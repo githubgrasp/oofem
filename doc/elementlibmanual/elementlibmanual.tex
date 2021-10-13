@@ -453,6 +453,25 @@ The specific input parameters for this element in addition of those for latticel
 \elementDescription{Reference}{\cite{GraAnt19}}
 \end{elementsummary}
 
+\subsubsection{latticeframe3d element}
+latticeframe3d represents a two-node 3d lattice element. Each node has six degrees of freedom as shown in Figure~\ref{latticeframe3dfig}.
+The element is based on the Rigid Body Spring Model originally developed by Toi  for modelling failure in steel frame member.
+The input parameters for this element are shown in Table~\ref{latticeframe3dsummary}. 
+
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=0.3\textwidth]{./latticeframe3d.pdf}
+ \caption{latticeframe3d element. Node numbering, DOF numbering, cross-section vertices and local coordinate system at integration point $C$.}
+ \label{latticeframe3dfig}
+\end{figure}
+
+\begin{elementsummary}{latticeframe3d}{3d lattice frame element}{\field{thick}{rn} \field{width}{rn} \field{gpCoords}{ra}}{latticeframe3d element summary}{latticeframe3dsummary}
+\elementParam{\param{thick}: defines the out of plane ($Y$-direction) thickness}
+\elementParam{\param{width}: defines the width of the midpoint cross-section in the $x$-$Z$ plane with the point $C$ at its centre}
+\elementParam{\param{gpCooords}: array of the coordinates of the integration point $C$ in the global coordinate system}
+\elementDescription{Unknowns}{Six dofs ($u$-displacement, $v$-displacement, $w$-displacement, $u$-rotation, $v$-rotation and $w$-rotation) are required in each node.}
+\end{elementsummary}
+
 %-----------------------------------------------------------------------------------------------
 \clearpage
 \subsection{Plane Stress Elements}
