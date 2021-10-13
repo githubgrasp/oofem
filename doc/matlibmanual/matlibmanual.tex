@@ -6026,41 +6026,6 @@ Supported modes& 1dMat\\
 %\end{center}
 \end{table}
 
-\subsubsection{Plasticity lattice model for steel}
-
-This is a Plasticity material used together with lattice elements.
-The stress-strain law has the form
-\begin{equation}
-\boldsymbol{\sigma} = \mathbf{D}_{\rm e} \left(\boldsymbol{\varepsilon}-\boldsymbol{\varepsilon}_{\rm p} \right)
-\end{equation}
-where $\boldsymbol{\sigma}$ is a vector of tractions and rotational components, $\mathbf{D}_{\rm e}$ is the elastic stiffness matrix, $\boldsymbol{\varepsilon}$ is a vector of strains obtained from displacement jumps smeared over the element length and rotational components and $\boldsymbol{\varepsilon}_{\rm p}$ are the plastic strains.
-\begin{table}[!htb]
-\begin{mmt}
-\hline
-Description & Plasticity steel model for lattice elements \\
-\hline
-Record Format & \descitem{latticeframesteelplastic} \elemparam{}{in}
-\elemparam{d}{rn} \optelemparam{talpha}{rn} \elemparam{e}{rn} \optelemparam{n}{rn} \optelemparam{nx0}{rn} \optelemparam{mx0}{rn} \optelemparam{my0}{rn} \optelemparam{mz0}{rn} \elemparam{sub}{in} \elemparam{iter}{in} \elemparam{tol}{rn}\\
-Parameters &- \param{} material number\\
-&- \param{d} material density\\
-&- \optparam{talpha} Thermal expansion coefficient. Default is 0.\\
-&- \optparam{e} Young's modulus of the lattice material.\\
-&- \param{n} Poisson's ratio of the material that the beam element is made of.\\
-&- \optparam{nx0} maximum axial force.\\
-&- \optparam{mx0} maximum bending moment about x.\\
-&- \optparam{my0} maximum bending moment about y.\\
-&- \optparam{mz0} maximum bending moment about z.\\
-&- \optparam{sub} maximum number of subincrementations.\\
-&- \optparam{iter} maximum number of newton iterations.\\
-&- \optparam{tol} tolerance for newton method.\\
-Supported modes & 3dlattice\\
-Supported modes & 3dlattice\\
-\hline
-\end{mmt}
-\caption{Plasticity steel model for lattice elements -- summary.}
-\label{latticeframesteelplastic_table}
-%\end{center}                                                                                                                                                                                            
-\end{table}
 
 
 \subsection{User-defined material models using MFront}
