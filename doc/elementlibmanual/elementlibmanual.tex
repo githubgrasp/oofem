@@ -456,19 +456,19 @@ The specific input parameters for this element in addition of those for latticel
 \subsubsection{latticeframe3d element}
 latticeframe3d represents a two-node 3d lattice element. Each node has six degrees of freedom as shown in Figure~\ref{latticeframe3dfig}.
 The element is based on the Rigid Body Spring Model originally developed by Toi  for modelling failure in steel frame member.
-The input parameters for this element are shown in Table~\ref{latticeframe3dsummary}. 
+The input parameters for this element are shown in Table~\ref{latticeframe3dsummary}.
 
 \begin{figure}[htb]
   \centering
-  \includegraphics[width=0.3\textwidth]{./latticeframe3d.pdf}
+  \includegraphics[width=0.3\textwidth]{./latticeframe3d.png}
  \caption{latticeframe3d element. Node numbering, DOF numbering, cross-section vertices and local coordinate system at integration point $C$.}
  \label{latticeframe3dfig}
 \end{figure}
 
-\begin{elementsummary}{latticeframe3d}{3d lattice frame element}{\field{thick}{rn} \field{width}{rn} \field{gpCoords}{ra}}{latticeframe3d element summary}{latticeframe3dsummary}
-\elementParam{\param{thick}: defines the out of plane ($Y$-direction) thickness}
-\elementParam{\param{width}: defines the width of the midpoint cross-section in the $x$-$z$ plane with the point $C$ at its centre}
-\elementParam{\param{gpCooords}: array of the coordinates of the integration point $C$ in the global coordinate system}
+\begin{elementsummary}{latticeframe3d}{3d lattice frame element}{\field{iy}{rn} \field{iz}{rn} \field{ik}{rn} \field{shearcoeff}{rn} \field{s}{rn} \field{area}{rn}  \field{gpCoords}{ra}}{latticeframe3d element summary}{latticeframe3dsummary}
+\elementParam{\param{refnode}: sets reference node to determine the local coordinate system of element.}
+\elementParam{\param{s}: s is the position of the integration point}
+\elementDescription{CS properties}{Area, inertia moment along y and z axis (\param{iy} and \param{iz} parameters), torsion inertia moment (\param{ik} parameter) and either cross section area shear correction factor (\param{shearcoeff} parameter) are required. These cross section properties are assumed to be defined in local coordinate system of element.}
 \elementDescription{Unknowns}{Six dofs ($u$-displacement, $v$-displacement, $w$-displacement, $u$-rotation, $v$-rotation and $w$-rotation) are required in each node.}
 \end{elementsummary}
 
