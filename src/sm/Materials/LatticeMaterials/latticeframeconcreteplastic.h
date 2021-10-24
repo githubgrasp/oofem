@@ -52,6 +52,10 @@
 #define _IFT_LatticeFrameConcretePlastic_mx0 "mx0"
 #define _IFT_LatticeFrameConcretePlastic_my0 "my0"
 #define _IFT_LatticeFrameConcretePlastic_mz0 "mz0"
+#define _IFT_LatticeFrameConcretePlastic_nx01 "nx01"
+#define _IFT_LatticeFrameConcretePlastic_mx01 "mx01"
+#define _IFT_LatticeFrameConcretePlastic_my01 "my01"
+#define _IFT_LatticeFrameConcretePlastic_mz01 "mz01"
 #define _IFT_LatticeFrameConcretePlastic_tol "tol"
 #define _IFT_LatticeFrameConcretePlastic_iter "iter"
 #define _IFT_LatticeFrameConcretePlastic_sub "sub"
@@ -128,6 +132,18 @@ protected:
 
     ///maximum  bending moment about x-axis mz0
     double mz0;
+    
+    ///maximum axial force in x-axis x-axis nx01
+    double nx01;
+
+    ///maximum  bending moment about x-axis mx01
+    double mx01;
+
+    ///maximum  bending moment about x-axis my01
+    double my01;
+
+    ///maximum  bending moment about x-axis mz01
+    double mz01;
 
     /// yield tolerance
     double yieldTol;

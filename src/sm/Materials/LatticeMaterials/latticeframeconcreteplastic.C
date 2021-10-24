@@ -77,15 +77,27 @@ LatticeFrameConcretePlastic::initializeFrom(InputRecord &ir)
     //Nx0
     IR_GIVE_FIELD(ir, this->nx0, _IFT_LatticeFrameConcretePlastic_nx0); // Macro
 
+    //Nx01                                                                                                                                                                                                
+    IR_GIVE_FIELD(ir, this->nx01, _IFT_LatticeFrameConcretePlastic_nx01); // Macro
+    
     //Mx0
     IR_GIVE_FIELD(ir, this->mx0, _IFT_LatticeFrameConcretePlastic_mx0); // Macro
 
+    //Mx01                                                                                                                                                                                                
+    IR_GIVE_FIELD(ir, this->mx01, _IFT_LatticeFrameConcretePlastic_mx01); // Macro
+    
     //My0
     IR_GIVE_FIELD(ir, this->my0, _IFT_LatticeFrameConcretePlastic_my0); // Macro
 
+    //My01                                                                                                                                                                                                
+    IR_GIVE_FIELD(ir, this->my01, _IFT_LatticeFrameConcretePlastic_my01); // Macro       
+    
     //Mz0
     IR_GIVE_FIELD(ir, this->mz0, _IFT_LatticeFrameConcretePlastic_mz0); // Macro
 
+    //Mz01                                                                                                                                                                                                
+    IR_GIVE_FIELD(ir, this->mz01, _IFT_LatticeFrameConcretePlastic_mz01); // Macro     
+    
     yieldTol = 1.e-6;
     ;
     IR_GIVE_FIELD(ir, this->yieldTol, _IFT_LatticeFrameConcretePlastic_tol); // Macro
@@ -128,16 +140,46 @@ LatticeFrameConcretePlastic::computeYieldValue(const FloatArrayF< 4 > &stress,
                                             GaussPoint *gp,
                                             TimeStep *tStep) const
 {
-    double yieldValue = 0.;
-    double nx = stress.at(1);
-    double mx = stress.at(2);
-    double my = stress.at(3);
-    double mz = stress.at(4);
+  double yieldValue = 0.;
+  double nx = stress.at(1);
+  double mx = stress.at(2);
+  double my = stress.at(3);
+  double mz = stress.at(4);
+  double a;
+  {
+    if ( nx > 0 ) {
+        a = nx0;
+    } else {
+        a = nx01;
+    }
+  double b;
 
-    {
-        yieldValue = pow(nx / this->nx0, 2.) + pow(mx / this->mx0, 2.) + pow(my / this->my0, 2.) + pow(mz / this->mz0, 2.) - 1.;
+    if ( mx > 0 ) {
+        b = mx0;
+    } else {
+        b = mx01;
+    }
+  double c;
+	
+    if ( my > 0 ) {
+        c = my0;
+    } else {
+        c = my01;
     }
 
+  double d;
+    
+    if ( mz> 0 ) {
+        d = mz0;
+    } else {
+        d = mz01;
+    }
+  
+    {
+    
+           yieldValue = pow(nx / a, 2.) + pow(mx / b, 2.) + pow(my / c, 2.) + pow(mz / d, 2.) - 1.;
+    }
+  }
     return yieldValue;
 }
 
@@ -150,13 +192,45 @@ LatticeFrameConcretePlastic::computeFVector(const FloatArrayF< 4 > &stress,
     double mx = stress.at(2);
     double my = stress.at(3);
     double mz = stress.at(4);
+    double a;
+    double b;
+    double c;
+    double d;
+
+    if ( nx > 0 ) {
+        a = nx01;
+    } else {
+        a = nx0;
+    }
+
+    if ( mx > 0 ) {
+        b = mx0;
+    } else {
+	b = mx01;
+    }
+
+    if ( my > 0 ) {
+        c = my0;
+    } else {
+	c = my01;
+    }
+
+    if ( mz> 0 ) {
+        d = mz0;
+    } else {
+        d = mz01;
+    }
 
     FloatArrayF< 4 >f;
 
-    f.at(1) = 2. * nx / pow(this->nx0, 2.);
-    f.at(2) = 2. * mx / pow(this->mx0, 2.);
-    f.at(3) = 2. * my / pow(this->my0, 2.);
-    f.at(4) = 2. * mz / pow(this->mz0, 2.);
+    // f.at(1) = 2. * nx / pow(this->nx0, 2.);
+    // f.at(2) = 2. * mx / pow(this->mx0, 2.);
+    // f.at(3) = 2. * my / pow(this->my0, 2.);
+    // f.at(4) = 2. * mz / pow(this->mz0, 2.);
+    f.at(1) = 2. * nx / pow(a, 2.);
+    f.at(2) = 2. * mx / pow(b, 2.);
+    f.at(3) = 2. * my / pow(c, 2.);
+    f.at(4) = 2. * mz / pow(d, 2.);
 
     return f;
 }
@@ -164,31 +238,66 @@ LatticeFrameConcretePlastic::computeFVector(const FloatArrayF< 4 > &stress,
 FloatMatrixF< 4, 4 >
 LatticeFrameConcretePlastic::computeDMMatrix(const FloatArrayF< 4 > &stress, GaussPoint *gp, TimeStep *tStep) const
 {
+  // FloatMatrixF< 4, 4 >dm;
+    double nx = stress.at(1);
+    double mx = stress.at(2);
+    double my = stress.at(3);
+    double mz = stress.at(4);
+
+    double a;
+    double b;
+    double c;
+    double d;
+
+    if ( nx > 0 ) {
+        a = nx01;
+    } else {
+        a = nx0;
+    }
+
+    if ( mx > 0 ) {
+        b = mx0;
+    } else {
+	b = mx01;
+    }
+
+    if ( my > 0 ) {
+        c = my0;
+    } else {
+	c = my01;
+    }
+
+    if ( mz> 0 ) {
+        d = mz0;
+    } else {
+        d = mz01;
+    }
+    
     FloatMatrixF< 4, 4 >dm;
 
     //Derivatives of dGDSig
-    dm.at(1, 1) = 2. / pow(this->nx0, 2.);
+    dm.at(1, 1) = 2. / pow(a, 2.);
     dm.at(1, 2) = 0;
     dm.at(1, 3) = 0;
     dm.at(1, 4) = 0;
 
     //Derivatives of dGDTau
     dm.at(2, 1) = 0;
-    dm.at(2, 2) = 2. / pow(this->mx0, 2.);
+    dm.at(2, 2) = 2. / pow(b, 2.);
     dm.at(2, 3) = 0;
     dm.at(2, 4) = 0;
 
     //Derivates of evolution law
     dm.at(3, 1) = 0;
     dm.at(3, 2) = 0;
-    dm.at(3, 3) = 2. / pow(this->my0, 2.);
+    dm.at(3, 3) = 2. / pow(c, 2.);
     dm.at(3, 4) = 0;
 
     //Derivates of evolution law
     dm.at(4, 1) = 0;
     dm.at(4, 2) = 0;
     dm.at(4, 3) = 0;
-    dm.at(4, 3) = 2. / pow(this->mz0, 2.);
+    dm.at(4, 3) = 2. / pow(d, 2.);
 
     return dm;
 }
@@ -230,11 +339,76 @@ LatticeFrameConcretePlastic::performPlasticityReturn(GaussPoint *gp, const Float
     auto tempPlasticStrain = status->givePlasticLatticeStrain() [ { 0, 3, 4, 5 } ];
 
     FloatArrayF< 4 >tangent = { area *this->e, ik *g, iy *this->e, iz *this->e };
-
+    
     /* Compute trial stress*/
     auto stress = mult(tangent, strain - tempPlasticStrain);
 
-    auto oldStrain = this->giveReducedStrain(gp, tStep) [ { 0, 3, 4, 5 } ];
+    double k1;
+    double k2;
+    double k3;
+    double k4; 
+    k1 = stress.at(1);
+    k2 = stress.at(2);
+    k3 = stress.at(3);
+    k4 = stress.at(4);
+
+    if ( k1>0 && k2>0 && k3>0 && k4>0 ) {
+      stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;
+       } else {
+      
+    if ( k1>0 && k2>0 && k3<0 && k4>0 ) {
+      stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;}}
+
+    if ( k1>0 && k2>0 && k3<0 && k4<0 ) {
+      stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;
+       } else {
+
+    if ( k1>0 && k2>0 && k3>0 && k4<0 ) {
+      stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;}}
+
+    if ( k1>0 && k2<0 && k3>0 && k4>0 ) {
+      stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;
+       } else {
+
+    if ( k1>0 && k2<0 && k3<0 && k4>0 ) {
+      stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;}}
+
+    if ( k1>0 && k2<0 && k3<0 && k4<0 ) {
+      stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;
+       } else {
+
+    if ( k1>0 && k2<0 && k3>0 && k4<0 ) {
+      stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;}}
+
+    if ( k1<0 && k2>0 && k3>0 && k4>0 ) {
+      stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;
+       } else {
+
+    if ( k1<0 && k2>0 && k3<0 && k4>0 ) {
+      stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;}}
+
+    if ( k1<0 && k2>0 && k3<0 && k4<0 ) {
+      stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;
+       } else {
+
+    if ( k1<0 && k2>0 && k3>0 && k4<0 ) {
+      stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;}}
+
+    if ( k1<0 && k2<0 && k3>0 && k4>0 ) {
+      stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;
+       } else {
+
+    if ( k1<0 && k2<0 && k3<0 && k4>0 ) {
+      stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;}}
+
+    if ( k1<0 && k2<0 && k3<0 && k4<0 ) {
+      stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;
+       } else {
+
+      if ( k1<0 && k2<0 && k3>0 && k4<0 ) {
+	stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;}}
+    
+     auto oldStrain = this->giveReducedStrain(gp, tStep) [ { 0, 3, 4, 5 } ];
 
     /* Compute yield value*/
     double yieldValue = computeYieldValue(stress, gp, tStep);
