@@ -58,6 +58,7 @@ REGISTER_Material(LatticeFrameConcretePlastic);
 // LatticeStructuralMaterial(n, d)
 bool
 LatticeFrameConcretePlastic::hasMaterialModeCapability(MaterialMode mode) const
+
 {
     return ( mode == _3dLattice );
 }

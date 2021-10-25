@@ -165,6 +165,7 @@ protected:
     //
 
 public:
+
     LatticeFrameConcretePlastic(int n, Domain *d) : LatticeStructuralMaterial(n, d) { };
 
     FloatArrayF< 4 >computeFVector(const FloatArrayF< 4 > &sigma, GaussPoint *gp, TimeStep *tStep) const;
