@@ -296,7 +296,6 @@ set (sm_material
     Materials/LatticeMaterials/latticeframeconcreteplastic.C
 )
 
-
 if (USE_MFRONT)
     list (APPEND sm_material Materials/mfrontusermaterial.C)
 endif ()
