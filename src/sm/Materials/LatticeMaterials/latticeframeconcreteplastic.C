@@ -145,23 +145,23 @@ LatticeFrameConcretePlastic::computeYieldValue(const FloatArrayF< 4 > &stress,
   double mx = stress.at(2);
   double my = stress.at(3);
   double mz = stress.at(4);
-  double a;
   {
-    if ( nx > 0 ) {
+  double a;
+    if ( nx >= 0 ) {
         a = nx0;
     } else {
         a = nx01;
     }
   double b;
 
-    if ( mx > 0 ) {
+    if ( mx >= 0 ) {
         b = mx0;
     } else {
         b = mx01;
     }
   double c;
 	
-    if ( my > 0 ) {
+    if ( my >= 0 ) {
         c = my0;
     } else {
         c = my01;
@@ -169,7 +169,7 @@ LatticeFrameConcretePlastic::computeYieldValue(const FloatArrayF< 4 > &stress,
 
   double d;
     
-    if ( mz> 0 ) {
+    if ( mz>= 0 ) {
         d = mz0;
     } else {
         d = mz01;
@@ -197,25 +197,25 @@ LatticeFrameConcretePlastic::computeFVector(const FloatArrayF< 4 > &stress,
     double c;
     double d;
 
-    if ( nx > 0 ) {
+    if ( nx >= 0 ) {
         a = nx01;
     } else {
         a = nx0;
     }
 
-    if ( mx > 0 ) {
+    if ( mx >= 0 ) {
         b = mx0;
     } else {
 	b = mx01;
     }
 
-    if ( my > 0 ) {
+    if ( my >= 0 ) {
         c = my0;
     } else {
 	c = my01;
     }
 
-    if ( mz> 0 ) {
+    if ( mz>= 0 ) {
         d = mz0;
     } else {
         d = mz01;
@@ -249,25 +249,25 @@ LatticeFrameConcretePlastic::computeDMMatrix(const FloatArrayF< 4 > &stress, Gau
     double c;
     double d;
 
-    if ( nx > 0 ) {
+    if ( nx >= 0 ) {
         a = nx01;
     } else {
         a = nx0;
     }
 
-    if ( mx > 0 ) {
+    if ( mx >= 0 ) {
         b = mx0;
     } else {
 	b = mx01;
     }
 
-    if ( my > 0 ) {
+    if ( my >= 0 ) {
         c = my0;
     } else {
 	c = my01;
     }
 
-    if ( mz> 0 ) {
+    if ( mz>= 0 ) {
         d = mz0;
     } else {
         d = mz01;
@@ -351,61 +351,61 @@ LatticeFrameConcretePlastic::performPlasticityReturn(GaussPoint *gp, const Float
     k2 = stress.at(2);
     k3 = stress.at(3);
     k4 = stress.at(4);
-//test
-    if ( k1>0 && k2>0 && k3>0 && k4>0 ) {
+//tes
+    if ( k1>=0 && k2>=0 && k3>=0 && k4>=0 ) {
       stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;
        } else {
       
-    if ( k1>0 && k2>0 && k3<0 && k4>0 ) {
+    if ( k1>=0 && k2>=0 && k3<0 && k4>=0 ) {
       stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;}}
 
-    if ( k1>0 && k2>0 && k3<0 && k4<0 ) {
+    if ( k1>=0 && k2>=0 && k3<0 && k4<0 ) {
       stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;
        } else {
 
-    if ( k1>0 && k2>0 && k3>0 && k4<0 ) {
+    if ( k1>=0 && k2>=0 && k3>=0 && k4<0 ) {
       stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;}}
 
-    if ( k1>0 && k2<0 && k3>0 && k4>0 ) {
+    if ( k1>=0 && k2<0 && k3>=0 && k4>=0 ) {
       stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;
        } else {
 
-    if ( k1>0 && k2<0 && k3<0 && k4>0 ) {
+    if ( k1>=0 && k2<0 && k3<0 && k4>=0 ) {
       stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;}}
 
-    if ( k1>0 && k2<0 && k3<0 && k4<0 ) {
+    if ( k1>=0 && k2<0 && k3<0 && k4<0 ) {
       stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;
        } else {
 
-    if ( k1>0 && k2<0 && k3>0 && k4<0 ) {
+    if ( k1>=0 && k2<0 && k3>=0 && k4<0 ) {
       stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;}}
 
-    if ( k1<0 && k2>0 && k3>0 && k4>0 ) {
+    if ( k1<0 && k2>=0 && k3>=0 && k4>=0 ) {
       stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;
        } else {
 
-    if ( k1<0 && k2>0 && k3<0 && k4>0 ) {
+    if ( k1<0 && k2>=0 && k3<0 && k4>=0 ) {
       stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;}}
 
-    if ( k1<0 && k2>0 && k3<0 && k4<0 ) {
+    if ( k1<0 && k2>=0 && k3<0 && k4<0 ) {
       stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;
        } else {
 
-    if ( k1<0 && k2>0 && k3>0 && k4<0 ) {
+    if ( k1<0 && k2>=0 && k3>=0 && k4<0 ) {
       stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;}}
 
-    if ( k1<0 && k2<0 && k3>0 && k4>0 ) {
+    if ( k1<0 && k2<0 && k3>=0 && k4>=0 ) {
       stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;
        } else {
 
-    if ( k1<0 && k2<0 && k3<0 && k4>0 ) {
+    if ( k1<0 && k2<0 && k3<0 && k4>=0 ) {
       stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;}}
 
     if ( k1<0 && k2<0 && k3<0 && k4<0 ) {
       stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;
        } else {
 
-      if ( k1<0 && k2<0 && k3>0 && k4<0 ) {
+      if ( k1<0 && k2<0 && k3>=0 && k4<0 ) {
 	stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;}}
     
      auto oldStrain = this->giveReducedStrain(gp, tStep) [ { 0, 3, 4, 5 } ];
