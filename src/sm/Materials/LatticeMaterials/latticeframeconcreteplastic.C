@@ -351,7 +351,7 @@ LatticeFrameConcretePlastic::performPlasticityReturn(GaussPoint *gp, const Float
     k2 = stress.at(2);
     k3 = stress.at(3);
     k4 = stress.at(4);
-
+//test
     if ( k1>0 && k2>0 && k3>0 && k4>0 ) {
       stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;
        } else {
