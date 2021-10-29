@@ -169,7 +169,7 @@ LatticeFrameConcretePlastic::computeYieldValue(const FloatArrayF< 4 > &stress,
 
   double d;
     
-    if ( mz>= 0 ) {
+    if ( mz >= 0 ) {
         d = mz0;
     } else {
         d = mz01;
@@ -198,9 +198,9 @@ LatticeFrameConcretePlastic::computeFVector(const FloatArrayF< 4 > &stress,
     double d;
 
     if ( nx >= 0 ) {
-        a = nx01;
-    } else {
         a = nx0;
+    } else {
+        a = nx01;
     }
 
     if ( mx >= 0 ) {
@@ -215,7 +215,7 @@ LatticeFrameConcretePlastic::computeFVector(const FloatArrayF< 4 > &stress,
 	c = my01;
     }
 
-    if ( mz>= 0 ) {
+    if ( mz >= 0 ) {
         d = mz0;
     } else {
         d = mz01;
@@ -250,9 +250,9 @@ LatticeFrameConcretePlastic::computeDMMatrix(const FloatArrayF< 4 > &stress, Gau
     double d;
 
     if ( nx >= 0 ) {
-        a = nx01;
-    } else {
         a = nx0;
+    } else {
+        a = nx01;
     }
 
     if ( mx >= 0 ) {
@@ -521,13 +521,52 @@ LatticeFrameConcretePlastic::performRegularReturn(FloatArrayF< 4 > &stress,
             return;
         }
 
-        FloatArrayF< 5 >residualsNorm;
-        residualsNorm.at(1) = residuals.at(1) / this->nx0;
-        residualsNorm.at(2) = residuals.at(2) / this->mx0;
-        residualsNorm.at(3) = residuals.at(3) / this->my0;
-        residualsNorm.at(4) = residuals.at(4) / this->mz0;
-        residualsNorm.at(5) = residuals.at(5);
+        //FloatArrayF< 5 >residualsNorm;
+	// residualsNorm.at(1) = residuals.at(1) / this->nx01;
+        //residualsNorm.at(2) = residuals.at(2) / this->mx01;
+        //residualsNorm.at(3) = residuals.at(3) / this->my01;
+        //residualsNorm.at(4) = residuals.at(4) / this->mz01;
+        //residualsNorm.at(5) = residuals.at(5);
+    double nx = stress.at(1);
+    double mx = stress.at(2);
+    double my = stress.at(3);
+    double mz = stress.at(4);
 
+    double a;
+    double b;
+    double c;
+    double d;
+
+    if ( nx >= 0 ) {
+	a = nx0;
+    } else {
+        a = nx01;
+    }
+
+    if ( mx >= 0 ) {
+	b = mx0;
+    } else {
+        b = mx01;
+    }
+
+    if ( my >= 0 ) {
+	c = my0;
+    } else {
+        c = my01;
+    }
+
+    if ( mz>= 0 ) {
+        d = mz0;
+    } else {
+        d = mz01;
+    }
+
+        FloatArrayF< 5 >residualsNorm;
+        residualsNorm.at(1) = residuals.at(1) / a;
+        residualsNorm.at(2) = residuals.at(2) / b;
+        residualsNorm.at(3) = residuals.at(3) / c;
+        residualsNorm.at(4) = residuals.at(4) / d;
+        residualsNorm.at(5) = residuals.at(5);
         normOfResiduals = norm(residualsNorm);
 
         if ( std::isnan(normOfResiduals) ) {
