@@ -51,84 +51,93 @@
 #include "classfactory.h"
 
 namespace oofem {
-REGISTER_Material(LatticeFrameConcretePlastic);
+REGISTER_Material( LatticeFrameConcretePlastic );
 
 // constructor which creates a dummy material without a status and without random extension interface
 // LatticeFrameConcretePlastic :: LatticeFrameConcretelPlastic(int n, Domain *d) :
 // LatticeStructuralMaterial(n, d)
-bool
-LatticeFrameConcretePlastic::hasMaterialModeCapability(MaterialMode mode) const
+bool LatticeFrameConcretePlastic::hasMaterialModeCapability( MaterialMode mode ) const
 {
     return ( mode == _3dLattice );
 }
 
 
-void
-LatticeFrameConcretePlastic::initializeFrom(InputRecord &ir)
+void LatticeFrameConcretePlastic::initializeFrom( InputRecord &ir )
 {
-    LatticeStructuralMaterial::initializeFrom(ir);
+    LatticeStructuralMaterial::initializeFrom( ir );
 
-    //Young's modulus of the material that the beam element is made of
-    IR_GIVE_FIELD(ir, this->e, _IFT_LatticeFrameConcretePlastic_e); // Macro
+    // Young's modulus of the material that the beam element is made of
+    IR_GIVE_FIELD( ir, this->e, _IFT_LatticeFrameConcretePlastic_e ); // Macro
 
-    //Poisson's ratio of the material that the beam element is made of
-    IR_GIVE_FIELD(ir, this->nu, _IFT_LatticeFrameConcretePlastic_n); // Macro
+    // Poisson's ratio of the material that the beam element is made of
+    IR_GIVE_FIELD( ir, this->nu, _IFT_LatticeFrameConcretePlastic_n ); // Macro
 
-    //Nx0
-    IR_GIVE_FIELD(ir, this->nx0, _IFT_LatticeFrameConcretePlastic_nx0); // Macro
+    // Nx0
+    IR_GIVE_FIELD( ir, this->nx0, _IFT_LatticeFrameConcretePlastic_nx0 ); // Macro
 
-    //Nx01                                                                                                                                                                                                
-    IR_GIVE_FIELD(ir, this->nx01, _IFT_LatticeFrameConcretePlastic_nx01); // Macro
-    
-    //Mx0
-    IR_GIVE_FIELD(ir, this->mx0, _IFT_LatticeFrameConcretePlastic_mx0); // Macro
+    // Nx01
+    IR_GIVE_FIELD( ir, this->nx01, _IFT_LatticeFrameConcretePlastic_nx01 ); // Macro
 
-    //Mx01                                                                                                                                                                                                
-    IR_GIVE_FIELD(ir, this->mx01, _IFT_LatticeFrameConcretePlastic_mx01); // Macro
-    
-    //My0
-    IR_GIVE_FIELD(ir, this->my0, _IFT_LatticeFrameConcretePlastic_my0); // Macro
+    // vy0
+    IR_GIVE_FIELD( ir, this->vy0, _IFT_LatticeFrameConcretePlastic_vy0 ); // Macro
 
-    //My01                                                                                                                                                                                                
-    IR_GIVE_FIELD(ir, this->my01, _IFT_LatticeFrameConcretePlastic_my01); // Macro       
-    
-    //Mz0
-    IR_GIVE_FIELD(ir, this->mz0, _IFT_LatticeFrameConcretePlastic_mz0); // Macro
+    // vy01
+    IR_GIVE_FIELD( ir, this->vy01, _IFT_LatticeFrameConcretePlastic_vy01 ); // Macro
 
-    //Mz01                                                                                                                                                                                                
-    IR_GIVE_FIELD(ir, this->mz01, _IFT_LatticeFrameConcretePlastic_mz01); // Macro     
-    
+    // vz0
+    IR_GIVE_FIELD( ir, this->vz0, _IFT_LatticeFrameConcretePlastic_vz0 ); // Macro
+
+    // vz01
+    IR_GIVE_FIELD( ir, this->vz01, _IFT_LatticeFrameConcretePlastic_vz01 ); // Macro
+
+    // Mx0
+    IR_GIVE_FIELD( ir, this->mx0, _IFT_LatticeFrameConcretePlastic_mx0 ); // Macro
+
+    // Mx01
+    IR_GIVE_FIELD( ir, this->mx01, _IFT_LatticeFrameConcretePlastic_mx01 ); // Macro
+
+    // My0
+    IR_GIVE_FIELD( ir, this->my0, _IFT_LatticeFrameConcretePlastic_my0 ); // Macro
+
+    // My01
+    IR_GIVE_FIELD( ir, this->my01, _IFT_LatticeFrameConcretePlastic_my01 ); // Macro
+
+    // Mz0
+    IR_GIVE_FIELD( ir, this->mz0, _IFT_LatticeFrameConcretePlastic_mz0 ); // Macro
+
+    // Mz01
+    IR_GIVE_FIELD( ir, this->mz01, _IFT_LatticeFrameConcretePlastic_mz01 ); // Macro
+
     yieldTol = 1.e-6;
-    ;
-    IR_GIVE_FIELD(ir, this->yieldTol, _IFT_LatticeFrameConcretePlastic_tol); // Macro
+    IR_GIVE_FIELD( ir, this->yieldTol, _IFT_LatticeFrameConcretePlastic_tol ); // Macro
 
     this->newtonIter = 100;
-    IR_GIVE_FIELD(ir, this->newtonIter, _IFT_LatticeFrameConcretePlastic_iter); // Macro
+    IR_GIVE_FIELD( ir, this->newtonIter, _IFT_LatticeFrameConcretePlastic_iter ); // Macro
 
     numberOfSubIncrements = 10;
-    IR_GIVE_FIELD(ir, this->numberOfSubIncrements, _IFT_LatticeFrameConcretePlastic_sub); // Macro
+    IR_GIVE_FIELD( ir, this->numberOfSubIncrements, _IFT_LatticeFrameConcretePlastic_sub ); // Macro
 
     this->plasticFlag = 1;
-    IR_GIVE_OPTIONAL_FIELD(ir, plasticFlag, _IFT_LatticeFrameConcretePlastic_plastic); // Macro
+    IR_GIVE_OPTIONAL_FIELD( ir, plasticFlag, _IFT_LatticeFrameConcretePlastic_plastic ); // Macro
 }
 
 MaterialStatus *
-LatticeFrameConcretePlastic::CreateStatus(GaussPoint *gp) const
+LatticeFrameConcretePlastic::CreateStatus( GaussPoint *gp ) const
 {
-    return new LatticeFrameConcretePlasticStatus(1, LatticeFrameConcretePlastic::domain, gp);
+    return new LatticeFrameConcretePlasticStatus( 1, LatticeFrameConcretePlastic::domain, gp );
 }
 
 MaterialStatus *
-LatticeFrameConcretePlastic::giveStatus(GaussPoint *gp) const
+LatticeFrameConcretePlastic::giveStatus( GaussPoint *gp ) const
 {
     // test
-    MaterialStatus *status = static_cast< MaterialStatus * >( gp->giveMaterialStatus() );
+    MaterialStatus *status = static_cast<MaterialStatus *>( gp->giveMaterialStatus() );
     if ( !status ) {
         // create a new one
-        status = this->CreateStatus(gp);
+        status = this->CreateStatus( gp );
 
         if ( status ) {
-            gp->setMaterialStatus(status);
+            gp->setMaterialStatus( status );
         }
     }
 
@@ -136,593 +145,1245 @@ LatticeFrameConcretePlastic::giveStatus(GaussPoint *gp) const
 }
 
 double
-LatticeFrameConcretePlastic::computeYieldValue(const FloatArrayF< 4 > &stress,
-                                            GaussPoint *gp,
-                                            TimeStep *tStep) const
+LatticeFrameConcretePlastic::computeYieldValue( const FloatArrayF<6> &stress, const FloatArrayF<6> &k,
+    GaussPoint *gp,
+    TimeStep *tStep ) const
 {
-  double yieldValue = 0.;
-  double nx = stress.at(1);
-  double mx = stress.at(2);
-  double my = stress.at(3);
-  double mz = stress.at(4);
-  {
-  double a;
-    if ( nx >= 0 ) {
-        a = nx0;
-    } else {
-        a = nx01;
-    }
-  double b;
-
-    if ( mx >= 0 ) {
-        b = mx0;
-    } else {
-        b = mx01;
-    }
-  double c;
-	
-    if ( my >= 0 ) {
-        c = my0;
-    } else {
-        c = my01;
-    }
-
-  double d;
-    
-    if ( mz >= 0 ) {
-        d = mz0;
-    } else {
-        d = mz01;
-    }
-  
+    double yieldValue = 0.;
+    double nx         = stress.at( 1 );
+    double vy         = stress.at( 2 );
+    double vz         = stress.at( 3 );
+    double mx         = stress.at( 4 );
+    double my         = stress.at( 5 );
+    double mz         = stress.at( 6 );
     {
-    
-           yieldValue = pow(nx / a, 2.) + pow(mx / b, 2.) + pow(my / c, 2.) + pow(mz / d, 2.) - 1.;
+        double a1;
+        if ( k.at( 1 ) == 1 ) {
+            a1 = nx0;
+        } else {
+            a1 = nx01;
+        }
+        double a2;
+        if ( k.at( 2 ) == 1 ) {
+            a2 = vy0;
+        } else {
+            a2 = vy01;
+        }
+        double a3;
+        if ( k.at( 3 ) == 1 ) {
+            a3 = vz0;
+        } else {
+            a3 = vz01;
+        }
+        double a4;
+
+        if ( k.at( 4 ) == 1 ) {
+            a4 = mx0;
+        } else {
+            a4 = mx01;
+        }
+        double a5;
+
+        if ( k.at( 5 ) == 1 ) {
+            a5 = my0;
+        } else {
+            a5 = my01;
+        }
+
+        double a6;
+
+        if ( k.at( 6 ) == 1 ) {
+            a6 = mz0;
+        } else {
+            a6 = mz01;
+        }
+
+
+        {
+
+            yieldValue = pow( nx / a1, 2. ) + pow( vy / a2, 2. ) + pow( vz / a3, 2. ) + pow( mx / a4, 2. ) + pow( my / a5, 2. ) + pow( mz / a6, 2. ) - 1.;
+        }
     }
-  }
     return yieldValue;
 }
 
-FloatArrayF< 4 >
-LatticeFrameConcretePlastic::computeFVector(const FloatArrayF< 4 > &stress,
-                                         GaussPoint *gp,
-                                         TimeStep *tStep) const
+FloatArrayF<6>
+LatticeFrameConcretePlastic::computeFVector( const FloatArrayF<6> &stress, const FloatArrayF<6> &k,
+    GaussPoint *gp,
+    TimeStep *tStep ) const
 {
-    double nx = stress.at(1);
-    double mx = stress.at(2);
-    double my = stress.at(3);
-    double mz = stress.at(4);
-    double a;
-    double b;
-    double c;
-    double d;
+    double nx = stress.at( 1 );
+    double vy = stress.at( 2 );
+    double vz = stress.at( 3 );
+    double mx = stress.at( 4 );
+    double my = stress.at( 5 );
+    double mz = stress.at( 6 );
+    {
+        double a1;
+        if ( k.at( 1 ) == 1 ) {
+            a1 = nx0;
+        } else {
+            a1 = nx01;
+        }
+        double a2;
+        if ( k.at( 2 ) == 1 ) {
+            a2 = vy0;
+        } else {
+            a2 = vy01;
+        }
+        double a3;
+        if ( k.at( 3 ) == 1 ) {
+            a3 = vz0;
+        } else {
+            a3 = vz01;
+        }
+        double a4;
 
-    if ( nx >= 0 ) {
-        a = nx0;
-    } else {
-        a = nx01;
+        if ( k.at( 4 ) == 1 ) {
+            a4 = mx0;
+        } else {
+            a4 = mx01;
+        }
+        double a5;
+
+        if ( k.at( 5 ) == 1 ) {
+            a5 = my0;
+        } else {
+            a5 = my01;
+        }
+
+        double a6;
+
+        if ( k.at( 6 ) == 1 ) {
+            a6 = mz0;
+        } else {
+            a6 = mz01;
+        }
+
+        FloatArrayF<6> f;
+        f.at( 1 ) = 2. * nx / pow( a1, 2. );
+        f.at( 2 ) = 2. * vy / pow( a2, 2. );
+        f.at( 3 ) = 2. * vz / pow( a3, 2. );
+        f.at( 4 ) = 2. * mx / pow( a4, 2. );
+        f.at( 5 ) = 2. * my / pow( a5, 2. );
+        f.at( 6 ) = 2. * mz / pow( a6, 2. );
+
+        return f;
     }
-
-    if ( mx >= 0 ) {
-        b = mx0;
-    } else {
-	b = mx01;
-    }
-
-    if ( my >= 0 ) {
-        c = my0;
-    } else {
-	c = my01;
-    }
-
-    if ( mz >= 0 ) {
-        d = mz0;
-    } else {
-        d = mz01;
-    }
-
-    FloatArrayF< 4 >f;
-
-    // f.at(1) = 2. * nx / pow(this->nx0, 2.);
-    // f.at(2) = 2. * mx / pow(this->mx0, 2.);
-    // f.at(3) = 2. * my / pow(this->my0, 2.);
-    // f.at(4) = 2. * mz / pow(this->mz0, 2.);
-    f.at(1) = 2. * nx / pow(a, 2.);
-    f.at(2) = 2. * mx / pow(b, 2.);
-    f.at(3) = 2. * my / pow(c, 2.);
-    f.at(4) = 2. * mz / pow(d, 2.);
-
-    return f;
 }
+    FloatMatrixF<6, 6>
+    LatticeFrameConcretePlastic::computeDMMatrix( const FloatArrayF<6> &stress, const FloatArrayF<6> &k, GaussPoint *gp, TimeStep *tStep ) const
+    {
 
-FloatMatrixF< 4, 4 >
-LatticeFrameConcretePlastic::computeDMMatrix(const FloatArrayF< 4 > &stress, GaussPoint *gp, TimeStep *tStep) const
-{
-  // FloatMatrixF< 4, 4 >dm;
-    double nx = stress.at(1);
-    double mx = stress.at(2);
-    double my = stress.at(3);
-    double mz = stress.at(4);
+        double a1;
+        if ( k.at( 1 ) == 1 ) {
+            a1 = nx0;
+        } else {
+            a1 = nx01;
+        }
+        double a2;
+        if ( k.at( 2 ) == 1 ) {
+            a2 = vy0;
+        } else {
+            a2 = vy01;
+        }
+        double a3;
+        if ( k.at( 3 ) == 1 ) {
+            a3 = vz0;
+        } else {
+            a3 = vz01;
+        }
+        double a4;
 
-    double a;
-    double b;
-    double c;
-    double d;
+        if ( k.at( 4 ) == 1 ) {
+            a4 = mx0;
+        } else {
+            a4 = mx01;
+        }
+        double a5;
 
-    if ( nx >= 0 ) {
-        a = nx0;
-    } else {
-        a = nx01;
+        if ( k.at( 5 ) == 1 ) {
+            a5 = my0;
+        } else {
+            a5 = my01;
+        }
+
+        double a6;
+
+        if ( k.at( 6 ) == 1 ) {
+            a6 = mz0;
+        } else {
+            a6 = mz01;
+        }
+
+
+        FloatMatrixF<6, 6> dm;
+
+        // Derivatives of dGDSig
+        dm.at( 1, 1 ) = 2. / pow( a1, 2. );
+        dm.at( 1, 2 ) = 0;
+        dm.at( 1, 3 ) = 0;
+        dm.at( 1, 4 ) = 0;
+        dm.at( 1, 5 ) = 0;
+        dm.at( 1, 6 ) = 0;
+
+
+        // Derivatives of dGDTau
+        dm.at( 2, 1 ) = 0;
+        dm.at( 2, 2 ) = 2. / pow( a2, 2. );
+        dm.at( 2, 3 ) = 0;
+        dm.at( 2, 4 ) = 0;
+        dm.at( 2, 5 ) = 0;
+        dm.at( 2, 6 ) = 0;
+
+
+        // Derivates of evolution law
+        dm.at( 3, 1 ) = 0;
+        dm.at( 3, 2 ) = 0;
+        dm.at( 3, 3 ) = 2. / pow( a3, 2. );
+        dm.at( 3, 4 ) = 0;
+        dm.at( 3, 5 ) = 0;
+        dm.at( 3, 6 ) = 0;
+
+
+        // Derivates of evolution law
+        dm.at( 4, 1 ) = 0;
+        dm.at( 4, 2 ) = 0;
+        dm.at( 4, 3 ) = 0;
+        dm.at( 4, 4 ) = 2. / pow( a4, 2. );
+        dm.at( 4, 5 ) = 0;
+        dm.at( 4, 6 ) = 0;
+
+        // Derivates of evolution law
+        dm.at( 5, 1 ) = 0;
+        dm.at( 5, 2 ) = 0;
+        dm.at( 5, 3 ) = 0;
+        dm.at( 5, 4 ) = 0;
+        dm.at( 5, 5 ) = 2. / pow( a5, 2. );
+        dm.at( 5, 6 ) = 0;
+
+        // Derivates of evolution law
+        dm.at( 6, 1 ) = 0;
+        dm.at( 6, 2 ) = 0;
+        dm.at( 6, 3 ) = 0;
+        dm.at( 6, 4 ) = 0;
+        dm.at( 6, 5 ) = 0;
+        dm.at( 6, 6 ) = 2. / pow( a6, 2. );
+
+        return dm;
     }
 
-    if ( mx >= 0 ) {
-        b = mx0;
-    } else {
-	b = mx01;
+    FloatArrayF<6>
+        LatticeFrameConcretePlastic::giveThermalDilatationVector( GaussPoint * gp, TimeStep * tStep ) const
+    // returns a FloatArray(6) of initial strain vector caused by unit temperature in direction of gp (element) local axes
+    {
+        double alpha = this->give( tAlpha, gp );
+
+        return {
+            alpha, 0., 0., 0., 0., 0.
+        };
     }
 
-    if ( my >= 0 ) {
-        c = my0;
-    } else {
-	c = my01;
+    FloatArrayF<6>
+        LatticeFrameConcretePlastic::giveStrain( GaussPoint * gp, TimeStep * tStep ) const
+    {
+        auto status = static_cast<LatticeMaterialStatus *>( this->giveStatus( gp ) );
+        return status->giveLatticeStrain();
     }
 
-    if ( mz>= 0 ) {
-        d = mz0;
-    } else {
-        d = mz01;
-    }
-    
-    FloatMatrixF< 4, 4 >dm;
 
-    //Derivatives of dGDSig
-    dm.at(1, 1) = 2. / pow(a, 2.);
-    dm.at(1, 2) = 0;
-    dm.at(1, 3) = 0;
-    dm.at(1, 4) = 0;
+    FloatArrayF<6>
+    LatticeFrameConcretePlastic::performPlasticityReturn( GaussPoint * gp, const FloatArrayF<6> &Strain, TimeStep *tStep ) const
+    {
+        double g                = this->e / ( 2. * ( 1. + this->nu ) );
+        const double area       = ( static_cast<LatticeStructuralElement *>( gp->giveElement() ) )->giveArea();
+        const double iy         = ( static_cast<LatticeStructuralElement *>( gp->giveElement() ) )->giveIy();
+        const double iz         = ( static_cast<LatticeStructuralElement *>( gp->giveElement() ) )->giveIz();
+        const double ik         = ( static_cast<LatticeStructuralElement *>( gp->giveElement() ) )->giveIk();
+        const double shearareay = ( static_cast<LatticeStructuralElement *>( gp->giveElement() ) )->giveShearAreaY();
+        const double shearareaz = ( static_cast<LatticeStructuralElement *>( gp->giveElement() ) )->giveShearAreaZ();
 
-    //Derivatives of dGDTau
-    dm.at(2, 1) = 0;
-    dm.at(2, 2) = 2. / pow(b, 2.);
-    dm.at(2, 3) = 0;
-    dm.at(2, 4) = 0;
+        auto status = static_cast<LatticeFrameConcretePlasticStatus *>( this->giveStatus( gp ) );
 
-    //Derivates of evolution law
-    dm.at(3, 1) = 0;
-    dm.at(3, 2) = 0;
-    dm.at(3, 3) = 2. / pow(c, 2.);
-    dm.at(3, 4) = 0;
+        // Shear components are not used for plasticity return
+        auto strain = Strain[{ 0, 1, 2, 3, 4, 5 }];
 
-    //Derivates of evolution law
-    dm.at(4, 1) = 0;
-    dm.at(4, 2) = 0;
-    dm.at(4, 3) = 0;
-    dm.at(4, 3) = 2. / pow(d, 2.);
+        /* Get plastic strain vector from status*/
+        auto tempPlasticStrain = status->givePlasticLatticeStrain()[{ 0, 1, 2, 3, 4, 5 }];
 
-    return dm;
-}
+        FloatArrayF<6> tangent = { area * this->e, g * shearareay, g * shearareaz, ik * g, iy * this->e, iz * this->e };
 
-FloatArrayF< 6 >
-LatticeFrameConcretePlastic::giveThermalDilatationVector(GaussPoint *gp,  TimeStep *tStep) const
-// returns a FloatArray(6) of initial strain vector caused by unit temperature in direction of gp (element) local axes
-{
-    double alpha = this->give(tAlpha, gp);
+        /* Compute trial stress*/
+        auto stress = mult( tangent, strain - tempPlasticStrain );
 
-    return {
-        alpha, 0., 0., 0., 0., 0.
-    };
-}
+        FloatArrayF<6> k;
 
-FloatArrayF< 6 >
-LatticeFrameConcretePlastic::giveReducedStrain(GaussPoint *gp, TimeStep *tStep) const
-{
-    auto status = static_cast< LatticeMaterialStatus * >( this->giveStatus(gp) );
-    return status->giveReducedLatticeStrain();
-}
+        if ( stress.at( 1 ) >= 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) >= 0 ) {
+            k.at( 1 ) = 1;
+            k.at( 2 ) = 1;
+            k.at( 3 ) = 1;
+            k.at( 4 ) = 1;
+            k.at( 5 ) = 1;
+            k.at( 6 ) = 1;
+
+        }
+
+        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) < 0 && stress.at( 6 ) >= 0 ) {
+            k.at( 1 ) = 1;
+            k.at( 2 ) = 1;
+            k.at( 3 ) = 1;
+            k.at( 4 ) = 1;
+            k.at( 5 ) = -1;
+            k.at( 6 ) = 1;
+
+        }
+
+        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) < 0 && stress.at( 6 ) < 0 ) {
+            k.at( 1 ) = 1;
+            k.at( 2 ) = 1;
+            k.at( 3 ) = 1;
+            k.at( 4 ) = 1;
+            k.at( 5 ) = -1;
+            k.at( 6 ) = -1;
+        }
+
+        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) < 0 ) {
+            k.at( 1 ) = 1;
+            k.at( 2 ) = 1;
+            k.at( 3 ) = 1;
+            k.at( 4 ) = 1;
+            k.at( 5 ) = 1;
+            k.at( 6 ) = -1;
+        }
+
+        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) < 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) >= 0 ) {
+            k.at( 1 ) = 1;
+            k.at( 2 ) = 1;
+            k.at( 3 ) = 1;
+            k.at( 4 ) = -1;
+            k.at( 5 ) = 1;
+            k.at( 6 ) = 1;
+        }
+
+        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) < 0 && stress.at( 5 ) < 0 && stress.at( 6 ) >= 0 ) {
+            k.at( 1 ) = 1;
+            k.at( 2 ) = 1;
+            k.at( 3 ) = 1;
+            k.at( 4 ) = -1;
+            k.at( 5 ) = -1;
+            k.at( 6 ) = 1;
+        }
+
+        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) < 0 && stress.at( 5 ) < 0 && stress.at( 6 ) < 0 ) {
+            k.at( 1 ) = 1;
+            k.at( 2 ) = 1;
+            k.at( 3 ) = 1;
+            k.at( 4 ) = -1;
+            k.at( 5 ) = -1;
+            k.at( 6 ) = -1;
+        }
+
+        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) < 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) < 0 ) {
+            k.at( 1 ) = 1;
+            k.at( 2 ) = 1;
+            k.at( 3 ) = 1;
+            k.at( 4 ) = -1;
+            k.at( 5 ) = 1;
+            k.at( 6 ) = -1;
+        }
+
+        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) < 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) >= 0 ) {
+            k.at( 1 ) = 1;
+            k.at( 2 ) = 1;
+            k.at( 3 ) = -1;
+            k.at( 4 ) = 1;
+            k.at( 5 ) = 1;
+            k.at( 6 ) = 1;
+
+        }
+
+        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) < 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) < 0 && stress.at( 6 ) >= 0 ) {
+            k.at( 1 ) = 1;
+            k.at( 2 ) = 1;
+            k.at( 3 ) = -1;
+            k.at( 4 ) = 1;
+            k.at( 5 ) = -1;
+            k.at( 6 ) = 1;
+
+        }
+
+        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) < 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) < 0 && stress.at( 6 ) < 0 ) {
+            k.at( 1 ) = 1;
+            k.at( 2 ) = 1;
+            k.at( 3 ) = -1;
+            k.at( 4 ) = 1;
+            k.at( 5 ) = -1;
+            k.at( 6 ) = -1;
+        }
+
+        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) < 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) < 0 ) {
+            k.at( 1 ) = 1;
+            k.at( 2 ) = 1;
+            k.at( 3 ) = -1;
+            k.at( 4 ) = 1;
+            k.at( 5 ) = 1;
+            k.at( 6 ) = -1;
+        }
+
+        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) < 0 && stress.at( 4 ) < 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) >= 0 ) {
+            k.at( 1 ) = 1;
+            k.at( 2 ) = 1;
+            k.at( 3 ) = -1;
+            k.at( 4 ) = -1;
+            k.at( 5 ) = 1;
+            k.at( 6 ) = 1;
+        }
+
+        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) < 0 && stress.at( 4 ) < 0 && stress.at( 5 ) < 0 && stress.at( 6 ) >= 0 ) {
+            k.at( 1 ) = 1;
+            k.at( 2 ) = 1;
+            k.at( 3 ) = -1;
+            k.at( 4 ) = -1;
+            k.at( 5 ) = -1;
+            k.at( 6 ) = 1;
+        }
+
+        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) < 0 && stress.at( 4 ) < 0 && stress.at( 5 ) < 0 && stress.at( 6 ) < 0 ) {
+            k.at( 1 ) = 1;
+            k.at( 2 ) = 1;
+            k.at( 3 ) = -1;
+            k.at( 4 ) = -1;
+            k.at( 5 ) = -1;
+            k.at( 6 ) = -1;
+        }
+
+        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) < 0 && stress.at( 4 ) < 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) < 0 ) {
+            k.at( 1 ) = 1;
+            k.at( 2 ) = 1;
+            k.at( 3 ) = -1;
+            k.at( 4 ) = -1;
+            k.at( 5 ) = 1;
+            k.at( 6 ) = -1;
+        }
+
+        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) < 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) >= 0 ) {
+            k.at( 1 ) = 1;
+            k.at( 2 ) = -1;
+            k.at( 3 ) = 1;
+            k.at( 4 ) = 1;
+            k.at( 5 ) = 1;
+            k.at( 6 ) = 1;
+
+        }
+
+        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) < 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) < 0 && stress.at( 6 ) >= 0 ) {
+            k.at( 1 ) = 1;
+            k.at( 2 ) = -1;
+            k.at( 3 ) = 1;
+            k.at( 4 ) = 1;
+            k.at( 5 ) = -1;
+            k.at( 6 ) = 1;
+
+        }
+
+        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) < 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) < 0 && stress.at( 6 ) < 0 ) {
+            k.at( 1 ) = 1;
+            k.at( 2 ) = -1;
+            k.at( 3 ) = 1;
+            k.at( 4 ) = 1;
+            k.at( 5 ) = -1;
+            k.at( 6 ) = -1;
+        }
+
+        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) < 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) < 0 ) {
+            k.at( 1 ) = 1;
+            k.at( 2 ) = -1;
+            k.at( 3 ) = 1;
+            k.at( 4 ) = 1;
+            k.at( 5 ) = 1;
+            k.at( 6 ) = -1;
+        }
+
+        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) < 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) < 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) >= 0 ) {
+            k.at( 1 ) = 1;
+            k.at( 2 ) = -1;
+            k.at( 3 ) = 1;
+            k.at( 4 ) = -1;
+            k.at( 5 ) = 1;
+            k.at( 6 ) = 1;
+        }
+
+        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) < 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) < 0 && stress.at( 5 ) < 0 && stress.at( 6 ) >= 0 ) {
+            k.at( 1 ) = 1;
+            k.at( 2 ) = -1;
+            k.at( 3 ) = 1;
+            k.at( 4 ) = -1;
+            k.at( 5 ) = -1;
+            k.at( 6 ) = 1;
+        }
+
+        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) < 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) < 0 && stress.at( 5 ) < 0 && stress.at( 6 ) < 0 ) {
+            k.at( 1 ) = 1;
+            k.at( 2 ) = -1;
+            k.at( 3 ) = 1;
+            k.at( 4 ) = -1;
+            k.at( 5 ) = -1;
+            k.at( 6 ) = -1;
+        }
+
+        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) < 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) < 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) < 0 ) {
+            k.at( 1 ) = 1;
+            k.at( 2 ) = -1;
+            k.at( 3 ) = 1;
+            k.at( 4 ) = -1;
+            k.at( 5 ) = 1;
+            k.at( 6 ) = -1;
+        }
+
+        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) < 0 && stress.at( 3 ) < 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) >= 0 ) {
+            k.at( 1 ) = 1;
+            k.at( 2 ) = -1;
+            k.at( 3 ) = -1;
+            k.at( 4 ) = 1;
+            k.at( 5 ) = 1;
+            k.at( 6 ) = 1;
+
+        }
+
+        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) < 0 && stress.at( 3 ) < 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) < 0 && stress.at( 6 ) >= 0 ) {
+            k.at( 1 ) = 1;
+            k.at( 2 ) = -1;
+            k.at( 3 ) = -1;
+            k.at( 4 ) = 1;
+            k.at( 5 ) = -1;
+            k.at( 6 ) = 1;
+
+        }
+
+        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) < 0 && stress.at( 3 ) < 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) < 0 && stress.at( 6 ) < 0 ) {
+            k.at( 1 ) = 1;
+            k.at( 2 ) = -1;
+            k.at( 3 ) = -1;
+            k.at( 4 ) = 1;
+            k.at( 5 ) = -1;
+            k.at( 6 ) = -1;
+        }
+
+        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) < 0 && stress.at( 3 ) < 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) < 0 ) {
+            k.at( 1 ) = 1;
+            k.at( 2 ) = -1;
+            k.at( 3 ) = -1;
+            k.at( 4 ) = 1;
+            k.at( 5 ) = 1;
+            k.at( 6 ) = -1;
+        }
+
+        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) < 0 && stress.at( 3 ) < 0 && stress.at( 4 ) < 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) >= 0 ) {
+            k.at( 1 ) = 1;
+            k.at( 2 ) = -1;
+            k.at( 3 ) = -1;
+            k.at( 4 ) = -1;
+            k.at( 5 ) = 1;
+            k.at( 6 ) = 1;
+        }
+
+        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) < 0 && stress.at( 3 ) < 0 && stress.at( 4 ) < 0 && stress.at( 5 ) < 0 && stress.at( 6 ) >= 0 ) {
+            k.at( 1 ) = 1;
+            k.at( 2 ) = -1;
+            k.at( 3 ) = -1;
+            k.at( 4 ) = -1;
+            k.at( 5 ) = -1;
+            k.at( 6 ) = 1;
+        }
+
+        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) < 0 && stress.at( 3 ) < 0 && stress.at( 4 ) < 0 && stress.at( 5 ) < 0 && stress.at( 6 ) < 0 ) {
+            k.at( 1 ) = 1;
+            k.at( 2 ) = -1;
+            k.at( 3 ) = -1;
+            k.at( 4 ) = -1;
+            k.at( 5 ) = -1;
+            k.at( 6 ) = -1;
+        }
+
+        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) < 0 && stress.at( 3 ) < 0 && stress.at( 4 ) < 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) < 0 ) {
+            k.at( 1 ) = 1;
+            k.at( 2 ) = -1;
+            k.at( 3 ) = -1;
+            k.at( 4 ) = -1;
+            k.at( 5 ) = 1;
+            k.at( 6 ) = -1;
+        }
 
 
-FloatArrayF< 6 >
-LatticeFrameConcretePlastic::performPlasticityReturn(GaussPoint *gp, const FloatArrayF< 6 > &reducedStrain, TimeStep *tStep) const
-{
-    double g = this->e / ( 2. * ( 1. + this->nu ) );
-    const double area = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveArea();
-    const double iy = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveIy();
-    const double iz = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveIz();
-    const double ik = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveIk();
+        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) >= 0 ) {
+            k.at( 1 ) = -1;
+            k.at( 2 ) = 1;
+            k.at( 3 ) = 1;
+            k.at( 4 ) = 1;
+            k.at( 5 ) = 1;
+            k.at( 6 ) = 1;
 
-    auto status = static_cast< LatticeFrameConcretePlasticStatus * >( this->giveStatus(gp) );
+        }
 
-    //Shear components are not used for plasticity return
-    auto strain = reducedStrain [ { 0, 3, 4, 5 } ];
+        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) < 0 && stress.at( 6 ) >= 0 ) {
+            k.at( 1 ) = -1;
+            k.at( 2 ) = 1;
+            k.at( 3 ) = 1;
+            k.at( 4 ) = 1;
+            k.at( 5 ) = -1;
+            k.at( 6 ) = 1;
 
-    /* Get plastic strain vector from status*/
-    auto tempPlasticStrain = status->givePlasticLatticeStrain() [ { 0, 3, 4, 5 } ];
+        }
 
-    FloatArrayF< 4 >tangent = { area *this->e, ik *g, iy *this->e, iz *this->e };
-    
-    /* Compute trial stress*/
-    auto stress = mult(tangent, strain - tempPlasticStrain);
+        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) < 0 && stress.at( 6 ) < 0 ) {
+            k.at( 1 ) = -1;
+            k.at( 2 ) = 1;
+            k.at( 3 ) = 1;
+            k.at( 4 ) = 1;
+            k.at( 5 ) = -1;
+            k.at( 6 ) = -1;
+        }
 
-    double k1;
-    double k2;
-    double k3;
-    double k4; 
-    k1 = stress.at(1);
-    k2 = stress.at(2);
-    k3 = stress.at(3);
-    k4 = stress.at(4);
-//tes
-    if ( k1>=0 && k2>=0 && k3>=0 && k4>=0 ) {
-      stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;
-       } else {
-      
-    if ( k1>=0 && k2>=0 && k3<0 && k4>=0 ) {
-      stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;}}
+        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) < 0 ) {
+            k.at( 1 ) = -1;
+            k.at( 2 ) = 1;
+            k.at( 3 ) = 1;
+            k.at( 4 ) = 1;
+            k.at( 5 ) = 1;
+            k.at( 6 ) = -1;
+        }
 
-    if ( k1>=0 && k2>=0 && k3<0 && k4<0 ) {
-      stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;
-       } else {
+        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) < 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) >= 0 ) {
+            k.at( 1 ) = -1;
+            k.at( 2 ) = 1;
+            k.at( 3 ) = 1;
+            k.at( 4 ) = -1;
+            k.at( 5 ) = 1;
+            k.at( 6 ) = 1;
+        }
 
-    if ( k1>=0 && k2>=0 && k3>=0 && k4<0 ) {
-      stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;}}
+        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) < 0 && stress.at( 5 ) < 0 && stress.at( 6 ) >= 0 ) {
+            k.at( 1 ) = -1;
+            k.at( 2 ) = 1;
+            k.at( 3 ) = 1;
+            k.at( 4 ) = -1;
+            k.at( 5 ) = -1;
+            k.at( 6 ) = 1;
+        }
 
-    if ( k1>=0 && k2<0 && k3>=0 && k4>=0 ) {
-      stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;
-       } else {
+        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) < 0 && stress.at( 5 ) < 0 && stress.at( 6 ) < 0 ) {
+            k.at( 1 ) = -1;
+            k.at( 2 ) = 1;
+            k.at( 3 ) = 1;
+            k.at( 4 ) = -1;
+            k.at( 5 ) = -1;
+            k.at( 6 ) = -1;
+        }
 
-    if ( k1>=0 && k2<0 && k3<0 && k4>=0 ) {
-      stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;}}
+        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) < 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) < 0 ) {
+            k.at( 1 ) = -1;
+            k.at( 2 ) = 1;
+            k.at( 3 ) = 1;
+            k.at( 4 ) = -1;
+            k.at( 5 ) = 1;
+            k.at( 6 ) = -1;
+        }
 
-    if ( k1>=0 && k2<0 && k3<0 && k4<0 ) {
-      stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;
-       } else {
+        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) < 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) >= 0 ) {
+            k.at( 1 ) = -1;
+            k.at( 2 ) = 1;
+            k.at( 3 ) = -1;
+            k.at( 4 ) = 1;
+            k.at( 5 ) = 1;
+            k.at( 6 ) = 1;
 
-    if ( k1>=0 && k2<0 && k3>=0 && k4<0 ) {
-      stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;}}
+        }
 
-    if ( k1<0 && k2>=0 && k3>=0 && k4>=0 ) {
-      stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;
-       } else {
+        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) < 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) < 0 && stress.at( 6 ) >= 0 ) {
+            k.at( 1 ) = -1;
+            k.at( 2 ) = 1;
+            k.at( 3 ) = -1;
+            k.at( 4 ) = 1;
+            k.at( 5 ) = -1;
+            k.at( 6 ) = 1;
 
-    if ( k1<0 && k2>=0 && k3<0 && k4>=0 ) {
-      stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;}}
+        }
 
-    if ( k1<0 && k2>=0 && k3<0 && k4<0 ) {
-      stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;
-       } else {
+        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) < 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) < 0 && stress.at( 6 ) < 0 ) {
+            k.at( 1 ) = -1;
+            k.at( 2 ) = 1;
+            k.at( 3 ) = -1;
+            k.at( 4 ) = 1;
+            k.at( 5 ) = -1;
+            k.at( 6 ) = -1;
+        }
 
-    if ( k1<0 && k2>=0 && k3>=0 && k4<0 ) {
-      stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;}}
+        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) < 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) < 0 ) {
+            k.at( 1 ) = -1;
+            k.at( 2 ) = 1;
+            k.at( 3 ) = -1;
+            k.at( 4 ) = 1;
+            k.at( 5 ) = 1;
+            k.at( 6 ) = -1;
+        }
 
-    if ( k1<0 && k2<0 && k3>=0 && k4>=0 ) {
-      stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;
-       } else {
+        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) < 0 && stress.at( 4 ) < 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) >= 0 ) {
+            k.at( 1 ) = -1;
+            k.at( 2 ) = 1;
+            k.at( 3 ) = -1;
+            k.at( 4 ) = -1;
+            k.at( 5 ) = 1;
+            k.at( 6 ) = 1;
+        }
 
-    if ( k1<0 && k2<0 && k3<0 && k4>=0 ) {
-      stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;}}
+        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) < 0 && stress.at( 4 ) < 0 && stress.at( 5 ) < 0 && stress.at( 6 ) >= 0 ) {
+            k.at( 1 ) = -1;
+            k.at( 2 ) = 1;
+            k.at( 3 ) = -1;
+            k.at( 4 ) = -1;
+            k.at( 5 ) = -1;
+            k.at( 6 ) = 1;
+        }
 
-    if ( k1<0 && k2<0 && k3<0 && k4<0 ) {
-      stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;
-       } else {
+        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) < 0 && stress.at( 4 ) < 0 && stress.at( 5 ) < 0 && stress.at( 6 ) < 0 ) {
+            k.at( 1 ) = -1;
+            k.at( 2 ) = 1;
+            k.at( 3 ) = -1;
+            k.at( 4 ) = -1;
+            k.at( 5 ) = -1;
+            k.at( 6 ) = -1;
+        }
 
-      if ( k1<0 && k2<0 && k3>=0 && k4<0 ) {
-	stress.at(1)= k1, stress.at(2)=k2, stress.at(3)= k3, stress.at(4)= k4;}}
-    
-     auto oldStrain = this->giveReducedStrain(gp, tStep) [ { 0, 3, 4, 5 } ];
+        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) < 0 && stress.at( 4 ) < 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) < 0 ) {
+            k.at( 1 ) = -1;
+            k.at( 2 ) = 1;
+            k.at( 3 ) = -1;
+            k.at( 4 ) = -1;
+            k.at( 5 ) = 1;
+            k.at( 6 ) = -1;
+        }
 
-    /* Compute yield value*/
-    double yieldValue = computeYieldValue(stress, gp, tStep);
-    int subIncrementCounter = 0;
+        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) < 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) >= 0 ) {
+            k.at( 1 ) = -1;
+            k.at( 2 ) = -1;
+            k.at( 3 ) = 1;
+            k.at( 4 ) = 1;
+            k.at( 5 ) = 1;
+            k.at( 6 ) = 1;
 
-    /* Check yield condition, i.e. if the yield value is less than the yield tolerance. If yield condition is valid. Do perform regular return (closest point return)*/
+        }
 
-    if ( yieldValue > yieldTol ) {
-        int subIncrementFlag = 0;
-        auto convergedStrain = oldStrain;
-        auto tempStrain = strain;
-        auto deltaStrain = strain - oldStrain;
-        //To get into the loop
-        status->letTempReturnResultBe(LatticeFrameConcretePlastic::RR_NotConverged);
-        while ( status->giveTempReturnResult() == RR_NotConverged || subIncrementFlag == 1 ) {
-            stress = mult(tangent, tempStrain - tempPlasticStrain);
-            performRegularReturn(stress, yieldValue, gp, tStep);
+        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) < 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) < 0 && stress.at( 6 ) >= 0 ) {
+            k.at( 1 ) = -1;
+            k.at( 2 ) = -1;
+            k.at( 3 ) = 1;
+            k.at( 4 ) = 1;
+            k.at( 5 ) = -1;
+            k.at( 6 ) = 1;
 
-            if ( status->giveTempReturnResult() == RR_NotConverged ) {
-                subIncrementCounter++;
-                if ( subIncrementCounter > numberOfSubIncrements ) {
-                    OOFEM_LOG_INFO("Unstable element %d \n", gp->giveElement()->giveGlobalNumber() );
-                    OOFEM_LOG_INFO("Yield value %e \n", yieldValue);
-                    OOFEM_LOG_INFO("ConvergedStrain value %e %e %e %e\n", convergedStrain.at(1), convergedStrain.at(2), convergedStrain.at(3), convergedStrain.at(4) );
-                    OOFEM_LOG_INFO("tempStrain value %e %e %e %e\n", tempStrain.at(1), tempStrain.at(2), tempStrain.at(3), tempStrain.at(4) );
-                    OOFEM_LOG_INFO("deltaStrain value %e %e %e %e\n", deltaStrain.at(1), deltaStrain.at(2), deltaStrain.at(3), deltaStrain.at(4) );
-                    OOFEM_LOG_INFO("targetstrain value %e %e %e %e\n", strain.at(1), strain.at(2), strain.at(3), strain.at(4) );
+        }
 
-                    OOFEM_ERROR("LatticeFrameConcretePlastic :: performPlasticityReturn - Could not reach convergence with small deltaStrain, giving up.");
+        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) < 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) < 0 && stress.at( 6 ) < 0 ) {
+            k.at( 1 ) = -1;
+            k.at( 2 ) = -1;
+            k.at( 3 ) = 1;
+            k.at( 4 ) = 1;
+            k.at( 5 ) = -1;
+            k.at( 6 ) = -1;
+        }
+
+        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) < 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) < 0 ) {
+            k.at( 1 ) = -1;
+            k.at( 2 ) = -1;
+            k.at( 3 ) = 1;
+            k.at( 4 ) = 1;
+            k.at( 5 ) = 1;
+            k.at( 6 ) = -1;
+        }
+
+        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) < 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) < 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) >= 0 ) {
+            k.at( 1 ) = -1;
+            k.at( 2 ) = -1;
+            k.at( 3 ) = 1;
+            k.at( 4 ) = -1;
+            k.at( 5 ) = 1;
+            k.at( 6 ) = 1;
+        }
+
+        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) < 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) < 0 && stress.at( 5 ) < 0 && stress.at( 6 ) >= 0 ) {
+            k.at( 1 ) = -1;
+            k.at( 2 ) = -1;
+            k.at( 3 ) = 1;
+            k.at( 4 ) = -1;
+            k.at( 5 ) = -1;
+            k.at( 6 ) = 1;
+        }
+
+        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) < 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) < 0 && stress.at( 5 ) < 0 && stress.at( 6 ) < 0 ) {
+            k.at( 1 ) = -1;
+            k.at( 2 ) = -1;
+            k.at( 3 ) = 1;
+            k.at( 4 ) = -1;
+            k.at( 5 ) = -1;
+            k.at( 6 ) = -1;
+        }
+
+        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) < 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) < 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) < 0 ) {
+            k.at( 1 ) = -1;
+            k.at( 2 ) = -1;
+            k.at( 3 ) = 1;
+            k.at( 4 ) = -1;
+            k.at( 5 ) = 1;
+            k.at( 6 ) = -1;
+        }
+
+        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) < 0 && stress.at( 3 ) < 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) >= 0 ) {
+            k.at( 1 ) = -1;
+            k.at( 2 ) = -1;
+            k.at( 3 ) = -1;
+            k.at( 4 ) = 1;
+            k.at( 5 ) = 1;
+            k.at( 6 ) = 1;
+
+        }
+
+        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) < 0 && stress.at( 3 ) < 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) < 0 && stress.at( 6 ) >= 0 ) {
+            k.at( 1 ) = -1;
+            k.at( 2 ) = -1;
+            k.at( 3 ) = -1;
+            k.at( 4 ) = 1;
+            k.at( 5 ) = -1;
+            k.at( 6 ) = 1;
+
+        }
+
+        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) < 0 && stress.at( 3 ) < 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) < 0 && stress.at( 6 ) < 0 ) {
+            k.at( 1 ) = -1;
+            k.at( 2 ) = -1;
+            k.at( 3 ) = -1;
+            k.at( 4 ) = 1;
+            k.at( 5 ) = -1;
+            k.at( 6 ) = -1;
+        }
+
+        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) < 0 && stress.at( 3 ) < 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) < 0 ) {
+            k.at( 1 ) = -1;
+            k.at( 2 ) = -1;
+            k.at( 3 ) = -1;
+            k.at( 4 ) = 1;
+            k.at( 5 ) = 1;
+            k.at( 6 ) = -1;
+        }
+
+        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) < 0 && stress.at( 3 ) < 0 && stress.at( 4 ) < 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) >= 0 ) {
+            k.at( 1 ) = -1;
+            k.at( 2 ) = -1;
+            k.at( 3 ) = -1;
+            k.at( 4 ) = -1;
+            k.at( 5 ) = 1;
+            k.at( 6 ) = 1;
+        }
+
+        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) < 0 && stress.at( 3 ) < 0 && stress.at( 4 ) < 0 && stress.at( 5 ) < 0 && stress.at( 6 ) >= 0 ) {
+            k.at( 1 ) = -1;
+            k.at( 2 ) = -1;
+            k.at( 3 ) = -1;
+            k.at( 4 ) = -1;
+            k.at( 5 ) = -1;
+            k.at( 6 ) = 1;
+        }
+
+        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) < 0 && stress.at( 3 ) < 0 && stress.at( 4 ) < 0 && stress.at( 5 ) < 0 && stress.at( 6 ) < 0 ) {
+            k.at( 1 ) = -1;
+            k.at( 2 ) = -1;
+            k.at( 3 ) = -1;
+            k.at( 4 ) = -1;
+            k.at( 5 ) = -1;
+            k.at( 6 ) = -1;
+        }
+
+        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) < 0 && stress.at( 3 ) < 0 && stress.at( 4 ) < 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) < 0 ) {
+            k.at( 1 ) = -1;
+            k.at( 2 ) = -1;
+            k.at( 3 ) = -1;
+            k.at( 4 ) = -1;
+            k.at( 5 ) = 1;
+            k.at( 6 ) = -1;
+
+        } else {
+            OOFEM_ERROR( "This case should not exist" );
+        }
+
+        auto oldStrain = this->giveStrain( gp, tStep )[{ 0, 1, 2, 3, 4, 5 }];
+
+        /* Compute yield value*/
+        double yieldValue       = computeYieldValue( stress, k, gp, tStep );
+        int subIncrementCounter = 0;
+
+        /* Check yield condition, i.e. if the yield value is less than the yield tolerance. If yield condition is valid. Do perform regular return (closest point return)*/
+
+        if ( yieldValue > yieldTol ) {
+            int subIncrementFlag = 0;
+            auto convergedStrain = oldStrain;
+            auto tempStrain      = strain;
+            auto deltaStrain     = strain - oldStrain;
+            // To get into the loop
+            status->letTempReturnResultBe( LatticeFrameConcretePlastic::RR_NotConverged );
+            while ( status->giveTempReturnResult() == RR_NotConverged || subIncrementFlag == 1 ) {
+                stress = mult( tangent, tempStrain - tempPlasticStrain );
+                performRegularReturn( stress, k, yieldValue, gp, tStep );
+                if ( status->giveTempReturnResult() == RR_WrongSurface ) {
+                    int RestartWithNewKValue;
+               }
+                 if ( status->giveTempReturnResult() == RR_NotConverged ) {
+                    subIncrementCounter++;
+                    if ( subIncrementCounter > numberOfSubIncrements ) {
+                        OOFEM_LOG_INFO( "Unstable element %d \n", gp->giveElement()->giveGlobalNumber() );
+                        OOFEM_LOG_INFO( "Yield value %e \n", yieldValue );
+                        OOFEM_LOG_INFO( "ConvergedStrain value %e %e %e %e\n", convergedStrain.at( 1 ), convergedStrain.at( 2 ), convergedStrain.at( 3 ), convergedStrain.at( 4 ), convergedStrain.at( 5 ), convergedStrain.at( 6 ) );
+                        OOFEM_LOG_INFO( "tempStrain value %e %e %e %e\n", tempStrain.at( 1 ), tempStrain.at( 2 ), tempStrain.at( 3 ), tempStrain.at( 4 ), tempStrain.at( 5 ), tempStrain.at( 6 ) );
+                        OOFEM_LOG_INFO( "deltaStrain value %e %e %e %e\n", deltaStrain.at( 1 ), deltaStrain.at( 2 ), deltaStrain.at( 3 ), deltaStrain.at( 4 ), deltaStrain.at( 5 ), deltaStrain.at( 6 ) );
+                        OOFEM_LOG_INFO( "targetstrain value %e %e %e %e\n", strain.at( 1 ), strain.at( 2 ), strain.at( 3 ), strain.at( 4 ), strain.at( 5 ), strain.at( 6 ) );
+
+                        OOFEM_ERROR( "LatticeFrameConcretePlastic :: performPlasticityReturn - Could not reach convergence with small deltaStrain, giving up." );
+                    }
+                    subIncrementFlag = 1;
+                    deltaStrain *= 0.5;
+                    tempStrain = convergedStrain + deltaStrain;
+                } else if ( status->giveTempReturnResult() == RR_Converged && subIncrementFlag == 1 ) {
+                    tempPlasticStrain.at( 1 ) = tempStrain.at( 1 ) - stress.at( 1 ) / ( area * this->e );
+                    tempPlasticStrain.at( 2 ) = tempStrain.at( 2 ) - stress.at( 2 ) / ( g * shearareay );
+                    tempPlasticStrain.at( 3 ) = tempStrain.at( 3 ) - stress.at( 3 ) / ( g * shearareaz );
+                    tempPlasticStrain.at( 4 ) = tempStrain.at( 4 ) - stress.at( 4 ) / ( ik * g );
+                    tempPlasticStrain.at( 5 ) = tempStrain.at( 5 ) - stress.at( 5 ) / ( iy * this->e );
+                    tempPlasticStrain.at( 6 ) = tempStrain.at( 6 ) - stress.at( 6 ) / ( iz * this->e );
+
+                    status->letTempPlasticLatticeStrainBe( assemble<6>( tempPlasticStrain, { 0, 1, 2, 3, 4, 5 } ) );
+
+                    subIncrementFlag = 0;
+
+                    status->letTempReturnResultBe( LatticeFrameConcretePlastic::RR_NotConverged );
+                    convergedStrain     = tempStrain;
+                    deltaStrain         = strain - convergedStrain;
+                    tempStrain          = strain;
+                    subIncrementCounter = 0;
                 }
-                subIncrementFlag = 1;
-                deltaStrain *= 0.5;
-                tempStrain = convergedStrain + deltaStrain;
-            } else if ( status->giveTempReturnResult() == RR_Converged && subIncrementFlag == 1 ) {
-                tempPlasticStrain.at(1) = tempStrain.at(1) - stress.at(1) / ( area * this->e );
-                tempPlasticStrain.at(2) = tempStrain.at(2) - stress.at(2) / ( ik * g );
-                tempPlasticStrain.at(3) = tempStrain.at(3) - stress.at(3) / ( iy * this->e );
-                tempPlasticStrain.at(4) = tempStrain.at(4) - stress.at(4) / ( iz * this->e );
-
-                status->letTempPlasticLatticeStrainBe(assemble< 6 >(tempPlasticStrain, { 0, 3, 4, 5 }) );
-
-                subIncrementFlag = 0;
-
-                status->letTempReturnResultBe(LatticeFrameConcretePlastic::RR_NotConverged);
-                convergedStrain = tempStrain;
-                deltaStrain = strain - convergedStrain;
-                tempStrain = strain;
-                subIncrementCounter = 0;
             }
         }
+    //}
+        // const double shearareay = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveShearAreaY();
+       //  const double shearareaz = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveShearAreaZ();
+
+
+        tempPlasticStrain.at( 1 ) = strain.at( 1 ) - stress.at( 1 ) / ( area * this->e );
+        tempPlasticStrain.at( 2 ) = strain.at( 2 ) - stress.at( 2 ) / ( g * shearareay );
+        tempPlasticStrain.at( 3 ) = strain.at( 3 ) - stress.at( 3 ) / ( g * shearareaz );
+        tempPlasticStrain.at( 4 ) = strain.at( 4 ) - stress.at( 4 ) / ( ik * g );
+        tempPlasticStrain.at( 5 ) = strain.at( 5 ) - stress.at( 5 ) / ( iy * this->e );
+        tempPlasticStrain.at( 6 ) = strain.at( 6 ) - stress.at( 6 ) / ( iz * this->e );
+
+         status->letTempPlasticLatticeStrainBe(assemble< 6 >(tempPlasticStrain, { 0, 1, 2, 3, 4, 5}) );
+         auto answer = assemble< 6 >(stress, { 0, 1, 2, 3, 4, 5});
+        // answer.at(2) = shearareay * g * reducedStrain.at(2);
+        // answer.at(3) = shearareaz * g * reducedStrain.at(3);
+
+        return answer;
     }
 
-    const double shearareay = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveShearAreaY();
-    const double shearareaz = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveShearAreaZ();
-
-
-    tempPlasticStrain.at(1) = strain.at(1) - stress.at(1) / ( area * this->e );
-    tempPlasticStrain.at(2) = strain.at(2) - stress.at(2) / ( ik * g );
-    tempPlasticStrain.at(3) = strain.at(3) - stress.at(3) / ( iy * this->e );
-    tempPlasticStrain.at(4) = strain.at(4) - stress.at(4) / ( iz * this->e );
-
-
-    status->letTempPlasticLatticeStrainBe(assemble< 6 >(tempPlasticStrain, { 0, 3, 4, 5 }) );
-    auto answer = assemble< 6 >(stress, { 0, 3, 4, 5 });
-    answer.at(2) = shearareay * g * reducedStrain.at(2);
-    answer.at(3) = shearareaz * g * reducedStrain.at(3);
-
-    return answer;
-}
-
-Interface *
-LatticeFrameConcretePlastic::giveInterface(InterfaceType type)
-{
-    return nullptr;
-}
-
-void
-LatticeFrameConcretePlastic::performRegularReturn(FloatArrayF< 4 > &stress,
-                                               double yieldValue,
-                                               GaussPoint *gp,
-                                               TimeStep *tStep) const
-{
-    //Use material specific status
-    auto status = static_cast< LatticeFrameConcretePlasticStatus * >( this->giveStatus(gp) );
-
-    double deltaLambda = 0.;
-
-    auto trialStress = stress;
-    auto tempStress = trialStress;
-
-    //initialise unknowns
-    FloatArrayF< 5 >unknowns;
-    unknowns.at(1) = trialStress.at(1);
-    unknowns.at(2) = trialStress.at(2);
-    unknowns.at(3) = trialStress.at(3);
-    unknowns.at(4) = trialStress.at(4);
-    unknowns.at(5) = 0.;
-
-    yieldValue = computeYieldValue(tempStress, gp, tStep);
-
-    //initiate residuals
-    FloatArrayF< 5 >residuals;
-    residuals.at(5) = yieldValue;
-    double normOfResiduals  = 1.; //just to get into the loop
-    int iterationCount = 0;
-    while ( normOfResiduals > yieldTol ) {
-        iterationCount++;
-        if ( iterationCount == newtonIter ) {
-            status->letTempReturnResultBe(LatticeFrameConcretePlasticStatus::RR_NotConverged);
-            return;
-        }
-
-        //FloatArrayF< 5 >residualsNorm;
-	// residualsNorm.at(1) = residuals.at(1) / this->nx01;
-        //residualsNorm.at(2) = residuals.at(2) / this->mx01;
-        //residualsNorm.at(3) = residuals.at(3) / this->my01;
-        //residualsNorm.at(4) = residuals.at(4) / this->mz01;
-        //residualsNorm.at(5) = residuals.at(5);
-    double nx = stress.at(1);
-    double mx = stress.at(2);
-    double my = stress.at(3);
-    double mz = stress.at(4);
-
-    double a;
-    double b;
-    double c;
-    double d;
-
-    if ( nx >= 0 ) {
-	a = nx0;
-    } else {
-        a = nx01;
+    Interface *
+    LatticeFrameConcretePlastic::giveInterface( InterfaceType type )
+    {
+        return nullptr;
     }
 
-    if ( mx >= 0 ) {
-	b = mx0;
-    } else {
-        b = mx01;
-    }
+    void
+    LatticeFrameConcretePlastic::performRegularReturn( FloatArrayF<6> & stress, const FloatArrayF<6> &k,
+        double yieldValue,
+        GaussPoint *gp,
+        TimeStep *tStep ) const
+    {
+        // Use material specific status
+        auto status = static_cast<LatticeFrameConcretePlasticStatus *>( this->giveStatus( gp ) );
 
-    if ( my >= 0 ) {
-	c = my0;
-    } else {
-        c = my01;
-    }
+        double deltaLambda = 0.;
 
-    if ( mz>= 0 ) {
-        d = mz0;
-    } else {
-        d = mz01;
-    }
+        auto trialStress = stress;
+        auto tempStress  = trialStress;
 
-        FloatArrayF< 5 >residualsNorm;
-        residualsNorm.at(1) = residuals.at(1) / a;
-        residualsNorm.at(2) = residuals.at(2) / b;
-        residualsNorm.at(3) = residuals.at(3) / c;
-        residualsNorm.at(4) = residuals.at(4) / d;
-        residualsNorm.at(5) = residuals.at(5);
-        normOfResiduals = norm(residualsNorm);
+        // initialise unknowns
+        FloatArrayF<7> unknowns;
+        unknowns.at( 1 ) = trialStress.at( 1 );
+        unknowns.at( 2 ) = trialStress.at( 2 );
+        unknowns.at( 3 ) = trialStress.at( 3 );
+        unknowns.at( 4 ) = trialStress.at( 4 );
+        unknowns.at( 5 ) = trialStress.at( 5 );
+        unknowns.at( 6 ) = trialStress.at( 6 );
+        unknowns.at( 7 ) = 0.;
 
-        if ( std::isnan(normOfResiduals) ) {
-            status->letTempReturnResultBe(LatticeFrameConcretePlasticStatus::RR_NotConverged);
-            return;
-        }
+        yieldValue = computeYieldValue( tempStress, k, gp, tStep );
 
-        if ( normOfResiduals > yieldTol ) {
-            auto jacobian = computeJacobian(tempStress, deltaLambda, gp, tStep);
+        // initiate residuals
+        FloatArrayF<7> residuals;
+        residuals.at( 7 )      = yieldValue;
+        double normOfResiduals = 1.; // just to get into the loop
+        int iterationCount     = 0;
+        while ( normOfResiduals > yieldTol ) {
+            iterationCount++;
+            if ( iterationCount == newtonIter ) {
+                status->letTempReturnResultBe( LatticeFrameConcretePlasticStatus::RR_NotConverged );
+                return;
+            }
 
-            auto solution = solve_check(jacobian, residuals);
-            if ( solution.first ) {
-                unknowns -= solution.second;
+            // FloatArrayF< 5 >residualsNorm;
+            //  residualsNorm.at(1) = residuals.at(1) / this->nx01;
+            // residualsNorm.at(2) = residuals.at(2) / this->mx01;
+            // residualsNorm.at(3) = residuals.at(3) / this->my01;
+            // residualsNorm.at(4) = residuals.at(4) / this->mz01;
+            // residualsNorm.at(5) = residuals.at(5);
+            // double nx = stress.at(1);
+            // double mx = stress.at(2);
+            // double my = stress.at(3);
+            // double mz = stress.at(4);
+
+            double a1;
+            if ( k.at( 1 ) == 1 ) {
+                a1 = nx0;
             } else {
-                status->letTempReturnResultBe(LatticeFrameConcretePlastic::RR_NotConverged);
+                a1 = nx01;
+            }
+            double a2;
+            if ( k.at( 2 ) == 1 ) {
+                a2 = vy0;
+            } else {
+                a2 = vy01;
+            }
+            double a3;
+            if ( k.at( 3 ) == 1 ) {
+                a3 = vz0;
+            } else {
+                a3 = vz01;
+            }
+            double a4;
+
+            if ( k.at( 4 ) == 1 ) {
+                a4 = mx0;
+            } else {
+                a4 = mx01;
+            }
+            double a5;
+
+            if ( k.at( 5 ) == 1 ) {
+                a5 = my0;
+            } else {
+                a5 = my01;
             }
 
-            unknowns.at(5) = max(unknowns.at(5), 0.); //Keep deltaLambda greater than zero!
+            double a6;
 
-            /* Update increments final values and DeltaLambda*/
-            tempStress.at(1) = unknowns.at(1);
-            tempStress.at(2) = unknowns.at(2);
-            tempStress.at(3) = unknowns.at(3);
-            tempStress.at(4) = unknowns.at(4);
-            deltaLambda = unknowns.at(5);
+            if ( k.at( 6 ) == 1 ) {
+                a6 = mz0;
+            } else {
+                a6 = mz01;
+            }
 
-            /* Compute the fVector*/
-            auto FVector = computeFVector(tempStress, gp, tStep);
-            double g = this->e / ( 2. * ( 1. + this->nu ) );
-            const double area = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveArea();
-            const double ik = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveIk();
-            const double iy = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveIy();
-            const double iz = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveIz();
 
-            residuals.at(1) = tempStress.at(1) - trialStress.at(1) + area * this->e * deltaLambda * FVector.at(1);
-            residuals.at(2) = tempStress.at(2) - trialStress.at(2) + ik * g * deltaLambda * FVector.at(2);
-            residuals.at(3) = tempStress.at(3) - trialStress.at(3) + iy * this->e * deltaLambda * FVector.at(3);
-            residuals.at(4) = tempStress.at(4) - trialStress.at(4) + iz * this->e * deltaLambda * FVector.at(4);
-            residuals.at(5) = computeYieldValue(tempStress, gp, tStep);
+            FloatArrayF<7> residualsNorm;
+            residualsNorm.at( 1 ) = residuals.at( 1 ) / a1;
+            residualsNorm.at( 2 ) = residuals.at( 2 ) / a2;
+            residualsNorm.at( 3 ) = residuals.at( 3 ) / a3;
+            residualsNorm.at( 4 ) = residuals.at( 4 ) / a4;
+            residualsNorm.at( 5 ) = residuals.at( 5 ) / a5;
+            residualsNorm.at( 6 ) = residuals.at( 6 ) / a6;
+            residualsNorm.at( 7 ) = residuals.at( 7 );
+            normOfResiduals       = norm( residualsNorm );
+            //printf( "normOfResiduals=%e\n", normOfResiduals );
+            if ( std::isnan( normOfResiduals ) ) {
+                status->letTempReturnResultBe( LatticeFrameConcretePlasticStatus::RR_NotConverged );
+                return;
+            }
+
+            if ( normOfResiduals > yieldTol ) {
+                auto jacobian = computeJacobian( tempStress, k, deltaLambda, gp, tStep );
+
+                auto solution = solve_check( jacobian, residuals );
+                if ( solution.first ) {
+                    unknowns -= solution.second;
+                } else {
+                    status->letTempReturnResultBe( LatticeFrameConcretePlastic::RR_NotConverged );
+                }
+
+                unknowns.at( 7 ) = max( unknowns.at( 7 ), 0. ); // Keep deltaLambda greater than zero!
+
+                /* Update increments final values and DeltaLambda*/
+                tempStress.at( 1 ) = unknowns.at( 1 );
+                tempStress.at( 2 ) = unknowns.at( 2 );
+                tempStress.at( 3 ) = unknowns.at( 3 );
+                tempStress.at( 4 ) = unknowns.at( 4 );
+                tempStress.at( 5 ) = unknowns.at( 5 );
+                tempStress.at( 6 ) = unknowns.at( 6 );
+                deltaLambda        = unknowns.at( 7 );
+
+                /* Compute the fVector*/
+                auto FVector            = computeFVector( tempStress, k, gp, tStep );
+                double g                = this->e / ( 2. * ( 1. + this->nu ) );
+                const double area       = ( static_cast<LatticeStructuralElement *>( gp->giveElement() ) )->giveArea();
+                const double ik         = ( static_cast<LatticeStructuralElement *>( gp->giveElement() ) )->giveIk();
+                const double iy         = ( static_cast<LatticeStructuralElement *>( gp->giveElement() ) )->giveIy();
+                const double iz         = ( static_cast<LatticeStructuralElement *>( gp->giveElement() ) )->giveIz();
+                const double shearareay = ( static_cast<LatticeStructuralElement *>( gp->giveElement() ) )->giveShearAreaY();
+                const double shearareaz = ( static_cast<LatticeStructuralElement *>( gp->giveElement() ) )->giveShearAreaZ();
+
+
+                residuals.at( 1 ) = tempStress.at( 1 ) - trialStress.at( 1 ) + area * this->e * deltaLambda * FVector.at( 1 );
+                residuals.at( 2 ) = tempStress.at( 2 ) - trialStress.at( 2 ) + shearareay * g * deltaLambda * FVector.at( 2 );
+                residuals.at( 3 ) = tempStress.at( 3 ) - trialStress.at( 3 ) + shearareaz * g * deltaLambda * FVector.at( 3 );
+                residuals.at( 4 ) = tempStress.at( 4 ) - trialStress.at( 4 ) + ik * g * deltaLambda * FVector.at( 4 );
+                residuals.at( 5 ) = tempStress.at( 5 ) - trialStress.at( 5 ) + iy * this->e * deltaLambda * FVector.at( 5 );
+                residuals.at( 6 ) = tempStress.at( 6 ) - trialStress.at( 6 ) + iz * this->e * deltaLambda * FVector.at( 6 );
+                residuals.at( 7 ) = computeYieldValue( tempStress, k, gp, tStep );
+            }
+        }
+        status->letTempReturnResultBe( LatticeFrameConcretePlastic::RR_Converged );
+        stress = tempStress;
+    }
+
+    FloatMatrixF<7, 7>
+    LatticeFrameConcretePlastic::computeJacobian( const FloatArrayF<6> &stress, const FloatArrayF<6> &k,
+        const double deltaLambda,
+        GaussPoint *gp,
+        TimeStep *tStep ) const
+    {
+        auto dMMatrix           = computeDMMatrix( stress, k, gp, tStep );
+        auto fVector            = computeFVector( stress, k, gp, tStep );
+        double g                = this->e / ( 2. * ( 1. + this->nu ) );
+        const double area       = ( static_cast<LatticeStructuralElement *>( gp->giveElement() ) )->giveArea();
+        const double ik         = ( static_cast<LatticeStructuralElement *>( gp->giveElement() ) )->giveIk();
+        const double iy         = ( static_cast<LatticeStructuralElement *>( gp->giveElement() ) )->giveIy();
+        const double iz         = ( static_cast<LatticeStructuralElement *>( gp->giveElement() ) )->giveIz();
+        const double shearareay = ( static_cast<LatticeStructuralElement *>( gp->giveElement() ) )->giveShearAreaY();
+        const double shearareaz = ( static_cast<LatticeStructuralElement *>( gp->giveElement() ) )->giveShearAreaZ();
+
+
+        /* Compute matrix*/
+        FloatMatrixF<7, 7> jacobian;
+        jacobian.at( 1, 1 ) = 1. + this->e * area * deltaLambda * dMMatrix.at( 1, 1 );
+        jacobian.at( 1, 2 ) = 0.;
+        jacobian.at( 1, 3 ) = 0.;
+        jacobian.at( 1, 4 ) = 0.;
+        jacobian.at( 1, 5 ) = 0.;
+        jacobian.at( 1, 6 ) = 0.;
+        jacobian.at( 1, 7 ) = this->e * area * fVector.at( 1 );
+
+        jacobian.at( 2, 1 ) = 0.;
+        jacobian.at( 2, 2 ) = 1. + shearareay * g * deltaLambda * dMMatrix.at( 2, 2 );
+        jacobian.at( 2, 3 ) = 0.;
+        jacobian.at( 2, 4 ) = 0.;
+        jacobian.at( 2, 5 ) = 0.;
+        jacobian.at( 2, 6 ) = 0.;
+        jacobian.at( 2, 7 ) = this->e * area * fVector.at( 2 );
+
+        jacobian.at( 3, 1 ) = 0.;
+        jacobian.at( 3, 2 ) = 0.;
+        jacobian.at( 3, 3 ) = 1. + shearareaz * g * deltaLambda * dMMatrix.at( 3, 3 );
+        jacobian.at( 3, 4 ) = 0.;
+        jacobian.at( 3, 5 ) = 0.;
+        jacobian.at( 3, 6 ) = 0.;
+        jacobian.at( 3, 7 ) = this->e * area * fVector.at( 3 );
+
+        jacobian.at( 4, 1 ) = 0.;
+        jacobian.at( 4, 2 ) = 0.;
+        jacobian.at( 4, 3 ) = 0.;
+        jacobian.at( 4, 4 ) = 1. + ik * g * deltaLambda * dMMatrix.at( 4, 4 );
+        jacobian.at( 4, 5 ) = 0.;
+        jacobian.at( 4, 6 ) = 0.;
+        jacobian.at( 4, 7 ) = this->e * area * fVector.at( 4 );
+
+        jacobian.at( 5, 1 ) = 0.;
+        jacobian.at( 5, 2 ) = 0.;
+        jacobian.at( 5, 3 ) = 0.;
+        jacobian.at( 5, 4 ) = 0.;
+        jacobian.at( 5, 5 ) = 1. + iy * g * deltaLambda * dMMatrix.at( 5, 5 );
+        jacobian.at( 5, 6 ) = 0.;
+        jacobian.at( 5, 7 ) = this->e * area * fVector.at( 5 );
+
+        jacobian.at( 6, 1 ) = 0.;
+        jacobian.at( 6, 2 ) = 0.;
+        jacobian.at( 6, 3 ) = 0.;
+        jacobian.at( 6, 4 ) = 0.;
+        jacobian.at( 6, 5 ) = 0.;
+        jacobian.at( 6, 6 ) = 1. + iz * g * deltaLambda * dMMatrix.at( 6, 6 );
+        jacobian.at( 6, 7 ) = this->e * area * fVector.at( 6 );
+
+        jacobian.at( 7, 1 ) = fVector.at( 1 );
+        jacobian.at( 7, 2 ) = fVector.at( 2 );
+        jacobian.at( 7, 3 ) = fVector.at( 3 );
+        jacobian.at( 7, 4 ) = fVector.at( 4 );
+        jacobian.at( 7, 5 ) = fVector.at( 5 );
+        jacobian.at( 7, 6 ) = fVector.at( 6 );
+        jacobian.at( 7, 7 ) = 0.;
+
+        return jacobian;
+    }
+
+    FloatArrayF<6>
+    LatticeFrameConcretePlastic::giveFrameForces3d( const FloatArrayF<6> &originalStrain, GaussPoint *gp, TimeStep *tStep )
+    {
+        auto status        = static_cast<LatticeFrameConcretePlasticStatus *>( this->giveStatus( gp ) );
+        auto Strain = originalStrain;
+        auto thermalStrain = this->computeStressIndependentStrainVector( gp, tStep, VM_Total );
+        if ( thermalStrain.giveSize() ) {
+            Strain -= FloatArrayF<6>( thermalStrain );
+        }
+
+        auto stress = this->performPlasticityReturn( gp, Strain, tStep );
+
+        status->letTempLatticeStrainBe( originalStrain );
+        status->letTempLatticeStrainBe( Strain );
+        status->letTempLatticeStressBe( stress );
+
+        return stress;
+    }
+
+
+    FloatMatrixF<6, 6>
+    LatticeFrameConcretePlastic::give3dFrameStiffnessMatrix( MatResponseMode rmode, GaussPoint * gp, TimeStep * atTime ) const
+    {
+        static_cast<LatticeFrameConcretePlasticStatus *>( this->giveStatus( gp ) );
+
+        double g = this->e / ( 2. * ( 1. + this->nu ) );
+
+        const double area       = ( static_cast<LatticeStructuralElement *>( gp->giveElement() ) )->giveArea();
+        const double ik         = ( static_cast<LatticeStructuralElement *>( gp->giveElement() ) )->giveIk();
+        const double iy         = ( static_cast<LatticeStructuralElement *>( gp->giveElement() ) )->giveIy();
+        const double iz         = ( static_cast<LatticeStructuralElement *>( gp->giveElement() ) )->giveIz();
+        const double shearareay = ( static_cast<LatticeStructuralElement *>( gp->giveElement() ) )->giveShearAreaY();
+        const double shearareaz = ( static_cast<LatticeStructuralElement *>( gp->giveElement() ) )->giveShearAreaZ();
+
+        FloatArrayF<6> d = {
+            this->e * area,
+            g * shearareay,
+            g * shearareaz,
+            g * ik,
+            this->e * iy,
+            this->e * iz
+        };
+
+        return diag( d );
+    }
+
+    LatticeFrameConcretePlasticStatus::LatticeFrameConcretePlasticStatus( int n, Domain *d, GaussPoint *g ) :
+        LatticeMaterialStatus( g )
+    {
+    }
+
+    void
+        LatticeFrameConcretePlasticStatus::printOutputAt( FILE * file, TimeStep * tStep ) const
+    {
+        LatticeMaterialStatus::printOutputAt( file, tStep );
+
+        fprintf( file, "plasticStrains " );
+        for ( double s : this->plasticLatticeStrain ) {
+            fprintf( file, "% .8e ", s );
         }
     }
-
-    status->letTempReturnResultBe(LatticeFrameConcretePlastic::RR_Converged);
-    ;
-
-    stress = tempStress;
-}
-
-FloatMatrixF< 5, 5 >
-LatticeFrameConcretePlastic::computeJacobian(const FloatArrayF< 4 > &stress,
-                                          const double deltaLambda,
-                                          GaussPoint *gp,
-                                          TimeStep *tStep) const
-{
-    auto dMMatrix = computeDMMatrix(stress, gp, tStep);
-    auto fVector = computeFVector(stress, gp, tStep);
-    double g = this->e / ( 2. * ( 1. + this->nu ) );
-    const double area = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveArea();
-    const double ik = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveIk();
-    const double iy = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveIy();
-    const double iz = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveIz();
-
-
-    /* Compute matrix*/
-    FloatMatrixF< 5, 5 >jacobian;
-    jacobian.at(1, 1) = 1. + this->e * area * deltaLambda * dMMatrix.at(1, 1);
-    jacobian.at(1, 2) = 0.;
-    jacobian.at(1, 3) = 0.;
-    jacobian.at(1, 4) = 0.;
-    jacobian.at(1, 5) = this->e * area * fVector.at(1);
-
-    jacobian.at(2, 1) = 0.;
-    jacobian.at(2, 2) = 1. + ik * g * deltaLambda * dMMatrix.at(2, 2);
-    jacobian.at(2, 3) = 0.;
-    jacobian.at(2, 4) = 0.;
-    jacobian.at(2, 5) = ik * this->e * fVector.at(2);
-
-    jacobian.at(3, 1) = 0.;
-    jacobian.at(3, 2) = 0.;
-    jacobian.at(3, 3) = 1. + iy * this->e * deltaLambda * dMMatrix.at(3, 3);
-    jacobian.at(3, 4) = 0.;
-    jacobian.at(3, 5) = iy * this->e * fVector.at(3);
-
-    jacobian.at(4, 1) = 0.;
-    jacobian.at(4, 2) = 0.;
-    jacobian.at(4, 3) = 0.;
-    jacobian.at(4, 4) = 1. + iz * this->e * deltaLambda * dMMatrix.at(4, 4);
-    jacobian.at(4, 5) = iz * this->e * fVector.at(4);
-
-    jacobian.at(5, 1) = fVector.at(1);
-    jacobian.at(5, 2) = fVector.at(2);
-    jacobian.at(5, 3) = fVector.at(3);
-    jacobian.at(5, 4) = fVector.at(4);
-    jacobian.at(5, 5) = 0.;
-
-    return jacobian;
-}
-
-FloatArrayF< 6 >
-LatticeFrameConcretePlastic::giveFrameForces3d(const FloatArrayF< 6 > &originalStrain, GaussPoint *gp, TimeStep *tStep)
-{
-    auto status = static_cast< LatticeFrameConcretePlasticStatus * >( this->giveStatus(gp) );
-    auto reducedStrain = originalStrain;
-    auto thermalStrain = this->computeStressIndependentStrainVector(gp, tStep, VM_Total);
-    if ( thermalStrain.giveSize() ) {
-        reducedStrain -= FloatArrayF< 6 >(thermalStrain);
-    }
-
-    auto stress = this->performPlasticityReturn(gp, reducedStrain, tStep);
-
-    status->letTempLatticeStrainBe(originalStrain);
-    status->letTempReducedLatticeStrainBe(reducedStrain);
-    status->letTempLatticeStressBe(stress);
-
-    return stress;
-}
-
-
-
-FloatMatrixF< 6, 6 >
-LatticeFrameConcretePlastic::give3dFrameStiffnessMatrix(MatResponseMode rmode, GaussPoint *gp, TimeStep *atTime) const
-{
-    static_cast< LatticeFrameConcretePlasticStatus * >( this->giveStatus(gp) );
-
-    double g = this->e / ( 2. * ( 1. + this->nu ) );
-
-    const double area = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveArea();
-    const double ik = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveIk();
-    const double iy = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveIy();
-    const double iz = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveIz();
-    const double shearareay = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveShearAreaY();
-    const double shearareaz = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveShearAreaZ();
-
-    FloatArrayF< 6 >d = {
-        this->e * area,
-        g *shearareay,
-        g *shearareaz,
-        g *ik,
-        this->e * iy,
-        this->e * iz
-    };
-
-    return diag(d);
-}
-
-LatticeFrameConcretePlasticStatus::LatticeFrameConcretePlasticStatus(int n, Domain *d, GaussPoint *g) :  LatticeMaterialStatus(g)
-{ }
-
-void
-LatticeFrameConcretePlasticStatus::printOutputAt(FILE *file, TimeStep *tStep) const
-{
-    LatticeMaterialStatus::printOutputAt(file, tStep);
-
-    fprintf(file, "plasticStrains ");
-    for ( double s : this->plasticLatticeStrain ) {
-        fprintf(file, "% .8e ", s);
-    }
-}
 }

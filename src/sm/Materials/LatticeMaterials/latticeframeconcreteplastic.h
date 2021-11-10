@@ -31,8 +31,10 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
+
 #ifndef latticeframeconcreteplastic_h
 #define latticeframeconcreteplastic_h
+
 
 #include "latticestructuralmaterial.h"
 #include "cltypes.h"
@@ -40,7 +42,6 @@
 #include "strainvector.h"
 #include "stressvector.h"
 #include "latticematstatus.h"
-
 ///@name Input fields for LatticeFrameConcrePlastic
 //@{
 #define _IFT_LatticeFrameConcretePlastic_Name "LatticeFrameConcretePlastic"
@@ -48,10 +49,14 @@
 #define _IFT_LatticeFrameConcretePlastic_e "e"
 #define _IFT_LatticeFrameConcretePlastic_n "n"
 #define _IFT_LatticeFrameConcretePlastic_nx0 "nx0"
+#define _IFT_LatticeFrameConcretePlastic_vy0 "vy0"
+#define _IFT_LatticeFrameConcretePlastic_vz0 "vz0"
 #define _IFT_LatticeFrameConcretePlastic_mx0 "mx0"
 #define _IFT_LatticeFrameConcretePlastic_my0 "my0"
 #define _IFT_LatticeFrameConcretePlastic_mz0 "mz0"
 #define _IFT_LatticeFrameConcretePlastic_nx01 "nx01"
+#define _IFT_LatticeFrameConcretePlastic_vy01 "vy01"
+#define _IFT_LatticeFrameConcretePlastic_vz01 "vz01"
 #define _IFT_LatticeFrameConcretePlastic_mx01 "mx01"
 #define _IFT_LatticeFrameConcretePlastic_my01 "my01"
 #define _IFT_LatticeFrameConcretePlastic_mz01 "mz01"
@@ -80,14 +85,15 @@ public:
 
     enum LatticeFrameConcretePlastic_ReturnResult {
         RR_NotConverged,
-        RR_Converged
-    };
+        RR_Converged,
+        RR_WrongSurface,
 
+
+    };
 
 protected:
 
     int tempReturnResult = LatticeFrameConcretePlasticStatus::RR_NotConverged;
-
 
 
 public:
@@ -123,6 +129,10 @@ protected:
     ///maximum axial force in x-axis x-axis nx0
     double nx0;
 
+    double vy0;
+
+    double vz0;
+
     ///maximum  bending moment about x-axis mx0
     double mx0;
 
@@ -134,6 +144,11 @@ protected:
     
     ///maximum axial force in x-axis x-axis nx01
     double nx01;
+
+    double vy01;
+
+    double vz01;
+
 
     ///maximum  bending moment about x-axis mx01
     double mx01;
@@ -156,8 +171,9 @@ protected:
     ///plastic flag
     double plasticFlag;
 
-    enum LatticeFrameConcretePlastic_ReturnResult { RR_NotConverged, RR_Converged };
+    enum LatticeFrameConcretePlastic_ReturnResult { RR_NotConverged, RR_Converged, RR_WrongSurface};
     //   mutable LatticeFrameConcretePlastic_ReturnResult returnResult = RR_NotConverged; /// FIXME: This must be removed. Not thread safe. Shouldn't be stored at all.
+   // enum LatticeFrameConcretePlastic_ReturnResult { RR_WrongSurface};
 
     double initialYieldStress = 0.;
 
@@ -166,23 +182,23 @@ protected:
 public:
     LatticeFrameConcretePlastic(int n, Domain *d) : LatticeStructuralMaterial(n, d) { };
 
-    FloatArrayF< 4 >computeFVector(const FloatArrayF< 4 > &sigma, GaussPoint *gp, TimeStep *tStep) const;
+    FloatArrayF< 6 >computeFVector(const FloatArrayF< 6 > &sigma, const FloatArrayF< 6 > &k, GaussPoint *gp, TimeStep *tStep) const;
 
-    FloatMatrixF< 4, 4 >computeDMMatrix(const FloatArrayF< 4 > &sigma, GaussPoint *gp, TimeStep *tStep) const;
+    FloatMatrixF< 6, 6 >computeDMMatrix(const FloatArrayF< 6 > &sigma,  const FloatArrayF<6> &k, GaussPoint *gp, TimeStep *tStep) const;
 
     FloatArrayF< 6 >giveThermalDilatationVector(GaussPoint *gp,  TimeStep *tStep) const override;
 
-    FloatArrayF< 6 >giveReducedLatticeStrain(GaussPoint *gp, TimeStep *tStep) const;
+    FloatArrayF< 6 >giveLatticeStrain(GaussPoint *gp, TimeStep *tStep) const;
 
-    virtual FloatArrayF< 6 >giveReducedStrain(GaussPoint *gp, TimeStep *tStep) const;
+    virtual FloatArrayF< 6 >giveStrain(GaussPoint *gp, TimeStep *tStep) const;
 
-    FloatArrayF< 6 >performPlasticityReturn(GaussPoint *gp, const FloatArrayF< 6 > &reducedStrain, TimeStep *tStep) const;
+    FloatArrayF< 6 >performPlasticityReturn(GaussPoint *gp, const FloatArrayF< 6 > &strain, TimeStep *tStep) const;
 
-    void performRegularReturn(FloatArrayF< 4 > &stress, double yieldValue, GaussPoint *gp, TimeStep *tStep) const;
+    void performRegularReturn(FloatArrayF< 6 > &stress,  const FloatArrayF< 6 > &k, double yieldValue, GaussPoint *gp, TimeStep *tStep) const;
 
-    double computeYieldValue(const FloatArrayF< 4 > &sigma, GaussPoint *gp, TimeStep *tStep) const;
+    double computeYieldValue(const FloatArrayF< 6 > &sigma,  const FloatArrayF<6> &k, GaussPoint *gp, TimeStep *tStep) const;
 
-    FloatMatrixF< 5, 5 >computeJacobian(const FloatArrayF< 4 > &sigma, const double deltaLambda, GaussPoint *gp, TimeStep *tStep) const;
+    FloatMatrixF< 7, 7 >computeJacobian(const FloatArrayF< 6 > &sigma, const FloatArrayF< 6 > &k, const double deltaLambda, GaussPoint *gp, TimeStep *tStep) const;
 
     FloatArrayF< 6 >giveFrameForces3d(const FloatArrayF< 6 > &strain, GaussPoint *gp, TimeStep *tStep) override;
 
@@ -205,6 +221,7 @@ public:
     MaterialStatus *giveStatus(GaussPoint *gp) const override;
 
 protected:
+
 };
 } // end namespace oofem
 
