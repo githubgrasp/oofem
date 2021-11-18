@@ -157,51 +157,51 @@ LatticeFrameConcretePlastic::computeYieldValue( const FloatArrayF<6> &stress, co
     double my         = stress.at( 5 );
     double mz         = stress.at( 6 );
     {
-        double a1;
+        double ax;
         if ( k.at( 1 ) == 1 ) {
-            a1 = nx0;
+            ax = nx0;
         } else {
-            a1 = nx01;
+            ax = nx01;
         }
-        double a2;
+        double ay;
         if ( k.at( 2 ) == 1 ) {
-            a2 = vy0;
+            ay = vy0;
         } else {
-            a2 = vy01;
+            ay = vy01;
         }
-        double a3;
+        double az;
         if ( k.at( 3 ) == 1 ) {
-            a3 = vz0;
+            az = vz0;
         } else {
-            a3 = vz01;
+            az = vz01;
         }
-        double a4;
+        double bx;
 
         if ( k.at( 4 ) == 1 ) {
-            a4 = mx0;
+            bx = mx0;
         } else {
-            a4 = mx01;
+            bx = mx01;
         }
-        double a5;
+        double by;
 
         if ( k.at( 5 ) == 1 ) {
-            a5 = my0;
+            by = my0;
         } else {
-            a5 = my01;
+            by = my01;
         }
 
-        double a6;
+        double bz;
 
         if ( k.at( 6 ) == 1 ) {
-            a6 = mz0;
+            bz = mz0;
         } else {
-            a6 = mz01;
+            bz = mz01;
         }
 
 
         {
 
-            yieldValue = pow( nx / a1, 2. ) + pow( vy / a2, 2. ) + pow( vz / a3, 2. ) + pow( mx / a4, 2. ) + pow( my / a5, 2. ) + pow( mz / a6, 2. ) - 1.;
+            yieldValue = pow( nx / ax, 2. ) + pow( vy / ay, 2. ) + pow( vz / az, 2. ) + pow( mx / bx, 2. ) + pow( my / by, 2. ) + pow( mz / bz, 2. ) - 1.;
         }
     }
     return yieldValue;
@@ -219,182 +219,260 @@ LatticeFrameConcretePlastic::computeFVector( const FloatArrayF<6> &stress, const
     double my = stress.at( 5 );
     double mz = stress.at( 6 );
     {
-        double a1;
+        double ax;
         if ( k.at( 1 ) == 1 ) {
-            a1 = nx0;
+            ax = nx0;
         } else {
-            a1 = nx01;
+            ax = nx01;
         }
-        double a2;
+        double ay;
         if ( k.at( 2 ) == 1 ) {
-            a2 = vy0;
+            ay = vy0;
         } else {
-            a2 = vy01;
+            ay = vy01;
         }
-        double a3;
+        double az;
         if ( k.at( 3 ) == 1 ) {
-            a3 = vz0;
+            az = vz0;
         } else {
-            a3 = vz01;
+            az = vz01;
         }
-        double a4;
+        double bx;
 
         if ( k.at( 4 ) == 1 ) {
-            a4 = mx0;
+            bx = mx0;
         } else {
-            a4 = mx01;
+            bx = mx01;
         }
-        double a5;
+        double by;
 
         if ( k.at( 5 ) == 1 ) {
-            a5 = my0;
+            by = my0;
         } else {
-            a5 = my01;
+            by = my01;
         }
 
-        double a6;
+        double bz;
 
         if ( k.at( 6 ) == 1 ) {
-            a6 = mz0;
+            bz = mz0;
         } else {
-            a6 = mz01;
+            bz = mz01;
         }
 
+
         FloatArrayF<6> f;
-        f.at( 1 ) = 2. * nx / pow( a1, 2. );
-        f.at( 2 ) = 2. * vy / pow( a2, 2. );
-        f.at( 3 ) = 2. * vz / pow( a3, 2. );
-        f.at( 4 ) = 2. * mx / pow( a4, 2. );
-        f.at( 5 ) = 2. * my / pow( a5, 2. );
-        f.at( 6 ) = 2. * mz / pow( a6, 2. );
+        f.at( 1 ) = 2. * nx / pow( ax, 2. );
+        f.at( 2 ) = 2. * vy / pow( ay, 2. );
+        f.at( 3 ) = 2. * vz / pow( az, 2. );
+        f.at( 4 ) = 2. * mx / pow( bx, 2. );
+        f.at( 5 ) = 2. * my / pow( by, 2. );
+        f.at( 6 ) = 2. * mz / pow( bz, 2. );
 
         return f;
     }
 }
-    FloatMatrixF<6, 6>
-    LatticeFrameConcretePlastic::computeDMMatrix( const FloatArrayF<6> &stress, const FloatArrayF<6> &k, GaussPoint *gp, TimeStep *tStep ) const
-    {
+FloatMatrixF<6, 6>
+LatticeFrameConcretePlastic::computeDMMatrix( const FloatArrayF<6> &stress, const FloatArrayF<6> &k, GaussPoint *gp, TimeStep *tStep ) const
+{
 
-        double a1;
-        if ( k.at( 1 ) == 1 ) {
-            a1 = nx0;
-        } else {
-            a1 = nx01;
-        }
-        double a2;
-        if ( k.at( 2 ) == 1 ) {
-            a2 = vy0;
-        } else {
-            a2 = vy01;
-        }
-        double a3;
-        if ( k.at( 3 ) == 1 ) {
-            a3 = vz0;
-        } else {
-            a3 = vz01;
-        }
-        double a4;
+    double ax;
+    if ( k.at( 1 ) == 1 ) {
+        ax = nx0;
+    } else {
+        ax = nx01;
+    }
+    double ay;
+    if ( k.at( 2 ) == 1 ) {
+        ay = vy0;
+    } else {
+        ay = vy01;
+    }
+    double az;
+    if ( k.at( 3 ) == 1 ) {
+        az = vz0;
+    } else {
+        az = vz01;
+    }
+    double bx;
 
-        if ( k.at( 4 ) == 1 ) {
-            a4 = mx0;
-        } else {
-            a4 = mx01;
-        }
-        double a5;
+    if ( k.at( 4 ) == 1 ) {
+        bx = mx0;
+    } else {
+        bx = mx01;
+    }
+    double by;
 
-        if ( k.at( 5 ) == 1 ) {
-            a5 = my0;
-        } else {
-            a5 = my01;
-        }
-
-        double a6;
-
-        if ( k.at( 6 ) == 1 ) {
-            a6 = mz0;
-        } else {
-            a6 = mz01;
-        }
-
-
-        FloatMatrixF<6, 6> dm;
-
-        // Derivatives of dGDSig
-        dm.at( 1, 1 ) = 2. / pow( a1, 2. );
-        dm.at( 1, 2 ) = 0;
-        dm.at( 1, 3 ) = 0;
-        dm.at( 1, 4 ) = 0;
-        dm.at( 1, 5 ) = 0;
-        dm.at( 1, 6 ) = 0;
-
-
-        // Derivatives of dGDTau
-        dm.at( 2, 1 ) = 0;
-        dm.at( 2, 2 ) = 2. / pow( a2, 2. );
-        dm.at( 2, 3 ) = 0;
-        dm.at( 2, 4 ) = 0;
-        dm.at( 2, 5 ) = 0;
-        dm.at( 2, 6 ) = 0;
-
-
-        // Derivates of evolution law
-        dm.at( 3, 1 ) = 0;
-        dm.at( 3, 2 ) = 0;
-        dm.at( 3, 3 ) = 2. / pow( a3, 2. );
-        dm.at( 3, 4 ) = 0;
-        dm.at( 3, 5 ) = 0;
-        dm.at( 3, 6 ) = 0;
-
-
-        // Derivates of evolution law
-        dm.at( 4, 1 ) = 0;
-        dm.at( 4, 2 ) = 0;
-        dm.at( 4, 3 ) = 0;
-        dm.at( 4, 4 ) = 2. / pow( a4, 2. );
-        dm.at( 4, 5 ) = 0;
-        dm.at( 4, 6 ) = 0;
-
-        // Derivates of evolution law
-        dm.at( 5, 1 ) = 0;
-        dm.at( 5, 2 ) = 0;
-        dm.at( 5, 3 ) = 0;
-        dm.at( 5, 4 ) = 0;
-        dm.at( 5, 5 ) = 2. / pow( a5, 2. );
-        dm.at( 5, 6 ) = 0;
-
-        // Derivates of evolution law
-        dm.at( 6, 1 ) = 0;
-        dm.at( 6, 2 ) = 0;
-        dm.at( 6, 3 ) = 0;
-        dm.at( 6, 4 ) = 0;
-        dm.at( 6, 5 ) = 0;
-        dm.at( 6, 6 ) = 2. / pow( a6, 2. );
-
-        return dm;
+    if ( k.at( 5 ) == 1 ) {
+        by = my0;
+    } else {
+        by = my01;
     }
 
-    FloatArrayF<6>
-        LatticeFrameConcretePlastic::giveThermalDilatationVector( GaussPoint * gp, TimeStep * tStep ) const
-    // returns a FloatArray(6) of initial strain vector caused by unit temperature in direction of gp (element) local axes
-    {
-        double alpha = this->give( tAlpha, gp );
+    double bz;
 
-        return {
-            alpha, 0., 0., 0., 0., 0.
-        };
+    if ( k.at( 6 ) == 1 ) {
+        bz = mz0;
+    } else {
+        bz = mz01;
     }
 
-    FloatArrayF<6>
-        LatticeFrameConcretePlastic::giveStrain( GaussPoint * gp, TimeStep * tStep ) const
-    {
-        auto status = static_cast<LatticeMaterialStatus *>( this->giveStatus( gp ) );
-        return status->giveLatticeStrain();
-    }
 
+    FloatMatrixF<6, 6> dm;
+
+    // Derivatives of dGDSig
+    dm.at( 1, 1 ) = 2. / pow( ax, 2. );
+    dm.at( 1, 2 ) = 0;
+    dm.at( 1, 3 ) = 0;
+    dm.at( 1, 4 ) = 0;
+    dm.at( 1, 5 ) = 0;
+    dm.at( 1, 6 ) = 0;
+
+
+    // Derivatives of dGDTau
+    dm.at( 2, 1 ) = 0;
+    dm.at( 2, 2 ) = 2. / pow( ay, 2. );
+    dm.at( 2, 3 ) = 0;
+    dm.at( 2, 4 ) = 0;
+    dm.at( 2, 5 ) = 0;
+    dm.at( 2, 6 ) = 0;
+
+
+    // Derivates of evolution law
+    dm.at( 3, 1 ) = 0;
+    dm.at( 3, 2 ) = 0;
+    dm.at( 3, 3 ) = 2. / pow( az, 2. );
+    dm.at( 3, 4 ) = 0;
+    dm.at( 3, 5 ) = 0;
+    dm.at( 3, 6 ) = 0;
+
+
+    // Derivates of evolution law
+    dm.at( 4, 1 ) = 0;
+    dm.at( 4, 2 ) = 0;
+    dm.at( 4, 3 ) = 0;
+    dm.at( 4, 4 ) = 2. / pow( bx, 2. );
+    dm.at( 4, 5 ) = 0;
+    dm.at( 4, 6 ) = 0;
+
+    // Derivates of evolution law
+    dm.at( 5, 1 ) = 0;
+    dm.at( 5, 2 ) = 0;
+    dm.at( 5, 3 ) = 0;
+    dm.at( 5, 4 ) = 0;
+    dm.at( 5, 5 ) = 2. / pow( by, 2. );
+    dm.at( 5, 6 ) = 0;
+
+    // Derivates of evolution law
+    dm.at( 6, 1 ) = 0;
+    dm.at( 6, 2 ) = 0;
+    dm.at( 6, 3 ) = 0;
+    dm.at( 6, 4 ) = 0;
+    dm.at( 6, 5 ) = 0;
+    dm.at( 6, 6 ) = 2. / pow( bz, 2. );
+
+    return dm;
+}
+//
+FloatArrayF<6>
+LatticeFrameConcretePlastic::giveThermalDilatationVector( GaussPoint *gp, TimeStep *tStep ) const
+// returns a FloatArray(6) of initial strain vector caused by unit temperature in direction of gp (element) local axes
+{
+    double alpha = this->give( tAlpha, gp );
+
+    return {
+        alpha, 0., 0., 0., 0., 0.
+    };
+}
+
+FloatArrayF<6>
+LatticeFrameConcretePlastic::giveStrain( GaussPoint *gp, TimeStep *tStep ) const
+
+{
+    auto status = static_cast<LatticeMaterialStatus *>( this->giveStatus( gp ) );
+    return status->giveLatticeStrain();
+}
+FloatArrayF<6>
+LatticeFrameConcretePlastic::checkStatus( const FloatArrayF<6> &stress, GaussPoint *gp, TimeStep *tStep ) const
+{
+
+    // int surface = -1;
+
+    // double transition = 0;
+
+
+    void
+    LatticeFrameConcretePlastic ::giveSwitches( FloatArray & k, int m )
+    {
+        if ( stress.at( 1 ) >= 1 ) {
+            m.at( 1 ) = 1;
+        } else {
+            m.at( 1 ) = -1;
+        }
+
+        if ( stress.at( 2 ) >= 1 ) {
+            m.at( 2 ) = 1;
+        } else {
+            m.at( 2 ) = -1;
+        }
+
+        if ( stress.at( 3 ) >= 1 ) {
+            m.at( 3 ) = 1;
+        } else {
+            m.at( 3 ) = -1;
+        }
+
+        if ( stress.at( 4 ) >= 1 ) {
+            m.at( 4 ) = 1;
+        } else {
+            m.at( 4 ) = -1;
+        }
+
+        if ( stress.at( 5 ) >= 1 ) {
+            m.at( 5 ) = 1;
+        } else {
+            m.at( 5 ) = -1;
+        }
+
+        if ( stress.at( 6 ) >= 1 ) {
+            m.at( 6 ) = 1;
+        } else {
+            m.at( 6 ) = -1;
+        }
+
+        int counter = 1;
+        for ( int xi = -1; xi < 2; xi + 2 ) {
+            for ( int yi = -1; yi < 2; yi + 2 ) {
+                for ( int zi = -1; zi < 2; zi + 2 ) {
+                    for ( int xj = -1; xj < 2; zi + 2 ) {
+                        for ( int yj = -1; yj < 2; zi + 2 ) {
+                            for ( int zj = -1; zj < 2; zi + 2 ) {
+                                if ( !( zj == 0 && yj == 0 && xj == 0 && zi == 0 && yi == 0 && xi == 0 ) ) {
+                                    if ( counter == m ) {
+                                        k( 0 ) = xi;
+                                        k( 1 ) = yi;
+                                        k( 2 ) = zi;
+                                        k( 3 ) = xj;
+                                        k( 4 ) = yj;
+                                        k( 5 ) = zj;
+                                    }
+                                    counter++;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return k;
+    }
+}
 
     FloatArrayF<6>
     LatticeFrameConcretePlastic::performPlasticityReturn( GaussPoint * gp, const FloatArrayF<6> &Strain, TimeStep *tStep ) const
     {
+        LatticeFrameConcretePlastic_ReturnResult returnResult = RR_Unknown;
+        int kIter = 0;
         double g                = this->e / ( 2. * ( 1. + this->nu ) );
         const double area       = ( static_cast<LatticeStructuralElement *>( gp->giveElement() ) )->giveArea();
         const double iy         = ( static_cast<LatticeStructuralElement *>( gp->giveElement() ) )->giveIy();
@@ -416,605 +494,10 @@ LatticeFrameConcretePlastic::computeFVector( const FloatArrayF<6> &stress, const
         /* Compute trial stress*/
         auto stress = mult( tangent, strain - tempPlasticStrain );
 
-        FloatArrayF<6> k;
-
-        if ( stress.at( 1 ) >= 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) >= 0 ) {
-            k.at( 1 ) = 1;
-            k.at( 2 ) = 1;
-            k.at( 3 ) = 1;
-            k.at( 4 ) = 1;
-            k.at( 5 ) = 1;
-            k.at( 6 ) = 1;
-
-        }
-
-        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) < 0 && stress.at( 6 ) >= 0 ) {
-            k.at( 1 ) = 1;
-            k.at( 2 ) = 1;
-            k.at( 3 ) = 1;
-            k.at( 4 ) = 1;
-            k.at( 5 ) = -1;
-            k.at( 6 ) = 1;
-
-        }
-
-        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) < 0 && stress.at( 6 ) < 0 ) {
-            k.at( 1 ) = 1;
-            k.at( 2 ) = 1;
-            k.at( 3 ) = 1;
-            k.at( 4 ) = 1;
-            k.at( 5 ) = -1;
-            k.at( 6 ) = -1;
-        }
-
-        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) < 0 ) {
-            k.at( 1 ) = 1;
-            k.at( 2 ) = 1;
-            k.at( 3 ) = 1;
-            k.at( 4 ) = 1;
-            k.at( 5 ) = 1;
-            k.at( 6 ) = -1;
-        }
-
-        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) < 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) >= 0 ) {
-            k.at( 1 ) = 1;
-            k.at( 2 ) = 1;
-            k.at( 3 ) = 1;
-            k.at( 4 ) = -1;
-            k.at( 5 ) = 1;
-            k.at( 6 ) = 1;
-        }
-
-        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) < 0 && stress.at( 5 ) < 0 && stress.at( 6 ) >= 0 ) {
-            k.at( 1 ) = 1;
-            k.at( 2 ) = 1;
-            k.at( 3 ) = 1;
-            k.at( 4 ) = -1;
-            k.at( 5 ) = -1;
-            k.at( 6 ) = 1;
-        }
-
-        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) < 0 && stress.at( 5 ) < 0 && stress.at( 6 ) < 0 ) {
-            k.at( 1 ) = 1;
-            k.at( 2 ) = 1;
-            k.at( 3 ) = 1;
-            k.at( 4 ) = -1;
-            k.at( 5 ) = -1;
-            k.at( 6 ) = -1;
-        }
-
-        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) < 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) < 0 ) {
-            k.at( 1 ) = 1;
-            k.at( 2 ) = 1;
-            k.at( 3 ) = 1;
-            k.at( 4 ) = -1;
-            k.at( 5 ) = 1;
-            k.at( 6 ) = -1;
-        }
-
-        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) < 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) >= 0 ) {
-            k.at( 1 ) = 1;
-            k.at( 2 ) = 1;
-            k.at( 3 ) = -1;
-            k.at( 4 ) = 1;
-            k.at( 5 ) = 1;
-            k.at( 6 ) = 1;
-
-        }
-
-        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) < 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) < 0 && stress.at( 6 ) >= 0 ) {
-            k.at( 1 ) = 1;
-            k.at( 2 ) = 1;
-            k.at( 3 ) = -1;
-            k.at( 4 ) = 1;
-            k.at( 5 ) = -1;
-            k.at( 6 ) = 1;
-
-        }
-
-        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) < 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) < 0 && stress.at( 6 ) < 0 ) {
-            k.at( 1 ) = 1;
-            k.at( 2 ) = 1;
-            k.at( 3 ) = -1;
-            k.at( 4 ) = 1;
-            k.at( 5 ) = -1;
-            k.at( 6 ) = -1;
-        }
-
-        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) < 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) < 0 ) {
-            k.at( 1 ) = 1;
-            k.at( 2 ) = 1;
-            k.at( 3 ) = -1;
-            k.at( 4 ) = 1;
-            k.at( 5 ) = 1;
-            k.at( 6 ) = -1;
-        }
-
-        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) < 0 && stress.at( 4 ) < 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) >= 0 ) {
-            k.at( 1 ) = 1;
-            k.at( 2 ) = 1;
-            k.at( 3 ) = -1;
-            k.at( 4 ) = -1;
-            k.at( 5 ) = 1;
-            k.at( 6 ) = 1;
-        }
-
-        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) < 0 && stress.at( 4 ) < 0 && stress.at( 5 ) < 0 && stress.at( 6 ) >= 0 ) {
-            k.at( 1 ) = 1;
-            k.at( 2 ) = 1;
-            k.at( 3 ) = -1;
-            k.at( 4 ) = -1;
-            k.at( 5 ) = -1;
-            k.at( 6 ) = 1;
-        }
-
-        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) < 0 && stress.at( 4 ) < 0 && stress.at( 5 ) < 0 && stress.at( 6 ) < 0 ) {
-            k.at( 1 ) = 1;
-            k.at( 2 ) = 1;
-            k.at( 3 ) = -1;
-            k.at( 4 ) = -1;
-            k.at( 5 ) = -1;
-            k.at( 6 ) = -1;
-        }
-
-        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) < 0 && stress.at( 4 ) < 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) < 0 ) {
-            k.at( 1 ) = 1;
-            k.at( 2 ) = 1;
-            k.at( 3 ) = -1;
-            k.at( 4 ) = -1;
-            k.at( 5 ) = 1;
-            k.at( 6 ) = -1;
-        }
-
-        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) < 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) >= 0 ) {
-            k.at( 1 ) = 1;
-            k.at( 2 ) = -1;
-            k.at( 3 ) = 1;
-            k.at( 4 ) = 1;
-            k.at( 5 ) = 1;
-            k.at( 6 ) = 1;
-
-        }
-
-        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) < 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) < 0 && stress.at( 6 ) >= 0 ) {
-            k.at( 1 ) = 1;
-            k.at( 2 ) = -1;
-            k.at( 3 ) = 1;
-            k.at( 4 ) = 1;
-            k.at( 5 ) = -1;
-            k.at( 6 ) = 1;
-
-        }
-
-        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) < 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) < 0 && stress.at( 6 ) < 0 ) {
-            k.at( 1 ) = 1;
-            k.at( 2 ) = -1;
-            k.at( 3 ) = 1;
-            k.at( 4 ) = 1;
-            k.at( 5 ) = -1;
-            k.at( 6 ) = -1;
-        }
-
-        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) < 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) < 0 ) {
-            k.at( 1 ) = 1;
-            k.at( 2 ) = -1;
-            k.at( 3 ) = 1;
-            k.at( 4 ) = 1;
-            k.at( 5 ) = 1;
-            k.at( 6 ) = -1;
-        }
-
-        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) < 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) < 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) >= 0 ) {
-            k.at( 1 ) = 1;
-            k.at( 2 ) = -1;
-            k.at( 3 ) = 1;
-            k.at( 4 ) = -1;
-            k.at( 5 ) = 1;
-            k.at( 6 ) = 1;
-        }
-
-        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) < 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) < 0 && stress.at( 5 ) < 0 && stress.at( 6 ) >= 0 ) {
-            k.at( 1 ) = 1;
-            k.at( 2 ) = -1;
-            k.at( 3 ) = 1;
-            k.at( 4 ) = -1;
-            k.at( 5 ) = -1;
-            k.at( 6 ) = 1;
-        }
-
-        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) < 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) < 0 && stress.at( 5 ) < 0 && stress.at( 6 ) < 0 ) {
-            k.at( 1 ) = 1;
-            k.at( 2 ) = -1;
-            k.at( 3 ) = 1;
-            k.at( 4 ) = -1;
-            k.at( 5 ) = -1;
-            k.at( 6 ) = -1;
-        }
-
-        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) < 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) < 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) < 0 ) {
-            k.at( 1 ) = 1;
-            k.at( 2 ) = -1;
-            k.at( 3 ) = 1;
-            k.at( 4 ) = -1;
-            k.at( 5 ) = 1;
-            k.at( 6 ) = -1;
-        }
-
-        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) < 0 && stress.at( 3 ) < 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) >= 0 ) {
-            k.at( 1 ) = 1;
-            k.at( 2 ) = -1;
-            k.at( 3 ) = -1;
-            k.at( 4 ) = 1;
-            k.at( 5 ) = 1;
-            k.at( 6 ) = 1;
-
-        }
-
-        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) < 0 && stress.at( 3 ) < 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) < 0 && stress.at( 6 ) >= 0 ) {
-            k.at( 1 ) = 1;
-            k.at( 2 ) = -1;
-            k.at( 3 ) = -1;
-            k.at( 4 ) = 1;
-            k.at( 5 ) = -1;
-            k.at( 6 ) = 1;
-
-        }
-
-        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) < 0 && stress.at( 3 ) < 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) < 0 && stress.at( 6 ) < 0 ) {
-            k.at( 1 ) = 1;
-            k.at( 2 ) = -1;
-            k.at( 3 ) = -1;
-            k.at( 4 ) = 1;
-            k.at( 5 ) = -1;
-            k.at( 6 ) = -1;
-        }
-
-        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) < 0 && stress.at( 3 ) < 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) < 0 ) {
-            k.at( 1 ) = 1;
-            k.at( 2 ) = -1;
-            k.at( 3 ) = -1;
-            k.at( 4 ) = 1;
-            k.at( 5 ) = 1;
-            k.at( 6 ) = -1;
-        }
-
-        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) < 0 && stress.at( 3 ) < 0 && stress.at( 4 ) < 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) >= 0 ) {
-            k.at( 1 ) = 1;
-            k.at( 2 ) = -1;
-            k.at( 3 ) = -1;
-            k.at( 4 ) = -1;
-            k.at( 5 ) = 1;
-            k.at( 6 ) = 1;
-        }
-
-        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) < 0 && stress.at( 3 ) < 0 && stress.at( 4 ) < 0 && stress.at( 5 ) < 0 && stress.at( 6 ) >= 0 ) {
-            k.at( 1 ) = 1;
-            k.at( 2 ) = -1;
-            k.at( 3 ) = -1;
-            k.at( 4 ) = -1;
-            k.at( 5 ) = -1;
-            k.at( 6 ) = 1;
-        }
-
-        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) < 0 && stress.at( 3 ) < 0 && stress.at( 4 ) < 0 && stress.at( 5 ) < 0 && stress.at( 6 ) < 0 ) {
-            k.at( 1 ) = 1;
-            k.at( 2 ) = -1;
-            k.at( 3 ) = -1;
-            k.at( 4 ) = -1;
-            k.at( 5 ) = -1;
-            k.at( 6 ) = -1;
-        }
-
-        else if ( stress.at( 1 ) >= 0 && stress.at( 2 ) < 0 && stress.at( 3 ) < 0 && stress.at( 4 ) < 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) < 0 ) {
-            k.at( 1 ) = 1;
-            k.at( 2 ) = -1;
-            k.at( 3 ) = -1;
-            k.at( 4 ) = -1;
-            k.at( 5 ) = 1;
-            k.at( 6 ) = -1;
-        }
-
-
-        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) >= 0 ) {
-            k.at( 1 ) = -1;
-            k.at( 2 ) = 1;
-            k.at( 3 ) = 1;
-            k.at( 4 ) = 1;
-            k.at( 5 ) = 1;
-            k.at( 6 ) = 1;
-
-        }
-
-        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) < 0 && stress.at( 6 ) >= 0 ) {
-            k.at( 1 ) = -1;
-            k.at( 2 ) = 1;
-            k.at( 3 ) = 1;
-            k.at( 4 ) = 1;
-            k.at( 5 ) = -1;
-            k.at( 6 ) = 1;
-
-        }
-
-        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) < 0 && stress.at( 6 ) < 0 ) {
-            k.at( 1 ) = -1;
-            k.at( 2 ) = 1;
-            k.at( 3 ) = 1;
-            k.at( 4 ) = 1;
-            k.at( 5 ) = -1;
-            k.at( 6 ) = -1;
-        }
-
-        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) < 0 ) {
-            k.at( 1 ) = -1;
-            k.at( 2 ) = 1;
-            k.at( 3 ) = 1;
-            k.at( 4 ) = 1;
-            k.at( 5 ) = 1;
-            k.at( 6 ) = -1;
-        }
-
-        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) < 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) >= 0 ) {
-            k.at( 1 ) = -1;
-            k.at( 2 ) = 1;
-            k.at( 3 ) = 1;
-            k.at( 4 ) = -1;
-            k.at( 5 ) = 1;
-            k.at( 6 ) = 1;
-        }
-
-        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) < 0 && stress.at( 5 ) < 0 && stress.at( 6 ) >= 0 ) {
-            k.at( 1 ) = -1;
-            k.at( 2 ) = 1;
-            k.at( 3 ) = 1;
-            k.at( 4 ) = -1;
-            k.at( 5 ) = -1;
-            k.at( 6 ) = 1;
-        }
-
-        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) < 0 && stress.at( 5 ) < 0 && stress.at( 6 ) < 0 ) {
-            k.at( 1 ) = -1;
-            k.at( 2 ) = 1;
-            k.at( 3 ) = 1;
-            k.at( 4 ) = -1;
-            k.at( 5 ) = -1;
-            k.at( 6 ) = -1;
-        }
-
-        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) < 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) < 0 ) {
-            k.at( 1 ) = -1;
-            k.at( 2 ) = 1;
-            k.at( 3 ) = 1;
-            k.at( 4 ) = -1;
-            k.at( 5 ) = 1;
-            k.at( 6 ) = -1;
-        }
-
-        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) < 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) >= 0 ) {
-            k.at( 1 ) = -1;
-            k.at( 2 ) = 1;
-            k.at( 3 ) = -1;
-            k.at( 4 ) = 1;
-            k.at( 5 ) = 1;
-            k.at( 6 ) = 1;
-
-        }
-
-        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) < 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) < 0 && stress.at( 6 ) >= 0 ) {
-            k.at( 1 ) = -1;
-            k.at( 2 ) = 1;
-            k.at( 3 ) = -1;
-            k.at( 4 ) = 1;
-            k.at( 5 ) = -1;
-            k.at( 6 ) = 1;
-
-        }
-
-        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) < 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) < 0 && stress.at( 6 ) < 0 ) {
-            k.at( 1 ) = -1;
-            k.at( 2 ) = 1;
-            k.at( 3 ) = -1;
-            k.at( 4 ) = 1;
-            k.at( 5 ) = -1;
-            k.at( 6 ) = -1;
-        }
-
-        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) < 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) < 0 ) {
-            k.at( 1 ) = -1;
-            k.at( 2 ) = 1;
-            k.at( 3 ) = -1;
-            k.at( 4 ) = 1;
-            k.at( 5 ) = 1;
-            k.at( 6 ) = -1;
-        }
-
-        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) < 0 && stress.at( 4 ) < 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) >= 0 ) {
-            k.at( 1 ) = -1;
-            k.at( 2 ) = 1;
-            k.at( 3 ) = -1;
-            k.at( 4 ) = -1;
-            k.at( 5 ) = 1;
-            k.at( 6 ) = 1;
-        }
-
-        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) < 0 && stress.at( 4 ) < 0 && stress.at( 5 ) < 0 && stress.at( 6 ) >= 0 ) {
-            k.at( 1 ) = -1;
-            k.at( 2 ) = 1;
-            k.at( 3 ) = -1;
-            k.at( 4 ) = -1;
-            k.at( 5 ) = -1;
-            k.at( 6 ) = 1;
-        }
-
-        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) < 0 && stress.at( 4 ) < 0 && stress.at( 5 ) < 0 && stress.at( 6 ) < 0 ) {
-            k.at( 1 ) = -1;
-            k.at( 2 ) = 1;
-            k.at( 3 ) = -1;
-            k.at( 4 ) = -1;
-            k.at( 5 ) = -1;
-            k.at( 6 ) = -1;
-        }
-
-        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) >= 0 && stress.at( 3 ) < 0 && stress.at( 4 ) < 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) < 0 ) {
-            k.at( 1 ) = -1;
-            k.at( 2 ) = 1;
-            k.at( 3 ) = -1;
-            k.at( 4 ) = -1;
-            k.at( 5 ) = 1;
-            k.at( 6 ) = -1;
-        }
-
-        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) < 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) >= 0 ) {
-            k.at( 1 ) = -1;
-            k.at( 2 ) = -1;
-            k.at( 3 ) = 1;
-            k.at( 4 ) = 1;
-            k.at( 5 ) = 1;
-            k.at( 6 ) = 1;
-
-        }
-
-        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) < 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) < 0 && stress.at( 6 ) >= 0 ) {
-            k.at( 1 ) = -1;
-            k.at( 2 ) = -1;
-            k.at( 3 ) = 1;
-            k.at( 4 ) = 1;
-            k.at( 5 ) = -1;
-            k.at( 6 ) = 1;
-
-        }
-
-        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) < 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) < 0 && stress.at( 6 ) < 0 ) {
-            k.at( 1 ) = -1;
-            k.at( 2 ) = -1;
-            k.at( 3 ) = 1;
-            k.at( 4 ) = 1;
-            k.at( 5 ) = -1;
-            k.at( 6 ) = -1;
-        }
-
-        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) < 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) < 0 ) {
-            k.at( 1 ) = -1;
-            k.at( 2 ) = -1;
-            k.at( 3 ) = 1;
-            k.at( 4 ) = 1;
-            k.at( 5 ) = 1;
-            k.at( 6 ) = -1;
-        }
-
-        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) < 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) < 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) >= 0 ) {
-            k.at( 1 ) = -1;
-            k.at( 2 ) = -1;
-            k.at( 3 ) = 1;
-            k.at( 4 ) = -1;
-            k.at( 5 ) = 1;
-            k.at( 6 ) = 1;
-        }
-
-        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) < 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) < 0 && stress.at( 5 ) < 0 && stress.at( 6 ) >= 0 ) {
-            k.at( 1 ) = -1;
-            k.at( 2 ) = -1;
-            k.at( 3 ) = 1;
-            k.at( 4 ) = -1;
-            k.at( 5 ) = -1;
-            k.at( 6 ) = 1;
-        }
-
-        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) < 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) < 0 && stress.at( 5 ) < 0 && stress.at( 6 ) < 0 ) {
-            k.at( 1 ) = -1;
-            k.at( 2 ) = -1;
-            k.at( 3 ) = 1;
-            k.at( 4 ) = -1;
-            k.at( 5 ) = -1;
-            k.at( 6 ) = -1;
-        }
-
-        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) < 0 && stress.at( 3 ) >= 0 && stress.at( 4 ) < 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) < 0 ) {
-            k.at( 1 ) = -1;
-            k.at( 2 ) = -1;
-            k.at( 3 ) = 1;
-            k.at( 4 ) = -1;
-            k.at( 5 ) = 1;
-            k.at( 6 ) = -1;
-        }
-
-        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) < 0 && stress.at( 3 ) < 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) >= 0 ) {
-            k.at( 1 ) = -1;
-            k.at( 2 ) = -1;
-            k.at( 3 ) = -1;
-            k.at( 4 ) = 1;
-            k.at( 5 ) = 1;
-            k.at( 6 ) = 1;
-
-        }
-
-        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) < 0 && stress.at( 3 ) < 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) < 0 && stress.at( 6 ) >= 0 ) {
-            k.at( 1 ) = -1;
-            k.at( 2 ) = -1;
-            k.at( 3 ) = -1;
-            k.at( 4 ) = 1;
-            k.at( 5 ) = -1;
-            k.at( 6 ) = 1;
-
-        }
-
-        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) < 0 && stress.at( 3 ) < 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) < 0 && stress.at( 6 ) < 0 ) {
-            k.at( 1 ) = -1;
-            k.at( 2 ) = -1;
-            k.at( 3 ) = -1;
-            k.at( 4 ) = 1;
-            k.at( 5 ) = -1;
-            k.at( 6 ) = -1;
-        }
-
-        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) < 0 && stress.at( 3 ) < 0 && stress.at( 4 ) >= 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) < 0 ) {
-            k.at( 1 ) = -1;
-            k.at( 2 ) = -1;
-            k.at( 3 ) = -1;
-            k.at( 4 ) = 1;
-            k.at( 5 ) = 1;
-            k.at( 6 ) = -1;
-        }
-
-        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) < 0 && stress.at( 3 ) < 0 && stress.at( 4 ) < 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) >= 0 ) {
-            k.at( 1 ) = -1;
-            k.at( 2 ) = -1;
-            k.at( 3 ) = -1;
-            k.at( 4 ) = -1;
-            k.at( 5 ) = 1;
-            k.at( 6 ) = 1;
-        }
-
-        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) < 0 && stress.at( 3 ) < 0 && stress.at( 4 ) < 0 && stress.at( 5 ) < 0 && stress.at( 6 ) >= 0 ) {
-            k.at( 1 ) = -1;
-            k.at( 2 ) = -1;
-            k.at( 3 ) = -1;
-            k.at( 4 ) = -1;
-            k.at( 5 ) = -1;
-            k.at( 6 ) = 1;
-        }
-
-        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) < 0 && stress.at( 3 ) < 0 && stress.at( 4 ) < 0 && stress.at( 5 ) < 0 && stress.at( 6 ) < 0 ) {
-            k.at( 1 ) = -1;
-            k.at( 2 ) = -1;
-            k.at( 3 ) = -1;
-            k.at( 4 ) = -1;
-            k.at( 5 ) = -1;
-            k.at( 6 ) = -1;
-        }
-
-        else if ( stress.at( 1 ) < 0 && stress.at( 2 ) < 0 && stress.at( 3 ) < 0 && stress.at( 4 ) < 0 && stress.at( 5 ) >= 0 && stress.at( 6 ) < 0 ) {
-            k.at( 1 ) = -1;
-            k.at( 2 ) = -1;
-            k.at( 3 ) = -1;
-            k.at( 4 ) = -1;
-            k.at( 5 ) = 1;
-            k.at( 6 ) = -1;
-
-        } else {
-            OOFEM_ERROR( "This case should not exist" );
-        }
 
         auto oldStrain = this->giveStrain( gp, tStep )[{ 0, 1, 2, 3, 4, 5 }];
+	//test
+        auto k = checkStatus(stress, gp, tStep);
 
         /* Compute yield value*/
         double yieldValue       = computeYieldValue( stress, k, gp, tStep );
@@ -1032,9 +515,9 @@ LatticeFrameConcretePlastic::computeFVector( const FloatArrayF<6> &stress, const
             while ( status->giveTempReturnResult() == RR_NotConverged || subIncrementFlag == 1 ) {
                 stress = mult( tangent, tempStrain - tempPlasticStrain );
                 performRegularReturn( stress, k, yieldValue, gp, tStep );
-                if ( status->giveTempReturnResult() == RR_WrongSurface ) {
-                    int RestartWithNewKValue;
-               }
+                //if ( status->giveTempReturnResult() == RR_WrongSurface ) {
+		//  int RestartWithNewKValue;
+		//}
                  if ( status->giveTempReturnResult() == RR_NotConverged ) {
                     subIncrementCounter++;
                     if ( subIncrementCounter > numberOfSubIncrements ) {
@@ -1067,6 +550,22 @@ LatticeFrameConcretePlastic::computeFVector( const FloatArrayF<6> &stress, const
                     deltaStrain         = strain - convergedStrain;
                     tempStrain          = strain;
                     subIncrementCounter = 0;
+                }else {//Converged
+                    //Check the surface
+
+                   auto  kCheck = checkStatus(stress,  gp, tStep);
+                   if   (  kCheck  == k )  {
+                           kCheck=k;
+                   }else{
+                       //ended up in a region for which other surface should have been used.
+                      //Try with other surface
+                       if ( kIter == 1 ) {
+                           OOFEM_ERROR("LatticePlasticityDamage :: performPlasticityReturn - Tried both k");
+                       }
+                       k = kCheck;
+                       returnResult = RR_NotConverged;
+                       kIter++;
+                   }
                 }
             }
         }
@@ -1145,58 +644,59 @@ LatticeFrameConcretePlastic::computeFVector( const FloatArrayF<6> &stress, const
             // double my = stress.at(3);
             // double mz = stress.at(4);
 
-            double a1;
+            double ax;
             if ( k.at( 1 ) == 1 ) {
-                a1 = nx0;
+                ax = nx0;
             } else {
-                a1 = nx01;
+                ax = nx01;
             }
-            double a2;
+            double ay;
             if ( k.at( 2 ) == 1 ) {
-                a2 = vy0;
+                ay = vy0;
             } else {
-                a2 = vy01;
+                ay = vy01;
             }
-            double a3;
+            double az;
             if ( k.at( 3 ) == 1 ) {
-                a3 = vz0;
+                az = vz0;
             } else {
-                a3 = vz01;
+                az = vz01;
             }
-            double a4;
+            double bx;
 
             if ( k.at( 4 ) == 1 ) {
-                a4 = mx0;
+                bx = mx0;
             } else {
-                a4 = mx01;
+                bx = mx01;
             }
-            double a5;
+            double by;
 
             if ( k.at( 5 ) == 1 ) {
-                a5 = my0;
+                by = my0;
             } else {
-                a5 = my01;
+                by = my01;
             }
 
-            double a6;
+            double bz;
 
             if ( k.at( 6 ) == 1 ) {
-                a6 = mz0;
+                bz = mz0;
             } else {
-                a6 = mz01;
+                bz = mz01;
             }
+
 
 
             FloatArrayF<7> residualsNorm;
-            residualsNorm.at( 1 ) = residuals.at( 1 ) / a1;
-            residualsNorm.at( 2 ) = residuals.at( 2 ) / a2;
-            residualsNorm.at( 3 ) = residuals.at( 3 ) / a3;
-            residualsNorm.at( 4 ) = residuals.at( 4 ) / a4;
-            residualsNorm.at( 5 ) = residuals.at( 5 ) / a5;
-            residualsNorm.at( 6 ) = residuals.at( 6 ) / a6;
+            residualsNorm.at( 1 ) = residuals.at( 1 ) / ax;
+            residualsNorm.at( 2 ) = residuals.at( 2 ) / ay;
+            residualsNorm.at( 3 ) = residuals.at( 3 ) / az;
+            residualsNorm.at( 4 ) = residuals.at( 4 ) / bx;
+            residualsNorm.at( 5 ) = residuals.at( 5 ) / by;
+            residualsNorm.at( 6 ) = residuals.at( 6 ) / bz;
             residualsNorm.at( 7 ) = residuals.at( 7 );
             normOfResiduals       = norm( residualsNorm );
-            //printf( "normOfResiduals=%e\n", normOfResiduals );
+            printf( "normOfResiduals=%e\n", normOfResiduals );
             if ( std::isnan( normOfResiduals ) ) {
                 status->letTempReturnResultBe( LatticeFrameConcretePlasticStatus::RR_NotConverged );
                 return;
@@ -1280,7 +780,7 @@ LatticeFrameConcretePlastic::computeFVector( const FloatArrayF<6> &stress, const
         jacobian.at( 2, 4 ) = 0.;
         jacobian.at( 2, 5 ) = 0.;
         jacobian.at( 2, 6 ) = 0.;
-        jacobian.at( 2, 7 ) = this->e * area * fVector.at( 2 );
+        jacobian.at( 2, 7 ) = shearareay * g * fVector.at( 2 );
 
         jacobian.at( 3, 1 ) = 0.;
         jacobian.at( 3, 2 ) = 0.;
@@ -1288,7 +788,7 @@ LatticeFrameConcretePlastic::computeFVector( const FloatArrayF<6> &stress, const
         jacobian.at( 3, 4 ) = 0.;
         jacobian.at( 3, 5 ) = 0.;
         jacobian.at( 3, 6 ) = 0.;
-        jacobian.at( 3, 7 ) = this->e * area * fVector.at( 3 );
+        jacobian.at( 3, 7 ) = shearareaz * g * fVector.at( 3 );
 
         jacobian.at( 4, 1 ) = 0.;
         jacobian.at( 4, 2 ) = 0.;
@@ -1296,23 +796,24 @@ LatticeFrameConcretePlastic::computeFVector( const FloatArrayF<6> &stress, const
         jacobian.at( 4, 4 ) = 1. + ik * g * deltaLambda * dMMatrix.at( 4, 4 );
         jacobian.at( 4, 5 ) = 0.;
         jacobian.at( 4, 6 ) = 0.;
-        jacobian.at( 4, 7 ) = this->e * area * fVector.at( 4 );
+        jacobian.at( 4, 7 ) = ik * this->e * fVector.at(4);
 
         jacobian.at( 5, 1 ) = 0.;
         jacobian.at( 5, 2 ) = 0.;
         jacobian.at( 5, 3 ) = 0.;
         jacobian.at( 5, 4 ) = 0.;
-        jacobian.at( 5, 5 ) = 1. + iy * g * deltaLambda * dMMatrix.at( 5, 5 );
+        jacobian.at( 5, 5 ) = 1. + iy * this->e * deltaLambda * dMMatrix.at( 5, 5 );
         jacobian.at( 5, 6 ) = 0.;
-        jacobian.at( 5, 7 ) = this->e * area * fVector.at( 5 );
+        jacobian.at( 5, 7 ) = iy * this->e * fVector.at(5);
+
 
         jacobian.at( 6, 1 ) = 0.;
         jacobian.at( 6, 2 ) = 0.;
         jacobian.at( 6, 3 ) = 0.;
         jacobian.at( 6, 4 ) = 0.;
         jacobian.at( 6, 5 ) = 0.;
-        jacobian.at( 6, 6 ) = 1. + iz * g * deltaLambda * dMMatrix.at( 6, 6 );
-        jacobian.at( 6, 7 ) = this->e * area * fVector.at( 6 );
+        jacobian.at( 6, 6 ) = 1. + this->e * iz * deltaLambda * dMMatrix.at( 6, 6 );
+        jacobian.at( 6, 7 ) = this->e * iz* fVector.at( 6 );
 
         jacobian.at( 7, 1 ) = fVector.at( 1 );
         jacobian.at( 7, 2 ) = fVector.at( 2 );

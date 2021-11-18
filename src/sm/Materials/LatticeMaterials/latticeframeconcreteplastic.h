@@ -86,7 +86,7 @@ public:
     enum LatticeFrameConcretePlastic_ReturnResult {
         RR_NotConverged,
         RR_Converged,
-        RR_WrongSurface,
+
 
 
     };
@@ -171,7 +171,7 @@ protected:
     ///plastic flag
     double plasticFlag;
 
-    enum LatticeFrameConcretePlastic_ReturnResult { RR_NotConverged, RR_Converged, RR_WrongSurface};
+    enum LatticeFrameConcretePlastic_ReturnResult { RR_NotConverged, RR_Converged, RR_Unknown};
     //   mutable LatticeFrameConcretePlastic_ReturnResult returnResult = RR_NotConverged; /// FIXME: This must be removed. Not thread safe. Shouldn't be stored at all.
    // enum LatticeFrameConcretePlastic_ReturnResult { RR_WrongSurface};
 
@@ -195,7 +195,7 @@ public:
     FloatArrayF< 6 >performPlasticityReturn(GaussPoint *gp, const FloatArrayF< 6 > &strain, TimeStep *tStep) const;
 
     void performRegularReturn(FloatArrayF< 6 > &stress,  const FloatArrayF< 6 > &k, double yieldValue, GaussPoint *gp, TimeStep *tStep) const;
-
+    void giveSwitches(IntArray &answer, int k);
     double computeYieldValue(const FloatArrayF< 6 > &sigma,  const FloatArrayF<6> &k, GaussPoint *gp, TimeStep *tStep) const;
 
     FloatMatrixF< 7, 7 >computeJacobian(const FloatArrayF< 6 > &sigma, const FloatArrayF< 6 > &k, const double deltaLambda, GaussPoint *gp, TimeStep *tStep) const;
@@ -221,7 +221,9 @@ public:
     MaterialStatus *giveStatus(GaussPoint *gp) const override;
 
 protected:
-
+    FloatArrayF<6> checkTransition( const FloatArrayF<6> &sigma, GaussPoint *gp, TimeStep *tStep ) const;
+    FloatArrayF<6> checkStatus( const FloatArrayF<6> &stress, GaussPoint *gp, TimeStep *tStep ) const;
+    FloatArray giveSwitches( FloatArray &k, int m );
 };
 } // end namespace oofem
 
