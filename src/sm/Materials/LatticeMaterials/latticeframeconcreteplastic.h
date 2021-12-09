@@ -171,7 +171,7 @@ protected:
     ///plastic flag
     double plasticFlag;
 
-    enum LatticeFrameConcretePlastic_ReturnResult { RR_NotConverged, RR_Converged, RR_Unknown};
+    enum LatticeFrameConcretePlastic_ReturnResult { RR_NotConverged, RR_Converged, RR_Unknown, RR_known};
     //   mutable LatticeFrameConcretePlastic_ReturnResult returnResult = RR_NotConverged; /// FIXME: This must be removed. Not thread safe. Shouldn't be stored at all.
    // enum LatticeFrameConcretePlastic_ReturnResult { RR_WrongSurface};
 
@@ -182,23 +182,26 @@ protected:
 public:
     LatticeFrameConcretePlastic(int n, Domain *d) : LatticeStructuralMaterial(n, d) { };
 
-    FloatArrayF< 6 >computeFVector(const FloatArrayF< 6 > &sigma, const FloatArrayF< 6 > &k, GaussPoint *gp, TimeStep *tStep) const;
+    FloatArrayF< 6 >computeFVector(const FloatArrayF< 6 > &stress, const FloatArrayF< 6 > &k, GaussPoint *gp, TimeStep *tStep) const;
 
-    FloatMatrixF< 6, 6 >computeDMMatrix(const FloatArrayF< 6 > &sigma,  const FloatArrayF<6> &k, GaussPoint *gp, TimeStep *tStep) const;
+    FloatMatrixF< 6, 6 >computeDMMatrix(const FloatArrayF< 6 > &stress,  const FloatArrayF<6> &k, GaussPoint *gp, TimeStep *tStep) const;
 
     FloatArrayF< 6 >giveThermalDilatationVector(GaussPoint *gp,  TimeStep *tStep) const override;
 
     FloatArrayF< 6 >giveLatticeStrain(GaussPoint *gp, TimeStep *tStep) const;
 
+    int giveIPValue(FloatArray &answer, GaussPoint *gp, InternalStateType type, TimeStep *atTime) override;
     virtual FloatArrayF< 6 >giveStrain(GaussPoint *gp, TimeStep *tStep) const;
 
     FloatArrayF< 6 >performPlasticityReturn(GaussPoint *gp, const FloatArrayF< 6 > &strain, TimeStep *tStep) const;
 
     void performRegularReturn(FloatArrayF< 6 > &stress,  const FloatArrayF< 6 > &k, double yieldValue, GaussPoint *gp, TimeStep *tStep) const;
     void giveSwitches(IntArray &answer, int k);
-    double computeYieldValue(const FloatArrayF< 6 > &sigma,  const FloatArrayF<6> &k, GaussPoint *gp, TimeStep *tStep) const;
+    double computeYieldValue(const FloatArrayF< 6 > &stress,  const FloatArrayF<6> &k, GaussPoint *gp, TimeStep *tStep) const;
 
-    FloatMatrixF< 7, 7 >computeJacobian(const FloatArrayF< 6 > &sigma, const FloatArrayF< 6 > &k, const double deltaLambda, GaussPoint *gp, TimeStep *tStep) const;
+    FloatMatrixF< 7, 7 >computeJacobian(const FloatArrayF< 6 > &stress, const FloatArrayF< 6 > &k, const double deltaLambda, GaussPoint *gp, TimeStep *tStep) const;
+
+    IntArray checkStatus( const FloatArrayF<6> &stress, IntArray &k, GaussPoint *gp, TimeStep *tStep ) const;
 
     FloatArrayF< 6 >giveFrameForces3d(const FloatArrayF< 6 > &strain, GaussPoint *gp, TimeStep *tStep) override;
 
@@ -221,9 +224,9 @@ public:
     MaterialStatus *giveStatus(GaussPoint *gp) const override;
 
 protected:
-    FloatArrayF<6> checkTransition( const FloatArrayF<6> &sigma, GaussPoint *gp, TimeStep *tStep ) const;
-    FloatArrayF<6> checkStatus( const FloatArrayF<6> &stress, GaussPoint *gp, TimeStep *tStep ) const;
-    FloatArray giveSwitches( FloatArray &k, int m );
+    const FloatArray checkStatus( FloatArrayF<6> f, GaussPoint *pPoint, TimeStep *pStep ) const;
+    IntArray checkStatus( const FloatArrayF<6> &stress, IntArray &k ) const;
+    const FloatArrayF<6> checkTransition( const FloatArrayF<6> &stress, GaussPoint *gp, TimeStep *tStep ) const;
 };
 } // end namespace oofem
 
