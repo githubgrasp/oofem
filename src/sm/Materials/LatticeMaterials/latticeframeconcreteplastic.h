@@ -66,7 +66,6 @@
 #define _IFT_LatticeFrameConcretePlastic_plastic "plastic"
 #define _IFT_LatticeFrameConcretePlastic_dapu "dapu"
 
-
 //@}
 
 namespace oofem {
@@ -176,8 +175,6 @@ protected:
 
     ///udap
     double dapu;
-
-
 
 
     enum LatticeFrameConcretePlastic_ReturnResult { RR_NotConverged, RR_Converged, RR_Unknown, RR_known};

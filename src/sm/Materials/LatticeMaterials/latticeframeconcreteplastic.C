@@ -508,7 +508,6 @@ LatticeFrameConcretePlastic::computeFVector( const FloatArrayF<6> &stress, const
 
         /* Get plastic strain vector from status*/
         auto tempPlasticStrain = status->givePlasticLatticeStrain()[{ 0, 1, 2, 3, 4, 5 }];
-        double s = static_cast< LatticeStructuralElement * >( gp->giveElement() )->giveLength();
 
         FloatArrayF<6> tangent = { area * this->e, g * shearareay, g * shearareaz, ik * g, iy * this->e, iz * this->e };
 
@@ -563,8 +562,6 @@ LatticeFrameConcretePlastic::computeFVector( const FloatArrayF<6> &stress, const
                     tempPlasticStrain.at( 5 ) = tempStrain.at( 5 ) - stress.at( 5 ) / ( iy * this->e );
                     tempPlasticStrain.at( 6 ) = tempStrain.at( 6 ) - stress.at( 6 ) / ( iz * this->e );
 
-
-
                     status->letTempPlasticLatticeStrainBe( assemble<6>( tempPlasticStrain, { 0, 1, 2, 3, 4, 5 } ) );
 
                     subIncrementFlag = 0;
@@ -597,13 +594,13 @@ LatticeFrameConcretePlastic::computeFVector( const FloatArrayF<6> &stress, const
         // const double shearareay = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveShearAreaY();
        //  const double shearareaz = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveShearAreaZ();
 
+
         tempPlasticStrain.at( 1 ) = strain.at( 1 ) - stress.at( 1 ) / ( area * this->e );
         tempPlasticStrain.at( 2 ) = strain.at( 2 ) - stress.at( 2 ) / ( g * shearareay );
         tempPlasticStrain.at( 3 ) = strain.at( 3 ) - stress.at( 3 ) / ( g * shearareaz );
         tempPlasticStrain.at( 4 ) = strain.at( 4 ) - stress.at( 4 ) / ( ik * g );
         tempPlasticStrain.at( 5 ) = strain.at( 5 ) - stress.at( 5 ) / ( iy * this->e );
         tempPlasticStrain.at( 6 ) = strain.at( 6 ) - stress.at( 6 ) / ( iz * this->e );
-
 
          status->letTempPlasticLatticeStrainBe(assemble< 6 >(tempPlasticStrain, { 0, 1, 2, 3, 4, 5}) );
          auto answer = assemble< 6 >(stress, { 0, 1, 2, 3, 4, 5});
@@ -852,12 +849,9 @@ LatticeFrameConcretePlastic::computeFVector( const FloatArrayF<6> &stress, const
         auto PlasticStrain = status->givePlasticLatticeStrain()[{ 0, 1, 2, 3, 4, 5 }];
         double le = static_cast< LatticeStructuralElement * >( gp->giveElement() )->giveLength();
         FloatArrayF<6> deltaAlphaPlastic;
-        deltaAlphaPlastic.at(5) = PlasticStrain.at(5)*le ;
-        deltaAlphaPlastic.at(6) = PlasticStrain.at(6)*le ;
-
-
+        deltaAlphaPlastic.at(5) = PlasticStrain.at(5) * le;
+        deltaAlphaPlastic.at(6) = PlasticStrain.at(6) * le;
         double omega ;
-
      //   if ( PlasticStrain.at(1)*le >= this->us ||  PlasticStrain.at(2)*le >= this->us || PlasticStrain.at(3)*le >= this->us || PlasticStrain.at(4)*le >= this->us || PlasticStrain.at(5)*le >= this->us || PlasticStrain.at(6)*le >= this->us  ) {
           if ( deltaAlphaPlastic.at(5) >= this->dapu || deltaAlphaPlastic.at(6) >= this->dapu){
             omega = 1;
