@@ -446,6 +446,7 @@ LatticeFrame3d::initializeFrom(InputRecord &ir)
 
     this->s = 0.;
     IR_GIVE_OPTIONAL_FIELD(ir, s, _IFT_LatticeFrame3d_s);
+
 }
 
 
@@ -466,8 +467,6 @@ LatticeFrame3d::computeLength()
 
     return length;
 }
-
-
 
 void
 LatticeFrame3d::computeLumpedMassMatrix(FloatMatrix &answer, TimeStep *tStep)

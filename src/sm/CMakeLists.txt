@@ -293,6 +293,7 @@ set (sm_material
     Materials/LatticeMaterials/latticeplasticitydamageviscoelastic.C
     Materials/LatticeMaterials/latticeframeelastic.C
     Materials/LatticeMaterials/latticeframesteelplastic.C
+    Materials/LatticeMaterials/latticeframeconcreteplastic.C
 )
 
 if (USE_MFRONT)
