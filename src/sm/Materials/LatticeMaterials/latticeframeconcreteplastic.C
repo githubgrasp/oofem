@@ -120,8 +120,8 @@ void LatticeFrameConcretePlastic::initializeFrom( InputRecord &ir )
     this->plasticFlag = 1;
     IR_GIVE_OPTIONAL_FIELD( ir, plasticFlag, _IFT_LatticeFrameConcretePlastic_plastic ); // Macro
 
-    // deltaAlphaPlasticUltimate;
-    IR_GIVE_OPTIONAL_FIELD(ir, this->dapu, _IFT_LatticeFrameConcretePlastic_dapu);
+    // deltaPlasticStrainUltimate;
+    IR_GIVE_OPTIONAL_FIELD(ir, this->wu, _IFT_LatticeFrameConcretePlastic_wu);
 
 
 }
@@ -848,12 +848,15 @@ LatticeFrameConcretePlastic::computeFVector( const FloatArrayF<6> &stress, const
         auto stress = this->performPlasticityReturn( gp, Strain, tStep );
         auto PlasticStrain = status->givePlasticLatticeStrain()[{ 0, 1, 2, 3, 4, 5 }];
         double le = static_cast< LatticeStructuralElement * >( gp->giveElement() )->giveLength();
-        FloatArrayF<6> deltaAlphaPlastic;
-        deltaAlphaPlastic.at(5) = PlasticStrain.at(5) * le;
-        deltaAlphaPlastic.at(6) = PlasticStrain.at(6) * le;
-        double omega ;
+        double equivalentPlasticStrain=sqrt(pow (PlasticStrain.at(1), 2. )+ pow (PlasticStrain.at(2), 2. )+ pow (PlasticStrain.at(3), 2. )+ pow (PlasticStrain.at(4), 2. )+ pow (PlasticStrain.at(5), 2. )+ pow (PlasticStrain.at(6), 2. ));
+        double KappaD=equivalentPlasticStrain;
+        double omega;
+       // FloatArrayF<6> deltaAlphaPlastic;
+        //deltaAlphaPlastic.at(5) = PlasticStrain.at(5) * le;
+        //deltaAlphaPlastic.at(6) = PlasticStrain.at(6) * le;
+        //double omega ;
      //   if ( PlasticStrain.at(1)*le >= this->us ||  PlasticStrain.at(2)*le >= this->us || PlasticStrain.at(3)*le >= this->us || PlasticStrain.at(4)*le >= this->us || PlasticStrain.at(5)*le >= this->us || PlasticStrain.at(6)*le >= this->us  ) {
-          if ( deltaAlphaPlastic.at(5) >= this->dapu || deltaAlphaPlastic.at(6) >= this->dapu){
+          if (KappaD*le >= this->wu) {
             omega = 1;
         } else {omega = 0;}
 

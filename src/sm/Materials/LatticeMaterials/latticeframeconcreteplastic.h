@@ -64,7 +64,7 @@
 #define _IFT_LatticeFrameConcretePlastic_iter "iter"
 #define _IFT_LatticeFrameConcretePlastic_sub "sub"
 #define _IFT_LatticeFrameConcretePlastic_plastic "plastic"
-#define _IFT_LatticeFrameConcretePlastic_dapu "dapu"
+#define _IFT_LatticeFrameConcretePlastic_wu "wu"
 
 //@}
 
@@ -174,7 +174,7 @@ protected:
     double plasticFlag;
 
     ///udap
-    double dapu;
+    double wu;
 
 
     enum LatticeFrameConcretePlastic_ReturnResult { RR_NotConverged, RR_Converged, RR_Unknown, RR_known};
