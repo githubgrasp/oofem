@@ -8,7 +8,8 @@
  *            #####    #####   ##      ######  ##     ##
  *
  *
- *             OOFEM : Object Oriented Finite Element Code
+ *             OOFEM : Obje
+ *            ct Oriented Finite Element Code
  *
  *               Copyright (C) 1993 - 2019   Borek Patzak
  *
@@ -846,25 +847,31 @@ LatticeFrameConcretePlastic::computeFVector( const FloatArrayF<6> &stress, const
             Strain -= FloatArrayF<6>( thermalStrain );
         }
         auto stress = this->performPlasticityReturn( gp, Strain, tStep );
-        auto PlasticStrain = status->givePlasticLatticeStrain()[{ 0, 1, 2, 3, 4, 5 }];
+        auto PlasticStrain = status->giveTempPlasticLatticeStrain()[{ 0, 1, 2, 3, 4, 5 }];
         double le = static_cast< LatticeStructuralElement * >( gp->giveElement() )->giveLength();
-        double equivalentPlasticStrain=sqrt(pow (PlasticStrain.at(1), 2. )+ pow (PlasticStrain.at(2), 2. )+ pow (PlasticStrain.at(3), 2. )+ pow (PlasticStrain.at(4), 2. )+ pow (PlasticStrain.at(5), 2. )+ pow (PlasticStrain.at(6), 2. ));
-        double KappaD=equivalentPlasticStrain;
+        double equivalentStrain=sqrt(pow (PlasticStrain.at(1), 2. )+ pow (PlasticStrain.at(2), 2. )+ pow (PlasticStrain.at(3), 2. )+ pow (PlasticStrain.at(4), 2. )+ pow (PlasticStrain.at(5), 2. )+ pow (PlasticStrain.at(6), 2. ));
+        double kappaD=0;
+        if (equivalentStrain > status->giveKappaD())
+        { kappaD=equivalentStrain;}
+        else {kappaD=status->giveKappaD();}
+
         double omega;
        // FloatArrayF<6> deltaAlphaPlastic;
         //deltaAlphaPlastic.at(5) = PlasticStrain.at(5) * le;
         //deltaAlphaPlastic.at(6) = PlasticStrain.at(6) * le;
         //double omega ;
      //   if ( PlasticStrain.at(1)*le >= this->us ||  PlasticStrain.at(2)*le >= this->us || PlasticStrain.at(3)*le >= this->us || PlasticStrain.at(4)*le >= this->us || PlasticStrain.at(5)*le >= this->us || PlasticStrain.at(6)*le >= this->us  ) {
-          if (KappaD*le >= this->wu) {
-            omega = 1;
-        } else {omega = 0;}
+          if (kappaD*le >= this->wu) {
+            omega = 1.0;
+        } else {omega = status->giveDamage();}
 
         stress *= ( 1. - omega );
 
         status->letTempLatticeStrainBe( originalStrain );
         status->letTempLatticeStrainBe( Strain );
         status->letTempLatticeStressBe( stress );
+        status->setKappaD(kappaD);
+        status->setDamage(omega);
 
         return stress;
     }
@@ -900,15 +907,67 @@ LatticeFrameConcretePlastic::computeFVector( const FloatArrayF<6> &stress, const
         LatticeMaterialStatus( g )
     {
     }
-
     void
-        LatticeFrameConcretePlasticStatus::printOutputAt( FILE * file, TimeStep * tStep ) const
+    LatticeFrameConcretePlasticStatus::initTempStatus()
+    {
+        LatticeMaterialStatus::initTempStatus();
+        this->tempKappaD = this->kappaD;
+        this->tempDamage = this->damage;
+    }
+    void
+    LatticeFrameConcretePlasticStatus::printOutputAt( FILE * file, TimeStep * tStep ) const
     {
         LatticeMaterialStatus::printOutputAt( file, tStep );
-
+        
         fprintf( file, "plasticStrains " );
         for ( double s : this->plasticLatticeStrain ) {
             fprintf( file, "% .8e ", s );
         }
     }
-}
+    void
+    LatticeFrameConcretePlasticStatus::updateYourself(TimeStep *atTime)
+    //
+    // updates variables (nonTemp variables describing situation at previous equilibrium state)
+    // after a new equilibrium state has been reached
+    // temporary variables are having values corresponding to newly reached equilibrium.
+    //
+    {
+        LatticeMaterialStatus::updateYourself(atTime);
+        this->kappaD = this->tempKappaD;
+        this->damage = this->tempDamage;
+    }
+    void
+    LatticeFrameConcretePlasticStatus::saveContext(DataStream &stream, ContextMode mode)
+    //
+    // saves full information stored in this Status
+    // no temp variables stored
+    //
+    {
+        LatticeMaterialStatus::saveContext(stream, mode);
+        
+        if ( !stream.write(& kappaD, 1) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(& damage, 1) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+    }
+    
+    void
+    LatticeFrameConcretePlasticStatus::restoreContext(DataStream &stream, ContextMode mode)
+    //
+    // restores full information stored in stream to this Status
+    //
+    {
+        LatticeMaterialStatus::restoreContext(stream, mode);
+        
+        if ( !stream.read(& kappaD, 1) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(& damage, 1) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+    }
+
+
+    }

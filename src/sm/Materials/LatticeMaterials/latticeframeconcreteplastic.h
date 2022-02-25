@@ -84,15 +84,15 @@ public:
         LatticeFrameConcretePlastic_Plastic,
     };
 
-
     enum LatticeFrameConcretePlastic_ReturnResult {
         RR_NotConverged,
         RR_Converged,
-
-
-
     };
 
+    double kappaD;
+    double tempKappaD;
+    double  damage;
+    double tempDamage;
 protected:
 
     int tempReturnResult = LatticeFrameConcretePlasticStatus::RR_NotConverged;
@@ -111,6 +111,40 @@ public:
     void letTempReturnResultBe(const int result) { tempReturnResult = result; }
 
     int giveTempReturnResult() const { return tempReturnResult; }
+
+    double giveKappaD() const { return kappaD; }
+
+    double giveTempKappaD() const { return tempKappaD; }
+
+   // void   setTempKappaD(double newKappa) { tempKappaD = newKappa; }
+
+    double giveDamage() const { return damage; }
+
+    double giveTempDamage() const { return tempDamage; }
+
+    void   setTempDamage(double newDamage) { tempDamage = newDamage; }
+
+
+
+
+
+
+    //double giveKappaD() const { return kappaD; }
+
+   // double giveDamage() const { return damage; }
+
+    void   setKappaD(double newKappa) { tempKappaD = newKappa; }
+
+    void   setDamage(double newDamage) { tempDamage = newDamage; }
+
+    void initTempStatus() override;
+
+    void updateYourself(TimeStep *) override;
+
+    void saveContext(DataStream &stream, ContextMode mode) override;
+
+    void restoreContext(DataStream &stream, ContextMode mode) override;
+
 };
 
 
