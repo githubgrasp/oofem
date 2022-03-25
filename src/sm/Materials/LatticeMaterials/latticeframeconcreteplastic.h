@@ -65,6 +65,9 @@
 #define _IFT_LatticeFrameConcretePlastic_sub "sub"
 #define _IFT_LatticeFrameConcretePlastic_plastic "plastic"
 #define _IFT_LatticeFrameConcretePlastic_wu "wu"
+#define _IFT_LatticeFrameConcretePlastic_wfone "wfone"
+#define _IFT_LatticeFrameConcretePlastic_wftwo "wftwo"
+#define _IFT_LatticeFrameConcretePlastic_qzero "qzero"
 
 //@}
 
@@ -83,20 +86,21 @@ public:
         LatticeFrameConcretePlastic_Unloading,
         LatticeFrameConcretePlastic_Plastic,
     };
-
     enum LatticeFrameConcretePlastic_ReturnResult {
         RR_NotConverged,
         RR_Converged,
     };
-
     double kappaD;
     double tempKappaD;
-    double  damage;
+    double kappaDOne;
+    double tempKappaDOne;
+    double damage;
     double tempDamage;
+    double damageOne;
+    double tempDamageOne;
 protected:
 
     int tempReturnResult = LatticeFrameConcretePlasticStatus::RR_NotConverged;
-
 
 public:
 
@@ -112,30 +116,29 @@ public:
 
     int giveTempReturnResult() const { return tempReturnResult; }
 
-    double giveKappaD() const { return kappaD; }
+    double giveKappaD() const { return tempKappaD; }
 
     double giveTempKappaD() const { return tempKappaD; }
 
-   // void   setTempKappaD(double newKappa) { tempKappaD = newKappa; }
+    double giveKappaDOne() const { return tempKappaDOne; }
+
+    double giveTempKappaDOne() const { return tempKappaDOne; }
+
+    void   setKappaD(double newKappa) { tempKappaD = newKappa; }
+
+    void   setKappaDOne(double newKappaOne) { tempKappaDOne = newKappaOne; }
 
     double giveDamage() const { return damage; }
 
     double giveTempDamage() const { return tempDamage; }
 
-    void   setTempDamage(double newDamage) { tempDamage = newDamage; }
-
-
-
-
-
-
-    //double giveKappaD() const { return kappaD; }
-
-   // double giveDamage() const { return damage; }
-
-    void   setKappaD(double newKappa) { tempKappaD = newKappa; }
-
     void   setDamage(double newDamage) { tempDamage = newDamage; }
+
+    double giveDamageOne() const { return damageOne; }
+
+    double giveTempDamageOne() const { return tempDamageOne; }
+
+    void   setDamageOne(double newDamageOne) { tempDamageOne = newDamageOne; }
 
     void initTempStatus() override;
 
@@ -155,6 +158,8 @@ class LatticeFrameConcretePlastic : public LatticeStructuralMaterial
 
 {
 protected:
+
+
 
     ///Normal modulus
     double e;
@@ -207,8 +212,19 @@ protected:
     ///plastic flag
     double plasticFlag;
 
-    ///udap
+    ///wu
     double wu;
+
+
+    ///wfone
+    double wfone;
+
+    ///wfone
+    double wftwo;
+
+    ///qzero
+    double qzero;
+
 
 
     enum LatticeFrameConcretePlastic_ReturnResult { RR_NotConverged, RR_Converged, RR_Unknown, RR_known};
@@ -235,8 +251,10 @@ public:
 
     FloatArrayF< 6 >performPlasticityReturn(GaussPoint *gp, const FloatArrayF< 6 > &strain, TimeStep *tStep) const;
 
-    void performRegularReturn(FloatArrayF< 6 > &stress,  const FloatArrayF< 6 > &k, double yieldValue, GaussPoint *gp, TimeStep *tStep) const;
+    void performRegularReturn(FloatArrayF< 6 > &stress, LatticeFrameConcretePlastic_ReturnResult,  const FloatArrayF< 6 > &k, double yieldValue, GaussPoint *gp, TimeStep *tStep) const;
+
     void giveSwitches(IntArray &answer, int k);
+
     double computeYieldValue(const FloatArrayF< 6 > &stress,  const FloatArrayF<6> &k, GaussPoint *gp, TimeStep *tStep) const;
 
     FloatMatrixF< 7, 7 >computeJacobian(const FloatArrayF< 6 > &stress, const FloatArrayF< 6 > &k, const double deltaLambda, GaussPoint *gp, TimeStep *tStep) const;

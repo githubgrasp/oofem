@@ -8,8 +8,7 @@
  *            #####    #####   ##      ######  ##     ##
  *
  *
- *             OOFEM : Obje
- *            ct Oriented Finite Element Code
+ *             OOFEM : Object Oriented Finite Element Code
  *
  *               Copyright (C) 1993 - 2019   Borek Patzak
  *
@@ -121,12 +120,23 @@ void LatticeFrameConcretePlastic::initializeFrom( InputRecord &ir )
     this->plasticFlag = 1;
     IR_GIVE_OPTIONAL_FIELD( ir, plasticFlag, _IFT_LatticeFrameConcretePlastic_plastic ); // Macro
 
-    // deltaPlasticStrainUltimate;
+    // deltaAlphaPlasticUltimate;
     IR_GIVE_OPTIONAL_FIELD(ir, this->wu, _IFT_LatticeFrameConcretePlastic_wu);
 
+    IR_GIVE_FIELD(ir, wfone, _IFT_LatticeFrameConcretePlastic_wfone);
+
+    IR_GIVE_FIELD(ir, wftwo, _IFT_LatticeFrameConcretePlastic_wftwo);
+
+    IR_GIVE_OPTIONAL_FIELD(ir, this->qzero, _IFT_LatticeFrameConcretePlastic_qzero);
+
+    // deltaAlphaPlasticUltimate;
+ //   IR_GIVE_OPTIONAL_FIELD(ir, this->wuone, _IFT_LatticeFrameConcretePlastic_wuone);
+
+ //   IR_GIVE_FIELD(ir, wfthree, _IFT_LatticeFrameConcretePlastic_wfthree);
+
+ //   IR_GIVE_FIELD(ir, wffour, _IFT_LatticeFrameConcretePlastic_wffour);
 
 }
-
 MaterialStatus *
 LatticeFrameConcretePlastic::CreateStatus( GaussPoint *gp ) const
 {
@@ -536,7 +546,7 @@ LatticeFrameConcretePlastic::computeFVector( const FloatArrayF<6> &stress, const
             status->letTempReturnResultBe( LatticeFrameConcretePlastic::RR_NotConverged );
             while ( status->giveTempReturnResult() == RR_NotConverged || subIncrementFlag == 1 ) {
                 stress = mult( tangent, tempStrain - tempPlasticStrain );
-                performRegularReturn( stress, k, yieldValue, gp, tStep );
+                performRegularReturn( stress, returnResult, k, yieldValue, gp, tStep );
                 //if ( status->giveTempReturnResult() == RR_WrongSurface ) {
 		//  int RestartWithNewKValue;
 		//}
@@ -557,7 +567,7 @@ LatticeFrameConcretePlastic::computeFVector( const FloatArrayF<6> &stress, const
                     tempStrain = convergedStrain + deltaStrain;
                 } else if ( status->giveTempReturnResult() == RR_Converged && subIncrementFlag == 1 ) {
                     tempPlasticStrain.at( 1 ) = tempStrain.at( 1 ) - stress.at( 1 ) / ( area * this->e );
-                    tempPlasticStrain.at( 2 ) = tempStrain.at( 2 ) - stress.at( 2 ) / ( g * shearareay );
+                    tempPlasticStrain.at( 2 ) = tempStrain.at( 2 ) - stress.at( 2 ) / ( g * shearareay);
                     tempPlasticStrain.at( 3 ) = tempStrain.at( 3 ) - stress.at( 3 ) / ( g * shearareaz );
                     tempPlasticStrain.at( 4 ) = tempStrain.at( 4 ) - stress.at( 4 ) / ( ik * g );
                     tempPlasticStrain.at( 5 ) = tempStrain.at( 5 ) - stress.at( 5 ) / ( iy * this->e );
@@ -618,7 +628,7 @@ LatticeFrameConcretePlastic::computeFVector( const FloatArrayF<6> &stress, const
     }
 //
     void
-    LatticeFrameConcretePlastic::performRegularReturn( FloatArrayF<6> & stress, const FloatArrayF<6> &k,
+    LatticeFrameConcretePlastic::performRegularReturn( FloatArrayF<6> & stress, LatticeFrameConcretePlastic_ReturnResult, const FloatArrayF<6> &k,
         double yieldValue,
         GaussPoint *gp,
         TimeStep *tStep ) const
@@ -744,9 +754,9 @@ LatticeFrameConcretePlastic::computeFVector( const FloatArrayF<6> &stress, const
 
 
 
-                residuals.at( 1 ) = tempStress.at( 1 ) - trialStress.at( 1 ) + area * this->e * deltaLambda * FVector.at( 1 );
+                residuals.at( 1 ) = tempStress.at( 1 ) - trialStress.at( 1 ) + area * this->e* deltaLambda * FVector.at( 1 );
                 residuals.at( 2 ) = tempStress.at( 2 ) - trialStress.at( 2 ) + shearareay * g * deltaLambda * FVector.at( 2 );
-                residuals.at( 3 ) = tempStress.at( 3 ) - trialStress.at( 3 ) + shearareaz * g * deltaLambda * FVector.at( 3 );
+                residuals.at( 3 ) = tempStress.at( 3 ) - trialStress.at( 3 ) + shearareaz * g  * deltaLambda * FVector.at( 3 );
                 residuals.at( 4 ) = tempStress.at( 4 ) - trialStress.at( 4 ) + ik * g * deltaLambda * FVector.at( 4 );
                 residuals.at( 5 ) = tempStress.at( 5 ) - trialStress.at( 5 ) + iy * this->e * deltaLambda * FVector.at( 5 );
                 residuals.at( 6 ) = tempStress.at( 6 ) - trialStress.at( 6 ) + iz * this->e * deltaLambda * FVector.at( 6 );
@@ -773,11 +783,9 @@ LatticeFrameConcretePlastic::computeFVector( const FloatArrayF<6> &stress, const
         const double iy         = ( static_cast<LatticeStructuralElement *>( gp->giveElement() ) )->giveIy();
         const double iz         = ( static_cast<LatticeStructuralElement *>( gp->giveElement() ) )->giveIz();
 
-
-
         /* Compute matrix*/
         FloatMatrixF<7, 7> jacobian;
-        jacobian.at( 1, 1 ) = 1. + this->e * area * deltaLambda * dMMatrix.at( 1, 1 );
+        jacobian.at( 1, 1 ) = 1. + this->e * area* deltaLambda * dMMatrix.at( 1, 1 );
         jacobian.at( 1, 2 ) = 0.;
         jacobian.at( 1, 3 ) = 0.;
         jacobian.at( 1, 4 ) = 0.;
@@ -836,10 +844,10 @@ LatticeFrameConcretePlastic::computeFVector( const FloatArrayF<6> &stress, const
 
         return jacobian;
     }
-
     FloatArrayF<6>
     LatticeFrameConcretePlastic::giveFrameForces3d( const FloatArrayF<6> &originalStrain, GaussPoint *gp, TimeStep *tStep )
     {
+
         auto status        = static_cast<LatticeFrameConcretePlasticStatus *>( this->giveStatus( gp ) );
         auto Strain = originalStrain;
         auto thermalStrain = this->computeStressIndependentStrainVector( gp, tStep, VM_Total );
@@ -849,23 +857,32 @@ LatticeFrameConcretePlastic::computeFVector( const FloatArrayF<6> &stress, const
         auto stress = this->performPlasticityReturn( gp, Strain, tStep );
         auto PlasticStrain = status->giveTempPlasticLatticeStrain()[{ 0, 1, 2, 3, 4, 5 }];
         double le = static_cast< LatticeStructuralElement * >( gp->giveElement() )->giveLength();
-        double equivalentStrain=sqrt(pow (PlasticStrain.at(1), 2. )+ pow (PlasticStrain.at(2), 2. )+ pow (PlasticStrain.at(3), 2. )+ pow (PlasticStrain.at(4), 2. )+ pow (PlasticStrain.at(5), 2. )+ pow (PlasticStrain.at(6), 2. ));
-        double kappaD=0;
-        if (equivalentStrain > status->giveKappaD())
-        { kappaD=equivalentStrain;}
-        else {kappaD=status->giveKappaD();}
+        double equivalentStrain=sqrt(pow (PlasticStrain.at(1), 2 )+ pow (PlasticStrain.at(2), 2 )+ pow (PlasticStrain.at(3), 2 )+pow (PlasticStrain.at(4), 2 )+ pow (PlasticStrain.at(5), 2. )+ pow (PlasticStrain.at(6), 2 ));
+        double kappaD = 0.0;
 
-        double omega;
-       // FloatArrayF<6> deltaAlphaPlastic;
-        //deltaAlphaPlastic.at(5) = PlasticStrain.at(5) * le;
-        //deltaAlphaPlastic.at(6) = PlasticStrain.at(6) * le;
-        //double omega ;
-     //   if ( PlasticStrain.at(1)*le >= this->us ||  PlasticStrain.at(2)*le >= this->us || PlasticStrain.at(3)*le >= this->us || PlasticStrain.at(4)*le >= this->us || PlasticStrain.at(5)*le >= this->us || PlasticStrain.at(6)*le >= this->us  ) {
-          if (kappaD*le >= this->wu) {
-            omega = 1.0;
-        } else {omega = status->giveDamage();}
+        if (equivalentStrain-wu > status->giveKappaD()){
+            kappaD = equivalentStrain-wu;
+        } else {kappaD = status->giveKappaD();}
 
-        stress *= ( 1. - omega );
+        double omega = 0.0;
+        if ( kappaD*le  < wu  ) {
+            omega = 0.;
+        }
+         else if ( kappaD*le > wu && kappaD*le < wfone  ) {
+            omega = 1.-(1.-((1.-qzero)*(kappaD*le)/(wfone)));
+         }
+        else  {
+            omega = 1.-(qzero-(qzero*(kappaD*le-wfone)/(wftwo-wfone)));
+         }
+
+        if ( omega > 1.0 ) {
+            omega = 1.;}
+        else if ( omega < 0.0 ) {
+            omega = 0.;
+        }
+
+        stress*= (1-omega);
+
 
         status->letTempLatticeStrainBe( originalStrain );
         status->letTempLatticeStrainBe( Strain );
@@ -913,16 +930,8 @@ LatticeFrameConcretePlastic::computeFVector( const FloatArrayF<6> &stress, const
         LatticeMaterialStatus::initTempStatus();
         this->tempKappaD = this->kappaD;
         this->tempDamage = this->damage;
-    }
-    void
-    LatticeFrameConcretePlasticStatus::printOutputAt( FILE * file, TimeStep * tStep ) const
-    {
-        LatticeMaterialStatus::printOutputAt( file, tStep );
-        
-        fprintf( file, "plasticStrains " );
-        for ( double s : this->plasticLatticeStrain ) {
-            fprintf( file, "% .8e ", s );
-        }
+        this->tempKappaDOne = this->kappaDOne;
+        this->tempDamageOne = this->damageOne;
     }
     void
     LatticeFrameConcretePlasticStatus::updateYourself(TimeStep *atTime)
@@ -935,6 +944,18 @@ LatticeFrameConcretePlastic::computeFVector( const FloatArrayF<6> &stress, const
         LatticeMaterialStatus::updateYourself(atTime);
         this->kappaD = this->tempKappaD;
         this->damage = this->tempDamage;
+        this->kappaDOne = this->tempKappaDOne;
+        this->damageOne = this->tempDamageOne;
+    }
+    void
+        LatticeFrameConcretePlasticStatus::printOutputAt( FILE * file, TimeStep * tStep ) const
+    {
+        LatticeMaterialStatus::printOutputAt( file, tStep );
+
+        fprintf( file, "plasticStrains " );
+        for ( double s : this->plasticLatticeStrain ) {
+            fprintf( file, "% .8e ", s );
+        }
     }
     void
     LatticeFrameConcretePlasticStatus::saveContext(DataStream &stream, ContextMode mode)
@@ -944,15 +965,26 @@ LatticeFrameConcretePlastic::computeFVector( const FloatArrayF<6> &stress, const
     //
     {
         LatticeMaterialStatus::saveContext(stream, mode);
-        
+
+
+
         if ( !stream.write(& kappaD, 1) ) {
             THROW_CIOERR(CIO_IOERR);
         }
+
         if ( !stream.write(& damage, 1) ) {
             THROW_CIOERR(CIO_IOERR);
         }
+        if ( !stream.write(& kappaDOne, 1) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+
+        if ( !stream.write(& damageOne, 1) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
     }
-    
+
+
     void
     LatticeFrameConcretePlasticStatus::restoreContext(DataStream &stream, ContextMode mode)
     //
@@ -960,14 +992,20 @@ LatticeFrameConcretePlastic::computeFVector( const FloatArrayF<6> &stress, const
     //
     {
         LatticeMaterialStatus::restoreContext(stream, mode);
-        
+
         if ( !stream.read(& kappaD, 1) ) {
             THROW_CIOERR(CIO_IOERR);
         }
+
         if ( !stream.read(& damage, 1) ) {
             THROW_CIOERR(CIO_IOERR);
         }
-    }
+        if ( !stream.read(& kappaDOne, 1) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
 
-
+        if ( !stream.read(& damageOne, 1) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
     }
+}
