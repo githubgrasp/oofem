@@ -860,20 +860,24 @@ LatticeFrameConcretePlastic::computeFVector( const FloatArrayF<6> &stress, const
         double equivalentStrain=sqrt(pow (PlasticStrain.at(1), 2 )+ pow (PlasticStrain.at(2), 2 )+ pow (PlasticStrain.at(3), 2 )+pow (PlasticStrain.at(4), 2 )+ pow (PlasticStrain.at(5), 2. )+ pow (PlasticStrain.at(6), 2 ));
         double kappaD = 0.0;
 
-        if (equivalentStrain-wu > status->giveKappaD()){
-            kappaD = equivalentStrain-wu;
+        if (equivalentStrain-wu/le > status->giveKappaD()){
+            kappaD = equivalentStrain-wu/le;
         } else {kappaD = status->giveKappaD();}
 
         double omega = 0.0;
         if ( kappaD*le  < wu  ) {
             omega = 0.;
         }
-         else if ( kappaD*le > wu && kappaD*le < wfone  ) {
-            omega = 1.-(1.-((1.-qzero)*(kappaD*le)/(wfone)));
-         }
-        else  {
-            omega = 1.-(qzero-(qzero*(kappaD*le-wfone)/(wftwo-wfone)));
-         }
+
+        else if ( kappaD*le > wu && kappaD*le < wfone  )
+       {
+            omega =1-qzero-(1-qzero)*(wfone-kappaD*le)/(wfone-wu);
+        }
+        else
+        {
+          omega =1-qzero*(wftwo-kappaD*le)/(wftwo-wfone);
+        }
+
 
         if ( omega > 1.0 ) {
             omega = 1.;}
