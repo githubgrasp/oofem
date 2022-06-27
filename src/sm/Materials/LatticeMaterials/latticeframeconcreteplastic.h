@@ -10,7 +10,7 @@
  *
  *             OOFEM : Object Oriented Finite Element Code
  *
- *               Copyright (C) 1993 - 2019   Borek Patzak
+ *               Copyright (C) 1993 - 2022   Borek Patzak
  *
  *
  *
@@ -42,7 +42,7 @@
 #include "strainvector.h"
 #include "stressvector.h"
 #include "latticematstatus.h"
-///@name Input fields for LatticeFrameConcrePlastic
+///@name Input fields for LatticeFrameConcretePlastic
 //@{
 #define _IFT_LatticeFrameConcretePlastic_Name "LatticeFrameConcretePlastic"
 #define _IFT_LatticeFrameConcretePlastic_talpha "talpha"
@@ -68,7 +68,6 @@
 #define _IFT_LatticeFrameConcretePlastic_wfone "wfone"
 #define _IFT_LatticeFrameConcretePlastic_wftwo "wftwo"
 #define _IFT_LatticeFrameConcretePlastic_qzero "qzero"
-
 //@}
 
 namespace oofem {
@@ -90,15 +89,14 @@ public:
         RR_NotConverged,
         RR_Converged,
     };
-    double kappaD;
-    double tempKappaD;
-    double kappaDOne;
-    double tempKappaDOne;
-    double damage;
-    double tempDamage;
-    double damageOne;
-    double tempDamageOne;
+
 protected:
+
+    double kappaD = 0.;
+    double tempKappaD = 0.;
+    double damage = 0.;
+    double tempDamage = 0.;
+
 
     int tempReturnResult = LatticeFrameConcretePlasticStatus::RR_NotConverged;
 
@@ -116,29 +114,17 @@ public:
 
     int giveTempReturnResult() const { return tempReturnResult; }
 
-    double giveKappaD() const { return tempKappaD; }
+    double giveKappaD() const { return this->kappaD; }
 
-    double giveTempKappaD() const { return tempKappaD; }
+    double giveTempKappaD() const { return this->tempKappaD; }
 
-    double giveKappaDOne() const { return tempKappaDOne; }
+    void   setTempKappaD(double newKappa) { this->tempKappaD = newKappa; }
 
-    double giveTempKappaDOne() const { return tempKappaDOne; }
+    double giveDamage() const { return this->damage; }
 
-    void   setKappaD(double newKappa) { tempKappaD = newKappa; }
+    double giveTempDamage() const { return this->tempDamage; }
 
-    void   setKappaDOne(double newKappaOne) { tempKappaDOne = newKappaOne; }
-
-    double giveDamage() const { return damage; }
-
-    double giveTempDamage() const { return tempDamage; }
-
-    void   setDamage(double newDamage) { tempDamage = newDamage; }
-
-    double giveDamageOne() const { return damageOne; }
-
-    double giveTempDamageOne() const { return tempDamageOne; }
-
-    void   setDamageOne(double newDamageOne) { tempDamageOne = newDamageOne; }
+    void   setTempDamage(double newDamage) { this->tempDamage = newDamage; }
 
     void initTempStatus() override;
 
@@ -147,12 +133,11 @@ public:
     void saveContext(DataStream &stream, ContextMode mode) override;
 
     void restoreContext(DataStream &stream, ContextMode mode) override;
-
 };
 
 
 /**
- * This class implements a local random linear elastic model for lattice elements.
+ * This class implements a concrete plasticity model for concrete for frame elements.
  */
 class LatticeFrameConcretePlastic : public LatticeStructuralMaterial
 
@@ -182,14 +167,13 @@ protected:
 
     ///maximum  bending moment about x-axis mz0
     double mz0;
-    
+
     ///maximum axial force in x-axis x-axis nx01
     double nx01;
 
     double vy01;
 
     double vz01;
-
 
     ///maximum  bending moment about x-axis mx01
     double mx01;
@@ -215,7 +199,6 @@ protected:
     ///wu
     double wu;
 
-
     ///wfone
     double wfone;
 
@@ -226,21 +209,16 @@ protected:
     double qzero;
 
 
-
-    enum LatticeFrameConcretePlastic_ReturnResult { RR_NotConverged, RR_Converged, RR_Unknown, RR_known};
-    //   mutable LatticeFrameConcretePlastic_ReturnResult returnResult = RR_NotConverged; /// FIXME: This must be removed. Not thread safe. Shouldn't be stored at all.
-   // enum LatticeFrameConcretePlastic_ReturnResult { RR_WrongSurface};
+    enum LatticeFrameConcretePlastic_ReturnResult { RR_NotConverged, RR_Converged, RR_Unknown, RR_known };
 
     double initialYieldStress = 0.;
-
-    //
 
 public:
     LatticeFrameConcretePlastic(int n, Domain *d) : LatticeStructuralMaterial(n, d) { };
 
     FloatArrayF< 6 >computeFVector(const FloatArrayF< 6 > &stress, const FloatArrayF< 6 > &k, GaussPoint *gp, TimeStep *tStep) const;
 
-    FloatMatrixF< 6, 6 >computeDMMatrix(const FloatArrayF< 6 > &stress,  const FloatArrayF<6> &k, GaussPoint *gp, TimeStep *tStep) const;
+    FloatMatrixF< 6, 6 >computeDMMatrix(const FloatArrayF< 6 > &stress,  const FloatArrayF< 6 > &k, GaussPoint *gp, TimeStep *tStep) const;
 
     FloatArrayF< 6 >giveThermalDilatationVector(GaussPoint *gp,  TimeStep *tStep) const override;
 
@@ -255,11 +233,11 @@ public:
 
     void giveSwitches(IntArray &answer, int k);
 
-    double computeYieldValue(const FloatArrayF< 6 > &stress,  const FloatArrayF<6> &k, GaussPoint *gp, TimeStep *tStep) const;
+    double computeYieldValue(const FloatArrayF< 6 > &stress,  const FloatArrayF< 6 > &k, GaussPoint *gp, TimeStep *tStep) const;
 
     FloatMatrixF< 7, 7 >computeJacobian(const FloatArrayF< 6 > &stress, const FloatArrayF< 6 > &k, const double deltaLambda, GaussPoint *gp, TimeStep *tStep) const;
 
-    IntArray checkStatus( const FloatArrayF<6> &stress, IntArray &k, GaussPoint *gp, TimeStep *tStep ) const;
+    IntArray checkStatus(const FloatArrayF< 6 > &stress, IntArray &k, GaussPoint *gp, TimeStep *tStep) const;
 
     FloatArrayF< 6 >giveFrameForces3d(const FloatArrayF< 6 > &strain, GaussPoint *gp, TimeStep *tStep) override;
 
@@ -282,9 +260,9 @@ public:
     MaterialStatus *giveStatus(GaussPoint *gp) const override;
 
 protected:
-    const FloatArray checkStatus( FloatArrayF<6> f, GaussPoint *pPoint, TimeStep *pStep ) const;
-    IntArray checkStatus( const FloatArrayF<6> &stress, IntArray &k ) const;
-    const FloatArrayF<6> checkTransition( const FloatArrayF<6> &stress, GaussPoint *gp, TimeStep *tStep ) const;
+    const FloatArray checkStatus(FloatArrayF< 6 >f, GaussPoint *pPoint, TimeStep *pStep) const;
+    IntArray checkStatus(const FloatArrayF< 6 > &stress, IntArray &k) const;
+    const FloatArrayF< 6 >checkTransition(const FloatArrayF< 6 > &stress, GaussPoint *gp, TimeStep *tStep) const;
 };
 } // end namespace oofem
 
