@@ -120,8 +120,8 @@ void LatticeFrameConcretePlastic::initializeFrom(InputRecord &ir)
     // wu
     IR_GIVE_OPTIONAL_FIELD(ir, this->wu, _IFT_LatticeFrameConcretePlastic_wu);
 
-    // wfone
-    IR_GIVE_FIELD(ir, wfone, _IFT_LatticeFrameConcretePlastic_wfone);
+    // wf
+    IR_GIVE_FIELD(ir, wf, _IFT_LatticeFrameConcretePlastic_wf);
 }
 MaterialStatus *
 LatticeFrameConcretePlastic::CreateStatus(GaussPoint *gp) const
@@ -788,7 +788,9 @@ LatticeFrameConcretePlastic::giveFrameForces3d(const FloatArrayF< 6 > &originalS
 
     double le = static_cast< LatticeStructuralElement * >( gp->giveElement() )->giveLength();
 
-    double equivalentStrain = sqrt(pow(tempPlasticStrain.at(1), 2) + pow(tempPlasticStrain.at(2), 2) + pow(tempPlasticStrain.at(3), 2) + pow(tempPlasticStrain.at(4), 2) + pow(tempPlasticStrain.at(5), 2.) + pow(tempPlasticStrain.at(6), 2) ) - wu / le;
+    //double equivalentStrain = sqrt(pow(tempPlasticStrain.at(1), 2) + pow(tempPlasticStrain.at(2), 2) + pow(tempPlasticStrain.at(3), 2) +
+    //                              pow(tempPlasticStrain.at(4), 2) + pow(tempPlasticStrain.at(5), 2.) + pow(tempPlasticStrain.at(6), 2) ) - wu / le;
+    double equivalentStrain = sqrt(pow(tempPlasticStrain.at(4), 2) + pow(tempPlasticStrain.at(5), 2.) + pow(tempPlasticStrain.at(6), 2) ) - wu / le;
     //	printf("equivalentStrain = %e, wu/le = %e, le = %e\n", equivalentStrain, wu/le, le);
 
     double tempKappaD = 0.0;
@@ -803,7 +805,7 @@ LatticeFrameConcretePlastic::giveFrameForces3d(const FloatArrayF< 6 > &originalS
     if ( tempKappaD  <= 0.  ) {
         omega = 0.;
     } else if ( tempKappaD > 0. ) {
-        omega = 1. - exp(-tempKappaD * le / ( wfone - wu ) );
+        omega = 1. - exp(-tempKappaD * le / ( wf ) );
     } else {
         printf("Should not be here\n");
     }
@@ -885,8 +887,10 @@ LatticeFrameConcretePlasticStatus::printOutputAt(FILE *file, TimeStep *tStep) co
     for ( double s : this->plasticLatticeStrain ) {
         fprintf(file, "% .8e ", s);
     }
-    fprintf(file, "kappad %.8e ", this->kappaD);
-    fprintf(file, "damage %.8e ", this->damage);
+    //fprintf(file, "kappad %.8e ", this->kappaD);
+   // fprintf(file, "damage %.8e ", this->damage);
+    fprintf(file, ", kappaD %.8e, damage %.8e \n", this->kappaD, this->damage);
+
 }
 
 void

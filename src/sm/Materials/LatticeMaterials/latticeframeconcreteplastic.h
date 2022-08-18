@@ -65,7 +65,7 @@
 #define _IFT_LatticeFrameConcretePlastic_sub "sub"
 #define _IFT_LatticeFrameConcretePlastic_plastic "plastic"
 #define _IFT_LatticeFrameConcretePlastic_wu "wu"
-#define _IFT_LatticeFrameConcretePlastic_wfone "wfone"
+#define _IFT_LatticeFrameConcretePlastic_wf "wf"
 #define _IFT_LatticeFrameConcretePlastic_wftwo "wftwo"
 #define _IFT_LatticeFrameConcretePlastic_qzero "qzero"
 //@}
@@ -199,10 +199,10 @@ protected:
     ///wu
     double wu;
 
-    ///wfone
-    double wfone;
+    ///wf
+    double wf;
 
-    ///wfone
+    ///wftwo
     double wftwo;
 
     ///qzero
