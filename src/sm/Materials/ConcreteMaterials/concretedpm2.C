@@ -495,8 +495,16 @@ ConcreteDPM2::initializeFrom(InputRecord &ir)
     linearElasticMaterial.initializeFrom(ir);
 
     //damage flag
-    this->damageFlag = 1; //Default value using damage in tension and compression according to IJSS CDPM2 paper.
+    this->damageFlag = 1;
+    //0 = no damage
+    //1 = Default value using damage in tension and compression according to IJSS CDPM2 paper.
+    //2 = Simplified version without split of stress but two damage variables
+    //3 = Only tensile damage. Reduction to a fully isotropic model. Similar to CDPM article.
+    //4 = New approach without split but two damage variables
     IR_GIVE_OPTIONAL_FIELD(ir, this->damageFlag, _IFT_ConcreteDPM2_damflag);
+    if(damageFlag <0 || damageFlag >4){  
+      OOFEM_ERROR("Unknown value of damage flag. Must be 0, 1, 2 or 3");
+    }
 
     // elastic parameters
     IR_GIVE_FIELD(ir, this->eM, _IFT_IsotropicLinearElasticMaterial_e)
@@ -857,9 +865,16 @@ ConcreteDPM2::giveRealStressVector_3d(const FloatArrayF< 6 > &fullStrainVector, 
             stress = effectiveStress * ( 1. - ( 1. - alpha ) * damages.at(1) ) * ( 1. - alpha * damages.at(2) );
         } else if ( this->damageFlag == 3 ) { //Consider only tensile damage. Reduction to a fully isotropic model. Similar to CDPM article.
             stress = effectiveStress * ( 1. - damages.at(1) );
-        } else {
-            OOFEM_ERROR("Unknown value of damage flag. Must be 0, 1, 2 or 3");
-        }
+	} else if ( this->damageFlag == 4 ) { //New way for testing
+	  printf("alpha = %e, alpha*damages.at(1) = %e and damages.at(2) = %e\n",alpha, alpha*damages.at(1), damages.at(2));
+	  
+	  if( alpha*damages.at(1) > damages.at(2)){	    
+	    stress = effectiveStress*(1.-alpha*damages.at(1));
+	  }
+	  else{
+	    stress = effectiveStress*(1.-damages.at(2));
+	  }
+	}
     } else {
         stress = effectiveStress;
     }
@@ -919,11 +934,14 @@ ConcreteDPM2::computeDamage(const FloatArrayF< 6 > &strain,
 
     tempEquivStrainTension = status->giveEquivStrainTension() + ( tempEquivStrain - status->giveEquivStrain() ) / rateFactor;
 
-    if ( unAndReloadingFlag == 0 ) { //Standard way
+
+    if(damageFlag !=4){ // standard way
+      if ( unAndReloadingFlag == 0 ) { //Standard way
         tempEquivStrainCompression = status->giveEquivStrainCompression() + ( tempAlpha * ( tempEquivStrain - status->giveEquivStrain() ) ) / rateFactor;
-    } else {
+      } else {
         tempEquivStrainCompression = status->giveEquivStrainCompression() + status->giveAlpha() * ( minEquivStrain - status->giveEquivStrain() ) / rateFactor + ( tempAlpha * ( tempEquivStrain - minEquivStrain ) ) / rateFactor;
-    }
+      }
+    
 
 
     //If damage threshold is exceeded determine the rate factor from the previous step
@@ -939,9 +957,31 @@ ConcreteDPM2::computeDamage(const FloatArrayF< 6 > &strain,
             tempEquivStrainCompression = status->giveEquivStrainCompression() + status->giveAlpha() * ( minEquivStrain - status->giveEquivStrain() ) / rateFactor + ( tempAlpha * ( tempEquivStrain - minEquivStrain ) ) / rateFactor;
         }
     }
-
+    
+    }
+    else {//damageFlag=4
+      //compute etha
+      double etha = 0.;
+      if(rho<1.e-16){
+	etha = 0.;
+      }
+      else{
+	etha = sig/(sqrt(3./2.)*rho);
+	printf("etha in damages = %e\n", etha);
+      }
+      
+      if(etha <0.){
+	tempEquivStrainCompression = status->giveEquivStrainCompression() +  ( tempEquivStrain - status->giveEquivStrain() ) / rateFactor;
+      }
+      else{
+	tempEquivStrainCompression = status->giveEquivStrainCompression();
+      }
+    }
+    
     status->letTempRateFactorBe(rateFactor);
 
+
+    
     double fTension = tempEquivStrainTension - status->giveKappaDTension();
     double fCompression = tempEquivStrainCompression - status->giveKappaDCompression();
 
@@ -1236,9 +1276,13 @@ ConcreteDPM2::computeDeltaPlasticStrainNormCompression(double tempAlpha, double 
 
     const auto &tempPlasticStrain = status->giveTempPlasticStrain();
     const auto &plasticStrain = status->givePlasticStrain();
-
+    
     auto deltaPlasticStrain = tempAlpha * ( tempPlasticStrain - plasticStrain );
-
+  
+    if(damageFlag == 4){//New way of computing damage
+      deltaPlasticStrain = tempPlasticStrain - plasticStrain;
+    }
+    
     double deltaPlasticStrainNorm = 0;
 
     //Distinguish pre-peak, peak and post-peak
@@ -2573,7 +2617,10 @@ ConcreteDPM2::computeAlpha(FloatArrayF< 6 > &effectiveStressTension,
                            FloatArrayF< 6 > &effectiveStressCompression,
                            const FloatArrayF< 6 > &effectiveStress) const
 {
-    auto tmp = StructuralMaterial::computePrincipalValDir(from_voigt_stress(effectiveStress) );
+
+  if(this->damageFlag == 1){//standard way
+
+  auto tmp = StructuralMaterial::computePrincipalValDir(from_voigt_stress(effectiveStress) );
     auto principalStress = tmp.first;
     auto stressPrincipalDir = tmp.second;
 
@@ -2613,6 +2660,38 @@ ConcreteDPM2::computeAlpha(FloatArrayF< 6 > &effectiveStressTension,
     }
 
     return 1. - alphaTension;
+  }
+  else if(this->damageFlag == 4){ //new way for testing
+
+    auto tmp = computeDeviatoricVolumetricSplit(effectiveStress);
+    double sig = tmp.second;
+    auto deviatoricStress = tmp.first;
+    double rho = computeSecondCoordinate(deviatoricStress);
+    double etha = sig/(sqrt(3./2.)*rho);
+    double alpha = 0.;
+
+    //Debug
+    double theta = 0.;
+    computeCoordinates(effectiveStress, sig, rho, theta);
+    double ethaTest = sig/(sqrt(3./2.)*rho);
+
+    printf("Check of etha. Direct = %e and coordinates = %e\n", etha, ethaTest);
+    
+    
+    if(etha >= 0.){
+      alpha = 1;
+    }
+    else if(etha >= -1./3. && etha < 0.){
+      alpha = 27.*pow(etha+1./3.,2.) *(-2.*etha+1./3.);
+    }
+    else{
+      alpha = 0.;
+    }
+
+    printf("etha = %e and alpha = %e\n", etha, alpha);
+    
+    return alpha;
+  }
 }
 
 
