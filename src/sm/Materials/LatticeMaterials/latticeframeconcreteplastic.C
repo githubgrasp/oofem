@@ -914,6 +914,7 @@ LatticeFrameConcretePlasticStatus::saveContext(DataStream &stream, ContextMode m
 }
 
 
+
 void
 LatticeFrameConcretePlasticStatus::restoreContext(DataStream &stream, ContextMode mode)
 //
