@@ -96,6 +96,7 @@ set (sm_element
     Elements/LatticeElements/latticebeam3d.C
     Elements/LatticeElements/latticebeam3dboundary.C
     Elements/LatticeElements/latticeframe3d.C
+    Elements/LatticeElements/latticeframe3dg.C
     Elements/tet21ghostsolid.C
     Elements/quad1platesubsoil.C 
     Elements/quad2platesubsoil.C
@@ -424,8 +425,8 @@ set (sm
     ${sm_obsolete}
     ${sm_new}
     ${sm_boundary_conditions}
-    ${sm_quasicontinuum} 
-    )
+    ${sm_quasicontinuum}
+        Elements/LatticeElements/tStep.cpp Elements/LatticeElements/tStep.h)
 
 if (USE_PARALLEL)
     list (APPEND sm ${sm_parallel})
