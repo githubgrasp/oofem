@@ -35,7 +35,7 @@
 #ifndef latticeframe3dg_h
 #define latticeframe3dg_h
 
-#include "latticestructuralelement.h"
+#include "latticeframe3d.h"
 
 ///@name Input fields for LatticeFrame3dg
 //@{
@@ -52,7 +52,7 @@ namespace oofem {
  * Authors: Gumaa Abdelrhim and Peter Grassl
  */
 
-class LatticeFrame3dg : public LatticeStructuralElement
+class LatticeFrame3dg : public LatticeFrame3d
 {
 protected:
     int referenceNode;
@@ -72,52 +72,13 @@ public:
     virtual ~LatticeFrame3dg();
 
 
-    int giveLocalCoordinateSystem(FloatMatrix &answer) override;
-
-    int computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords) override;
-
-    double computeLength() override;
-
-    double giveLength() override;
-
-    double giveArea() override;
-
-    double giveIy() override;
-
-    double giveIz() override;
-
-    double giveIk() override;
-
-    double giveShearAreaY() override;
-
-    double giveShearAreaZ() override;
-
-    int computeNumberOfDofs() override { return 12; }
-
-    void giveDofManDofIDMask(int inode, IntArray &) const override;
-
-    virtual void giveGPCoordinates(FloatArray &coords);
-
     const char *giveInputRecordName() const override { return _IFT_LatticeFrame3dg_Name; }
     const char *giveClassName() const override { return "latticeframe3dg"; }
-    void initializeFrom(InputRecord &ir) override;
-
-
-    Element_Geometry_Type giveGeometryType() const override { return EGT_line_1; }
 
 
 protected:
-    //void computeBmatrixAt(GaussPoint *, FloatMatrix &, int = 1, int = ALL_STRAINS) override;
-    bool computeGtoLRotationMatrix(FloatMatrix &) override;
-    void computeLumpedMassMatrix(FloatMatrix &answer, TimeStep *tStep) override;
-    void computeMassMatrix(FloatMatrix &answer, TimeStep *tStep) override
-    { this->computeLumpedMassMatrix(answer, tStep); }
     void computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode, TimeStep *tStep) override;
-    void computeConstitutiveMatrixAt(FloatMatrix &answer, MatResponseMode rMode, GaussPoint *gp, TimeStep *tStep) override;
-    void computeStressVector(FloatArray &answer, const FloatArray &strain, GaussPoint *gp, TimeStep *tStep) override;
-    void computeGaussPoints() override;
-    integrationDomain giveIntegrationDomain() const override { return _Line; }
-    virtual void computeBmatrixNAt( GaussPoint *aGaussPoint, FloatMatrix &answer, int li, int ui, TimeStep *tStep );
+  virtual void computeBmatrixNAt( GaussPoint *aGaussPoint, FloatMatrix &answer, TimeStep *tStep );
     virtual void  computeStrainVector( FloatArray &answer, GaussPoint *gp, TimeStep *tStep ) override;
     void giveInternalForcesVector(FloatArray &answer, TimeStep *tStep, int useUpdatedGpRecord) override;
 

@@ -45,7 +45,7 @@
 #include "floatarray.h"
 #include "floatarrayf.h"
 #include "mathfem.h"
-#include "latticestructuralelement.h"
+#include "latticeframe3d.h"
 #include "contextioerr.h"
 #include "datastream.h"
 #include "classfactory.h"
@@ -59,7 +59,7 @@
 namespace oofem {
 REGISTER_Element(LatticeFrame3dg);
 
-LatticeFrame3dg::LatticeFrame3dg(int n, Domain *aDomain) : LatticeStructuralElement(n, aDomain)
+LatticeFrame3dg::LatticeFrame3dg(int n, Domain *aDomain) : LatticeFrame3d(n, aDomain)
 {
     numberOfDofMans = 2;
 }
@@ -68,7 +68,7 @@ LatticeFrame3dg::~LatticeFrame3dg()
 {}
 
 void
-LatticeFrame3dg::computeBmatrixNAt(GaussPoint *aGaussPoint, FloatMatrix &answer, int li, int ui, TimeStep *tStep)
+  LatticeFrame3dg::computeBmatrixNAt(GaussPoint *aGaussPoint, FloatMatrix &answer,  TimeStep *tStep)
 // Returns the strain matrix of the receiver.
 {
     //Assemble Bmatrix (used to compute strains and rotations)
@@ -181,48 +181,6 @@ LatticeFrame3dg::computeBmatrixNAt(GaussPoint *aGaussPoint, FloatMatrix &answer,
     return;
 }
 
-void
-LatticeFrame3dg::giveGPCoordinates(FloatArray &coords)
-{
-    coords.resize(3);
-    coords = this->globalCentroid;
-    return;
-}
-
-double
-LatticeFrame3dg::giveLength()
-{
-    return this->length;
-}
-
-void
-LatticeFrame3dg::computeConstitutiveMatrixAt(FloatMatrix &answer, MatResponseMode rMode, GaussPoint *gp, TimeStep *tStep)
-{
-    answer =  static_cast< LatticeCrossSection * >( this->giveCrossSection() )->give3dFrameStiffnessMatrix(rMode, gp, tStep);
-}
-
-void
-LatticeFrame3dg::computeStressVector(FloatArray &answer, const FloatArray &strain, GaussPoint *gp, TimeStep *tStep)
-{
-    answer = static_cast< LatticeCrossSection * >( this->giveCrossSection() )->giveFrameForces3d(strain, gp, tStep);
-}
-
-int
-LatticeFrame3dg::computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords)
-{
-    double ksi, n1, n2;
-
-    ksi = lcoords.at(1);
-    n1  = ( 1. - ksi ) * 0.5;
-    n2  = ( 1. + ksi ) * 0.5;
-
-    answer.resize(3);
-    answer.at(1) = n1 * this->giveNode(1)->giveCoordinate(1) + n2 * this->giveNode(2)->giveCoordinate(1);
-    answer.at(2) = n1 * this->giveNode(1)->giveCoordinate(2) + n2 * this->giveNode(2)->giveCoordinate(2);
-    answer.at(3) = n1 * this->giveNode(1)->giveCoordinate(3) + n2 * this->giveNode(2)->giveCoordinate(3);
-
-    return 1;
-}
 
 void
 LatticeFrame3dg::computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode,
@@ -246,44 +204,7 @@ LatticeFrame3dg::computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMo
     return;
 }
 
-void LatticeFrame3dg::computeGaussPoints()
-// Sets up the array of Gauss Points of the receiver.
-{
-    integrationRulesArray.resize(1);
-    integrationRulesArray [ 0 ].reset( new GaussIntegrationRule(1, this, 1, 3) );
-    integrationRulesArray [ 0 ]->SetUpPointsOnLine(1, _3dLattice);
-}
-
-double LatticeFrame3dg::giveArea() {
-  FloatArray lc(1);
-  return this->giveCrossSection()->give(CS_Area, lc, this);
-}
-
-double LatticeFrame3dg::giveIy() {
-  FloatArray lc(1);
-  return this->giveCrossSection()->give(CS_InertiaMomentY, lc, this);
-}
-
-double LatticeFrame3dg::giveIz() {
-  FloatArray lc(1);
-  return this->giveCrossSection()->give(CS_InertiaMomentZ, lc, this);
-}
-
-double LatticeFrame3dg::giveIk() {
-  FloatArray lc(1);
-  return this->giveCrossSection()->give(CS_TorsionConstantX, lc, this);
-}
-
-double LatticeFrame3dg::giveShearAreaY() {
-  FloatArray lc(1);
-  return this->giveCrossSection()->give(CS_ShearAreaY, lc, this);
-}
-
-double LatticeFrame3dg::giveShearAreaZ() {
-  FloatArray lc(1);
-  return this->giveCrossSection()->give(CS_ShearAreaZ, lc, this);
-}
-void
+ void
 LatticeFrame3dg :: computeStrainVector(FloatArray &answer, GaussPoint *gp, TimeStep *tStep)
 // Computes the vector containing the strains at the Gauss point gp of
 // the receiver, at time step tStep. The nature of these strains depends
@@ -374,157 +295,5 @@ LatticeFrame3dg::giveInternalForcesVector(FloatArray &answer,
         answer.zero();
         return;
     }
-}
-
-bool
-LatticeFrame3dg::computeGtoLRotationMatrix(FloatMatrix &answer)
-{
-    FloatMatrix lcs;
-    answer.resize(12, 12);
-    answer.zero();
-
-    this->giveLocalCoordinateSystem(lcs);
-    for ( int i = 1; i <= 3; i++ ) {
-        for ( int j = 1; j <= 3; j++ ) {
-            answer.at(i, j) = lcs.at(i, j);
-            answer.at(i + 3, j + 3) = lcs.at(i, j);
-            answer.at(i + 6, j + 6) = lcs.at(i, j);
-            answer.at(i + 9, j + 9) = lcs.at(i, j);
-        }
-    }
-
-    return 1;
-}
-
-int
-LatticeFrame3dg::giveLocalCoordinateSystem(FloatMatrix &answer)
-{
-    FloatArray lx, ly, lz, help(3);
-    Node *nodeA, *nodeB;
-    nodeA = this->giveNode(1);
-    nodeB = this->giveNode(2);
-
-    lx.beDifferenceOf(nodeB->giveCoordinates(), nodeA->giveCoordinates() );
-    lx.normalize();
-
-    if ( this->referenceNode ) {
-        Node *refNode = this->giveDomain()->giveNode(this->referenceNode);
-        help.beDifferenceOf(refNode->giveCoordinates(), nodeA->giveCoordinates() );
-
-        lz.beVectorProductOf(lx, help);
-        lz.normalize();
-    } else if ( this->zaxis.giveSize() > 0 ) {
-        lz = this->zaxis;
-        lz.add(lz.dotProduct(lx), lx);
-        lz.normalize();
-    } else {
-        FloatMatrix rot(3, 3);
-        double theta = referenceAngle * M_PI / 180.0;
-
-        rot.at(1, 1) = cos(theta) + pow(lx.at(1), 2) * ( 1 - cos(theta) );
-        rot.at(1, 2) = lx.at(1) * lx.at(2) * ( 1 - cos(theta) ) - lx.at(3) * sin(theta);
-        rot.at(1, 3) = lx.at(1) * lx.at(3) * ( 1 - cos(theta) ) + lx.at(2) * sin(theta);
-
-        rot.at(2, 1) = lx.at(2) * lx.at(1) * ( 1 - cos(theta) ) + lx.at(3) * sin(theta);
-        rot.at(2, 2) = cos(theta) + pow(lx.at(2), 2) * ( 1 - cos(theta) );
-        rot.at(2, 3) = lx.at(2) * lx.at(3) * ( 1 - cos(theta) ) - lx.at(1) * sin(theta);
-
-        rot.at(3, 1) = lx.at(3) * lx.at(1) * ( 1 - cos(theta) ) - lx.at(2) * sin(theta);
-        rot.at(3, 2) = lx.at(3) * lx.at(2) * ( 1 - cos(theta) ) + lx.at(1) * sin(theta);
-        rot.at(3, 3) = cos(theta) + pow(lx.at(3), 2) * ( 1 - cos(theta) );
-
-        help.at(3) = 1.0;         // up-vector
-        // here is ly is used as a temp var
-        if ( fabs(lx.dotProduct(help) ) > 0.999 ) {  // Check if it is vertical
-            ly = {
-                0., 1., 0.
-            };
-        } else {
-            ly.beVectorProductOf(lx, help);
-        }
-        lz.beProductOf(rot, ly);
-        lz.normalize();
-    }
-
-    ly.beVectorProductOf(lz, lx);
-    ly.normalize();
-
-    answer.resize(3, 3);
-    answer.zero();
-    for ( int i = 1; i <= 3; i++ ) {
-        answer.at(1, i) = lx.at(i);
-        answer.at(2, i) = ly.at(i);
-        answer.at(3, i) = lz.at(i);
-    }
-
-    return 1;
-}
-
-
-void
-LatticeFrame3dg::giveDofManDofIDMask(int inode, IntArray &answer) const
-{
-    answer = {
-        D_u, D_v, D_w, R_u, R_v, R_w
-    };
-}
-
-void
-LatticeFrame3dg::initializeFrom(InputRecord &ir)
-{
-    LatticeStructuralElement::initializeFrom(ir);
-
-    referenceNode = 0;
-    referenceAngle = 0;
-    this->zaxis.clear();
-    if ( ir.hasField(_IFT_LatticeFrame3dg_zaxis) ) {
-        IR_GIVE_FIELD(ir, this->zaxis, _IFT_LatticeFrame3dg_zaxis);
-    } else if ( ir.hasField(_IFT_LatticeFrame3dg_refnode) ) {
-        IR_GIVE_FIELD(ir, referenceNode, _IFT_LatticeFrame3dg_refnode);
-        if ( referenceNode == 0 ) {
-            OOFEM_WARNING("wrong reference node specified. Using default orientation.");
-        }
-    } else if ( ir.hasField(_IFT_LatticeFrame3dg_refangle) ) {
-        IR_GIVE_FIELD(ir, referenceAngle, _IFT_LatticeFrame3dg_refangle);
-    } else {
-        throw ValueInputException(ir, _IFT_LatticeFrame3dg_zaxis, "axis, reference node, or angle not set");
-    }
-
-    this->s = 0.;
-    IR_GIVE_OPTIONAL_FIELD(ir, s, _IFT_LatticeFrame3dg_s);
-
-}
-
-
-double
-LatticeFrame3dg::computeLength()
-{
-    double dx, dy, dz;
-    Node *nodeA, *nodeB;
-
-    if ( length == 0. ) {
-        nodeA   = this->giveNode(1);
-        nodeB   = this->giveNode(2);
-        dx      = nodeB->giveCoordinate(1) - nodeA->giveCoordinate(1);
-        dy      = nodeB->giveCoordinate(2) - nodeA->giveCoordinate(2);
-        dz      = nodeB->giveCoordinate(3) - nodeA->giveCoordinate(3);
-        length  = sqrt(dx * dx + dy * dy + dz * dz);
-    }
-
-    return length;
-}
-
-void
-LatticeFrame3dg::computeLumpedMassMatrix(FloatMatrix &answer, TimeStep *tStep)
-// Returns the lumped mass matrix of the receiver. This expression is
-// valid in both local and global axes.
-{
-    GaussPoint *gp = integrationRulesArray [ 0 ]->getIntegrationPoint(0);
-    double density = static_cast< LatticeCrossSection * >( this->giveCrossSection() )->give('d', gp);
-    double halfMass = density * computeVolumeAround(gp) / 2.;
-    answer.resize(12, 12);
-    answer.zero();
-    answer.at(1, 1) = answer.at(2, 2) = answer.at(3, 3) = halfMass;
-    answer.at(7, 7) = answer.at(8, 8) = answer.at(9, 9) = halfMass;
 }
 } // end namespace oofem

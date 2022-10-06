@@ -426,7 +426,7 @@ set (sm
     ${sm_new}
     ${sm_boundary_conditions}
     ${sm_quasicontinuum}
-        Elements/LatticeElements/tStep.cpp Elements/LatticeElements/tStep.h)
+    )
 
 if (USE_PARALLEL)
     list (APPEND sm ${sm_parallel})
