@@ -176,6 +176,9 @@ protected:
     int state_flag = ConcreteDPM2Status::ConcreteDPM2_Elastic;
     int temp_state_flag = ConcreteDPM2Status::ConcreteDPM2_Elastic;
 
+    int deletionFlag = 0.;
+    int tempDeletionFlag = 1.;
+
 
 #ifdef keep_track_of_dissipated_energy
     /// Density of total work done by stresses on strain increments.
@@ -198,6 +201,10 @@ public:
     void saveContext(DataStream &stream, ContextMode mode) override;
     void restoreContext(DataStream &stream, ContextMode mode) override;
     const char *giveClassName() const override { return "ConcreteDPM2Status"; }
+
+    void setTempDeletionFlag(int newFlag) { this->tempDeletionFlag = newFlag; }
+    int giveDeletionFlag() const { return this->deletionFlag; }
+    int giveTempDeletionFlag() const { return this->tempDeletionFlag; }
 
 
     // Inline functions for access to state variables
