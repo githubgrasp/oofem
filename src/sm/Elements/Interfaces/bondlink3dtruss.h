@@ -86,7 +86,7 @@ public:
 
     virtual double giveBondDiameter();
 
-    int computeNumberOfDofs() override { return 9; }
+    int computeNumberOfDofs() override { return 6; }
 
     void giveDofManDofIDMask(int inode, IntArray &) const override;
 
@@ -120,7 +120,6 @@ protected:
     void computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode, TimeStep *tStep) override;
     void computeConstitutiveMatrixAt(FloatMatrix &answer, MatResponseMode rMode, GaussPoint *gp, TimeStep *tStep) override;
     void computeStressVector(FloatArray &answer, const FloatArray &strain, GaussPoint *gp, TimeStep *tStep) override;
-
 
     /**
      * This computes the geometrical properties of the element. It is called only once.
