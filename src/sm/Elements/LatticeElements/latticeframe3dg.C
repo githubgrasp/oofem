@@ -68,7 +68,7 @@ LatticeFrame3dg::~LatticeFrame3dg()
 {}
 
 void
-  LatticeFrame3dg::computeBmatrixNAt(GaussPoint *aGaussPoint, FloatMatrix &answer,  TimeStep *tStep)
+  LatticeFrame3dg::computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer,  TimeStep *tStep)
 // Returns the strain matrix of the receiver.
 {
     //Assemble Bmatrix (used to compute strains and rotations)
@@ -76,11 +76,8 @@ void
     answer.zero();
 
     this->length = computeLength();
-    FloatArray u, stress, strain;
+    FloatArray u;
     this->computeVectorOf(VM_Total, tStep, u);
-    if ( initialDisplacements ) {
-        u.subtract(* initialDisplacements);
-    }
 
     //Normal displacement jump in x-direction
     //First node
@@ -193,7 +190,7 @@ LatticeFrame3dg::computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMo
 
     answer.resize(12, 12);
     answer.zero();
-    this->computeBmatrixNAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), bj, tStep);
+    this->computeBmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), bj, tStep);
     this->computeConstitutiveMatrixAt(d, rMode, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
 
     dbj.beProductOf(d, bj);
@@ -212,6 +209,7 @@ LatticeFrame3dg :: computeStrainVector(FloatArray &answer, GaussPoint *gp, TimeS
 {
     FloatMatrix b;
     FloatArray u;
+    FloatArray incrementalStrain;
 
     if ( !this->LatticeFrame3dg::isActivated(tStep) ) {
         answer.resize(StructuralMaterial :: giveSizeOfVoigtSymVector(gp->giveMaterialMode() ) );
@@ -220,20 +218,15 @@ LatticeFrame3dg :: computeStrainVector(FloatArray &answer, GaussPoint *gp, TimeS
     }
 
     LatticeMaterialStatus *lmatStat = dynamic_cast< LatticeMaterialStatus * >( integrationRulesArray [ 0 ]->getIntegrationPoint(0)->giveMaterialStatus() );
-    auto oldStrain =lmatStat ->giveLatticeStrain();
+    auto Strain =lmatStat ->giveLatticeStrain();
 
-    this->LatticeFrame3dg::computeBmatrixNAt(gp, b, tStep);
+    this->computeBmatrixAt( integrationRulesArray[0]->getIntegrationPoint( 0 ), b, tStep );
     this->computeVectorOf(VM_Incremental, tStep, u);
 
-     answer.beProductOf(b, u);
-     answer.times(1./this->length);
+    answer.beProductOf(b, u);
+    answer.times(1./this->length);
 
-
-    // subtract initial displacements, if defined
-   // if ( initialDisplacements ) {
-      //  u.subtract(* initialDisplacements);
-  //  }
-    answer += oldStrain;
+    answer +=Strain;
 }
 
 void
@@ -245,55 +238,33 @@ LatticeFrame3dg::giveInternalForcesVector(FloatArray &answer,
     FloatArray incrementalStress;
     FloatArray incrementalInternalForces;
     FloatArray oldInternalForces;
-    GaussPoint *gp = this->integrationRulesArray [ 0 ]->getIntegrationPoint(0);
 
     this->length = computeLength();
+    GaussPoint *gp = this->integrationRulesArray [ 0 ]->getIntegrationPoint(0);
 
-    this->computeVectorOf(VM_Total, tStep, u);
+    //this->computeVectorOf( VM_Total, tStep, u );
+    //   answer.clear();
 
-    //if ( initialDisplacements ) {
-    //   u.subtract(* initialDisplacements);
-   //}
+    this->computeBmatrixAt( integrationRulesArray[0]->getIntegrationPoint( 0 ), b, tStep );
+    bt.beTranspositionOf( b );
 
-   //zero answer will resize accordingly when adding first contribution
-   //answer.clear();
+    //Total stress
+    this->LatticeFrame3dg::computeStrainVector(strain, gp, tStep);
+    this->computeStressVector( stress, strain, integrationRulesArray[0]->getIntegrationPoint( 0 ), tStep );
 
-    this->LatticeFrame3dg::computeBmatrixNAt(gp, b , tStep);
-    bt.beTranspositionOf(b);
+    //Old stresses
+    LatticeMaterialStatus *lmatStat = dynamic_cast<LatticeMaterialStatus *>( integrationRulesArray[0]->getIntegrationPoint( 0 )->giveMaterialStatus() );
+    auto oldStress                          = lmatStat->giveLatticeStress();
+    oldInternalForces.beProductOf(bt, oldStress);
 
-    this->computeStrainVector(strain, gp, tStep);
-    this->computeStressVector(stress, strain, gp, tStep);
+    incrementalStress.beDifferenceOf(oldStress, stress);
+    answer.beProductOf(bt, incrementalStress);
 
-     LatticeMaterialStatus *lmatStat = dynamic_cast< LatticeMaterialStatus * >( integrationRulesArray [ 0 ]->getIntegrationPoint(0)->giveMaterialStatus() );
-
-     auto oldStress = lmatStat->giveLatticeStress();
-     oldInternalForces.beProductOf(bt, oldStress);
-
-     incrementalStress.beDifferenceOf(stress, oldStress);
-
-     incrementalInternalForces.beProductOf(bt, incrementalStress);
-
-     answer=oldInternalForces + incrementalInternalForces;
+     answer +=oldInternalForces;
 
 
 
-     // if ( useUpdatedGpRecord == 1 ) {
-    //    LatticeMaterialStatus *lmatStat = dynamic_cast< LatticeMaterialStatus * >( integrationRulesArray [ 0 ]->getIntegrationPoint(0)->giveMaterialStatus() );
-    //    stress = lmatStat->giveLatticeStress();
-   // } else {
-    //    if ( !this->isActivated(tStep) ) {
-    //        strain.zero();
-    //    }
-     //   strain.beProductOf(b, u);
-//	strain.times(1./this->length);
-     //   this->computeStressVector(stress, strain, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
-   // }
-
-  //  answer.beProductOf(bt, stress);
-
-    if ( !this->isActivated(tStep) ) {
-        answer.zero();
         return;
-    }
+
 }
 } // end namespace oofem

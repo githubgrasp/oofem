@@ -78,7 +78,7 @@ public:
 
 protected:
     void computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode, TimeStep *tStep) override;
-  virtual void computeBmatrixNAt( GaussPoint *aGaussPoint, FloatMatrix &answer, TimeStep *tStep );
+  virtual void computeBmatrixAt( GaussPoint *aGaussPoint, FloatMatrix &answer, TimeStep *tStep );
     virtual void  computeStrainVector( FloatArray &answer, GaussPoint *gp, TimeStep *tStep ) override;
     void giveInternalForcesVector(FloatArray &answer, TimeStep *tStep, int useUpdatedGpRecord) override;
 
