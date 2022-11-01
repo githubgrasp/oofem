@@ -70,7 +70,7 @@ protected:
 public:
     LatticeFrame3dg(int n, Domain *);
     virtual ~LatticeFrame3dg();
-
+    int giveLocalCoordinateSystem(FloatMatrix &answer, TimeStep *tStep) ;
 
     const char *giveInputRecordName() const override { return _IFT_LatticeFrame3dg_Name; }
     const char *giveClassName() const override { return "latticeframe3dg"; }
@@ -78,10 +78,11 @@ public:
 
 protected:
     void computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode, TimeStep *tStep) override;
-  virtual void computeBmatrixAt( GaussPoint *aGaussPoint, FloatMatrix &answer, TimeStep *tStep );
+    virtual void computeBmatrixAt( GaussPoint *aGaussPoint, FloatMatrix &answer, TimeStep *tStep );
     virtual void  computeStrainVector( FloatArray &answer, GaussPoint *gp, TimeStep *tStep ) override;
     void giveInternalForcesVector(FloatArray &answer, TimeStep *tStep, int useUpdatedGpRecord) override;
-
+    bool computeGtoLRotationMatrix(FloatMatrix &,  TimeStep *tStep) ;
+    virtual void computeBFmatrixAt( GaussPoint *aGaussPoint, FloatMatrix &answer, TimeStep *tStep );
 };
 } // end namespace oofem
 #endif
