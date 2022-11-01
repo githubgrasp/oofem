@@ -411,6 +411,7 @@ LatticeFrame3dg::giveLocalCoordinateSystem(FloatMatrix &answer,  TimeStep *tStep
     this->computeVectorOf(VM_Total, tStep, u);
 
     nodeA = this->giveNode(1);
+    nodeA->giveCoordinates();
     coord = nodeA->giveCoordinates();
     uA =  { u.at(1), u.at(2), u.at(3) } ;
     uA += coord;
