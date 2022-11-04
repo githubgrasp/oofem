@@ -50,6 +50,7 @@
 #include "datastream.h"
 #include "classfactory.h"
 #include "sm/CrossSections/latticecrosssection.h"
+#include "engngm.h"
 
 #ifdef __OOFEG
  #include "oofeggraphiccontext.h"
@@ -68,7 +69,7 @@ LatticeFrame3dg::~LatticeFrame3dg()
 {}
 
 void
-  LatticeFrame3dg::computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer,  TimeStep *tStep)
+  LatticeFrame3dg::computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, int li, int ui)
 // Returns the strain matrix of the receiver.
 {
     //Assemble Bmatrix (used to compute strains and rotations)
@@ -76,6 +77,9 @@ void
     answer.zero();
 
     this->length = computeLength();
+
+    TimeStep *tStep = this->domain->giveEngngModel()->giveCurrentStep();    
+
     FloatArray u;
     this->computeVectorOf(VM_Total, tStep, u);
      //printf("u/n");
@@ -180,13 +184,16 @@ void
 }
 
 void
-LatticeFrame3dg::computeBFmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer,  TimeStep *tStep)
+LatticeFrame3dg::computeBFmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer)
 {
     //Assemble BFmatrix (used to compute forces )
     answer.resize(12, 6);
     answer.zero();
 
     this->length = computeLength();
+
+    TimeStep *tStep = this->domain->giveEngngModel()->giveCurrentStep();
+    
     FloatArray u;
     this->computeVectorOf(VM_Total, tStep, u);
 
@@ -301,8 +308,8 @@ LatticeFrame3dg::computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMo
 
     answer.resize(12, 12);
     answer.zero();
-    this->LatticeFrame3dg::computeBFmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), bf, tStep);
-    this->LatticeFrame3dg::computeBmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), bj, tStep);
+    computeBFmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), bf);
+    computeBmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), bj);
     this->computeConstitutiveMatrixAt(d, rMode, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
 
     dbj.beProductOf(d, bj);
@@ -330,7 +337,7 @@ LatticeFrame3dg :: computeStrainVector(FloatArray &answer, GaussPoint *gp, TimeS
         return;
     }
 
-    this->LatticeFrame3dg::computeBmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), b, tStep);
+    this->LatticeFrame3dg::computeBmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), b);
 
     this->computeVectorOf(VM_Total, tStep, u);
     answer.beProductOf(b, u);
@@ -358,7 +365,7 @@ LatticeFrame3dg::giveInternalForcesVector(FloatArray &answer,
     // zero answer will resize accordingly when adding first contribution
     answer.clear();
 
-    this->LatticeFrame3dg::computeBFmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), bf, tStep);
+    this->LatticeFrame3dg::computeBFmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), bf);
 
     if ( useUpdatedGpRecord == 1 ) {
         LatticeMaterialStatus *lmatStat = dynamic_cast< LatticeMaterialStatus * >( integrationRulesArray [ 0 ]->getIntegrationPoint(0)->giveMaterialStatus() );
@@ -382,13 +389,13 @@ LatticeFrame3dg::giveInternalForcesVector(FloatArray &answer,
     }
 }
 bool
-LatticeFrame3dg::computeGtoLRotationMatrix(FloatMatrix &answer,  TimeStep *tStep)
+LatticeFrame3dg::computeGtoLRotationMatrix(FloatMatrix &answer)
 {
     FloatMatrix lcs;
     answer.resize(12, 12);
     answer.zero();
 
-    this->giveLocalCoordinateSystem(lcs, tStep);
+    this->giveLocalCoordinateSystem(lcs);
     for ( int i = 1; i <= 3; i++ ) {
         for ( int j = 1; j <= 3; j++ ) {
             answer.at(i, j) = lcs.at(i, j);
@@ -401,27 +408,22 @@ LatticeFrame3dg::computeGtoLRotationMatrix(FloatMatrix &answer,  TimeStep *tStep
     return 1;
 }
 int
-LatticeFrame3dg::giveLocalCoordinateSystem(FloatMatrix &answer,  TimeStep *tStep)
+LatticeFrame3dg::giveLocalCoordinateSystem(FloatMatrix &answer)
 {
     FloatArray lx, ly, lz, help(3);
     FloatArray coord;
     FloatArray uA, uB, u;
 
+    TimeStep *tStep = this->domain->giveEngngModel()->giveCurrentStep();
+    
     Node *nodeA, *nodeB;
-    this->computeVectorOf(VM_Total, tStep, u);
-
     nodeA = this->giveNode(1);
-    nodeA->giveCoordinates();
-    coord = nodeA->giveCoordinates();
-    uA =  { u.at(1), u.at(2), u.at(3) } ;
-    uA += coord;
-
     nodeB = this->giveNode(2);
-    nodeB->giveCoordinates();
-    coord = nodeB->giveCoordinates();
-    uB =  { u.at(7), u.at(8), u.at(9) } ;
-    uB += coord;
 
+    //This is not working yet. It only works so far if displacements are translations only. We could do it DOf by DOF or we could understand better hte updated Langragian version that seems to be implemented. I will let you know.
+    nodeA->giveUpdatedCoordinates(uA,tStep,1);
+    nodeB->giveUpdatedCoordinates(uB,tStep,1);    
+    
     lx.beDifferenceOf(uB, uA );
     lx.normalize();
 
