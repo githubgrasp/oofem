@@ -412,7 +412,7 @@ LatticeFrame3dg::giveLocalCoordinateSystem(FloatMatrix &answer)
 {
     FloatArray lx, ly, lz, help(3);
     FloatArray coord;
-    FloatArray uA, uB, u;
+    FloatArray uA(3), uB(3);
 
     TimeStep *tStep = this->domain->giveEngngModel()->giveCurrentStep();
     
@@ -421,8 +421,13 @@ LatticeFrame3dg::giveLocalCoordinateSystem(FloatMatrix &answer)
     nodeB = this->giveNode(2);
 
     //This is not working yet. It only works so far if displacements are translations only. We could do it DOf by DOF or we could understand better hte updated Langragian version that seems to be implemented. I will let you know.
-    nodeA->giveUpdatedCoordinates(uA,tStep,1);
-    nodeB->giveUpdatedCoordinates(uB,tStep,1);    
+    uA.at(1) = nodeA->giveUpdatedCoordinate(1,tStep,1.);
+    uA.at(2) = nodeA->giveUpdatedCoordinate(2,tStep,1.);
+    uA.at(3) = nodeA->giveUpdatedCoordinate(3,tStep,1.);
+
+    uB.at(1) = nodeB->giveUpdatedCoordinate(1,tStep,1.);
+    uB.at(2) = nodeB->giveUpdatedCoordinate(2,tStep,1.);
+    uB.at(3) = nodeB->giveUpdatedCoordinate(3,tStep,1.);
     
     lx.beDifferenceOf(uB, uA );
     lx.normalize();
