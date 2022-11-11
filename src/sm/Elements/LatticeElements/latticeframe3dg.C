@@ -69,7 +69,7 @@ LatticeFrame3dg::~LatticeFrame3dg()
 {}
 
 void
-  LatticeFrame3dg::computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, int li, int ui)
+LatticeFrame3dg::computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, int li, int ui)
 // Returns the strain matrix of the receiver.
 {
     //Assemble Bmatrix (used to compute strains and rotations)
@@ -78,27 +78,44 @@ void
 
     this->length = computeLength();
 
-    TimeStep *tStep = this->domain->giveEngngModel()->giveCurrentStep();    
+    TimeStep *tStep = this->domain->giveEngngModel()->giveCurrentStep();
 
     FloatArray u;
     this->computeVectorOf(VM_Total, tStep, u);
-     //printf("u/n");
-     //u.printYourself();
+    double l1 = this->length*(1.-this->s)/2;
+    double l2 = this->length*(1.+this->s)/2;
     //Normal displacement jump in x-direction
     //First node
     answer.at(1, 1) = -1.;
     answer.at(1, 2) = 0.;
     answer.at(1, 3) = 0.;
     answer.at(1, 4) = 0.;
-    answer.at(1, 5) =  sin(u.at(5))*this->length*(1.-this->s)/2.;
-    answer.at(1, 6) =  sin(u.at(6))*this->length*(1.-this->s)/2.;
+    if ( u.at(5) == 0 ) {
+        answer.at(1, 5) =  0;
+    } else {
+        answer.at(1, 5) =  l1*(1-cos(u.at(5)))/u.at(5);
+    }
+    if ( u.at(6) == 0 ) {
+        answer.at(1, 6) =  0;
+    } else {
+        answer.at(1, 6) =  l1*(1-cos(u.at(6)))/u.at(6);
+    }
+    //
     //Second node
     answer.at(1, 7) = 1.;
     answer.at(1, 8) = 0.;
     answer.at(1, 9) = 0.;
     answer.at(1, 10) = 0.;
-    answer.at(1, 11) =  sin(u.at(10))*this->length*(1.+this->s)/2.;
-    answer.at(1, 12) =  sin(u.at(12))*this->length*(1.+this->s)/2.;
+    if ( u.at(11) == 0 ) {
+        answer.at(1, 11) =  0;
+    } else {
+        answer.at(1, 11) =  l2*(1-cos(u.at(11)))/u.at(11);
+    }
+    if ( u.at(12) == 0 ) {
+        answer.at(1, 12) =  0;
+    } else {
+        answer.at(1, 12) =  l2*(1-cos(u.at(12)))/u.at(12);
+    }
 
     //Shear displacement jump in y-plane
     //first node
@@ -107,14 +124,22 @@ void
     answer.at(2, 3) =  0.;
     answer.at(2, 4) = 0.;
     answer.at(2, 5) = 0;
-    answer.at(2, 6) =  -cos(u.at(6))*this->length*(1.-this->s)/2.;
+    if ( u.at(6) == 0 ) {
+        answer.at( 2, 6 ) = l1;
+    } else {
+        answer.at( 2, 6 ) = -sin( u.at( 6 ) ) * l1/u.at(6);
+    }
     //Second node
     answer.at(2, 7) = 0.;
     answer.at(2, 8) = 1.;
     answer.at(2, 9) =  0.;
     answer.at(2, 10) = 0.;
     answer.at(2, 11) = 0;
-    answer.at(2, 12) = -cos(u.at(12))*this->length*(1.+this->s)/2.;
+    if ( u.at(12) == 0 ) {
+        answer.at(2, 12) =  l2;
+    } else {
+        answer.at( 2, 12 ) = -sin( u.at( 12 ) ) * l2/u.at(12);
+    }
 
     //Shear displacement jump in z-plane
     //first node
@@ -122,14 +147,22 @@ void
     answer.at(3, 2) = 0.;
     answer.at(3, 3) = -1.;
     answer.at(3, 4) = 0.;
-    answer.at(3, 5) = cos(u.at(5))*this->length*(1.-this->s)/2.;
+    if ( u.at(5) == 0 ) {
+        answer.at(3, 5) =  l1;
+    } else {
+        answer.at( 3, 5 ) = sin( u.at( 5 ) ) * l1/u.at(5);
+    }
     answer.at(3, 6) = 0.;
     //Second node
     answer.at(3, 7) = 0.;
     answer.at(3, 8) = 0.;
     answer.at(3, 9) =  1.;
     answer.at(3, 10) = 0.;
-    answer.at(3, 11) = cos(u.at(10))*this->length*(1.+this->s)/2.;
+    if ( u.at(11) == 0 ) {
+    answer.at(3, 11) =  l2;
+    } else {
+    answer.at( 3, 11 ) = sin( u.at( 11 ) ) *l2/u.at(11);
+    }
     answer.at(3, 12) = 0.;
 
     //Rotation around x-axis
@@ -193,10 +226,11 @@ LatticeFrame3dg::computeBFmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer)
     this->length = computeLength();
 
     TimeStep *tStep = this->domain->giveEngngModel()->giveCurrentStep();
-    
+
     FloatArray u;
     this->computeVectorOf(VM_Total, tStep, u);
-
+    double l1 = this->length*(1.-this->s)/2;
+    double l2 = this->length*(1.+this->s)/2;
     //First Nx1
     answer.at(1, 1) = -1.;
     answer.at(1, 2) = 0.;
@@ -248,46 +282,46 @@ LatticeFrame3dg::computeBFmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer)
     //Torsion  x
     //First node Mx1
     answer.at(4, 1) = 0.;
-    answer.at(4, 2) = -sin(u.at(5))*this->length*(1.+this->s)/2.;
-    answer.at(4, 3) = -sin(u.at(6))*this->length*(1.+this->s)/2.;
+    answer.at(4, 2) = -sin(u.at(5))*l1;
+    answer.at(4, 3) = -sin(u.at(6))*l1;
     answer.at(4, 4) = -1.;
     answer.at(4, 5) = 0.;
     answer.at(4, 6) = 0.;
     //Second node Mx2
     answer.at(10, 1) = 0.;
-    answer.at(10, 2) = sin(u.at(10))*this->length*(1.+this->s)/2.;
-    answer.at(10, 3) = sin(u.at(12))*this->length*(1.+this->s)/2.;
+    answer.at(10, 2) = sin(u.at(11))*l2;
+    answer.at(10, 3) = sin(u.at(12))*l2;
     answer.at(10, 4) = 1.;
     answer.at(10, 5) = 0.;
     answer.at(10, 6) = 0.;
 
     //Moment around y-axis
     //First node my1
-    answer.at(5, 1) = sin(u.at(5))*this->length*(1.+this->s)/2.;
+    answer.at(5, 1) = sin(u.at(5))*l1;
     answer.at(5, 2) = 0.;
-    answer.at(5, 3) = cos(u.at(6))*this->length*(1.+this->s)/2.;
+    answer.at(5, 3) = cos(u.at(5))*l1;
     answer.at(5, 4) = 0.;
     answer.at(5, 5) = -1.;
     answer.at(5, 6) = 0.;
     //Second node My2
-    answer.at(11, 1) = sin(u.at(10))*this->length*(1.+this->s)/2.;
+    answer.at(11, 1) = sin(u.at(11))*l2;
     answer.at(11, 2) = 0.;
-    answer.at(11, 3) = cos(u.at(12))*this->length*(1.+this->s)/2.;
+    answer.at(11, 3) = cos(u.at(11))*l2;
     answer.at(11, 4) = 0.;
     answer.at(11, 5) = 1.;
     answer.at(11, 6) = 0.;
 
     //Moment around z-axis
     //First node Mz1
-    answer.at(6, 1) = sin(u.at(5))*this->length*(1.+this->s)/2.;
-    answer.at(6, 2) = -cos(u.at(6))*this->length*(1.+this->s)/2.;
+    answer.at(6, 1) = sin(u.at(6))*l1;
+    answer.at(6, 2) = -cos(u.at(6))*l1;
     answer.at(6, 3) = 0.;
     answer.at(6, 4) = 0.;
     answer.at(6, 5) = 0.;
     answer.at(6, 6) = -1.;
     //Second node Mz2
-    answer.at(12, 1) = sin(u.at(10))*this->length*(1.+this->s)/2.;
-    answer.at(12, 2) = -cos(u.at(12))*this->length*(1.+this->s)/2.;
+    answer.at(12, 1) = sin(u.at(12))*l2;
+    answer.at(12, 2) = -cos(u.at(12))*l2;
     answer.at(12, 3) =  0.;
     answer.at(12, 4) = 0.;
     answer.at(12, 5) = 0.;
@@ -316,8 +350,8 @@ LatticeFrame3dg::computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMo
     dbj.times(1. / length);
     bjt.beTranspositionOf(bj);
     answer.beProductOf(bf, dbj);
-   // printf("answer/n");
-    //answer.printYourself();
+   printf("Bmatrix/n");
+    bj.printYourself();
     return;
 }
 
@@ -415,7 +449,7 @@ LatticeFrame3dg::giveLocalCoordinateSystem(FloatMatrix &answer)
     FloatArray uA(3), uB(3);
 
     TimeStep *tStep = this->domain->giveEngngModel()->giveCurrentStep();
-    
+
     Node *nodeA, *nodeB;
     nodeA = this->giveNode(1);
     nodeB = this->giveNode(2);
@@ -428,7 +462,7 @@ LatticeFrame3dg::giveLocalCoordinateSystem(FloatMatrix &answer)
     uB.at(1) = nodeB->giveUpdatedCoordinate(1,tStep,1.);
     uB.at(2) = nodeB->giveUpdatedCoordinate(2,tStep,1.);
     uB.at(3) = nodeB->giveUpdatedCoordinate(3,tStep,1.);
-    
+
     lx.beDifferenceOf(uB, uA );
     lx.normalize();
 
