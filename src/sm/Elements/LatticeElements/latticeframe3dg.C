@@ -72,7 +72,10 @@ void
 LatticeFrame3dg::computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, int li, int ui)
 // Returns the strain matrix of the receiver.
 {
-    //Assemble Bmatrix (used to compute strains and rotations)
+
+  double tol=1.e-16;
+
+  //Assemble Bmatrix (used to compute strains and rotations)
     answer.resize(6, 12);
     answer.zero();
 
@@ -90,15 +93,15 @@ LatticeFrame3dg::computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, 
     answer.at(1, 2) = 0.;
     answer.at(1, 3) = 0.;
     answer.at(1, 4) = 0.;
-    if ( u.at(5) == 0 ) {
-        answer.at(1, 5) =  0;
+    if ( fabs(u.at(5)) <= tol ) {
+        answer.at(1, 5) =  0.;
     } else {
-        answer.at(1, 5) =  l1*(1-cos(u.at(5)))/u.at(5);
+      answer.at(1, 5) =  l1*(1. - cos(u.at(5)))/u.at(5);
     }
-    if ( u.at(6) == 0 ) {
-        answer.at(1, 6) =  0;
+    if ( fabs(u.at(6)) <= tol ) {
+        answer.at(1, 6) =  0.;
     } else {
-        answer.at(1, 6) =  l1*(1-cos(u.at(6)))/u.at(6);
+        answer.at(1, 6) =  l1*(1. - cos(u.at(6)))/u.at(6);
     }
     //
     //Second node
@@ -106,15 +109,15 @@ LatticeFrame3dg::computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, 
     answer.at(1, 8) = 0.;
     answer.at(1, 9) = 0.;
     answer.at(1, 10) = 0.;
-    if ( u.at(11) == 0 ) {
+    if ( fabs(u.at(11)) <= tol ) {
         answer.at(1, 11) =  0;
     } else {
-        answer.at(1, 11) =  l2*(1-cos(u.at(11)))/u.at(11);
+        answer.at(1, 11) =  l2*(1.-cos(u.at(11)))/u.at(11);
     }
-    if ( u.at(12) == 0 ) {
-        answer.at(1, 12) =  0;
+    if ( fabs(u.at(12)) <= tol ) {
+        answer.at(1, 12) =  0.;
     } else {
-        answer.at(1, 12) =  l2*(1-cos(u.at(12)))/u.at(12);
+        answer.at(1, 12) =  l2*(1.-cos(u.at(12)))/u.at(12);
     }
 
     //Shear displacement jump in y-plane
@@ -124,7 +127,7 @@ LatticeFrame3dg::computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, 
     answer.at(2, 3) =  0.;
     answer.at(2, 4) = 0.;
     answer.at(2, 5) = 0;
-    if ( u.at(6) == 0 ) {
+    if ( fabs(u.at(6)) <= tol ) {
         answer.at( 2, 6 ) = l1;
     } else {
         answer.at( 2, 6 ) = -sin( u.at( 6 ) ) * l1/u.at(6);
@@ -135,7 +138,7 @@ LatticeFrame3dg::computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, 
     answer.at(2, 9) =  0.;
     answer.at(2, 10) = 0.;
     answer.at(2, 11) = 0;
-    if ( u.at(12) == 0 ) {
+    if ( fabs(u.at(12)) <= tol ) {
         answer.at(2, 12) =  l2;
     } else {
         answer.at( 2, 12 ) = -sin( u.at( 12 ) ) * l2/u.at(12);
@@ -147,7 +150,7 @@ LatticeFrame3dg::computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, 
     answer.at(3, 2) = 0.;
     answer.at(3, 3) = -1.;
     answer.at(3, 4) = 0.;
-    if ( u.at(5) == 0 ) {
+    if ( fabs(u.at(5)) <= tol ) {
         answer.at(3, 5) =  l1;
     } else {
         answer.at( 3, 5 ) = sin( u.at( 5 ) ) * l1/u.at(5);
@@ -158,7 +161,7 @@ LatticeFrame3dg::computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, 
     answer.at(3, 8) = 0.;
     answer.at(3, 9) =  1.;
     answer.at(3, 10) = 0.;
-    if ( u.at(11) == 0 ) {
+    if ( fabs(u.at(11)) <= tol ) {
     answer.at(3, 11) =  l2;
     } else {
     answer.at( 3, 11 ) = sin( u.at( 11 ) ) *l2/u.at(11);
@@ -348,10 +351,10 @@ LatticeFrame3dg::computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMo
 
     dbj.beProductOf(d, bj);
     dbj.times(1. / length);
-    bjt.beTranspositionOf(bj);
+    //    bjt.beTranspositionOf(bj);
     answer.beProductOf(bf, dbj);
-   printf("Bmatrix/n");
-    bj.printYourself();
+    //   printf("Bmatrix/n");
+    //    bj.printYourself();
     return;
 }
 
