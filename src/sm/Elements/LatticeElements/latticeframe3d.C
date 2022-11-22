@@ -241,7 +241,8 @@ LatticeFrame3d::computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMod
     dbj.times(1. / length);
     bjt.beTranspositionOf(bj);
     answer.beProductOf(bjt, dbj);
-
+    //printf("answer/n");
+    //answer.printYourself();
     return;
 }
 
@@ -305,6 +306,7 @@ LatticeFrame3d::giveInternalForcesVector(FloatArray &answer,
     answer.clear();
 
     this->computeBmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), b);
+
     bt.beTranspositionOf(b);
 
     if ( useUpdatedGpRecord == 1 ) {
@@ -318,16 +320,12 @@ LatticeFrame3d::giveInternalForcesVector(FloatArray &answer,
 	strain.times(1./this->length);
         this->computeStressVector(stress, strain, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
     }
-
     answer.beProductOf(bt, stress);
-
     if ( !this->isActivated(tStep) ) {
         answer.zero();
         return;
     }
 }
-
-
 
 bool
 LatticeFrame3d::computeGtoLRotationMatrix(FloatMatrix &answer)
@@ -357,9 +355,9 @@ LatticeFrame3d::giveLocalCoordinateSystem(FloatMatrix &answer)
     Node *nodeA, *nodeB;
     nodeA = this->giveNode(1);
     nodeB = this->giveNode(2);
-
     lx.beDifferenceOf(nodeB->giveCoordinates(), nodeA->giveCoordinates() );
     lx.normalize();
+
 
     if ( this->referenceNode ) {
         Node *refNode = this->giveDomain()->giveNode(this->referenceNode);

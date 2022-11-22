@@ -432,6 +432,7 @@ LIBeam3dNL2 :: computeGaussPoints()
 
 void
 LIBeam3dNL2 :: computeConstitutiveMatrixAt(FloatMatrix &answer, MatResponseMode rMode, GaussPoint *gp, TimeStep *tStep)
+
 {
     answer = this->giveStructuralCrossSection()->give3dBeamStiffMtrx(rMode, gp, tStep);
 }

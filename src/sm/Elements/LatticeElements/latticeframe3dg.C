@@ -116,7 +116,7 @@ LatticeFrame3dg::computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, 
     } else {
         answer.at(1, 12) =  -l2*(1.-cos(u.at(12)))/u.at(12);
     }
-
+//
     //Shear displacement jump in y-plane
     //first node
     answer.at(2, 1) = 0.;
