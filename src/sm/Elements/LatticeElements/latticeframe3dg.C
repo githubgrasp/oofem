@@ -53,8 +53,8 @@
 #include "engngm.h"
 
 #ifdef __OOFEG
- #include "oofeggraphiccontext.h"
- #include "../sm/Materials/structuralmaterial.h"
+#include "oofeggraphiccontext.h"
+#include "../sm/Materials/structuralmaterial.h"
 #endif
 
 namespace oofem {
@@ -68,6 +68,7 @@ LatticeFrame3dg::LatticeFrame3dg(int n, Domain *aDomain) : LatticeFrame3d(n, aDo
 LatticeFrame3dg::~LatticeFrame3dg()
 {}
 
+
 void
 LatticeFrame3dg::computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, int li, int ui)
 // Returns the strain matrix of the receiver.
@@ -75,11 +76,10 @@ LatticeFrame3dg::computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, 
     //Assemble Bmatrix (used to compute strains and rotations)
     answer.resize(6, 12);
     answer.zero();
-
-    this->length = computeLength();
-
     TimeStep *tStep = this->domain->giveEngngModel()->giveCurrentStep();
 
+    this->length = computeLength();
+    double tol=1.e-16;
     FloatArray u;
     this->computeVectorOf(VM_Total, tStep, u);
     double l1 = this->length*(1.-this->s)/2;
@@ -90,15 +90,15 @@ LatticeFrame3dg::computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, 
     answer.at(1, 2) = 0.;
     answer.at(1, 3) = 0.;
     answer.at(1, 4) = 0.;
-    if ( u.at(5) == 0 ) {
-        answer.at(1, 5) =  0;
+    if ( fabs(u.at(5)) <= tol ) {
+        answer.at(1, 5) =  0.;
     } else {
-        answer.at(1, 5) =  l1*(1-cos(u.at(5)))/u.at(5);
+        answer.at(1, 5) =  l1*(1. - cos(u.at(5)))/u.at(5);
     }
-    if ( u.at(6) == 0 ) {
-        answer.at(1, 6) =  0;
+    if ( fabs(u.at(6)) <= tol ) {
+        answer.at(1, 6) =  0.;
     } else {
-        answer.at(1, 6) =  l1*(1-cos(u.at(6)))/u.at(6);
+        answer.at(1, 6) =  l1*(1. - cos(u.at(6)))/u.at(6);
     }
     //
     //Second node
@@ -106,15 +106,15 @@ LatticeFrame3dg::computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, 
     answer.at(1, 8) = 0.;
     answer.at(1, 9) = 0.;
     answer.at(1, 10) = 0.;
-    if ( u.at(11) == 0 ) {
+    if ( fabs(u.at(11)) <= tol ) {
         answer.at(1, 11) =  0;
     } else {
-        answer.at(1, 11) =  l2*(1-cos(u.at(11)))/u.at(11);
+        answer.at(1, 11) =  -l2*(1.-cos(u.at(11)))/u.at(11);
     }
-    if ( u.at(12) == 0 ) {
-        answer.at(1, 12) =  0;
+    if ( fabs(u.at(12)) <= tol ) {
+        answer.at(1, 12) =  0.;
     } else {
-        answer.at(1, 12) =  l2*(1-cos(u.at(12)))/u.at(12);
+        answer.at(1, 12) =  -l2*(1.-cos(u.at(12)))/u.at(12);
     }
 
     //Shear displacement jump in y-plane
@@ -124,7 +124,7 @@ LatticeFrame3dg::computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, 
     answer.at(2, 3) =  0.;
     answer.at(2, 4) = 0.;
     answer.at(2, 5) = 0;
-    if ( u.at(6) == 0 ) {
+    if ( fabs(u.at(6)) <= tol ) {
         answer.at( 2, 6 ) = l1;
     } else {
         answer.at( 2, 6 ) = -sin( u.at( 6 ) ) * l1/u.at(6);
@@ -135,7 +135,7 @@ LatticeFrame3dg::computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, 
     answer.at(2, 9) =  0.;
     answer.at(2, 10) = 0.;
     answer.at(2, 11) = 0;
-    if ( u.at(12) == 0 ) {
+    if ( fabs(u.at(12)) <= tol ) {
         answer.at(2, 12) =  l2;
     } else {
         answer.at( 2, 12 ) = -sin( u.at( 12 ) ) * l2/u.at(12);
@@ -147,7 +147,7 @@ LatticeFrame3dg::computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, 
     answer.at(3, 2) = 0.;
     answer.at(3, 3) = -1.;
     answer.at(3, 4) = 0.;
-    if ( u.at(5) == 0 ) {
+    if ( fabs(u.at(5)) <= tol ) {
         answer.at(3, 5) =  l1;
     } else {
         answer.at( 3, 5 ) = sin( u.at( 5 ) ) * l1/u.at(5);
@@ -158,10 +158,10 @@ LatticeFrame3dg::computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, 
     answer.at(3, 8) = 0.;
     answer.at(3, 9) =  1.;
     answer.at(3, 10) = 0.;
-    if ( u.at(11) == 0 ) {
-    answer.at(3, 11) =  l2;
+    if ( fabs(u.at(11)) <= tol ) {
+        answer.at(3, 11) =  l2;
     } else {
-    answer.at( 3, 11 ) = sin( u.at( 11 ) ) *l2/u.at(11);
+        answer.at( 3, 11 ) = sin( u.at( 11 ) ) *l2/u.at(11);
     }
     answer.at(3, 12) = 0.;
 
@@ -304,7 +304,7 @@ LatticeFrame3dg::computeBFmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer)
     answer.at(5, 5) = -1.;
     answer.at(5, 6) = 0.;
     //Second node My2
-    answer.at(11, 1) = sin(u.at(11))*l2;
+    answer.at(11, 1) = -sin(u.at(11))*l2;
     answer.at(11, 2) = 0.;
     answer.at(11, 3) = cos(u.at(11))*l2;
     answer.at(11, 4) = 0.;
@@ -320,7 +320,7 @@ LatticeFrame3dg::computeBFmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer)
     answer.at(6, 5) = 0.;
     answer.at(6, 6) = -1.;
     //Second node Mz2
-    answer.at(12, 1) = sin(u.at(12))*l2;
+    answer.at(12, 1) = -sin(u.at(12))*l2;
     answer.at(12, 2) = -cos(u.at(12))*l2;
     answer.at(12, 3) =  0.;
     answer.at(12, 4) = 0.;
@@ -329,6 +329,7 @@ LatticeFrame3dg::computeBFmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer)
 
     return;
 }
+
 
 
 void
@@ -342,16 +343,14 @@ LatticeFrame3dg::computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMo
 
     answer.resize(12, 12);
     answer.zero();
-    computeBFmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), bf);
-    computeBmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), bj);
+    this->computeBmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), bj);
     this->computeConstitutiveMatrixAt(d, rMode, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
+    computeBFmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), bf);
 
     dbj.beProductOf(d, bj);
     dbj.times(1. / length);
     bjt.beTranspositionOf(bj);
     answer.beProductOf(bf, dbj);
-   printf("Bmatrix/n");
-    bj.printYourself();
     return;
 }
 
@@ -370,57 +369,46 @@ LatticeFrame3dg :: computeStrainVector(FloatArray &answer, GaussPoint *gp, TimeS
         answer.zero();
         return;
     }
-
+    LatticeMaterialStatus *lmatStat = dynamic_cast< LatticeMaterialStatus * >( integrationRulesArray [ 0 ]->getIntegrationPoint(0)->giveMaterialStatus() );
+    auto Strain =lmatStat ->giveLatticeStrain();
     this->LatticeFrame3dg::computeBmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), b);
-
-    this->computeVectorOf(VM_Total, tStep, u);
+    this->computeVectorOf(VM_Incremental, tStep, u);
     answer.beProductOf(b, u);
-
     answer.times(1./this->length);
-   // printf("Strain/n");
-    //answer.printYourself();
-    }
-
+    answer +=Strain;
+}
 void
 LatticeFrame3dg::giveInternalForcesVector(FloatArray &answer,
     TimeStep *tStep, int useUpdatedGpRecord)
 {
     FloatMatrix b, bt, bf;
     FloatArray u, stress, strain;
+    FloatArray incrementalStress;
+    FloatArray incrementalInternalForces;
+    FloatArray oldInternalForces;
+    FloatArray totalInternalForces;
 
-    this->length = computeLength();
+   // auto tempPlasticStrain = status->givePlasticLatticeStrain();
 
-    this->computeVectorOf(VM_Total, tStep, u);
-
-    if ( initialDisplacements ) {
-        u.subtract(* initialDisplacements);
-    }
-
-    // zero answer will resize accordingly when adding first contribution
-    answer.clear();
-
+    this->length   = computeLength();
+    GaussPoint *gp = this->integrationRulesArray[0]->getIntegrationPoint( 0 );
     this->LatticeFrame3dg::computeBFmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), bf);
+    bt.beTranspositionOf( b );
+    // Total stress
+    this->LatticeFrame3dg::computeStrainVector( strain, gp, tStep );
+    this->computeStressVector( stress, strain, integrationRulesArray[0]->getIntegrationPoint( 0 ), tStep );
+    totalInternalForces.beProductOf( bf, stress );
+    // Old stresses
+    LatticeMaterialStatus *lmatStat = dynamic_cast<LatticeMaterialStatus *>( integrationRulesArray[0]->getIntegrationPoint( 0 )->giveMaterialStatus() );
+    auto oldStress= lmatStat->giveLatticeStress();
+    oldInternalForces.beProductOf( bf, oldStress );
+    incrementalStress.beDifferenceOf( stress, oldStress );
+    answer.beProductOf( bf, incrementalStress );
+    answer += oldInternalForces;
+    //totalInternalForces = strain.at(6) - stress.at(6);
 
-    if ( useUpdatedGpRecord == 1 ) {
-        LatticeMaterialStatus *lmatStat = dynamic_cast< LatticeMaterialStatus * >( integrationRulesArray [ 0 ]->getIntegrationPoint(0)->giveMaterialStatus() );
-        stress = lmatStat->giveLatticeStress();
-    } else {
-        if ( !this->isActivated(tStep) ) {
-            strain.zero();
-        }
-        this->LatticeFrame3dg::computeStrainVector( strain, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep );
-        this->computeStressVector(stress, strain, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
-    }
-   // printf("Stress/n");
-    //stress.printYourself();
+    //status->letTotalInernalforcesBe(tempTotalInternalForces);
 
-    answer.beProductOf(bf, stress);
-    //printf("Force/n");
-    //answer.printYourself();
-    if ( !this->isActivated(tStep) ) {
-        answer.zero();
-        return;
-    }
 }
 bool
 LatticeFrame3dg::computeGtoLRotationMatrix(FloatMatrix &answer)
@@ -429,7 +417,7 @@ LatticeFrame3dg::computeGtoLRotationMatrix(FloatMatrix &answer)
     answer.resize(12, 12);
     answer.zero();
 
-    this->giveLocalCoordinateSystem(lcs);
+    this->LatticeFrame3dg::giveLocalCoordinateSystem(lcs);
     for ( int i = 1; i <= 3; i++ ) {
         for ( int j = 1; j <= 3; j++ ) {
             answer.at(i, j) = lcs.at(i, j);
@@ -518,5 +506,7 @@ LatticeFrame3dg::giveLocalCoordinateSystem(FloatMatrix &answer)
 
     return 1;
 }
+
+
 
 } // end namespace oofem
