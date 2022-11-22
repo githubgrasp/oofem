@@ -66,7 +66,7 @@ protected:
     FloatMatrix localCoordinateSystem;
 
     FloatArray midPoint, globalCentroid, normal;
-//
+
 public:
     LatticeFrame3dg(int n, Domain *);
     virtual ~LatticeFrame3dg();
