@@ -73,7 +73,10 @@ void
 LatticeFrame3dg::computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, int li, int ui)
 // Returns the strain matrix of the receiver.
 {
-    //Assemble Bmatrix (used to compute strains and rotations)
+
+  double tol=1.e-16;
+
+  //Assemble Bmatrix (used to compute strains and rotations)
     answer.resize(6, 12);
     answer.zero();
     TimeStep *tStep = this->domain->giveEngngModel()->giveCurrentStep();
@@ -93,7 +96,11 @@ LatticeFrame3dg::computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, 
     if ( fabs(u.at(5)) <= tol ) {
         answer.at(1, 5) =  0.;
     } else {
+<<<<<<< HEAD
         answer.at(1, 5) =  l1*(1. - cos(u.at(5)))/u.at(5);
+=======
+      answer.at(1, 5) =  l1*(1. - cos(u.at(5)))/u.at(5);
+>>>>>>> 8b84bfe5ffc7ec1a98411bbd4e124d9b4d1eebfe
     }
     if ( fabs(u.at(6)) <= tol ) {
         answer.at(1, 6) =  0.;
@@ -109,12 +116,20 @@ LatticeFrame3dg::computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, 
     if ( fabs(u.at(11)) <= tol ) {
         answer.at(1, 11) =  0;
     } else {
+<<<<<<< HEAD
         answer.at(1, 11) =  -l2*(1.-cos(u.at(11)))/u.at(11);
+=======
+        answer.at(1, 11) =  l2*(1.-cos(u.at(11)))/u.at(11);
+>>>>>>> 8b84bfe5ffc7ec1a98411bbd4e124d9b4d1eebfe
     }
     if ( fabs(u.at(12)) <= tol ) {
         answer.at(1, 12) =  0.;
     } else {
+<<<<<<< HEAD
         answer.at(1, 12) =  -l2*(1.-cos(u.at(12)))/u.at(12);
+=======
+        answer.at(1, 12) =  l2*(1.-cos(u.at(12)))/u.at(12);
+>>>>>>> 8b84bfe5ffc7ec1a98411bbd4e124d9b4d1eebfe
     }
 //
     //Shear displacement jump in y-plane
@@ -159,7 +174,11 @@ LatticeFrame3dg::computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, 
     answer.at(3, 9) =  1.;
     answer.at(3, 10) = 0.;
     if ( fabs(u.at(11)) <= tol ) {
+<<<<<<< HEAD
         answer.at(3, 11) =  l2;
+=======
+    answer.at(3, 11) =  l2;
+>>>>>>> 8b84bfe5ffc7ec1a98411bbd4e124d9b4d1eebfe
     } else {
         answer.at( 3, 11 ) = sin( u.at( 11 ) ) *l2/u.at(11);
     }
@@ -349,8 +368,13 @@ LatticeFrame3dg::computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMo
 
     dbj.beProductOf(d, bj);
     dbj.times(1. / length);
-    bjt.beTranspositionOf(bj);
+    //    bjt.beTranspositionOf(bj);
     answer.beProductOf(bf, dbj);
+<<<<<<< HEAD
+=======
+    //   printf("Bmatrix/n");
+    //    bj.printYourself();
+>>>>>>> 8b84bfe5ffc7ec1a98411bbd4e124d9b4d1eebfe
     return;
 }
 

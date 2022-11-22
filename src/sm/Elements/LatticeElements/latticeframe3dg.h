@@ -84,7 +84,7 @@ protected:
     void giveInternalForcesVector(FloatArray &answer, TimeStep *tStep, int useUpdatedGpRecord) override;
     bool computeGtoLRotationMatrix(FloatMatrix &) override;
     void computeBFmatrixAt( GaussPoint *aGaussPoint, FloatMatrix &answer);
-
+//
 };
 } // end namespace oofem
 #endif
