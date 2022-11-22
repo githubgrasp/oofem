@@ -83,8 +83,9 @@ protected:
     virtual void  computeStrainVector( FloatArray &answer, GaussPoint *gp, TimeStep *tStep ) override;
     void giveInternalForcesVector(FloatArray &answer, TimeStep *tStep, int useUpdatedGpRecord) override;
     bool computeGtoLRotationMatrix(FloatMatrix &) override;
-    void computeBFmatrixAt( GaussPoint *aGaussPoint, FloatMatrix &answer);
-//
+
+  void computeBFmatrixAt( GaussPoint *aGaussPoint, FloatMatrix &answer);
+
 };
 } // end namespace oofem
 #endif
