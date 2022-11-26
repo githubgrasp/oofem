@@ -78,6 +78,9 @@ protected:
     /// Non-equilibrated plastic lattice strain
     FloatArrayF< 6 >oldPlasticLatticeStrain;
 
+    /// Internal Forces
+    FloatArrayF< 12 >internalForces;
+
 
     /// Equilibriated damage lattice strain
     FloatArrayF< 6 >damageLatticeStrain;
@@ -100,6 +103,12 @@ protected:
 
     ///Increment of dissipation
     double deltaDissipation = 0.;
+
+   // ///Internal lForces
+   // double internalForces=0;
+
+  //  ///temp Internal Forces
+   // double tempInternalForces=0;
 
     /// Non-equilibrated increment of dissipation
     double tempDeltaDissipation = 0.;
@@ -139,8 +148,10 @@ public:
 
     /// Returns lattice strain.
     const FloatArrayF< 6 > &giveLatticeStrain() const { return this->latticeStrain; }
+
+
     /// Returns lattice strain.
-    const FloatArrayF< 6 > &giveTempLatticeStrain() const { return this->tempLatticeStress; }
+    const FloatArrayF< 6 > &giveTempLatticeStrain() const { return this->tempLatticeStrain; }
 
     /// Returns reduced lattice strain.
     const FloatArrayF< 6 > &giveReducedLatticeStrain() const { return reducedLatticeStrain; }
@@ -162,6 +173,9 @@ public:
     /// Returns temp lattice stress.
     const FloatArrayF< 6 > &giveTempLatticeStress() const { return this->tempLatticeStress; }
 
+    /// Returns temp lattice stress.
+    const FloatArrayF< 12 > &giveTempInternalForces() const { return this->tempInternalForces; }
+
     /// Returns temp damage lattice strain.
     const FloatArrayF< 6 > &giveTempDamageLatticeStrain() const { return this->tempDamageLatticeStrain; }
 
@@ -176,6 +190,12 @@ public:
 
     /// Assigns the temp value of lattice stress.
     void letTempLatticeStressBe(const FloatArrayF< 6 > &v) { this->tempLatticeStress = v; }
+
+    /// Assigns the temp value of lattice stress.
+    void letTempInternalForcesBe(const FloatArrayF< 12 > &v) { this->tempInternalForces = v; }
+
+    /// Assigns the temp value of lattice stress.
+    void letInternalForcesBe(const FloatArrayF< 12 > &v) { this->internalForces = v; }
 
     /// Assigns the temp value of damage lattice strain.
     void letTempDamageLatticeStrainBe(const FloatArrayF< 6 > &v) { this->tempDamageLatticeStrain = v; }
@@ -240,6 +260,8 @@ public:
     void saveContext(DataStream &stream, ContextMode mode) override;
 
     void restoreContext(DataStream &stream, ContextMode mode) override;
+    /// temp Internal Forces
+    FloatArrayF< 12 >tempInternalForces;
 };
 } // end namespace oofem
 #endif // matstatus_h

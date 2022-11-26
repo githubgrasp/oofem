@@ -109,12 +109,12 @@ LatticeFrame3dg::computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, 
     if ( fabs(u.at(11)) <= tol ) {
         answer.at(1, 11) =  0;
     } else {
-        answer.at(1, 11) =  -l2*(1.-cos(u.at(11)))/u.at(11);
+        answer.at(1, 11) =  l2*(1.-cos(u.at(11)))/u.at(11);
     }
     if ( fabs(u.at(12)) <= tol ) {
         answer.at(1, 12) =  0.;
     } else {
-        answer.at(1, 12) =  -l2*(1.-cos(u.at(12)))/u.at(12);
+        answer.at(1, 12) =  l2*(1.-cos(u.at(12)))/u.at(12);
     }
 
     //Shear displacement jump in y-plane
@@ -304,7 +304,7 @@ LatticeFrame3dg::computeBFmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer)
     answer.at(5, 5) = -1.;
     answer.at(5, 6) = 0.;
     //Second node My2
-    answer.at(11, 1) = -sin(u.at(11))*l2;
+    answer.at(11, 1) = sin(u.at(11))*l2;
     answer.at(11, 2) = 0.;
     answer.at(11, 3) = cos(u.at(11))*l2;
     answer.at(11, 4) = 0.;
@@ -320,7 +320,7 @@ LatticeFrame3dg::computeBFmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer)
     answer.at(6, 5) = 0.;
     answer.at(6, 6) = -1.;
     //Second node Mz2
-    answer.at(12, 1) = -sin(u.at(12))*l2;
+    answer.at(12, 1) = sin(u.at(12))*l2;
     answer.at(12, 2) = -cos(u.at(12))*l2;
     answer.at(12, 3) =  0.;
     answer.at(12, 4) = 0.;
@@ -329,10 +329,14 @@ LatticeFrame3dg::computeBFmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer)
 
     return;
 }
-
+void
+LatticeFrame3dg::computeConstitutiveMatrixAt(FloatMatrix &answer, MatResponseMode rMode, GaussPoint *gp, TimeStep *tStep)
+{
+    answer =  static_cast< LatticeCrossSection * >( this->giveCrossSection() )->give3dFrameStiffnessMatrix(rMode, gp, tStep);
+}
 void
 LatticeFrame3dg::computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode,
-                                       TimeStep *tStep)
+    TimeStep *tStep)
 // Computes numerically the stiffness matrix of the receiver.
 {
     FloatMatrix d, bi, bj, bjt, dbj, dij, bf;
@@ -500,7 +504,72 @@ LatticeFrame3dg::giveLocalCoordinateSystem(FloatMatrix &answer)
 
     return 1;
 }
+void
+LatticeFrame3dg::giveDofManDofIDMask(int inode, IntArray &answer) const
+{
+    answer = {
+        D_u, D_v, D_w, R_u, R_v, R_w
+    };
+}
 
+void
+LatticeFrame3dg::initializeFrom(InputRecord &ir)
+{
+    LatticeStructuralElement::initializeFrom(ir);
+
+    referenceNode = 0;
+    referenceAngle = 0;
+    this->zaxis.clear();
+    if ( ir.hasField(_IFT_LatticeFrame3d_zaxis) ) {
+        IR_GIVE_FIELD(ir, this->zaxis, _IFT_LatticeFrame3dg_zaxis);
+    } else if ( ir.hasField(_IFT_LatticeFrame3d_refnode) ) {
+        IR_GIVE_FIELD(ir, referenceNode, _IFT_LatticeFrame3dg_refnode);
+        if ( referenceNode == 0 ) {
+            OOFEM_WARNING("wrong reference node specified. Using default orientation.");
+        }
+    } else if ( ir.hasField(_IFT_LatticeFrame3d_refangle) ) {
+        IR_GIVE_FIELD(ir, referenceAngle, _IFT_LatticeFrame3dg_refangle);
+    } else {
+        throw ValueInputException(ir, _IFT_LatticeFrame3d_zaxis, "axis, reference node, or angle not set");
+    }
+
+    this->s = 0.;
+    IR_GIVE_OPTIONAL_FIELD(ir, s, _IFT_LatticeFrame3d_s);
+
+}
+
+
+double
+LatticeFrame3dg::computeLength()
+{
+    double dx, dy, dz;
+    Node *nodeA, *nodeB;
+
+    if ( length == 0. ) {
+        nodeA   = this->giveNode(1);
+        nodeB   = this->giveNode(2);
+        dx      = nodeB->giveCoordinate(1) - nodeA->giveCoordinate(1);
+        dy      = nodeB->giveCoordinate(2) - nodeA->giveCoordinate(2);
+        dz      = nodeB->giveCoordinate(3) - nodeA->giveCoordinate(3);
+        length  = sqrt(dx * dx + dy * dy + dz * dz);
+    }
+
+    return length;
+}
+
+void
+LatticeFrame3dg::computeLumpedMassMatrix(FloatMatrix &answer, TimeStep *tStep)
+// Returns the lumped mass matrix of the receiver. This expression is
+// valid in both local and global axes.
+{
+    GaussPoint *gp = integrationRulesArray [ 0 ]->getIntegrationPoint(0);
+    double density = static_cast< LatticeCrossSection * >( this->giveCrossSection() )->give('d', gp);
+    double halfMass = density * computeVolumeAround(gp) / 2.;
+    answer.resize(12, 12);
+    answer.zero();
+    answer.at(1, 1) = answer.at(2, 2) = answer.at(3, 3) = halfMass;
+    answer.at(7, 7) = answer.at(8, 8) = answer.at(9, 9) = halfMass;
+}
 
 
 } // end namespace oofem

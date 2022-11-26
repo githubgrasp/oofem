@@ -54,6 +54,8 @@ LatticeMaterialStatus :: initTempStatus()
 
     this->tempLatticeStrain = this->latticeStrain;
 
+    this->tempInternalForces = this->internalForces;
+
     this->tempLatticeStress = this->latticeStress;
 
     this->tempReducedLatticeStrain = this->reducedLatticeStrain;
@@ -77,6 +79,8 @@ void
 LatticeMaterialStatus :: updateYourself(TimeStep *atTime)
 {
     MaterialStatus :: updateYourself(atTime);
+
+    this->internalForces = this->tempInternalForces;
 
     this->latticeStress = this->tempLatticeStress;
 
@@ -146,6 +150,10 @@ LatticeMaterialStatus :: saveContext(DataStream &stream, ContextMode mode)
         THROW_CIOERR(iores);
     }
 
+    if ( ( iores = internalForces.storeYourself(stream) ) != CIO_OK ) {
+        THROW_CIOERR(iores);
+    }
+
     if ( ( iores = latticeStrain.storeYourself(stream) ) != CIO_OK ) {
         THROW_CIOERR(iores);
     }
@@ -191,6 +199,10 @@ LatticeMaterialStatus :: restoreContext(DataStream &stream, ContextMode mode)
     contextIOResultType iores;
 
     if ( ( iores = damageLatticeStrain.restoreYourself(stream) ) != CIO_OK ) {
+        THROW_CIOERR(iores);
+    }
+
+    if ( ( iores = internalForces.restoreYourself(stream) ) != CIO_OK ) {
         THROW_CIOERR(iores);
     }
 
