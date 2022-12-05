@@ -68,9 +68,9 @@ LatticeFrame3dg::LatticeFrame3dg(int n, Domain *aDomain) : LatticeFrame3d(n, aDo
 LatticeFrame3dg::~LatticeFrame3dg()
 {}
 
-
+ 
 void
-LatticeFrame3dg::computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, int li, int ui)
+LatticeFrame3dg::computeBDmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer)
 // Returns the strain matrix of the receiver.
 {
     //Assemble Bmatrix (used to compute strains and rotations)
@@ -81,7 +81,8 @@ LatticeFrame3dg::computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, 
     this->length = computeLength();
     double tol=1.e-16;
     FloatArray u;
-    this->computeVectorOf(VM_Total, tStep, u);
+    //    this->computeVectorOf(VM_Total, tStep, u);
+    this->computeVectorOf(VM_Incremental, tStep, u);
     double l1 = this->length*(1.-this->s)/2;
     double l2 = this->length*(1.+this->s)/2;
     //Normal displacement jump in x-direction
@@ -228,10 +229,12 @@ LatticeFrame3dg::computeBFmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer)
     TimeStep *tStep = this->domain->giveEngngModel()->giveCurrentStep();
 
     FloatArray u;
-    this->computeVectorOf(VM_Total, tStep, u);
+    this->computeVectorOf(VM_Incremental, tStep, u);
+    //    this->computeVectorOf(VM_Total, tStep, u);
     double l1 = this->length*(1.-this->s)/2;
     double l2 = this->length*(1.+this->s)/2;
-    //First Nx1
+
+    //Nx1
     answer.at(1, 1) = -1.;
     answer.at(1, 2) = 0.;
     answer.at(1, 3) = 0.;
@@ -239,7 +242,48 @@ LatticeFrame3dg::computeBFmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer)
     answer.at(1, 5) = 0.;
     answer.at(1, 6) = 0.;
 
-    //Second Nx2
+    //Fy1
+    answer.at(2, 1) = 0.;
+    answer.at(2, 2) = -1.;
+    answer.at(2, 3) = 0.;
+    answer.at(2, 4) = 0.;
+    answer.at(2, 5) = 0;
+    answer.at(2, 6) = 0.;
+    
+    //Fz1
+    answer.at(3, 1) = 0.;
+    answer.at(3, 2) = 0.;
+    answer.at(3, 3) = -1.;
+    answer.at(3, 4) = 0.;
+    answer.at(3, 5) = 0.;
+    answer.at(3, 6) = 0.;
+    
+    //Mx1
+    answer.at(4, 1) = 0.;
+    answer.at(4, 2) = -sin(u.at(5))*l1;
+    answer.at(4, 3) = -sin(u.at(6))*l1;
+    answer.at(4, 4) = -1.;
+    answer.at(4, 5) = 0.;
+    answer.at(4, 6) = 0.;
+   
+    //My1
+    answer.at(5, 1) = sin(u.at(5))*l1;
+    answer.at(5, 2) = 0.;
+    answer.at(5, 3) = cos(u.at(5))*l1;
+    answer.at(5, 4) = 0.;
+    answer.at(5, 5) = -1.;
+    answer.at(5, 6) = 0.;
+
+    //Mz1
+    answer.at(6, 1) = sin(u.at(6))*l1;
+    answer.at(6, 2) = -cos(u.at(6))*l1;
+    answer.at(6, 3) = 0.;
+    answer.at(6, 4) = 0.;
+    answer.at(6, 5) = 0.;
+    answer.at(6, 6) = -1.;
+
+    
+    //Nx2
     answer.at(7, 1) = 1.;
     answer.at(7, 2) = 0.;
     answer.at(7, 3) = 0.;
@@ -247,15 +291,7 @@ LatticeFrame3dg::computeBFmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer)
     answer.at(7, 5) = 0.;
     answer.at(7, 6) = 0.;
 
-    //Shear Y
-    //first node Fy1
-    answer.at(2, 1) = 0.;
-    answer.at(2, 2) = -1.;
-    answer.at(2, 3) = 0.;
-    answer.at(2, 4) = 0.;
-    answer.at(2, 5) = 0;
-    answer.at(2, 6) = 0.;
-    //Second node Fy2
+    //Fy2
     answer.at(8, 1) = 0.;
     answer.at(8, 2) = 1.;
     answer.at(8, 3) =  0.;
@@ -263,15 +299,7 @@ LatticeFrame3dg::computeBFmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer)
     answer.at(8, 5) = 0;
     answer.at(8, 6) = 0.;
 
-    //Shear Z
-    //first node Fz1
-    answer.at(3, 1) = 0.;
-    answer.at(3, 2) = 0.;
-    answer.at(3, 3) = -1.;
-    answer.at(3, 4) = 0.;
-    answer.at(3, 5) = 0.;
-    answer.at(3, 6) = 0.;
-    //Second node Fz2
+    //Fz2
     answer.at(9, 1) = 0.;
     answer.at(9, 2) = 0.;
     answer.at(9, 3) =  1.;
@@ -279,15 +307,7 @@ LatticeFrame3dg::computeBFmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer)
     answer.at(9, 5) = 0.;
     answer.at(9, 6) = 0.;
 
-    //Torsion  x
-    //First node Mx1
-    answer.at(4, 1) = 0.;
-    answer.at(4, 2) = -sin(u.at(5))*l1;
-    answer.at(4, 3) = -sin(u.at(6))*l1;
-    answer.at(4, 4) = -1.;
-    answer.at(4, 5) = 0.;
-    answer.at(4, 6) = 0.;
-    //Second node Mx2
+    //Mx2
     answer.at(10, 1) = 0.;
     answer.at(10, 2) = sin(u.at(11))*l2;
     answer.at(10, 3) = sin(u.at(12))*l2;
@@ -295,15 +315,7 @@ LatticeFrame3dg::computeBFmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer)
     answer.at(10, 5) = 0.;
     answer.at(10, 6) = 0.;
 
-    //Moment around y-axis
-    //First node my1
-    answer.at(5, 1) = sin(u.at(5))*l1;
-    answer.at(5, 2) = 0.;
-    answer.at(5, 3) = cos(u.at(5))*l1;
-    answer.at(5, 4) = 0.;
-    answer.at(5, 5) = -1.;
-    answer.at(5, 6) = 0.;
-    //Second node My2
+    //My2
     answer.at(11, 1) = sin(u.at(11))*l2;
     answer.at(11, 2) = 0.;
     answer.at(11, 3) = cos(u.at(11))*l2;
@@ -311,15 +323,7 @@ LatticeFrame3dg::computeBFmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer)
     answer.at(11, 5) = 1.;
     answer.at(11, 6) = 0.;
 
-    //Moment around z-axis
-    //First node Mz1
-    answer.at(6, 1) = sin(u.at(6))*l1;
-    answer.at(6, 2) = -cos(u.at(6))*l1;
-    answer.at(6, 3) = 0.;
-    answer.at(6, 4) = 0.;
-    answer.at(6, 5) = 0.;
-    answer.at(6, 6) = -1.;
-    //Second node Mz2
+    //Mz2
     answer.at(12, 1) = sin(u.at(12))*l2;
     answer.at(12, 2) = -cos(u.at(12))*l2;
     answer.at(12, 3) =  0.;
@@ -345,7 +349,7 @@ LatticeFrame3dg::computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMo
 
     answer.resize(12, 12);
     answer.zero();
-    this->computeBmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), bj);
+    this->computeBDmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), bj);
     this->computeConstitutiveMatrixAt(d, rMode, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
     computeBFmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), bf);
 
@@ -369,13 +373,13 @@ LatticeFrame3dg :: computeStrainVector(FloatArray &answer, GaussPoint *gp, TimeS
     FloatArray incrementalStrain;
 
     LatticeMaterialStatus *lmatStat = dynamic_cast< LatticeMaterialStatus * >( integrationRulesArray [ 0 ]->getIntegrationPoint(0)->giveMaterialStatus() );
-    auto Strain =lmatStat ->giveLatticeStrain();
-    this->LatticeFrame3dg::computeBmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), b);
+    auto strain =lmatStat ->giveLatticeStrain();
+    this->LatticeFrame3dg::computeBDmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), b);
     this->computeVectorOf(VM_Incremental, tStep, u);
+    //this->computeVectorOf(VM_Total, tStep, u);
     answer.beProductOf(b, u);
     answer.times(1./this->length);
-    answer +=Strain;
-
+    answer += strain;
 }
 
 void
@@ -384,30 +388,31 @@ LatticeFrame3dg::giveInternalForcesVector(FloatArray &answer,
 {
     FloatMatrix b, bt, bf;
     FloatArray u, stress, strain;
-    FloatArray incrementalStress;
-    FloatArray incrementalInternalForces;
-    FloatArray oldInternalForces;
-    FloatArray totalInternalForces;
-
 
     this->length   = computeLength();
     GaussPoint *gp = this->integrationRulesArray[0]->getIntegrationPoint( 0 );
     this->LatticeFrame3dg::computeBFmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), bf);
-    bt.beTranspositionOf( b );
+    //    bt.beTranspositionOf( b );
     // Total stress
     this->LatticeFrame3dg::computeStrainVector( strain, gp, tStep );
     this->computeStressVector( stress, strain, integrationRulesArray[0]->getIntegrationPoint( 0 ), tStep );
-    totalInternalForces.beProductOf( bf, stress );
+    //   totalInternalForces.beProductOf( bf, stress );
     // Old stresses
     LatticeMaterialStatus *lmatStat = dynamic_cast<LatticeMaterialStatus *>( integrationRulesArray[0]->getIntegrationPoint( 0 )->giveMaterialStatus() );
     auto oldStress= lmatStat->giveLatticeStress();
-    oldInternalForces.beProductOf( bf, oldStress );
+
+    auto oldInternalForces = lmatStat->giveInternalForces();
+
+    FloatArray incrementalStress;
     incrementalStress.beDifferenceOf( stress, oldStress );
+
     answer.beProductOf( bf, incrementalStress );
+    //answer.beProductOf( bf, stress );
     answer += oldInternalForces;
-    //totalInternalForces = strain.at(6) - stress.at(6);
-    //status->letTotalInernalforcesBe(tempTotalInternalForces);
+
+    lmatStat->letTempInternalForcesBe(answer);
 }
+
 bool
 LatticeFrame3dg::computeGtoLRotationMatrix(FloatMatrix &answer)
 {
@@ -431,27 +436,49 @@ int
 LatticeFrame3dg::giveLocalCoordinateSystem(FloatMatrix &answer)
 {
     FloatArray lx, ly, lz, help(3);
-    FloatArray coord;
-    FloatArray uA(3), uB(3);
-
+    FloatArray coordA, coordB;
+    FloatArray uA(6),uAIncr(6), uB(6),uBIncr(6);
+    IntArray dofid = {1,2,3,4,5,6};
+  
     TimeStep *tStep = this->domain->giveEngngModel()->giveCurrentStep();
-
+    
     Node *nodeA, *nodeB;
     nodeA = this->giveNode(1);
     nodeB = this->giveNode(2);
+    
+    
+    coordA = nodeA->giveCoordinates();
+    nodeA->giveUnknownVector(uA,dofid,VM_Total,tStep,false);
+    nodeA->giveUnknownVector(uAIncr,dofid,VM_Incremental,tStep,false);
+    //    nodeA->giveUnknownVectorOfType(uA, DisplacementVector, VM_Total, tStep);
+    // nodeA->giveUnknownVectorOfType(uAIncr, DisplacementVector, VM_Incremental, tStep);
+    for(int i=1;i<=3;i++){
+      coordA.at(i) += uA.at(i)-uAIncr.at(i);
+    }
 
-    //This is not working yet. It only works so far if displacements are translations only. We could do it DOf by DOF or we could understand better hte updated Langragian version that seems to be implemented. I will let you know.
-    uA.at(1) = nodeA->giveUpdatedCoordinate(1,tStep,1.);
-    uA.at(2) = nodeA->giveUpdatedCoordinate(2,tStep,1.);
-    uA.at(3) = nodeA->giveUpdatedCoordinate(3,tStep,1.);
 
-    uB.at(1) = nodeB->giveUpdatedCoordinate(1,tStep,1.);
-    uB.at(2) = nodeB->giveUpdatedCoordinate(2,tStep,1.);
-    uB.at(3) = nodeB->giveUpdatedCoordinate(3,tStep,1.);
+    
+    coordB = nodeB->giveCoordinates();
+    nodeB->giveUnknownVector(uB,dofid,VM_Total,tStep,false);
+    nodeB->giveUnknownVector(uBIncr,dofid,VM_Incremental,tStep,false);
 
-    lx.beDifferenceOf(uB, uA );
+    //      nodeB->giveUnknownVector(uB,dofid,VM_Total,tStep,false);
+    for(int i=1;i<=3;i++){
+      coordB.at(i) += uB.at(i)-uBIncr.at(i);
+    }
+    
+    /* uA.at(1) = nodeA->giveUpdatedCoordinate(1,tStep,1.); */
+    /* uA.at(2) = nodeA->giveUpdatedCoordinate(2,tStep,1.); */
+    /* uA.at(3) = nodeA->giveUpdatedCoordinate(3,tStep,1.); */
+
+    /* uB.at(1) = nodeB->giveUpdatedCoordinate(1,tStep,1.); */
+    /* uB.at(2) = nodeB->giveUpdatedCoordinate(2,tStep,1.); */
+    /* uB.at(3) = nodeB->giveUpdatedCoordinate(3,tStep,1.); */
+
+    
+    lx.beDifferenceOf(coordB, coordA );
     lx.normalize();
-
+    
     if ( this->referenceNode ) {
         Node *refNode = this->giveDomain()->giveNode(this->referenceNode);
         help.beDifferenceOf(refNode->giveCoordinates(), nodeA->giveCoordinates() );
@@ -504,7 +531,10 @@ LatticeFrame3dg::giveLocalCoordinateSystem(FloatMatrix &answer)
 
     return 1;
 }
-void
+
+ 
+
+ void
 LatticeFrame3dg::giveDofManDofIDMask(int inode, IntArray &answer) const
 {
     answer = {
@@ -555,6 +585,44 @@ LatticeFrame3dg::computeLength()
     }
 
     return length;
+}
+
+double
+LatticeFrame3dg::computeCurrentLength()
+{
+
+  TimeStep *tStep = this->domain->giveEngngModel()->givePreviousStep();
+  if(tStep->isTheFirstStep()){
+    tStep = this->domain->giveEngngModel()->giveCurrentStep();
+  }
+
+
+  double dx, dy, dz;
+  Node *nodeA, *nodeB;
+  double currentLength;
+  FloatArray uA(6), uB(6), coordA(3), coordB(3);
+  IntArray dofid = {1,2,3,4,5,6}; 
+  
+  nodeA   = this->giveNode(1);
+  coordA = nodeA->giveCoordinates();
+  nodeA->giveUnknownVector(uA,dofid,VM_Total,tStep,false);
+  for(int i=1;i<=3;i++){
+    coordA.at(i) += uA.at(i);
+  }
+
+  nodeB   = this->giveNode(2);
+  coordB = nodeB->giveCoordinates();
+  nodeB->giveUnknownVector(uB,dofid,VM_Total,tStep,false);
+  for(int i=1;i<=3;i++){
+    coordB.at(i) += uB.at(i);
+  }
+
+  dx      = coordB.at(1) - coordA.at(1);
+  dy      = coordB.at(2) - coordA.at(2);
+  dz      = coordB.at(3) - coordA.at(3);
+  currentLength  = sqrt(dx * dx + dy * dy + dz * dz);
+  
+  return currentLength;
 }
 
 void

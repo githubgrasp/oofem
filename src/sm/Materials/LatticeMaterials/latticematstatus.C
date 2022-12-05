@@ -170,6 +170,10 @@ LatticeMaterialStatus :: saveContext(DataStream &stream, ContextMode mode)
         THROW_CIOERR(iores);
     }
 
+    if ( ( iores = internalForces.storeYourself(stream) ) != CIO_OK ) {
+        THROW_CIOERR(iores);
+    }
+    
     if ( !stream.write(le) ) {
         THROW_CIOERR(CIO_IOERR);
     }
@@ -222,6 +226,11 @@ LatticeMaterialStatus :: restoreContext(DataStream &stream, ContextMode mode)
         THROW_CIOERR(iores);
     }
 
+    if ( ( iores = internalForces.restoreYourself(stream) ) != CIO_OK ) {
+        THROW_CIOERR(iores);
+    }
+
+    
     if ( !stream.read(le) ) {
         THROW_CIOERR(CIO_IOERR);
     }
@@ -237,5 +246,7 @@ LatticeMaterialStatus :: restoreContext(DataStream &stream, ContextMode mode)
     if ( !stream.read(crackFlag) ) {
         THROW_CIOERR(CIO_IOERR);
     }
+
+    
 }
 } // end namespace oofem

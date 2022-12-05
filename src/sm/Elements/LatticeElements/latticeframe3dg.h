@@ -72,6 +72,7 @@ public:
    virtual ~LatticeFrame3dg();
 
    double computeLength() override;
+  double computeCurrentLength();
    void initializeFrom(InputRecord &ir) override;
    void giveDofManDofIDMask(int inode, IntArray &) const override;
 
@@ -88,7 +89,7 @@ public:
 
    protected:
    void computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode, TimeStep *tStep) override;
-   void computeBmatrixAt(GaussPoint *, FloatMatrix &, int = 1, int = ALL_STRAINS) override;
+   void computeBDmatrixAt(GaussPoint *, FloatMatrix &);
    //  virtual void computeBmatrixAt( GaussPoint *aGaussPoint, FloatMatrix &answer) override;
    virtual void  computeStrainVector( FloatArray &answer, GaussPoint *gp, TimeStep *tStep ) override;
    bool computeGtoLRotationMatrix(FloatMatrix &) override;

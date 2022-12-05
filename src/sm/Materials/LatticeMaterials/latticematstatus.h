@@ -78,9 +78,10 @@ protected:
     /// Non-equilibrated plastic lattice strain
     FloatArrayF< 6 >oldPlasticLatticeStrain;
 
-    /// Internal Forces
+    /// Equilibrated Internal Forces
     FloatArrayF< 12 >internalForces;
-
+  ///Non-equilibrated Internal Forces
+  FloatArrayF< 12 >tempInternalForces;
 
     /// Equilibriated damage lattice strain
     FloatArrayF< 6 >damageLatticeStrain;
@@ -179,6 +180,10 @@ public:
     /// Returns temp damage lattice strain.
     const FloatArrayF< 6 > &giveTempDamageLatticeStrain() const { return this->tempDamageLatticeStrain; }
 
+    /// Returns temp damage lattice strain.
+    const FloatArrayF< 12 > &giveInternalForces() const { return this->internalForces; }
+
+  
     /// Assigns the temp value of lattice strain.
     void letTempLatticeStrainBe(const FloatArrayF< 6 > &v) { this->tempLatticeStrain = v; }
 
@@ -193,9 +198,6 @@ public:
 
     /// Assigns the temp value of lattice stress.
     void letTempInternalForcesBe(const FloatArrayF< 12 > &v) { this->tempInternalForces = v; }
-
-    /// Assigns the temp value of lattice stress.
-    void letInternalForcesBe(const FloatArrayF< 12 > &v) { this->internalForces = v; }
 
     /// Assigns the temp value of damage lattice strain.
     void letTempDamageLatticeStrainBe(const FloatArrayF< 6 > &v) { this->tempDamageLatticeStrain = v; }
@@ -260,8 +262,6 @@ public:
     void saveContext(DataStream &stream, ContextMode mode) override;
 
     void restoreContext(DataStream &stream, ContextMode mode) override;
-    /// temp Internal Forces
-    FloatArrayF< 12 >tempInternalForces;
 };
 } // end namespace oofem
 #endif // matstatus_h
