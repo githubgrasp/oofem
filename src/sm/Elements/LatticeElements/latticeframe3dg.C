@@ -70,7 +70,7 @@ LatticeFrame3dg::~LatticeFrame3dg()
 
  
 void
-LatticeFrame3dg::computeBDmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer)
+LatticeFrame3dg::computeBDmatrixAt(GaussPoint *gp, FloatMatrix &answer)
 // Returns the strain matrix of the receiver.
 {
     //Assemble Bmatrix (used to compute strains and rotations)
@@ -338,6 +338,22 @@ LatticeFrame3dg::computeConstitutiveMatrixAt(FloatMatrix &answer, MatResponseMod
 {
     answer =  static_cast< LatticeCrossSection * >( this->giveCrossSection() )->give3dFrameStiffnessMatrix(rMode, gp, tStep);
 }
+int
+LatticeFrame3dg::computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords)
+{
+    double ksi, n1, n2;
+
+    ksi = lcoords.at(1);
+    n1  = ( 1. - ksi ) * 0.5;
+    n2  = ( 1. + ksi ) * 0.5;
+
+    answer.resize(3);
+    answer.at(1) = n1 * this->giveNode(1)->giveCoordinate(1) + n2 * this->giveNode(2)->giveCoordinate(1);
+    answer.at(2) = n1 * this->giveNode(1)->giveCoordinate(2) + n2 * this->giveNode(2)->giveCoordinate(2);
+    answer.at(3) = n1 * this->giveNode(1)->giveCoordinate(3) + n2 * this->giveNode(2)->giveCoordinate(3);
+
+    return 1;
+}
 void
 LatticeFrame3dg::computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode,
     TimeStep *tStep)
@@ -350,8 +366,12 @@ LatticeFrame3dg::computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMo
     answer.resize(12, 12);
     answer.zero();
     this->computeBDmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), bj);
+    printf("Bmatrix/n");
+    bj.printYourself();
     this->computeConstitutiveMatrixAt(d, rMode, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
     computeBFmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), bf);
+    printf("BFmatrix/n");
+    bf.printYourself();
 
     dbj.beProductOf(d, bj);
     dbj.times(1. / length);
@@ -360,6 +380,37 @@ LatticeFrame3dg::computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMo
     //printf("answer/n");
     //answer.printYourself();
     return;
+}
+
+
+double LatticeFrame3dg::giveArea() {
+    FloatArray lc(1);
+    return this->giveCrossSection()->give(CS_Area, lc, this);
+}
+
+double LatticeFrame3dg::giveIy() {
+    FloatArray lc(1);
+    return this->giveCrossSection()->give(CS_InertiaMomentY, lc, this);
+}
+
+double LatticeFrame3dg::giveIz() {
+    FloatArray lc(1);
+    return this->giveCrossSection()->give(CS_InertiaMomentZ, lc, this);
+}
+
+double LatticeFrame3dg::giveIk() {
+    FloatArray lc(1);
+    return this->giveCrossSection()->give(CS_TorsionConstantX, lc, this);
+}
+
+double LatticeFrame3dg::giveShearAreaY() {
+    FloatArray lc(1);
+    return this->giveCrossSection()->give(CS_ShearAreaY, lc, this);
+}
+
+double LatticeFrame3dg::giveShearAreaZ() {
+    FloatArray lc(1);
+    return this->giveCrossSection()->give(CS_ShearAreaZ, lc, this);
 }
 
 void
@@ -439,14 +490,14 @@ LatticeFrame3dg::giveLocalCoordinateSystem(FloatMatrix &answer)
     FloatArray coordA, coordB;
     FloatArray uA(6),uAIncr(6), uB(6),uBIncr(6);
     IntArray dofid = {1,2,3,4,5,6};
-  
+
     TimeStep *tStep = this->domain->giveEngngModel()->giveCurrentStep();
-    
+
     Node *nodeA, *nodeB;
     nodeA = this->giveNode(1);
     nodeB = this->giveNode(2);
-    
-    
+
+
     coordA = nodeA->giveCoordinates();
     nodeA->giveUnknownVector(uA,dofid,VM_Total,tStep,false);
     nodeA->giveUnknownVector(uAIncr,dofid,VM_Incremental,tStep,false);
@@ -456,8 +507,6 @@ LatticeFrame3dg::giveLocalCoordinateSystem(FloatMatrix &answer)
       coordA.at(i) += uA.at(i)-uAIncr.at(i);
     }
 
-
-    
     coordB = nodeB->giveCoordinates();
     nodeB->giveUnknownVector(uB,dofid,VM_Total,tStep,false);
     nodeB->giveUnknownVector(uBIncr,dofid,VM_Incremental,tStep,false);
@@ -466,7 +515,7 @@ LatticeFrame3dg::giveLocalCoordinateSystem(FloatMatrix &answer)
     for(int i=1;i<=3;i++){
       coordB.at(i) += uB.at(i)-uBIncr.at(i);
     }
-    
+
     /* uA.at(1) = nodeA->giveUpdatedCoordinate(1,tStep,1.); */
     /* uA.at(2) = nodeA->giveUpdatedCoordinate(2,tStep,1.); */
     /* uA.at(3) = nodeA->giveUpdatedCoordinate(3,tStep,1.); */
@@ -475,10 +524,10 @@ LatticeFrame3dg::giveLocalCoordinateSystem(FloatMatrix &answer)
     /* uB.at(2) = nodeB->giveUpdatedCoordinate(2,tStep,1.); */
     /* uB.at(3) = nodeB->giveUpdatedCoordinate(3,tStep,1.); */
 
-    
+
     lx.beDifferenceOf(coordB, coordA );
     lx.normalize();
-    
+
     if ( this->referenceNode ) {
         Node *refNode = this->giveDomain()->giveNode(this->referenceNode);
         help.beDifferenceOf(refNode->giveCoordinates(), nodeA->giveCoordinates() );
@@ -545,30 +594,11 @@ LatticeFrame3dg::giveDofManDofIDMask(int inode, IntArray &answer) const
 void
 LatticeFrame3dg::initializeFrom(InputRecord &ir)
 {
-    LatticeStructuralElement::initializeFrom(ir);
+    LatticeFrame3d::initializeFrom(ir);
 
-    referenceNode = 0;
-    referenceAngle = 0;
-    this->zaxis.clear();
-    if ( ir.hasField(_IFT_LatticeFrame3d_zaxis) ) {
-        IR_GIVE_FIELD(ir, this->zaxis, _IFT_LatticeFrame3dg_zaxis);
-    } else if ( ir.hasField(_IFT_LatticeFrame3d_refnode) ) {
-        IR_GIVE_FIELD(ir, referenceNode, _IFT_LatticeFrame3dg_refnode);
-        if ( referenceNode == 0 ) {
-            OOFEM_WARNING("wrong reference node specified. Using default orientation.");
-        }
-    } else if ( ir.hasField(_IFT_LatticeFrame3d_refangle) ) {
-        IR_GIVE_FIELD(ir, referenceAngle, _IFT_LatticeFrame3dg_refangle);
-    } else {
-        throw ValueInputException(ir, _IFT_LatticeFrame3d_zaxis, "axis, reference node, or angle not set");
-    }
 
-    this->s = 0.;
-    IR_GIVE_OPTIONAL_FIELD(ir, s, _IFT_LatticeFrame3d_s);
 
 }
-
-
 double
 LatticeFrame3dg::computeLength()
 {
@@ -601,8 +631,8 @@ LatticeFrame3dg::computeCurrentLength()
   Node *nodeA, *nodeB;
   double currentLength;
   FloatArray uA(6), uB(6), coordA(3), coordB(3);
-  IntArray dofid = {1,2,3,4,5,6}; 
-  
+  IntArray dofid = {1,2,3,4,5,6};
+
   nodeA   = this->giveNode(1);
   coordA = nodeA->giveCoordinates();
   nodeA->giveUnknownVector(uA,dofid,VM_Total,tStep,false);
@@ -621,7 +651,7 @@ LatticeFrame3dg::computeCurrentLength()
   dy      = coordB.at(2) - coordA.at(2);
   dz      = coordB.at(3) - coordA.at(3);
   currentLength  = sqrt(dx * dx + dy * dy + dz * dz);
-  
+
   return currentLength;
 }
 

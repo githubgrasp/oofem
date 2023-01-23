@@ -40,10 +40,7 @@
 ///@name Input fields for LatticeFrame3dg
 //@{
 #define _IFT_LatticeFrame3dg_Name "latticeframe3dg"
-#define _IFT_LatticeFrame3dg_refnode "refnode"
-#define _IFT_LatticeFrame3dg_refangle "refangle"
-#define _IFT_LatticeFrame3dg_zaxis "zaxis"
-#define _IFT_LatticeFrame3dg_s "s"
+
 //@}
 
 namespace oofem {
@@ -70,7 +67,19 @@ protected:
 public:
    LatticeFrame3dg(int n, Domain *);
    virtual ~LatticeFrame3dg();
+   int computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords) override;
 
+   double giveArea() override;
+
+   double giveIy() override;
+
+   double giveIz() override;
+
+   double giveIk() override;
+
+   double giveShearAreaY() override;
+
+   double giveShearAreaZ() override;
    double computeLength() override;
   double computeCurrentLength();
    void initializeFrom(InputRecord &ir) override;
