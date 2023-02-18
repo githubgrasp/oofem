@@ -70,7 +70,7 @@ LatticeFrame3dg::~LatticeFrame3dg()
 
  
 void
-LatticeFrame3dg::computeBDmatrixAt(GaussPoint *gp, FloatMatrix &answer)
+LatticeFrame3dg::computeBDmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer)
 // Returns the strain matrix of the receiver.
 {
     //Assemble Bmatrix (used to compute strains and rotations)
@@ -366,12 +366,12 @@ LatticeFrame3dg::computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMo
     answer.resize(12, 12);
     answer.zero();
     this->computeBDmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), bj);
-    printf("Bmatrix/n");
-    bj.printYourself();
+    //printf("Bmatrix/n");
+   // bj.printYourself();
     this->computeConstitutiveMatrixAt(d, rMode, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
     computeBFmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), bf);
-    printf("BFmatrix/n");
-    bf.printYourself();
+  //  printf("BFmatrix/n");
+   // bf.printYourself();
 
     dbj.beProductOf(d, bj);
     dbj.times(1. / length);
