@@ -402,15 +402,15 @@ LatticeFrame3d3g::computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rM
     answer.at(2,1)= 0;
     answer.at(2,2)= d.at(2,2);
     answer.at(2,3)= 0.;
-    answer.at(2,4)= d.at(2,2)*(-sin(u.at(4))*sin(u.at(6))+cos(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1;
-    answer.at(2,5)= d.at(2, 2)*sin(u.at(4))*cos(u.at(5))*cos(u.at(6))*l1;
-    answer.at(2,6)= d.at(2, 2)*(cos(u.at(4))*cos(u.at(6))-sin(u.at(4))*sin(u.at(5))*sin(u.at(6)))*l1;
+    answer.at(2,4)= -d.at(2,2)*(sin(u.at(4))*sin(u.at(6))-cos(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1;
+    answer.at(2,5)= -d.at(2, 2)*(-sin(u.at(4))*cos(u.at(5))*cos(u.at(6)))*l1;
+    answer.at(2,6)= -d.at(2, 2)*(-cos(u.at(4))*cos(u.at(6))+sin(u.at(4))*sin(u.at(5))*sin(u.at(6)))*l1;
     answer.at(2,7)= 0.;
     answer.at(2,8)= -d.at(2,2);
     answer.at(2,9)= 0.;
-    answer.at(2,10)= d.at(2,2)*(-sin(u.at(10))*sin(u.at(12))+cos(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2;
-    answer.at(2,11)= d.at(2, 2)*sin(u.at(10))*cos(u.at(11))*cos(u.at(12))*l2;
-    answer.at(2,12)= d.at(2, 2)*(cos(u.at(10))*cos(u.at(12))-sin(u.at(10))*sin(u.at(11))*sin(u.at(12)))*l2;
+    answer.at(2,10)= -d.at(2,2)*(sin(u.at(10))*sin(u.at(12))-cos(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2;
+    answer.at(2,11)= -d.at(2, 2)*(-sin(u.at(10))*cos(u.at(11))*cos(u.at(12)))*l2;
+    answer.at(2,12)= -d.at(2, 2)*(-cos(u.at(10))*cos(u.at(12))+sin(u.at(10))*sin(u.at(11))*sin(u.at(12)))*l2;
 
 
     //Shear Z 1
@@ -461,7 +461,7 @@ LatticeFrame3d3g::computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rM
     answer.at(6,3)= 0;
     answer.at(6,4)= d.at(1, 1)*((u.at(7)-u.at(1))+(1-cos(u.at(11))*cos(u.at(12)))*l2+(1-cos(u.at(5))*cos(u.at(6)))*l1)*(-sin(u.at(4))*sin(u.at(6))+cos(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1-d.at(2, 2)*(sin(u.at(4))*sin(u.at(6))*l1*cos(u.at(5))*cos(u.at(6))*l1-cos(u.at(4))*sin(u.at(5))*cos(u.at(6))*l1*cos(u.at(5))*cos(u.at(6))*l1);
     answer.at(6,5)= d.at(1,1)*((cos(u.at(4))*sin(u.at(6))+sin(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1*sin(u.at(5))*cos(u.at(6))*l1+((u.at(7)-u.at(1))+(1-cos(u.at(11))*cos(u.at(12)))*l2+(1-cos(u.at(5))*cos(u.at(6)))*l1)*sin(u.at(4))*cos(u.at(5))*cos(u.at(6))*l1)-d.at(2,2)*(-(u.at(8)-u.at(2))*l1*sin(u.at(5))*cos(u.at(6))+cos(u.at(10))*sin(u.at(12))*l2*sin(u.at(5))*cos(u.at(6))*l1+sin(u.at(10))*sin(u.at(11))*cos(u.at(12))*l2*sin(u.at(5))*cos(u.at(6))*l1+cos(u.at(4))*sin(u.at(6))*l1*sin(u.at(5))*cos(u.at(6))*l1-sin(u.at(4))*cos(u.at(5)*2)*cos(u.at(6))*l1*cos(u.at(6))*l1);
-    answer.at(6,6)= d.at(1, 1)*((cos(u.at(4))*sin(u.at(6))+sin(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1*cos(u.at(5))*sin(u.at(6))*l1+(cos(u.at(4))*sin(u.at(6))+sin(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1*(cos(u.at(4))*cos(u.at(6))-sin(u.at(4))*sin(u.at(5))*sin(u.at(6)))*l1)- d.at(2, 2)*((-u.at(8)+u.at(2))*cos(u.at(5))*sin(u.at(6))*l1+l1*l2*cos(u.at(10))*sin(u.at(12))*cos(u.at(5))*sin(u.at(6))+l1*l2*sin(u.at(10))*sin(u.at(11))*cos(u.at(12))*cos(u.at(5))*sin(u.at(6))-cos(u.at(4))*cos(u.at(5))*cos(2*u.at(6))*l1*l1+sin(u.at(4))*sin(u.at(5))*cos(u.at(5))*cos(u.at(6))*sin(u.at(6))*2*l1*l1)+d.at(6, 6);
+    answer.at(6,6)= d.at(1, 1)*((cos(u.at(4))*sin(u.at(6))+sin(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1*cos(u.at(5))*sin(u.at(6))*l1+((u.at(7)-u.at(1))+(1-cos(u.at(11))*cos(u.at(12)))*l2+(1-cos(u.at(5))*cos(u.at(6)))*l1)*(cos(u.at(4))*cos(u.at(6))-sin(u.at(4))*sin(u.at(5))*sin(u.at(6)))*l1)- d.at(2, 2)*((-u.at(8)+u.at(2))*cos(u.at(5))*sin(u.at(6))*l1+l1*l2*cos(u.at(10))*sin(u.at(12))*cos(u.at(5))*sin(u.at(6))+l1*l2*sin(u.at(10))*sin(u.at(11))*cos(u.at(12))*cos(u.at(5))*sin(u.at(6))-cos(u.at(4))*cos(u.at(5))*cos(2*u.at(6))*l1*l1+sin(u.at(4))*sin(u.at(5))*cos(u.at(5))*cos(u.at(6))*sin(u.at(6))*2*l1*l1)+d.at(6, 6);
     answer.at(6,7)= d.at(1, 1)*(cos(u.at(4))*sin(u.at(6))+sin(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1;;
     answer.at(6,8)= -d.at(2, 2)*cos(u.at(5))*cos(u.at(6))*l1;
     answer.at(6,9)= 0.;
@@ -488,26 +488,26 @@ LatticeFrame3d3g::computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rM
     answer.at(8,2)= -d.at(2,2);
     answer.at(8,3)= 0.;
     answer.at(8,4)= d.at(2,2)*(sin(u.at(4))*sin(u.at(6))-cos(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1;
-    answer.at(8,5)= -d.at(2, 2)*sin(u.at(4))*cos(u.at(5))*cos(u.at(6))*l1;
-    answer.at(8,6)= -d.at(2, 2)*(cos(u.at(4))*cos(u.at(6))-sin(u.at(4))*sin(u.at(5))*sin(u.at(6)))*l1;
+    answer.at(8,5)= d.at(2, 2)*(-sin(u.at(4))*cos(u.at(5))*cos(u.at(6)))*l1;
+    answer.at(8,6)= d.at(2, 2)*(-cos(u.at(4))*cos(u.at(6))+sin(u.at(4))*sin(u.at(5))*sin(u.at(6)))*l1;
     answer.at(8,7)= 0.;
     answer.at(8,8)= d.at(2,2);
     answer.at(8,9)= 0.;
     answer.at(8,10)= d.at(2,2)*(sin(u.at(10))*sin(u.at(12))-cos(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2;
-    answer.at(8,11)= -d.at(2, 2)*sin(u.at(10))*cos(u.at(11))*cos(u.at(12))*l2;
-    answer.at(8,12)= -d.at(2, 2)*(cos(u.at(10))*cos(u.at(12))-sin(u.at(10))*sin(u.at(11))*sin(u.at(12)))*l2;
+    answer.at(8,11)= d.at(2, 2)*(-sin(u.at(10))*cos(u.at(11))*cos(u.at(12)))*l2;
+    answer.at(8,12)= d.at(2, 2)*(-cos(u.at(10))*cos(u.at(12))+sin(u.at(10))*sin(u.at(11))*sin(u.at(12)))*l2;
 
     //Shear Z 2
     answer.at(9,1)= 0;
     answer.at(9,2)= 0.;
     answer.at(9,3)= -d.at(3,3);
-    answer.at(9,4)= -d.at(3,3)*(cos(u.at(4))*sin(u.at(6))+sin(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1;
+    answer.at(9,4)= d.at(3,3)*(cos(u.at(4))*sin(u.at(6))+sin(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1;
     answer.at(9,5)= d.at(3, 3)*(cos(u.at(4))*cos(u.at(5))*cos(u.at(6)))*l1;
     answer.at(9,6)= -d.at(3, 3)*(sin(u.at(4))*cos(u.at(6))+cos(u.at(4))*sin(u.at(5))*sin(u.at(6)))*l1;
     answer.at(9,7)= 0.;
     answer.at(9,8)= 0;
     answer.at(9,9)= d.at(3,3);
-    answer.at(9,10)= -d.at(3,3)*(cos(u.at(10))*sin(u.at(12))+sin(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2;
+    answer.at(9,10)= d.at(3,3)*(cos(u.at(10))*sin(u.at(12))+sin(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2;
     answer.at(9,11)= d.at(3, 3)*(cos(u.at(10))*cos(u.at(11))*cos(u.at(12)))*l2;
     answer.at(9,12)= -d.at(3, 3)*(sin(u.at(10))*cos(u.at(12))+cos(u.at(10))*sin(u.at(11))*sin(u.at(12)))*l2;
 
@@ -544,17 +544,17 @@ LatticeFrame3d3g::computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rM
     answer.at(12,3)= 0.;
     answer.at(12,4)= -d.at(2,2)*(sin(u.at(4))*sin(u.at(6))*l1*cos(u.at(11))*cos(u.at(12))*l2-cos(u.at(4))*sin(u.at(5))*cos(u.at(6))*l1*cos(u.at(11))*cos(u.at(12))*l2);
     answer.at(12,5)= d.at(1, 1)*(cos(u.at(10))*sin(u.at(12))+sin(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2*sin(u.at(5))*cos(u.at(6))*l1-d.at(2,2)*(-sin(u.at(4))*cos(u.at(5))*cos(u.at(6))*l1*cos(u.at(11))*cos(u.at(12))*l2);
-    answer.at(12,6)= d.at(1,1)*((cos(u.at(10))*sin(u.at(12))+sin(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2*cos(u.at(5))*sin(u.at(6))*l1)-d.at(2,2)*(-cos(u.at(4))*cos(u.at(6))*l1*cos(u.at(11))*cos(u.at(12))*l2-sin(u.at(4))*sin(u.at(5))*cos(u.at(6))*l1*cos(u.at(11))*cos(u.at(12))*l2)-d.at(6,6);
+    answer.at(12,6)= d.at(1,1)*((cos(u.at(10))*sin(u.at(12))+sin(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2*cos(u.at(5))*sin(u.at(6))*l1)-d.at(2,2)*(-cos(u.at(4))*cos(u.at(6))*l1*cos(u.at(11))*cos(u.at(12))*l2+sin(u.at(4))*sin(u.at(5))*sin(u.at(6))*l1*cos(u.at(11))*cos(u.at(12))*l2)-d.at(6,6);
     answer.at(12,7)= d.at(1, 1)*(cos(u.at(10))*sin(u.at(12))+sin(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2;
     answer.at(12,8)= -d.at(2, 2)*cos(u.at(11))*cos(u.at(12))*l2;
     answer.at(12,9)= 0.;
     answer.at(12,10)= d.at(1, 1)*((u.at(7)-u.at(1))+(1-cos(u.at(11))*cos(u.at(12)))*l2+(1-cos(u.at(5))*cos(u.at(6)))*l1)*(-sin(u.at(10))*sin(u.at(12))+cos(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2-d.at(2, 2)*(sin(u.at(10))*sin(u.at(12))*l2*cos(u.at(11))*cos(u.at(12))*l2-cos(u.at(10))*sin(u.at(11))*cos(u.at(12))*l2*cos(u.at(11))*cos(u.at(12))*l2);
     answer.at(12,11)= d.at(1,1)*((cos(u.at(10))*sin(u.at(12))+sin(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2*sin(u.at(11))*cos(u.at(12))*l2+((u.at(7)-u.at(1))+(1-cos(u.at(11))*cos(u.at(12)))*l2+(1-cos(u.at(5))*cos(u.at(6)))*l1)*sin(u.at(10))*cos(u.at(11))*cos(u.at(12))*l2)-d.at(2,2)*(-(u.at(8)-u.at(2))*l2*sin(u.at(11))*cos(u.at(12))+cos(u.at(10))*sin(u.at(12))*l2*sin(u.at(11))*cos(u.at(12))*l2-sin(u.at(10))*cos(2*u.at(11))*cos(u.at(12))*l2*cos(u.at(12))*l2+cos(u.at(4))*sin(u.at(6))*l1*sin(u.at(11))*cos(u.at(12))*l2+sin(u.at(4))*sin(u.at(5))*cos(u.at(6))*l1*sin(u.at(11))*cos(u.at(12))*l2);
-    answer.at(12,12)= d.at(1,1)*((cos(u.at(10))*sin(u.at(12))+sin(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2+((u.at(7)-u.at(1))+(1-cos(u.at(11))*cos(u.at(12)))*l2+(1-cos(u.at(5))*cos(u.at(6)))*l1)*(cos(u.at(10))*cos(u.at(12))-sin(u.at(10))*sin(u.at(11))*sin(u.at(12)))*l2)-d.at(2,2)*(-(u.at(8)-u.at(2))*cos(u.at(11))*sin(u.at(12))*sin(u.at(12))*l2-cos(u.at(10))*cos(2*u.at(12))*l2*cos(u.at(11))*l2+sin(u.at(10))*sin(u.at(11))*2*cos(u.at(12))*sin(u.at(12))*l2*cos(u.at(11))*l2+cos(u.at(4))*sin(u.at(6))*l1*cos(u.at(11))*sin(u.at(12))*l2+sin(u.at(4))*sin(u.at(5))*cos(u.at(6))*l1*cos(u.at(11))*sin(u.at(12))*l2)+d.at(6,6);
+    answer.at(12,12)= d.at(1,1)*((cos(u.at(10))*sin(u.at(12))+sin(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2*(cos(u.at(11))*sin(u.at(12))*l2)+((u.at(7)-u.at(1))+(1-cos(u.at(11))*cos(u.at(12)))*l2+(1-cos(u.at(5))*cos(u.at(6)))*l1)*(cos(u.at(10))*cos(u.at(12))-sin(u.at(10))*sin(u.at(11))*sin(u.at(12)))*l2)-d.at(2,2)*(-(u.at(8)-u.at(2))*cos(u.at(11))*sin(u.at(12))*l2-cos(u.at(10))*cos(2*u.at(12))*l2*cos(u.at(11))*l2+sin(u.at(10))*sin(u.at(11))*2*cos(u.at(12))*sin(u.at(12))*l2*cos(u.at(11))*l2+cos(u.at(4))*sin(u.at(6))*l1*cos(u.at(11))*sin(u.at(12))*l2+sin(u.at(4))*sin(u.at(5))*cos(u.at(6))*l1*cos(u.at(11))*sin(u.at(12))*l2)+d.at(6,6);
    //
     answer.times(1. / length);
-   // printf("answerDD/n");
-   // answer.printYourself();
+    printf("answerSM/n");
+    answer.printYourself();
     return;
 }
 double LatticeFrame3d3g::giveArea() {
@@ -646,7 +646,7 @@ LatticeFrame3d3g::giveInternalForcesVector(FloatArray &answer,
     answer.at(2)= -incrementalStress.at(2);
     answer.at(3)= -incrementalStress.at(3);
     answer.at(4)= -incrementalStress.at(4);
-    answer.at(5)= incrementalStress.at(1)*(sin(u.at(4))*sin(u.at(6))-cos(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1+incrementalStress.at(3)*(cos(u.at(5))*cos(u.at(6)))*l2-incrementalStress.at(5);
+    answer.at(5)= incrementalStress.at(1)*(sin(u.at(4))*sin(u.at(6))-cos(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1+incrementalStress.at(3)*(cos(u.at(5))*cos(u.at(6)))*l1-incrementalStress.at(5);
     answer.at(6)= incrementalStress.at(1)*(cos(u.at(4))*sin(u.at(6))+sin(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1-incrementalStress.at(2)*(cos(u.at(5))*cos(u.at(6)))*l1-incrementalStress.at(6);
     answer.at(7)= incrementalStress.at(1);
     answer.at(8)= incrementalStress.at(2);
