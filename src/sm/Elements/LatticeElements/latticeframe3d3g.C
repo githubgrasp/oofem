@@ -118,58 +118,57 @@ namespace oofem {
         answer.at(3, 1) = 0;
         answer.at(3, 2) = 0.;
         answer.at(3, 3) = d.at(3, 3);
-        answer.at(3, 4) = d.at(3, 3) * ( cos( u.at(4) ) * sin( u.at(6) ) + sin( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1;
+        answer.at(3, 4) = -d.at(3, 3) * ( -cos( u.at(4) ) * sin( u.at(6) ) - sin( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1;
         answer.at(3, 5) = -d.at(3, 3) * ( cos( u.at(4) ) * cos( u.at(5) ) * cos( u.at(6) ) ) * l1;
-        answer.at(3, 6) = d.at(3, 3) * ( sin( u.at(4) ) * cos( u.at(6) ) + cos( u.at(4) ) * sin( u.at(5) ) * sin( u.at(6) ) ) * l1;
+        answer.at(3, 6) = -d.at(3, 3) * ( -sin( u.at(4) ) * cos( u.at(6) ) - cos( u.at(4) ) * sin( u.at(5) ) * sin( u.at(6) ) ) * l1;
         answer.at(3, 7) = 0.;
         answer.at(3, 8) = 0;
         answer.at(3, 9) = -d.at(3, 3);
-        answer.at(3, 10) = d.at(3, 3) * ( cos( u.at(10) ) * sin( u.at(12) ) + sin( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2;
+        answer.at(3, 10) = -d.at(3, 3) * ( -cos( u.at(10) ) * sin( u.at(12) ) - sin( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2;
         answer.at(3, 11) = -d.at(3, 3) * ( cos( u.at(10) ) * cos( u.at(11) ) * cos( u.at(12) ) ) * l2;
-        answer.at(3, 12) = d.at(3, 3) * ( sin( u.at(10) ) * cos( u.at(12) ) + cos( u.at(10) ) * sin( u.at(11) ) * sin( u.at(12) ) ) * l2;
+        answer.at(3, 12) = -d.at(3, 3) * ( -sin( u.at(10) ) * cos( u.at(12) ) - cos( u.at(10) ) * sin( u.at(11) ) * sin( u.at(12) ) ) * l2;
 
         // Mx 1
         answer.at(4, 1) = 0;
-        answer.at(4, 2) = 0.;
-        answer.at(4, 3) = 0.;
-        answer.at(4, 4) = d.at(4, 4);
-        answer.at(4, 5) = 0.;
-        answer.at(4, 6) = 0.;
+        answer.at(4, 2) = d.at(2,2)*(sin(u.at(4))*sin(u.at(6))-cos(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1;
+        answer.at(4, 3) = d.at(3,3)*(cos(u.at(4))*sin(u.at(6))+sin(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1;
+        answer.at(4, 4) = -d.at(2,2)*((sin(u.at(4))*sin(u.at(6))-cos(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1*(-(-sin(u.at(4))*sin(u.at(6))+cos(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1)+(u.at(8)-u.at(2)-(cos(u.at(10))*sin(u.at(12))+sin(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2-(cos(u.at(4))*sin(u.at(6))+sin(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1)*(cos(u.at(4))*sin(u.at(6))+sin(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1)-d.at(3,3)*((cos(u.at(4))*sin(u.at(6))+sin(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1*(-(cos(u.at(4))*sin(u.at(6))+sin(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1)+(u.at(9)-u.at(3)-(sin(u.at(10))*sin(u.at(12))-cos(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2-(sin(u.at(4))*sin(u.at(6))-cos(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1)*(-sin(u.at(4))*sin(u.at(6))+cos(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1)+d.at(4,4);
+        answer.at(4, 5) = -d.at(2,2)*((sin(u.at(4))*sin(u.at(6))-cos(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1*(-(sin(u.at(4))*cos(u.at(5))*cos(u.at(6)))*l1)+(u.at(8)-u.at(2)-(cos(u.at(10))*sin(u.at(12))+sin(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2-(cos(u.at(4))*sin(u.at(6))+sin(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1)* (-cos(u.at(4))*cos(u.at(5))*cos(u.at(6)))*l1)-d.at(3,3)*((cos(u.at(4))*sin(u.at(6))+sin(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1*(-(-cos(u.at(4))*cos(u.at(5))*cos(u.at(6)))*l1)+(u.at(9)-u.at(3)-(sin(u.at(10))*sin(u.at(12))-cos(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2-(sin(u.at(4))*sin(u.at(6))-cos(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1)*(sin(u.at(4))*cos(u.at(5))*cos(u.at(6)))*l1);
+        answer.at(4, 6) = -d.at(2,2)*((sin(u.at(4))*sin(u.at(6))-cos(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1*(-(cos(u.at(4))*cos(u.at(6))-sin(u.at(4))*sin(u.at(5))*sin(u.at(6)))*l1)+(u.at(8)-u.at(2)-(cos(u.at(10))*sin(u.at(12))+sin(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2-(cos(u.at(4))*sin(u.at(6))+sin(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1)*(sin(u.at(4))*cos(u.at(6))+cos(u.at(4))*sin(u.at(5))*sin(u.at(6)))*l1)-d.at(3,3)*((cos(u.at(4))*sin(u.at(6))+sin(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1*(-(sin(u.at(4))*sin(u.at(6))+cos(u.at(4))*sin(u.at(5))*sin(u.at(6)))*l1)+(u.at(9)-u.at(3)-(sin(u.at(10))*sin(u.at(12))-cos(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2-(sin(u.at(4))*sin(u.at(6))-cos(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1)*(cos(u.at(4))*cos(u.at(6))-sin(u.at(4))*sin(u.at(5))*sin(u.at(6)))*l1);
         answer.at(4, 7) = 0.;
-        answer.at(4, 8) = 0;
-        answer.at(4, 9) = 0.;
-        answer.at(4, 10) = -d.at(4, 4);
-        answer.at(4, 11) = 0.;
-        answer.at(4, 12) = 0.;
+        answer.at(4, 8) = -d.at(2,2)*(sin(u.at(4))*sin(u.at(6))-cos(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1;
+        answer.at(4, 9) = -d.at(3,3)*(cos(u.at(4))*sin(u.at(6))+sin(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1;
+        answer.at(4, 10) = -d.at(2,2)*((sin(u.at(4))*sin(u.at(6))-cos(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1*(-(-sin(u.at(10))*sin(u.at(12))+cos(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2))-d.at(3,3)*((cos(u.at(4))*sin(u.at(6))+sin(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1*(-(cos(u.at(10))*sin(u.at(12))+sin(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2))-d.at(4,4);
+        answer.at(4, 11) = -d.at(2,2)*((sin(u.at(4))*sin(u.at(6))-cos(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1*(-(sin(u.at(10))*cos(u.at(11))*cos(u.at(12)))*l2))-d.at(3,3)*((cos(u.at(4))*sin(u.at(6))+sin(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1*(-(-cos(u.at(10))*cos(u.at(11))*cos(u.at(12)))*l2));
+        answer.at(4, 12) = -d.at(2,2)*((sin(u.at(4))*sin(u.at(6))-cos(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1*(-(cos(u.at(10))*cos(u.at(12))-sin(u.at(10))*sin(u.at(11))*sin(u.at(12)))*l2))-d.at(3,3)*((cos(u.at(4))*sin(u.at(6))+sin(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1*(-(sin(u.at(10))*cos(u.at(12))+cos(u.at(10))*sin(u.at(11))*sin(u.at(12)))*l2));
 
         // My 1
         answer.at(5, 1) = -d.at(1, 1) * ( sin( u.at(4) ) * sin( u.at(6) ) - cos( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1;
         answer.at(5, 2) = 0.;
         answer.at(5, 3) = -d.at(3, 3) * cos( u.at(5) ) * cos( u.at(6) ) * l1;
-        answer.at(5, 4) = d.at(1, 1) * ( ( u.at(7) - u.at(1) ) + ( 1 - cos( u.at(11) ) * cos( u.at(12) ) ) * l2 + ( 1 - cos( u.at(5) ) * cos( u.at(6) ) ) * l1 ) * ( cos( u.at(4) ) * sin( u.at(6) ) + sin( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1 + d.at(3, 3) * ( -cos( u.at(4) ) * sin( u.at(6) ) * l1 * cos( u.at(5) ) * cos( u.at(6) ) * l1 - sin( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) * l1 * cos( u.at(5) ) * cos( u.at(6) ) * l1 );
-        answer.at(5, 5) = d.at(1, 1) * ( ( sin( u.at(4) ) * sin( u.at(6) ) - cos( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1 * sin( u.at(5) ) * cos( u.at(6) ) * l1 + ( ( u.at(7) - u.at(1) ) + ( 1 - cos( u.at(11) ) * cos( u.at(12) ) ) * l2 + ( 1 - cos( u.at(5) ) * cos( u.at(6) ) ) * l1 ) * ( -cos( u.at(4) ) * cos( u.at(5) ) * cos( u.at(6) ) * l1 ) ) + d.at(3, 3) * ( -( u.at(9) - u.at(3) ) * sin( u.at(5) ) * cos( u.at(6) ) * l1 + sin( u.at(10) ) * sin( u.at(12) ) * l2 * sin( u.at(5) ) * cos( u.at(6) ) * l1 - cos( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) * l2 * sin( u.at(5) ) * cos( u.at(6) ) * l1 + sin( u.at(4) ) * sin( u.at(6) ) * l1 * sin( u.at(5) ) * cos( u.at(6) ) * l1 + cos( u.at(4) ) * cos( 2 * u.at(5) ) * cos( u.at(6) ) * l1 * cos( u.at(6) ) * l1 ) + d.at(5, 5);
-        answer.at(5, 6) = d.at(1, 1) * ( ( sin( u.at(4) ) * sin( u.at(6) ) - cos( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1 * cos( u.at(5) ) * sin( u.at(6) ) * l1 + ( ( u.at(7) - u.at(1) ) + ( 1 - cos( u.at(11) ) * cos( u.at(12) ) ) * l2 + ( 1 - cos( u.at(5) ) * cos( u.at(6) ) ) * l1 ) * ( sin( u.at(4) ) * cos( u.at(6) ) + cos( u.at(4) ) * sin( u.at(5) ) * sin( u.at(6) ) ) * l1 ) + d.at(3, 3) * ( -( u.at(9) - u.at(3) ) * cos( u.at(5) ) * sin( u.at(6) ) * l1 + sin( u.at(10) ) * sin( u.at(12) ) * l2 * cos( u.at(5) ) * sin( u.at(6) ) * l1 - cos( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) * l2 * cos( u.at(5) ) * sin( u.at(6) ) * l1 - sin( u.at(4) ) * cos( 2 * u.at(6) ) * l1 * cos( u.at(5) ) * l1 - cos( u.at(4) ) * sin( u.at(5) ) * 2 * sin( u.at(6) ) * cos( u.at(6) ) * l1 * cos( u.at(5) ) * l1 );
+        answer.at(5, 4) = d.at(1, 1) * ( ( ( u.at(7) - u.at(1) ) + ( 1 - cos( u.at(11) ) * cos( u.at(12) ) ) * l2 + ( 1 - cos( u.at(5) ) * cos( u.at(6) ) ) * l1 )*( cos( u.at(4) ) * sin( u.at(6) ) + sin( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1) + d.at(3, 3) * (( cos( u.at(5) ) * cos( u.at(6) ))*l1* ( -cos( u.at(4) ) * sin( u.at(6) ) - sin( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1 );
+        answer.at(5, 5) = d.at(1, 1) * (( sin( u.at(4) ) * sin( u.at(6) ) - cos( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1*(sin( u.at(5) ) * cos( u.at(6) ) ) * l1+( ( u.at(7) - u.at(1) ) + ( 1 - cos( u.at(11) ) * cos( u.at(12) ) ) * l2 + ( 1 - cos( u.at(5) ) * cos( u.at(6) ) ) * l1 )*( - cos( u.at(4) ) * cos( u.at(5) ) * cos( u.at(6) ) ) * l1 ) + d.at(3, 3) * (( cos( u.at(5) ) * cos( u.at(6) ))*l1*(cos( u.at(4) ) * cos( u.at(5) ) * cos( u.at(6) ) ) * l1+( ( u.at(9) - u.at(3) )-( sin( u.at(10) ) * sin( u.at(12) ) - cos( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2-( sin( u.at(4) ) * sin( u.at(6) ) - cos( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1)*( -sin( u.at(5) ) * cos( u.at(6) ))*l1 )+ d.at(5, 5);
+        answer.at(5, 6) = d.at(1, 1) * (( sin( u.at(4) ) * sin( u.at(6) ) - cos( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1*(cos( u.at(5) ) * sin( u.at(6) ) ) * l1+( ( u.at(7) - u.at(1) ) + ( 1 - cos( u.at(11) ) * cos( u.at(12) ) ) * l2 + ( 1 - cos( u.at(5) ) * cos( u.at(6) ) ) * l1 )*( sin( u.at(4) ) * cos( u.at(6) ) + cos( u.at(4) ) * sin( u.at(5) ) * sin( u.at(6) ) ) * l1 ) + d.at(3, 3) * (( cos( u.at(5) ) * cos( u.at(6) ))*l1*( -sin( u.at(4) ) * cos( u.at(6) ) - cos( u.at(4) ) * sin( u.at(5) ) * sin( u.at(6) ) ) * l1+( ( u.at(9) - u.at(3) )-( sin( u.at(10) ) * sin( u.at(12) ) - cos( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2-( sin( u.at(4) ) * sin( u.at(6) ) - cos( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1)*( -cos( u.at(5) ) * sin( u.at(6) ))*l1);
         answer.at(5, 7) = d.at(1, 1) * ( sin( u.at(4) ) * sin( u.at(6) ) - cos( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1;
         answer.at(5, 8) = 0;
         answer.at(5, 9) = d.at(3, 3) * cos( u.at(5) ) * cos( u.at(6) ) * l1;
-        answer.at(5, 10) = d.at(3, 3) * ( -cos( u.at(10) ) * sin( u.at(12) ) * l2 * cos( u.at(5) ) * cos( u.at(6) ) * l1 - sin( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) * l2 * cos( u.at(5) ) * cos( u.at(6) ) * l1 );
-        answer.at(5, 11) = d.at(1, 1) * ( ( sin( u.at(4) ) * sin( u.at(6) ) - cos( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1 * sin( u.at(11) ) * cos( u.at(12) ) * l2 ) + d.at(3, 3) * ( cos( u.at(10) ) * cos( u.at(11) ) * cos( u.at(12) ) * l2 * cos( u.at(5) ) * cos( u.at(6) ) * l1 ) - d.at(5, 5);
-        answer.at(5, 12) = d.at(1, 1) * ( ( sin( u.at(4) ) * sin( u.at(6) ) - cos( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1 * cos( u.at(11) ) * sin( u.at(12) ) * l2 ) + d.at(3, 3) * ( -sin( u.at(10) ) * cos( u.at(12) ) * l2 * cos( u.at(5) ) * cos( u.at(6) ) * l1 - cos( u.at(10) ) * sin( u.at(11) ) * sin( u.at(12) ) * l2 * cos( u.at(5) ) * cos( u.at(6) ) * l1 );
+        answer.at(5, 10) =  d.at(3, 3) * (( cos( u.at(5) ) * cos( u.at(6) ))*l1*( -cos( u.at(10) ) * sin( u.at(12) ) - sin( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2 );
+        answer.at(5, 11) = d.at(1, 1) * (( sin( u.at(4) ) * sin( u.at(6) ) - cos( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1*(sin( u.at(11) ) * cos( u.at(12) ) ) * l2 ) + d.at(3, 3) * (( cos( u.at(5) ) * cos( u.at(6) ))*l1*(cos( u.at(10) ) * cos( u.at(11) ) * cos( u.at(12) ) ) * l2 )- d.at(5, 5);
+        answer.at(5, 12) = d.at(1, 1) * (( sin( u.at(4) ) * sin( u.at(6) ) - cos( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1*(cos( u.at(11) ) * sin( u.at(12) ) ) * l2 ) + d.at(3, 3) * (( cos( u.at(5) ) * cos( u.at(6) ))*l1*( -sin( u.at(10) ) * cos( u.at(12) ) - cos( u.at(10) ) * sin( u.at(11) ) * sin( u.at(12) ) ) * l2);
 
         // Mz 1
         answer.at(6, 1) = -d.at(1, 1) * ( cos( u.at(4) ) * sin( u.at(6) ) + sin( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1;
         answer.at(6, 2) = d.at(2, 2) * cos( u.at(5) ) * cos( u.at(6) ) * l1;
         answer.at(6, 3) = 0;
-        answer.at(6, 4) = d.at(1, 1) * ( ( u.at(7) - u.at(1) ) + ( 1 - cos( u.at(11) ) * cos( u.at(12) ) ) * l2 + ( 1 - cos( u.at(5) ) * cos( u.at(6) ) ) * l1 ) * ( -sin( u.at(4) ) * sin( u.at(6) ) + cos( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1 - d.at(2, 2) * ( sin( u.at(4) ) * sin( u.at(6) ) * l1 * cos( u.at(5) ) * cos( u.at(6) ) * l1 - cos( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) * l1 * cos( u.at(5) ) * cos( u.at(6) ) * l1 );
-        answer.at(6, 5) = d.at(1, 1) * ( ( cos( u.at(4) ) * sin( u.at(6) ) + sin( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1 * sin( u.at(5) ) * cos( u.at(6) ) * l1 + ( ( u.at(7) - u.at(1) ) + ( 1 - cos( u.at(11) ) * cos( u.at(12) ) ) * l2 + ( 1 - cos( u.at(5) ) * cos( u.at(6) ) ) * l1 ) * sin( u.at(4) ) * cos( u.at(5) ) * cos( u.at(6) ) * l1 ) - d.at(2, 2) * ( -( u.at(8) - u.at(2) ) * l1 * sin( u.at(5) ) * cos( u.at(6) ) + cos( u.at(10) ) * sin( u.at(12) ) * l2 * sin( u.at(5) ) * cos( u.at(6) ) * l1 + sin( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) * l2 * sin( u.at(5) ) * cos( u.at(6) ) * l1 + cos( u.at(4) ) * sin( u.at(6) ) * l1 * sin( u.at(5) ) * cos( u.at(6) ) * l1 - sin( u.at(4) ) * cos(u.at(5) * 2) * cos( u.at(6) ) * l1 * cos( u.at(6) ) * l1 );
-        answer.at(6, 6) = d.at(1, 1) * ( ( cos( u.at(4) ) * sin( u.at(6) ) + sin( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1 * cos( u.at(5) ) * sin( u.at(6) ) * l1 + ( ( u.at(7) - u.at(1) ) + ( 1 - cos( u.at(11) ) * cos( u.at(12) ) ) * l2 + ( 1 - cos( u.at(5) ) * cos( u.at(6) ) ) * l1 ) * ( cos( u.at(4) ) * cos( u.at(6) ) - sin( u.at(4) ) * sin( u.at(5) ) * sin( u.at(6) ) ) * l1 ) - d.at(2, 2) * ( ( -u.at(8) + u.at(2) ) * cos( u.at(5) ) * sin( u.at(6) ) * l1 + l1 * l2 * cos( u.at(10) ) * sin( u.at(12) ) * cos( u.at(5) ) * sin( u.at(6) ) + l1 * l2 * sin( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) * cos( u.at(5) ) * sin( u.at(6) ) - cos( u.at(4) ) * cos( u.at(5) ) * cos( 2 * u.at(6) ) * l1 * l1 + sin( u.at(4) ) * sin( u.at(5) ) * cos( u.at(5) ) * cos( u.at(6) ) * sin( u.at(6) ) * 2 * l1 * l1 ) + d.at(6, 6);
+        answer.at(6, 4) = d.at(1, 1) * (( ( u.at(7) - u.at(1) ) + ( 1 - cos( u.at(11) ) * cos( u.at(12) ) ) * l2 + ( 1 - cos( u.at(5) ) * cos( u.at(6) ) ) * l1 )*( -sin( u.at(4) ) * sin( u.at(6) ) + cos( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1  )  - d.at(2, 2) * (( cos( u.at(5) ) * cos( u.at(6) ) * l1 )*(( sin( u.at(4) ) * sin( u.at(6) ) - cos( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1) );
+        answer.at(6, 5) = d.at(1, 1) * (( cos( u.at(4) ) * sin( u.at(6) ) + sin( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1*(sin( u.at(5) ) * cos( u.at(6) ) ) * l1+( ( u.at(7) - u.at(1) ) + ( 1 - cos( u.at(11) ) * cos( u.at(12) ) ) * l2 + ( 1 - cos( u.at(5) ) * cos( u.at(6) ) ) * l1 )*(sin( u.at(4) ) * cos( u.at(5) ) * cos( u.at(6) ) ) * l1 )  - d.at(2, 2) * (( cos( u.at(5) ) * cos( u.at(6) ) * l1 )*(-(sin( u.at(4) ) * cos( u.at(5) ) * cos( u.at(6) ) ) * l1)+(( u.at(8) - u.at(2) )-( cos( u.at(10) ) * sin( u.at(12) ) + sin( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2-( cos( u.at(4) ) * sin( u.at(6) ) + sin( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1)*( -sin( u.at(5) ) * cos( u.at(6) ) * l1 ) );
+        answer.at(6, 6) = d.at(1, 1) * (( cos( u.at(4) ) * sin( u.at(6) ) + sin( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1*( (cos( u.at(5) ) * sin( u.at(6) ) ) * l1 )+ ( ( u.at(7) - u.at(1) ) + ( 1 - cos( u.at(11) ) * cos( u.at(12) ) ) * l2 + ( 1 - cos( u.at(5) ) * cos( u.at(6) ) ) * l1 )*( cos( u.at(4) ) * cos( u.at(6) ) - sin( u.at(4) ) * sin( u.at(5) ) * sin( u.at(6) ) ) * l1)  - d.at(2, 2) * (( cos( u.at(5) ) * cos( u.at(6) ) * l1 )*(-( cos( u.at(4) ) * cos( u.at(6) ) - sin( u.at(4) ) * sin( u.at(5) ) * sin( u.at(6) ) ) * l1)+(( u.at(8) - u.at(2) )-( cos( u.at(10) ) * sin( u.at(12) ) + sin( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2-( cos( u.at(4) ) * sin( u.at(6) ) + sin( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1)* ( -cos( u.at(5) ) * sin( u.at(6) ) * l1 ))+d.at(6, 6);
         answer.at(6, 7) = d.at(1, 1) * ( cos( u.at(4) ) * sin( u.at(6) ) + sin( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1;
-        ;
         answer.at(6, 8) = -d.at(2, 2) * cos( u.at(5) ) * cos( u.at(6) ) * l1;
         answer.at(6, 9) = 0.;
-        answer.at(6, 10) = -d.at(2, 2) * ( sin( u.at(10) ) * sin( u.at(12) ) * l2 * cos( u.at(5) ) * cos( u.at(6) ) * l1 - cos( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) * l2 * cos( u.at(5) ) * cos( u.at(6) ) * l1 );
-        answer.at(6, 11) = d.at(1, 1) * ( cos( u.at(4) ) * sin( u.at(6) ) + sin( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1 * sin( u.at(11) ) * cos( u.at(12) ) * l2 - d.at(2, 2) * ( -sin( u.at(10) ) * cos( u.at(11) ) * cos( u.at(12) ) * l2 * cos( u.at(5) ) * cos( u.at(6) ) * l1 );
-        answer.at(6, 12) = d.at(1, 1) * ( ( cos( u.at(4) ) * sin( u.at(6) ) + sin( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1 * cos( u.at(11) ) * sin( u.at(12) ) * l2 ) - d.at(2, 2) * ( -cos( u.at(10) ) * cos( u.at(12) ) * l2 * cos( u.at(5) ) * cos( u.at(6) ) * l1 + sin( u.at(10) ) * sin( u.at(11) ) * sin( u.at(12) ) * l2 * cos( u.at(5) ) * cos( u.at(6) ) * l1 ) - d.at(6, 6);
+        answer.at(6, 10) = - d.at(2, 2) * (( cos( u.at(5) ) * cos( u.at(6) ) * l1 )*(-( -sin( u.at(10) ) * sin( u.at(12) ) + cos( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2) );
+        answer.at(6, 11) = d.at(1, 1) * (( cos( u.at(4) ) * sin( u.at(6) ) + sin( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1*( (sin( u.at(11) ) * cos( u.at(12) ) ) * l2  ) )  - d.at(2, 2) * (( cos( u.at(5) ) * cos( u.at(6) ) * l1 )*(-( sin( u.at(10) ) * cos( u.at(11) ) * cos( u.at(12) ) ) * l2) );
+        answer.at(6, 12) = d.at(1, 1) * (( cos( u.at(4) ) * sin( u.at(6) ) + sin( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1*((cos( u.at(11) ) * sin( u.at(12) ) ) * l2 ) )  - d.at(2, 2) * (( cos( u.at(5) ) * cos( u.at(6) ) * l1 )*(-( cos( u.at(10) ) * cos( u.at(12) ) - sin( u.at(10) ) * sin( u.at(11) ) * sin( u.at(12) ) ) * l2) )-d.at(6, 6);
 
         //Axial 2
         answer.at(7, 1) = -d.at(1, 1);
@@ -203,59 +202,56 @@ namespace oofem {
         answer.at(9, 1) = 0;
         answer.at(9, 2) = 0.;
         answer.at(9, 3) = -d.at(3, 3);
-        answer.at(9, 4) = d.at(3, 3) * ( cos( u.at(4) ) * sin( u.at(6) ) + sin( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1;
+        answer.at(9, 4) = d.at(3, 3) * ( -cos( u.at(4) ) * sin( u.at(6) ) - sin( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1;
         answer.at(9, 5) = d.at(3, 3) * ( cos( u.at(4) ) * cos( u.at(5) ) * cos( u.at(6) ) ) * l1;
-        answer.at(9, 6) = -d.at(3, 3) * ( sin( u.at(4) ) * cos( u.at(6) ) + cos( u.at(4) ) * sin( u.at(5) ) * sin( u.at(6) ) ) * l1;
+        answer.at(9, 6) = d.at(3, 3) * ( -sin( u.at(4) ) * cos( u.at(6) ) - cos( u.at(4) ) * sin( u.at(5) ) * sin( u.at(6) ) ) * l1;
         answer.at(9, 7) = 0.;
         answer.at(9, 8) = 0;
         answer.at(9, 9) = d.at(3, 3);
-        answer.at(9, 10) = d.at(3, 3) * ( cos( u.at(10) ) * sin( u.at(12) ) + sin( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2;
+        answer.at(9, 10) = d.at(3, 3) * ( -cos( u.at(10) ) * sin( u.at(12) ) - sin( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2;
         answer.at(9, 11) = d.at(3, 3) * ( cos( u.at(10) ) * cos( u.at(11) ) * cos( u.at(12) ) ) * l2;
-        answer.at(9, 12) = -d.at(3, 3) * ( sin( u.at(10) ) * cos( u.at(12) ) + cos( u.at(10) ) * sin( u.at(11) ) * sin( u.at(12) ) ) * l2;
+        answer.at(9, 12) = d.at(3, 3) * ( -sin( u.at(10) ) * cos( u.at(12) ) - cos( u.at(10) ) * sin( u.at(11) ) * sin( u.at(12) ) ) * l2;
 
         // Mx 2
         answer.at(10, 1) = 0;
-        answer.at(10, 2) = 0.;
-        answer.at(10, 3) = 0.;
-        answer.at(10, 4) = -d.at(4, 4);
-        answer.at(10, 5) = 0.;
-        answer.at(10, 6) = 0.;
+        answer.at(10, 2) = -d.at(2,2)*(-(sin(u.at(10))*sin(u.at(12))-cos(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2);
+        answer.at(10, 3) = -d.at(3,3)*(-(cos(u.at(10))*sin(u.at(12))+sin(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2);
+        answer.at(10, 4) = -d.at(2,2)*((sin(u.at(10))*sin(u.at(12))-cos(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2*(-(-sin(u.at(4))*sin(u.at(6))+cos(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1))-d.at(3,3)*((cos(u.at(10))*sin(u.at(12))+sin(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2*(-(cos(u.at(4))*sin(u.at(6))+sin(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1))-d.at(4,4);
+        answer.at(10, 5) = -d.at(2,2)*((sin(u.at(10))*sin(u.at(12))-cos(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2*(-sin(u.at(4))*cos(u.at(5))*cos(u.at(6)))*l1)-d.at(3,3)*((cos(u.at(10))*sin(u.at(12))+sin(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2*(cos(u.at(4))*cos(u.at(5))*cos(u.at(6)))*l1);
+        answer.at(10, 6) = -d.at(2,2)*((sin(u.at(10))*sin(u.at(12))-cos(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2*(-(cos(u.at(4))*cos(u.at(6))-sin(u.at(4))*sin(u.at(5))*sin(u.at(6)))*l1))-d.at(3,3)*((cos(u.at(10))*sin(u.at(12))+sin(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2*(-(sin(u.at(4))*cos(u.at(6))+cos(u.at(4))*sin(u.at(5))*sin(u.at(6)))*l1));
         answer.at(10, 7) = 0.;
-        answer.at(10, 8) = 0;
-        answer.at(10, 9) = 0.;
-        answer.at(10, 10) = d.at(4, 4);
-        answer.at(10, 11) = 0.;
-        answer.at(10, 12) = 0.;
-
+        answer.at(10, 8) = -d.at(2,2)*(sin(u.at(10))*sin(u.at(12))-cos(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2;
+        answer.at(10, 9) = -d.at(3,3)*(cos(u.at(10))*sin(u.at(12))+sin(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2;
+        answer.at(10, 10) = -d.at(2,2)*((sin(u.at(10))*sin(u.at(12))-cos(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2*(-(-sin(u.at(10))*sin(u.at(12))+cos(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2)+(u.at(8)-u.at(2)-(cos(u.at(10))*sin(u.at(12))+sin(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2-(cos(u.at(4))*sin(u.at(6))+sin(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1)*(cos(u.at(10))*sin(u.at(12))+sin(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2)-d.at(3,3)*((cos(u.at(10))*sin(u.at(12))+sin(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2*(-(cos(u.at(10))*sin(u.at(12))+sin(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2)+(u.at(9)-u.at(3)-(sin(u.at(10))*sin(u.at(12))-cos(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2-(sin(u.at(4))*sin(u.at(6))-cos(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1)*(-sin(u.at(10))*sin(u.at(12))+cos(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2)+d.at(4,4);
+        answer.at(10, 11) = -d.at(2,2)*((sin(u.at(10))*sin(u.at(12))-cos(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2*(-sin(u.at(10))*cos(u.at(11))*cos(u.at(12)))*l2+(u.at(8)-u.at(2)-(cos(u.at(10))*sin(u.at(12))+sin(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2-(cos(u.at(4))*sin(u.at(6))+sin(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1)*(-cos(u.at(10))*cos(u.at(11))*cos(u.at(12)))*l2)-d.at(3,3)*((cos(u.at(10))*sin(u.at(12))+sin(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2*(cos(u.at(10))*cos(u.at(11))*cos(u.at(12)))*l2+(u.at(9)-u.at(3)-(sin(u.at(10))*sin(u.at(12))-cos(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2-(sin(u.at(4))*sin(u.at(6))-cos(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1)*(sin(u.at(10))*cos(u.at(11))*cos(u.at(12)))*l2);
+        answer.at(10, 12) = -d.at(2,2)*((sin(u.at(10))*sin(u.at(12))-cos(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2*(-cos(u.at(10))*cos(u.at(12))+sin(u.at(10))*sin(u.at(11))*sin(u.at(12)))*l2+(u.at(8)-u.at(2)-(cos(u.at(10))*sin(u.at(12))+sin(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2-(cos(u.at(4))*sin(u.at(6))+sin(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1)*(sin(u.at(10))*cos(u.at(12))+cos(u.at(10))*sin(u.at(11))*sin(u.at(12)))*l2)-d.at(3,3)*((cos(u.at(10))*sin(u.at(12))+sin(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2*(-sin(u.at(10))*cos(u.at(12))-cos(u.at(10))*sin(u.at(11))*sin(u.at(12)))*l2+(u.at(9)-u.at(3)-(sin(u.at(10))*sin(u.at(12))-cos(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2-(sin(u.at(4))*sin(u.at(6))-cos(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1)*(cos(u.at(10))*cos(u.at(12))-sin(u.at(10))*sin(u.at(11))*sin(u.at(12)))*l2);
         // My 2
         answer.at(11, 1) = -d.at(1, 1) * ( sin( u.at(10) ) * sin( u.at(12) ) - cos( u.at(12) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2;
         answer.at(11, 2) = 0.;
         answer.at(11, 3) = -d.at(3, 3) * cos( u.at(11) ) * cos( u.at(12) ) * l2;
-        answer.at(11, 4) = d.at(3, 3) * ( -cos( u.at(4) ) * sin( u.at(6) ) * l1 * cos( u.at(11) ) * cos( u.at(12) ) * l2 - sin( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) * l1 * cos( u.at(11) ) * cos( u.at(12) ) * l2 );
-        ;
-        answer.at(11, 5) = d.at(1, 1) * ( ( sin( u.at(10) ) * sin( u.at(12) ) - cos( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2 * sin( u.at(5) ) * cos( u.at(6) ) * l1 ) + d.at(3, 3) * ( cos( u.at(4) ) * cos( u.at(5) ) * cos( u.at(6) ) * l1 * cos( u.at(11) ) * cos( u.at(12) ) * l2 ) - d.at(5, 5);
-        answer.at(11, 6) = d.at(1, 1) * ( ( sin( u.at(10) ) * sin( u.at(12) ) - cos( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2 * cos( u.at(5) ) * sin( u.at(6) ) * l1 ) + d.at(3, 3) * ( -sin( u.at(4) ) * cos( u.at(6) ) * l1 * cos( u.at(11) ) * cos( u.at(12) ) * l2 - cos( u.at(4) ) * sin( u.at(5) ) * sin( u.at(6) ) * l1 * cos( u.at(11) ) * cos( u.at(12) ) * l2 );
+        answer.at(11, 4) =  d.at(3, 3) * (( cos( u.at(11) ) * cos( u.at(12) ))*l2*( -cos( u.at(4) ) * sin( u.at(6) ) - sin( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1 );
+        answer.at(11, 5) = d.at(1, 1) * (( sin( u.at(10) ) * sin( u.at(12) ) - cos( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2*(sin( u.at(5) ) * cos( u.at(6) ) ) * l1 ) + d.at(3, 3) * (( cos( u.at(11) ) * cos( u.at(12) ))*l2*(cos( u.at(4) ) * cos( u.at(5) ) * cos( u.at(6) ) ) * l1 )- d.at(5, 5);
+        answer.at(11, 6) = d.at(1, 1) * (( sin( u.at(10) ) * sin( u.at(12) ) - cos( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2*(cos( u.at(5) ) * sin( u.at(6) ) ) * l1 ) + d.at(3, 3) * (( cos( u.at(11) ) * cos( u.at(12) ))*l2*( -sin( u.at(4) ) * cos( u.at(6) ) - cos( u.at(4) ) * sin( u.at(5) ) * sin( u.at(6) ) ) * l1);
         answer.at(11, 7) = d.at(1, 1) * ( sin( u.at(10) ) * sin( u.at(12) ) - cos( u.at(12) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2;
         answer.at(11, 8) = 0;
         answer.at(11, 9) = d.at(3, 3) * cos( u.at(11) ) * cos( u.at(12) ) * l2;
-        answer.at(11, 10) = d.at(1, 1) * ( ( u.at(7) - u.at(1) ) + ( 1 - cos( u.at(11) ) * cos( u.at(12) ) ) * l2 + ( 1 - cos( u.at(5) ) * cos( u.at(6) ) ) * l1 ) * ( cos( u.at(10) ) * sin( u.at(12) ) + sin( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2 + d.at(3, 3) * ( -cos( u.at(10) ) * sin( u.at(12) ) * l2 * cos( u.at(11) ) * cos( u.at(12) ) * l2 - sin( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) * l2 * cos( u.at(11) ) * cos( u.at(12) ) * l2 );
-        ;
-        answer.at(11, 11) = d.at(1, 1) * ( ( sin( u.at(10) ) * sin( u.at(12) ) - cos( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2 * sin( u.at(11) ) * cos( u.at(12) ) * l2 + ( ( u.at(7) - u.at(1) ) + ( 1 - cos( u.at(11) ) * cos( u.at(12) ) ) * l2 + ( 1 - cos( u.at(5) ) * cos( u.at(6) ) ) * l1 ) * ( -cos( u.at(10) ) * cos( u.at(11) ) * cos( u.at(12) ) * l2 ) ) + d.at(3, 3) * ( -( u.at(9) - u.at(3) ) * sin( u.at(11) ) * cos( u.at(12) ) * l2 + sin( u.at(10) ) * sin( u.at(12) ) * l2 * sin( u.at(11) ) * cos( u.at(12) ) * l2 + cos( u.at(10) ) * cos( 2 * u.at(11) ) * cos( u.at(12) ) * l2 * cos( u.at(12) ) * l2 + sin( u.at(4) ) * sin( u.at(6) ) * l1 * sin( u.at(11) ) * cos( u.at(12) ) * l2 - cos( u.at(4) ) * cos( 2 * u.at(5) ) * cos( u.at(6) ) * l1 * sin( u.at(11) ) * cos( u.at(12) ) * l2 ) + d.at(5, 5);
-        answer.at(11, 12) = d.at(1, 1) * ( ( sin( u.at(10) ) * sin( u.at(12) ) - cos( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2 * cos( u.at(11) ) * sin( u.at(12) ) * l2 + ( ( u.at(7) - u.at(1) ) + ( 1 - cos( u.at(11) ) * cos( u.at(12) ) ) * l2 + ( 1 - cos( u.at(5) ) * cos( u.at(6) ) ) * l1 ) * ( sin( u.at(10) ) * cos( u.at(12) ) + cos( u.at(10) ) * sin( u.at(11) ) * sin( u.at(12) ) ) * l2 ) + d.at(3, 3) * ( -( u.at(9) - u.at(3) ) * cos( u.at(11) ) * sin( u.at(12) ) * l2 - sin( u.at(10) ) * cos( 2 * u.at(12) ) * cos( u.at(11) ) * l2 * l2 - cos( u.at(10) ) * sin( u.at(11) ) * 2 * cos( u.at(12) ) * sin( u.at(12) ) * l2 * cos( u.at(11) ) * l2 + sin( u.at(4) ) * sin( u.at(6) ) * l1 * cos( u.at(11) ) * sin( u.at(12) ) * l2 - cos( u.at(4) ) * sin( u.at(5) ) * 2 * cos( u.at(6) ) * l1 * cos( u.at(11) ) * sin( u.at(12) ) * l2 );
+        answer.at(11, 10) = d.at(1, 1) * (( ( u.at(7) - u.at(1) ) + ( 1 - cos( u.at(11) ) * cos( u.at(12) ) ) * l2 + ( 1 - cos( u.at(5) ) * cos( u.at(6) ) ) * l1 )*( cos( u.at(10) ) * sin( u.at(12) ) + sin( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2) + d.at(3, 3) * (( cos( u.at(11) ) * cos( u.at(12) ))*l2*( -cos( u.at(10) ) * sin( u.at(12) ) - sin( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2);
+        answer.at(11, 11) = d.at(1, 1) * ( ( sin( u.at(10) ) * sin( u.at(12) ) - cos( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2*(sin( u.at(11) ) * cos( u.at(12) ) ) * l2+( ( u.at(7) - u.at(1) ) + ( 1 - cos( u.at(11) ) * cos( u.at(12) ) ) * l2 + ( 1 - cos( u.at(5) ) * cos( u.at(6) ) ) * l1 )*( - cos( u.at(10) ) * cos( u.at(11) ) * cos( u.at(12) ) ) * l2) + d.at(3, 3) * (( cos( u.at(11) ) * cos( u.at(12) ))*l2*(cos( u.at(10) ) * cos( u.at(11) ) * cos( u.at(12) ) ) * l2+( ( u.at(9) - u.at(3) )-( sin( u.at(10) ) * sin( u.at(12) ) - cos( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2-( sin( u.at(4) ) * sin( u.at(6) ) - cos( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1)*( -sin( u.at(11) ) * cos( u.at(12) ))*l2 )+ d.at(5, 5);
+        answer.at(11, 12) = d.at(1, 1) * (( sin( u.at(10) ) * sin( u.at(12) ) - cos( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2*( cos( u.at(11) ) * sin( u.at(12) ) ) * l2+( ( u.at(7) - u.at(1) ) + ( 1 - cos( u.at(11) ) * cos( u.at(12) ) ) * l2 + ( 1 - cos( u.at(5) ) * cos( u.at(6) ) ) * l1 )*( sin( u.at(11) ) * cos( u.at(12) ) + cos( u.at(10) ) * sin( u.at(11) ) * sin( u.at(12) ) ) * l2 ) + d.at(3, 3) * (( cos( u.at(11) ) * cos( u.at(12) ))*l2*( -sin( u.at(10) ) * cos( u.at(12) ) - cos( u.at(10) ) * sin( u.at(11) ) * sin( u.at(12) ) ) * l2+( ( u.at(9) - u.at(3) )-( sin( u.at(10) ) * sin( u.at(12) ) - cos( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2-( sin( u.at(4) ) * sin( u.at(6) ) - cos( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1)*( -cos( u.at(11) ) * sin( u.at(12) ))*l2);
 
         // Mz 2
         answer.at(12, 1) = -d.at(1, 1) * ( cos( u.at(10) ) * sin( u.at(12) ) + sin( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2;
         answer.at(12, 2) = d.at(2, 2) * cos( u.at(11) ) * cos( u.at(12) ) * l2;
         answer.at(12, 3) = 0.;
-        answer.at(12, 4) = -d.at(2, 2) * ( sin( u.at(4) ) * sin( u.at(6) ) * l1 * cos( u.at(11) ) * cos( u.at(12) ) * l2 - cos( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) * l1 * cos( u.at(11) ) * cos( u.at(12) ) * l2 );
-        answer.at(12, 5) = d.at(1, 1) * ( cos( u.at(10) ) * sin( u.at(12) ) + sin( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2 * sin( u.at(5) ) * cos( u.at(6) ) * l1 - d.at(2, 2) * ( -sin( u.at(4) ) * cos( u.at(5) ) * cos( u.at(6) ) * l1 * cos( u.at(11) ) * cos( u.at(12) ) * l2 );
-        answer.at(12, 6) = d.at(1, 1) * ( ( cos( u.at(10) ) * sin( u.at(12) ) + sin( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2 * cos( u.at(5) ) * sin( u.at(6) ) * l1 ) - d.at(2, 2) * ( -cos( u.at(4) ) * cos( u.at(6) ) * l1 * cos( u.at(11) ) * cos( u.at(12) ) * l2 + sin( u.at(4) ) * sin( u.at(5) ) * sin( u.at(6) ) * l1 * cos( u.at(11) ) * cos( u.at(12) ) * l2 ) - d.at(6, 6);
+        answer.at(12, 4) = - d.at(2, 2) * (( cos( u.at(11) ) * cos( u.at(12) ) * l2 )*(-( -sin( u.at(4) ) * sin( u.at(6) ) + cos( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1) );
+        answer.at(12, 5) = d.at(1, 1) * (( cos( u.at(10) ) * sin( u.at(12) ) + sin( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2*(  ( sin( u.at(5) ) * cos( u.at(6) ) ) * l1 ))  - d.at(2, 2) * (( cos( u.at(11) ) * cos( u.at(12) ) * l2 )*(-(sin( u.at(4) ) * cos( u.at(5) ) * cos( u.at(6) ) ) * l1));
+        answer.at(12, 6) = d.at(1, 1) * (( cos( u.at(10) ) * sin( u.at(12) ) + sin( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2*( (cos( u.at(5) ) * sin( u.at(6) ) ) * l1 ))  - d.at(2, 2) * (( cos( u.at(11) ) * cos( u.at(12) ) * l2 )*(-( cos( u.at(4) ) * cos( u.at(6) ) - sin( u.at(4) ) * sin( u.at(5) ) * sin( u.at(6) ) ) * l1))-d.at(6, 6);
         answer.at(12, 7) = d.at(1, 1) * ( cos( u.at(10) ) * sin( u.at(12) ) + sin( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2;
         answer.at(12, 8) = -d.at(2, 2) * cos( u.at(11) ) * cos( u.at(12) ) * l2;
         answer.at(12, 9) = 0.;
-        answer.at(12, 10) = d.at(1, 1) * ( ( u.at(7) - u.at(1) ) + ( 1 - cos( u.at(11) ) * cos( u.at(12) ) ) * l2 + ( 1 - cos( u.at(5) ) * cos( u.at(6) ) ) * l1 ) * ( -sin( u.at(10) ) * sin( u.at(12) ) + cos( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2 - d.at(2, 2) * ( sin( u.at(10) ) * sin( u.at(12) ) * l2 * cos( u.at(11) ) * cos( u.at(12) ) * l2 - cos( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) * l2 * cos( u.at(11) ) * cos( u.at(12) ) * l2 );
-        answer.at(12, 11) = d.at(1, 1) * ( ( cos( u.at(10) ) * sin( u.at(12) ) + sin( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2 * sin( u.at(11) ) * cos( u.at(12) ) * l2 + ( ( u.at(7) - u.at(1) ) + ( 1 - cos( u.at(11) ) * cos( u.at(12) ) ) * l2 + ( 1 - cos( u.at(5) ) * cos( u.at(6) ) ) * l1 ) * sin( u.at(10) ) * cos( u.at(11) ) * cos( u.at(12) ) * l2 ) - d.at(2, 2) * ( -( u.at(8) - u.at(2) ) * l2 * sin( u.at(11) ) * cos( u.at(12) ) + cos( u.at(10) ) * sin( u.at(12) ) * l2 * sin( u.at(11) ) * cos( u.at(12) ) * l2 - sin( u.at(10) ) * cos( 2 * u.at(11) ) * cos( u.at(12) ) * l2 * cos( u.at(12) ) * l2 + cos( u.at(4) ) * sin( u.at(6) ) * l1 * sin( u.at(11) ) * cos( u.at(12) ) * l2 + sin( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) * l1 * sin( u.at(11) ) * cos( u.at(12) ) * l2 );
-        answer.at(12, 12) = d.at(1, 1) * ( ( cos( u.at(10) ) * sin( u.at(12) ) + sin( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2 * ( cos( u.at(11) ) * sin( u.at(12) ) * l2 ) + ( ( u.at(7) - u.at(1) ) + ( 1 - cos( u.at(11) ) * cos( u.at(12) ) ) * l2 + ( 1 - cos( u.at(5) ) * cos( u.at(6) ) ) * l1 ) * ( cos( u.at(10) ) * cos( u.at(12) ) - sin( u.at(10) ) * sin( u.at(11) ) * sin( u.at(12) ) ) * l2 ) - d.at(2, 2) * ( -( u.at(8) - u.at(2) ) * cos( u.at(11) ) * sin( u.at(12) ) * l2 - cos( u.at(10) ) * cos( 2 * u.at(12) ) * l2 * cos( u.at(11) ) * l2 + sin( u.at(10) ) * sin( u.at(11) ) * 2 * cos( u.at(12) ) * sin( u.at(12) ) * l2 * cos( u.at(11) ) * l2 + cos( u.at(4) ) * sin( u.at(6) ) * l1 * cos( u.at(11) ) * sin( u.at(12) ) * l2 + sin( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) * l1 * cos( u.at(11) ) * sin( u.at(12) ) * l2 ) + d.at(6, 6);
+        answer.at(12, 10) = d.at(1, 1) * (( ( u.at(7) - u.at(1) ) + ( 1 - cos( u.at(11) ) * cos( u.at(12) ) ) * l2 + ( 1 - cos( u.at(5) ) * cos( u.at(6) ) ) * l1 )*( -sin( u.at(10) ) * sin( u.at(12) ) + cos( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2)  - d.at(2, 2) * (( cos( u.at(11) ) * cos( u.at(12) ) * l2 )*(-( -sin( u.at(10) ) * sin( u.at(12) ) + cos( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2));
+        answer.at(12, 11) = d.at(1, 1) * (( cos( u.at(10) ) * sin( u.at(12) ) + sin( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2*( (sin( u.at(11) ) * cos( u.at(12) ) ) * l2)+( ( u.at(7) - u.at(1) ) + ( 1 - cos( u.at(11) ) * cos( u.at(12) ) ) * l2 + ( 1 - cos( u.at(5) ) * cos( u.at(6) ) ) * l1 )*( sin( u.at(10) ) * cos( u.at(11) ) * cos( u.at(12) ) ) * l2)  - d.at(2, 2) * (( cos( u.at(11) ) * cos( u.at(12) ) * l2 )*(-(  sin( u.at(10) ) * cos( u.at(11) ) * cos( u.at(12) ) ) * l2)+(( u.at(8) - u.at(2) )-( cos( u.at(10) ) * sin( u.at(12) ) + sin( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2-( cos( u.at(4) ) * sin( u.at(6) ) + sin( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1)*( -sin( u.at(11) ) * cos( u.at(12) ) * l2 ));
+        answer.at(12, 12) = d.at(1, 1) * (( cos( u.at(10) ) * sin( u.at(12) ) + sin( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2*(( sin( u.at(11) ) * cos( u.at(12) ) ) * l2)+( ( u.at(7) - u.at(1) ) + ( 1 - cos( u.at(11) ) * cos( u.at(12) ) ) * l2 + ( 1 - cos( u.at(5) ) * cos( u.at(6) ) ) * l1 )*( cos( u.at(10) ) * cos( u.at(12) ) - sin( u.at(10) ) * sin( u.at(11) ) * sin( u.at(12) ) ) * l2)  - d.at(2, 2) * (( cos( u.at(11) ) * cos( u.at(12) ) * l2 )*(-( cos( u.at(10) ) * cos( u.at(12) ) - sin( u.at(10) ) * sin( u.at(11) ) * sin( u.at(12) ) ) * l2)+(( u.at(8) - u.at(2) )-( cos( u.at(10) ) * sin( u.at(12) ) + sin( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2-( cos( u.at(4) ) * sin( u.at(6) ) + sin( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1)*( -cos( u.at(11) ) * sin( u.at(12) ) * l2 ))+d.at(6, 6);
 
         answer.times(1. / length);
 
@@ -284,7 +280,8 @@ namespace oofem {
         answer.at(5) = u.at(11) - u.at(5);
         answer.at(6) = u.at(12) - u.at(6);
         answer.times(1. / this->length);
-
+         // printf("Strain/n");
+        // answer.printYourself();
         answer += strain;
     }
     //
@@ -316,14 +313,14 @@ namespace oofem {
         answer.at(1) = -incrementalStress.at(1),
         answer.at(2) = -incrementalStress.at(2);
         answer.at(3) = -incrementalStress.at(3);
-        answer.at(4) = -incrementalStress.at(4);
-        answer.at(5) = incrementalStress.at(1) * ( sin( u.at(4) ) * sin( u.at(6) ) - cos( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1 + incrementalStress.at(3) * ( cos( u.at(5) ) * cos( u.at(6) ) ) * l1 - incrementalStress.at(5);
+        answer.at(4) = +incrementalStress.at(2)*( sin( u.at(4) ) * sin( u.at(6) ) - cos( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1 -incrementalStress.at(3)*( cos( u.at(4) ) * sin( u.at(6) ) + sin( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1-incrementalStress.at(4);
+        answer.at(5) = -incrementalStress.at(1) * ( sin( u.at(4) ) * sin( u.at(6) ) - cos( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1 + incrementalStress.at(3) * ( cos( u.at(5) ) * cos( u.at(6) ) ) * l1 - incrementalStress.at(5);
         answer.at(6) = incrementalStress.at(1) * ( cos( u.at(4) ) * sin( u.at(6) ) + sin( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1 - incrementalStress.at(2) * ( cos( u.at(5) ) * cos( u.at(6) ) ) * l1 - incrementalStress.at(6);
         answer.at(7) = incrementalStress.at(1);
         answer.at(8) = incrementalStress.at(2);
         answer.at(9) = incrementalStress.at(3);
-        answer.at(10) = incrementalStress.at(4);
-        answer.at(11) = incrementalStress.at(1) * ( sin( u.at(10) ) * sin( u.at(12) ) - cos( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2 + incrementalStress.at(3) * ( cos( u.at(11) ) * cos( u.at(12) ) ) * l2 + incrementalStress.at(5);
+        answer.at(10) = incrementalStress.at(2)*( sin( u.at(10) ) * sin( u.at(12) ) - cos( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2 -incrementalStress.at(3)*( cos( u.at(10) ) * sin( u.at(12) ) + sin( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2+incrementalStress.at(4);
+        answer.at(11) = -incrementalStress.at(1) * ( sin( u.at(10) ) * sin( u.at(12) ) - cos( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2 + incrementalStress.at(3) * ( cos( u.at(11) ) * cos( u.at(12) ) ) * l2 + incrementalStress.at(5);
         answer.at(12) = incrementalStress.at(1) * ( cos( u.at(10) ) * sin( u.at(12) ) + sin( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2 - incrementalStress.at(2) * ( cos( u.at(11) ) * cos( u.at(12) ) ) * l2 + incrementalStress.at(6);
         answer += oldInternalForces;
 
