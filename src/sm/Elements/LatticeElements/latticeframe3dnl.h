@@ -37,31 +37,33 @@
 
 #include "latticeframe3d.h"
 
-///@name Input fields for LatticeFrame3d3g
+///@name Input fields for LatticeFrame3dNL
 //@{
-#define _IFT_LatticeFrame3d3g_Name "latticeframe3d3g"
+#define _IFT_LatticeFrame3dNL_Name "latticeframe3d3g"
 
 //@}
 
 namespace oofem {
 /**
- * This class implements a geometric nonlinear 3-dimensional frame element based on rigid body spring theory presented in Toi 1991 and Toi 1993. It is an extension of a geometric linear 3-dimensional frame element. It belongs to the group of lattice models in OOFEM.
- * Authors: Gumaa Abdelrhim and Peter Grassl
- */
+This class implements a geometric nonlinear 3-dimensional frame element. It is an extension of a geometric linear 3-dimensional frame element based on rigid body spring theory called LatticeFrame3D presented in Toi 1991 and Toi 1993. It belongs to the group of lattice models in the OOFEM structure, but can be used as a standard 3D beam element.
+References:
+Toi, Y. (1991). Shifted integration technique in one‐dimensional plastic collapse analysis using linear and cubic finite elements. International Journal for Numerical Methods in Engineering, 31(8), 1537-1552.
+Toi, Y., & Isobe, D. (1993). Adaptively shifted integration technique for finite element collapse analysis of framed structures. International Journal for Numerical Methods in Engineering, 36(14), 2323-2339.
+Authors: Gumaa Abdelrhim and Peter Grassl, 2023
+*/
 
-class LatticeFrame3d3g : public LatticeFrame3d
+class LatticeFrame3dNL : public LatticeFrame3d
 {
 protected:
 
 public:
-    LatticeFrame3d3g(int n, Domain *);
-    virtual ~LatticeFrame3d3g();
-    double computeCurrentLength();
-
+    LatticeFrame3dNL(int n, Domain *);
+    virtual ~LatticeFrame3dNL();
+  
     int giveLocalCoordinateSystem(FloatMatrix &answer) override;
 
-    const char *giveInputRecordName() const override { return _IFT_LatticeFrame3d3g_Name; }
-    const char *giveClassName() const override { return "latticeframe3d3g"; }
+    const char *giveInputRecordName() const override { return _IFT_LatticeFrame3dNL_Name; }
+    const char *giveClassName() const override { return "latticeframe3dnl"; }
 
     void giveInternalForcesVector(FloatArray &answer, TimeStep *tStep, int useUpdatedGpRecord) override;
 
