@@ -25,6 +25,7 @@ set (sm_element
     Elements/Bars/truss2d.C 
     Elements/Bars/truss3d.C
     Elements/Bars/truss3dnl.C
+    Elements/Bars/truss3dnl2.C
     Elements/Bars/qtruss1d.C 
     Elements/Beams/libeam2d.C 
     Elements/Beams/libeam2dnl.C
@@ -151,6 +152,7 @@ set (sm_interface_elements
     Elements/Interfaces/Deprecated/interfaceelem2dlin.C
     Elements/Interfaces/Deprecated/interfaceelem2dquad.C
     Elements/Interfaces/Deprecated/interfaceelem3dtrlin.C
+    Elements/Interfaces/bondlink3dtruss.C	
 )
 
 set (sm_boundary_conditions
@@ -190,6 +192,7 @@ set (sm_emodel
     EngineeringModels/freewarping.C 
     EngineeringModels/structuralmaterialevaluator.C
     EngineeringModels/qclinearstatic.C
+    EngineeringModels/pdelta.C
     )
 
 set (sm_loads
@@ -282,6 +285,7 @@ set (sm_material
     Materials/HyperelasticMaterials/blatzkomaterial.C
     Materials/HyperelasticMaterials/simopistermaterial.C
     Materials/HyperelasticMaterials/ogdencompressiblematerial.C
+    Materials/HyperelasticMaterials/hyperelasticmaterial1d.C
     #Lattice models
     Materials/LatticeMaterials/latticematstatus.C
     Materials/LatticeMaterials/latticestructuralmaterial.C	
@@ -296,6 +300,7 @@ set (sm_material
     Materials/LatticeMaterials/latticeframeelastic.C
     Materials/LatticeMaterials/latticeframesteelplastic.C
     Materials/LatticeMaterials/latticeframeconcreteplastic.C
+    Materials/1D/isoasymm1d.C
 )
 if (USE_MFRONT)
     list (APPEND sm_material Materials/mfrontusermaterial.C)

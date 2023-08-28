@@ -110,7 +110,8 @@ if (USE_PETSC)
     list (APPEND core_nm petscsolver.C petscsparsemtrx.C)
 endif ()
 
-if (USE_INTEL_MKL_PARDISO)
+if (USE_INTEL_MKL_PARDISO OR USE_ONEAPI)
+    message (STATUS "    MKL Solver is enabled for compilation")
     list (APPEND core_nm mklpardisosolver.C)
 endif ()
 
@@ -155,6 +156,7 @@ set (core_dofman
     dofmanager.C
     node.C
     slavenode.C
+    generalslavenode.C
     hangingnode.C
     qcnode.C
     rigidarmnode.C

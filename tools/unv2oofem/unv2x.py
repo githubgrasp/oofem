@@ -49,6 +49,9 @@ class UNVParser:
         oofem_elemProp.append(oofem_elementProperties("LIBeam2D",oofem_elemProp[-1]))
         oofem_elemProp.append(oofem_elementProperties("LIBeam2Dnl",oofem_elemProp[-1]))
         oofem_elemProp.append(oofem_elementProperties("Beam3D",oofem_elemProp[-1]))
+        oofem_elemProp.append(oofem_elementProperties("Line1ht",oofem_elemProp[-1]))
+        oofem_elemProp.append(oofem_elementProperties("Line1mt",oofem_elemProp[-1]))
+        oofem_elemProp.append(oofem_elementProperties("Line1hmt",oofem_elemProp[-1]))
         oofem_elemProp.append(oofem_elementProperties("LIBeam3D",oofem_elemProp[-1]))
         oofem_elemProp.append(oofem_elementProperties("LIBeam3D2",oofem_elemProp[-1]))
         oofem_elemProp.append(oofem_elementProperties("LIBeam3Dnl",oofem_elemProp[-1]))
@@ -163,14 +166,14 @@ class UNVParser:
                 else:
                     dataline=Line2Int(line1)
                     eltype=dataline[1]
-                    if eltype==11 or eltype==22:# types of elements which are defined on 3 lines
-                        # 1D elements have an additionnal line in their definition
+                    if eltype==11 or eltype==21 or eltype==22:# types of elements which are defined on 3 lines
+                        # 1D elements have an additional line in their definition
                         line3=file.readline()
                         cntvt=Line2Int(line3)
-                    elif eltype==113:#Quadratic wedge have nodes on 2 lines
+                    elif eltype==113:#Quadratic wedge has nodes on 2 lines
                         line3=file.readline()
                         cntvt = Line2Int(line2) + Line2Int(line3)
-                        print(cntvt, type(cntvt))
+                        #print("Quadratic wedge", cntvt, type(cntvt))
                     elif eltype==116:#Quadratic brick element have nodes on 3 lines
                         line3=file.readline()
                         line4=file.readline()
