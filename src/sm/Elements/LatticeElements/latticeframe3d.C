@@ -101,14 +101,14 @@ LatticeFrame3d::computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, i
     answer.at(2, 3) =  0.;
     answer.at(2, 4) = 0.;
     answer.at(2, 5) = 0;
-    answer.at(2, 6) = -this->length*(1-this->s)/2.;
+    answer.at(2, 6) = -this->length*(1.-this->s)/2.;
     //Second node
     answer.at(2, 7) = 0.;
     answer.at(2, 8) = 1.;
     answer.at(2, 9) =  0.;
     answer.at(2, 10) = 0.;
     answer.at(2, 11) = 0;
-    answer.at(2, 12) = -this->length*(1+this->s)/2.;
+    answer.at(2, 12) = -this->length*(1.+this->s)/2.;
 
     //Shear displacement jump in z-plane
     //first node
@@ -116,14 +116,14 @@ LatticeFrame3d::computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, i
     answer.at(3, 2) = 0.;
     answer.at(3, 3) = -1.;
     answer.at(3, 4) = 0.;
-    answer.at(3, 5) = this->length*(1-this->s)/2.;
+    answer.at(3, 5) = this->length*(1.-this->s)/2.;
     answer.at(3, 6) = 0.;
     //Second node
     answer.at(3, 7) = 0.;
     answer.at(3, 8) = 0.;
     answer.at(3, 9) =  1.;
     answer.at(3, 10) = 0.;
-    answer.at(3, 11) = this->length*(1+this->s)/2.;
+    answer.at(3, 11) = this->length*(1.+this->s)/2.;
     answer.at(3, 12) = 0.;
 
     //Rotation around x-axis
@@ -241,7 +241,8 @@ LatticeFrame3d::computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMod
     dbj.times(1. / length);
     bjt.beTranspositionOf(bj);
     answer.beProductOf(bjt, dbj);
-
+    //printf("answer/n");
+    //answer.printYourself();
     return;
 }
 
@@ -305,6 +306,7 @@ LatticeFrame3d::giveInternalForcesVector(FloatArray &answer,
     answer.clear();
 
     this->computeBmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), b);
+
     bt.beTranspositionOf(b);
 
     if ( useUpdatedGpRecord == 1 ) {
@@ -318,16 +320,12 @@ LatticeFrame3d::giveInternalForcesVector(FloatArray &answer,
 	strain.times(1./this->length);
         this->computeStressVector(stress, strain, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
     }
-
     answer.beProductOf(bt, stress);
-
     if ( !this->isActivated(tStep) ) {
         answer.zero();
         return;
     }
 }
-
-
 
 bool
 LatticeFrame3d::computeGtoLRotationMatrix(FloatMatrix &answer)
@@ -357,9 +355,9 @@ LatticeFrame3d::giveLocalCoordinateSystem(FloatMatrix &answer)
     Node *nodeA, *nodeB;
     nodeA = this->giveNode(1);
     nodeB = this->giveNode(2);
-
     lx.beDifferenceOf(nodeB->giveCoordinates(), nodeA->giveCoordinates() );
     lx.normalize();
+
 
     if ( this->referenceNode ) {
         Node *refNode = this->giveDomain()->giveNode(this->referenceNode);
@@ -446,6 +444,7 @@ LatticeFrame3d::initializeFrom(InputRecord &ir)
 
     this->s = 0.;
     IR_GIVE_OPTIONAL_FIELD(ir, s, _IFT_LatticeFrame3d_s);
+
 }
 
 
@@ -466,8 +465,6 @@ LatticeFrame3d::computeLength()
 
     return length;
 }
-
-
 
 void
 LatticeFrame3d::computeLumpedMassMatrix(FloatMatrix &answer, TimeStep *tStep)

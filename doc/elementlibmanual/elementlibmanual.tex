@@ -437,7 +437,7 @@ Here, $\mathbf{x}^{'}$ and $\mathbf{x}$ are the nodes inside and outside, respec
 \elementDescription{Reference}{\cite{AthWheGra18}}
 \end{elementsummary}
 
-\subsubsection{Latticelink3d}
+\subsubsection{Latticelink3d element}
 This element represents a two-node 3d link element connecting 3d beam and 3d lattice elements. Each node has six degrees of freedom. 
 The input parameters for this element are shown in Table~\ref{latticelink3dsummary}. 
 
@@ -451,7 +451,7 @@ The input parameters for this element are shown in Table~\ref{latticelink3dsumma
 \elementDescription{Reference}{\cite{GraAnt19}}
 \end{elementsummary}
 
-\subsubsection{Latticelink3dboundary}
+\subsubsection{Latticelink3dboundary element}
 Represents three-node 3d boundary link element connecting 3d beam and 3d lattice elements. The first two nodes have the same meaning as for latticelink3d. The third node is used to control the loading of the periodic cell using three normal (xx, yy and zz) and three shear strain (yz, xz, xy) components.
 The specific input parameters for this element in addition of those for latticelink3d are shown in Table~\ref{latticelink3dboundarysummary}. 
 
@@ -459,6 +459,33 @@ The specific input parameters for this element in addition of those for latticel
 \elementParam{\param{location}: }
 \elementDescription{Unknowns}{Six dofs ($u$-displacement, $v$-displacement, $w$-displacement, $u$-rotation, $v$-rotation and $w$-rotation) are required in each node.}
 \elementDescription{Reference}{\cite{GraAnt19}}
+\end{elementsummary}
+
+ \subsubsection{Latticeframe3d element}
+ Latticeframe3d represents a two-node linear 3d frame element. Each node has six degrees of freedom, namely three translations and three rotations. The element is based on the link between rigid body spring and Timoshenko frame models. The main idea is to model the elastic and inelastic response of a connection of two nodes by a set of springs located at the contact facet of two rigid bodies. Displacement jumps are computed at the contact facet, which are smeared out over the element length in the form of strains. The input parameters for this element are shown in Table ~\ref{latticeframe3dsummary}. For the computation of the nodal forces, the initial configuration is used.
+%%  \begin{figure}[htb]
+%%  \centering
+%%  \includegraphics[width=0.3\textwidth]{./latticeframe.png}
+%%  \includegraphics[width=0.3\textwidth]{./latticeframe1.png}
+%%  \caption{latticeframe3d element. Node numbering, DOF numbering, cross-section vertices and local coordinate system at integration point.}
+%%  \label{latticeframe3dfig}
+%%  \end{figure}
+
+ \begin{elementsummary}{latticeframe3d}{3d lattice frame element}{{ \field{zaxis}{ra} }{rn}}{latticeframe3d element summary}{latticeframe3dsummary}
+\elementParam{\param{zaxis}: z-axis of local coordinate system }
+\elementDescription{CS properties}{Area, inertia moment along y and z axis (\param{iy} and \param{iz} parameters), torsion inertia moment (\param{ik} parameter) and either cross section area shear correction factor (\param{beamshearcoeff} parameter) or equivalent shear areas (\param{shearareay} and \param{shearareaz} parameters) are required. These cross section properties are assumed to be defined in local coordinate system of element.}
+\elementDescription{Unknowns}{Six dofs ($u$-displacement, $v$-displacement, $w$-displacement, $u$-rotation, $v$-rotation and $w$-rotation) are required in each node.}
+\elementDescription{Reference}{\cite{Toi91, Toi93}}
+\end{elementsummary}
+
+ \subsubsection{Latticeframe3dnl element}
+ Latticeframe3dnl represents a two-node nonlinear 3d frame element. Each node has six degrees of freedom, namely three translations and three rotations. The element is based on the link between rigid body spring and Timoshenko frame models. The main idea is to model the elastic and inelastic response of a connection of two nodes by a set of springs located at the contact facet of two rigid bodies. Displacement jumps are computed at the contact facet considering the incrementally deformed geometry, which are smeared out over the element length in the form of strains. The input parameters for this element are shown in Table ~\ref{latticeframe3dnlsummary}. For the computation of the nodal forces, the incrementally deformed configuration is used. At the start of each step the local co-ordinate system is updated with the displacements of the previous step.
+
+ \begin{elementsummary}{latticeframe3dnl}{3d lattice frame element}{{ \field{zaxis}{ra} }{rn}}{latticeframe3d element summary}{latticeframe3dnlsummary}
+\elementParam{\param{zaxis}: z-axis of local coordinate system }
+\elementDescription{CS properties}{Area, inertia moment along y and z axis (\param{iy} and \param{iz} parameters), torsion inertia moment (\param{ik} parameter) and either cross section area shear correction factor (\param{beamshearcoeff} parameter) or equivalent shear areas (\param{shearareay} and \param{shearareaz} parameters) are required. These cross section properties are assumed to be defined in local coordinate system of element.}
+\elementDescription{Unknowns}{Six dofs ($u$-displacement, $v$-displacement, $w$-displacement, $u$-rotation, $v$-rotation and $w$-rotation) are required in each node.}
+\elementDescription{Reference}{\cite{Toi91, Toi93, AbdGra23}}
 \end{elementsummary}
 
 %-----------------------------------------------------------------------------------------------
@@ -2240,17 +2267,15 @@ supports modelling of two immiscible fluids.}
 %\printbibliography
 
 \begin{thebibliography}{99}
-
-
 \bibitem{RobertCook1989} R. D. Cook and D. S. Malkus and M. E. Plesha, ``Concepts and Applications of Finite Element Analysis'', Third Edition, isbn: 0-471-84788-7, 1989.
 \bibitem{BittnarSejnoha1996} Z. Bittnar and J. Sejnoha, ``Numerical Methods in Structural Mechanics'',Thomas Telford,isbn:978-0784401705, 1996.
 \bibitem{RagnarLarsson2011} R. Larsson and J. Mediavilla and M. Fagerström, ``Dynamic fracture modeling in shell structures based on XFEM'', International Journal for Numerical Methods in Engineering, vol. 86, no. 4-5, 499--527, 2011.
 \bibitem{GraJir10} P. Grassl and M. Jir\'{a}sek, ``Meso-scale approach to modelling the fracture process zone of concrete subjected to uniaxial tension'', International Journal of Solids and Structures, vol. 47, iss. 7-8, pp. 957-968, 2010..
 \bibitem{GraBol16} P. Grassl, J. Bolander, ``Three-Dimensional Network Model for Coupling of Fracture and Mass Transport in Quasi-Brittle Geomaterials'', Materials, 9, 782, 2016
 \bibitem{AthWheGra18} I. Athanasiadis, S. Wheeler and P. Grassl. ``Hydro-mechanical network modelling of particulate composites'', International Journal of Solids and Structures, vol. 130-131, pp. 49-60, 2018.
-\bibitem{GraAnt19} P. Grassl and A. Antonelli. ``3D network modelling of fracture processes in fibre-reinforced geomaterials'', International Journal of Solids and Structures, vol. 156-157, Pages 234-242, 2019.
-
-  
+\bibitem{GraAnt19} P. Grassl and A. Antonelli. ``3D network modelling of fracture processes in fibre-reinforced geomaterials'', International Journal of Solids and Structures, vol. 156-157, pp. 234-242, 2019.
+\bibitem{Toi91} Y. Toi. ``Shifted integration technique in one‐dimensional plastic collapse analysis using linear and cubic finite elements'', International Journal for Numerical Methods in Engineering 31, no. 8, pp. 1537-1552, 1991.
+\bibitem{AbdGra23} G. Abdelrhim and P. Grassl. ``On a geometric nonlinear Timoshenko frame element with material nonlinearity'', Annual Conference of the UK Association for Computational Mechanics (UKACM), The University of Warwick, UK, 19-21 April 2023.
 \end{thebibliography}
 \end{document}
 
