@@ -110,7 +110,7 @@ public:
 
 
 protected:
-    void computeBmatrixAt(GaussPoint *, FloatMatrix &, int = 1, int = ALL_STRAINS) override;
+    virtual void computeBmatrixAt(GaussPoint *, FloatMatrix &, int = 1, int = ALL_STRAINS) override;
     bool computeGtoLRotationMatrix(FloatMatrix &) override;
     void computeLumpedMassMatrix(FloatMatrix &answer, TimeStep *tStep) override;
     void computeMassMatrix(FloatMatrix &answer, TimeStep *tStep) override

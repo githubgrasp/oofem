@@ -6079,6 +6079,74 @@ Supported modes & 3dlattice\\
 \label{latticeplasticdamageviscoelastic_table}
 \end{table}
 
+\subsubsection{Plasticity lattice model for steel}
+
+This is a Plasticity material used together with lattice elements.It has bean developed to describe the failure process  failure of steel frame member.
+The stress-strain law has the form
+\begin{equation}
+\boldsymbol{\sigma} = \mathbf{D}_{\rm e} \left(\boldsymbol{\varepsilon}-\boldsymbol{\varepsilon}_{\rm p} \right)
+\end{equation}
+where $\boldsymbol{\sigma}$ is a vector of tractions and rotational components, $\mathbf{D}_{\rm e}$ is the elastic stiffness matrix, $\boldsymbol{\varepsilon}$ is a vector of strains obtained from displacement jumps smeared over the element length and rotational components and $\boldsymbol{\varepsilon}_{\rm p}$ are the plastic strains. The model parameters are summarised in Table \ref{latticeframesteelplastic_table}.
+\begin{table}[!htb]
+ \centering
+\begin{tabular}{|l|l|}
+\hline
+Description & Plasticity lattice model for steel \\
+\hline
+Record Format & \descitem{latticeframesteelplastic} $\elemparam{}_{(in)}$
+$\elemparam{d}_{(rn)}$ $\optelemparam{talpha}_{(rn)}$ $\elemparam{e}_{(rn)}$ $\optelemparam{n}_{(rn)}$ $\optelemparam{nx0}_{(rn)}$ $\optelemparam{mx0}_{(rn)}$\\ &$\optelemparam{my0}_{(rn)}$ $\optelemparam{mz0}_{(rn)}$ $\elemparam{sub}_{(in)}$ $\elemparam{iter}_{(in)}$ $\elemparam{tol}_{(rn)}$\\
+Parameters &- \param{} material number\\
+&- $\param{d}$ material density\\
+&- $\optparam{talpha}$ Thermal expansion coefficient. Default is 0.\\
+&- $\optparam{e}$ Young's modulus of the lattice material.\\
+&- $\param{n}$ Poisson's ratio of the material that the beam element is made of.\\
+&- $\optparam{nx0}$ ultimate capacity under pure axialloads.\\
+&- $\optparam{mx0}$ ultimate capacity under pure moment about $x$.\\
+&- $\optparam{my0}$ ultimate capacity under pure moment about $y$.\\
+&- $\optparam{mz0}$ ultimate capacity under pure moment about $z$.\\
+&- $\optparam{sub}$ maximum number of subincrementations.\\
+&- $\optparam{iter}$ maximum number of newton iterations.\\
+&- $\optparam{tol}$ tolerance for newton method.\\
+Supported modes & 3dlattice\\
+
+\hline
+\end{tabular}
+
+\caption{Plasticity steel model for lattice elements -- summary.}
+\label{latticeframesteelplastic_table}
+%\end{center}                  
+  \end{table}
+The nonlinear response of the beam element is given directly as an relationship between internal force and strain. The basic equations include an additive decomposition of total strain into elastic part and plastic part
+
+\begin{equation}
+\boldsymbol{\varepsilon} = \boldsymbol{\varepsilon}_{\rm e}-\boldsymbol{\varepsilon}_{\rm p} 
+\end{equation}
+
+Trail stress
+\begin{equation}
+    \sigma_{n+1}^{tr}  =D^e (\varepsilon_{n+1}  - \varepsilon_n^p)
+\end{equation}
+
+The yield function
+\begin{equation}
+(\frac{N_x}{N_0})^2+ (\frac{M_x}{M_{x0}} )^2+ (\frac{M_y}{M_{y0}} )^2+ (\frac{M_z}{M_{z0}} )^2- 1 = 0
+\end{equation}
+
+where $M$, $M y$ , $N$ and $M$ , are the two components of bending moment, an axial force and
+a torsional moment, respectively. The subscript 0 indicates a fully plastic value under the
+condition that each component of resultant forces acts independently on a cross-section of
+a member.
+\\
+loading-unloading conditions
+
+loading-unloading conditions
+\begin{equation}
+f(\bar{\vsig},\kappa)\le 0 \qquad \dot{\lambda}\geq 0 \qquad \dot{\lambda}f(\bar{\vsig},\kappa)=0,
+\end{equation}
+evolution law for plastic strain
+\begin{equation}
+\dot{\veps}_{\rm{p}} = \dot{\lambda} \frac{\partial f}{\partial \bar{\vsig}},
+\end{equation}
 
 
 \subsection{Material models for steel relaxation}
@@ -6189,7 +6257,6 @@ Supported modes& 1dMat\\
 \label{steelRelax_table}
 %\end{center}
 \end{table}
-
 
 
 \subsection{User-defined material models using MFront}
