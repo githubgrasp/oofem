@@ -32,14 +32,14 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef latticeframe3d3g_h
-#define latticeframe3d3g_h
+#ifndef latticeframe3dnl_h
+#define latticeframe3dnl_h
 
 #include "latticeframe3d.h"
 
 ///@name Input fields for LatticeFrame3dNL
 //@{
-#define _IFT_LatticeFrame3dNL_Name "latticeframe3d3g"
+#define _IFT_LatticeFrame3dNL_Name "latticeframe3dnl"
 
 //@}
 
