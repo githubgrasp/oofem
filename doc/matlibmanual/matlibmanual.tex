@@ -5723,8 +5723,20 @@ Supported modes& \_2dInterface, \_3dInterface\\
 %\end{center}
 \end{table}
 
-\subsubsection{Slip model for trusses and beams}
-This is an elasto-plastic model for slip between reinforcement modelled as three-dimensional beam or truss elements and matrix elements. The theory of the model is described in the paper \textit{Upscaling of three-dimensional reinforced concrete representative volume elements to effective beam and plate models. A Sciegaj, P Grassl, F Larsson, K Runesson, K Lundgren. International Journal of Solids and Structures 202, 835-853} The model parameters are summarised in Tab.~\ref{linkslip_table}.
+\subsubsection{LinkSlip - Slip model for trusses and beams}
+This is an elasto-plastic model for slip between reinforcement modelled as three-dimensional beam or truss elements and matrix elements. The theory of the model is described in the paper \cite{SciGraLarRun20} for the case of beams. The model parameters are summarised in Tab.~\ref{linkslip_table}.
+There are three types of constitutive relations supported which are shown in Figure~\ref{linkslip}, which are chosen by means of the input parameter \param{type}.
+
+\begin{figure}[!htb]
+\begin{htmlonly}
+  \centerline{\includegraphics[width=1.\textwidth]{linkslip.pdf}}
+\end{htmlonly}
+%begin{latexonly}
+ \centerline{\includegraphics[width=0.8\textwidth]{linkslip}}
+%end{latexonly}
+  \caption{Bond stress ($\tau$) - slip ($s$) diagram for link slip model.}
+  \label{linkslip}
+\end{figure}
 
 \begin{table}[!htb]
 \begin{mmt}
@@ -5732,15 +5744,16 @@ This is an elasto-plastic model for slip between reinforcement modelled as three
 Description & Slip model \\
 \hline
 Record Format & \descitem{linkslip} \elemparam{}{in} 
-\elemparam{kn}{rn}  \elemparam{ks}{rn} \elemparam{s1}{rn} \elemparam{s2}{rn} \elemparam{s3}{rn} \elemparam{taumax}{rn} \optelemparam{tauf}{rn}  \optelemparam{alpha}{rn}\\
+\elemparam{kn}{rn}  \elemparam{kl}{rn} \optelemparam{type}{in} \elemparam{s1}{rn} \elemparam{s2}{rn} \elemparam{s3}{rn} \elemparam{t0}{rn} \optelemparam{tf}{rn}  \optelemparam{alpha}{rn}\\
 Parameters &- \param{} material number\\
-&- \param{ka} interface elastic axial stiffness (in the direction of slip)\\
+&- \param{kn} interface elastic axial stiffness (in the direction of slip)\\
 &- \param{kl} interface elastic lateral stiffness\\
+&- \param{type} type of bond law (default is zero)\\
 &- \param{s1} characteristic slip value\\
 &- \param{s2} characteristic slip value\\
 &- \param{s3} characteristic slip value\\
-&- \param{taumax} maximum bond stress\\
-&- \param{tauf} residual bond stress at reinforcement pull-out\\
+&- \param{t0} maximum bond stress\\
+&- \param{tf} residual bond stress at reinforcement pull-out\\
 &- \param{alpha} bond-slip curve parameter (exponent)\\
 
 Supported modes & \_3dInterface\\
@@ -5750,8 +5763,6 @@ Supported modes & \_3dInterface\\
 \label{linkslip_table}
 %\end{center}
 \end{table}
-
-
 
 
 \subsection{Material models for lattice elements}
@@ -7329,8 +7340,8 @@ In Rock Under Compression, International Journal of Fracture Mechanics
 \bibitem{fib:2010} International Federation for Structural Concrete (\textit{fib}): The \textit{fib} Model Code for Concrete Structures 2010.
 \bibitem{GraDav11} P. Grassl and T. Davies: Lattice modelling of corrosion induced cracking and bond in reinforced concrete. Cement and Concrete Composites, 33, 918-924, 2011.
 \bibitem{AthWheGra18} I. Athanasiadis, S. Wheeler and P. Grassl: Hydro-mechanical network modelling of particulate composites. International Journal of Solids and Structures 130-131, 49-60, 2018.
+\bibitem{SciGraLarRun20} A. Sciegaj and P. Grassl and F. Larsson and K. Runesson and K. Lundgren. ``Upscaling of three-dimensional reinforced concrete representative volume elements to effective beam and plate models'', International Journal of Solids and Structures, vol. 202, pp. 835-853, 2020.
 \end{thebibliography}
-
 \end{document}
 
 
