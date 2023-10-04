@@ -1508,6 +1508,39 @@ approximation of displacement field. Can be used to glue together two elements w
 \end{elementsummary}
 
 
+\subsubsection{Bondlink3d element}
+This class implements a bond link for connecting beam (frame) and continuum elements in unstructured meshes.
+The main idea is to use the rotation of the beam element and the rigid arm from the beam node to the continuum element node to compute the displacement jump along the rebar element (and two components, which are perpendicular to each other and lie in a plane for which the direction along the rebar is normal to. This element differs from the lattice link element, for which both the beam and the lattice nodes have rotational DOFs and therefore the lattice node's rotations can be used to compute the displacement jump at the beam element location. It also differs from the other interface elements since the first stiffness component is in the direction of the slip.     
+
+This element represents a two-node 3d link element connecting 3d beam and 3d lattice elements.
+The bond area for this element is calculated from the length and diameter of the truss element that is bonded to the continuum as $A_{\mathrm{bond}} = \pi d l$, where $A_{\mathrm{bond}}$ is the bond area, $d$ is the reinforcement diameter and $l$ is the length of the element. Each node has six degrees of freedom. 
+The input parameters for this element are shown in Table~\ref{bondlink3dsummary}. 
+
+\begin{elementsummary}{bondlink3d}{3d bond link element for beams}{\field{length}{rn}  \field{diameter}{rn} \field{dirvector}{ra} \field{l\_end}{rn}}{latticelink3d element summary}{latticelink3dsummary}
+\elementParam{\param{length}: bond length}
+\elementParam{\param{diameter}: diameter }
+\elementParam{\param{dirvector}: direction vector in which bond-slip occurs.}
+\elementDescription{Unknowns}{Six dofs ($u$-displacement, $v$-displacement, $w$-displacement, $u$-rotation, $v$-rotation and $w$-rotation) are required in the beam node and three dofs ($u$-displacement, $v$-displacement, $w$-displacement) in the continnum node. The order of input of nodes must be beam node first and continuum node second.}
+\elementDescription{Reference}{\cite{SciGraLarRun20}}
+\label{bondlink3dsummary}
+\end{elementsummary}
+
+\subsubsection{Bondlink3dtruss element}
+
+This class implements a bond link for connecting trusses and continuum elements for meshes in which the nodes of the trusses and continuum elements coincide.     
+The bond area for this element is calculated from the length and diameter of the truss element that is bonded to the continuum as $A_{\mathrm{bond}} = \pi d l$, where $A_{\mathrm{bond}}$ is the bond area, $d$ is the reinforcement diameter and $l$ is the length of the element.   
+The input parameters for this element are shown in Table~\ref{bondlink3dtrusssummary}. 
+
+\begin{elementsummary}{bondlink3dtruss}{3d bond link element for trusses}{\field{length}{rn}  \field{diameter}{rn} \field{dirvector}{ra}}{bondlink3dtruss element summary}{bondlink3dtrusssummary}
+\elementParam{\param{length}: bond length}
+\elementParam{\param{diameter}: diameter of rebar modelled by truss element }
+\elementParam{\param{dirvector}: direction vector in which bond-slip occurs.}
+\elementDescription{Unknowns}{Three dofs ($u$-displacement, $v$-displacement, $w$-displacement) are required in each node.}
+\label{bondlink3dtrusssummary}
+\end{elementsummary}
+
+
+
 %-----------------------------------------------------------------------------------------------
 \clearpage
 \subsection{Free warping analysis elements}
@@ -2276,6 +2309,7 @@ supports modelling of two immiscible fluids.}
 \bibitem{GraAnt19} P. Grassl and A. Antonelli. ``3D network modelling of fracture processes in fibre-reinforced geomaterials'', International Journal of Solids and Structures, vol. 156-157, pp. 234-242, 2019.
 \bibitem{Toi91} Y. Toi. ``Shifted integration technique in one‐dimensional plastic collapse analysis using linear and cubic finite elements'', International Journal for Numerical Methods in Engineering 31, no. 8, pp. 1537-1552, 1991.
 \bibitem{AbdGra23} G. Abdelrhim and P. Grassl. ``On a geometric nonlinear Timoshenko frame element with material nonlinearity'', Annual Conference of the UK Association for Computational Mechanics (UKACM), The University of Warwick, UK, 19-21 April 2023.
+\bibitem{SciGraLarRun20} A. Sciegaj and P. Grassl and F. Larsson and K. Runesson and K. Lundgren. ``Upscaling of three-dimensional reinforced concrete representative volume elements to effective beam and plate models'', International Journal of Solids and Structures, vol. 202, pp. 835-853, 2020.
 \end{thebibliography}
 \end{document}
 
