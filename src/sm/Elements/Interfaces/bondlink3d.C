@@ -262,11 +262,6 @@ BondLink3d :: initializeFrom(InputRecord &ir)
 
     IR_GIVE_FIELD(ir, this->directionVector, _IFT_BondLink3d_dirvector);
 
-    IR_GIVE_FIELD(ir, this->bondEndLength, _IFT_BondLink3d_length_end);
-
-    if ( this->bondEndLength < this->bondLength ) {
-        this->bondLength = this->bondEndLength;
-    }
 }
 
 
