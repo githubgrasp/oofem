@@ -142,6 +142,8 @@ public:
 
     FloatMatrixF< 3, 3 >give3dStiffnessMatrix_Eng(MatResponseMode rMode, GaussPoint *gp, TimeStep *tStep) const override;
 
+  FloatMatrixF< 1, 1 >give1dStiffnessMatrix_Eng(MatResponseMode rMode, GaussPoint *gp, TimeStep *tStep) const override;
+
     Interface *giveInterface(InterfaceType) override;
 
 

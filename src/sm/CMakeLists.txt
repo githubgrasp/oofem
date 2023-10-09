@@ -151,7 +151,8 @@ set (sm_interface_elements
     Elements/Interfaces/Deprecated/interfaceelem2dlin.C
     Elements/Interfaces/Deprecated/interfaceelem2dquad.C
     Elements/Interfaces/Deprecated/interfaceelem3dtrlin.C
-    Elements/Interfaces/bondlink3dtruss.C	
+    Elements/Interfaces/bondlink3dtruss.C
+    Elements/Interfaces/bondlink1d.C		
 )
 
 set (sm_boundary_conditions
