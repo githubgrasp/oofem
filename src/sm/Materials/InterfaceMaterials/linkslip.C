@@ -173,6 +173,8 @@ LinkSlip::giveEngTraction_3d(const FloatArrayF< 3 > &jump, GaussPoint *gp, TimeS
     status->letTempJumpBe(jump);
     status->letTempTractionBe(traction);
 
+    printf("traction %e\n", traction.at(1));
+
     return traction;
 }
 
@@ -188,6 +190,13 @@ LinkSlip::give3dStiffnessMatrix_Eng(MatResponseMode rMode, GaussPoint *gp, TimeS
     return diag< 3 >({ this->kNormal, this->kLateral, this->kLateral });
 }
 
+FloatMatrixF< 1, 1 >
+LinkSlip::give1dStiffnessMatrix_Eng(MatResponseMode rMode, GaussPoint *gp, TimeStep *tStep) const
+{
+    return this->kNormal;
+}
+
+ 
 LinkSlipStatus::LinkSlipStatus(GaussPoint *g) :  StructuralInterfaceMaterialStatus(g)
 {}
 
