@@ -173,8 +173,6 @@ LinkSlip::giveEngTraction_3d(const FloatArrayF< 3 > &jump, GaussPoint *gp, TimeS
     status->letTempJumpBe(jump);
     status->letTempTractionBe(traction);
 
-    printf("traction %e\n", traction.at(1));
-
     return traction;
 }
 
