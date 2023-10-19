@@ -145,6 +145,41 @@ void BondLink1d::computeGaussPoints()
 }
 
 
+int
+BondLink1d::computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords)
+{
+
+  if(geometryFlag ==0){
+    answer.resize(3);
+
+
+
+  //coordinates of the two nodes
+  Node *nodeA, *nodeB;
+  FloatArray coordsA(3), coordsB(3);
+
+    //Order of nodes. Important, because continuum node does not have rotational DOFs.
+    //Beam node
+    nodeA  = this->giveNode(1);
+    //Continuum node
+    nodeB  = this->giveNode(2);
+
+
+    //Calculate components of distance from continuum node to lattice node.
+    for ( int i = 0; i < 3; i++ ) {
+      answer.at(i + 1) =  (nodeA->giveCoordinate(i + 1)+nodeB->giveCoordinate(i + 1))/2.;
+    }
+    this->globalCentroid = answer;
+    geometryFlag = 1;
+    
+  }
+  else{
+    answer = this->globalCentroid;
+  }
+  
+    return 1;
+}
+ 
 
 
 double
