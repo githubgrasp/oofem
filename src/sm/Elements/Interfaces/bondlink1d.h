@@ -110,10 +110,13 @@ protected:
     void computeStressVector(FloatArray &answer, const FloatArray &strain, GaussPoint *gp, TimeStep *tStep) override;
 
     /**
-     * This computes the geometrical properties of the element. It is called only once.
+     * This function is different from the standard computeGlobalCordinates
+     * function as it returns the global coordinates of the gausspoint
+     * independent to the value of the lcoords.
      */
-    void computePropertiesOfCrossSection();
+    int computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords) override;
 
+  
     void computeGaussPoints() override;
     integrationDomain  giveIntegrationDomain() const override { return _Line; }
 };
