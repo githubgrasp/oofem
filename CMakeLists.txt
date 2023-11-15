@@ -1,4 +1,6 @@
 cmake_minimum_required (VERSION 3.1)
+set(CMAKE_MODULE_PATH  ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+
 include (CheckSymbolExists)
 include (CheckCXXSymbolExists)
 include (CheckIncludeFiles)
@@ -6,6 +8,8 @@ include (CheckIncludeFileCXX)
 include (CheckCXXSourceCompiles)
 include (GenerateExportHeader)
 include (ProcessorCount)
+include (GenerateVersion)
+
 
 # Use ccache if available. Needs to be performed early for it to work with cmake.
 find_program(CCACHE_PROGRAM ccache)
@@ -23,7 +27,7 @@ string(TIMESTAMP YEAR "%Y")
 set (oofem_COPYRIGHT "Copyright (C) 1994-${YEAR} Borek Patzak")
 set (oofem_EMAIL "oofem@fsv.cvut.cz")
 
-set(CMAKE_MODULE_PATH  ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+set(CMAKE_VERBOSE_MAKEFILE ON)
 
 # Default is debug build
 if (NOT CMAKE_BUILD_TYPE)
@@ -69,6 +73,9 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GN
     set (CMAKE_CXX_FLAGS_DEBUG "-O0 -Wsuggest-override ${CMAKE_CXX_FLAGS_DEBUG}")
 endif()
 set (CMAKE_CXX_FLAGS_PROFILING "${CMAKE_CXX_FLAGS_PROFILING} -O2 -pg")
+
+
+
 
 #######################################################################
 ######################## Custom paths #################################
@@ -697,6 +704,8 @@ if (USE_SHARED_LIB)
         )
     target_link_libraries (liboofem ${EXT_LIBS})
     set_target_properties (liboofem PROPERTIES OUTPUT_NAME oofem)
+    add_dependencies(liboofem version)
+
     if (NOT "${LIBOOFEM_EXPORT_CFLAGS}" STREQUAL "")
         set_target_properties (liboofem PROPERTIES COMPILE_FLAGS ${LIBOOFEM_EXPORT_CFLAGS})
     endif ()
@@ -737,9 +746,13 @@ endif ()
 # OOFEM target
 if (USE_SHARED_LIB) # Prefer dynamic lib if available.
   add_executable (oofem ${oofem_SOURCE_DIR}/src/main/main.C)
+  add_dependencies(oofem version)
+
   target_link_libraries (oofem liboofem)
 else ()
   add_executable (oofem ${oofem_SOURCE_DIR}/src/main/main.C ${LIBS})
+  add_dependencies(oofem version)
+
   target_link_libraries (oofem ${EXT_LIBS})
 endif ()
 
@@ -760,14 +773,18 @@ if (USE_OOFEG)
         target_link_libraries (oofeg ${EXT_LIBS})
     endif ()
     install(TARGETS oofeg DESTINATION bin)
+    add_dependencies(oofeg version)
 endif ()
 
+
 add_executable(liboofem_benchmark ${oofem_SOURCE_DIR}/src/main/benchmark.C)
+add_dependencies(liboofem_benchmark version)
 set_target_properties(liboofem_benchmark PROPERTIES EXCLUDE_FROM_ALL TRUE)
 target_link_libraries (liboofem_benchmark liboofem benchmark)
 
 # Example of using liboofem with dynamic input record:
 add_executable(beam2d_1 ${oofem_SOURCE_DIR}/bindings/oofemlib/beam2d_1.C)
+add_dependencies(beam2d_1 version)
 set_target_properties(beam2d_1 PROPERTIES EXCLUDE_FROM_ALL TRUE)
 target_link_libraries (beam2d_1 liboofem)
 
