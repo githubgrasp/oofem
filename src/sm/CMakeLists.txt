@@ -442,6 +442,7 @@ add_library(sm
     ${LIB_TYPE}
     ${sm}
     )
+add_dependencies(sm version)
 
 # Not included:
 #pnldeidynamiccomm
