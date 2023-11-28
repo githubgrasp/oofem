@@ -2409,7 +2409,7 @@ StructuralMaterial::initializeFrom(InputRecord &ir)
 
     referenceTemperature = 0.0;
     IR_GIVE_OPTIONAL_FIELD(ir, referenceTemperature, _IFT_StructuralMaterial_referencetemperature);
-
+    
     double alpha = 0.0;
     IR_GIVE_OPTIONAL_FIELD(ir, alpha, _IFT_StructuralMaterial_talpha);
     if ( !propertyDictionary.includes(tAlpha) ) {

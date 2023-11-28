@@ -48,6 +48,8 @@
 #define _IFT_LatticeFrameElastic_talpha "talpha"
 #define _IFT_LatticeFrameElastic_e "e"
 #define _IFT_LatticeFrameElastic_n "n"
+#define _IFT_LatticeFrameElastic_tcrit "tcrit"
+
 //@}
 
 namespace oofem {
@@ -58,11 +60,15 @@ class LatticeFrameElastic : public LatticeStructuralMaterial
 {
 protected:
     ///Normal modulus
-    double e;
+  double e;
 
-    ///Ratio of shear and normal modulus
+    ///Potion ratio of the material
     double nu;
 
+    ///critical temperature which is used to control reduction factor for material properties
+    double tCrit;
+
+  
 public:
     LatticeFrameElastic(int n, Domain *d) : LatticeStructuralMaterial(n, d) { };
 
@@ -75,7 +81,9 @@ public:
 
     void initializeFrom(InputRecord &ir) override;
 
+  double computeTemperatureReductionFactor(GaussPoint *gp, TimeStep *tStep, ValueModeType mode) const;
 
+  
     bool isCharacteristicMtrxSymmetric(MatResponseMode rMode) const override { return false; }
 
     FloatArrayF< 6 >giveFrameForces3d(const FloatArrayF< 6 > &strain, GaussPoint *gp, TimeStep *tStep) override;
