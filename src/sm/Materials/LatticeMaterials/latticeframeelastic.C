@@ -69,6 +69,13 @@ LatticeFrameElastic::initializeFrom(InputRecord &ir)
 
     //Poisson's ratio of the material that the beam element is made of
     IR_GIVE_FIELD(ir, this->nu, _IFT_LatticeFrameElastic_n); // Macro
+
+        //tempeature threshold used to compute reduction
+    this->tCrit = 0.;
+    IR_GIVE_OPTIONAL_FIELD(ir, this->tCrit, _IFT_LatticeFrameElastic_tcrit); // Macro
+
+
+    
 }
 
 MaterialStatus *
@@ -119,8 +126,16 @@ LatticeFrameElastic::giveFrameForces3d(const FloatArrayF< 6 > &strain,
     auto status = static_cast< LatticeMaterialStatus * >( this->giveStatus(gp) );
 
     this->initTempStatus(gp);
+
+    // subtract stress independent part
+    auto reducedStrain = strain;
+    FloatArray indepStrain = this->computeStressIndependentStrainVector(gp, tStep, VM_Total);
+    if ( indepStrain.giveSize() > 0 ) {
+        reducedStrain -= FloatArrayF< 6 >(indepStrain);
+    }
+
     auto stiffnessMatrix = LatticeFrameElastic::give3dFrameStiffnessMatrix(ElasticStiffness, gp, tStep);
-    auto stress = dot(stiffnessMatrix, strain);
+    auto stress = dot(stiffnessMatrix, reducedStrain);
     status->letTempLatticeStrainBe(strain);
     status->letTempLatticeStressBe(stress);
 
@@ -140,7 +155,15 @@ LatticeFrameElastic::give3dFrameStiffnessMatrix(MatResponseMode rmode, GaussPoin
 {
     static_cast< LatticeMaterialStatus * >( this->giveStatus(gp) );
 
-    double g = this->e / ( 2. * ( 1. + this->nu ) );
+   //Reduce Young's modulus based on temperature
+   double reductionFactor =1.;
+   if(this->tCrit !=0.){
+     reductionFactor = computeTemperatureReductionFactor(gp,atTime,VM_Total);
+   }
+   
+   
+   double eReduced = reductionFactor*this->e;           
+    double g = eReduced / ( 2. * ( 1. + this->nu ) );
 
     const double area = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveArea();
     const double iy = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveIy();
@@ -151,14 +174,69 @@ LatticeFrameElastic::give3dFrameStiffnessMatrix(MatResponseMode rmode, GaussPoin
 
     //Peter: You need to put here the correct values. Please check this.
     FloatArrayF< 6 >d = {
-        this->e * area,
+        eReduced * area,
         g *shearareay,
         g *shearareaz,
         g *ik,
-        this->e * iy,
-        this->e * iz
+        eReduced * iy,
+        eReduced * iz
     };
 
     return diag(d);
 }
+
+ 
+ double LatticeFrameElastic::computeTemperatureReductionFactor(GaussPoint *gp, TimeStep *tStep, ValueModeType mode) const
+ {
+   double reductionFactor = 1.;
+
+    FloatArray et;
+    
+    if ( gp->giveIntegrationRule() == NULL ) {
+        ///@todo Hack for loose gausspoints. We shouldn't ask for "gp->giveElement()". FIXME
+        return reductionFactor;
+    }
+    
+    Element *elem = gp->giveElement();
+    StructuralElement *selem = dynamic_cast< StructuralElement * >( gp->giveElement() );
+
+    if ( tStep->giveIntrinsicTime() < this->castingTime ) {
+        return reductionFactor;
+    }
+
+    //sum up all prescribed temperatures over an element
+    //elem->computeResultingIPTemperatureAt(et, tStep, gp, mode);
+    if ( selem ) {
+        selem->computeResultingIPTemperatureAt(et, tStep, gp, mode);
+    }
+
+    /* add external source, if provided */
+    FieldManager *fm = domain->giveEngngModel()->giveContext()->giveFieldManager();
+    FieldPtr tf = fm->giveField(FT_Temperature);
+    if ( tf ) {
+        // temperature field registered
+        FloatArray gcoords, et2;
+        elem->computeGlobalCoordinates(gcoords, gp->giveNaturalCoordinates() );
+        int err;
+        if ( ( err = tf->evaluateAt(et2, gcoords, mode, tStep) ) ) {
+            OOFEM_ERROR("tf->evaluateAt failed, element %d, error code %d", elem->giveNumber(), err);
+        }
+
+        if ( et2.isNotEmpty() ) {
+            if ( et.isEmpty() ) {
+                et = et2;
+            } else {
+                et.at(1) += et2.at(1);
+            }
+        }
+    }
+
+    //Compute reductionFactor    
+    if(et.at(1)>this->referenceTemperature && et.at(1)>0.){
+      reductionFactor = exp(-pow((et.at(1)-this->referenceTemperature)/(tCrit-this->referenceTemperature),2.));
+    }
+
+    return reductionFactor;
+ }
+ 
 }

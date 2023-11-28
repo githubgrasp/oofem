@@ -45,8 +45,6 @@
 
 ///@name Input fields for LatticeStructuralMaterial
 //@{
-#define _IFT_LatticeStructuralMaterial_referencetemperature "referencetemperature"
-#define _IFT_LatticeStructuralMaterial_talpha "talpha"
 //@}
 
 namespace oofem {
@@ -68,7 +66,6 @@ class LatticeStructuralMaterial : public StructuralMaterial
 {
 protected:
     /// Reference temperature (temperature, when material has been built into structure).
-    double referenceTemperature = 0.;
 
 public:
 

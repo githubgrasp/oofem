@@ -35,7 +35,7 @@
 #ifndef latticeframesteelplastic_h
 #define latticeframesteelplastic_h
 
-#include "latticestructuralmaterial.h"
+#include "latticeframeelastic.h"
 #include "cltypes.h"
 #include "randommaterialext.h"
 #include "strainvector.h"
@@ -106,15 +106,10 @@ public:
 /**
  * This class implements a local random linear elastic model for lattice elements.
  */
-class LatticeFrameSteelPlastic : public LatticeStructuralMaterial
+class LatticeFrameSteelPlastic : public LatticeFrameElastic
 {
 protected:
 
-    ///Normal modulus
-    double e;
-
-    ///Ratio of shear and normal modulus
-    double nu;
 
     ///maximum axial force in x-axis x-axis nx0
     double nx0;
@@ -134,11 +129,9 @@ protected:
     /// maximum number of iterations for stress return
     double newtonIter;
 
-    ///number Of SubIncrements
+    ///maximum number Of SubIncrements
     double numberOfSubIncrements;
 
-    ///plastic flag
-    double plasticFlag;
 
     enum LatticeFrameSteelPlastic_ReturnResult { RR_NotConverged, RR_Converged };
     //   mutable LatticeFrameSteelPlastic_ReturnResult returnResult = RR_NotConverged; /// FIXME: This must be removed. Not thread safe. Shouldn't be stored at all.
@@ -148,7 +141,7 @@ protected:
     //
 
 public:
-    LatticeFrameSteelPlastic(int n, Domain *d) : LatticeStructuralMaterial(n, d) { };
+    LatticeFrameSteelPlastic(int n, Domain *d) : LatticeFrameElastic(n, d) { };
 
     FloatArrayF< 4 >computeFVector(const FloatArrayF< 4 > &sigma, GaussPoint *gp, TimeStep *tStep) const;
 
@@ -181,8 +174,6 @@ public:
     bool isCharacteristicMtrxSymmetric(MatResponseMode rMode) const override { return false; }
 
     Interface *giveInterface(InterfaceType) override;
-
-    FloatMatrixF< 6, 6 >give3dFrameStiffnessMatrix(MatResponseMode rMode, GaussPoint *gp, TimeStep *tStep) const override;
 
     bool hasMaterialModeCapability(MaterialMode mode) const override;
 

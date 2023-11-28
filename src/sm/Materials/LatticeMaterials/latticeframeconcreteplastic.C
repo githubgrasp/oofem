@@ -791,7 +791,6 @@ LatticeFrameConcretePlastic::giveFrameForces3d(const FloatArrayF< 6 > &originalS
     //double equivalentStrain = sqrt(pow(tempPlasticStrain.at(1), 2) + pow(tempPlasticStrain.at(2), 2) + pow(tempPlasticStrain.at(3), 2) +
     //                              pow(tempPlasticStrain.at(4), 2) + pow(tempPlasticStrain.at(5), 2.) + pow(tempPlasticStrain.at(6), 2) ) - wu / le;
     double equivalentStrain = sqrt(pow(tempPlasticStrain.at(4), 2) + pow(tempPlasticStrain.at(5), 2.) + pow(tempPlasticStrain.at(6), 2) ) - wu / le;
-    //	printf("equivalentStrain = %e, wu/le = %e, le = %e\n", equivalentStrain, wu/le, le);
 
     double tempKappaD = 0.0;
 
