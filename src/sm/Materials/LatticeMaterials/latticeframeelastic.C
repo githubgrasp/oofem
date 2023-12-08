@@ -231,11 +231,12 @@ LatticeFrameElastic::give3dFrameStiffnessMatrix(MatResponseMode rmode, GaussPoin
         }
     }
 
-    //Compute reductionFactor    
-    if(et.at(1)>this->referenceTemperature && et.at(1)>0.){
-      reductionFactor = exp(-pow((et.at(1)-this->referenceTemperature)/(tCrit-this->referenceTemperature),2.));
+    //Compute reductionFactor
+    if(et.isNotEmpty()) {
+        if ( et.at( 1 ) > this->referenceTemperature && et.at( 1 ) > 0. ) {
+            reductionFactor = exp( -pow( ( et.at( 1 ) - this->referenceTemperature ) / ( tCrit - this->referenceTemperature ), 2. ) );
+        }
     }
-
     return reductionFactor;
  }
  
