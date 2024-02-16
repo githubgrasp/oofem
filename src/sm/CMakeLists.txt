@@ -223,6 +223,7 @@ set (sm_material
     Materials/ConcreteMaterials/concrete3.C 
     Materials/ConcreteMaterials/concretedpm.C 
     Materials/ConcreteMaterials/concretedpm2.C
+    Materials/ConcreteMaterials/cdpm2f.C
     Materials/ConcreteMaterials/idm1.C 
     Materials/ConcreteMaterials/idmnl1.C 
     Materials/ConcreteMaterials/idmgrad.C
