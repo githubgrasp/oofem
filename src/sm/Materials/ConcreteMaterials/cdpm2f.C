@@ -145,8 +145,9 @@ namespace oofem {
 
         this->z = ftTemp / ( 0.5 * g * tau0 * lf / df * ( ( 1. + beta * deltaCu / df ) * ( pow( ( 1. - 2. * deltaCu / lf ), 2.) ) ) );
 
-        this->vfm = ( -( this->eM + this->eM * this->z ) + sqrt(pow( ( this->eM + this->eM * z ), 2 ) + 4. * ( this->ef - this->eM ) * this->eM * this->z) ) / ( 2. * ( this->ef - this->eM ) );
+	this->vfm = ( -( this->eM + this->eM * this->z ) + sqrt(pow( ( this->eM + this->eM * z ), 2 ) + 4. * ( this->ef - this->eM ) * this->eM * this->z) ) / ( 2. * ( this->ef - this->eM ) );
 
+		
         this->alphaMin = exp( ( this->vfm - this->vf0 ) / this->vf0 );
 
         this->deltaUl = this->lf / 2.;
@@ -319,7 +320,13 @@ namespace oofem {
             residualMid = computeStressResidual(equivStrain, damageTwo, kappaOne, kappaTwo, le);
 
             if ( ( residual * residualMid > 0 ) ) {
-                OOFEM_ERROR("Bisection method will not work because solution is not bracketed. The two residuals are %e and %e\n", residual, residualMid);
+	      /* //Bisection method cannot find a solution. This can be the case, because the fibre law is too steep at tha start. If this is the reason, then damage is kept zero at this stage and the solution is provided by effective stress only. */
+	       if(damageOld == 0.){
+		 return damageOld;
+	       }
+	       else{
+		OOFEM_ERROR("Bisection method will not work because solution is not bracketed. The two residuals are %e and %e\n", residual, residualMid);
+	       }
             }
 
             damage = residual < 0.0 ? ( dDamage = damageTwo - damageOne, damageOne ) : ( dDamage = damageOne - damageTwo, damageTwo );
