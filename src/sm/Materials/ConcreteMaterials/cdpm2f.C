@@ -320,13 +320,8 @@ namespace oofem {
             residualMid = computeStressResidual(equivStrain, damageTwo, kappaOne, kappaTwo, le);
 
             if ( ( residual * residualMid > 0 ) ) {
-	      /* //Bisection method cannot find a solution. This can be the case, because the fibre law is too steep at tha start. If this is the reason, then damage is kept zero at this stage and the solution is provided by effective stress only. */
-	       if(damageOld == 0.){
+	      /* //Bisection method cannot find a solution. This can be the case, because the fibre law is too steep at tha start. If this is the reason, then damage is kept constant at this stage. */
 		 return damageOld;
-	       }
-	       else{
-		OOFEM_ERROR("Bisection method will not work because solution is not bracketed. The two residuals are %e and %e\n", residual, residualMid);
-	       }
             }
 
             damage = residual < 0.0 ? ( dDamage = damageTwo - damageOne, damageOne ) : ( dDamage = damageOne - damageTwo, damageTwo );
