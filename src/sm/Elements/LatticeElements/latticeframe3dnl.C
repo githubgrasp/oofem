@@ -271,7 +271,7 @@ namespace oofem {
         return;
     }
 
-
+//
     void
     LatticeFrame3dNL::computeStrainVector(FloatArray &answer, GaussPoint *gp, TimeStep *tStep)
     // Computes the vector containing the strains at the Gauss point gp of
