@@ -88,14 +88,14 @@ namespace oofem {
         this->computeVectorOf(VM_Total, tStep, un1d);
         auto un1     = un1d - uIncr;
 
-        double xin=(cos(un1d.at(5))*cos(un1d.at(6)))*l1;
-        double yin=(cos(un1d.at(4))*sin(un1d.at(6))+sin(un1d.at(4))*sin(un1d.at(5))*cos(un1d.at(6)))*l1;
-        double zin=(sin(un1d.at(4))*sin(un1d.at(6))-cos(un1d.at(4))*sin(un1d.at(5))*cos(un1d.at(6)))*l1;
+        double xin1=(cos(un1.at(5))*cos(un1.at(6)))*l1;
+        double yin1=(cos(un1.at(4))*sin(un1.at(6))+sin(un1.at(4))*sin(un1.at(5))*cos(un1.at(6)))*l1;
+        double zin1=(sin(un1.at(4))*sin(un1.at(6))-cos(un1.at(4))*sin(un1.at(5))*cos(un1.at(6)))*l1;
 
 
-        double xjn=(cos(un1d.at(11))*cos(un1d.at(12)))*l2;
-        double yjn=(cos(un1d.at(10))*sin(un1d.at(12))+sin(un1d.at(10))*sin(un1d.at(11))*cos(un1d.at(12)))*l2;
-        double zjn=(sin(un1d.at(10))*sin(un1d.at(12))-cos(un1d.at(10))*sin(un1d.at(11))*cos(un1d.at(12)))*l2;
+        double xjn1=(cos(un1.at(11))*cos(un1.at(12)))*l2;
+        double yjn1=(cos(un1.at(10))*sin(un1.at(12))+sin(un1.at(10))*sin(un1.at(11))*cos(un1.at(12)))*l2;
+        double zjn1=(sin(un1.at(10))*sin(un1.at(12))-cos(un1.at(10))*sin(un1.at(11))*cos(un1.at(12)))*l2;
 
 
 
@@ -104,85 +104,85 @@ namespace oofem {
         answer.at(1, 2) = 0.;
         answer.at(1, 3) = 0.;
         answer.at(1, 4) = 0.;
-        answer.at(1, 5) = d.at(1,1)*(-zin);
-        answer.at(1, 6) = -d.at(1,1)*(yin);
+        answer.at(1, 5) = d.at(1,1)*(-zin1);
+        answer.at(1, 6) = -d.at(1,1)*(yin1);
         answer.at(1, 7) = -d.at(1, 1);
         answer.at(1, 8) = 0.;
         answer.at(1, 9) = 0.;
         answer.at(1, 10) = 0.;
-        answer.at(1, 11) = d.at(1,1)*(-zjn);
-        answer.at(1, 12) = -d.at(1,1)*(yjn);
+        answer.at(1, 11) = d.at(1,1)*(-zjn1);
+        answer.at(1, 12) = -d.at(1,1)*(yjn1);
 
         //Shear Y 1
         answer.at(2, 1) = 0;
         answer.at(2, 2) = d.at(2, 2);
         answer.at(2, 3) = 0.;
-        answer.at(2, 4) = -d.at(2,2)*(zin);
+        answer.at(2, 4) = -d.at(2,2)*(zin1);
         answer.at(2, 5) = 0;
-        answer.at(2, 6) = -d.at(2,2)*(-xin);
+        answer.at(2, 6) = -d.at(2,2)*(-xin1);
         answer.at(2, 7) = 0.;
         answer.at(2, 8) = -d.at(2,2);
         answer.at(2, 9) = 0.;
-        answer.at(2, 10) = -d.at(2,2)*(zjn);
+        answer.at(2, 10) = -d.at(2,2)*(zjn1);
         answer.at(2, 11) = 0;
-        answer.at(2, 12) = -d.at(2,2)*(-xjn);
+        answer.at(2, 12) = -d.at(2,2)*(-xjn1);
 
         //Shear Z 1
         answer.at(3, 1) = 0;
         answer.at(3, 2) = 0.;
         answer.at(3, 3) = d.at(3, 3);
-        answer.at(3, 4) = -d.at(3,3)*(-zin);
-        answer.at(3, 5) = -d.at(3,3)*(xin);
+        answer.at(3, 4) = -d.at(3,3)*(-zin1);
+        answer.at(3, 5) = -d.at(3,3)*(xin1);
         answer.at(3, 6) = 0;
         answer.at(3, 7) = 0.;
         answer.at(3, 8) = 0;
         answer.at(3, 9) = -d.at(3, 3);
-        answer.at(3, 10) = -d.at(3,3)*(-zjn);
-        answer.at(3, 11) = -d.at(3,3)*(xjn);
+        answer.at(3, 10) = -d.at(3,3)*(-zjn1);
+        answer.at(3, 11) = -d.at(3,3)*(xjn1);
         answer.at(3, 12) = 0;
 
         // Mx 1
         answer.at(4, 1) = 0;
-        answer.at(4, 2) = d.at(2,2)*(-zin);
-        answer.at(4, 3) = -d.at(3,3)*(-yin);
-        answer.at(4, 4) = -d.at(3,3)*(-yin*yin)+d.at(2,2)*(zin*zin)+d.at(4,4);
-        answer.at(4, 5) = -d.at(3,3)*(yin*xin);
-        answer.at(4, 6) = d.at(2,2)*(-zin*xin);
+        answer.at(4, 2) = d.at(2,2)*(-zin1);
+        answer.at(4, 3) = -d.at(3,3)*(-yin1);
+        answer.at(4, 4) = -d.at(3,3)*(-yin1*yin1)+d.at(2,2)*(zin1*zin1)+d.at(4,4);
+        answer.at(4, 5) = -d.at(3,3)*(yin1*xin1);
+        answer.at(4, 6) = d.at(2,2)*(-zin1*xin1);
         answer.at(4, 7) = 0.;
-        answer.at(4, 8) = d.at(2,2)*(zin);
-        answer.at(4, 9) = -d.at(3,3)*(yjn);
-        answer.at(4, 10) = -d.at(3,3)*(-yin*yjn)+d.at(2,2)*(+zin*zjn)-d.at(4,4);
-        answer.at(4, 11) = -d.at(3,3)*(yin*xjn);
-        answer.at(4, 12) = d.at(2,2)*(-zin*xjn);
+        answer.at(4, 8) = d.at(2,2)*(zin1);
+        answer.at(4, 9) = -d.at(3,3)*(yjn1);
+        answer.at(4, 10) = -d.at(3,3)*(-yin1*yjn1)+d.at(2,2)*(+zin1*zjn1)-d.at(4,4);
+        answer.at(4, 11) = -d.at(3,3)*(yin1*xjn1);
+        answer.at(4, 12) = d.at(2,2)*(-zin1*xjn1);
 
         // My 1
-        answer.at(5, 1) = -d.at(1,1)*(-zin);
+        answer.at(5, 1) = -d.at(1,1)*(-zin1);
         answer.at(5, 2) = 0;
-        answer.at(5, 3) = d.at(3,3)*(-xin);
-        answer.at(5, 4) = d.at(3,3)*(-xin*yin);
-        answer.at(5, 5) = -d.at(1,1)*(-zin*zin)+d.at(3,3)*(+xin*xin)+d.at(5,5);
-        answer.at(5, 6) = -d.at(1,1)*(+zin*yin);
-        answer.at(5, 7) = -d.at(1,1)*(zin);
+        answer.at(5, 3) = d.at(3,3)*(-xin1);
+        answer.at(5, 4) = d.at(3,3)*(-xin1*yin1);
+        answer.at(5, 5) = -d.at(1,1)*(-zin1*zin1)+d.at(3,3)*(xin1*xin1)+d.at(5,5);
+        answer.at(5, 6) = -d.at(1,1)*(+zin1*yin1);
+        answer.at(5, 7) = -d.at(1,1)*(zin1);
         answer.at(5, 8) = 0;
-        answer.at(5, 9) = d.at(3,3)*(xin);
-        answer.at(5, 10) = d.at(3,3)*(-xin*yjn);
-        answer.at(5, 11) = -d.at(1,1)*(-zin*zjn)+d.at(3,3)*(xin*xjn)-d.at(5,5);
-        answer.at(5, 12) = -d.at(1,1)*(+zin*yjn);
+        answer.at(5, 9) = d.at(3,3)*(xin1);
+        answer.at(5, 10) = d.at(3,3)*(-xin1*yjn1);
+        answer.at(5, 11) = -d.at(1,1)*(-zin1*zjn1)+d.at(3,3)*(xin1*xjn1)-d.at(5,5);
+        answer.at(5, 12) = -d.at(1,1)*(+zin1*yjn1);
 
 
         // Mz 1
-        answer.at(6, 1) = d.at(1,1)*(-yin);
-        answer.at(6, 2) = -d.at(2,2)*(-xin);
+        answer.at(6, 1) = d.at(1,1)*(-yin1);
+        answer.at(6, 2) = -d.at(2,2)*(-xin1);
         answer.at(6, 3) = 0;
-        answer.at(6, 4) = -d.at(2,2)*(xin*zin);
-        answer.at(6, 5) = d.at(1,1)*(-yin*zin);
-        answer.at(6, 6) = d.at(1,1)*(yin*yin)-d.at(2,2)*(-xin*xin)+d.at(6,6);
-        answer.at(6, 7) = d.at(1,1)*(yin);
-        answer.at(6, 8) = -d.at(2,2)*(xin);
+        answer.at(6, 4) = -d.at(2,2)*(xin1*zin1);
+        answer.at(6, 5) = d.at(1,1)*(-yin1*zin1);
+        answer.at(6, 6) = d.at(1,1)*(yin1*yin1)-d.at(2,2)*(-xin1*xin1)+d.at(6,6);
+        answer.at(6, 7) = d.at(1,1)*(yin1);
+        answer.at(6, 8) = -d.at(2,2)*(xin1);
         answer.at(6, 9) = 0;
-        answer.at(6, 10) = -d.at(2,2)*(xin*zjn);
-        answer.at(6, 11) = d.at(1,1)*(-yin*zjn);
-        answer.at(6, 12) = d.at(1,1)*(yin*yjn)-d.at(2,2)*(-xin*xjn)-d.at(6,6);
+        answer.at(6, 10) = -d.at(2,2)*(xin1*zjn1);
+        answer.at(6, 11) = d.at(1,1)*(-yin1*zjn1);
+        answer.at(6, 12) = d.at(1,1)*(yin1*yjn1)-d.at(2,2)*(-xin1*xjn1)-d.at(6,6);
 
 
 
@@ -191,83 +191,83 @@ namespace oofem {
         answer.at(7, 2) = 0.;
         answer.at(7, 3) = 0.;
         answer.at(7, 4) = 0.;
-        answer.at(7, 5) = -d.at(1,1)*(-zin);
-        answer.at(7, 6) = d.at(1,1)*(yin);
+        answer.at(7, 5) = -d.at(1,1)*(-zin1);
+        answer.at(7, 6) = d.at(1,1)*(yin1);
         answer.at(7, 7) = d.at(1, 1);
         answer.at(7, 8) = 0.;
         answer.at(7, 9) = 0.;
         answer.at(7, 10) = 0.;
-        answer.at(7, 11) = d.at(1,1)*(-zjn);
-        answer.at(7, 12) = d.at(1,1)*(yjn);
+        answer.at(7, 11) = d.at(1,1)*(-zjn1);
+        answer.at(7, 12) = d.at(1,1)*(yjn1);
 
         //Shear Y 2
         answer.at(8, 1) = 0;
         answer.at(8, 2) = -d.at(2, 2);
         answer.at(8, 3) = 0.;
-        answer.at(8, 4) = d.at(2,2)*(zin);
+        answer.at(8, 4) = d.at(2,2)*(zin1);
         answer.at(8, 5) = 0;
-        answer.at(8, 6) = d.at(2,2)*(-xin);
+        answer.at(8, 6) = d.at(2,2)*(-xin1);
         answer.at(8, 7) = 0.;
         answer.at(8, 8) = d.at(2,2);
         answer.at(8, 9) = 0.;
-        answer.at(8, 10) = d.at(2,2)*(zjn);
+        answer.at(8, 10) = d.at(2,2)*(zjn1);
         answer.at(8, 11) = 0;
-        answer.at(8, 12) = d.at(2,2)*(-xjn);
+        answer.at(8, 12) = d.at(2,2)*(-xjn1);
 
         //Shear Z 2
         answer.at(9, 1) = 0;
         answer.at(9, 2) = 0.;
         answer.at(9, 3) = -d.at(3, 3);
-        answer.at(9, 4) = d.at(3,3)*(-zin);
-        answer.at(9, 5) = d.at(3,3)*(xin);
+        answer.at(9, 4) = d.at(3,3)*(-zin1);
+        answer.at(9, 5) = d.at(3,3)*(xin1);
         answer.at(9, 6) = 0;
         answer.at(9, 7) = 0.;
         answer.at(9, 8) = 0;
         answer.at(9, 9) = d.at(3, 3);
-        answer.at(9, 10) = d.at(3,3)*(-zjn);
-        answer.at(9, 11) = d.at(3,3)*(xjn);
+        answer.at(9, 10) = d.at(3,3)*(-zjn1);
+        answer.at(9, 11) = d.at(3,3)*(xjn1);
         answer.at(9, 12) = 0;
 
         // Mx 2
         answer.at(10, 1) = 0;
-        answer.at(10, 2) = -d.at(2,2)*(zjn);
-        answer.at(10, 3) = d.at(3,3)*(yin);
-        answer.at(10, 4) = d.at(3,3)*(yjn*yin)-d.at(2,2)*(-zjn*zin)-d.at(4,4);
-        answer.at(10, 5) = d.at(3,3)*(-yjn*xin);
-        answer.at(10, 6) = -d.at(2,2)*(zjn*xin);
+        answer.at(10, 2) = -d.at(2,2)*(zjn1);
+        answer.at(10, 3) = d.at(3,3)*(yin1);
+        answer.at(10, 4) = d.at(3,3)*(yjn1*yin1)-d.at(2,2)*(-zjn1*zin1)-d.at(4,4);
+        answer.at(10, 5) = d.at(3,3)*(-yjn1*xin1);
+        answer.at(10, 6) = -d.at(2,2)*(zjn1*xin1);
         answer.at(10, 7) = 0.;
-        answer.at(10, 8) = -d.at(2,2)*(-zjn);
-        answer.at(10, 9) = d.at(3,3)*(-yjn);
-        answer.at(10, 10) = d.at(3,3)*(yjn*yjn)-d.at(2,2)*(-zjn*zjn)+d.at(4,4);
-        answer.at(10, 11) = d.at(3,3)*(-yjn*xjn);
-        answer.at(10, 12) = -d.at(2,2)*(+zjn*xjn);
+        answer.at(10, 8) = -d.at(2,2)*(-zjn1);
+        answer.at(10, 9) = d.at(3,3)*(-yjn1);
+        answer.at(10, 10) = d.at(3,3)*(yjn1*yjn1)-d.at(2,2)*(-zjn1*zjn1)+d.at(4,4);
+        answer.at(10, 11) = d.at(3,3)*(-yjn1*xjn1);
+        answer.at(10, 12) = -d.at(2,2)*(+zjn1*xjn1);
         // My 2
-        answer.at(11, 1) = d.at(1,1)*(zjn);
+        answer.at(11, 1) = d.at(1,1)*(zjn1);
         answer.at(11, 2) = 0;
-        answer.at(11, 3) = -d.at(3,3)*(xjn);
-        answer.at(11, 4) = -d.at(3,3)*(xjn*yin);
-        answer.at(11, 5) = d.at(1,1)*(zjn*zin)-d.at(3,3)*(-xjn*xin)-d.at(5,5);
-        answer.at(11, 6) = d.at(1,1)*(-zjn*yin);
-        answer.at(11, 7) = d.at(1,1)*(-zjn);
+        answer.at(11, 3) = -d.at(3,3)*(xjn1);
+        answer.at(11, 4) = -d.at(3,3)*(xjn1*yin1);
+        answer.at(11, 5) = d.at(1,1)*(zjn1*zin1)-d.at(3,3)*(-xjn1*xin1)-d.at(5,5);
+        answer.at(11, 6) = d.at(1,1)*(-zjn1*yin1);
+        answer.at(11, 7) = d.at(1,1)*(-zjn1);
         answer.at(11, 8) = 0;
-        answer.at(11, 9) = -d.at(3,3)*(-xjn);
-        answer.at(11, 10) = -d.at(3,3)*(xjn*yjn);
-        answer.at(11, 11) = d.at(1,1)*(zjn*zjn)-d.at(3,3)*(-xjn*xjn)+d.at(5,5);
-        answer.at(11, 12) = d.at(1,1)*(-zjn*yjn);
+        answer.at(11, 9) = -d.at(3,3)*(-xjn1);
+        answer.at(11, 10) = -d.at(3,3)*(xjn1*yjn1);
+        answer.at(11, 11) = d.at(1,1)*(zjn1*zjn1)-d.at(3,3)*(-xjn1*xjn1)+d.at(5,5);
+        answer.at(11, 12) = d.at(1,1)*(-zjn1*yjn1);
         // Mz 2
-        answer.at(12, 1) = d.at(1,1)*(zjn);
-        answer.at(12, 2) = 0;
-        answer.at(12, 3) = -d.at(3,3)*(xjn);
-        answer.at(12, 4) = -d.at(3,3)*(xjn*yin);
-        answer.at(12, 5) = d.at(1,1)*(zjn*zin)-d.at(3,3)*(-xjn*xin)-d.at(5,5);
-        answer.at(12, 6) = d.at(1,1)*(-zjn*yin);
-        answer.at(12, 7) = d.at(1,1)*(-zjn);
-        answer.at(12, 8) = 0;
-        answer.at(12, 9) = -d.at(3,3)*(-xjn);
-        answer.at(12, 10) = -d.at(3,3)*(xjn*yjn);
-        answer.at(12, 11) = d.at(1,1)*(zjn*zjn)-d.at(3,3)*(-xjn*xjn)+d.at(5,5);
-        answer.at(12, 12) = d.at(1,1)*(-zjn*yjn);
-
+        answer.at(12, 1) = -yjn1*d.at(1,1);
+        answer.at(12, 2) = xjn1*d.at(2,2);
+        answer.at(12, 3) = 0;
+        answer.at(12, 4) = -xjn1*d.at(2,2)*(zin1);
+        answer.at(12, 5) = yjn1*d.at(1,1)*(-zin1);
+        answer.at(12, 6) = yjn1*d.at(1,1)*(yin1)-xjn1*d.at(2,2)*(-xin1)-d.at(6,6);
+        answer.at(12, 7) = yjn1*d.at(1,1);
+        answer.at(12, 8) = -xjn1*d.at(2,2);
+        answer.at(12, 9) = 0;
+        answer.at(12, 10) = -xjn1*d.at(2,2)*(zjn1);
+        answer.at(12, 11) = yjn1*d.at(1,1)*(-zjn1);
+        answer.at(12, 12) =  yjn1*d.at(1,1)*(yjn1)-xjn1*d.at(2,2)*(-xjn1)+d.at(6,6);
+        answer.times(1. / this->length);
         return;
     }
 
@@ -456,8 +456,8 @@ namespace oofem {
         answer.at(5) = deltaT.at(2);
         answer.at(6) = deltaT.at(3);
         answer.times(1. / this->length);
-         printf("Strain/n");
-         answer.printYourself();
+//         printf("Strain/n");
+//         answer.printYourself();
          answer += strain;
         //
         // FloatMatrix b;
@@ -476,10 +476,10 @@ namespace oofem {
         answerold.at(5) = uIncr.at(11) - uIncr.at(5);
         answerold.at(6) = uIncr.at(12) - uIncr.at(6);
         answerold.times(1. / this->length);
-        // answerold.times(1. / ln);
+      //   answerold.times(1. / ln);
 //         printf("StrainOld/n");
-//         answer.printYourself();
-        answerold += strain;
+//         answerold.printYourself();
+//        answer += strain;
     }
     //
     void
@@ -503,7 +503,7 @@ namespace oofem {
         GaussPoint *gp = this->integrationRulesArray [ 0 ]->getIntegrationPoint(0);
 
         // Total stress
-        this->LatticeFrame3dNL::computeStrainVector(strain, gp, tStep);
+        this->computeStrainVector(strain, gp, tStep);
         this->computeStressVector(stress, strain, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
 
         // Old stresses
@@ -698,25 +698,25 @@ namespace oofem {
         printf("Force/n");
         answer.printYourself();
 
-      // lmatStat->letTempInternalForcesBe(answer);
+       lmatStat->letTempInternalForcesBe(answer);
 
-        answerold.resize(12);
-        answerold.at(1) = -incrementalStress.at(1);
-        answerold.at(2) = -incrementalStress.at(2);
-        answerold.at(3) = -incrementalStress.at(3);
-        answerold.at(4) = +incrementalStress.at(2) * ( sin( uIncr.at(4) ) * sin( uIncr.at(6) ) - cos( uIncr.at(4) ) * sin( uIncr.at(5) ) * cos( uIncr.at(6) ) ) * l1 - incrementalStress.at(3) * ( cos( uIncr.at(4) ) * sin( uIncr.at(6) ) + sin( uIncr.at(4) ) * sin( uIncr.at(5) ) * cos( uIncr.at(6) ) ) * l1 - incrementalStress.at(4);
-        answerold.at(5) = -incrementalStress.at(1) * ( sin( uIncr.at(4) ) * sin( uIncr.at(6) ) - cos( uIncr.at(4) ) * sin( uIncr.at(5) ) * cos( uIncr.at(6) ) ) * l1 + incrementalStress.at(3) * ( cos( uIncr.at(5) ) * cos( uIncr.at(6) ) ) * l1 - incrementalStress.at(5);
-        answerold.at(6) = incrementalStress.at(1) * ( cos( uIncr.at(4) ) * sin( uIncr.at(6) ) + sin( uIncr.at(4) ) * sin( uIncr.at(5) ) * cos( uIncr.at(6) ) ) * l1 - incrementalStress.at(2) * ( cos( uIncr.at(5) ) * cos( uIncr.at(6) ) ) * l1 - incrementalStress.at(6);
-        answerold.at(7) = incrementalStress.at(1);
-        answerold.at(8) = incrementalStress.at(2);
-        answerold.at(9) = incrementalStress.at(3);
-        answerold.at(10) = incrementalStress.at(2) * ( sin( uIncr.at(10) ) * sin( uIncr.at(12) ) - cos( uIncr.at(10) ) * sin( uIncr.at(11) ) * cos( uIncr.at(12) ) ) * l2 - incrementalStress.at(3) * ( cos( uIncr.at(10) ) * sin( uIncr.at(12) ) + sin( uIncr.at(10) ) * sin( uIncr.at(11) ) * cos( uIncr.at(12) ) ) * l2 + incrementalStress.at(4);
-        answerold.at(11) = -incrementalStress.at(1) * ( sin( uIncr.at(10) ) * sin( uIncr.at(12) ) - cos( uIncr.at(10) ) * sin( uIncr.at(11) ) * cos( uIncr.at(12) ) ) * l2 + incrementalStress.at(3) * ( cos( uIncr.at(11) ) * cos( uIncr.at(12) ) ) * l2 + incrementalStress.at(5);
-        answerold.at(12) = incrementalStress.at(1) * ( cos( uIncr.at(10) ) * sin( uIncr.at(12) ) + sin( uIncr.at(10) ) * sin( uIncr.at(11) ) * cos( uIncr.at(12) ) ) * l2 - incrementalStress.at(2) * ( cos( uIncr.at(11) ) * cos( uIncr.at(12) ) ) * l2 + incrementalStress.at(6);
-        answerold += oldInternalForces;
-        printf("OldForce/n");
-        answerold.printYourself();
-        lmatStat->letTempInternalForcesBe(answer);
+//        answer.resize(12);
+//        answer.at(1) = -incrementalStress.at(1);
+//        answer.at(2) = -incrementalStress.at(2);
+//        answer.at(3) = -incrementalStress.at(3);
+//        answer.at(4) = +incrementalStress.at(2) * ( sin( uIncr.at(4) ) * sin( uIncr.at(6) ) - cos( uIncr.at(4) ) * sin( uIncr.at(5) ) * cos( uIncr.at(6) ) ) * l1 - incrementalStress.at(3) * ( cos( uIncr.at(4) ) * sin( uIncr.at(6) ) + sin( uIncr.at(4) ) * sin( uIncr.at(5) ) * cos( uIncr.at(6) ) ) * l1 - incrementalStress.at(4);
+//        answer.at(5) = -incrementalStress.at(1) * ( sin( uIncr.at(4) ) * sin( uIncr.at(6) ) - cos( uIncr.at(4) ) * sin( uIncr.at(5) ) * cos( uIncr.at(6) ) ) * l1 + incrementalStress.at(3) * ( cos( uIncr.at(5) ) * cos( uIncr.at(6) ) ) * l1 - incrementalStress.at(5);
+//        answer.at(6) = incrementalStress.at(1) * ( cos( uIncr.at(4) ) * sin( uIncr.at(6) ) + sin( uIncr.at(4) ) * sin( uIncr.at(5) ) * cos( uIncr.at(6) ) ) * l1 - incrementalStress.at(2) * ( cos( uIncr.at(5) ) * cos( uIncr.at(6) ) ) * l1 - incrementalStress.at(6);
+//        answer.at(7) = incrementalStress.at(1);
+//        answer.at(8) = incrementalStress.at(2);
+//        answer.at(9) = incrementalStress.at(3);
+//        answer.at(10) = incrementalStress.at(2) * ( sin( uIncr.at(10) ) * sin( uIncr.at(12) ) - cos( uIncr.at(10) ) * sin( uIncr.at(11) ) * cos( uIncr.at(12) ) ) * l2 - incrementalStress.at(3) * ( cos( uIncr.at(10) ) * sin( uIncr.at(12) ) + sin( uIncr.at(10) ) * sin( uIncr.at(11) ) * cos( uIncr.at(12) ) ) * l2 + incrementalStress.at(4);
+//        answer.at(11) = -incrementalStress.at(1) * ( sin( uIncr.at(10) ) * sin( uIncr.at(12) ) - cos( uIncr.at(10) ) * sin( uIncr.at(11) ) * cos( uIncr.at(12) ) ) * l2 + incrementalStress.at(3) * ( cos( uIncr.at(11) ) * cos( uIncr.at(12) ) ) * l2 + incrementalStress.at(5);
+//        answer.at(12) = incrementalStress.at(1) * ( cos( uIncr.at(10) ) * sin( uIncr.at(12) ) + sin( uIncr.at(10) ) * sin( uIncr.at(11) ) * cos( uIncr.at(12) ) ) * l2 - incrementalStress.at(2) * ( cos( uIncr.at(11) ) * cos( uIncr.at(12) ) ) * l2 + incrementalStress.at(6);
+//        answer += oldInternalForces;
+//        printf("OldForce/n");
+//        answer.printYourself();
+//        lmatStat->letTempInternalForcesBe(answer);
     }
 
     int
