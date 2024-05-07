@@ -67,165 +67,19 @@ namespace oofem {
 
     LatticeFrame3dNL::~LatticeFrame3dNL()
     {}
-//    void
-//    LatticeFrame3dNL::computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, TimeStep *tStep, int li, int ui)
-//// Returns the strain matrix of the receiver.
-//    {
-//        FloatArray u;
-//        this->computeVectorOf(VM_Total, tStep, u);
-//
-//        this->length = computeLength();
-//        double l1 = this->length * ( 1. - this->s ) / 2;
-//        double l2 = this->length * ( 1. + this->s ) / 2;
-//        answer.resize(6, 12);
-//        answer.zero();
-//        double cx1=(cos(u.at(5))*cos(u.at(6)))*l1;
-//        double cy1=(cos(u.at(4))*sin(u.at(6))+sin(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1;
-//        double cz1=(sin(u.at(4))*sin(u.at(6))-cos(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1;
-//
-//
-//        double cx2=(cos(u.at(11))*cos(u.at(12)))*l2;
-//        double cy2=(cos(u.at(10))*sin(u.at(12))+sin(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2;
-//        double cz2=(sin(u.at(10))*sin(u.at(12))-cos(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2;
-//
-//
-//        //Normal displacement jump in x-direction
-//        //First node
-//        answer.at(1, 1) = -1.;
-//        answer.at(1, 2) = 0.;
-//        answer.at(1, 3) = 0.;
-//        answer.at(1, 4) = 0.;
-//        answer.at(1, 5) = -cz1;
-//        answer.at(1, 6) = cy1;
-//        //Second node
-//        answer.at(1, 7) = 1.;
-//        answer.at(1, 8) = 0.;
-//        answer.at(1, 9) = 0.;
-//        answer.at(1, 10) = 0.;
-//        answer.at(1, 11) = -cz2;
-//        answer.at(1, 12) = cy2;
-//
-//        //Shear displacement jump in y-plane
-//        //first node
-//        answer.at(2, 1) = 0.;
-//        answer.at(2, 2) = -1.;
-//        answer.at(2, 3) =  0.;
-//        answer.at(2, 4) = cz1;
-//        answer.at(2, 5) = 0;
-//        answer.at(2, 6) = -cx1;
-//        //Second node
-//        answer.at(2, 7) = 0.;
-//        answer.at(2, 8) = 1.;
-//        answer.at(2, 9) =  0.;
-//        answer.at(2, 10) = cz2;
-//        answer.at(2, 11) = 0;
-//        answer.at(2, 12) = -cx2;
-//
-//        //Shear displacement jump in z-plane
-//        //first node
-//        answer.at(3, 1) = 0.;
-//        answer.at(3, 2) = 0.;
-//        answer.at(3, 3) = -1.;
-//        answer.at(3, 4) = -cy1;
-//        answer.at(3, 5) = cx1;
-//        answer.at(3, 6) = 0.;
-//        //Second node
-//        answer.at(3, 7) = 0.;
-//        answer.at(3, 8) = 0.;
-//        answer.at(3, 9) =  1.;
-//        answer.at(3, 10) = -cy2;
-//        answer.at(3, 11) = cx2;
-//        answer.at(3, 12) = 0.;
-//
-//        //Rotation around x-axis
-//        //First node
-//        answer.at(4, 1) = 0.;
-//        answer.at(4, 2) = 0;
-//        answer.at(4, 3) = 0.;
-//        answer.at(4, 4) = -1.;
-//        answer.at(4, 5) = 0.;
-//        answer.at(4, 6) = 0.;
-//        //Second node
-//        answer.at(4, 7) = 0.;
-//        answer.at(4, 8) = 0.;
-//        answer.at(4, 9) = 0.;
-//        answer.at(4, 10) = 1.;
-//        answer.at(4, 11) = 0.;
-//        answer.at(4, 12) = 0.;
-//
-//        //Rotation around y-axis
-//        //First node
-//        answer.at(5, 1) = 0.;
-//        answer.at(5, 2) = 0.;
-//        answer.at(5, 3) = 0.;
-//        answer.at(5, 4) = 0.;
-//        answer.at(5, 5) = -1.;
-//        answer.at(5, 6) = 0.;
-//        //Second node
-//        answer.at(5, 7) = 0.;
-//        answer.at(5, 8) = 0.;
-//        answer.at(5, 9) =  0.;
-//        answer.at(5, 10) = 0.;
-//        answer.at(5, 11) = 1.;
-//        answer.at(5, 12) = 0.;
-//
-//        //Rotation around z-axis
-//        //First node
-//        answer.at(6, 1) = 0.;
-//        answer.at(6, 2) = 0.;
-//        answer.at(6, 3) = 0.;
-//        answer.at(6, 4) = 0.;
-//        answer.at(6, 5) = 0.;
-//        answer.at(6, 6) = -1.;
-//        //Second node
-//        answer.at(6, 7) = 0.;
-//        answer.at(6, 8) = 0.;
-//        answer.at(6, 9) =  0.;
-//        answer.at(6, 10) = 0.;
-//        answer.at(6, 11) = 0.;
-//        answer.at(6, 12) = 1.;
-//
-//        return;
-//    }
-//    void
-//    LatticeFrame3dNL::computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode,
-//                                             TimeStep *tStep)
-//// Computes numerically the stiffness matrix of the receiver.
-//    {
-//        FloatMatrix d, bi, bj, bjt, dbj, dij;
-//
-//        this->length = computeLength();
-//
-//        answer.resize(12, 12);
-//        answer.zero();
-//        this-> computeBmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), bj);
-//        this->computeConstitutiveMatrixAt(d, rMode, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
-//
-//        dbj.beProductOf(d, bj);
-//        dbj.times(1. / length);
-//        bjt.beTranspositionOf(bj);
-//        answer.beProductOf(bjt, dbj);
-//        //printf("answer/n");
-//        //answer.printYourself();
-//        return;
-//    }
     void
-    LatticeFrame3dNL::computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode,
-                                             TimeStep *tStep)
+    LatticeFrame3dNL::computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, int li, int ui)
+ //Returns the strain matrix of the receiver.
     {
-        FloatMatrix d;
         FloatArray u;
-        this->length = computeLength();
-        answer.resize(12, 12);
-        answer.zero();
-
-        this->computeConstitutiveMatrixAt(d, rMode, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
-
-        double l1 = this->length * ( 1. - this->s ) / 2;
-        double l2 = this->length * ( 1. + this->s ) / 2;
-
+        TimeStep *tStep = this->domain->giveEngngModel()->giveCurrentStep();
         this->computeVectorOf(VM_Total, tStep, u);
 
+        this->length = computeLength();
+        double l1 = this->length * ( 1. - this->s ) / 2;
+        double l2 = this->length * ( 1. + this->s ) / 2;
+        answer.resize(6, 12);
+        answer.zero();
         double cx1=(cos(u.at(5))*cos(u.at(6)))*l1;
         double cy1=(cos(u.at(4))*sin(u.at(6))+sin(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1;
         double cz1=(sin(u.at(4))*sin(u.at(6))-cos(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1;
@@ -236,179 +90,328 @@ namespace oofem {
         double cz2=(sin(u.at(10))*sin(u.at(12))-cos(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2;
 
 
-
-        //Axial 1
-        answer.at(1, 1) = d.at(1, 1);
+        //Normal displacement jump in x-direction
+        //First node
+        answer.at(1, 1) = -1.;
         answer.at(1, 2) = 0.;
         answer.at(1, 3) = 0.;
         answer.at(1, 4) = 0.;
-        answer.at(1, 5) = -d.at(1,1)*(-cz1);
-        answer.at(1, 6) = -d.at(1,1)*(cy1);
-        answer.at(1, 7) = -d.at(1, 1);
+        answer.at(1, 5) = -cz1;
+        answer.at(1, 6) = cy1;
+        //Second node
+        answer.at(1, 7) = 1.;
         answer.at(1, 8) = 0.;
         answer.at(1, 9) = 0.;
         answer.at(1, 10) = 0.;
-        answer.at(1, 11) = -d.at(1,1)*(-cz2);
-        answer.at(1, 12) = -d.at(1,1)*(cy2);
+        answer.at(1, 11) = -cz2;
+        answer.at(1, 12) = cy2;
 
-        //Shear Y 1
-        answer.at(2, 1) = 0;
-        answer.at(2, 2) = d.at(2, 2);
-        answer.at(2, 3) = 0.;
-        answer.at(2, 4) = -d.at(2,2)*(cz1);
+        //Shear displacement jump in y-plane
+        //first node
+        answer.at(2, 1) = 0.;
+        answer.at(2, 2) = -1.;
+        answer.at(2, 3) =  0.;
+        answer.at(2, 4) = cz1;
         answer.at(2, 5) = 0;
-        answer.at(2, 6) = -d.at(2,2)*(-cx1);
+        answer.at(2, 6) = -cx1;
+        //Second node
         answer.at(2, 7) = 0.;
-        answer.at(2, 8) = -d.at(2,2);
-        answer.at(2, 9) = 0.;
-        answer.at(2, 10) = -d.at(2,2)*(cz2);
+        answer.at(2, 8) = 1.;
+        answer.at(2, 9) =  0.;
+        answer.at(2, 10) = cz2;
         answer.at(2, 11) = 0;
-        answer.at(2, 12) = -d.at(2,2)*(-cx2);
+        answer.at(2, 12) = -cx2;
 
-        //Shear Z 1
-        answer.at(3, 1) = 0;
+        //Shear displacement jump in z-plane
+        //first node
+        answer.at(3, 1) = 0.;
         answer.at(3, 2) = 0.;
-        answer.at(3, 3) = d.at(3, 3);
-        answer.at(3, 4) = -d.at(3,3)*(-cy1);
-        answer.at(3, 5) = -d.at(3,3)*(cx1);
-        answer.at(3, 6) = 0;
+        answer.at(3, 3) = -1.;
+        answer.at(3, 4) = -cy1;
+        answer.at(3, 5) = cx1;
+        answer.at(3, 6) = 0.;
+        //Second node
         answer.at(3, 7) = 0.;
-        answer.at(3, 8) = 0;
-        answer.at(3, 9) = -d.at(3, 3);
-        answer.at(3, 10) = -d.at(3,3)*(-cy2);
-        answer.at(3, 11) = -d.at(3,3)*(cx2);
-        answer.at(3, 12) = 0;
+        answer.at(3, 8) = 0.;
+        answer.at(3, 9) =  1.;
+        answer.at(3, 10) = -cy2;
+        answer.at(3, 11) = cx2;
+        answer.at(3, 12) = 0.;
 
-        // Mx 1
-        answer.at(4, 1) = 0;
-        answer.at(4, 2) = d.at(2,2)*(-cz1);
-        answer.at(4, 3) = -d.at(3,3)*(-cy1);
-        answer.at(4, 4) = -d.at(3,3)*(-cy1*cy1)+d.at(2,2)*(cz1*cz1)+d.at(4,4);
-        answer.at(4, 5) = -d.at(3,3)*(cy1*cx1);
-        answer.at(4, 6) = d.at(2,2)*(-cz1*cx1);
+        //Rotation around x-axis
+        //First node
+        answer.at(4, 1) = 0.;
+        answer.at(4, 2) = 0;
+        answer.at(4, 3) = 0.;
+        answer.at(4, 4) = -1.;
+        answer.at(4, 5) = 0.;
+        answer.at(4, 6) = 0.;
+        //Second node
         answer.at(4, 7) = 0.;
-        answer.at(4, 8) = d.at(2,2)*(cz1);
-        answer.at(4, 9) = -d.at(3,3)*(cy1);
-        answer.at(4, 10) = -d.at(3,3)*(-cy1*cy2)+d.at(2,2)*(+cz1*cz2)-d.at(4,4);
-        answer.at(4, 11) = -d.at(3,3)*(cy1*cx2);
-        answer.at(4, 12) = d.at(2,2)*(-cz1*cx2);
+        answer.at(4, 8) = 0.;
+        answer.at(4, 9) = 0.;
+        answer.at(4, 10) = 1.;
+        answer.at(4, 11) = 0.;
+        answer.at(4, 12) = 0.;
 
-        // My 1
-        answer.at(5, 1) = -d.at(1,1)*(-cz1);
-        answer.at(5, 2) = 0;
-        answer.at(5, 3) = d.at(3,3)*(-cx1);
-        answer.at(5, 4) = d.at(3,3)*(-cx1*cy1);
-        answer.at(5, 5) = -d.at(1,1)*(-cz1*cz1)+d.at(3,3)*(cx1*cx1)+d.at(5,5);
-        answer.at(5, 6) = -d.at(1,1)*(+cz1*cy1);
-        answer.at(5, 7) = -d.at(1,1)*(cz1);
-        answer.at(5, 8) = 0;
-        answer.at(5, 9) = d.at(3,3)*(cx1);
-        answer.at(5, 10) = d.at(3,3)*(-cx1*cy2);
-        answer.at(5, 11) = -d.at(1,1)*(-cz1*cz2)+d.at(3,3)*(cx1*cx2)-d.at(5,5);
-        answer.at(5, 12) = -d.at(1,1)*(+cz1*cy2);
+        //Rotation around y-axis
+        //First node
+        answer.at(5, 1) = 0.;
+        answer.at(5, 2) = 0.;
+        answer.at(5, 3) = 0.;
+        answer.at(5, 4) = 0.;
+        answer.at(5, 5) = -1.;
+        answer.at(5, 6) = 0.;
+        //Second node
+        answer.at(5, 7) = 0.;
+        answer.at(5, 8) = 0.;
+        answer.at(5, 9) =  0.;
+        answer.at(5, 10) = 0.;
+        answer.at(5, 11) = 1.;
+        answer.at(5, 12) = 0.;
 
+        //Rotation around z-axis
+        //First node
+        answer.at(6, 1) = 0.;
+        answer.at(6, 2) = 0.;
+        answer.at(6, 3) = 0.;
+        answer.at(6, 4) = 0.;
+        answer.at(6, 5) = 0.;
+        answer.at(6, 6) = -1.;
+        //Second node
+        answer.at(6, 7) = 0.;
+        answer.at(6, 8) = 0.;
+        answer.at(6, 9) =  0.;
+        answer.at(6, 10) = 0.;
+        answer.at(6, 11) = 0.;
+        answer.at(6, 12) = 1.;
 
-        // Mz 1
-        answer.at(6, 1) = d.at(1,1)*(-cy1);
-        answer.at(6, 2) = -d.at(2,2)*(-cx1);
-        answer.at(6, 3) = 0;
-        answer.at(6, 4) = -d.at(2,2)*(cx1*cz1);
-        answer.at(6, 5) = d.at(1,1)*(-cy1*cz1);
-        answer.at(6, 6) = d.at(1,1)*(cy1*cy1)-d.at(2,2)*(-cx1*cx1)+d.at(6,6);
-        answer.at(6, 7) = d.at(1,1)*(cy1);
-        answer.at(6, 8) = -d.at(2,2)*(cx1);
-        answer.at(6, 9) = 0;
-        answer.at(6, 10) = -d.at(2,2)*(cx1*cz2);
-        answer.at(6, 11) = d.at(1,1)*(-cy1*cz2);
-        answer.at(6, 12) = d.at(1,1)*(cy1*cy2)-d.at(2,2)*(-cx1*cx2)-d.at(6,6);
-
-
-
-        //Axial 2
-        answer.at(7, 1) = -d.at(1, 1);
-        answer.at(7, 2) = 0.;
-        answer.at(7, 3) = 0.;
-        answer.at(7, 4) = 0.;
-        answer.at(7, 5) = d.at(1,1)*(-cz1);
-        answer.at(7, 6) = d.at(1,1)*(cy1);
-        answer.at(7, 7) = d.at(1, 1);
-        answer.at(7, 8) = 0.;
-        answer.at(7, 9) = 0.;
-        answer.at(7, 10) = 0.;
-        answer.at(7, 11) = d.at(1,1)*(-cz2);
-        answer.at(7, 12) = d.at(1,1)*(cy2);
-
-        //Shear Y 2
-        answer.at(8, 1) = 0;
-        answer.at(8, 2) = -d.at(2, 2);
-        answer.at(8, 3) = 0.;
-        answer.at(8, 4) = d.at(2,2)*(cz1);
-        answer.at(8, 5) = 0;
-        answer.at(8, 6) = d.at(2,2)*(-cx1);
-        answer.at(8, 7) = 0.;
-        answer.at(8, 8) = d.at(2,2);
-        answer.at(8, 9) = 0.;
-        answer.at(8, 10) = d.at(2,2)*(cz2);
-        answer.at(8, 11) = 0;
-        answer.at(8, 12) = d.at(2,2)*(-cx2);
-
-        //Shear Z 2
-        answer.at(9, 1) = 0;
-        answer.at(9, 2) = 0.;
-        answer.at(9, 3) = -d.at(3, 3);
-        answer.at(9, 4) = d.at(3,3)*(-cy1);
-        answer.at(9, 5) = d.at(3,3)*(cx1);
-        answer.at(9, 6) = 0;
-        answer.at(9, 7) = 0.;
-        answer.at(9, 8) = 0;
-        answer.at(9, 9) = d.at(3, 3);
-        answer.at(9, 10) = d.at(3,3)*(-cy2);
-        answer.at(9, 11) = d.at(3,3)*(cx2);
-        answer.at(9, 12) = 0;
-
-        // Mx 2
-        answer.at(10, 1) = 0;
-        answer.at(10, 2) = -d.at(2,2)*(cz2);
-        answer.at(10, 3) = d.at(3,3)*(cy2);
-        answer.at(10, 4) = d.at(3,3)*(cy2*cy1)-d.at(2,2)*(-cz2*cz1)-d.at(4,4);
-        answer.at(10, 5) = d.at(3,3)*(-cy2*cx1);
-        answer.at(10, 6) = -d.at(2,2)*(cz2*cx1);
-        answer.at(10, 7) = 0.;
-        answer.at(10, 8) = -d.at(2,2)*(-cz2);
-        answer.at(10, 9) = d.at(3,3)*(-cy2);
-        answer.at(10, 10) = d.at(3,3)*(cy2*cy2)-d.at(2,2)*(-cz2*cz2)+d.at(4,4);
-        answer.at(10, 11) = d.at(3,3)*(-cy2*cx2);
-        answer.at(10, 12) = -d.at(2,2)*(+cz2*cx2);
-        // My 2
-        answer.at(11, 1) = d.at(1,1)*(cz2);
-        answer.at(11, 2) = 0;
-        answer.at(11, 3) = -d.at(3,3)*(cx2);
-        answer.at(11, 4) = -d.at(3,3)*(cx2*cy1);
-        answer.at(11, 5) = d.at(1,1)*(cz2*cz1)-d.at(3,3)*(-cx2*cx1)-d.at(5,5);
-        answer.at(11, 6) = d.at(1,1)*(-cz2*cy1);
-        answer.at(11, 7) = d.at(1,1)*(-cz2);
-        answer.at(11, 8) = 0;
-        answer.at(11, 9) = -d.at(3,3)*(-cx2);
-        answer.at(11, 10) = -d.at(3,3)*(cx2*cy2);
-        answer.at(11, 11) = d.at(1,1)*(cz2*cz2)-d.at(3,3)*(-cx2*cx2)+d.at(5,5);
-        answer.at(11, 12) = d.at(1,1)*(-cz2*cy2);
-        // Mz 2
-        answer.at(12, 1) = -cy2*d.at(1,1);
-        answer.at(12, 2) = cx2*d.at(2,2);
-        answer.at(12, 3) = 0;
-        answer.at(12, 4) = -cx2*d.at(2,2)*(cz1);
-        answer.at(12, 5) = cy2*d.at(1,1)*(-cz1);
-        answer.at(12, 6) = cy2*d.at(1,1)*(cy1)-cx2*d.at(2,2)*(-cx1)-d.at(6,6);
-        answer.at(12, 7) = cy2*d.at(1,1);
-        answer.at(12, 8) = -cx2*d.at(2,2);
-        answer.at(12, 9) = 0;
-        answer.at(12, 10) = -cx2*d.at(2,2)*(cz2);
-        answer.at(12, 11) = cy2*d.at(1,1)*(-cz2);
-        answer.at(12, 12) =  cy2*d.at(1,1)*(cy2)-cx2*d.at(2,2)*(-cx2)+d.at(6,6);
-        answer.times(1. / this->length);
         return;
     }
+    void
+    LatticeFrame3dNL::computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode,
+                                             TimeStep *tStep)
+    {
+        FloatMatrix d, bt, db, b;
+        FloatArray  u;
+
+        this->computeVectorOf(VM_Total, tStep, u);
+        this->length = computeLength();
+
+        answer.resize(12, 12);
+        answer.zero();
+        this->computeBmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), b);
+        this->computeConstitutiveMatrixAt(d, rMode, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
+
+        db.beProductOf(d, b);
+        db.times(1. / length);
+        bt.beTranspositionOf(b);
+        answer.beProductOf(bt, db);
+
+        printf("answer/n");
+        answer.printYourself();
+        return;
+    }
+//    void
+//    LatticeFrame3dNL::computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode,
+//                                             TimeStep *tStep)
+//    {
+//        FloatMatrix d;
+//        FloatArray u;
+//        this->length = computeLength();
+//        answer.resize(12, 12);
+//        answer.zero();
 //
+//        this->computeConstitutiveMatrixAt(d, rMode, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
+//
+//        double l1 = this->length * ( 1. - this->s ) / 2;
+//        double l2 = this->length * ( 1. + this->s ) / 2;
+//
+//        this->computeVectorOf(VM_Total, tStep, u);
+//
+//        double cx1=(cos(u.at(5))*cos(u.at(6)))*l1;
+//        double cy1=(cos(u.at(4))*sin(u.at(6))+sin(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1;
+//        double cz1=(sin(u.at(4))*sin(u.at(6))-cos(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1;
+//
+//
+//        double cx2=(cos(u.at(11))*cos(u.at(12)))*l2;
+//        double cy2=(cos(u.at(10))*sin(u.at(12))+sin(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2;
+//        double cz2=(sin(u.at(10))*sin(u.at(12))-cos(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2;
+//
+//
+//
+//        //Axial 1
+//        answer.at(1, 1) = d.at(1, 1);
+//        answer.at(1, 2) = 0.;
+//        answer.at(1, 3) = 0.;
+//        answer.at(1, 4) = 0.;
+//        answer.at(1, 5) = -d.at(1,1)*(-cz1);
+//        answer.at(1, 6) = -d.at(1,1)*(cy1);
+//        answer.at(1, 7) = -d.at(1, 1);
+//        answer.at(1, 8) = 0.;
+//        answer.at(1, 9) = 0.;
+//        answer.at(1, 10) = 0.;
+//        answer.at(1, 11) = -d.at(1,1)*(-cz2);
+//        answer.at(1, 12) = -d.at(1,1)*(cy2);
+//
+//        //Shear Y 1
+//        answer.at(2, 1) = 0;
+//        answer.at(2, 2) = d.at(2, 2);
+//        answer.at(2, 3) = 0.;
+//        answer.at(2, 4) = -d.at(2,2)*(cz1);
+//        answer.at(2, 5) = 0;
+//        answer.at(2, 6) = -d.at(2,2)*(-cx1);
+//        answer.at(2, 7) = 0.;
+//        answer.at(2, 8) = -d.at(2,2);
+//        answer.at(2, 9) = 0.;
+//        answer.at(2, 10) = -d.at(2,2)*(cz2);
+//        answer.at(2, 11) = 0;
+//        answer.at(2, 12) = -d.at(2,2)*(-cx2);
+//
+//        //Shear Z 1
+//        answer.at(3, 1) = 0;
+//        answer.at(3, 2) = 0.;
+//        answer.at(3, 3) = d.at(3, 3);
+//        answer.at(3, 4) = -d.at(3,3)*(-cy1);
+//        answer.at(3, 5) = -d.at(3,3)*(cx1);
+//        answer.at(3, 6) = 0;
+//        answer.at(3, 7) = 0.;
+//        answer.at(3, 8) = 0;
+//        answer.at(3, 9) = -d.at(3, 3);
+//        answer.at(3, 10) = -d.at(3,3)*(-cy2);
+//        answer.at(3, 11) = -d.at(3,3)*(cx2);
+//        answer.at(3, 12) = 0;
+//
+//        // Mx 1
+//        answer.at(4, 1) = 0;
+//        answer.at(4, 2) = d.at(2,2)*(-cz1);
+//        answer.at(4, 3) = -d.at(3,3)*(-cy1);
+//        answer.at(4, 4) = -d.at(3,3)*(-cy1*cy1)+d.at(2,2)*(cz1*cz1)+d.at(4,4);
+//        answer.at(4, 5) = -d.at(3,3)*(cy1*cx1);
+//        answer.at(4, 6) = d.at(2,2)*(-cz1*cx1);
+//        answer.at(4, 7) = 0.;
+//        answer.at(4, 8) = d.at(2,2)*(cz1);
+//        answer.at(4, 9) = -d.at(3,3)*(cy1);
+//        answer.at(4, 10) = -d.at(3,3)*(-cy1*cy2)+d.at(2,2)*(+cz1*cz2)-d.at(4,4);
+//        answer.at(4, 11) = -d.at(3,3)*(cy1*cx2);
+//        answer.at(4, 12) = d.at(2,2)*(-cz1*cx2);
+//
+//        // My 1
+//        answer.at(5, 1) = -d.at(1,1)*(-cz1);
+//        answer.at(5, 2) = 0;
+//        answer.at(5, 3) = d.at(3,3)*(-cx1);
+//        answer.at(5, 4) = d.at(3,3)*(-cx1*cy1);
+//        answer.at(5, 5) = -d.at(1,1)*(-cz1*cz1)+d.at(3,3)*(cx1*cx1)+d.at(5,5);
+//        answer.at(5, 6) = -d.at(1,1)*(+cz1*cy1);
+//        answer.at(5, 7) = -d.at(1,1)*(cz1);
+//        answer.at(5, 8) = 0;
+//        answer.at(5, 9) = d.at(3,3)*(cx1);
+//        answer.at(5, 10) = d.at(3,3)*(-cx1*cy2);
+//        answer.at(5, 11) = -d.at(1,1)*(-cz1*cz2)+d.at(3,3)*(cx1*cx2)-d.at(5,5);
+//        answer.at(5, 12) = -d.at(1,1)*(+cz1*cy2);
+//
+//
+//        // Mz 1
+//        answer.at(6, 1) = d.at(1,1)*(-cy1);
+//        answer.at(6, 2) = -d.at(2,2)*(-cx1);
+//        answer.at(6, 3) = 0;
+//        answer.at(6, 4) = -d.at(2,2)*(cx1*cz1);
+//        answer.at(6, 5) = d.at(1,1)*(-cy1*cz1);
+//        answer.at(6, 6) = d.at(1,1)*(cy1*cy1)-d.at(2,2)*(-cx1*cx1)+d.at(6,6);
+//        answer.at(6, 7) = d.at(1,1)*(cy1);
+//        answer.at(6, 8) = -d.at(2,2)*(cx1);
+//        answer.at(6, 9) = 0;
+//        answer.at(6, 10) = -d.at(2,2)*(cx1*cz2);
+//        answer.at(6, 11) = d.at(1,1)*(-cy1*cz2);
+//        answer.at(6, 12) = d.at(1,1)*(cy1*cy2)-d.at(2,2)*(-cx1*cx2)-d.at(6,6);
+//
+//
+//
+//        //Axial 2
+//        answer.at(7, 1) = -d.at(1, 1);
+//        answer.at(7, 2) = 0.;
+//        answer.at(7, 3) = 0.;
+//        answer.at(7, 4) = 0.;
+//        answer.at(7, 5) = d.at(1,1)*(-cz1);
+//        answer.at(7, 6) = d.at(1,1)*(cy1);
+//        answer.at(7, 7) = d.at(1, 1);
+//        answer.at(7, 8) = 0.;
+//        answer.at(7, 9) = 0.;
+//        answer.at(7, 10) = 0.;
+//        answer.at(7, 11) = d.at(1,1)*(-cz2);
+//        answer.at(7, 12) = d.at(1,1)*(cy2);
+//
+//        //Shear Y 2
+//        answer.at(8, 1) = 0;
+//        answer.at(8, 2) = -d.at(2, 2);
+//        answer.at(8, 3) = 0.;
+//        answer.at(8, 4) = d.at(2,2)*(cz1);
+//        answer.at(8, 5) = 0;
+//        answer.at(8, 6) = d.at(2,2)*(-cx1);
+//        answer.at(8, 7) = 0.;
+//        answer.at(8, 8) = d.at(2,2);
+//        answer.at(8, 9) = 0.;
+//        answer.at(8, 10) = d.at(2,2)*(cz2);
+//        answer.at(8, 11) = 0;
+//        answer.at(8, 12) = d.at(2,2)*(-cx2);
+//
+//        //Shear Z 2
+//        answer.at(9, 1) = 0;
+//        answer.at(9, 2) = 0.;
+//        answer.at(9, 3) = -d.at(3, 3);
+//        answer.at(9, 4) = d.at(3,3)*(-cy1);
+//        answer.at(9, 5) = d.at(3,3)*(cx1);
+//        answer.at(9, 6) = 0;
+//        answer.at(9, 7) = 0.;
+//        answer.at(9, 8) = 0;
+//        answer.at(9, 9) = d.at(3, 3);
+//        answer.at(9, 10) = d.at(3,3)*(-cy2);
+//        answer.at(9, 11) = d.at(3,3)*(cx2);
+//        answer.at(9, 12) = 0;
+//
+//        // Mx 2
+//        answer.at(10, 1) = 0;
+//        answer.at(10, 2) = -d.at(2,2)*(cz2);
+//        answer.at(10, 3) = d.at(3,3)*(cy2);
+//        answer.at(10, 4) = d.at(3,3)*(cy2*cy1)-d.at(2,2)*(-cz2*cz1)-d.at(4,4);
+//        answer.at(10, 5) = d.at(3,3)*(-cy2*cx1);
+//        answer.at(10, 6) = -d.at(2,2)*(cz2*cx1);
+//        answer.at(10, 7) = 0.;
+//        answer.at(10, 8) = -d.at(2,2)*(-cz2);
+//        answer.at(10, 9) = d.at(3,3)*(-cy2);
+//        answer.at(10, 10) = d.at(3,3)*(cy2*cy2)-d.at(2,2)*(-cz2*cz2)+d.at(4,4);
+//        answer.at(10, 11) = d.at(3,3)*(-cy2*cx2);
+//        answer.at(10, 12) = -d.at(2,2)*(+cz2*cx2);
+//        // My 2
+//        answer.at(11, 1) = d.at(1,1)*(cz2);
+//        answer.at(11, 2) = 0;
+//        answer.at(11, 3) = -d.at(3,3)*(cx2);
+//        answer.at(11, 4) = -d.at(3,3)*(cx2*cy1);
+//        answer.at(11, 5) = d.at(1,1)*(cz2*cz1)-d.at(3,3)*(-cx2*cx1)-d.at(5,5);
+//        answer.at(11, 6) = d.at(1,1)*(-cz2*cy1);
+//        answer.at(11, 7) = d.at(1,1)*(-cz2);
+//        answer.at(11, 8) = 0;
+//        answer.at(11, 9) = -d.at(3,3)*(-cx2);
+//        answer.at(11, 10) = -d.at(3,3)*(cx2*cy2);
+//        answer.at(11, 11) = d.at(1,1)*(cz2*cz2)-d.at(3,3)*(-cx2*cx2)+d.at(5,5);
+//        answer.at(11, 12) = d.at(1,1)*(-cz2*cy2);
+//        // Mz 2
+//        answer.at(12, 1) = -cy2*d.at(1,1);
+//        answer.at(12, 2) = cx2*d.at(2,2);
+//        answer.at(12, 3) = 0;
+//        answer.at(12, 4) = -cx2*d.at(2,2)*(cz1);
+//        answer.at(12, 5) = cy2*d.at(1,1)*(-cz1);
+//        answer.at(12, 6) = cy2*d.at(1,1)*(cy1)-cx2*d.at(2,2)*(-cx1)-d.at(6,6);
+//        answer.at(12, 7) = cy2*d.at(1,1);
+//        answer.at(12, 8) = -cx2*d.at(2,2);
+//        answer.at(12, 9) = 0;
+//        answer.at(12, 10) = -cx2*d.at(2,2)*(cz2);
+//        answer.at(12, 11) = cy2*d.at(1,1)*(-cz2);
+//        answer.at(12, 12) =  cy2*d.at(1,1)*(cy2)-cx2*d.at(2,2)*(-cx2)+d.at(6,6);
+//        answer.times(1. / this->length);
+//        return;
+//    }
+
     void
     LatticeFrame3dNL::computeStrainVector(FloatArray &answer, GaussPoint *gp, TimeStep *tStep)
     // Computes the vector containing the strains at the Gauss point gp of
@@ -424,6 +427,7 @@ namespace oofem {
         this->length   = computeLength();
         double l1 = this->length * ( 1. - this->s ) / 2;
         double l2 = this->length * ( 1. + this->s ) / 2;
+       // double ln = sqrt(pow(njn.at(1)-nin.at(1), 2) + pow(njn.at(2)-nin.at(2), 2) + pow(njn.at(3)-nin.at(3), 2) );
         LatticeMaterialStatus *lmatStat = dynamic_cast < LatticeMaterialStatus * > ( integrationRulesArray [ 0 ]->getIntegrationPoint(0)->giveMaterialStatus() );
         auto strain = lmatStat->giveLatticeStrain();
 
@@ -437,7 +441,7 @@ namespace oofem {
         double cz2=(sin(u.at(10))*sin(u.at(12))-cos(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2;
         //
         answer.resize(6);
-        answer.at(1) = u.at(7)-u.at(1)+cx2 +cx1 -l1-l2;
+        answer.at(1) = u.at(7)-u.at(1)-cx2 -cx1 +l1+l2;
         answer.at(2) = u.at(8)-u.at(2)-cy2 -cy1;
         answer.at(3) = u.at(9)-u.at(3)-cz2 -cz1;
         answer.at(4) = u.at(10)-u.at(4);
