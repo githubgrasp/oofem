@@ -1502,6 +1502,7 @@ namespace oofem {
     {
         auto status = static_cast < ConcreteDPM2Status * > ( this->giveStatus(gp) );
 
+
         ConcreteDPM2_ReturnResult returnResult = RR_Unknown;
         ConcreteDPM2_ReturnType returnType = RT_Unknown;
 

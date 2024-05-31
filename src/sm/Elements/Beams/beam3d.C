@@ -1245,7 +1245,7 @@ Beam3d :: computeInternalForcesFromBodyLoadVectorAtPoint(FloatArray &answer, Loa
 
 
 void
-Beam3d :: giveCompositeExportData(std :: vector< VTKPiece > &vtkPieces, IntArray &primaryVarsToExport, IntArray &internalVarsToExport, IntArray cellVarsToExport, TimeStep *tStep)
+Beam3d :: giveCompositeExportData(std :: vector< ExportRegion > &vtkPieces, IntArray &primaryVarsToExport, IntArray &internalVarsToExport, IntArray cellVarsToExport, TimeStep *tStep)
 {
     // divide element into several small ones
     vtkPieces.resize(1);
@@ -1281,8 +1281,6 @@ Beam3d :: giveCompositeExportData(std :: vector< VTKPiece > &vtkPieces, IntArray
         vtkPieces [ 0 ].setCellType(i + 1, 3);
     }
 
-
-
     InternalStateType isttype;
     int n = internalVarsToExport.giveSize();
     vtkPieces [ 0 ].setNumberOfInternalVarsToExport(internalVarsToExport, nNodes);
@@ -1294,6 +1292,10 @@ Beam3d :: giveCompositeExportData(std :: vector< VTKPiece > &vtkPieces, IntArray
                 FloatArray endForces;
                 this->giveInternalForcesVectorAtPoint(endForces, tStep, coords);
                 vtkPieces [ 0 ].setInternalVarInNode(isttype, nN, endForces);
+            } else if ( isttype == IST_X_LCS || isttype == IST_Y_LCS || isttype == IST_Z_LCS ) {
+                FloatArray answer;
+                this->giveLocalCoordinateSystemVector(isttype, answer);
+                vtkPieces[0].setInternalVarInNode(isttype, nN, answer);
             } else {
                 fprintf( stderr, "VTKXMLExportModule::exportIntVars: unsupported variable type %s\n", __InternalStateTypeToString(isttype) );
             }

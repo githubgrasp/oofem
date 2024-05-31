@@ -193,12 +193,16 @@ namespace oofem {
     ENUM_ITEM_WITH_VALUE(IST_TransferStress, 143) \
     ENUM_ITEM_WITH_VALUE(IST_MacroSlipGradient, 144) \
     ENUM_ITEM_WITH_VALUE(IST_ReinfMembraneStress, 145)\
-    ENUM_ITEM_WITH_VALUE(IST_TensionDissWork, 146) \
-    ENUM_ITEM_WITH_VALUE(IST_TensionDeltaDissWork, 147) \
-    ENUM_ITEM_WITH_VALUE(IST_ShearDissWork, 148) \
-    ENUM_ITEM_WITH_VALUE(IST_ShearDeltaDissWork, 149) \
-    ENUM_ITEM_WITH_VALUE(IST_CompressionDissWork, 150) \
-    ENUM_ITEM_WITH_VALUE(IST_CompressionDeltaDissWork, 151)      
+    ENUM_ITEM_WITH_VALUE(IST_VolumeFraction, 146) \
+    ENUM_ITEM_WITH_VALUE(IST_X_LCS, 147) /*Unit vector in local coordinate system in the x direction (usable for diagrams of internal forces for VTK export)*/ \
+    ENUM_ITEM_WITH_VALUE(IST_Y_LCS, 148) \
+    ENUM_ITEM_WITH_VALUE(IST_Z_LCS, 149)
+    ENUM_ITEM_WITH_VALUE(IST_TensionDissWork, 150)	\
+    ENUM_ITEM_WITH_VALUE(IST_TensionDeltaDissWork, 151) \
+    ENUM_ITEM_WITH_VALUE(IST_ShearDissWork, 152) \
+    ENUM_ITEM_WITH_VALUE(IST_ShearDeltaDissWork, 153) \
+    ENUM_ITEM_WITH_VALUE(IST_CompressionDissWork, 154) \
+    ENUM_ITEM_WITH_VALUE(IST_CompressionDeltaDissWork, 155)      
 
 /**
  * Type  representing the physical meaning of element or constitutive model internal variable.
