@@ -466,13 +466,16 @@ NonLinearDynamic :: proceedStep(int di, TimeStep *tStep)
         incrementOfDisplacement.zero();
     }
 
-    NM_Status numMetStatus = nMethod->solve(*effectiveStiffnessMatrix, rhs, NULL,
+    ConvergedReason numMetStatus = nMethod->solve(*effectiveStiffnessMatrix, rhs, NULL,
                                             totalDisplacement, incrementOfDisplacement, forcesVector,
                                             internalForcesEBENorm, loadLevel, SparseNonLinearSystemNM :: rlm_total, currentIterations, tStep);
-    if ( !( numMetStatus & NM_Success ) ) {
+    if ( numMetStatus != CR_CONVERGED ) {
         OOFEM_ERROR("NRSolver failed to solve problem");
     }
+    tStep->numberOfIterations = currentIterations;
+    tStep->convergedReason = numMetStatus;
 
+    
     rhs = previousVelocityVector;
     rhs2 = previousAccelerationVector;
     for ( int i = 1; i <= neq; i++ ) {
@@ -570,18 +573,20 @@ void NonLinearDynamic :: updateInternalRHS(FloatArray &answer, TimeStep *tStep, 
         // Updating the residual vector @ NR-solver
         help.beScaled(a0 + eta * a1, incrementOfDisplacement);
 
-        massMatrix->times(help, rhs2);
+        if (!( tStep->isTheFirstStep() && initFlag )) {
+            massMatrix->times(help, rhs2);
 
-        forcesVector = internalForces;
-        forcesVector.add(rhs2);
-        forcesVector.subtract(previousInternalForces);
-
-        if ( delta != 0 ) {
-            help.beScaled(delta * a1, incrementOfDisplacement);
-            this->timesMtrx(help, rhs2, TangentStiffnessMatrix, this->giveDomain(1), tStep);
-            //this->assembleVector(rhs2, tStep, MatrixProductAssembler(TangentAssembler(), help), VM_Total, 
-            //                    EModelDefaultEquationNumbering(), this->giveDomain(1));
+            forcesVector = internalForces;
             forcesVector.add(rhs2);
+            forcesVector.subtract(previousInternalForces);
+
+            if ( delta != 0 ) {
+                help.beScaled(delta * a1, incrementOfDisplacement);
+                this->timesMtrx(help, rhs2, TangentStiffnessMatrix, this->giveDomain(1), tStep);
+                //this->assembleVector(rhs2, tStep, MatrixProductAssembler(TangentAssembler(), help), VM_Total, 
+                //                    EModelDefaultEquationNumbering(), this->giveDomain(1));
+                forcesVector.add(rhs2);
+            }
         }
     }
 #ifdef TIME_REPORT

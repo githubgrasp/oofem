@@ -32,21 +32,48 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef nmstatus_h
-#define nmstatus_h
+#ifndef solutionstatusexportmodule_h_
+#define solutionstatusexportmodule_h_
+
+#include "exportmodule.h"
+
+///@name Input fields for SolutionStatusExportModule
+//@{
+#define _IFT_SolutionStatusExportModule_Name "solutionstatus"
+#define _IFT_SolutionStatusExportModule_format "fmt" ///< Filename where rules are defined (normally the input file).
+//@}
 
 namespace oofem {
-/**
- * Mask defining NumMetod Status; which can be asked after
- * finishing computation by Numerical Method.
- * this mask should report some situation.
- */
-typedef unsigned long NM_Status;
+class Domain;
+class Element;
+class DofManager;
 
-#define NM_None         0
-#define NM_Success      ( 1L << 1 ) ///< Numerical method exited with success.
-#define NM_NoSuccess    ( 1L << 2 ) ///< Numerical method failed to solve problem.
-#define NM_KeepTangent  ( 1L << 3 ) ///< Don't assemble new tangent, but use previous.
-#define NM_ForceRestart ( 1L << 4 )
+
+/**
+ * Configurable solution status export module. Creates and continuously updates the status file
+ according to simulation progress.
+ */
+class OOFEM_EXPORT SolutionStatusExportModule : public ExportModule
+{
+protected:
+  std::string filename;
+  FILE* outputFile;
+  std::vector<std::string> recs;
+
+    void checkRecs();
+    void printRecsHeader();
+public:
+    SolutionStatusExportModule(int n, EngngModel * e);
+    SolutionStatusExportModule(const SolutionStatusExportModule &) = delete;
+    SolutionStatusExportModule &operator=(const SolutionStatusExportModule &) = delete;
+
+    void initialize() override;
+    void terminate() override;
+    void initializeFrom(InputRecord &ir) override;
+    void doOutput(TimeStep *tStep, bool forcedOutput = false) override;
+
+    const char *giveClassName() const override { return "SolutionStatusExportModule"; }
+    const char *giveInputRecordName() const { return _IFT_SolutionStatusExportModule_Name; }
+};
 } // end namespace oofem
-#endif // nmstatus_h
+#endif // solutionstatusexportmodule_h_
