@@ -90,9 +90,9 @@ set (sm_material
     LatticeMaterials/latticeplasticitydamage.C
     LatticeMaterials/latticeslip.C
     LatticeMaterials/latticeplasticitydamageviscoelastic.C
-    Materials/LatticeMaterials/latticeframeelastic.C
-    Materials/LatticeMaterials/latticeframesteelplastic.C
-    Materials/LatticeMaterials/latticeframeconcreteplastic.C
+    LatticeMaterials/latticeframeelastic.C
+    LatticeMaterials/latticeframesteelplastic.C
+    LatticeMaterials/latticeframeconcreteplastic.C
     1D/isoasymm1d.C
 )
 
