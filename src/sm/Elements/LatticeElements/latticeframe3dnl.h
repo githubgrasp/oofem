@@ -52,24 +52,25 @@ Toi, Y., & Isobe, D. (1993). Adaptively shifted integration technique for finite
 Authors: Gumaa Abdelrhim and Peter Grassl, 2023
 */
 
-class LatticeFrame3dNL : public LatticeFrame3d
-{
-protected:
+    class LatticeFrame3dNL : public LatticeFrame3d
+    {
+    protected:
 
-public:
-    LatticeFrame3dNL(int n, Domain *);
-    virtual ~LatticeFrame3dNL();
-  
-    int giveLocalCoordinateSystem(FloatMatrix &answer) override;
+    public:
+        LatticeFrame3dNL(int n, Domain *);
+        virtual ~LatticeFrame3dNL();
 
-    const char *giveInputRecordName() const override { return _IFT_LatticeFrame3dNL_Name; }
-    const char *giveClassName() const override { return "latticeframe3dnl"; }
+      //        int giveLocalCoordinateSystem(FloatMatrix &answer) override;
 
-    void giveInternalForcesVector(FloatArray &answer, TimeStep *tStep, int useUpdatedGpRecord) override;
+        const char *giveInputRecordName() const override { return _IFT_LatticeFrame3dNL_Name; }
+        const char *giveClassName() const override { return "latticeframe3dnl"; }
 
-protected:
-    void computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode, TimeStep *tStep) override;
-    virtual void  computeStrainVector(FloatArray &answer, GaussPoint *gp, TimeStep *tStep) override;
-};
+        void giveInternalForcesVector(FloatArray &answer, TimeStep *tStep, int useUpdatedGpRecord) override;
+
+    protected:
+        virtual void computeBmatrixAt(GaussPoint *, FloatMatrix &, int = 1, int = ALL_STRAINS) override;
+        void computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode, TimeStep *tStep) override;
+        virtual void  computeStrainVector(FloatArray &answer, GaussPoint *gp, TimeStep *tStep) override;
+    };
 } // end namespace oofem
 #endif
