@@ -45,32 +45,30 @@
 
 namespace oofem {
 /**
-This class implements a geometric nonlinear 3-dimensional frame element. It is an extension of a geometric linear 3-dimensional frame element based on rigid body spring theory called LatticeFrame3D presented in Toi 1991 and Toi 1993. It belongs to the group of lattice models in the OOFEM structure, but can be used as a standard 3D beam element.
-References:
-Toi, Y. (1991). Shifted integration technique in one‐dimensional plastic collapse analysis using linear and cubic finite elements. International Journal for Numerical Methods in Engineering, 31(8), 1537-1552.
-Toi, Y., & Isobe, D. (1993). Adaptively shifted integration technique for finite element collapse analysis of framed structures. International Journal for Numerical Methods in Engineering, 36(14), 2323-2339.
-Authors: Gumaa Abdelrhim and Peter Grassl, 2023
-*/
+ * This class implements a geometric nonlinear 3-dimensional frame element. It is an extension of a geometric linear 3-dimensional frame element based on rigid body spring theory called LatticeFrame3D presented in Toi 1991 and Toi 1993. It belongs to the group of lattice models in the OOFEM structure, but can be used as a standard 3D beam element.
+ * References:
+ * Toi, Y. (1991). Shifted integration technique in one‐dimensional plastic collapse analysis using linear and cubic finite elements. International Journal for Numerical Methods in Engineering, 31(8), 1537-1552.
+ * Toi, Y., & Isobe, D. (1993). Adaptively shifted integration technique for finite element collapse analysis of framed structures. International Journal for Numerical Methods in Engineering, 36(14), 2323-2339.
+ * Authors: Gumaa Abdelrhim and Peter Grassl, 2023
+ */
 
-    class LatticeFrame3dNL : public LatticeFrame3d
-    {
-    protected:
+class LatticeFrame3dNL : public LatticeFrame3d
+{
+protected:
 
-    public:
-        LatticeFrame3dNL(int n, Domain *);
-        virtual ~LatticeFrame3dNL();
+public:
+    LatticeFrame3dNL(int n, Domain *);
+    virtual ~LatticeFrame3dNL();
 
-      //        int giveLocalCoordinateSystem(FloatMatrix &answer) override;
+    const char *giveInputRecordName() const override { return _IFT_LatticeFrame3dNL_Name; }
+    const char *giveClassName() const override { return "latticeframe3dnl"; }
 
-        const char *giveInputRecordName() const override { return _IFT_LatticeFrame3dNL_Name; }
-        const char *giveClassName() const override { return "latticeframe3dnl"; }
+    void giveInternalForcesVector(FloatArray &answer, TimeStep *tStep, int useUpdatedGpRecord) override;
 
-        void giveInternalForcesVector(FloatArray &answer, TimeStep *tStep, int useUpdatedGpRecord) override;
-
-    protected:
-        virtual void computeBmatrixAt(GaussPoint *, FloatMatrix &, int = 1, int = ALL_STRAINS) override;
-        void computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode, TimeStep *tStep) override;
-        virtual void  computeStrainVector(FloatArray &answer, GaussPoint *gp, TimeStep *tStep) override;
-    };
+protected:
+    virtual void computeBmatrixAt(GaussPoint *, FloatMatrix &, int = 1, int = ALL_STRAINS) override;
+    void computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode, TimeStep *tStep) override;
+    virtual void  computeStrainVector(FloatArray &answer, GaussPoint *gp, TimeStep *tStep) override;
+};
 } // end namespace oofem
 #endif
