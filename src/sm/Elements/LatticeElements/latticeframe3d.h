@@ -76,6 +76,8 @@ public:
 
     int computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords) override;
 
+    int computeLoadGToLRotationMtrx(FloatMatrix &answer) override;
+
     double computeLength() override;
 
     double giveLength() override;
