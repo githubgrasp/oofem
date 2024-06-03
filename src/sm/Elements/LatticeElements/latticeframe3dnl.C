@@ -53,7 +53,7 @@
 #include "engngm.h"
 
 #ifdef __OOFEG
-#include "oofeggraphiccontext.h"
+ #include "oofeggraphiccontext.h"
  #include "../sm/Materials/structuralmaterial.h"
 #endif
 
@@ -69,7 +69,7 @@ namespace oofem {
     {}
     void
     LatticeFrame3dNL::computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, int li, int ui)
- //Returns the strain matrix of the receiver.
+    //Returns the strain matrix of the receiver.
     {
         FloatArray u;
         TimeStep *tStep = this->domain->giveEngngModel()->giveCurrentStep();
@@ -80,14 +80,14 @@ namespace oofem {
         double l2 = this->length * ( 1. + this->s ) / 2;
         answer.resize(6, 12);
         answer.zero();
-        double cx1=(cos(u.at(5))*cos(u.at(6)))*l1;
-        double cy1=(cos(u.at(4))*sin(u.at(6))+sin(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1;
-        double cz1=(sin(u.at(4))*sin(u.at(6))-cos(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1;
+        double cx1 = ( cos(u.at(5) ) * cos(u.at(6) ) ) * l1;
+        double cy1 = ( cos(u.at(4) ) * sin(u.at(6) ) + sin(u.at(4) ) * sin(u.at(5) ) * cos(u.at(6) ) ) * l1;
+        double cz1 = ( sin(u.at(4) ) * sin(u.at(6) ) - cos(u.at(4) ) * sin(u.at(5) ) * cos(u.at(6) ) ) * l1;
 
 
-        double cx2=(cos(u.at(11))*cos(u.at(12)))*l2;
-        double cy2=(cos(u.at(10))*sin(u.at(12))+sin(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2;
-        double cz2=(sin(u.at(10))*sin(u.at(12))-cos(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2;
+        double cx2 = ( cos(u.at(11) ) * cos(u.at(12) ) ) * l2;
+        double cy2 = ( cos(u.at(10) ) * sin(u.at(12) ) + sin(u.at(10) ) * sin(u.at(11) ) * cos(u.at(12) ) ) * l2;
+        double cz2 = ( sin(u.at(10) ) * sin(u.at(12) ) - cos(u.at(10) ) * sin(u.at(11) ) * cos(u.at(12) ) ) * l2;
 
 
         //Normal displacement jump in x-direction
@@ -193,7 +193,7 @@ namespace oofem {
                                              TimeStep *tStep)
     {
         FloatMatrix d, bt, db, b;
-        FloatArray  u;
+        FloatArray u;
 
         this->computeVectorOf(VM_Total, tStep, u);
         this->length = computeLength();
@@ -214,7 +214,7 @@ namespace oofem {
     void
     LatticeFrame3dNL::computeStrainVector(FloatArray &answer, GaussPoint *gp, TimeStep *tStep)
     {
-        FloatArray   u;
+        FloatArray u;
         this->computeVectorOf(VM_Total, tStep, u);
 
         this->length   = computeLength();
@@ -223,24 +223,23 @@ namespace oofem {
         LatticeMaterialStatus *lmatStat = dynamic_cast < LatticeMaterialStatus * > ( integrationRulesArray [ 0 ]->getIntegrationPoint(0)->giveMaterialStatus() );
         auto strain = lmatStat->giveLatticeStrain();
 
-        double cx1=(cos(u.at(5))*cos(u.at(6)))*l1;
-        double cy1=(cos(u.at(4))*sin(u.at(6))+sin(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1;
-        double cz1=(sin(u.at(4))*sin(u.at(6))-cos(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1;
+        double cx1 = ( cos(u.at(5) ) * cos(u.at(6) ) ) * l1;
+        double cy1 = ( cos(u.at(4) ) * sin(u.at(6) ) + sin(u.at(4) ) * sin(u.at(5) ) * cos(u.at(6) ) ) * l1;
+        double cz1 = ( sin(u.at(4) ) * sin(u.at(6) ) - cos(u.at(4) ) * sin(u.at(5) ) * cos(u.at(6) ) ) * l1;
 
 
-        double cx2=(cos(u.at(11))*cos(u.at(12)))*l2;
-        double cy2=(cos(u.at(10))*sin(u.at(12))+sin(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2;
-        double cz2=(sin(u.at(10))*sin(u.at(12))-cos(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2;
+        double cx2 = ( cos(u.at(11) ) * cos(u.at(12) ) ) * l2;
+        double cy2 = ( cos(u.at(10) ) * sin(u.at(12) ) + sin(u.at(10) ) * sin(u.at(11) ) * cos(u.at(12) ) ) * l2;
+        double cz2 = ( sin(u.at(10) ) * sin(u.at(12) ) - cos(u.at(10) ) * sin(u.at(11) ) * cos(u.at(12) ) ) * l2;
         //
         answer.resize(6);
-        answer.at(1) = u.at(7)-u.at(1)-cx2 -cx1 +l1+l2;
-        answer.at(2) = u.at(8)-u.at(2)-cy2 -cy1;
-        answer.at(3) = u.at(9)-u.at(3)-cz2 -cz1;
-        answer.at(4) = u.at(10)-u.at(4);
-        answer.at(5) = u.at(11)-u.at(5);
-        answer.at(6) = u.at(12)-u.at(6);
+        answer.at(1) = u.at(7) - u.at(1) - cx2 - cx1 + l1 + l2;
+        answer.at(2) = u.at(8) - u.at(2) - cy2 - cy1;
+        answer.at(3) = u.at(9) - u.at(3) - cz2 - cz1;
+        answer.at(4) = u.at(10) - u.at(4);
+        answer.at(5) = u.at(11) - u.at(5);
+        answer.at(6) = u.at(12) - u.at(6);
         answer.times(1. / this->length);
-
     }
     //
     void
@@ -263,111 +262,29 @@ namespace oofem {
         double l1 = this->length * ( 1. - this->s ) / 2;
         double l2 = this->length * ( 1. + this->s ) / 2;
 
-        double cx1=(cos(u.at(5))*cos(u.at(6)))*l1;
-        double cy1=(cos(u.at(4))*sin(u.at(6))+sin(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1;
-        double cz1=(sin(u.at(4))*sin(u.at(6))-cos(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1;
+        double cx1 = ( cos(u.at(5) ) * cos(u.at(6) ) ) * l1;
+        double cy1 = ( cos(u.at(4) ) * sin(u.at(6) ) + sin(u.at(4) ) * sin(u.at(5) ) * cos(u.at(6) ) ) * l1;
+        double cz1 = ( sin(u.at(4) ) * sin(u.at(6) ) - cos(u.at(4) ) * sin(u.at(5) ) * cos(u.at(6) ) ) * l1;
 
 
-        double cx2=(cos(u.at(11))*cos(u.at(12)))*l2;
-        double cy2=(cos(u.at(10))*sin(u.at(12))+sin(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2;
-        double cz2=(sin(u.at(10))*sin(u.at(12))-cos(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2;
+        double cx2 = ( cos(u.at(11) ) * cos(u.at(12) ) ) * l2;
+        double cy2 = ( cos(u.at(10) ) * sin(u.at(12) ) + sin(u.at(10) ) * sin(u.at(11) ) * cos(u.at(12) ) ) * l2;
+        double cz2 = ( sin(u.at(10) ) * sin(u.at(12) ) - cos(u.at(10) ) * sin(u.at(11) ) * cos(u.at(12) ) ) * l2;
 
         answer.resize(12);
         answer.at(1) = -stress.at(1);
         answer.at(2) = -stress.at(2);
         answer.at(3) = -stress.at(3);
-        answer.at(4) =  stress.at(2)*cz1- stress.at(3)*cy1- stress.at(4);
-        answer.at(5) = -stress.at(1)*cz1+ stress.at(3)*cx1- stress.at(5);
-        answer.at(6) = stress.at(1)*cy1- stress.at(2)*cx1- stress.at(6);
+        answer.at(4) =  stress.at(2) * cz1 - stress.at(3) * cy1 - stress.at(4);
+        answer.at(5) = -stress.at(1) * cz1 + stress.at(3) * cx1 - stress.at(5);
+        answer.at(6) = stress.at(1) * cy1 - stress.at(2) * cx1 - stress.at(6);
         answer.at(7) = stress.at(1);
         answer.at(8) = stress.at(2);
         answer.at(9) = stress.at(3);
-        answer.at(10) =  stress.at(2)*cz2- stress.at(3)*cy2+ stress.at(4);
-        answer.at(11) = -stress.at(1)*cz2+ stress.at(3)*cx2+ stress.at(5);
-        answer.at(12) = stress.at(1)*cy2- stress.at(2)*cx2+ stress.at(6);
+        answer.at(10) =  stress.at(2) * cz2 - stress.at(3) * cy2 + stress.at(4);
+        answer.at(11) = -stress.at(1) * cz2 + stress.at(3) * cx2 + stress.at(5);
+        answer.at(12) = stress.at(1) * cy2 - stress.at(2) * cx2 + stress.at(6);
 
         lmatStat->letTempInternalForcesBe(answer);
     }
-
-    /* int */
-    /* LatticeFrame3dNL::giveLocalCoordinateSystem(FloatMatrix &answer) */
-    /* { */
-    /*     FloatArray lx, ly, lz, help(3); */
-    /*     FloatArray coordA, coordB; */
-    /*     FloatArray uA(6), uAIncr(6), uB(6), uBIncr(6); */
-    /*     IntArray dofid = { */
-    /*             1, 2, 3, 4, 5, 6 */
-    /*     }; */
-
-    /*     TimeStep *tStep = this->domain->giveEngngModel()->giveCurrentStep(); */
-
-    /*     Node *nodeA, *nodeB; */
-    /*     nodeA = this->giveNode(1); */
-    /*     nodeB = this->giveNode(2); */
-
-    /*     //Local coordinate system is determined from the displacement of last step. */
-
-    /*     coordA = nodeA->giveCoordinates(); */
-    /*     nodeA->giveUnknownVector(uA, dofid, VM_Total, tStep, false); */
-    /*     nodeA->giveUnknownVector(uAIncr, dofid, VM_Incremental, tStep, false); */
-
-    /*     coordB = nodeB->giveCoordinates(); */
-    /*     nodeB->giveUnknownVector(uB, dofid, VM_Total, tStep, false); */
-    /*     nodeB->giveUnknownVector(uBIncr, dofid, VM_Incremental, tStep, false); */
-
-    /*     lx.beDifferenceOf(coordB, coordA); */
-    /*     lx.normalize(); */
-
-    /*     if ( this->referenceNode ) { */
-    /*         Node *refNode = this->giveDomain()->giveNode(this->referenceNode); */
-    /*         help.beDifferenceOf( refNode->giveCoordinates(), nodeA->giveCoordinates() ); */
-
-    /*         lz.beVectorProductOf(lx, help); */
-    /*         lz.normalize(); */
-    /*     } else if ( this->zaxis.giveSize() > 0 ) { */
-    /*         lz = this->zaxis; */
-    /*         lz.add(lz.dotProduct(lx), lx); */
-    /*         lz.normalize(); */
-    /*     } else { */
-    /*         FloatMatrix rot(3, 3); */
-    /*         double theta = referenceAngle * M_PI / 180.0; */
-
-    /*         rot.at(1, 1) = cos(theta) + pow(lx.at(1), 2) * ( 1 - cos(theta) ); */
-    /*         rot.at(1, 2) = lx.at(1) * lx.at(2) * ( 1 - cos(theta) ) - lx.at(3) * sin(theta); */
-    /*         rot.at(1, 3) = lx.at(1) * lx.at(3) * ( 1 - cos(theta) ) + lx.at(2) * sin(theta); */
-
-    /*         rot.at(2, 1) = lx.at(2) * lx.at(1) * ( 1 - cos(theta) ) + lx.at(3) * sin(theta); */
-    /*         rot.at(2, 2) = cos(theta) + pow(lx.at(2), 2) * ( 1 - cos(theta) ); */
-    /*         rot.at(2, 3) = lx.at(2) * lx.at(3) * ( 1 - cos(theta) ) - lx.at(1) * sin(theta); */
-
-    /*         rot.at(3, 1) = lx.at(3) * lx.at(1) * ( 1 - cos(theta) ) - lx.at(2) * sin(theta); */
-    /*         rot.at(3, 2) = lx.at(3) * lx.at(2) * ( 1 - cos(theta) ) + lx.at(1) * sin(theta); */
-    /*         rot.at(3, 3) = cos(theta) + pow(lx.at(3), 2) * ( 1 - cos(theta) ); */
-
-    /*         help.at(3) = 1.0;     // up-vector */
-
-    /*         if ( fabs( lx.dotProduct(help) ) > 0.999 ) { */
-    /*             ly = { */
-    /*                     0., 1., 0. */
-    /*             }; */
-    /*         } else { */
-    /*             ly.beVectorProductOf(lx, help); */
-    /*         } */
-    /*         lz.beProductOf(rot, ly); */
-    /*         lz.normalize(); */
-    /*     } */
-
-    /*     ly.beVectorProductOf(lz, lx); */
-    /*     ly.normalize(); */
-
-    /*     answer.resize(3, 3); */
-    /*     answer.zero(); */
-    /*     for ( int i = 1; i <= 3; i++ ) { */
-    /*         answer.at(1, i) = lx.at(i); */
-    /*         answer.at(2, i) = ly.at(i); */
-    /*         answer.at(3, i) = lz.at(i); */
-    /*     } */
-
-    /*     return 1; */
-    /* } */
 } // end namespace oofem
