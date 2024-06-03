@@ -351,7 +351,7 @@ LatticeFrame3d::computeGtoLRotationMatrix(FloatMatrix &answer)
 int
 LatticeFrame3d::giveLocalCoordinateSystem(FloatMatrix &answer)
 {
-    FloatArray lx, ly, lz, help(3);
+  FloatArray lx, ly(3), lz, help(3);
     Node *nodeA, *nodeB;
     nodeA = this->giveNode(1);
     nodeB = this->giveNode(2);
@@ -365,11 +365,15 @@ LatticeFrame3d::giveLocalCoordinateSystem(FloatMatrix &answer)
 
         lz.beVectorProductOf(lx, help);
         lz.normalize();
+	ly.beVectorProductOf(lz, lx);
+	ly.normalize();
     } else if ( this->zaxis.giveSize() > 0 ) {
         lz = this->zaxis;
         lz.add(lz.dotProduct(lx), lx);
         lz.normalize();
-    } else {
+	ly.beVectorProductOf(lz, lx);
+	ly.normalize();
+    } else if ( referenceAngle != -1000) {
         FloatMatrix rot(3, 3);
         double theta = referenceAngle * M_PI / 180.0;
 
@@ -397,18 +401,27 @@ LatticeFrame3d::giveLocalCoordinateSystem(FloatMatrix &answer)
         lz.beProductOf(rot, ly);
         lz.normalize();
     }
-
-    ly.beVectorProductOf(lz, lx);
-    ly.normalize();
+    else{//Check! Not sure if this works for general cases.
+      ly.at(1) = lx.at(2);
+      ly.at(2) = lx.at(1);
+      ly.at(3) = 0.;      
+      ly.normalize();
+      lz.beVectorProductOf(ly, lx);
+      lz.times(-1.);
+      lz.normalize();	
+    }
 
     answer.resize(3, 3);
     answer.zero();
     for ( int i = 1; i <= 3; i++ ) {
-        answer.at(1, i) = lx.at(i);
-        answer.at(2, i) = ly.at(i);
-        answer.at(3, i) = lz.at(i);
+      answer.at(1, i) = lx.at(i);
+      answer.at(2, i) = ly.at(i);
+      answer.at(3, i) = lz.at(i);
     }
-
+    printf("local coordinate system:\n");
+    answer.printYourself();
+    printf("\n");
+    
     return 1;
 }
 
@@ -427,7 +440,7 @@ LatticeFrame3d::initializeFrom(InputRecord &ir)
     LatticeStructuralElement::initializeFrom(ir);
 
     referenceNode = 0;
-    referenceAngle = 0;
+    this->referenceAngle = -1000;
     this->zaxis.clear();
     if ( ir.hasField(_IFT_LatticeFrame3d_zaxis) ) {
         IR_GIVE_FIELD(ir, this->zaxis, _IFT_LatticeFrame3d_zaxis);
@@ -439,7 +452,8 @@ LatticeFrame3d::initializeFrom(InputRecord &ir)
     } else if ( ir.hasField(_IFT_LatticeFrame3d_refangle) ) {
         IR_GIVE_FIELD(ir, referenceAngle, _IFT_LatticeFrame3d_refangle);
     } else {
-        throw ValueInputException(ir, _IFT_LatticeFrame3d_zaxis, "axis, reference node, or angle not set");
+      OOFEM_WARNING("axis, reference node, or angle not set. Using default orientation.");
+      //        throw ValueInputException(ir, _IFT_LatticeFrame3d_zaxis, 
     }
 
     this->s = 0.;
