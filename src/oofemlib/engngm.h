@@ -35,7 +35,7 @@
 #ifndef engngm_h
 #define engngm_h
 
-#include "oofemcfg.h"
+#include "oofemenv.h"
 #include "inputrecord.h"
 #include "intarray.h"
 #include "fieldmanager.h"
@@ -484,7 +484,7 @@ public:
      * somewhere from solveYourselfAt function). Implementation must be provided.
      * Default implementation is empty.
      */
-    virtual void initializeYourself(TimeStep *tStep) { }
+    virtual void initializeYourself(TimeStep *tStep);
     /**
      * Initializes the newly generated discretization state according to previous solution.
      * This process should typically include restoring old solution, instanciating newly

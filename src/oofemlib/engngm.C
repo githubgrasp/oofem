@@ -39,6 +39,7 @@
 #include "nummet.h"
 #include "sparsemtrx.h"
 #include "engngm.h"
+#include "oofemcfg.h"
 #include "timestep.h"
 #include "metastep.h"
 #include "element.h"
@@ -47,7 +48,7 @@
 #include "bodyload.h"
 #include "boundaryload.h"
 #include "nodalload.h"
-#include "oofemcfg.h"
+#include "oofemenv.h"
 #include "timer.h"
 #include "dofmanager.h"
 #include "node.h"
@@ -488,6 +489,15 @@ EngngModel :: forceEquationNumbering()
     return this->numberOfEquations;
 }
 
+void
+EngngModel::initializeYourself (TimeStep *tStep)
+{
+    // needed only of BCs are changing, no way to get this information now
+    // so to be safe, we alvays reinitialize
+    for ( auto &domain: domainList ) { 
+        domain->giveBCTracker()->initialize();
+    }
+}
 
 void
 EngngModel :: solveYourself()
