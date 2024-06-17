@@ -96,6 +96,8 @@ set (sm_element
     LatticeElements/latticelink3dboundary.C
     LatticeElements/latticebeam3d.C
     LatticeElements/latticebeam3dboundary.C
+    LatticeElements/latticeframe3d.C
+    LatticeElements/latticeframe3dnl.C
     tet21ghostsolid.C
     quad1platesubsoil.C 
     quad2platesubsoil.C
@@ -143,6 +145,8 @@ set (sm_interface_elements
     Interfaces/intelsurfquad1.C
     Interfaces/bondlink3d.C
     Interfaces/bondlink3dboundary.C
+    Interfaces/bondlink3dtruss.C
+    Interfaces/bondlink1d.C		
     #    bondlink3dboundarybeam.C	
     #    bondlink3dboundaryplate.C		
     Interfaces/Deprecated/interfaceelement1d.C
