@@ -107,8 +107,6 @@ protected:
 
     enum LatticeBondPlasticity_ReturnResult { RR_NotConverged, RR_Converged, RR_Elastic };
 
-    int giveIPValue(FloatArray &answer, GaussPoint *gp, InternalStateType type, TimeStep *atTime) override;
-
     /// compressive strength
     double fc = 0.;
 
