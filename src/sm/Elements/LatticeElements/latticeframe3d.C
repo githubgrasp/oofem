@@ -488,6 +488,12 @@ namespace oofem {
         answer.at(7, 7) = answer.at(8, 8) = answer.at(9, 9) = halfMass;
     }
 
+    double
+    LatticeFrame3d :: computeVolumeAround(GaussPoint *aGaussPoint)
+    {
+        return giveArea() * computeLength();
+    }
+
     int
     LatticeFrame3d::computeLoadGToLRotationMtrx(FloatMatrix &answer)
     {
