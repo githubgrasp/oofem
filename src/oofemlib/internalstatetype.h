@@ -186,7 +186,7 @@ namespace oofem {
     ENUM_ITEM_WITH_VALUE(IST_IncrementCreepModulus, 136) \
     ENUM_ITEM_WITH_VALUE(IST_NormalStress, 137) \
     ENUM_ITEM_WITH_VALUE(IST_LatticeStrain, 138) \
-    ENUM_ITEM_WITH_VALUE(IST_LatticeStress, 139) \
+    ENUM_ITEM_WITH_VALUE(IST_LatticeForce, 139) \
     ENUM_ITEM_WITH_VALUE(IST_PlasticLatticeStrain, 140) \
     ENUM_ITEM_WITH_VALUE(IST_InternalSource, 141) \
     ENUM_ITEM_WITH_VALUE(IST_MacroSlipVector, 142) \
@@ -202,7 +202,10 @@ namespace oofem {
     ENUM_ITEM_WITH_VALUE(IST_ShearDissWork, 152) \
     ENUM_ITEM_WITH_VALUE(IST_ShearDeltaDissWork, 153) \
     ENUM_ITEM_WITH_VALUE(IST_CompressionDissWork, 154) \
-    ENUM_ITEM_WITH_VALUE(IST_CompressionDeltaDissWork, 155)      
+    ENUM_ITEM_WITH_VALUE(IST_CompressionDeltaDissWork, 155) \
+    ENUM_ITEM_WITH_VALUE(IST_LatticeCurvature, 156) \
+    ENUM_ITEM_WITH_VALUE(IST_LatticeMoment, 157) \
+    ENUM_ITEM_WITH_VALUE(IST_PlasticLatticeCurvature, 158)
 
 /**
  * Type  representing the physical meaning of element or constitutive model internal variable.

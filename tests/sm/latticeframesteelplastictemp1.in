@@ -2,7 +2,6 @@ latticeframeelastictemp1.out
 Cantilever test with latticeframesteelplastic material model with temperature load
 NonLinearStatic nmsteps 1 nsteps 20  contextOutputStep 100 nmodules 0
 nsteps 20 rtolv 1.e-0 maxiter 2000 stiffMode 1 controllmode 1
-#refloadmode 1 minsteplength 1.e-3 ddm 2 3 6 ddv 1 2  ddltf 2 
 #errorcheck
 domain 3dLattice
 OutputManager tstep_all
