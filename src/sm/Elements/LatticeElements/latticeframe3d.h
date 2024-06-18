@@ -71,6 +71,7 @@ public:
     LatticeFrame3d(int n, Domain *);
     virtual ~LatticeFrame3d();
 
+    double computeVolumeAround(GaussPoint *aGaussPoint) override;
 
     int giveLocalCoordinateSystem(FloatMatrix &answer) override;
 
