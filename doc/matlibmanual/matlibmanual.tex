@@ -6090,14 +6090,44 @@ Supported modes & 3dlattice\\
 \label{latticeplasticdamageviscoelastic_table}
 \end{table}
 
-\subsubsection{Plasticity lattice model for steel}
-
-This is a Plasticity material used together with lattice elements.It has bean developed to describe the failure process  failure of steel frame member.
+\subsubsection{Elastic material model for lattice based frame elements}
+This is an elastic material model used together with 3d lattice frame elements. It has been specifically developed to describe the failure of steel frame member using the lattice elements latticeframe3d and latticeframe3dnl. However, it can also been used with any other 3d lattice element.
 The stress-strain law has the form
 \begin{equation}
-\boldsymbol{\sigma} = \mathbf{D}_{\rm e} \left(\boldsymbol{\varepsilon}-\boldsymbol{\varepsilon}_{\rm p} \right)
+  \mathbf{s} = \mathbf{D}_{\rm e} \mathbf{e}
 \end{equation}
-where $\boldsymbol{\sigma}$ is a vector of tractions and rotational components, $\mathbf{D}_{\rm e}$ is the elastic stiffness matrix, $\boldsymbol{\varepsilon}$ is a vector of strains obtained from displacement jumps smeared over the element length and rotational components and $\boldsymbol{\varepsilon}_{\rm p}$ are the plastic strains. The model parameters are summarised in Table \ref{latticeframesteelplastic_table}.
+where $\mathbf{e}$ is a vector of internal forces and moments, $\mathbf{D}_{\rm e}$ is the elastic stiffness matrix, $\mathbf{e}$ is a vector of generalised strains obtained from displacement jumps smeared over the element length and rotational components. The model parameters are summarised in Table \ref{latticeframesteelplastic_table}.
+
+\begin{table}[!htb]
+\begin{mmt}
+\hline
+Description & Plasticity lattice model for steel \\
+\hline
+Record Format & \descitem{latticeframesteelplastic} \elemparam{}{in}
+\elemparam{d}{rn} \optelemparam{talpha}{rn} \elemparam{e}{rn} \elemparam{n}{rn}\\
+Parameters &- \param{} material number\\
+&- \param{d} material density\\
+&- \optparam{talpha} Thermal expansion coefficient. Default is 0.\\
+&- \param{e} Young's modulus of the lattice material.\\
+&- \param{n} Poisson's ratio of the material that the beam element is made of.\\
+Supported modes & 3dlattice\\
+\hline
+\end{mmt}
+\caption{Elastic model for 3D lattice based frame elements -- summary.}
+\label{latticeframeelastic_table}
+%\end{center}                  
+  \end{table}
+The linear-elastic response of the frame elements is given directly as an relationship between generalised stress (internal forces) and generalised strain. 
+%
+
+
+\subsubsection{Plasticity lattice model for steel}
+This is a plasticity material used together with 3d lattice frame elements. It has been specifically developed to describe the failure process failure of steel frame member using the lattice elements latticeframe3d and latticeframe3dnl. 
+The generalised stress-strain law has the form
+\begin{equation}
+  \mathbf{s} = \mathbf{D}_{\rm e} \left(\mathbf{e}-\mathbf{e}_{\rm p} \right)
+\end{equation}
+where $\mathbf{e}$ is a vector of internal forces and moments, $\mathbf{D}_{\rm e}$ is the elastic stiffness matrix, $\mathbf{e}$ is a vector of generalised strains obtained from displacement jumps smeared over the element length and rotational components and $\mathbf{e}_{\rm p}$ are the plastic strains. The model parameters are summarised in Table \ref{latticeframesteelplastic_table}.
 
 \begin{table}[!htb]
 \begin{mmt}
@@ -6121,40 +6151,98 @@ Parameters &- \param{} material number\\
 Supported modes & 3dlattice\\
 \hline
 \end{mmt}
-\caption{Plasticity steel model for lattice elements -- summary.}
+\caption{Plasticity steel model for 3D lattice frame elements -- summary.}
 \label{latticeframesteelplastic_table}
 %\end{center}                  
   \end{table}
-The nonlinear response of the beam element is given directly as an relationship between internal force and strain. The basic equations include an additive decomposition of total strain into elastic part and plastic part
-
+The nonlinear response of the beam element is given directly as an relationship between internal force and strain. The basic equations include an additive decomposition of total strain into elastic part and plastic part of the form
+%
 \begin{equation}
-\boldsymbol{\varepsilon} = \boldsymbol{\varepsilon}_{\rm e}-\boldsymbol{\varepsilon}_{\rm p} 
+    \mathbf{e} = \mathbf{e}_{\rm e}+\mathbf{e}_{\rm p} 
 \end{equation}
 
-Trail stress
+The trial stress is calculated as
 \begin{equation}
-    \sigma_{n+1}^{tr}  =D^e (\varepsilon_{n+1}  - \varepsilon_n^p)
+    \mathbf{s}_{n+1}^{tr}  = \mathbf{D}^{\mathrm{e}} (\mathbf{e}_{n+1}  - \mathbf{e}_n^p)
 \end{equation}
 
-The yield function
+The yield function is given as
 \begin{equation}
-(\frac{N_x}{N_0})^2+ (\frac{M_x}{M_{x0}} )^2+ (\frac{M_y}{M_{y0}} )^2+ (\frac{M_z}{M_{z0}} )^2- 1 = 0
+(\dfrac{N_x}{N_0})^2+ (\dfrac{M_x}{M_{x0}})^2+ (\dfrac{M_y}{M_{y0}})^2+ (\dfrac{M_z}{M_{z0}})^2 - 1 = 0
+\end{equation}
+where $N_x$, $M_x$,$M_y$ and $M$ , are the two components of bending moment, an axial force and
+a torsional moment, respectively. The corresponding components with the subscript 0 indicate a fully plastic value under the
+condition that each component of resultant forces acts independently.
+The loading-unloading conditions are
+\begin{equation}
+f(\bar{\mathbf{s}},\kappa)\le 0 \qquad \dot{\lambda}\geq 0 \qquad \dot{\lambda}f(\bar{\mathbf{s}},\kappa)=0,
 \end{equation}
 
-where $M$, $M y$ , $N$ and $M$ , are the two components of bending moment, an axial force and
-a torsional moment, respectively. The subscript 0 indicates a fully plastic value under the
-condition that each component of resultant forces acts independently on a cross-section of
-a member.
-\\
-loading-unloading conditions
-
-loading-unloading conditions
+The flow rule is
 \begin{equation}
-f(\bar{\vsig},\kappa)\le 0 \qquad \dot{\lambda}\geq 0 \qquad \dot{\lambda}f(\bar{\vsig},\kappa)=0,
+\dot{\mathbf{e}}_{\rm{p}} = \dot{\lambda} \dfrac{\partial f}{\partial \bar{\mathbf{s}}},
 \end{equation}
-evolution law for plastic strain
+
+\subsubsection{Plasticity-damage lattice model for reinforced concrete}
+This is a plasticity-damage material used together with 3d lattice frame elements. It has been specifically developed to describe the failure process failure of reinforced concrete frame member using the lattice elements latticeframe3d and latticeframe3dnl. 
+The generalised stress-strain law has the form
 \begin{equation}
-\dot{\veps}_{\rm{p}} = \dot{\lambda} \frac{\partial f}{\partial \bar{\vsig}},
+  \mathbf{s} = \mathbf{D}_{\rm e} \left(\mathbf{e}-\mathbf{e}_{\rm p} \right)
+\end{equation}
+where $\mathbf{e}$ is a vector of internal forces and moments, $\mathbf{D}_{\rm e}$ is the elastic stiffness matrix, $\mathbf{e}$ is a vector of generalised strains obtained from displacement jumps smeared over the element length and rotational components and $\mathbf{e}_{\rm p}$ are the plastic strains. The model parameters are summarised in Table \ref{latticeframesteelplastic_table}.
+
+\begin{table}[!htb]
+\begin{mmt}
+\hline
+Description & Plasticity lattice model for steel \\
+\hline
+Record Format & \descitem{latticeframesteelplastic} \elemparam{}{in}
+\elemparam{d}{rn} \optelemparam{talpha}{rn} \elemparam{e}{rn} \elemparam{n}{rn} \elemparam{nx0}{rn} \elemparam{mx0}{rn} \elemparam{my0}{rn} \elemparam{mz0}{rn} \elemparam{sub}{in} \elemparam{iter}{in} \elemparam{tol}{rn}\\
+Parameters &- \param{} material number\\
+&- \param{d} material density\\
+&- \optparam{talpha} Thermal expansion coefficient. Default is 0.\\
+&- \param{e} Young's modulus of the lattice material.\\
+&- \param{n} Poisson's ratio of the material that the beam element is made of.\\
+&- \param{nx0} ultimate capacity under pure axialloads.\\
+&- \param{mx0} ultimate capacity under pure moment about $x$.\\
+&- \param{my0} ultimate capacity under pure moment about $y$.\\
+&- \param{mz0} ultimate capacity under pure moment about $z$.\\
+&- \optparam{sub} maximum number of subincrementations.\\
+&- \optparam{iter} maximum number of newton iterations.\\
+&- \optparam{tol} tolerance for newton method.\\
+Supported modes & 3dlattice\\
+\hline
+\end{mmt}
+\caption{Plasticity steel model for 3D lattice frame elements -- summary.}
+\label{latticeframesteelplastic_table}
+%\end{center}                  
+  \end{table}
+The nonlinear response of the beam element is given directly as an relationship between internal force and strain. The basic equations include an additive decomposition of total strain into elastic part and plastic part of the form
+%
+\begin{equation}
+    \mathbf{e} = \mathbf{e}_{\rm e}+\mathbf{e}_{\rm p} 
+\end{equation}
+
+The trial stress is calculated as
+\begin{equation}
+    \mathbf{s}_{n+1}^{tr}  = \mathbf{D}^{\mathrm{e}} (\mathbf{e}_{n+1}  - \mathbf{e}_n^p)
+\end{equation}
+
+The yield function is given as
+\begin{equation}
+(\dfrac{N_x}{N_0})^2+ (\dfrac{M_x}{M_{x0}})^2+ (\dfrac{M_y}{M_{y0}})^2+ (\dfrac{M_z}{M_{z0}})^2 - 1 = 0
+\end{equation}
+where $N_x$, $M_x$,$M_y$ and $M$ , are the two components of bending moment, an axial force and
+a torsional moment, respectively. The corresponding components with the subscript 0 indicate a fully plastic value under the
+condition that each component of resultant forces acts independently.
+The loading-unloading conditions are
+\begin{equation}
+f(\bar{\mathbf{s}},\kappa)\le 0 \qquad \dot{\lambda}\geq 0 \qquad \dot{\lambda}f(\bar{\mathbf{s}},\kappa)=0,
+\end{equation}
+
+The flow rule is
+\begin{equation}
+\dot{\mathbf{e}}_{\rm{p}} = \dot{\lambda} \dfrac{\partial f}{\partial \bar{\mathbf{s}}},
 \end{equation}
 
 
