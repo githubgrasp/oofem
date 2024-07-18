@@ -462,30 +462,38 @@ The specific input parameters for this element in addition of those for latticel
 \end{elementsummary}
 
  \subsubsection{Latticeframe3d element}
- Latticeframe3d represents a two-node linear 3d frame element. Each node has six degrees of freedom, namely three translations and three rotations. The element is based on the link between rigid body spring and Timoshenko frame models. The main idea is to model the elastic and inelastic response of a connection of two nodes by a set of springs located at the contact facet of two rigid bodies. Displacement jumps are computed at the contact facet, which are smeared out over the element length in the form of strains. The input parameters for this element are shown in Table ~\ref{latticeframe3dsummary}. For the computation of the nodal forces, the initial configuration is used.
-%%  \begin{figure}[htb]
-%%  \centering
-%%  \includegraphics[width=0.3\textwidth]{./latticeframe.png}
-%%  \includegraphics[width=0.3\textwidth]{./latticeframe1.png}
-%%  \caption{latticeframe3d element. Node numbering, DOF numbering, cross-section vertices and local coordinate system at integration point.}
-%%  \label{latticeframe3dfig}
-%%  \end{figure}
+ Latticeframe3d represents a two-node linear 3d frame element shown in Figure~\ref{fig:latticeframe3d}. Each node has six degrees of freedom, namely three translations and three rotations. The element is based on the link between rigid body spring and Timoshenko frame models. The main idea is to model the elastic and inelastic response of a connection of two nodes by a set of springs located at the contact facet of two rigid bodies. Displacement jumps are computed at the contact facet, which are smeared out over the element length in the form of strains. The input parameters for this element are shown in Table ~\ref{latticeframe3dsummary}. For the computation of the nodal forces, the initial configuration is used. The position of the plastic hinge is controlled by parameter $s$, which is normalised by half of the element length from the centre of the element. This approach was developed by \cite{Toi91}.
+ 
+  \begin{figure}[htb]
+    \centering
+  \includegraphics[width=0.4\textwidth]{./latticeframe3d.png}
+  \caption{latticeframe3d element. Node numbering, DOF numbering and location of contact with springs.}
+  \label{fig:latticeframe3d}
+  \end{figure}
 
- \begin{elementsummary}{latticeframe3d}{3d lattice frame element}{{ \field{zaxis}{ra} }{rn}}{latticeframe3d element summary}{latticeframe3dsummary}
+ \begin{elementsummary}{latticeframe3d}{3d lattice frame element}{\field{zaxis}{ra} \optField{s}{rn}}{latticeframe3d element summary}{latticeframe3dsummary}
 \elementParam{\param{zaxis}: z-axis of local coordinate system }
+\elementParam{\param{s}:  distance from centre to location of springs normalised by half of element length (0  centre of element (default), -1  left node of element, 1 right end of element)}
 \elementDescription{CS properties}{Area, inertia moment along y and z axis (\param{iy} and \param{iz} parameters), torsion inertia moment (\param{ik} parameter) and either cross section area shear correction factor (\param{beamshearcoeff} parameter) or equivalent shear areas (\param{shearareay} and \param{shearareaz} parameters) are required. These cross section properties are assumed to be defined in local coordinate system of element.}
 \elementDescription{Unknowns}{Six dofs ($u$-displacement, $v$-displacement, $w$-displacement, $u$-rotation, $v$-rotation and $w$-rotation) are required in each node.}
-\elementDescription{Reference}{\cite{Toi91, Toi93}}
+\elementDescription{Reference}{\cite{Toi91}}
 \end{elementsummary}
 
  \subsubsection{Latticeframe3dnl element}
- Latticeframe3dnl represents a two-node nonlinear 3d frame element. Each node has six degrees of freedom, namely three translations and three rotations. The element is based on the link between rigid body spring and Timoshenko frame models. The main idea is to model the elastic and inelastic response of a connection of two nodes by a set of springs located at the contact facet of two rigid bodies. Displacement jumps are computed at the contact facet considering the incrementally deformed geometry, which are smeared out over the element length in the form of strains. The input parameters for this element are shown in Table ~\ref{latticeframe3dnlsummary}. For the computation of the nodal forces, the incrementally deformed configuration is used. At the start of each step the local co-ordinate system is updated with the displacements of the previous step.
+ Latticeframe3dnl represents a two-node geometrically nonlinear 3d frame element. This element is an extension of latticeframe3d. Each node has six degrees of freedom, namely three translations and three rotations. The element is based on the link between rigid body spring and Timoshenko frame models. The main idea is to model the elastic and inelastic response of a connection of two nodes by a set of springs located at the contact facet of two rigid bodies. Displacement jumps are computed at the contact facet using the deformed geometry assuming large deformations, which are smeared out over the element length in the form of strains. The input parameters for this element are shown in Table~\ref{latticeframe3dnlsummary}. For the computation of the nodal forces, the deformed configuration is used as illustrated in Figure~\ref{fig:latticeframe3dnl}.
 
- \begin{elementsummary}{latticeframe3dnl}{3d lattice frame element}{{ \field{zaxis}{ra} }{rn}}{latticeframe3d element summary}{latticeframe3dnlsummary}
-\elementParam{\param{zaxis}: z-axis of local coordinate system }
+ \begin{figure}[htb]
+    \centering
+  \includegraphics[width=0.5\textwidth]{./latticeframe3dnl.png}
+  \caption{latticeframe3dnl element. Illustration of calculation of nodal forces using deformed geometry.}
+  \label{fig:latticeframe3dnl}
+  \end{figure}
+ 
+ \begin{elementsummary}{latticeframe3dnl}{3d lattice frame element}{-}{latticeframe3dnl element summary}{latticeframe3dnlsummary}
+   \elementParam{}
 \elementDescription{CS properties}{Area, inertia moment along y and z axis (\param{iy} and \param{iz} parameters), torsion inertia moment (\param{ik} parameter) and either cross section area shear correction factor (\param{beamshearcoeff} parameter) or equivalent shear areas (\param{shearareay} and \param{shearareaz} parameters) are required. These cross section properties are assumed to be defined in local coordinate system of element.}
 \elementDescription{Unknowns}{Six dofs ($u$-displacement, $v$-displacement, $w$-displacement, $u$-rotation, $v$-rotation and $w$-rotation) are required in each node.}
-\elementDescription{Reference}{\cite{Toi91, Toi93, AbdGra23}}
+\elementDescription{Reference}{\cite{AbdGra24}}
 \end{elementsummary}
 
 %-----------------------------------------------------------------------------------------------
@@ -569,8 +577,6 @@ The node numbering is anti-clockwise and is explained in fig. (\ref
 \elementDescription{Nlgeo}{0, 1.}
 \elementDescription{Status}{Stable}
 \end{elementsummary}
-
-
 
 
 \subsubsection{TrPlaneStress2d}
@@ -2338,7 +2344,7 @@ supports modelling of two immiscible fluids.}
 \bibitem{AthWheGra18} I. Athanasiadis, S. Wheeler and P. Grassl. ``Hydro-mechanical network modelling of particulate composites'', International Journal of Solids and Structures, vol. 130-131, pp. 49-60, 2018.
 \bibitem{GraAnt19} P. Grassl and A. Antonelli. ``3D network modelling of fracture processes in fibre-reinforced geomaterials'', International Journal of Solids and Structures, vol. 156-157, pp. 234-242, 2019.
 \bibitem{Toi91} Y. Toi. ``Shifted integration technique in one‐dimensional plastic collapse analysis using linear and cubic finite elements'', International Journal for Numerical Methods in Engineering 31, no. 8, pp. 1537-1552, 1991.
-\bibitem{AbdGra23} G. Abdelrhim and P. Grassl. ``On a geometric nonlinear Timoshenko frame element with material nonlinearity'', Annual Conference of the UK Association for Computational Mechanics (UKACM), The University of Warwick, UK, 19-21 April 2023.
+\bibitem{AbdGra24} G. Abdelrhim and P. Grassl. ``A simple frame element for large rotations'', Available at SSRN 4850146, 2024.
 \bibitem{SciGraLarRun20} A. Sciegaj and P. Grassl and F. Larsson and K. Runesson and K. Lundgren. ``Upscaling of three-dimensional reinforced concrete representative volume elements to effective beam and plate models'', International Journal of Solids and Structures, vol. 202, pp. 835-853, 2020.
 \end{thebibliography}
 \end{document}
