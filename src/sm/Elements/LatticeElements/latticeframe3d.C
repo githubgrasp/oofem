@@ -401,13 +401,22 @@ namespace oofem {
             lz.beProductOf(rot, ly);
             lz.normalize();
         } else   {//Check! Not sure if this works for general cases.
-            ly.at(1) = lx.at(2);
-            ly.at(2) = lx.at(1);
-            ly.at(3) = 0.;
-            ly.normalize();
-            lz.beVectorProductOf(ly, lx);
-            lz.times(-1.);
-            lz.normalize();
+	  if ( lx.at(1) == 0 ) {
+	    ly.at(1) = 0.;
+	    ly.at(2) = lx.at(3);
+	    ly.at(3) = lx.at(2);
+	  } else if ( lx.at(2) == 0 ) {
+	    ly.at(1) = lx.at(3);
+	    ly.at(2) = 0.;
+	    ly.at(3) = -lx.at(1);
+	  } else {
+	    ly.at(1) = lx.at(2);
+	    ly.at(2) = -lx.at(1);
+	    ly.at(3) = 0.;
+	  }
+          ly.normalize();
+          lz.beVectorProductOf(lx, ly);
+          lz.normalize();
         }
 
         answer.resize(3, 3);
@@ -418,6 +427,7 @@ namespace oofem {
             answer.at(3, i) = lz.at(i);
         }
 
+	
         return 1;
     }
 
@@ -448,7 +458,7 @@ namespace oofem {
         } else if ( ir.hasField(_IFT_LatticeFrame3d_refangle) ) {
             IR_GIVE_FIELD(ir, referenceAngle, _IFT_LatticeFrame3d_refangle);
         } else {
-            OOFEM_WARNING("axis, reference node, or angle not set. Using default orientation.");
+	  //            OOFEM_WARNING("axis, reference node, or angle not set. Using default orientation.");
         }
 
         this->s = 0.;
