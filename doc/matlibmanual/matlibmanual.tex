@@ -4215,7 +4215,7 @@ Note that the effective element size $h$ is obtained by projecting the element.
 For instance, if the element is a cube of edge length 100 mm, its effective
 size in the direction of the body diagonal can be 173 mm. 
 
-\subsubsection{Damage-plastic model for concrete - CDPM2}
+\subsubsection{Damage-plastic model for concrete - CDPM2} \label{sec:cdpm2}
 
 This model is an extension of the ConcreteDPM presented in \ref{sec:cdpm}.
 CDPM2 has been developed by Grassl and coworkers for modelling the failure of concrete for both static and dynamic loading. It is is described in detail in \cite{GraXenNys13}.
@@ -4663,6 +4663,40 @@ Supported modes& 3dMat, PlaneStrain, 1dMat\\
 \label{cdpm2_table}
 %\end{center}
 \end{longtable}
+
+\subsubsection{Damage-plastic model for fibre reinforced concrete - CDPM2F}
+CDPM2F is a fibre extension of CDPM2 in \ref{sec:cdpm2}. The theory of CDPM2F is described in \cite{ZhoMarGra24}.
+The main idea of CDPM2F is to adjust the damage part of CDPM2 to predict the effect of fibres.
+Below in Table~\ref{cdpm2f_table} the input parameters of CDPM2F in addition to those required for CDPM2 are described. 
+
+\begin{htmlonly}
+\begin{longtable}{|l|l|}
+\end{htmlonly}
+\begin{longtable}{|l|p{9cm}|}
+%\begin{center}
+%\begin{mmt}
+\hline
+Description & CDPM2F\\
+\hline
+Record Format & \descitem{cdpm2f} \elemparam{lf}{rn} \elemparam{vf0}{rn} \elemparam{df}{rn} \elemparam{tau0}{rn} \elemparam{beta}{rn} [\elemparam{f}{rn}] \elemparam{ef}{rn} \elemparam{sm}{rn} [\elemparam{alpha}{rn}] [\elemparam{xi}{rn}]\\
+Parameters &- \param{lf} length of fibre\\
+&- \param{vf0} base volume fraction of fibres\\
+&- \param{df} diameter of fibre\\
+&- \param{tau0} initial bond strength of interface between fibre and matrix\\
+&- \param{beta} hardening parameter of interface between fibre and matrix\\
+&- \param{f} snubbing factor\\
+&- \param{ef} Young's modulus of fibre material\\
+&- \param{sm}  staturated crack spacing\\
+&- \param{alpha} parameter related to dispersion\\
+&- \param{xi}  parameter controling hardening of fibre stress strain response\\
+Supported modes& 3dMat, PlaneStrain, 1DMat\\
+\hline
+%\end{mmt}
+\caption{CDPM2F -- summary.}
+\label{cdpm2f_table}
+%\end{center}
+\end{longtable}
+
 
 
 \subsubsection{Fixed crack model for concrete - ConcreteFCM}
@@ -7427,6 +7461,7 @@ In Rock Under Compression, International Journal of Fracture Mechanics
 \bibitem{GraDav11} P. Grassl and T. Davies: Lattice modelling of corrosion induced cracking and bond in reinforced concrete. Cement and Concrete Composites, 33, 918-924, 2011.
 \bibitem{AthWheGra18} I. Athanasiadis, S. Wheeler and P. Grassl: Hydro-mechanical network modelling of particulate composites. International Journal of Solids and Structures 130-131, 49-60, 2018.
 \bibitem{SciGraLarRun20} A. Sciegaj and P. Grassl and F. Larsson and K. Runesson and K. Lundgren. ``Upscaling of three-dimensional reinforced concrete representative volume elements to effective beam and plate models'', International Journal of Solids and Structures, vol. 202, pp. 835-853, 2020.
+\bibitem{ZhoMarGra24} C. Zhou and A. Marlot and P. Grassl: CDPM2F: A Damage-Plasticity Approach to Modelling the Failure of Engineered Cementitious Composites, Available at SSRN 4819173, 2024.
 \end{thebibliography}
 \end{document}
 
