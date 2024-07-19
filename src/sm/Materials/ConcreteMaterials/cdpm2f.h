@@ -98,7 +98,7 @@ protected:
     double ef = 0.;
     /// initial bond strength of interface between fibre and matrix
     double tau0 = 0.;
-    /// hardening parameter of fibre
+    /// hardening parameter of interface between fibre and matrix
     double beta = 0.;
     ///snubbing factor
     double f = 0.;
