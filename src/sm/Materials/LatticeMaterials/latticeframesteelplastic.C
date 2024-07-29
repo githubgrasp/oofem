@@ -68,26 +68,22 @@ namespace oofem {
     {
         LatticeFrameElastic::initializeFrom(ir);
 
-        //Nx0
         IR_GIVE_FIELD(ir, this->nx0, _IFT_LatticeFrameSteelPlastic_nx0); // Macro
 
-        //Mx0
         IR_GIVE_FIELD(ir, this->mx0, _IFT_LatticeFrameSteelPlastic_mx0); // Macro
 
-        //My0
         IR_GIVE_FIELD(ir, this->my0, _IFT_LatticeFrameSteelPlastic_my0); // Macro
 
-        //Mz0
         IR_GIVE_FIELD(ir, this->mz0, _IFT_LatticeFrameSteelPlastic_mz0); // Macro
 
         yieldTol = 1.e-6;
-        IR_GIVE_FIELD(ir, this->yieldTol, _IFT_LatticeFrameSteelPlastic_tol); // Macro
+        IR_GIVE_OPTIONAL_FIELD(ir, this->yieldTol, _IFT_LatticeFrameSteelPlastic_tol); // Macro
 
         this->newtonIter = 100;
-        IR_GIVE_FIELD(ir, this->newtonIter, _IFT_LatticeFrameSteelPlastic_iter); // Macro
+        IR_GIVE_OPTIONAL_FIELD(ir, this->newtonIter, _IFT_LatticeFrameSteelPlastic_iter); // Macro
 
         numberOfSubIncrements = 10;
-        IR_GIVE_FIELD(ir, this->numberOfSubIncrements, _IFT_LatticeFrameSteelPlastic_sub); // Macro
+        IR_GIVE_OPTIONAL_FIELD(ir, this->numberOfSubIncrements, _IFT_LatticeFrameSteelPlastic_sub); // Macro
     }
 
     MaterialStatus *
