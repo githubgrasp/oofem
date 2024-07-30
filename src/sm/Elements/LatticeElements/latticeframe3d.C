@@ -101,14 +101,14 @@ namespace oofem {
         answer.at(2, 3) =  0.;
         answer.at(2, 4) = 0.;
         answer.at(2, 5) = 0;
-        answer.at(2, 6) = -this->length * ( 1. - this->s ) / 2.;
+        answer.at(2, 6) = -this->length * ( 1. + this->s ) / 2.;
         //Second node
         answer.at(2, 7) = 0.;
         answer.at(2, 8) = 1.;
         answer.at(2, 9) =  0.;
         answer.at(2, 10) = 0.;
         answer.at(2, 11) = 0;
-        answer.at(2, 12) = -this->length * ( 1. + this->s ) / 2.;
+        answer.at(2, 12) = -this->length * ( 1. - this->s ) / 2.;
 
         //Shear displacement jump in z-plane
         //first node
@@ -116,14 +116,14 @@ namespace oofem {
         answer.at(3, 2) = 0.;
         answer.at(3, 3) = -1.;
         answer.at(3, 4) = 0.;
-        answer.at(3, 5) = this->length * ( 1. - this->s ) / 2.;
+        answer.at(3, 5) = this->length * ( 1. + this->s ) / 2.;
         answer.at(3, 6) = 0.;
         //Second node
         answer.at(3, 7) = 0.;
         answer.at(3, 8) = 0.;
         answer.at(3, 9) =  1.;
         answer.at(3, 10) = 0.;
-        answer.at(3, 11) = this->length * ( 1. + this->s ) / 2.;
+        answer.at(3, 11) = this->length * ( 1. - this->s ) / 2.;
         answer.at(3, 12) = 0.;
 
         //Rotation around x-axis
