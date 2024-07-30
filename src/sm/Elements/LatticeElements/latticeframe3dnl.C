@@ -76,8 +76,8 @@ namespace oofem {
         this->computeVectorOf(VM_Total, tStep, u);
 
         this->length = computeLength();
-        double l1 = this->length * ( 1. - this->s ) / 2;
-        double l2 = this->length * ( 1. + this->s ) / 2;
+        double l1 = this->length * ( 1. + this->s ) / 2;
+        double l2 = this->length * ( 1. - this->s ) / 2;
         answer.resize(6, 12);
         answer.zero();
         double cx1 = ( cos(u.at(5) ) * cos(u.at(6) ) ) * l1;
@@ -218,8 +218,8 @@ namespace oofem {
         this->computeVectorOf(VM_Total, tStep, u);
 
         this->length   = computeLength();
-        double l1 = this->length * ( 1. - this->s ) / 2;
-        double l2 = this->length * ( 1. + this->s ) / 2;
+        double l1 = this->length * ( 1. + this->s ) / 2;
+        double l2 = this->length * ( 1. - this->s ) / 2;
         LatticeMaterialStatus *lmatStat = dynamic_cast < LatticeMaterialStatus * > ( integrationRulesArray [ 0 ]->getIntegrationPoint(0)->giveMaterialStatus() );
         auto strain = lmatStat->giveLatticeStrain();
 
@@ -259,8 +259,8 @@ namespace oofem {
         auto oldStress = lmatStat->giveLatticeStress();
 
         auto oldInternalForces = lmatStat->giveInternalForces();
-        double l1 = this->length * ( 1. - this->s ) / 2;
-        double l2 = this->length * ( 1. + this->s ) / 2;
+        double l1 = this->length * ( 1. + this->s ) / 2;
+        double l2 = this->length * ( 1. - this->s ) / 2;
 
         double cx1 = ( cos(u.at(5) ) * cos(u.at(6) ) ) * l1;
         double cy1 = ( cos(u.at(4) ) * sin(u.at(6) ) + sin(u.at(4) ) * sin(u.at(5) ) * cos(u.at(6) ) ) * l1;
