@@ -6137,7 +6137,7 @@ where $\mathbf{e}$ is a vector of internal forces and moments, $\mathbf{D}_{\rm 
 \hline
 Description & Plasticity lattice model for steel \\
 \hline
-Record Format & \descitem{latticeframesteelplastic} \elemparam{}{in}
+Record Format & \descitem{latticeframeelastic} \elemparam{}{in}
 \elemparam{d}{rn} \optelemparam{talpha}{rn} \elemparam{e}{rn} \elemparam{n}{rn}\\
 Parameters &- \param{} material number\\
 &- \param{d} material density\\
@@ -6155,7 +6155,7 @@ The linear-elastic response of the frame elements is given directly as an relati
 %
 
 
-\subsubsection{Plasticity lattice model for steel}
+\subsubsection{Steel Plasticity material model for lattice based frame elements}
 This is a plasticity material used together with 3d lattice frame elements. It has been specifically developed to describe the failure process failure of steel frame member using the lattice elements latticeframe3d and latticeframe3dnl. 
 The generalised stress-strain law has the form
 \begin{equation}
@@ -6217,7 +6217,7 @@ The flow rule is
 \dot{\mathbf{e}}_{\rm{p}} = \dot{\lambda} \dfrac{\partial f}{\partial \bar{\mathbf{s}}},
 \end{equation}
 
-\subsubsection{Plasticity-damage lattice model for reinforced concrete}
+\subsubsection{Reinforced concrete plasticity-damage material model for lattice based frame elements}
 This is a plasticity-damage material used together with 3d lattice frame elements. It has been specifically developed to describe the failure process failure of reinforced concrete frame member using the lattice elements latticeframe3d and latticeframe3dnl. 
 The generalised stress-strain law has the form
 \begin{equation}
