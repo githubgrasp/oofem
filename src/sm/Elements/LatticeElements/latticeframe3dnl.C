@@ -80,14 +80,23 @@ namespace oofem {
         double l2 = this->length * ( 1. + this->s ) / 2;
         answer.resize(6, 12);
         answer.zero();
+//        double cx1=(cos(u.at(5))*cos(u.at(6)))*l1;
+//        double cy1=(cos(u.at(4))*sin(u.at(6))+sin(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1;
+//        double cz1=(sin(u.at(4))*sin(u.at(6))-cos(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1;
+//
+//
+//        double cx2=(cos(u.at(11))*cos(u.at(12)))*l2;
+//        double cy2=(cos(u.at(10))*sin(u.at(12))+sin(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2;
+//        double cz2=(sin(u.at(10))*sin(u.at(12))-cos(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2;
+
         double cx1=(cos(u.at(5))*cos(u.at(6)))*l1;
-        double cy1=(cos(u.at(4))*sin(u.at(6))+sin(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1;
-        double cz1=(sin(u.at(4))*sin(u.at(6))-cos(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1;
+        double cy1=(cos(u.at(5))*sin(u.at(6)))*l1;
+        double cz1=(-sin(u.at(5)))*l1;
 
 
         double cx2=(cos(u.at(11))*cos(u.at(12)))*l2;
-        double cy2=(cos(u.at(10))*sin(u.at(12))+sin(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2;
-        double cz2=(sin(u.at(10))*sin(u.at(12))-cos(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2;
+        double cy2=(cos(u.at(11))*sin(u.at(12)))*l2;
+        double cz2=(-sin(u.at(11)))*l2;
 
 
         //Normal displacement jump in x-direction
@@ -208,8 +217,8 @@ namespace oofem {
         bt.beTranspositionOf(b);
         answer.beProductOf(bt, db);
 
-        printf("answer/n");
-        answer.printYourself();
+//        printf("answer/n");
+//        answer.printYourself();
         return;
     }
 //    void
@@ -292,7 +301,7 @@ namespace oofem {
 //        answer.at(4, 7) = 0.;
 //        answer.at(4, 8) = d.at(2,2)*(cz1);
 //        answer.at(4, 9) = -d.at(3,3)*(cy1);
-//        answer.at(4, 10) = -d.at(3,3)*(-cy1*cy2)+d.at(2,2)*(+cz1*cz2)-d.at(4,4);
+//        answer.at(4, 10) = d.at(3,3)*(cy1*cy2)+d.at(2,2)*(+cz1*cz2)-d.at(4,4);
 //        answer.at(4, 11) = -d.at(3,3)*(cy1*cx2);
 //        answer.at(4, 12) = d.at(2,2)*(-cz1*cx2);
 //
@@ -308,8 +317,7 @@ namespace oofem {
 //        answer.at(5, 9) = d.at(3,3)*(cx1);
 //        answer.at(5, 10) = d.at(3,3)*(-cx1*cy2);
 //        answer.at(5, 11) = -d.at(1,1)*(-cz1*cz2)+d.at(3,3)*(cx1*cx2)-d.at(5,5);
-//        answer.at(5, 12) = -d.at(1,1)*(+cz1*cy2);
-//
+//        answer.at(5, 12) = -d.at(1,1)*(cz1*cy2);
 //
 //        // Mz 1
 //        answer.at(6, 1) = d.at(1,1)*(-cy1);
@@ -324,8 +332,6 @@ namespace oofem {
 //        answer.at(6, 10) = -d.at(2,2)*(cx1*cz2);
 //        answer.at(6, 11) = d.at(1,1)*(-cy1*cz2);
 //        answer.at(6, 12) = d.at(1,1)*(cy1*cy2)-d.at(2,2)*(-cx1*cx2)-d.at(6,6);
-//
-//
 //
 //        //Axial 2
 //        answer.at(7, 1) = -d.at(1, 1);
@@ -382,6 +388,7 @@ namespace oofem {
 //        answer.at(10, 10) = d.at(3,3)*(cy2*cy2)-d.at(2,2)*(-cz2*cz2)+d.at(4,4);
 //        answer.at(10, 11) = d.at(3,3)*(-cy2*cx2);
 //        answer.at(10, 12) = -d.at(2,2)*(+cz2*cx2);
+//
 //        // My 2
 //        answer.at(11, 1) = d.at(1,1)*(cz2);
 //        answer.at(11, 2) = 0;
@@ -395,6 +402,7 @@ namespace oofem {
 //        answer.at(11, 10) = -d.at(3,3)*(cx2*cy2);
 //        answer.at(11, 11) = d.at(1,1)*(cz2*cz2)-d.at(3,3)*(-cx2*cx2)+d.at(5,5);
 //        answer.at(11, 12) = d.at(1,1)*(-cz2*cy2);
+//
 //        // Mz 2
 //        answer.at(12, 1) = -cy2*d.at(1,1);
 //        answer.at(12, 2) = cx2*d.at(2,2);
@@ -408,6 +416,7 @@ namespace oofem {
 //        answer.at(12, 10) = -cx2*d.at(2,2)*(cz2);
 //        answer.at(12, 11) = cy2*d.at(1,1)*(-cz2);
 //        answer.at(12, 12) =  cy2*d.at(1,1)*(cy2)-cx2*d.at(2,2)*(-cx2)+d.at(6,6);
+//
 //        answer.times(1. / this->length);
 //        return;
 //    }
@@ -431,14 +440,22 @@ namespace oofem {
         LatticeMaterialStatus *lmatStat = dynamic_cast < LatticeMaterialStatus * > ( integrationRulesArray [ 0 ]->getIntegrationPoint(0)->giveMaterialStatus() );
         auto strain = lmatStat->giveLatticeStrain();
 
+//        double cx1=(cos(u.at(5))*cos(u.at(6)))*l1;
+//        double cy1=(cos(u.at(4))*sin(u.at(6))+sin(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1;
+//        double cz1=(sin(u.at(4))*sin(u.at(6))-cos(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1;
+//
+//
+//        double cx2=(cos(u.at(11))*cos(u.at(12)))*l2;
+//        double cy2=(cos(u.at(10))*sin(u.at(12))+sin(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2;
+//        double cz2=(sin(u.at(10))*sin(u.at(12))-cos(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2;
         double cx1=(cos(u.at(5))*cos(u.at(6)))*l1;
-        double cy1=(cos(u.at(4))*sin(u.at(6))+sin(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1;
-        double cz1=(sin(u.at(4))*sin(u.at(6))-cos(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1;
+        double cy1=(cos(u.at(5))*sin(u.at(6)))*l1;
+        double cz1=(-sin(u.at(5)))*l1;
 
 
         double cx2=(cos(u.at(11))*cos(u.at(12)))*l2;
-        double cy2=(cos(u.at(10))*sin(u.at(12))+sin(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2;
-        double cz2=(sin(u.at(10))*sin(u.at(12))-cos(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2;
+        double cy2=(cos(u.at(11))*sin(u.at(12)))*l2;
+        double cz2=(-sin(u.at(11)))*l2;
         //
         answer.resize(6);
         answer.at(1) = u.at(7)-u.at(1)-cx2 -cx1 +l1+l2;
@@ -472,14 +489,23 @@ namespace oofem {
         double l1 = this->length * ( 1. - this->s ) / 2;
         double l2 = this->length * ( 1. + this->s ) / 2;
         //
+//        double cx1=(cos(u.at(5))*cos(u.at(6)))*l1;
+//        double cy1=(cos(u.at(4))*sin(u.at(6))+sin(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1;
+//        double cz1=(sin(u.at(4))*sin(u.at(6))-cos(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1;
+//
+//
+//        double cx2=(cos(u.at(11))*cos(u.at(12)))*l2;
+//        double cy2=(cos(u.at(10))*sin(u.at(12))+sin(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2;
+//        double cz2=(sin(u.at(10))*sin(u.at(12))-cos(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2;
+
         double cx1=(cos(u.at(5))*cos(u.at(6)))*l1;
-        double cy1=(cos(u.at(4))*sin(u.at(6))+sin(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1;
-        double cz1=(sin(u.at(4))*sin(u.at(6))-cos(u.at(4))*sin(u.at(5))*cos(u.at(6)))*l1;
+        double cy1=(cos(u.at(5))*sin(u.at(6)))*l1;
+        double cz1=(-sin(u.at(5)))*l1;
 
 
         double cx2=(cos(u.at(11))*cos(u.at(12)))*l2;
-        double cy2=(cos(u.at(10))*sin(u.at(12))+sin(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2;
-        double cz2=(sin(u.at(10))*sin(u.at(12))-cos(u.at(10))*sin(u.at(11))*cos(u.at(12)))*l2;
+        double cy2=(cos(u.at(11))*sin(u.at(12)))*l2;
+        double cz2=(-sin(u.at(11)))*l2;
         //
         //
         answer.resize(12);

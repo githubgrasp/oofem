@@ -206,7 +206,7 @@ LatticeFrameSteelPlastic::computeDMMatrix(const FloatArrayF< 4 > &stress, GaussP
     dm.at(4, 1) = 0;
     dm.at(4, 2) = 0;
     dm.at(4, 3) = 0;
-    dm.at(4, 3) = 2. / pow(this->mz0, 2.);
+    dm.at(4, 4) = 2. / pow(this->mz0, 2.);
 
     return dm;
 }

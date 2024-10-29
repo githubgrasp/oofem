@@ -431,7 +431,8 @@ set (sm
     ${sm_new}
     ${sm_boundary_conditions}
     ${sm_quasicontinuum}
-    )
+        Elements/LatticeElements/latticebeam3dboundary.h
+)
 
 if (USE_PARALLEL)
     list (APPEND sm ${sm_parallel})
