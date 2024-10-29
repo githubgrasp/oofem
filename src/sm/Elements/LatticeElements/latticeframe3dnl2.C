@@ -75,59 +75,55 @@ namespace oofem {
         TimeStep *tStep = this->domain->giveEngngModel()->giveCurrentStep();
         this->computeVectorOf(VM_Total, tStep, u);
 
-	FloatArray coordA(3), coordB(3);
-	coordA = giveNode(1)->giveCoordinates();
-	coordB = giveNode(2)->giveCoordinates();
-	
+        FloatArray coordA(3), coordB(3);
+        coordA = giveNode(1)->giveCoordinates();
+        coordB = giveNode(2)->giveCoordinates();
+
         this->length = computeLength();
         double l1 = this->length * ( 1. + this->s ) / 2.;
         double l2 = this->length * ( 1. - this->s ) / 2.;
 
-	double lx1 = (coordB.at(1)-coordA.at(1)) * ( 1. + this->s ) / 2.;
-	double ly1 = (coordB.at(2)-coordA.at(2)) * ( 1. + this->s ) / 2.;
-	double lz1 = (coordB.at(3)-coordA.at(3)) * ( 1. + this->s ) / 2.;
+        double lx1 = ( coordB.at(1) - coordA.at(1) ) * ( 1. + this->s ) / 2.;
+        double ly1 = ( coordB.at(2) - coordA.at(2) ) * ( 1. + this->s ) / 2.;
+        double lz1 = ( coordB.at(3) - coordA.at(3) ) * ( 1. + this->s ) / 2.;
 
-        double lx2 = (coordB.at(1)-coordA.at(1)) * ( 1. - this->s ) / 2.;
-	double ly2 = (coordB.at(2)-coordA.at(2)) * ( 1. - this->s ) / 2.;
-	double lz2 = (coordB.at(3)-coordA.at(3)) * ( 1. - this->s ) / 2.;
+        double lx2 = ( coordB.at(1) - coordA.at(1) ) * ( 1. - this->s ) / 2.;
+        double ly2 = ( coordB.at(2) - coordA.at(2) ) * ( 1. - this->s ) / 2.;
+        double lz2 = ( coordB.at(3) - coordA.at(3) ) * ( 1. - this->s ) / 2.;
 
-	answer.resize(6, 12);
+        answer.resize(6, 12);
         answer.zero();
 
 
-	double cx1Old = ( cos(u.at(5) ) * cos(u.at(6) ) ) * l1;
-        double cy1Old = ( cos(u.at(4) ) * sin(u.at(6) ) + sin(u.at(4) ) * sin(u.at(5) ) * cos(u.at(6) ) ) * l1;
-        double cz1Old = ( sin(u.at(4) ) * sin(u.at(6) ) - cos(u.at(4) ) * sin(u.at(5) ) * cos(u.at(6) ) ) * l1;
+        double cx1Old = ( cos( u.at(5) ) * cos( u.at(6) ) ) * l1;
+        double cy1Old = ( cos( u.at(4) ) * sin( u.at(6) ) + sin( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1;
+        double cz1Old = ( sin( u.at(4) ) * sin( u.at(6) ) - cos( u.at(4) ) * sin( u.at(5) ) * cos( u.at(6) ) ) * l1;
 
 
-        double cx2Old = ( cos(u.at(11) ) * cos(u.at(12) ) ) * l2;
-        double cy2Old = ( cos(u.at(10) ) * sin(u.at(12) ) + sin(u.at(10) ) * sin(u.at(11) ) * cos(u.at(12) ) ) * l2;
-        double cz2Old = ( sin(u.at(10) ) * sin(u.at(12) ) - cos(u.at(10) ) * sin(u.at(11) ) * cos(u.at(12) ) ) * l2;
+        double cx2Old = ( cos( u.at(11) ) * cos( u.at(12) ) ) * l2;
+        double cy2Old = ( cos( u.at(10) ) * sin( u.at(12) ) + sin( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2;
+        double cz2Old = ( sin( u.at(10) ) * sin( u.at(12) ) - cos( u.at(10) ) * sin( u.at(11) ) * cos( u.at(12) ) ) * l2;
 
 
-		//First node rotations 
-	double thetaX1 = u.at(4);
-	double thetaY1 = u.at(5);
-	double thetaZ1 = u.at(6);
-	
-	//Second node rotations
-	double thetaX2 = u.at(10);
-	double thetaY2 = u.at(11);
-	double thetaZ2 = u.at(12);
-		
+        //First node rotations
+        double thetaX1 = u.at(4);
+        double thetaY1 = u.at(5);
+        double thetaZ1 = u.at(6);
 
-	double cx1 = lz1*sin(thetaY1) + lx1*cos(thetaY1)*cos(thetaZ1) - ly1*cos(thetaY1)*sin(thetaZ1);
-	double cx2 =  lz2*sin(thetaY2) + lx2*cos(thetaY2)*cos(thetaZ2) - ly2*cos(thetaY2)*sin(thetaZ2);
+        //Second node rotations
+        double thetaX2 = u.at(10);
+        double thetaY2 = u.at(11);
+        double thetaZ2 = u.at(12);
 
-	double cy1 =  lx1*(cos(thetaX1)*sin(thetaZ1) + cos(thetaZ1)*sin(thetaX1)*sin(thetaY1)) + ly1*(cos(thetaX1)*cos(thetaZ1) - sin(thetaX1)*sin(thetaY1)*sin(thetaZ1)) - lz1*cos(thetaY1)*sin(thetaX1);
 
-	double cy2 = lx2*(cos(thetaX2)*sin(thetaZ2) + cos(thetaZ2)*sin(thetaX2)*sin(thetaY2)) + ly2*(cos(thetaX2)*sin(thetaZ2) - sin(thetaX2)*sin(thetaY2)*sin(thetaZ2)) - lz2*cos(thetaY2)*sin(thetaX2);
-	
-	double cz1 =  lx1*(sin(thetaX1)*sin(thetaZ1) - cos(thetaX1)*cos(thetaZ1)*sin(thetaY1)) + ly1*(cos(thetaZ1)*sin(thetaX1) + cos(thetaX1)*sin(thetaY1)*sin(thetaZ1)) + lz1*cos(thetaX1)*cos(thetaY1);
+        double cx1 = lz1 * sin(thetaY1) + lx1 * cos(thetaY1) * cos(thetaZ1) - ly1 * cos(thetaY1) * sin(thetaZ1);
+        double cx2 =  lz2 * sin(thetaY2) + lx2 * cos(thetaY2) * cos(thetaZ2) - ly2 * cos(thetaY2) * sin(thetaZ2);
+        double cy1 =  lx1 * ( cos(thetaX1) * sin(thetaZ1) + cos(thetaZ1) * sin(thetaX1) * sin(thetaY1) ) + ly1 * ( cos(thetaX1) * cos(thetaZ1) - sin(thetaX1) * sin(thetaY1) * sin(thetaZ1) ) - lz1 * cos(thetaY1) * sin(thetaX1);
+        double cy2 = lx2 * ( cos(thetaX2) * sin(thetaZ2) + cos(thetaZ2) * sin(thetaX2) * sin(thetaY2) ) + ly2 * ( cos(thetaX2) * cos(thetaZ2) - sin(thetaX2) * sin(thetaY2) * sin(thetaZ2) ) - lz2 * cos(thetaY2) * sin(thetaX2);
+        double cz1 =  lx1 * ( sin(thetaX1) * sin(thetaZ1) - cos(thetaX1) * cos(thetaZ1) * sin(thetaY1) ) + ly1 * ( cos(thetaZ1) * sin(thetaX1) + cos(thetaX1) * sin(thetaY1) * sin(thetaZ1) ) + lz1 * cos(thetaX1) * cos(thetaY1);
+        double cz2 =  lx2 * ( sin(thetaX2) * sin(thetaZ2) - cos(thetaX2) * cos(thetaZ2) * sin(thetaY2) ) + ly2 * ( cos(thetaZ2) * sin(thetaX2) + cos(thetaX2) * sin(thetaY2) * sin(thetaZ2) ) + lz2 * cos(thetaX2) * cos(thetaY2);
 
-	double cz2 =  lx2*(sin(thetaX2)*sin(thetaZ2) - cos(thetaX2)*cos(thetaZ2)*sin(thetaY2)) + ly2*(cos(thetaZ2)*sin(thetaX2) + cos(thetaX2)*sin(thetaY2)*sin(thetaZ2)) + lz2*cos(thetaX2)*cos(thetaY2);
 
-	
         //Normal displacement jump in x-direction
         //First node
         answer.at(1, 1) = -1.;
@@ -228,7 +224,7 @@ namespace oofem {
     }
     void
     LatticeFrame3dNL2::computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode,
-                                             TimeStep *tStep)
+                                              TimeStep *tStep)
     {
         FloatMatrix d, bt, db, b;
         FloatArray u;
@@ -241,14 +237,15 @@ namespace oofem {
         this->computeBmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), b);
 
         this->computeConstitutiveMatrixAt(d, rMode, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
-	//Rotate stiffness matrix
-	FloatMatrix r(6,6), rT(6,6), dR(6,6), rTDR(6,6);
-	computeGtoLStrainRotationMatrix(r);
-	rT.beTranspositionOf(r);
-	
-	dR.beProductOf(d,r);
-	rTDR.beProductOf(rT,dR);
-       
+
+        //Rotate constitutive stiffness matrix
+        FloatMatrix r(6, 6), rT(6, 6), dR(6, 6), rTDR(6, 6);
+        computeGtoLStrainRotationMatrix(r);
+        rT.beTranspositionOf(r);
+
+        dR.beProductOf(d, r);
+        rTDR.beProductOf(rT, dR);
+
         db.beProductOf(rTDR, b);
         db.times(1. / length);
         bt.beTranspositionOf(b);
@@ -260,87 +257,55 @@ namespace oofem {
     void
     LatticeFrame3dNL2::computeStrainVector(FloatArray &answer, GaussPoint *gp, TimeStep *tStep)
     {
+        //Compute normalised displacement jumps in global coordinate system first and then rotate it to the local coordiante system.
+
         FloatArray u;
         this->computeVectorOf(VM_Total, tStep, u);
 
-	FloatArray coordA(3), coordB(3);
-	coordA = giveNode(1)->giveCoordinates();
-	coordB = giveNode(2)->giveCoordinates();
+        FloatArray coordA(3), coordB(3);
+        coordA = giveNode(1)->giveCoordinates();
+        coordB = giveNode(2)->giveCoordinates();
 
         this->length = computeLength();
-	
+
         double l1 = this->length * ( 1. + this->s ) / 2.;
         double l2 = this->length * ( 1. - this->s ) / 2.;
 
-	double lx1 = (coordB.at(1)-coordA.at(1)) * ( 1. + this->s ) / 2.;
-	double ly1 = (coordB.at(2)-coordA.at(2)) * ( 1. + this->s ) / 2.;
-	double lz1 = (coordB.at(3)-coordA.at(3)) * ( 1. + this->s ) / 2.;
+        double lx1 = ( coordB.at(1) - coordA.at(1) ) * ( 1. + this->s ) / 2.;
+        double ly1 = ( coordB.at(2) - coordA.at(2) ) * ( 1. + this->s ) / 2.;
+        double lz1 = ( coordB.at(3) - coordA.at(3) ) * ( 1. + this->s ) / 2.;
 
-        double lx2 = (coordB.at(1)-coordA.at(1)) * ( 1. - this->s ) / 2.;
-	double ly2 = (coordB.at(2)-coordA.at(2)) * ( 1. - this->s ) / 2.;
-	double lz2 = (coordB.at(3)-coordA.at(3)) * ( 1. - this->s ) / 2.;
+        double lx2 = ( coordB.at(1) - coordA.at(1) ) * ( 1. - this->s ) / 2.;
+        double ly2 = ( coordB.at(2) - coordA.at(2) ) * ( 1. - this->s ) / 2.;
+        double lz2 = ( coordB.at(3) - coordA.at(3) ) * ( 1. - this->s ) / 2.;
 
-	/* printf("lengths new: lx1 = %e, ly1 = %e, lz1 = %e, lx2 = %e, ly2 = %e, lz2 = %e\n", lx1, ly1, lz1, lx2, ly2, lz2); */
-
-	/* printf("lengths old: l1 = %e, l2 = %e\n", l1, l2); */
-
-	
-	LatticeMaterialStatus *lmatStat = dynamic_cast < LatticeMaterialStatus * > ( integrationRulesArray [ 0 ]->getIntegrationPoint(0)->giveMaterialStatus() );
+        LatticeMaterialStatus *lmatStat = dynamic_cast < LatticeMaterialStatus * > ( integrationRulesArray [ 0 ]->getIntegrationPoint(0)->giveMaterialStatus() );
         auto strain = lmatStat->giveLatticeStrain();
 
-         double cx1Old = ( cos(u.at(5) ) * cos(u.at(6) ) ) * l1;
-         double cy1Old = ( cos(u.at(4) ) * sin(u.at(6) ) + sin(u.at(4) ) * sin(u.at(5) ) * cos(u.at(6) ) ) * l1;
-         double cz1Old = ( sin(u.at(4) ) * sin(u.at(6) ) - cos(u.at(4) ) * sin(u.at(5) ) * cos(u.at(6) ) ) * l1;
+        //First node rotations
+        double uX1 = u.at(1);
+        double uY1 = u.at(2);
+        double uZ1 = u.at(3);
 
-         double cx2Old = ( cos(u.at(11) ) * cos(u.at(12) ) ) * l2;
-        double cy2Old = ( cos(u.at(10) ) * sin(u.at(12) ) + sin(u.at(10) ) * sin(u.at(11) ) * cos(u.at(12) ) ) * l2;
-        double cz2Old = ( sin(u.at(10) ) * sin(u.at(12) ) - cos(u.at(10) ) * sin(u.at(11) ) * cos(u.at(12) ) ) * l2;
+        double thetaX1 = u.at(4);
+        double thetaY1 = u.at(5);
+        double thetaZ1 = u.at(6);
 
-	//	printf("Strain: cx1Old = %e, cy1Old = %e, cz1Old = %e, cx2Old = %e, cy2Old = %e, cz2Old = %e\n", cx1Old, cy1Old, cz1Old, cx2Old, cy2Old, cz2Old);
-	
+        double thetaX2 = u.at(10);
+        double thetaY2 = u.at(11);
+        double thetaZ2 = u.at(12);
 
+        double cx1 = lz1 * sin(thetaY1) + lx1 * cos(thetaY1) * cos(thetaZ1) - ly1 * cos(thetaY1) * sin(thetaZ1);
+        double cx2 =  lz2 * sin(thetaY2) + lx2 * cos(thetaY2) * cos(thetaZ2) - ly2 * cos(thetaY2) * sin(thetaZ2);
 
-	
-	//lx1 + lx2 - ux1 + ux2 - lz1*sin(thetaY1) - lz2*sin(thetaY2) - lx1*cos(thetaY1)*cos(thetaZ1) - lx2*cos(thetaY2)*cos(thetaZ2) + ly1*cos(thetaY1)*sin(thetaZ1) + ly2*cos(thetaY2)*sin(thetaZ2)
+        double cy1 =  lx1 * ( cos(thetaX1) * sin(thetaZ1) + cos(thetaZ1) * sin(thetaX1) * sin(thetaY1) ) + ly1 * ( cos(thetaX1) * cos(thetaZ1) - sin(thetaX1) * sin(thetaY1) * sin(thetaZ1) ) - lz1 * cos(thetaY1) * sin(thetaX1);
 
-	//ly1 + ly2 - uy1 + uy2 - lx1*(cos(thetaX1)*sin(thetaZ1) + cos(thetaZ1)*sin(thetaX1)*sin(thetaY1)) - lx2*(cos(thetaX2)*sin(thetaZ2) + cos(thetaZ2)*sin(thetaX2)*sin(thetaY2)) - ly1*(cos(thetaX1)*cos(thetaZ1) - sin(thetaX1)*sin(thetaY1)*sin(thetaZ1)) - ly2*(cos(thetaX2)*cos(thetaZ2) - sin(thetaX2)*sin(thetaY2)*sin(thetaZ2)) + lz1*cos(thetaY1)*sin(thetaX1) + lz2*cos(thetaY2)*sin(thetaX2)
+        double cy2 = lx2 * ( cos(thetaX2) * sin(thetaZ2) + cos(thetaZ2) * sin(thetaX2) * sin(thetaY2) ) + ly2 * ( cos(thetaX2) * cos(thetaZ2) - sin(thetaX2) * sin(thetaY2) * sin(thetaZ2) ) - lz2 * cos(thetaY2) * sin(thetaX2);
 
-	//lz1 + lz2 - uz1 + uz2 - lx1*(sin(thetaX1)*sin(thetaZ1) - cos(thetaX1)*cos(thetaZ1)*sin(thetaY1)) - lx2*(sin(thetaX2)*sin(thetaZ2) - cos(thetaX2)*cos(thetaZ2)*sin(thetaY2)) - ly1*(cos(thetaZ1)*sin(thetaX1) + cos(thetaX1)*sin(thetaY1)*sin(thetaZ1)) - ly2*(cos(thetaZ2)*sin(thetaX2) + cos(thetaX2)*sin(thetaY2)*sin(thetaZ2)) - lz1*cos(thetaX1)*cos(thetaY1) - lz2*cos(thetaX2)*cos(thetaY2)
+        double cz1 =  lx1 * ( sin(thetaX1) * sin(thetaZ1) - cos(thetaX1) * cos(thetaZ1) * sin(thetaY1) ) + ly1 * ( cos(thetaZ1) * sin(thetaX1) + cos(thetaX1) * sin(thetaY1) * sin(thetaZ1) ) + lz1 * cos(thetaX1) * cos(thetaY1);
 
-	//First node rotations 
-	double thetaX1 = u.at(4);
-	double thetaY1 = u.at(5);
-	double thetaZ1 = u.at(6);
-	
-	//Second node rotations
-	double thetaX2 = u.at(10);
-	double thetaY2 = u.at(11);
-	double thetaZ2 = u.at(12);
-		
-	double cx1 = lz1*sin(thetaY1) + lx1*cos(thetaY1)*cos(thetaZ1) - ly1*cos(thetaY1)*sin(thetaZ1);
-	double cx2 =  lz2*sin(thetaY2) + lx2*cos(thetaY2)*cos(thetaZ2) - ly2*cos(thetaY2)*sin(thetaZ2);
+        double cz2 =  lx2 * ( sin(thetaX2) * sin(thetaZ2) - cos(thetaX2) * cos(thetaZ2) * sin(thetaY2) ) + ly2 * ( cos(thetaZ2) * sin(thetaX2) + cos(thetaX2) * sin(thetaY2) * sin(thetaZ2) ) + lz2 * cos(thetaX2) * cos(thetaY2);
 
-	double cy1 =  lx1*(cos(thetaX1)*sin(thetaZ1) + cos(thetaZ1)*sin(thetaX1)*sin(thetaY1)) + ly1*(cos(thetaX1)*cos(thetaZ1) - sin(thetaX1)*sin(thetaY1)*sin(thetaZ1)) - lz1*cos(thetaY1)*sin(thetaX1);
-
-	double cy2 = lx2*(cos(thetaX2)*sin(thetaZ2) + cos(thetaZ2)*sin(thetaX2)*sin(thetaY2)) + ly2*(cos(thetaX2)*sin(thetaZ2) - sin(thetaX2)*sin(thetaY2)*sin(thetaZ2)) - lz2*cos(thetaY2)*sin(thetaX2);
-	
-	double cz1 =  lx1*(sin(thetaX1)*sin(thetaZ1) - cos(thetaX1)*cos(thetaZ1)*sin(thetaY1)) + ly1*(cos(thetaZ1)*sin(thetaX1) + cos(thetaX1)*sin(thetaY1)*sin(thetaZ1)) + lz1*cos(thetaX1)*cos(thetaY1);
-
-	double cz2 =  lx2*(sin(thetaX2)*sin(thetaZ2) - cos(thetaX2)*cos(thetaZ2)*sin(thetaY2)) + ly2*(cos(thetaZ2)*sin(thetaX2) + cos(thetaX2)*sin(thetaY2)*sin(thetaZ2)) + lz2*cos(thetaX2)*cos(thetaY2);
-
-	//	printf("Strain: cx1 = %e, cy1 = %e, cz1 = %e, cx2 = %e, cy2 = %e, cz2 = %e\n", cx1, cy1, cz1, cx2, cy2, cz2);
-
-
-
-
-/* lx1 + lx2 - ux1 + ux2 - lz1*sin(thetaY1) - lz2*sin(thetaY2) - lx1*cos(thetaY1)*cos(thetaZ1) - lx2*cos(thetaY2)*cos(thetaZ2) + ly1*cos(thetaY1)*sin(thetaZ1) + ly2*cos(thetaY2)*sin(thetaZ2) */
-/* ly1 + ly2 - uy1 + uy2 - lx1*(cos(thetaX1)*sin(thetaZ1) + cos(thetaZ1)*sin(thetaX1)*sin(thetaY1)) - lx2*(cos(thetaX2)*sin(thetaZ2) + cos(thetaZ2)*sin(thetaX2)*sin(thetaY2)) - ly1*(cos(thetaX1)*cos(thetaZ1) - sin(thetaX1)*sin(thetaY1)*sin(thetaZ1)) - ly2*(cos(thetaX2)*cos(thetaZ2) - sin(thetaX2)*sin(thetaY2)*sin(thetaZ2)) + lz1*cos(thetaY1)*sin(thetaX1) + lz2*cos(thetaY2)*sin(thetaX2) */
-/* lz1 + lz2 - uz1 + uz2 - lx1*(sin(thetaX1)*sin(thetaZ1) - cos(thetaX1)*cos(thetaZ1)*sin(thetaY1)) - lx2*(sin(thetaX2)*sin(thetaZ2) - cos(thetaX2)*cos(thetaZ2)*sin(thetaY2)) - ly1*(cos(thetaZ1)*sin(thetaX1) + cos(thetaX1)*sin(thetaY1)*sin(thetaZ1)) - ly2*(cos(thetaZ2)*sin(thetaX2) + cos(thetaX2)*sin(thetaY2)*sin(thetaZ2)) - lz1*cos(thetaX1)*cos(thetaY1) - lz2*cos(thetaX2)*cos(thetaY2) */
-
-
-
-
-	
         answer.resize(6);
         answer.at(1) = u.at(7) - u.at(1) - cx1 - cx2 + lx1 + lx2;
         answer.at(2) = u.at(8) - u.at(2) - cy1 - cy2 + ly1 + ly2;
@@ -348,22 +313,13 @@ namespace oofem {
         answer.at(4) = u.at(10) - u.at(4);
         answer.at(5) = u.at(11) - u.at(5);
         answer.at(6) = u.at(12) - u.at(6);
+
         answer.times(1. / this->length);
 
-	printf("strain before rotation in computeStrain\n");
-	answer.printYourself();
-	//Rotate strain vector to local coordinate system
-	FloatMatrix rotationMatrix(6,6);
-	computeGtoLStrainRotationMatrix(rotationMatrix);
-
-	printf("rotation matrix\n");
-	rotationMatrix.printYourself();
-
-	answer.rotatedWith(rotationMatrix,'n');
-
-	printf("strain after rotation in computeStrain\n");
-	answer.printYourself();
-	
+        //Rotate strain vector to local coordinate system
+        FloatMatrix rotationMatrix(6, 6);
+        computeGtoLStrainRotationMatrix(rotationMatrix);
+        answer.rotatedWith(rotationMatrix, 'n');
     }
 
 
@@ -393,11 +349,11 @@ namespace oofem {
     }
 
 
-    
+
     //
     void
     LatticeFrame3dNL2::giveInternalForcesVector(FloatArray &answer,
-                                               TimeStep *tStep, int useUpdatedGpRecord)
+                                                TimeStep *tStep, int useUpdatedGpRecord)
     {
         FloatMatrix b, bt, bf, d;
         FloatArray u, stress, strain;
@@ -411,73 +367,46 @@ namespace oofem {
 
         this->computeStrainVector(strain, gp, tStep);
         this->computeStressVector(stress, strain, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
-	
-	printf("stress before rotation in internal forces\n");
-	stress.printYourself();
 
-	/* //	Rotate strain vector to local coordinate system */
-	FloatMatrix rotationMatrix(6,6);
-	computeGtoLStrainRotationMatrix(rotationMatrix);
+        /* //	Rotate strain vector to local coordinate system */
+        FloatMatrix rotationMatrix(6, 6);
+        computeGtoLStrainRotationMatrix(rotationMatrix);
 
-	 printf("rotation matrix\n");
-	 rotationMatrix.printYourself();
+        stress.rotatedWith(rotationMatrix, 't');
 
-	stress.rotatedWith(rotationMatrix,'t');
+        //First node rotations
+        double thetaX1 = u.at(4);
+        double thetaY1 = u.at(5);
+        double thetaZ1 = u.at(6);
 
-	printf("stress after rotation in internal forces\n");
-	stress.printYourself();
+        //Second node rotations
+        double thetaX2 = u.at(10);
+        double thetaY2 = u.at(11);
+        double thetaZ2 = u.at(12);
 
 
-	//First node rotations 
-	double thetaX1 = u.at(4);
-	double thetaY1 = u.at(5);
-	double thetaZ1 = u.at(6);
-	
-	//Second node rotations
-	double thetaX2 = u.at(10);
-	double thetaY2 = u.at(11);
-	double thetaZ2 = u.at(12);
-
-	
         LatticeMaterialStatus *lmatStat = dynamic_cast < LatticeMaterialStatus * > ( integrationRulesArray [ 0 ]->getIntegrationPoint(0)->giveMaterialStatus() );
 
         double l1 = this->length * ( 1. + this->s ) / 2.;
         double l2 = this->length * ( 1. - this->s ) / 2.;
 
 
-        double lx1 = (coordB.at(1)-coordA.at(1)) * ( 1. + this->s ) / 2.;
-	double ly1 = (coordB.at(2)-coordA.at(2)) * ( 1. + this->s ) / 2.;
-	double lz1 = (coordB.at(3)-coordA.at(3)) * ( 1. + this->s ) / 2.;
+        double lx1 = ( coordB.at(1) - coordA.at(1) ) * ( 1. + this->s ) / 2.;
+        double ly1 = ( coordB.at(2) - coordA.at(2) ) * ( 1. + this->s ) / 2.;
+        double lz1 = ( coordB.at(3) - coordA.at(3) ) * ( 1. + this->s ) / 2.;
 
-        double lx2 = (coordB.at(1)-coordA.at(1)) * ( 1. - this->s ) / 2.;
-	double ly2 = (coordB.at(2)-coordA.at(2)) * ( 1. - this->s ) / 2.;
-	double lz2 = (coordB.at(3)-coordA.at(3)) * ( 1. - this->s ) / 2.;
-
-
-	double cx1 = lz1*sin(thetaY1) + lx1*cos(thetaY1)*cos(thetaZ1) - ly1*cos(thetaY1)*sin(thetaZ1);
-	double cx2 =  lz2*sin(thetaY2) + lx2*cos(thetaY2)*cos(thetaZ2) - ly2*cos(thetaY2)*sin(thetaZ2);
-	
-	double cy1 =  lx1*(cos(thetaX1)*sin(thetaZ1) + cos(thetaZ1)*sin(thetaX1)*sin(thetaY1)) + ly1*(cos(thetaX1)*cos(thetaZ1) - sin(thetaX1)*sin(thetaY1)*sin(thetaZ1)) - lz1*cos(thetaY1)*sin(thetaX1);
-	
-	double cy2 = lx2*(cos(thetaX2)*sin(thetaZ2) + cos(thetaZ2)*sin(thetaX2)*sin(thetaY2)) + ly2*(cos(thetaX2)*sin(thetaZ2) - sin(thetaX2)*sin(thetaY2)*sin(thetaZ2)) - lz2*cos(thetaY2)*sin(thetaX2);
-	
-	double cz1 =  lx1*(sin(thetaX1)*sin(thetaZ1) - cos(thetaX1)*cos(thetaZ1)*sin(thetaY1)) + ly1*(cos(thetaZ1)*sin(thetaX1) + cos(thetaX1)*sin(thetaY1)*sin(thetaZ1)) + lz1*cos(thetaX1)*cos(thetaY1);
-
-	double cz2 =  lx2*(sin(thetaX2)*sin(thetaZ2) - cos(thetaX2)*cos(thetaZ2)*sin(thetaY2)) + ly2*(cos(thetaZ2)*sin(thetaX2) + cos(thetaX2)*sin(thetaY2)*sin(thetaZ2)) + lz2*cos(thetaX2)*cos(thetaY2);
-	
-	//	printf("Internal forces: cx1 = %e, cy1 = %e, cz1 = %e, cx2 = %e, cy2 = %e, cz2 = %e\n", cx1, cy1, cz1, cx2, cy2, cz2);	
+        double lx2 = ( coordB.at(1) - coordA.at(1) ) * ( 1. - this->s ) / 2.;
+        double ly2 = ( coordB.at(2) - coordA.at(2) ) * ( 1. - this->s ) / 2.;
+        double lz2 = ( coordB.at(3) - coordA.at(3) ) * ( 1. - this->s ) / 2.;
 
 
-	 double cx1Old = ( cos(u.at(5) ) * cos(u.at(6) ) ) * l1;
-        double cy1Old = ( cos(u.at(4) ) * sin(u.at(6) ) + sin(u.at(4) ) * sin(u.at(5) ) * cos(u.at(6) ) ) * l1;
-        double cz1Old = ( sin(u.at(4) ) * sin(u.at(6) ) - cos(u.at(4) ) * sin(u.at(5) ) * cos(u.at(6) ) ) * l1;
+        double cx1 = lz1 * sin(thetaY1) + lx1 * cos(thetaY1) * cos(thetaZ1) - ly1 * cos(thetaY1) * sin(thetaZ1);
+        double cx2 =  lz2 * sin(thetaY2) + lx2 * cos(thetaY2) * cos(thetaZ2) - ly2 * cos(thetaY2) * sin(thetaZ2);
+        double cy1 =  lx1 * ( cos(thetaX1) * sin(thetaZ1) + cos(thetaZ1) * sin(thetaX1) * sin(thetaY1) ) + ly1 * ( cos(thetaX1) * cos(thetaZ1) - sin(thetaX1) * sin(thetaY1) * sin(thetaZ1) ) - lz1 * cos(thetaY1) * sin(thetaX1);
+        double cy2 = lx2 * ( cos(thetaX2) * sin(thetaZ2) + cos(thetaZ2) * sin(thetaX2) * sin(thetaY2) ) + ly2 * ( cos(thetaX2) * cos(thetaZ2) - sin(thetaX2) * sin(thetaY2) * sin(thetaZ2) ) - lz2 * cos(thetaY2) * sin(thetaX2);
+        double cz1 =  lx1 * ( sin(thetaX1) * sin(thetaZ1) - cos(thetaX1) * cos(thetaZ1) * sin(thetaY1) ) + ly1 * ( cos(thetaZ1) * sin(thetaX1) + cos(thetaX1) * sin(thetaY1) * sin(thetaZ1) ) + lz1 * cos(thetaX1) * cos(thetaY1);
+        double cz2 =  lx2 * ( sin(thetaX2) * sin(thetaZ2) - cos(thetaX2) * cos(thetaZ2) * sin(thetaY2) ) + ly2 * ( cos(thetaZ2) * sin(thetaX2) + cos(thetaX2) * sin(thetaY2) * sin(thetaZ2) ) + lz2 * cos(thetaX2) * cos(thetaY2);
 
-        double cx2Old = ( cos(u.at(11) ) * cos(u.at(12) ) ) * l2;
-        double cy2Old = ( cos(u.at(10) ) * sin(u.at(12) ) + sin(u.at(10) ) * sin(u.at(11) ) * cos(u.at(12) ) ) * l2;
-        double cz2Old = ( sin(u.at(10) ) * sin(u.at(12) ) - cos(u.at(10) ) * sin(u.at(11) ) * cos(u.at(12) ) ) * l2;
-
-	///	printf("Internal forces: cx1Old = %e, cy1Old = %e, cz1Old = %e, cx2Old = %e, cy2Old = %e, cz2Old = %e\n", cx1Old, cy1Old, cz1Old, cx2Old, cy2Old, cz2Old);	
-	
         answer.resize(12);
         answer.at(1) = -stress.at(1);
         answer.at(2) = -stress.at(2);
@@ -491,8 +420,8 @@ namespace oofem {
         answer.at(10) =  stress.at(2) * cz2 - stress.at(3) * cy2 + stress.at(4);
         answer.at(11) = -stress.at(1) * cz2 + stress.at(3) * cx2 + stress.at(5);
         answer.at(12) = stress.at(1) * cy2 - stress.at(2) * cx2 + stress.at(6);
-  
-	
+
+
         lmatStat->letTempInternalForcesBe(answer);
     }
 } // end namespace oofem
