@@ -98,7 +98,8 @@ set (sm_element
     LatticeElements/latticebeam3dboundary.C
     LatticeElements/latticeframe3d.C
     LatticeElements/latticeframe3dnl.C
-    LatticeElements/latticeframe3dnl2.C	
+    LatticeElements/latticeframe3dnl2.C
+    LatticeElements/latticeframe3dnl3.C	
     tet21ghostsolid.C
     quad1platesubsoil.C 
     quad2platesubsoil.C
