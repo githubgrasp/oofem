@@ -284,7 +284,7 @@ namespace oofem {
 
         //Compute the two rotation matrices in the local coordinate system
         FloatMatrix rotationMatrixOne(3, 3), rotationMatrixTwo(3, 3);
-        ;
+       
         computeLocalRotationMatrix(rotationMatrixOne, uROneGlobal);
         computeLocalRotationMatrix(rotationMatrixTwo, uRTwoGlobal);
 
@@ -300,10 +300,6 @@ namespace oofem {
         double cx2 = rotationMatrixTwo.at(1, 1) * l2;
         double cy2 = rotationMatrixTwo.at(2, 1) * l2;
         double cz2 = rotationMatrixTwo.at(3, 1) * l2;
-
-        /* l1 + l2 - ux1 + ux2 - R1_11*l1 - R2_11*l2 */
-        /*   uy2 - uy1 - R1_21*l1 - R2_21*l2 */
-        /*   uz2 - uz1 - R1_31*l1 - R2_31*l2 */
 
         //
         answer.resize(6);
