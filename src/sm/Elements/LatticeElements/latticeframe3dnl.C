@@ -194,7 +194,7 @@ namespace oofem {
         answer.at(6, 10) = 0.;
         answer.at(6, 11) = 0.;
         answer.at(6, 12) = 1.;
-
+//
         return;
     }
     void
