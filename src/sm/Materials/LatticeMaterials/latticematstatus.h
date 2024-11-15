@@ -39,6 +39,7 @@
 #include "../structuralms.h"
 #include "randommaterialext.h"
 #include "floatarrayf.h"
+#include "floatmatrixf.h"
 
 namespace oofem {
 class GaussPoint;
@@ -89,6 +90,14 @@ protected:
     /// Non-equilibriated damage lattice strain
     FloatArrayF< 6 >tempDamageLatticeStrain;
 
+
+  FloatMatrixF < 3,3 > globalRotationMatrixOne;
+  
+  FloatMatrixF < 3,3 > globalRotationMatrixTwo;
+
+  FloatMatrixF < 3,3 > tempGlobalRotationMatrixOne;
+
+  FloatMatrixF < 3,3 > tempGlobalRotationMatrixTwo; 
 
     /// Equilibrated normal stress
     double normalLatticeStress = 0.;
@@ -203,6 +212,16 @@ public:
     void letTempDamageLatticeStrainBe(const FloatArrayF< 6 > &v) { this->tempDamageLatticeStrain = v; }
 
 
+  void letTempGlobalRotationMatrixOneBe(const FloatMatrixF< 3,3 > & v){ this->globalRotationMatrixOne = v; }
+
+    const FloatMatrixF<3,3> giveGlobalRotationMatrixOne() const {return this->globalRotationMatrixOne;}
+
+
+  void letTempGlobalRotationMatrixTwoBe(const FloatMatrixF< 3,3 > & v){ this->globalRotationMatrixTwo = v; }
+  
+    const FloatMatrixF<3,3> giveGlobalRotationMatrixTwo() const {return this->globalRotationMatrixTwo;}
+  
+  
     /// Sets the temp normalStress
     void setTempNormalLatticeStress(double val) { this->tempNormalLatticeStress = val; }
 

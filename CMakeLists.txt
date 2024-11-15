@@ -713,7 +713,8 @@ if (USE_MPM)
 endif ()
 set (oofempy)
 if (USE_BOOSTPYTHON_BINDINGS)
-    set (oofempy ${oofem_SOURCE_DIR}/bindings/Deprecated/python/oofemlib.cpp)
+    set (oofempy ${oofem_SOURCE_DIR}/bindings/Deprecated/python/oofemlib.cpp
+            ../../../../../Software/oofem/src/sm/Elements/LatticeElements/latticeframe3dnl3.C)
 endif ()
 
 

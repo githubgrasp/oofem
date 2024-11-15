@@ -320,6 +320,7 @@ namespace oofem {
             strain.times(1. / this->length);
             this->computeStressVector(stress, strain, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
         }
+
         answer.beProductOf(bt, stress);
         if ( !this->isActivated(tStep) ) {
             answer.zero();
