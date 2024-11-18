@@ -33,7 +33,7 @@
  */
 
 #include "domain.h"
-#include "latticeframe3dnl3.h"
+#include "latticeframe3dnl4.h"
 #include "../sm/Materials/LatticeMaterials/latticematstatus.h"
 #include "node.h"
 #include "material.h"
@@ -58,36 +58,48 @@
 #endif
 
 namespace oofem {
-    REGISTER_Element(LatticeFrame3dNL3);
+    REGISTER_Element(LatticeFrame3dNL4);
 
-    LatticeFrame3dNL3::LatticeFrame3dNL3(int n, Domain *aDomain) : LatticeFrame3d(n, aDomain)
+    LatticeFrame3dNL4::LatticeFrame3dNL4(int n, Domain *aDomain) : LatticeFrame3d(n, aDomain)
     {
         numberOfDofMans = 2;
     }
 
-    LatticeFrame3dNL3::~LatticeFrame3dNL3()
+    LatticeFrame3dNL4::~LatticeFrame3dNL4()
     {}
+    
     void
-    LatticeFrame3dNL3::computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, int li, int ui)
+    LatticeFrame3dNL4::computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, int li, int ui)
     //Returns the strain matrix of the receiver.
     {
-        FloatArray u;
+      //      FloatArray u(12);
         TimeStep *tStep = this->domain->giveEngngModel()->giveCurrentStep();
+	GaussPoint *gp =  integrationRulesArray [ 0 ]->getIntegrationPoint(0);
+	LatticeMaterialStatus *lmatStat = dynamic_cast < LatticeMaterialStatus * > (this->giveMaterial()->giveStatus(gp));	
+	
+	//For Debugging
+	FloatArray u(12), uGlobal(12), uPrevGlobal(12), uIncGlobal(12);
+        this->computeVectorOf(VM_Total, tStep, u);
+	 	  
+	FloatMatrix r(12, 12), rT(12, 12);
+        computeGtoLRotationMatrix(r);
+        rT.beTranspositionOf(r);
+        uGlobal.beProductOf(rT, u);
 
+	lmatStat->letTempGlobalUBe(uGlobal);
+        uPrevGlobal = lmatStat->giveGlobalU();
+        uIncGlobal = uGlobal-uPrevGlobal;
 
 
 	
         //Compute the two rotation matrices in the local coordinate system
         FloatMatrix rotationMatrixOne(3, 3), rotationMatrixTwo(3, 3);	
-        computeLocalRotationMatrices(rotationMatrixOne, rotationMatrixTwo);
+        computeRotationMatrices(rotationMatrixOne, rotationMatrixTwo);
+
 	
         this->length   = computeLength();
         double l1 = this->length * ( 1. + this->s ) / 2;
         double l2 = this->length * ( 1. - this->s ) / 2;
-
-	GaussPoint *gp =  integrationRulesArray [ 0 ]->getIntegrationPoint(0);
-	LatticeMaterialStatus *lmatStat = dynamic_cast < LatticeMaterialStatus * > (this->giveMaterial()->giveStatus(gp));
-
 
         double cx1 = rotationMatrixOne.at(1, 1) * l1;
         double cy1 = rotationMatrixOne.at(2, 1) * l1;
@@ -197,7 +209,7 @@ namespace oofem {
         return;
     }
     void
-    LatticeFrame3dNL3::computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode,
+    LatticeFrame3dNL4::computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode,
                                               TimeStep *tStep)
     {
         FloatMatrix d, bt, db, b;
@@ -215,56 +227,53 @@ namespace oofem {
         db.times(1. / length);
         bt.beTranspositionOf(b);
         answer.beProductOf(bt, db);
-
+	
         return;
     }
 
-    void LatticeFrame3dNL3::computeLocalRotationMatrices(FloatMatrix &answerOne, FloatMatrix &answerTwo) {
-        //Use global rotational DOFs to compute rotation matrix.
-        //The order for the global rotations is first x, then y and finally z.
+    void LatticeFrame3dNL4::computeRotationMatrices(FloatMatrix &answerOne, FloatMatrix &answerTwo)
+    {
+        // Use global rotational DOFs to compute rotation matrix.
+        // The order for the global rotations is first x, then y and finally z.
 
-      FloatMatrix transform(3, 3), transformT(3, 3), localR(3, 3), help(3, 3), globalRTotal(3, 3), globalR(3, 3);
-      answerOne.resize(3,3);
-      answerTwo.resize(3,3);
-      
+      FloatMatrix transform( 3, 3 ), transformT( 3, 3 ), localR( 3, 3 ), help( 3, 3 ), globalRTotal( 3, 3 ), globalR( 3, 3 ),  globalRInc( 3, 3 ) , globalRIncX( 3, 3 ) , globalRIncY( 3, 3 ) , globalRIncZ( 3, 3 ) ;
+        answerOne.resize( 3, 3 );
+        answerTwo.resize( 3, 3 );
+
         TimeStep *tStep = this->domain->giveEngngModel()->giveCurrentStep();
-        GaussPoint *gp = this->integrationRulesArray [ 0 ]->getIntegrationPoint(0);
+        GaussPoint *gp  = this->integrationRulesArray[0]->getIntegrationPoint( 0 );
+        LatticeMaterialStatus *lmatStat = dynamic_cast<LatticeMaterialStatus *>( this->giveMaterial()->giveStatus( gp ) );
 
-
-//        LatticeMaterialStatus *lmatStat = dynamic_cast < LatticeMaterialStatus * > ( integrationRulesArray [ 0 ]->getIntegrationPoint(0)->giveMaterialStatus());
-        LatticeMaterialStatus *lmatStat = dynamic_cast < LatticeMaterialStatus * > (this->giveMaterial()->giveStatus(gp));
-
-	FloatArray u(12);
-        this->computeVectorOf(VM_Incremental, tStep, u);
-        FloatArray uGlobal(12);
-        FloatMatrix r(12, 12), rT(12, 12);
+        FloatArray u(12), uGlobal(12), uPrevGlobal(12), uIncGlobal(12);
+        this->computeVectorOf(VM_Total, tStep, u);
+	 	  
+	FloatMatrix r(12, 12), rT(12, 12);
         computeGtoLRotationMatrix(r);
         rT.beTranspositionOf(r);
         uGlobal.beProductOf(rT, u);
 
-	double thetaX, thetaY, thetaZ;
-	//Node 1
-        thetaX = uGlobal.at(4);
-        thetaY = uGlobal.at(5);
-        thetaZ = uGlobal.at(6);
-    
-        globalR.at(1, 1) = cos(thetaY) * cos(thetaZ);
-        globalR.at(1, 2) = -cos(thetaY) * sin(thetaZ);
-        globalR.at(1, 3) = sin(thetaY);
-        globalR.at(2, 1) = cos(thetaX) * sin(thetaZ) + sin(thetaX) * sin(thetaY) * cos(thetaZ);
-        globalR.at(2, 2) = -sin(thetaX) * sin(thetaY) * sin(thetaZ) + cos(thetaX) * cos(thetaZ);
-        globalR.at(2, 3) = -sin(thetaX) * cos(thetaY);
-        globalR.at(3, 1) = sin(thetaX) * sin(thetaZ) - cos(thetaX) * sin(thetaY) * cos(thetaZ);
-        globalR.at(3, 2) = cos(thetaX) * sin(thetaY) * sin(thetaZ) + sin(thetaX) * cos(thetaZ);
-        globalR.at(3, 3) = cos(thetaX) * cos(thetaY);
+	lmatStat->letTempGlobalUBe(uGlobal);
+        uPrevGlobal = lmatStat->giveGlobalU();
+        uIncGlobal = uGlobal-uPrevGlobal;
 
+	FloatArray rotationOne(3);
+	//Node 1
+        rotationOne.at(1) = uIncGlobal.at(4);
+        rotationOne.at(2) = uIncGlobal.at(5);
+        rotationOne.at(3) = uIncGlobal.at(6);
+
+
+	computeGlobalRotationMatrix(globalRInc,rotationOne);
+	
         if(!tStep->isTheFirstStep()) {
-            globalRTotal = lmatStat->giveGlobalRotationMatrixOne();
-            globalR.beProductOf( globalR, globalRTotal );
+	  globalRTotal = lmatStat->giveGlobalRotationMatrixOne();
+	  globalR.beProductOf( globalRInc, globalRTotal );
         }
+	else{
+	  globalR = globalRInc;
+	}
 
         lmatStat->letTempGlobalRotationMatrixOneBe( globalR );
-
 
         this->giveLocalCoordinateSystem(transform);
         transformT.beTranspositionOf(transform);
@@ -273,39 +282,57 @@ namespace oofem {
         answerOne.beProductOf(transform, help);
 
 	//Node 2
+	FloatArray rotationTwo(3);
+        rotationTwo.at(1) = uIncGlobal.at(10);
+        rotationTwo.at(2) = uIncGlobal.at(11);
+        rotationTwo.at(3) = uIncGlobal.at(12);
 
-        thetaX = uGlobal.at(10);
-        thetaY = uGlobal.at(11);
-        thetaZ = uGlobal.at(12);
-
-        globalR.at(1, 1) = cos(thetaY) * cos(thetaZ);
-        globalR.at(1, 2) = -cos(thetaY) * sin(thetaZ);
-        globalR.at(1, 3) = sin(thetaY);
-        globalR.at(2, 1) = cos(thetaX) * sin(thetaZ) + sin(thetaX) * sin(thetaY) * cos(thetaZ);
-        globalR.at(2, 2) = -sin(thetaX) * sin(thetaY) * sin(thetaZ) + cos(thetaX) * cos(thetaZ);
-        globalR.at(2, 3) = -sin(thetaX) * cos(thetaY);
-        globalR.at(3, 1) = sin(thetaX) * sin(thetaZ) - cos(thetaX) * sin(thetaY) * cos(thetaZ);
-        globalR.at(3, 2) = cos(thetaX) * sin(thetaY) * sin(thetaZ) + sin(thetaX) * cos(thetaZ);
-        globalR.at(3, 3) = cos(thetaX) * cos(thetaY);
-
+	computeGlobalRotationMatrix(globalRInc,rotationTwo);
+	
         //Need to distinguish between first and other steps.
         if(!tStep->isTheFirstStep()) {
             globalRTotal = lmatStat->giveGlobalRotationMatrixTwo();
-            globalR.beProductOf( globalR, globalRTotal );
+            globalR.beProductOf( globalRInc, globalRTotal );
         }
+	else{
+	  globalR = globalRInc;
+	}
 	lmatStat->letTempGlobalRotationMatrixTwoBe(globalR);	
-
-        this->giveLocalCoordinateSystem(transform);
-        transformT.beTranspositionOf(transform);
 
         help.beProductOf(globalR, transformT);
         answerTwo.beProductOf(transform, help);
-	       	
+
         return;
     }
 
     void
-    LatticeFrame3dNL3::computeStrainVector(FloatArray &answer, GaussPoint *gp, TimeStep *tStep)
+      LatticeFrame3dNL4::computeGlobalRotationMatrix(FloatMatrix &answer, FloatArray &rotation)
+    {
+      answer.resize(3,3);
+      answer.zero();
+      double thetaX, thetaY,thetaZ;    
+      thetaX = rotation.at(1);
+      thetaY = rotation.at(2);
+      thetaZ = rotation.at(3);
+      
+      //First x, then y and finally z
+      answer.at(1,1) = cos(thetaY) * cos(thetaZ);
+      answer.at(1,2) = cos(thetaZ) * sin(thetaY) * sin(thetaX) - sin(thetaZ) * cos(thetaX);
+      answer.at(1,3) = cos(thetaZ) * sin(thetaY) * cos(thetaX) + sin(thetaZ) * sin(thetaX);
+      
+      answer.at(2,1) = cos(thetaY) * sin(thetaZ);
+      answer.at(2,2) = sin(thetaZ) * sin(thetaY) * sin(thetaX) + cos(thetaZ) * cos(thetaX);
+      answer.at(2,3) = sin(thetaZ) * sin(thetaY) * cos(thetaX) - cos(thetaZ) * sin(thetaX);
+      
+      answer.at(3,1) = - sin(thetaY);
+      answer.at(3,2) = cos(thetaY) * sin(thetaX);
+      answer.at(3,3) = cos(thetaY) * cos(thetaX);
+      
+      return;
+    }
+    
+    void
+    LatticeFrame3dNL4::computeStrainVector(FloatArray &answer, GaussPoint *gp, TimeStep *tStep)
     {
         FloatArray u;
         this->computeVectorOf(VM_Total, tStep, u);
@@ -313,8 +340,7 @@ namespace oofem {
         //Compute the two rotation matrices in the local coordinate system
         FloatMatrix rotationMatrixOne(3, 3), rotationMatrixTwo(3, 3);
        
-        computeLocalRotationMatrices(rotationMatrixOne, rotationMatrixTwo);
-
+        computeRotationMatrices(rotationMatrixOne, rotationMatrixTwo);
         this->length   = computeLength();
         double l1 = this->length * ( 1. + this->s ) / 2;
         double l2 = this->length * ( 1. - this->s ) / 2;
@@ -328,7 +354,6 @@ namespace oofem {
         double cy2 = rotationMatrixTwo.at(2, 1) * l2;
         double cz2 = rotationMatrixTwo.at(3, 1) * l2;
 
-        //
         answer.resize(6);
         answer.at(1) = u.at(7) - u.at(1) - cx2 - cx1 + l1 + l2;
         answer.at(2) = u.at(8) - u.at(2) - cy2 - cy1;
@@ -340,31 +365,13 @@ namespace oofem {
     }
 
 
-    bool
-    LatticeFrame3dNL3::computeGtoLComponentTransformationMatrix(FloatMatrix &answer)
-    {
-        FloatMatrix lcs;
-        answer.resize(3, 3);
-        answer.zero();
-
-        this->giveLocalCoordinateSystem(lcs);
-        for ( int i = 1; i <= 3; i++ ) {
-            for ( int j = 1; j <= 3; j++ ) {
-                answer.at(i, j) = lcs.at(i, j);
-            }
-        }
-
-        return 1;
-    }
-
 
     void
-    LatticeFrame3dNL3::giveInternalForcesVector(FloatArray &answer,
+    LatticeFrame3dNL4::giveInternalForcesVector(FloatArray &answer,
                                                 TimeStep *tStep, int useUpdatedGpRecord)
     {
         FloatMatrix b, bt, bf, d;
         FloatArray u, stress, strain;
-        this->computeVectorOf(VM_Total, tStep, u);
 
         GaussPoint *gp = this->integrationRulesArray [ 0 ]->getIntegrationPoint(0);
 
@@ -384,7 +391,7 @@ namespace oofem {
 
         //Compute the two rotation matrices in the local coordinate system
         FloatMatrix rotationMatrixOne(3, 3), rotationMatrixTwo(3, 3);       
-        computeLocalRotationMatrices(rotationMatrixOne, rotationMatrixTwo);
+        computeRotationMatrices(rotationMatrixOne, rotationMatrixTwo);
 
         this->length   = computeLength();
         double l1 = this->length * ( 1. + this->s ) / 2;
