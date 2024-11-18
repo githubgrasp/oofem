@@ -67,7 +67,9 @@ LatticeMaterialStatus :: initTempStatus()
     this->tempGlobalRotationMatrixOne = this->globalRotationMatrixOne;
 
     this->tempGlobalRotationMatrixTwo = this->globalRotationMatrixTwo;
-    
+
+    this->tempGlobalU = this->globalU;
+
     this->tempDissipation = this->dissipation;
     this->tempDeltaDissipation = this->deltaDissipation;
     this->tempCrackFlag = this->crackFlag;
@@ -99,7 +101,9 @@ LatticeMaterialStatus :: updateYourself(TimeStep *atTime)
     this->globalRotationMatrixOne = this->tempGlobalRotationMatrixOne;
 
     this->globalRotationMatrixTwo = this->tempGlobalRotationMatrixTwo;
-    
+
+    this->globalU = this->tempGlobalU;
+
     this->dissipation = this->tempDissipation;
 
     this->deltaDissipation = this->tempDeltaDissipation;

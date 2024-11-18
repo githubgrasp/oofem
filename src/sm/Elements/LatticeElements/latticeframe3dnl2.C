@@ -123,6 +123,8 @@ namespace oofem {
         double cz1 =  lx1 * ( sin(thetaX1) * sin(thetaZ1) - cos(thetaX1) * cos(thetaZ1) * sin(thetaY1) ) + ly1 * ( cos(thetaZ1) * sin(thetaX1) + cos(thetaX1) * sin(thetaY1) * sin(thetaZ1) ) + lz1 * cos(thetaX1) * cos(thetaY1);
         double cz2 =  lx2 * ( sin(thetaX2) * sin(thetaZ2) - cos(thetaX2) * cos(thetaZ2) * sin(thetaY2) ) + ly2 * ( cos(thetaZ2) * sin(thetaX2) + cos(thetaX2) * sin(thetaY2) * sin(thetaZ2) ) + lz2 * cos(thetaX2) * cos(thetaY2);
 
+        printf("cx1 = %e, cy1 = %e, cz1 = %e\n", cx1, cy1, cz1);
+        printf("cx2 = %e, cy2 = %e, cz2 = %e\n", cx2, cy2, cz2);
 
         //Normal displacement jump in x-direction
         //First node
@@ -219,6 +221,9 @@ namespace oofem {
         answer.at(6, 10) = 0.;
         answer.at(6, 11) = 0.;
         answer.at(6, 12) = 1.;
+
+        printf("NL2 Bmatrix\n");
+        answer.printYourself();
 
         return;
     }
