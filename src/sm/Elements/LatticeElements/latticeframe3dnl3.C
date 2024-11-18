@@ -81,6 +81,7 @@ namespace oofem {
         rT.beTranspositionOf(r);
         uGlobal.beProductOf(rT, u);
 
+	
         FloatArray uROneGlobal(3);
         uROneGlobal.at(1) = uGlobal.at(4);
         uROneGlobal.at(2) = uGlobal.at(5);
@@ -96,6 +97,25 @@ namespace oofem {
         ;
         computeLocalRotationMatrix(rotationMatrixOne, uROneGlobal);
         computeLocalRotationMatrix(rotationMatrixTwo, uRTwoGlobal);
+
+	if((tStep->giveNumber() == 1 || tStep->giveNumber() == 2) && this->giveNumber() == 16){
+	  printf("rotationMatrixOne in NL3\n");  
+	  rotationMatrixOne.printYourself();  
+	  printf("rotationMatrixTwo in NL3\n");  
+	  rotationMatrixTwo.printYourself();  
+	  printf("globalUnknown in NL3\n");
+	  uGlobal.printYourself();
+	}
+
+	
+//if(this->giveNumber()==16) {
+//    printf( "In nl3\n" );
+//    printf( "rotationMatrixOne\n" );
+//    rotationMatrixOne.printYourself();
+//
+//    printf( "rotationMatrixTwo\n" );
+//    rotationMatrixTwo.printYourself();
+//}
 
         this->length   = computeLength();
         double l1 = this->length * ( 1. + this->s ) / 2;
@@ -229,6 +249,11 @@ namespace oofem {
         bt.beTranspositionOf(b);
         answer.beProductOf(bt, db);
 
+	if(this->giveNumber() == 16){
+	  printf("stiffness in NL3\n");
+	  answer.printYourself();
+	}
+	
         return;
     }
 
@@ -264,13 +289,22 @@ namespace oofem {
     LatticeFrame3dNL3::computeStrainVector(FloatArray &answer, GaussPoint *gp, TimeStep *tStep)
     {
         FloatArray u;
-        this->computeVectorOf(VM_Total, tStep, u);
+        this->computeVectorOf( VM_Total, tStep, u );
+        //        if ( this->giveNumber() == 16 ) {
+        //
+        //        printf( "u in computeStrain in NL3\n" );
+        //        u.printYourself();
+        //    }
+        FloatArray uGlobal( 12 );
+        FloatMatrix r( 12, 12 ), rT( 12, 12 );
+        computeGtoLRotationMatrix( r );
+        rT.beTranspositionOf( r );
+        uGlobal.beProductOf( rT, u );
 
-        FloatArray uGlobal(12);
-        FloatMatrix r(12, 12), rT(12, 12);
-        computeGtoLRotationMatrix(r);
-        rT.beTranspositionOf(r);
-        uGlobal.beProductOf(rT, u);
+        if ( this->giveNumber() == 16 ) {
+        printf( "in NL3 uGlobal\n" );
+        uGlobal.printYourself();
+        }
 
         FloatArray uROneGlobal(3);
         uROneGlobal.at(1) = uGlobal.at(4);
@@ -287,6 +321,12 @@ namespace oofem {
        
         computeLocalRotationMatrix(rotationMatrixOne, uROneGlobal);
         computeLocalRotationMatrix(rotationMatrixTwo, uRTwoGlobal);
+
+        if(this->giveNumber()==16) {
+            printf( "rotation Matrices in NL3 computeStrain\n" );
+            rotationMatrixOne.printYourself();
+            rotationMatrixTwo.printYourself();
+        }
 
         this->length   = computeLength();
         double l1 = this->length * ( 1. + this->s ) / 2;
@@ -341,9 +381,16 @@ namespace oofem {
 
         GaussPoint *gp = this->integrationRulesArray [ 0 ]->getIntegrationPoint(0);
 
-        this->computeStrainVector(strain, gp, tStep);
-        this->computeStressVector(stress, strain, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
-
+        if ( useUpdatedGpRecord == 1 ) {
+            LatticeMaterialStatus *lmatStat = dynamic_cast < LatticeMaterialStatus * > ( integrationRulesArray [ 0 ]->getIntegrationPoint(0)->giveMaterialStatus() );
+            stress = lmatStat->giveLatticeStress();
+        } else {
+            if ( !this->isActivated( tStep ) ) {
+                strain.zero();
+            }
+            this->computeStrainVector( strain, gp, tStep );
+            this->computeStressVector( stress, strain, integrationRulesArray[0]->getIntegrationPoint( 0 ), tStep );
+        }
         LatticeMaterialStatus *lmatStat = dynamic_cast < LatticeMaterialStatus * > ( integrationRulesArray [ 0 ]->getIntegrationPoint(0)->giveMaterialStatus() );
 
 
@@ -365,7 +412,7 @@ namespace oofem {
 
         //Compute the two rotation matrices in the local coordinate system
         FloatMatrix rotationMatrixOne(3, 3), rotationMatrixTwo(3, 3);
-        ;
+
         computeLocalRotationMatrix(rotationMatrixOne, uROneGlobal);
         computeLocalRotationMatrix(rotationMatrixTwo, uRTwoGlobal);
 
