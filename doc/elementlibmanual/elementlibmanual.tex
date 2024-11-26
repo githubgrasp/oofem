@@ -354,7 +354,7 @@ The element features are summarized in Table~\ref{beam3dsummary}.
 \clearpage
 \subsection{Lattice elements}
 \subsubsection{Lattice2d element}
-Represents two-node lattice element. Each node has 3 degrees of freedom.
+Represents two-node lattice element for small rotations. Each node has 3 degrees of freedom.
 The element is based on the Rigid Body Spring Model originally developed by Kawai and later delveloped by Bolander for modelling fracture in concrete. The main idea is to model the elastic and inelastic response of a connection of two nodes by a set of springs located at the contact facet of two rigid bodies, which is the mid-cross-section of the element. Displacement jumps are computed at the mid-cross-section, which are smeared out over the element length in the form of strains.
 The element is defined in x,y plane (see Figure~\ref{lattice2dfig}).
 The element features are summarized in Table~\ref{lattice2dsummary}.
@@ -395,7 +395,7 @@ Represents three-node lattice element for boundary of 2d periodic cells. The fir
 \end{elementsummary}
 
 \subsubsection{Lattice3d element}
-Lattice3d represents a two-node 3d lattice element. Each node has six degrees of freedom as shown in Figure~\ref{lattice3dfig}.
+Lattice3d represents a two-node 3d lattice element for small rotations. Each node has six degrees of freedom as shown in Figure~\ref{lattice3dfig}.
 The element is based on the Rigid Body Spring Model originally developed by Kawai and later delveloped by Bolander for modelling fracture in concrete. The main idea is to model the elastic and inelastic response of a connection of two nodes by a set of springs located at the contact facet of two rigid bodies, which is the mid-cross-section of the element. The properties of the mid-cross-section are internally computed from its vertices which are given as input in the global coordinate sytem. Displacement jumps are computed at the mid-cross-section, which are smeared out over the element length in the form of strains.
 The input parameters for this element are shown in Table~\ref{lattice3dsummary}. 
 
