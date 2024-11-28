@@ -1,5 +1,5 @@
 \documentclass[a4paper]{article}
-\usepackage{html}
+%\usepackage{html}
 \usepackage{graphicx}
 %\usepackage{hyperref}
 \usepackage{amssymb,amsmath}
@@ -69,9 +69,9 @@
 %begin{latexonly}
 \newenvironment{mmt}{\begin{tabular}{|l|p{9cm}|}}{\end{tabular}\\}
 %end{latexonly}
-\begin{htmlonly}
-\newenvironment{mmt}{\begin{tabular}{|l|l|}}{\end{tabular}\\}
-\end{htmlonly}
+%% \begin{htmlonly}
+%% \newenvironment{mmt}{\begin{tabular}{|l|l|}}{\end{tabular}\\}
+%% \end{htmlonly}
 
 \begin{document}
 
@@ -88,17 +88,17 @@ Th\'akurova 7, 166 29 Prague, Czech Republic
 }
 \maketitle
 %end{latexonly}
-\begin{htmlonly}
-\begin{center}
-\oofemlnk{\centerline{\includegraphics[width=0.7\textwidth]{oofem-logo-contour.eps}}}
-{\Large Material Model Library Manual}\\ \\
-{\bp \\
-Czech Technical University\\
-Faculty of Civil Engineering\\
-Department of Structural Mechanics\\
-Th\'akurova 7, 166 29 Prague, Czech Republic
-}
-\end{htmlonly}
+%% \begin{htmlonly}
+%% \begin{center}
+%% \oofemlnk{\centerline{\includegraphics[width=0.7\textwidth]{oofem-logo-contour.eps}}}
+%% {\Large Material Model Library Manual}\\ \\
+%% {\bp \\
+%% Czech Technical University\\
+%% Faculty of Civil Engineering\\
+%% Department of Structural Mechanics\\
+%% Th\'akurova 7, 166 29 Prague, Czech Republic
+%% }
+%% \end{htmlonly}
 
 \newpage
 \tableofcontents
@@ -1127,9 +1127,9 @@ Supported modes& 3dMat, PlaneStress, PlaneStrain, 1dMat,
 Masonry is a composite material made of bricks and mortar. Nonlinear behavior of both components should be considered to obtain a realistic model able to describe cracking, slip, and crushing of the material. The model is based on paper by Lourenco and Rots \cite{Rots}. It is formulated on the basis of softening plasticity for tension, shear, and compression (see fig.(\ref{compyieldsurffig})). Numerical implementation is based on modern algorithmic concepts such as implicit integration of the rate equations and consistent tangent stiffness matrices.
 
 \begin{figure}[!htb]
-\begin{htmlonly}
-  \centerline{\includegraphics[width=0.7\textwidth]{constmodel.eps}}
-\end{htmlonly}
+%% \begin{htmlonly}
+%%   \centerline{\includegraphics[width=0.7\textwidth]{constmodel.eps}}
+%% \end{htmlonly}
 %begin{latexonly}
  \centerline{\includegraphics[width=0.7\textwidth]{constmodel}}
 %end{latexonly}
@@ -1140,9 +1140,9 @@ Masonry is a composite material made of bricks and mortar. Nonlinear behavior of
 
 The approach used in this work is based on idea of concentrating all the damage in the relatively weak joints and, if necessary, in potential tension cracks in the bricks. The joint interface constitutive model should include all important damage mechanisms. Here, the  concept of interface elements is used. An interface element allows to incorporate discontinuities in the displacement field and its behavior is described in terms of a relation between the tractions and relative displacement across the interface. In the present work, these quantities will be denoted as $\sig$, generalized stress, and $\e$, generalized strain. For 2D configuration, $\sig=\{\sigma, \tau\}^T$ and $\e=\{u_n, u_s\}^T$, where $\sigma$ and $\tau$ are the normal and shear components of the traction interface vector and  $n$ and $s$ subscripts distinguish between normal and shear components of displacement vector.
 \begin{figure}[!htb]
-\begin{htmlonly}
-  \centerline{\includegraphics[width=0.7\textwidth]{mmodel.eps}}
-\end{htmlonly}
+%% \begin{htmlonly}
+%%   \centerline{\includegraphics[width=0.7\textwidth]{mmodel.eps}}
+%% \end{htmlonly}
 %begin{latexonly}
  \centerline{\includegraphics[width=0.7\textwidth]{mmodel}}
 %end{latexonly}
@@ -1168,9 +1168,9 @@ where the yield value $f_t$ is defined as
   f_t=f_{t0}\exp\left(-\del{f_{t0}}{G^I_f}\kappa_1\right)
 \end{equation}
 \begin{figure}[!htb]
-\begin{htmlonly}
-  \centerline{\includegraphics[width=0.7\textwidth]{tension.eps}}
-\end{htmlonly}
+%% \begin{htmlonly}
+%%   \centerline{\includegraphics[width=0.7\textwidth]{tension.eps}}
+%% \end{htmlonly}
 %begin{latexonly}
  \centerline{\includegraphics[width=0.7\textwidth]{tension}}
 %end{latexonly}
@@ -1196,9 +1196,9 @@ where $c_0$ is initial cohesion of joint, $\phi_0$ initial friction angle, $\phi
   g_2=\vert\tau\vert+\sigma\tan\Phi-c
 \end{equation}
 \begin{figure}[!htb]
-\begin{htmlonly}
-  \centerline{\includegraphics[width=0.7\textwidth]{shearconf.eps}}
-\end{htmlonly}
+%% \begin{htmlonly}
+%%   \centerline{\includegraphics[width=0.7\textwidth]{shearconf.eps}}
+%% \end{htmlonly}
 %begin{latexonly}
  \centerline{\includegraphics[width=0.7\textwidth]{shearconf}}
 %end{latexonly}
@@ -1240,9 +1240,9 @@ An associated flow and strain hardening hypothesis are being considered. This yi
   \dot\kappa_3=\lambda_3\sqrt{(2C_{nn}\sigma+C_n)*(2C_{nn}\sigma+C_n) + (2C_{ss}\tau)*(2C_{ss}\tau)}
 \end{equation}
 \begin{figure}[!htb]
-\begin{htmlonly}
-  \centerline{\includegraphics[width=0.7\textwidth]{capmode.eps}}
-\end{htmlonly}
+%% \begin{htmlonly}
+%%   \centerline{\includegraphics[width=0.7\textwidth]{capmode.eps}}
+%% \end{htmlonly}
 %begin{latexonly}
 \centerline{\includegraphics[width=0.7\textwidth]{capmode}}
 %end{latexonly}
@@ -1960,9 +1960,9 @@ The model parameters are summarized in Tab.~\ref{id_table}. Figure~\ref{idm_soft
 three modes of a softening law with corresponding variables.
 
 \begin{figure}[!htb]
-\begin{htmlonly}
-  \centerline{\includegraphics[width=0.99\textwidth]{Damage_material_diag.eps}}
-\end{htmlonly}
+%% \begin{htmlonly}
+%%   \centerline{\includegraphics[width=0.99\textwidth]{Damage_material_diag.eps}}
+%% \end{htmlonly}
 %begin{latexonly}
  \centerline{\includegraphics[width=0.99\textwidth]{Damage_material_diag}}
 %end{latexonly}
@@ -1971,9 +1971,9 @@ three modes of a softening law with corresponding variables.
 \end{figure}
 
 
-\begin{htmlonly}
-\begin{longtable}{|l|l|}
-\end{htmlonly}
+%% \begin{htmlonly}
+%% \begin{longtable}{|l|l|}
+%% \end{htmlonly}
 %begin{latexonly}
 \begin{longtable}{|l|p{9cm}|}
 %end{latexonly}
@@ -2385,9 +2385,9 @@ $\veps = \displaystyle\frac{3}{2\pi}\int_\Omega (\ve\otimes\mbf{n})\sym\dO$
 \end{table}
 
 \begin{figure}[!htb]
-\begin{htmlonly}
-  \centerline{\includegraphics[width=0.8\textwidth]{dm_comp.eps}}
-\end{htmlonly}
+%% \begin{htmlonly}
+%%   \centerline{\includegraphics[width=0.8\textwidth]{dm_comp.eps}}
+%% \end{htmlonly}
 %begin{latexonly}
  \centerline{\includegraphics[width=0.7\textwidth]{dm_comp}}
 %end{latexonly}
@@ -3954,10 +3954,10 @@ The eccentricity parameter $e$ that appears in this function, as well as the fri
 \begin{tabular}{cc}
 (a) & (b)
 \\
-%\begin{htmlonly}
- % \includegraphics[width=0.5\textwidth]{meridians.eps}&
- % \includegraphics[width=0.5\textwidth]{deviatoric.eps}
-%\end{htmlonly}
+%% %\begin{htmlonly}
+%%  % \includegraphics[width=0.5\textwidth]{meridians.eps}&
+%%  % \includegraphics[width=0.5\textwidth]{deviatoric.eps}
+%% %\end{htmlonly}
 %begin{latexonly}
  \includegraphics[width=0.5\textwidth]{meridians}&
  \includegraphics[width=0.5\textwidth]{deviatoric}
@@ -4605,9 +4605,9 @@ nominal stress using equation (\ref{cdpm2:efftonominal}). If parameter {\em damf
 only $\omega_t$ is used and the effective stress is reduced by $1-\omega_t$.
 
 
-\begin{htmlonly}
-\begin{longtable}{|l|l|}
-\end{htmlonly}
+%% \begin{htmlonly}
+%% \begin{longtable}{|l|l|}
+%% \end{htmlonly}
 \begin{longtable}{|l|p{9cm}|}
 %\begin{center}
 %\begin{mmt}
@@ -4669,9 +4669,9 @@ CDPM2F is a fibre extension of CDPM2 in \ref{sec:cdpm2}. The theory of CDPM2F is
 The main idea of CDPM2F is to adjust the damage part of CDPM2 to predict the effect of fibres.
 Below in Table~\ref{cdpm2f_table} the input parameters of CDPM2F in addition to those required for CDPM2 are described. 
 
-\begin{htmlonly}
-\begin{longtable}{|l|l|}
-\end{htmlonly}
+%% \begin{htmlonly}
+%% \begin{longtable}{|l|l|}
+%% \end{htmlonly}
 \begin{longtable}{|l|p{9cm}|}
 %\begin{center}
 %\begin{mmt}
@@ -4710,9 +4710,9 @@ The model supports 3 different options for stiffness reduction in shear after cr
 Sample syntax for a fixed crack model with volume density 24 kN/m$^3$, thermal dilation coefficient $12\times10^{-6}$ K$^{-1}$, Young's modulus 20 GPa, Poisson's ratio 0.2, fracture energy 100 N/m, tensile strength 2 MPa, linear softening, constant shear retention factor $\beta = 0.05$, Collins' shear strength (with compressive strength 30 MPa, aggregate size 0.01 m) and all cracks contribute to the shear stiffness; the analysis uses [m], [MPa] and [MN]:\\
 \texttt{ConcreteFCM 1 d 24.e-3 talpha 12.e-6 E 20000.~n 0.2 Gf 100e-6 ft 2.0 softType 2 shearType 1 beta 0.05 shearStrengthType 2 fc 30 ag 0.01\\ lengthscale 1.~multipleCrackShear}
 
-\begin{htmlonly}
-\begin{longtable}{|l|l|}
-\end{htmlonly}
+%% \begin{htmlonly}
+%% \begin{longtable}{|l|l|}
+%% \end{htmlonly}
 %begin{latexonly}
 \begin{longtable}{|l|p{9cm}|}
 %end{latexonly}
@@ -5179,9 +5179,9 @@ Sample syntax for a fixed crack model reinforced with fibers with volume density
 \texttt{FRCFCM 1 d 24.e-3 talpha 12.e-6 E 20000.~n 0.2 Gf 100e-6 ft 2.0 \\softType 2 shearType 1 beta 0.05 FiberType 0 Vf 0.02 Df 0.04e-3\\ Ef 20000.~Gfib 1000.~tau\_0 1.~FSStype 0  f 0.7 kfib 0.9 fDamType 0 \\ fibreactivationopening 10.e-6 dw0 2.e-6 dw1 1.e-6 orientationVector 3 1.~1.~0.~computeCrackSpacing}
 
 
-\begin{htmlonly}
-\begin{longtable}{|l|l|}
-\end{htmlonly}
+%% \begin{htmlonly}
+%% \begin{longtable}{|l|l|}
+%% \end{htmlonly}
 %begin{latexonly}
 \begin{longtable}{|l|p{9cm}|}
 %end{latexonly}
@@ -5260,9 +5260,9 @@ Supported modes& 3dMat, PlaneStress, PlaneStrain\\
 
 The material parameters are summarized in Tables \ref{concrete_fcm_table} (matrix), \ref{frcfcm_table} (fiber extension), and \ref{frcfcmnl_table} (nonlocal extension).
 
-\begin{htmlonly}
-\begin{longtable}{|l|l|}
-\end{htmlonly}
+%% \begin{htmlonly}
+%% \begin{longtable}{|l|l|}
+%% \end{htmlonly}
 %begin{latexonly}
 \begin{longtable}{|l|p{9cm}|}
 %end{latexonly}
@@ -5297,9 +5297,9 @@ where the first three numbers represent a directional vector of the local $x$-ax
 The index $p,~p\in\{11,22,33,23,31,12\}$ symbolizes six components of stress or strain vectors. The linear softening occurs after reaching a critical stress $f_{p,0}$, see Fig. \ref{comp_softening}. Orientation of cracks is assumed to be orthogonal and aligned with an orientation of material axes \cite[pp.236]{Bazant:98}. The transverse isotropy is generally lost upon fracture, material becomes orthotropic and six damage parameters $d_p$ are introduced.
 
 \begin{figure}[!htb]
-\begin{htmlonly}
-  \centerline{\includegraphics[width=0.7\textwidth]{Compodamagemat_diag.eps}}
-\end{htmlonly}
+%% \begin{htmlonly}
+%%   \centerline{\includegraphics[width=0.7\textwidth]{Compodamagemat_diag.eps}}
+%% \end{htmlonly}
 %begin{latexonly}
  \centerline{\includegraphics[width=0.7\textwidth]{Compodamagemat_diag}}
 %end{latexonly}
@@ -5351,9 +5351,9 @@ The damage initiation is based on a trial stress. It becomes necessary for  high
 
 
 \begin{figure}[!htb]
-\begin{htmlonly}
-  \centerline{\includegraphics[width=0.7\textwidth]{Compodamagemat_test.eps}}
-\end{htmlonly}
+%% \begin{htmlonly}
+%%   \centerline{\includegraphics[width=0.7\textwidth]{Compodamagemat_test.eps}}
+%% \end{htmlonly}
 %begin{latexonly}
 \centerline{\includegraphics[width=0.7\textwidth]{Compodamagemat_test}}
 %end{latexonly}
@@ -5682,9 +5682,9 @@ Supported modes& \_1dInterface\\
 \end{table}
 
 \begin{figure}[!htb]
-\begin{htmlonly}
-  \centerline{\includegraphics[width=0.7\textwidth]{Simple_interface_material_diag.eps}}
-\end{htmlonly}
+%% \begin{htmlonly}
+%%   \centerline{\includegraphics[width=0.7\textwidth]{Simple_interface_material_diag.eps}}
+%% \end{htmlonly}
 %begin{latexonly}
  \centerline{\includegraphics[width=0.7\textwidth]{Simple_interface_material_diag}}
 %end{latexonly}
@@ -5721,9 +5721,9 @@ k_\text{n} & 0 \\ 0 & k_\text{s}
 Model description and the input parameters are summarized in Tab.~\ref{bondceb_table}.
 
 \begin{figure}[!htb]
-\begin{htmlonly}
-  \centerline{\includegraphics[width=0.7\textwidth]{bondceb_diag.eps}}
-\end{htmlonly}
+%% \begin{htmlonly}
+%%   \centerline{\includegraphics[width=0.7\textwidth]{bondceb_diag.eps}}
+%% \end{htmlonly}
 %begin{latexonly}
  \centerline{\includegraphics[width=0.5\textwidth]{bondceb_diag}}
 %end{latexonly}
@@ -5762,9 +5762,9 @@ This is an elasto-plastic model for slip between reinforcement modelled as three
 There are three types of constitutive relations supported which are shown in Figure~\ref{linkslip}, which are chosen by means of the input parameter \param{type}.
 
 \begin{figure}[!htb]
-\begin{htmlonly}
-  \centerline{\includegraphics[width=1.\textwidth]{linkslip.pdf}}
-\end{htmlonly}
+%% \begin{htmlonly}
+%%   \centerline{\includegraphics[width=1.\textwidth]{linkslip.pdf}}
+%% \end{htmlonly}
 %begin{latexonly}
  \centerline{\includegraphics[width=0.8\textwidth]{linkslip}}
 %end{latexonly}
@@ -6892,9 +6892,9 @@ Supported modes& \_2dHeat, \_3dHeat\\
 \reffig{hydration_comparison} shows mutual comparison of three hydration models implemented in OOFEM. Parameters for exponential model according to \refeq{eq:affinity1} are $\tau=26\cdot3600=93600$~s, $\beta=0.75$, $\alpha_\infty=0.90$. Parameters for affinity model according to \refeq{eq:affinity2} are $B_1=3.519e-4$~s$^{-1}$, $B_2=8.0e-7$, $\eta=7.4$, $\alpha_\infty=0.85$.
 
 \begin{figure}[!htb]
-\begin{htmlonly}
-  \centerline{\includegraphics[width=0.7\textwidth]{Mokra_OOFEM_affinity_time.eps}}
-\end{htmlonly}
+%% \begin{htmlonly}
+%%   \centerline{\includegraphics[width=0.7\textwidth]{Mokra_OOFEM_affinity_time.eps}}
+%% \end{htmlonly}
 %begin{latexonly}
  \centerline{\includegraphics[width=0.7\textwidth]{Mokra_OOFEM_affinity_time}}
 %end{latexonly}
