@@ -72,13 +72,9 @@ namespace oofem {
     LatticeFrame3dNL4::computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, int li, int ui)
     //Returns the strain matrix of the receiver.
     {
-
       answer.resize(6, 12);
       answer.zero();
-      //      FloatArray u(12);
-//        TimeStep *tStep = this->domain->giveEngngModel()->giveCurrentStep();
-//	GaussPoint *gp =  integrationRulesArray [ 0 ]->getIntegrationPoint(0);
-
+	
         //Compute the two rotation matrices in the local coordinate system
         FloatMatrix rotationMatrixOne(3, 3), rotationMatrixTwo(3, 3);	
         computeRotationMatrices(rotationMatrixOne, rotationMatrixTwo);
@@ -196,12 +192,12 @@ namespace oofem {
         return;
     }
 
+
     
     void
     LatticeFrame3dNL4::computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode,
                                               TimeStep *tStep)
     {
-
         FloatMatrix d, bt, db, b;
 
         this->length = computeLength();
@@ -209,14 +205,12 @@ namespace oofem {
         answer.resize(12, 12);
         answer.zero();
         this->computeBmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), b);
-	
         this->computeConstitutiveMatrixAt(d, rMode, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
 
         db.beProductOf(d, b);
         db.times(1. / length);
         bt.beTranspositionOf(b);
         answer.beProductOf(bt, db);
-
         return;
     }
 
@@ -254,9 +248,8 @@ namespace oofem {
 
 	computeGlobalRotationMatrix(globalRInc,rotationOne);
 	
-
-	  globalRTotal = lmatStat->giveGlobalRotationMatrixOne();
-	  globalR.beProductOf( globalRInc, globalRTotal );
+	globalRTotal = lmatStat->giveGlobalRotationMatrixOne();
+	globalR.beProductOf( globalRInc, globalRTotal );
 
         lmatStat->letTempGlobalRotationMatrixOneBe( globalR );
 
@@ -364,8 +357,6 @@ namespace oofem {
         this->computeStrainVector(strain, gp, tStep);
         this->computeStressVector(stress, strain, gp, tStep);
     }
-
-
         //Compute the two rotation matrices in the local coordinate system
         FloatMatrix rotationMatrixOne(3, 3), rotationMatrixTwo(3, 3);       
         computeRotationMatrices(rotationMatrixOne, rotationMatrixTwo);
@@ -395,6 +386,5 @@ namespace oofem {
         answer.at(10) =  stress.at(2) * cz2 - stress.at(3) * cy2 + stress.at(4);
         answer.at(11) = -stress.at(1) * cz2 + stress.at(3) * cx2 + stress.at(5);
         answer.at(12) = stress.at(1) * cy2 - stress.at(2) * cx2 + stress.at(6);
-
     }
 } // end namespace oofem

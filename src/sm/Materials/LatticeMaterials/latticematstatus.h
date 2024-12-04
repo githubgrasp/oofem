@@ -99,10 +99,6 @@ protected:
 
   FloatArrayF< 12 >globalU;
 
-   FloatArrayF<12> tempTestU;
-   FloatArrayF<12> testU;
-
-  
     /// Equilibrated normal stress
     double normalLatticeStress = 0.;
 
@@ -213,8 +209,6 @@ public:
     void letTempGlobalUBe(const FloatArrayF< 12 > & v){ this->tempGlobalU = v;}
 
     const FloatArrayF < 12 > giveGlobalU() const {return this->globalU;}
-
-    const FloatArrayF < 12 > giveTempGlobalU() const {return this->tempGlobalU;}
 
   
     /// Sets the temp normalStress
