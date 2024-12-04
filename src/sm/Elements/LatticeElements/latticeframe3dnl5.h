@@ -71,6 +71,7 @@ protected:
   void computeGlobalRotationMatrix(FloatMatrix &answer, FloatArray &rotation);
   
   bool computeGtoLStrainRotationMatrix(FloatMatrix &answer);
+  
   bool computeGtoLRotationMatrix(FloatMatrix &) override;
   virtual void computeBmatrixAt(GaussPoint *, FloatMatrix &, int = 1, int = ALL_STRAINS) override;
   void computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode, TimeStep *tStep) override;

@@ -442,6 +442,5 @@ namespace oofem {
         answer.at(11) = -stress.at(1) * cz2 + stress.at(3) * cx2 + stress.at(5);
         answer.at(12) = stress.at(1) * cy2 - stress.at(2) * cx2 + stress.at(6);
 
-        lmatStat->letTempInternalForcesBe(answer);
     }
 } // end namespace oofem

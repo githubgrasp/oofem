@@ -123,8 +123,8 @@ namespace oofem {
         double cz1 =  lx1 * ( sin(thetaX1) * sin(thetaZ1) - cos(thetaX1) * cos(thetaZ1) * sin(thetaY1) ) + ly1 * ( cos(thetaZ1) * sin(thetaX1) + cos(thetaX1) * sin(thetaY1) * sin(thetaZ1) ) + lz1 * cos(thetaX1) * cos(thetaY1);
         double cz2 =  lx2 * ( sin(thetaX2) * sin(thetaZ2) - cos(thetaX2) * cos(thetaZ2) * sin(thetaY2) ) + ly2 * ( cos(thetaZ2) * sin(thetaX2) + cos(thetaX2) * sin(thetaY2) * sin(thetaZ2) ) + lz2 * cos(thetaX2) * cos(thetaY2);
 
-        printf("cx1 = %e, cy1 = %e, cz1 = %e\n", cx1, cy1, cz1);
-        printf("cx2 = %e, cy2 = %e, cz2 = %e\n", cx2, cy2, cz2);
+//        printf("cx1 = %e, cy1 = %e, cz1 = %e\n", cx1, cy1, cz1);
+//        printf("cx2 = %e, cy2 = %e, cz2 = %e\n", cx2, cy2, cz2);
 
         //Normal displacement jump in x-direction
         //First node
@@ -222,8 +222,8 @@ namespace oofem {
         answer.at(6, 11) = 0.;
         answer.at(6, 12) = 1.;
 
-        printf("NL2 Bmatrix\n");
-        answer.printYourself();
+//        printf("NL2 Bmatrix\n");
+//        answer.printYourself();
 
         return;
     }
@@ -266,6 +266,10 @@ namespace oofem {
 
         FloatArray u;
         this->computeVectorOf(VM_Total, tStep, u);
+
+        printf("NL2 Strain disp\n");
+        u.printYourself();
+
 
         FloatArray coordA(3), coordB(3);
         coordA = giveNode(1)->giveCoordinates();
@@ -311,6 +315,9 @@ namespace oofem {
 
         double cz2 =  lx2 * ( sin(thetaX2) * sin(thetaZ2) - cos(thetaX2) * cos(thetaZ2) * sin(thetaY2) ) + ly2 * ( cos(thetaZ2) * sin(thetaX2) + cos(thetaX2) * sin(thetaY2) * sin(thetaZ2) ) + lz2 * cos(thetaX2) * cos(thetaY2);
 
+                printf("cx1 = %e, cy1 = %e, cz1 = %e\n", cx1, cy1, cz1);
+                printf("cx2 = %e, cy2 = %e, cz2 = %e\n", cx2, cy2, cz2);
+
         answer.resize(6);
         answer.at(1) = u.at(7) - u.at(1) - cx1 - cx2 + lx1 + lx2;
         answer.at(2) = u.at(8) - u.at(2) - cy1 - cy2 + ly1 + ly2;
@@ -325,6 +332,10 @@ namespace oofem {
         FloatMatrix rotationMatrix(6, 6);
         computeGtoLStrainRotationMatrix(rotationMatrix);
         answer.rotatedWith(rotationMatrix, 'n');
+
+                printf("NL2 strain\n");
+                answer.printYourself();
+
     }
 
 
@@ -373,10 +384,9 @@ namespace oofem {
         this->computeStrainVector(strain, gp, tStep);
         this->computeStressVector(stress, strain, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
 
-        /* //	Rotate strain vector to local coordinate system */
+        /* //	Rotate stress vector to global coordinate system */
         FloatMatrix rotationMatrix(6, 6);
         computeGtoLStrainRotationMatrix(rotationMatrix);
-
         stress.rotatedWith(rotationMatrix, 't');
 
         //First node rotations
@@ -426,7 +436,5 @@ namespace oofem {
         answer.at(11) = -stress.at(1) * cz2 + stress.at(3) * cx2 + stress.at(5);
         answer.at(12) = stress.at(1) * cy2 - stress.at(2) * cx2 + stress.at(6);
 
-
-        lmatStat->letTempInternalForcesBe(answer);
     }
 } // end namespace oofem

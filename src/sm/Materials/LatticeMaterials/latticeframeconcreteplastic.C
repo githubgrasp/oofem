@@ -773,8 +773,13 @@ namespace oofem {
     FloatArrayF < 6 >
     LatticeFrameConcretePlastic::giveFrameForces3d(const FloatArrayF < 6 > & originalStrain, GaussPoint * gp, TimeStep * tStep)
     {
-        auto status        = static_cast < LatticeFrameConcretePlasticStatus * > ( this->giveStatus(gp) );
-        auto strain = originalStrain;
+      
+      
+      auto status        = static_cast < LatticeFrameConcretePlasticStatus * > ( this->giveStatus(gp) );
+
+      this->initTempStatus(gp);
+      
+      auto strain = originalStrain;
         auto thermalStrain = this->computeStressIndependentStrainVector(gp, tStep, VM_Total);
         if ( thermalStrain.giveSize() ) {
             strain -= FloatArrayF < 6 > ( thermalStrain );

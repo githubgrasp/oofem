@@ -258,7 +258,6 @@ namespace oofem {
         LatticeMaterialStatus *lmatStat = dynamic_cast < LatticeMaterialStatus * > ( integrationRulesArray [ 0 ]->getIntegrationPoint(0)->giveMaterialStatus() );
         auto oldStress = lmatStat->giveLatticeStress();
 
-        auto oldInternalForces = lmatStat->giveInternalForces();
         double l1 = this->length * ( 1. + this->s ) / 2;
         double l2 = this->length * ( 1. - this->s ) / 2;
 
@@ -285,6 +284,5 @@ namespace oofem {
         answer.at(11) = -stress.at(1) * cz2 + stress.at(3) * cx2 + stress.at(5);
         answer.at(12) = stress.at(1) * cy2 - stress.at(2) * cx2 + stress.at(6);
 
-        lmatStat->letTempInternalForcesBe(answer);
     }
 } // end namespace oofem
