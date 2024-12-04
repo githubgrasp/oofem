@@ -189,6 +189,7 @@ namespace oofem {
         answer.at(6, 11) = 0.;
         answer.at(6, 12) = 1.;
 
+
         return;
     }
 
@@ -206,7 +207,8 @@ namespace oofem {
         GaussPoint *gp  = this->integrationRulesArray[0]->getIntegrationPoint( 0 );
         LatticeMaterialStatus *lmatStat = dynamic_cast<LatticeMaterialStatus *>( this->giveMaterial()->giveStatus( gp ) );
 
-        FloatArray u(12), uPrevGlobal(12), uIncGlobal(12), uPrevTest(12);
+
+        FloatArray u(12), uPrevGlobal(12), uIncGlobal(12);
         this->computeVectorOf(VM_Total, tStep, u);
 
 	FloatMatrix r(12, 12), rT(12, 12);
@@ -241,7 +243,6 @@ namespace oofem {
 
 	computeGlobalRotationMatrix(globalRInc,rotationTwo);       
 
-        //Need to distinguish between first and other steps.
         globalRTotal = lmatStat->giveGlobalRotationMatrixTwo();
         globalR.beProductOf( globalRInc, globalRTotal );
 
@@ -257,7 +258,6 @@ namespace oofem {
     void
       LatticeFrame3dNL5::computeGlobalRotationMatrix(FloatMatrix &answer, FloatArray &rotation)
     {
-
       answer.resize(3,3);
       answer.zero();
       double thetaX, thetaY,thetaZ;    
@@ -334,7 +334,6 @@ namespace oofem {
 
 	FloatMatrix rotationMatrixOne(3,3), rotationMatrixTwo(3,3);
 	computeRotationMatrices(rotationMatrixOne, rotationMatrixTwo);
-
 	FloatArray c1(3);
 	c1.beProductOf(rotationMatrixOne,l1);
 	
@@ -381,27 +380,7 @@ namespace oofem {
     bool
     LatticeFrame3dNL5::computeGtoLRotationMatrix(FloatMatrix &answer)
     {
-	answer.resize(12, 12);
-        answer.zero();
-	
-
-	FloatMatrix lcs;
-	lcs.resize(3,3);
-	lcs.zero();
-	lcs.at(1,1) = 1.;
-	lcs.at(2,2) = 1.;
-	lcs.at(3,3) = 1.;
-
-	for ( int i = 1; i <= 3; i++ ) {
-	  for ( int j = 1; j <= 3; j++ ) {
-                answer.at(i, j) = lcs.at(i, j);
-                answer.at(i + 3, j + 3) = lcs.at(i, j);
-                answer.at(i + 6, j + 6) = lcs.at(i, j);
-                answer.at(i + 9, j + 9) = lcs.at(i, j);
-	  }
-        }
-	
-        return 1;
+        return false;
     }
 
 
