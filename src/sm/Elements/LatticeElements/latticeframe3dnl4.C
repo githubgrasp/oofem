@@ -72,31 +72,17 @@ namespace oofem {
     LatticeFrame3dNL4::computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, int li, int ui)
     //Returns the strain matrix of the receiver.
     {
+
+      answer.resize(6, 12);
+      answer.zero();
       //      FloatArray u(12);
-        TimeStep *tStep = this->domain->giveEngngModel()->giveCurrentStep();
-	GaussPoint *gp =  integrationRulesArray [ 0 ]->getIntegrationPoint(0);
-	LatticeMaterialStatus *lmatStat = dynamic_cast < LatticeMaterialStatus * > (this->giveMaterial()->giveStatus(gp));	
-	
-	//For Debugging
-	FloatArray u(12), uGlobal(12), uPrevGlobal(12), uIncGlobal(12);
-        this->computeVectorOf(VM_Total, tStep, u);
-	 	  
-	FloatMatrix r(12, 12), rT(12, 12);
-        computeGtoLRotationMatrix(r);
-        rT.beTranspositionOf(r);
-        uGlobal.beProductOf(rT, u);
+//        TimeStep *tStep = this->domain->giveEngngModel()->giveCurrentStep();
+//	GaussPoint *gp =  integrationRulesArray [ 0 ]->getIntegrationPoint(0);
 
-	lmatStat->letTempGlobalUBe(uGlobal);
-        uPrevGlobal = lmatStat->giveGlobalU();
-        uIncGlobal = uGlobal-uPrevGlobal;
-
-
-	
         //Compute the two rotation matrices in the local coordinate system
         FloatMatrix rotationMatrixOne(3, 3), rotationMatrixTwo(3, 3);	
         computeRotationMatrices(rotationMatrixOne, rotationMatrixTwo);
 
-	
         this->length   = computeLength();
         double l1 = this->length * ( 1. + this->s ) / 2;
         double l2 = this->length * ( 1. - this->s ) / 2;
@@ -110,6 +96,7 @@ namespace oofem {
         double cz2 = rotationMatrixTwo.at(3, 1) * l2;
 
         answer.resize(6, 12);
+	answer.zero();
         //Normal displacement jump in x-direction
         //First node
         answer.at(1, 1) = -1.;
@@ -208,26 +195,28 @@ namespace oofem {
 
         return;
     }
+
+    
     void
     LatticeFrame3dNL4::computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode,
                                               TimeStep *tStep)
     {
-        FloatMatrix d, bt, db, b;
-        FloatArray u;
 
-        this->computeVectorOf(VM_Total, tStep, u);
+        FloatMatrix d, bt, db, b;
+
         this->length = computeLength();
 
         answer.resize(12, 12);
         answer.zero();
         this->computeBmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), b);
+	
         this->computeConstitutiveMatrixAt(d, rMode, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
 
         db.beProductOf(d, b);
         db.times(1. / length);
         bt.beTranspositionOf(b);
         answer.beProductOf(bt, db);
-	
+
         return;
     }
 
@@ -265,13 +254,9 @@ namespace oofem {
 
 	computeGlobalRotationMatrix(globalRInc,rotationOne);
 	
-        if(!tStep->isTheFirstStep()) {
+
 	  globalRTotal = lmatStat->giveGlobalRotationMatrixOne();
 	  globalR.beProductOf( globalRInc, globalRTotal );
-        }
-	else{
-	  globalR = globalRInc;
-	}
 
         lmatStat->letTempGlobalRotationMatrixOneBe( globalR );
 
@@ -289,14 +274,9 @@ namespace oofem {
 
 	computeGlobalRotationMatrix(globalRInc,rotationTwo);
 	
-        //Need to distinguish between first and other steps.
-        if(!tStep->isTheFirstStep()) {
-            globalRTotal = lmatStat->giveGlobalRotationMatrixTwo();
-            globalR.beProductOf( globalRInc, globalRTotal );
-        }
-	else{
-	  globalR = globalRInc;
-	}
+	globalRTotal = lmatStat->giveGlobalRotationMatrixTwo();
+	globalR.beProductOf( globalRInc, globalRTotal );
+
 	lmatStat->letTempGlobalRotationMatrixTwoBe(globalR);	
 
         help.beProductOf(globalR, transformT);
@@ -339,12 +319,11 @@ namespace oofem {
 
         //Compute the two rotation matrices in the local coordinate system
         FloatMatrix rotationMatrixOne(3, 3), rotationMatrixTwo(3, 3);
-       
-        computeRotationMatrices(rotationMatrixOne, rotationMatrixTwo);
+	computeRotationMatrices(rotationMatrixOne, rotationMatrixTwo);
+
         this->length   = computeLength();
         double l1 = this->length * ( 1. + this->s ) / 2;
         double l2 = this->length * ( 1. - this->s ) / 2;
-        LatticeMaterialStatus *lmatStat = dynamic_cast < LatticeMaterialStatus * > ( integrationRulesArray [ 0 ]->getIntegrationPoint(0)->giveMaterialStatus() );
 
         double cx1 = rotationMatrixOne.at(1, 1) * l1;
         double cy1 = rotationMatrixOne.at(2, 1) * l1;
@@ -376,18 +355,16 @@ namespace oofem {
         GaussPoint *gp = this->integrationRulesArray [ 0 ]->getIntegrationPoint(0);
 
         if ( useUpdatedGpRecord == 1 ) {
-            LatticeMaterialStatus *lmatStat = dynamic_cast < LatticeMaterialStatus * > ( integrationRulesArray [ 0 ]->getIntegrationPoint(0)->giveMaterialStatus() );
+            LatticeMaterialStatus *lmatStat = dynamic_cast < LatticeMaterialStatus * > ( gp->giveMaterialStatus() );
             stress = lmatStat->giveLatticeStress();
         } else {
             if ( !this->isActivated(tStep) ) {
                 strain.zero();
         }
         this->computeStrainVector(strain, gp, tStep);
-        this->computeStressVector(stress, strain, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
+        this->computeStressVector(stress, strain, gp, tStep);
     }
 
-
-        LatticeMaterialStatus *lmatStat = dynamic_cast < LatticeMaterialStatus * > ( integrationRulesArray [ 0 ]->getIntegrationPoint(0)->giveMaterialStatus() );
 
         //Compute the two rotation matrices in the local coordinate system
         FloatMatrix rotationMatrixOne(3, 3), rotationMatrixTwo(3, 3);       
@@ -419,6 +396,5 @@ namespace oofem {
         answer.at(11) = -stress.at(1) * cz2 + stress.at(3) * cx2 + stress.at(5);
         answer.at(12) = stress.at(1) * cy2 - stress.at(2) * cx2 + stress.at(6);
 
-        lmatStat->letTempInternalForcesBe(answer);
     }
 } // end namespace oofem

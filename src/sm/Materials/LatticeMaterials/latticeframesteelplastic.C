@@ -483,7 +483,11 @@ namespace oofem {
     FloatArrayF < 6 >
     LatticeFrameSteelPlastic::giveFrameForces3d(const FloatArrayF < 6 > & originalStrain, GaussPoint * gp, TimeStep * tStep)
     {
+ 
         auto status = static_cast < LatticeFrameSteelPlasticStatus * > ( this->giveStatus(gp) );
+
+	this->initTempStatus(gp);
+	
         auto reducedStrain = originalStrain;
         auto thermalStrain = this->computeStressIndependentStrainVector(gp, tStep, VM_Total);
         if ( thermalStrain.giveSize() ) {

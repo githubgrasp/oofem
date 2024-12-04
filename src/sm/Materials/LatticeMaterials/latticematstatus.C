@@ -40,7 +40,15 @@
 
 namespace oofem {
 LatticeMaterialStatus :: LatticeMaterialStatus(GaussPoint *g) : MaterialStatus(g), RandomMaterialStatusExtensionInterface()
-{ }
+{
+    this->globalRotationMatrixOne.at(1,1) = 1.;
+    this->globalRotationMatrixOne.at(2,2) = 1.;
+    this->globalRotationMatrixOne.at(3,3) = 1.;
+
+    this->globalRotationMatrixTwo.at(1,1) = 1.;
+    this->globalRotationMatrixTwo.at(2,2) = 1.;
+    this->globalRotationMatrixTwo.at(3,3) = 1.;
+}
 
 
 void
@@ -54,8 +62,6 @@ LatticeMaterialStatus :: initTempStatus()
 
     this->tempLatticeStrain = this->latticeStrain;
 
-    this->tempInternalForces = this->internalForces;
-
     this->tempLatticeStress = this->latticeStress;
 
     this->tempReducedLatticeStrain = this->reducedLatticeStrain;
@@ -65,7 +71,6 @@ LatticeMaterialStatus :: initTempStatus()
     this->tempPlasticLatticeStrain = this->plasticLatticeStrain;
 
     this->tempGlobalRotationMatrixOne = this->globalRotationMatrixOne;
-
     this->tempGlobalRotationMatrixTwo = this->globalRotationMatrixTwo;
 
     this->tempGlobalU = this->globalU;
@@ -85,8 +90,6 @@ void
 LatticeMaterialStatus :: updateYourself(TimeStep *atTime)
 {
     MaterialStatus :: updateYourself(atTime);
-
-    this->internalForces = this->tempInternalForces;
 
     this->latticeStress = this->tempLatticeStress;
 
@@ -162,10 +165,6 @@ LatticeMaterialStatus :: saveContext(DataStream &stream, ContextMode mode)
         THROW_CIOERR(iores);
     }
 
-    if ( ( iores = internalForces.storeYourself(stream) ) != CIO_OK ) {
-        THROW_CIOERR(iores);
-    }
-
     if ( ( iores = latticeStrain.storeYourself(stream) ) != CIO_OK ) {
         THROW_CIOERR(iores);
     }
@@ -182,9 +181,6 @@ LatticeMaterialStatus :: saveContext(DataStream &stream, ContextMode mode)
         THROW_CIOERR(iores);
     }
 
-    if ( ( iores = internalForces.storeYourself(stream) ) != CIO_OK ) {
-        THROW_CIOERR(iores);
-    }
     
     if ( !stream.write(le) ) {
         THROW_CIOERR(CIO_IOERR);
@@ -201,6 +197,17 @@ LatticeMaterialStatus :: saveContext(DataStream &stream, ContextMode mode)
     if ( !stream.write(crackFlag) ) {
         THROW_CIOERR(CIO_IOERR);
     }
+
+
+    if ( !stream.write(updateFlag) ) {
+        THROW_CIOERR(CIO_IOERR);
+    }
+
+
+    if ( ( iores = globalU.storeYourself(stream) ) != CIO_OK ) {
+        THROW_CIOERR(iores);
+    }
+
 }
 
 
@@ -215,10 +222,6 @@ LatticeMaterialStatus :: restoreContext(DataStream &stream, ContextMode mode)
     contextIOResultType iores;
 
     if ( ( iores = damageLatticeStrain.restoreYourself(stream) ) != CIO_OK ) {
-        THROW_CIOERR(iores);
-    }
-
-    if ( ( iores = internalForces.restoreYourself(stream) ) != CIO_OK ) {
         THROW_CIOERR(iores);
     }
 
@@ -238,11 +241,7 @@ LatticeMaterialStatus :: restoreContext(DataStream &stream, ContextMode mode)
         THROW_CIOERR(iores);
     }
 
-    if ( ( iores = internalForces.restoreYourself(stream) ) != CIO_OK ) {
-        THROW_CIOERR(iores);
-    }
 
-    
     if ( !stream.read(le) ) {
         THROW_CIOERR(CIO_IOERR);
     }
@@ -257,6 +256,16 @@ LatticeMaterialStatus :: restoreContext(DataStream &stream, ContextMode mode)
 
     if ( !stream.read(crackFlag) ) {
         THROW_CIOERR(CIO_IOERR);
+    }
+
+
+    if ( !stream.read(updateFlag) ) {
+        THROW_CIOERR(CIO_IOERR);
+    }
+
+    
+    if ( ( iores = globalU.restoreYourself(stream) ) != CIO_OK ) {
+        THROW_CIOERR(iores);
     }
 
     

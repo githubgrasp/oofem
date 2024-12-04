@@ -74,15 +74,6 @@ namespace oofem {
       answer.resize(6, 12);
       answer.zero();
 
-
-      FloatArray u;
-      TimeStep *tStep = this->domain->giveEngngModel()->giveCurrentStep();
-      this->computeVectorOf(VM_Total, tStep, u);
-
-      if(tStep->giveNumber() == 1 && this->giveNumber() == 16){
-          printf("Debug\n");
-      }
-
         FloatArray coordA(3), coordB(3), l1(3), l2(3), help(3);       	
         coordA = giveNode(1)->giveCoordinates();
         coordB = giveNode(2)->giveCoordinates();
@@ -101,9 +92,6 @@ namespace oofem {
 	
 	FloatArray c2(3);
 	c2.beProductOf(rotationMatrixTwo,l2);
-
-        printf("cx1 = %e, cy1 = %e, cz1 = %e\n", c1.at(1), c1.at(2), c1.at(3));
-        printf("cx2 = %e, cy2 = %e, cz2 = %e\n", c2.at(1), c2.at(2), c2.at(3));
 
         //Normal displacement jump in x-direction
         //First node
@@ -201,9 +189,6 @@ namespace oofem {
         answer.at(6, 11) = 0.;
         answer.at(6, 12) = 1.;
 
-        printf("NL5 Bmatrix\n");
-        answer.printYourself();
-
         return;
     }
 
@@ -221,14 +206,16 @@ namespace oofem {
         GaussPoint *gp  = this->integrationRulesArray[0]->getIntegrationPoint( 0 );
         LatticeMaterialStatus *lmatStat = dynamic_cast<LatticeMaterialStatus *>( this->giveMaterial()->giveStatus( gp ) );
 
-        FloatArray u(12), uGlobal(12), uPrevGlobal(12), uIncGlobal(12);
-        this->computeVectorOf(VM_Total, tStep, uGlobal);
-	 	  
+        FloatArray u(12), uPrevGlobal(12), uIncGlobal(12), uPrevTest(12);
+        this->computeVectorOf(VM_Total, tStep, u);
+
 	FloatMatrix r(12, 12), rT(12, 12);
 
-	lmatStat->letTempGlobalUBe(uGlobal);
+        lmatStat->letTempGlobalUBe(u);
+
         uPrevGlobal = lmatStat->giveGlobalU();
-        uIncGlobal = uGlobal-uPrevGlobal;
+	
+	uIncGlobal = u-uPrevGlobal;
 
 	FloatArray rotationOne(3);
 	//Node 1
@@ -238,16 +225,9 @@ namespace oofem {
 
 	computeGlobalRotationMatrix(globalRInc,rotationOne);
 
-        printf("globalRIncOne\n");
-        globalRInc.printYourself();
-
-        if(!tStep->isTheFirstStep()) {
 	  globalRTotal = lmatStat->giveGlobalRotationMatrixOne();
 	  globalR.beProductOf( globalRInc, globalRTotal );
-        }
-	else{
-	  globalR = globalRInc;
-	}
+
 
         lmatStat->letTempGlobalRotationMatrixOneBe( globalR );
 
@@ -261,17 +241,10 @@ namespace oofem {
 
 	computeGlobalRotationMatrix(globalRInc,rotationTwo);       
 
-        printf("globalRIncTwo\n");
-        globalRInc.printYourself();
-
         //Need to distinguish between first and other steps.
-        if(!tStep->isTheFirstStep()) {
-            globalRTotal = lmatStat->giveGlobalRotationMatrixTwo();
-            globalR.beProductOf( globalRInc, globalRTotal );
-        }
-	else{
-	  globalR = globalRInc;
-	}
+        globalRTotal = lmatStat->giveGlobalRotationMatrixTwo();
+        globalR.beProductOf( globalRInc, globalRTotal );
+
 	lmatStat->letTempGlobalRotationMatrixTwoBe(globalR);	
 
         answerTwo = globalR;
@@ -284,6 +257,7 @@ namespace oofem {
     void
       LatticeFrame3dNL5::computeGlobalRotationMatrix(FloatMatrix &answer, FloatArray &rotation)
     {
+
       answer.resize(3,3);
       answer.zero();
       double thetaX, thetaY,thetaZ;    
@@ -314,9 +288,6 @@ namespace oofem {
                                               TimeStep *tStep)
     {
         FloatMatrix d, bt, db, b;
-        FloatArray u;
-
-        this->computeVectorOf(VM_Total, tStep, u);
         this->length = computeLength();
 
         answer.resize(12, 12);
@@ -363,7 +334,7 @@ namespace oofem {
 
 	FloatMatrix rotationMatrixOne(3,3), rotationMatrixTwo(3,3);
 	computeRotationMatrices(rotationMatrixOne, rotationMatrixTwo);
-	
+
 	FloatArray c1(3);
 	c1.beProductOf(rotationMatrixOne,l1);
 	
@@ -384,40 +355,6 @@ namespace oofem {
         FloatMatrix rotationMatrix(6, 6);
         computeGtoLStrainRotationMatrix(rotationMatrix);
         answer.rotatedWith(rotationMatrix, 'n');
-
-
-        /* //First node rotations */
-        /* double uX1 = u.at(1); */
-        /* double uY1 = u.at(2); */
-        /* double uZ1 = u.at(3); */
-
-        /* double thetaX1 = u.at(4); */
-        /* double thetaY1 = u.at(5); */
-        /* double thetaZ1 = u.at(6); */
-
-        /* double thetaX2 = u.at(10); */
-        /* double thetaY2 = u.at(11); */
-        /* double thetaZ2 = u.at(12); */
-
-
-/* 	lx1 + lx2 - ux1 + ux2 - lx1*r1_11 - lx2*r2_11 - ly1*r1_12 - ly2*r2_12 - lz1*r1_13 - lz2*r2_13 */
-/* ly1 + ly2 - uy1 + uy2 - lx1*r1_21 - lx2*r2_21 - ly1*r1_22 - ly2*r2_22 - lz1*r1_23 - lz2*r2_23 */
-/* lz1 + lz2 - uz1 + uz2 - lx1*r1_31 - lx2*r2_31 - ly1*r1_32 - ly2*r2_32 - lz1*r1_33 - lz2*r2_33 */
-/*                                                                             thetaX2 - thetaX1 */
-/*                                                                             thetaY2 - thetaY1 */
-/*                                                                             thetaZ2 - thetaZ1 */
-
-
-	
-        /* double cx1 = lx1 * rotationMatrixOne.at(1,1) + ly1 * rotationMatrixOne.at(1,2) +  lz1 * rotationMatrixOne.at(1,3); */
-        /* double cx2 = lx2 * rotationMatrixTwo.at(1,1) + ly2 * rotationMatrixTwo.at(1,2) +  lz2 * rotationMatrixTwo.at(1,3); */
-
-        /* double cy1 = lx1 * rotationMatrixOne.at(2,1) + ly1 * rotationMatrixOne.at(2,2) + lz1 * rotationMatrixOne.at(2,3); */
-        /* double cy2 = lx2 * rotationMatrixTwo.at(2,1) + ly2 * rotationMatrixTwo.at(2,2) +  lz2 * rotationMatrixTwo.at(2,3); */
-
-        /* double cz1 = lx1 * rotationMatrixOne.at(2,1) + ly1 * rotationMatrixOne.at(2,1) + lz1 * rotationMatrixOne.at(2,3); */
-        /* double cz2 = lx2 * rotationMatrixTwo.at(3,1) + ly2 * rotationMatrixTwo.at(3,2) + lz2 * rotationMatrixTwo.at(3,3); */
-
 
     }
 
@@ -444,7 +381,27 @@ namespace oofem {
     bool
     LatticeFrame3dNL5::computeGtoLRotationMatrix(FloatMatrix &answer)
     {
-        return false;
+	answer.resize(12, 12);
+        answer.zero();
+	
+
+	FloatMatrix lcs;
+	lcs.resize(3,3);
+	lcs.zero();
+	lcs.at(1,1) = 1.;
+	lcs.at(2,2) = 1.;
+	lcs.at(3,3) = 1.;
+
+	for ( int i = 1; i <= 3; i++ ) {
+	  for ( int j = 1; j <= 3; j++ ) {
+                answer.at(i, j) = lcs.at(i, j);
+                answer.at(i + 3, j + 3) = lcs.at(i, j);
+                answer.at(i + 6, j + 6) = lcs.at(i, j);
+                answer.at(i + 9, j + 9) = lcs.at(i, j);
+	  }
+        }
+	
+        return 1;
     }
 
 
@@ -472,68 +429,44 @@ namespace oofem {
 
         this->length = computeLength();
 
-	FloatMatrix rotationMatrixOne(3,3), rotationMatrixTwo(3,3);
-	computeRotationMatrices(rotationMatrixOne, rotationMatrixTwo);
-	
-	FloatArray c1(3);
-	c1.beProductOf(rotationMatrixOne,l1);
-	
-	FloatArray c2(3);
-	c2.beProductOf(rotationMatrixTwo,l2);
-
-        LatticeMaterialStatus *lmatStat = dynamic_cast < LatticeMaterialStatus * > ( integrationRulesArray [ 0 ]->getIntegrationPoint(0)->giveMaterialStatus() );
-	
         if ( useUpdatedGpRecord == 1 ) {
-            stress = lmatStat->giveLatticeStress();
+	  LatticeMaterialStatus *lmatStat = dynamic_cast < LatticeMaterialStatus * >( this->giveMaterial()->giveStatus(gp));
+	  stress = lmatStat->giveLatticeStress();
         } else {
             if ( !this->isActivated(tStep) ) {
                 strain.zero();
-        }
+           }
         this->computeStrainVector(strain, gp, tStep);
-        this->computeStressVector(stress, strain, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
+        this->computeStressVector(stress, strain, gp, tStep);
     }
-	
-        /* //	Rotate strain vector to local coordinate system */
-        /* FloatMatrix rotationMatrix(6, 6); */
-        /* computeGtoLStrainRotationMatrix(rotationMatrix); */
 
-        /* stress.rotatedWith(rotationMatrix, 't'); */
+    //This is only to put the values back into the status because it was reset in the computeStressVector when the status was initiated.
+    FloatMatrix rotationMatrixOne(3,3), rotationMatrixTwo(3,3);
+    computeRotationMatrices(rotationMatrixOne, rotationMatrixTwo);
 
-	
-        /* double l1 = this->length * ( 1. + this->s ) / 2.; */
-        /* double l2 = this->length * ( 1. - this->s ) / 2.; */
+    FloatArray c1(3);
+    c1.beProductOf(rotationMatrixOne,l1);
 
+    FloatArray c2(3);
+    c2.beProductOf(rotationMatrixTwo,l2);
 
-        /* double lx1 = ( coordB.at(1) - coordA.at(1) ) * ( 1. + this->s ) / 2.; */
-        /* double ly1 = ( coordB.at(2) - coordA.at(2) ) * ( 1. + this->s ) / 2.; */
-        /* double lz1 = ( coordB.at(3) - coordA.at(3) ) * ( 1. + this->s ) / 2.; */
+    FloatMatrix rotationMatrix(6, 6);
+    computeGtoLStrainRotationMatrix(rotationMatrix);
+    stress.rotatedWith(rotationMatrix, 't');
+    
+    answer.resize(12);
+    answer.at(1) = -stress.at(1);
+    answer.at(2) = -stress.at(2);
+    answer.at(3) = -stress.at(3);
+    answer.at(4) =  stress.at(2) * c1.at(3) - stress.at(3) * c1.at(2) - stress.at(4);
+    answer.at(5) = -stress.at(1) * c1.at(3) + stress.at(3) * c1.at(1) - stress.at(5);
+    answer.at(6) = stress.at(1) * c1.at(2) - stress.at(2) * c1.at(1) - stress.at(6);
+    answer.at(7) = stress.at(1);
+    answer.at(8) = stress.at(2);
+    answer.at(9) = stress.at(3);
+    answer.at(10) =  stress.at(2) * c2.at(3) - stress.at(3) * c2.at(2) + stress.at(4);
+    answer.at(11) = -stress.at(1) * c2.at(3) + stress.at(3) * c2.at(1) + stress.at(5);
+    answer.at(12) = stress.at(1) * c2.at(2) - stress.at(2) * c2.at(1) + stress.at(6);
 
-        /* double lx2 = ( coordB.at(1) - coordA.at(1) ) * ( 1. - this->s ) / 2.; */
-        /* double ly2 = ( coordB.at(2) - coordA.at(2) ) * ( 1. - this->s ) / 2.; */
-        /* double lz2 = ( coordB.at(3) - coordA.at(3) ) * ( 1. - this->s ) / 2.; */
-
-
-        /* double cx1 = lz1 * sin(thetaY1) + lx1 * cos(thetaY1) * cos(thetaZ1) - ly1 * cos(thetaY1) * sin(thetaZ1); */
-        /* double cx2 =  lz2 * sin(thetaY2) + lx2 * cos(thetaY2) * cos(thetaZ2) - ly2 * cos(thetaY2) * sin(thetaZ2); */
-        /* double cy1 =  lx1 * ( cos(thetaX1) * sin(thetaZ1) + cos(thetaZ1) * sin(thetaX1) * sin(thetaY1) ) + ly1 * ( cos(thetaX1) * cos(thetaZ1) - sin(thetaX1) * sin(thetaY1) * sin(thetaZ1) ) - lz1 * cos(thetaY1) * sin(thetaX1); */
-        /* double cy2 = lx2 * ( cos(thetaX2) * sin(thetaZ2) + cos(thetaZ2) * sin(thetaX2) * sin(thetaY2) ) + ly2 * ( cos(thetaX2) * cos(thetaZ2) - sin(thetaX2) * sin(thetaY2) * sin(thetaZ2) ) - lz2 * cos(thetaY2) * sin(thetaX2); */
-        /* double cz1 =  lx1 * ( sin(thetaX1) * sin(thetaZ1) - cos(thetaX1) * cos(thetaZ1) * sin(thetaY1) ) + ly1 * ( cos(thetaZ1) * sin(thetaX1) + cos(thetaX1) * sin(thetaY1) * sin(thetaZ1) ) + lz1 * cos(thetaX1) * cos(thetaY1); */
-        /* double cz2 =  lx2 * ( sin(thetaX2) * sin(thetaZ2) - cos(thetaX2) * cos(thetaZ2) * sin(thetaY2) ) + ly2 * ( cos(thetaZ2) * sin(thetaX2) + cos(thetaX2) * sin(thetaY2) * sin(thetaZ2) ) + lz2 * cos(thetaX2) * cos(thetaY2); */
-
-        answer.resize(12);
-        answer.at(1) = -stress.at(1);
-        answer.at(2) = -stress.at(2);
-        answer.at(3) = -stress.at(3);
-        answer.at(4) =  stress.at(2) * c1.at(3) - stress.at(3) * c1.at(2) - stress.at(4);
-        answer.at(5) = -stress.at(1) * c1.at(3) + stress.at(3) * c1.at(1) - stress.at(5);
-        answer.at(6) = stress.at(1) * c1.at(2) - stress.at(2) * c1.at(1) - stress.at(6);
-        answer.at(7) = stress.at(1);
-        answer.at(8) = stress.at(2);
-        answer.at(9) = stress.at(3);
-        answer.at(10) =  stress.at(2) * c2.at(3) - stress.at(3) * c2.at(2) + stress.at(4);
-        answer.at(11) = -stress.at(1) * c2.at(3) + stress.at(3) * c2.at(1) + stress.at(5);
-        answer.at(12) = stress.at(1) * c2.at(2) - stress.at(2) * c2.at(1) + stress.at(6);
-
-        lmatStat->letTempInternalForcesBe(answer);
     }
 } // end namespace oofem
