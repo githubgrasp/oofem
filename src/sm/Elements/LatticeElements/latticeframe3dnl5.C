@@ -86,7 +86,13 @@ namespace oofem {
 
 	FloatMatrix rotationMatrixOne(3,3), rotationMatrixTwo(3,3); 
 	computeRotationMatrices(rotationMatrixOne, rotationMatrixTwo);
-	
+
+
+	printf("rotationMatrixOne and rotationMatrixTwo in NL5\n");
+	rotationMatrixOne.printYourself();
+	rotationMatrixTwo.printYourself();
+
+		
 	FloatArray c1(3);
 	c1.beProductOf(rotationMatrixOne,l1);
 	
