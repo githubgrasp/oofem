@@ -1,9 +1,9 @@
 latticeframe3dnl.out
 Buckling3D. Model
-NonlinearStatic nmsteps 1 nsteps 1 nmodules 2
+NonlinearStatic nmsteps 1 nsteps 1 nmodules 1
 nsteps 11 stiffmode 0 rtolv 1.e-3 maxiter 20000 initialguess 1 controlmode 1 
 errorcheck
-vtkxml tstep_step 1 primvars 1 1 cellvars 4 138 139 156 157 domain_all element_all
+#vtkxml tstep_step 1 primvars 1 1 cellvars 4 138 139 156 157 domain_all element_all
 domain 3dLattice
 OutputManager
 ndofman 9 nelem 8 ncrosssect 1 nmat 1 nbc 2 nic 0 nltf 2 nset 0

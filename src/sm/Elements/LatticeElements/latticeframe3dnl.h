@@ -37,7 +37,7 @@
 
 #include "latticeframe3d.h"
 
-///@name Input fields for LatticeFrame3dNL
+///@name Input fields for Latticeframe3dnl
 //@{
 #define _IFT_LatticeFrame3dNL_Name "latticeframe3dnl"
 
@@ -45,15 +45,31 @@
 
 namespace oofem {
 /**
- * This class implements a geometric nonlinear 3-dimensional frame element. It is an extension of a geometric linear 3-dimensional frame element based on rigid body spring theory called LatticeFrame3D presented in Toi 1991 and Toi 1993. It belongs to the group of lattice models in the OOFEM structure, but can be used as a standard 3D beam element.
+ * This class implements a geometric nonlinear 3-dimensional frame element based on rigid body spring models. It is an extension of a geometric linear 3-dimensional frame element based on rigid body spring theory called LatticeFrame3D presented in Toi 1991 and Toi 1993. It belongs to the group of lattice models in the OOFEM structure, but can be used as a standard 3D beam element.
  * References:
  * Toi, Y. (1991). Shifted integration technique in one‐dimensional plastic collapse analysis using linear and cubic finite elements. International Journal for Numerical Methods in Engineering, 31(8), 1537-1552.
  * Toi, Y., & Isobe, D. (1993). Adaptively shifted integration technique for finite element collapse analysis of framed structures. International Journal for Numerical Methods in Engineering, 36(14), 2323-2339.
- * Authors: Gumaa Abdelrhim and Peter Grassl, 2023
+ * Authors: Gumaa Abdelrhim and Peter Grassl, 2024
  */
 
 class LatticeFrame3dNL : public LatticeFrame3d
 {
+private:
+  /// Last equilibriated rotation matrix one
+  FloatMatrix rotationMatrixOne;
+
+  /// Last equilibriated rotation matrix two
+  FloatMatrix rotationMatrixTwo;
+
+  /// Temporary rotation matrix one
+  FloatMatrix tempRotationMatrixOne;
+
+  /// Temporary rotation matrix two
+  FloatMatrix tempRotationMatrixTwo;
+
+  /// Time stamp of temporary centre triad.
+  StateCounterType tempRotationCounter;
+
 protected:
 
 public:
@@ -61,14 +77,26 @@ public:
     virtual ~LatticeFrame3dNL();
 
     const char *giveInputRecordName() const override { return _IFT_LatticeFrame3dNL_Name; }
-    const char *giveClassName() const override { return "latticeframe3dnl"; }
+    const char *giveClassName() const override { return "latticeframe3dnl5"; }
 
     void giveInternalForcesVector(FloatArray &answer, TimeStep *tStep, int useUpdatedGpRecord) override;
 
 protected:
-    virtual void computeBmatrixAt(GaussPoint *, FloatMatrix &, int = 1, int = ALL_STRAINS) override;
-    void computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode, TimeStep *tStep) override;
-    virtual void  computeStrainVector(FloatArray &answer, GaussPoint *gp, TimeStep *tStep) override;
+
+  void computeRotationMatrices(FloatMatrix &answerOne, FloatMatrix &answerTwo);
+  void computeGlobalRotationMatrix(FloatMatrix &answer, FloatArray &rotation);
+
+  void updateRotationMatrices(TimeStep *tStep);
+
+  bool computeGtoLStrainRotationMatrix(FloatMatrix &answer);
+  bool computeGtoLRotationMatrix(FloatMatrix &) override;
+  virtual void computeBmatrixAt(GaussPoint *, FloatMatrix &, int = 1, int = ALL_STRAINS) override;
+
+  void updateYourself(TimeStep *tStep) override;
+  void initForNewStep() override;
+
+  void computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode, TimeStep *tStep) override;
+  virtual void  computeStrainVector(FloatArray &answer, GaussPoint *gp, TimeStep *tStep) override;
 };
-} // end namespace oofem
+} // End namespace oofem
 #endif
