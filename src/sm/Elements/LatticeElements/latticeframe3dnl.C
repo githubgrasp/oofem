@@ -202,7 +202,6 @@ namespace oofem {
         answer.at(6, 11) = 0.;
         answer.at(6, 12) = 1.;
 
-
         return;
     }
 
@@ -236,7 +235,7 @@ LatticeFrame3dNL::updateRotationMatrices(TimeStep *tStep)
 	
 	FloatMatrix r(12, 12), rT(12, 12);
 
-	Node 1
+	//Node 1
 	FloatArray rotationOne(3);
         rotationOne.at(1) = uInc.at(4);
         rotationOne.at(2) = uInc.at(5);
@@ -245,7 +244,7 @@ LatticeFrame3dNL::updateRotationMatrices(TimeStep *tStep)
 	computeGlobalRotationMatrix(globalRInc,rotationOne);
 	this->tempRotationMatrixOne.beProductOf( globalRInc, this->rotationMatrixOne);
 
-	Node 2
+	//Node 2
 	FloatArray rotationTwo(3);
         rotationTwo.at(1) = uInc.at(10);
         rotationTwo.at(2) = uInc.at(11);
@@ -261,8 +260,8 @@ LatticeFrame3dNL::updateRotationMatrices(TimeStep *tStep)
  
 void
 LatticeFrame3dNL::initForNewStep()
-initializes receiver to new time step or can be used
-if current time step must be restarted
+//initializes receiver to new time step or can be used
+//if current time step must be restarted
 {
     LatticeFrame3d::initForNewStep();
 
@@ -282,7 +281,7 @@ if current time step must be restarted
       thetaY = rotation.at(2);
       thetaZ = rotation.at(3);
       
-      First x, then y and finally z
+      //   First x, then y and finally z
       answer.at(1,1) = cos(thetaY) * cos(thetaZ);
       answer.at(1,2) = cos(thetaZ) * sin(thetaY) * sin(thetaX) - sin(thetaZ) * cos(thetaX);
       answer.at(1,3) = cos(thetaZ) * sin(thetaY) * cos(thetaX) + sin(thetaZ) * sin(thetaX);
@@ -316,7 +315,7 @@ if current time step must be restarted
 
         this->computeConstitutiveMatrixAt(d, rMode, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
 
-        Rotate constitutive stiffness matrix
+        //Rotate constitutive stiffness matrix
         FloatMatrix r(6, 6), rT(6, 6), dR(6, 6), rTDR(6, 6);
         computeGtoLStrainRotationMatrix(r);
         rT.beTranspositionOf(r);
@@ -463,6 +462,5 @@ if current time step must be restarted
     answer.at(10) =  stress.at(2) * c2.at(3) - stress.at(3) * c2.at(2) + stress.at(4);
     answer.at(11) = -stress.at(1) * c2.at(3) + stress.at(3) * c2.at(1) + stress.at(5);
     answer.at(12) = stress.at(1) * c2.at(2) - stress.at(2) * c2.at(1) + stress.at(6);
-
     }
 } // end namespace oofem
