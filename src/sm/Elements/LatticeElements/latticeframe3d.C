@@ -356,13 +356,13 @@ namespace oofem {
         Node *nodeA, *nodeB;
         nodeA = this->giveNode(1);
         nodeB = this->giveNode(2);
-        lx.beDifferenceOf( nodeB->giveCoordinates(), nodeA->giveCoordinates() );
+        lx.beDifferenceOf(nodeB->giveCoordinates(), nodeA->giveCoordinates() );
         lx.normalize();
 
 
         if ( this->referenceNode ) {
             Node *refNode = this->giveDomain()->giveNode(this->referenceNode);
-            help.beDifferenceOf( refNode->giveCoordinates(), nodeA->giveCoordinates() );
+            help.beDifferenceOf(refNode->giveCoordinates(), nodeA->giveCoordinates() );
 
             lz.beVectorProductOf(lx, help);
             lz.normalize();
@@ -392,7 +392,7 @@ namespace oofem {
 
             help.at(3) = 1.0;     // up-vector
             // here is ly is used as a temp var
-            if ( fabs( lx.dotProduct(help) ) > 0.999 ) { // Check if it is vertical
+            if ( fabs(lx.dotProduct(help) ) > 0.999 ) {  // Check if it is vertical
                 ly = {
                     0., 1., 0.
                 };
@@ -401,23 +401,23 @@ namespace oofem {
             }
             lz.beProductOf(rot, ly);
             lz.normalize();
-        } else   {//Check! Not sure if this works for general cases.
-	  if ( lx.at(1) == 0 ) {
-	    ly.at(1) = 0.;
-	    ly.at(2) = lx.at(3);
-	    ly.at(3) = lx.at(2);
-	  } else if ( lx.at(2) == 0 ) {
-	    ly.at(1) = lx.at(3);
-	    ly.at(2) = 0.;
-	    ly.at(3) = -lx.at(1);
-	  } else {
-	    ly.at(1) = lx.at(2);
-	    ly.at(2) = -lx.at(1);
-	    ly.at(3) = 0.;
-	  }
-          ly.normalize();
-          lz.beVectorProductOf(lx, ly);
-          lz.normalize();
+        } else {  //Check! Not sure if this works for general cases.
+            if ( lx.at(1) == 0 ) {
+                ly.at(1) = 0.;
+                ly.at(2) = lx.at(3);
+                ly.at(3) = lx.at(2);
+            } else if ( lx.at(2) == 0 ) {
+                ly.at(1) = lx.at(3);
+                ly.at(2) = 0.;
+                ly.at(3) = -lx.at(1);
+            } else {
+                ly.at(1) = lx.at(2);
+                ly.at(2) = -lx.at(1);
+                ly.at(3) = 0.;
+            }
+            ly.normalize();
+            lz.beVectorProductOf(lx, ly);
+            lz.normalize();
         }
 
         answer.resize(3, 3);
@@ -428,7 +428,7 @@ namespace oofem {
             answer.at(3, i) = lz.at(i);
         }
 
-	
+
         return 1;
     }
 
@@ -459,7 +459,7 @@ namespace oofem {
         } else if ( ir.hasField(_IFT_LatticeFrame3d_refangle) ) {
             IR_GIVE_FIELD(ir, referenceAngle, _IFT_LatticeFrame3d_refangle);
         } else {
-	  //            OOFEM_WARNING("axis, reference node, or angle not set. Using default orientation.");
+            //            OOFEM_WARNING("axis, reference node, or angle not set. Using default orientation.");
         }
 
         this->s = 0.;
@@ -500,7 +500,7 @@ namespace oofem {
     }
 
     double
-    LatticeFrame3d :: computeVolumeAround(GaussPoint *aGaussPoint)
+    LatticeFrame3d::computeVolumeAround(GaussPoint *aGaussPoint)
     {
         return giveArea() * computeLength();
     }

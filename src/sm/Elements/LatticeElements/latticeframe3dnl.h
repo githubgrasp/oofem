@@ -55,20 +55,20 @@ namespace oofem {
 class LatticeFrame3dNL : public LatticeFrame3d
 {
 private:
-  /// Last equilibriated rotation matrix one
-  FloatMatrix rotationMatrixOne;
+    /// Last equilibriated rotation matrix one
+    FloatMatrix rotationMatrixOne;
 
-  /// Last equilibriated rotation matrix two
-  FloatMatrix rotationMatrixTwo;
+    /// Last equilibriated rotation matrix two
+    FloatMatrix rotationMatrixTwo;
 
-  /// Temporary rotation matrix one
-  FloatMatrix tempRotationMatrixOne;
+    /// Temporary rotation matrix one
+    FloatMatrix tempRotationMatrixOne;
 
-  /// Temporary rotation matrix two
-  FloatMatrix tempRotationMatrixTwo;
+    /// Temporary rotation matrix two
+    FloatMatrix tempRotationMatrixTwo;
 
-  /// Time stamp of temporary centre triad.
-  StateCounterType tempRotationCounter;
+    /// Time stamp of temporary centre triad.
+    StateCounterType tempRotationCounter;
 
 protected:
 
@@ -83,20 +83,20 @@ public:
 
 protected:
 
-  void computeRotationMatrices(FloatMatrix &answerOne, FloatMatrix &answerTwo);
-  void computeGlobalRotationMatrix(FloatMatrix &answer, FloatArray &rotation);
+    void computeRotationMatrices(FloatMatrix &answerOne, FloatMatrix &answerTwo);
+    void computeGlobalRotationMatrix(FloatMatrix &answer, FloatArray &rotation);
 
-  void updateRotationMatrices(TimeStep *tStep);
+    void updateRotationMatrices(TimeStep *tStep);
 
-  bool computeGtoLStrainRotationMatrix(FloatMatrix &answer);
-  bool computeGtoLRotationMatrix(FloatMatrix &) override;
-  virtual void computeBmatrixAt(GaussPoint *, FloatMatrix &, int = 1, int = ALL_STRAINS) override;
+    bool computeGtoLStrainRotationMatrix(FloatMatrix &answer);
+    bool computeGtoLRotationMatrix(FloatMatrix &) override;
+    virtual void computeBmatrixAt(GaussPoint *, FloatMatrix &, int = 1, int = ALL_STRAINS) override;
 
-  void updateYourself(TimeStep *tStep) override;
-  void initForNewStep() override;
+    void updateYourself(TimeStep *tStep) override;
+    void initForNewStep() override;
 
-  void computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode, TimeStep *tStep) override;
-  virtual void  computeStrainVector(FloatArray &answer, GaussPoint *gp, TimeStep *tStep) override;
+    void computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode, TimeStep *tStep) override;
+    virtual void  computeStrainVector(FloatArray &answer, GaussPoint *gp, TimeStep *tStep) override;
 };
 } // End namespace oofem
 #endif
