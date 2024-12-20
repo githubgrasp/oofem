@@ -87,17 +87,17 @@ protected:
     FloatArrayF< 6 >tempDamageLatticeStrain;
 
 
-  FloatMatrixF < 3,3 > globalRotationMatrixOne;
-  
-  FloatMatrixF < 3,3 > globalRotationMatrixTwo;
+    FloatMatrixF< 3, 3 >globalRotationMatrixOne;
 
-  FloatMatrixF < 3,3 > tempGlobalRotationMatrixOne;
+    FloatMatrixF< 3, 3 >globalRotationMatrixTwo;
 
-  FloatMatrixF < 3,3 > tempGlobalRotationMatrixTwo;
+    FloatMatrixF< 3, 3 >tempGlobalRotationMatrixOne;
 
-  FloatArrayF< 12 >tempGlobalU;
+    FloatMatrixF< 3, 3 >tempGlobalRotationMatrixTwo;
 
-  FloatArrayF< 12 >globalU;
+    FloatArrayF< 12 >tempGlobalU;
+
+    FloatArrayF< 12 >globalU;
 
     /// Equilibrated normal stress
     double normalLatticeStress = 0.;
@@ -179,7 +179,7 @@ public:
 
     /// Returns temp damage lattice strain.
     const FloatArrayF< 6 > &giveTempDamageLatticeStrain() const { return this->tempDamageLatticeStrain; }
-  
+
     /// Assigns the temp value of lattice strain.
     void letTempLatticeStrainBe(const FloatArrayF< 6 > &v) { this->tempLatticeStrain = v; }
 
@@ -196,21 +196,21 @@ public:
     void letTempDamageLatticeStrainBe(const FloatArrayF< 6 > &v) { this->tempDamageLatticeStrain = v; }
 
 
-  void letTempGlobalRotationMatrixOneBe(const FloatMatrixF< 3,3 > & v){ this->tempGlobalRotationMatrixOne = v; }
+    void letTempGlobalRotationMatrixOneBe(const FloatMatrixF< 3, 3 > &v) { this->tempGlobalRotationMatrixOne = v; }
 
-    const FloatMatrixF<3,3> giveGlobalRotationMatrixOne() const {return this->globalRotationMatrixOne;}
-
-
-  void letTempGlobalRotationMatrixTwoBe(const FloatMatrixF< 3,3 > & v){ this->tempGlobalRotationMatrixTwo = v; }
-  
-    const FloatMatrixF<3,3> giveGlobalRotationMatrixTwo() const {return this->globalRotationMatrixTwo;}
+    const FloatMatrixF< 3, 3 >giveGlobalRotationMatrixOne() const { return this->globalRotationMatrixOne; }
 
 
-    void letTempGlobalUBe(const FloatArrayF< 12 > & v){ this->tempGlobalU = v;}
+    void letTempGlobalRotationMatrixTwoBe(const FloatMatrixF< 3, 3 > &v) { this->tempGlobalRotationMatrixTwo = v; }
 
-    const FloatArrayF < 12 > giveGlobalU() const {return this->globalU;}
+    const FloatMatrixF< 3, 3 >giveGlobalRotationMatrixTwo() const { return this->globalRotationMatrixTwo; }
 
-  
+
+    void letTempGlobalUBe(const FloatArrayF< 12 > &v) { this->tempGlobalU = v; }
+
+    const FloatArrayF< 12 >giveGlobalU() const { return this->globalU; }
+
+
     /// Sets the temp normalStress
     void setTempNormalLatticeStress(double val) { this->tempNormalLatticeStress = val; }
 
