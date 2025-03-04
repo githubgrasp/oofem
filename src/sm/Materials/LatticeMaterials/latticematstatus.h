@@ -86,19 +86,6 @@ protected:
     /// Non-equilibriated damage lattice strain
     FloatArrayF< 6 >tempDamageLatticeStrain;
 
-
-    FloatMatrixF< 3, 3 >globalRotationMatrixOne;
-
-    FloatMatrixF< 3, 3 >globalRotationMatrixTwo;
-
-    FloatMatrixF< 3, 3 >tempGlobalRotationMatrixOne;
-
-    FloatMatrixF< 3, 3 >tempGlobalRotationMatrixTwo;
-
-    FloatArrayF< 12 >tempGlobalU;
-
-    FloatArrayF< 12 >globalU;
-
     /// Equilibrated normal stress
     double normalLatticeStress = 0.;
 
@@ -195,22 +182,6 @@ public:
     /// Assigns the temp value of damage lattice strain.
     void letTempDamageLatticeStrainBe(const FloatArrayF< 6 > &v) { this->tempDamageLatticeStrain = v; }
 
-
-    void letTempGlobalRotationMatrixOneBe(const FloatMatrixF< 3, 3 > &v) { this->tempGlobalRotationMatrixOne = v; }
-
-    const FloatMatrixF< 3, 3 >giveGlobalRotationMatrixOne() const { return this->globalRotationMatrixOne; }
-
-
-    void letTempGlobalRotationMatrixTwoBe(const FloatMatrixF< 3, 3 > &v) { this->tempGlobalRotationMatrixTwo = v; }
-
-    const FloatMatrixF< 3, 3 >giveGlobalRotationMatrixTwo() const { return this->globalRotationMatrixTwo; }
-
-
-    void letTempGlobalUBe(const FloatArrayF< 12 > &v) { this->tempGlobalU = v; }
-
-    const FloatArrayF< 12 >giveGlobalU() const { return this->globalU; }
-
-
     /// Sets the temp normalStress
     void setTempNormalLatticeStress(double val) { this->tempNormalLatticeStress = val; }
 
@@ -219,7 +190,6 @@ public:
 
     /// Gives the last equilibrated normal stress
     double giveTempNormalLatticeStress() const { return this->tempNormalLatticeStress; }
-
 
     ///Sets the temp_crack_flag
     void setTempCrackFlag(int val) { tempCrackFlag = val; }
