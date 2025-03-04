@@ -203,7 +203,6 @@ Material *LatticeCrossSection::giveMaterial(IntegrationPoint *ip) const
     }
 }
 
-
 int
 LatticeCrossSection::packUnknowns(DataStream &buff, TimeStep *tStep, GaussPoint *gp)
 {
