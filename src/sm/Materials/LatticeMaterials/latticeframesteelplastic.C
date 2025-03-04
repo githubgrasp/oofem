@@ -265,7 +265,7 @@ namespace oofem {
         int subIncrementCounter = 0;
 
         /* Check yield condition, i.e. if the yield value is less than the yield tolerance. If yield condition is valid. Do perform regular return (closest point return)*/
-
+	
         if ( yieldValue > yieldTol ) {
             int subIncrementFlag = 0;
             auto convergedStrain = oldStrain;

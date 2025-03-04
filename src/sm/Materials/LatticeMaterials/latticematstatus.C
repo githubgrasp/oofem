@@ -1,3 +1,4 @@
+
 /*
  *
  *                 #####    #####   ######  ######  ###   ###
@@ -41,13 +42,6 @@
 namespace oofem {
     LatticeMaterialStatus::LatticeMaterialStatus(GaussPoint *g) : MaterialStatus(g), RandomMaterialStatusExtensionInterface()
     {
-        this->globalRotationMatrixOne.at(1, 1) = 1.;
-        this->globalRotationMatrixOne.at(2, 2) = 1.;
-        this->globalRotationMatrixOne.at(3, 3) = 1.;
-
-        this->globalRotationMatrixTwo.at(1, 1) = 1.;
-        this->globalRotationMatrixTwo.at(2, 2) = 1.;
-        this->globalRotationMatrixTwo.at(3, 3) = 1.;
     }
 
 
@@ -69,11 +63,6 @@ namespace oofem {
         this->tempNormalLatticeStress = this->normalLatticeStress;
 
         this->tempPlasticLatticeStrain = this->plasticLatticeStrain;
-
-        this->tempGlobalRotationMatrixOne = this->globalRotationMatrixOne;
-        this->tempGlobalRotationMatrixTwo = this->globalRotationMatrixTwo;
-
-        this->tempGlobalU = this->globalU;
 
         this->tempDissipation = this->dissipation;
         this->tempDeltaDissipation = this->deltaDissipation;
@@ -100,12 +89,6 @@ namespace oofem {
         this->reducedLatticeStrain = this->tempReducedLatticeStrain;
 
         this->damageLatticeStrain = this->tempDamageLatticeStrain;
-
-        this->globalRotationMatrixOne = this->tempGlobalRotationMatrixOne;
-
-        this->globalRotationMatrixTwo = this->tempGlobalRotationMatrixTwo;
-
-        this->globalU = this->tempGlobalU;
 
         this->dissipation = this->tempDissipation;
 
@@ -148,7 +131,6 @@ namespace oofem {
             return nullptr;
         }
     }
-
 
     void
     LatticeMaterialStatus::saveContext(DataStream &stream, ContextMode mode)
@@ -201,11 +183,6 @@ namespace oofem {
 
         if ( !stream.write(updateFlag) ) {
             THROW_CIOERR(CIO_IOERR);
-        }
-
-
-        if ( ( iores = globalU.storeYourself(stream) ) != CIO_OK ) {
-            THROW_CIOERR(iores);
         }
     }
 
@@ -261,9 +238,5 @@ namespace oofem {
             THROW_CIOERR(CIO_IOERR);
         }
 
-
-        if ( ( iores = globalU.restoreYourself(stream) ) != CIO_OK ) {
-            THROW_CIOERR(iores);
-        }
     }
 } // end namespace oofem
