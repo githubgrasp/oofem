@@ -178,11 +178,19 @@ namespace oofem {
     }
 
     void
-    LatticeFrame3d::giveGPCoordinates(FloatArray &coords)
+    LatticeFrame3d::giveGpCoordinates(FloatArray &coords)
     {
         coords.resize(3);
-        coords = this->globalCentroid;
-        return;
+	FloatArray help(3);
+	help.zero();
+	help.at(1) = this->s;
+	if(this->midPoint.giveSize() == 0){
+	  this->midPoint.resize(3);
+	  computeGlobalCoordinates(this->midPoint,help);
+	}
+	coords = this->midPoint;
+	
+	return;
     }
 
     double
@@ -485,6 +493,7 @@ namespace oofem {
         return length;
     }
 
+        
     void
     LatticeFrame3d::computeLumpedMassMatrix(FloatMatrix &answer, TimeStep *tStep)
     // Returns the lumped mass matrix of the receiver. This expression is
