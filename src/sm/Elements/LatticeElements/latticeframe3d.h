@@ -65,7 +65,7 @@ protected:
     double s;
     FloatMatrix localCoordinateSystem;
 
-    FloatArray midPoint, globalCentroid, normal;
+    FloatArray midPoint;
 
 public:
     LatticeFrame3d(int n, Domain *);
@@ -100,7 +100,7 @@ public:
     void giveDofManDofIDMask(int inode, IntArray &) const override;
 
 
-    virtual void giveGPCoordinates(FloatArray &coords);
+    virtual void giveGpCoordinates(FloatArray &coords);
 
     const char *giveInputRecordName() const override { return _IFT_LatticeFrame3d_Name; }
     const char *giveClassName() const override { return "latticeframe3d"; }

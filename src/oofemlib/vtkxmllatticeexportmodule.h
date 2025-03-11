@@ -98,6 +98,7 @@ public:
 
     void setupVTKPiece(ExportRegion &vtkPiece, TimeStep *tStep, Set& region) override;
 
+    void writePrimaryVarsCross(ExportRegion &vtkPiece);
     void writeCellVarsCross(ExportRegion &vtkPiece);
 
     void setupVTKPieceCross(ExportRegion &vtkPiece, TimeStep *tStep, Set& region);
@@ -105,6 +106,9 @@ public:
     int initRegionNodeNumbering(ExportRegion& piece, Domain *domain, TimeStep *tStep, Set& region) override;
 
     void exportPrimaryVars(ExportRegion &piece, Set& region, IntArray& primaryVarsToExport, NodalRecoveryModel& smoother, TimeStep *tStep) override;
+
+    void exportPrimaryVarsCross(ExportRegion &vtkPiece, Set &region, IntArray& primaryVarsToExport, NodalRecoveryModel& smoother, TimeStep *tStep);
+    
     void exportIntVars(ExportRegion &piece, Set& region, IntArray& internalVarsToExport, NodalRecoveryModel& smoother, TimeStep *tStep) override;
 };
 } // end namespace oofem

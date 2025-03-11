@@ -60,4 +60,6 @@ LatticeStructuralElement :: printOutputAt(FILE *file, TimeStep *tStep)
     }
 }
 
+
+
 } // end namespace oofem

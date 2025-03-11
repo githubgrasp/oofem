@@ -190,7 +190,7 @@ public:
     /**
      * Gives the GP coordinates
      */
-    virtual void  giveGpCoordinates(FloatArray &coords) { return; }
+  virtual void  giveGpCoordinates(FloatArray &coords){return;}
 
     /**
      * Gives the y second moment of area

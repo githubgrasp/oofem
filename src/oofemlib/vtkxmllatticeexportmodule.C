@@ -256,6 +256,12 @@ VTKXMLLatticeExportModule::setupVTKPieceCross(ExportRegion &vtkPieceCross, TimeS
         } else if ( dynamic_cast< LatticeTransportElement * >( domain->giveElement(elements.at(ie) ) ) ) {
             numberOfCrossSectionNodes = ( static_cast< LatticeTransportElement * >( domain->giveElement(elements.at(ie) ) ) )->giveNumberOfCrossSectionNodes();
         }
+	/*Extention of lattice vtk output to deal with lattice elements in which not the cross-section is plotted, but only a point.
+	  This works with frame elements which are displayed as line segments.*/
+	if(numberOfCrossSectionNodes == 0){//This gives one point as default, so that a sphere can be plotted later.
+	  numberOfCrossSectionNodes = 1;
+	}
+	      
         crossSectionTable.at(ie) = numberOfCrossSectionNodes;
         numberOfNodes += numberOfCrossSectionNodes;
     }
@@ -277,6 +283,22 @@ VTKXMLLatticeExportModule::setupVTKPieceCross(ExportRegion &vtkPieceCross, TimeS
             ( static_cast< LatticeTransportElement * >( domain->giveElement(elements.at(ie) ) ) )->giveCrossSectionCoordinates(crossSectionCoordinates);
         }
 
+
+	/*Extention of lattice vtk output to deal with lattice elements in which not the cross-section is plotted, but only a point.
+	  This works with frame elements which are displayed as line segments.*/
+	//TODO: I don't know why this is done here again as the number was extracted before. 
+	if(numberOfCrossSectionNodes == 0){//This gives one point as default, so that a sphere can be plotted later.
+	  numberOfCrossSectionNodes = 1;
+	  crossSectionCoordinates.resize(3);
+
+	  if (  dynamic_cast< LatticeStructuralElement * >( domain->giveElement(elements.at(ie) ) ) ) {        
+            ( static_cast< LatticeStructuralElement * >( domain->giveElement(elements.at(ie) ) ) )->giveGpCoordinates(crossSectionCoordinates);
+	  } else if ( dynamic_cast< LatticeTransportElement * >( domain->giveElement(elements.at(ie) ) ) ) {
+            ( static_cast< LatticeTransportElement * >( domain->giveElement(elements.at(ie) ) ) )->giveGpCoordinates(crossSectionCoordinates);
+	  }
+	}
+	
+	
         for ( int is = 0; is < numberOfCrossSectionNodes; is++ ) {
             nodeCounter++;
             nodeTable.at(nodeCounter, 1) = crossSectionCoordinates.at(3 * is + 1);
@@ -313,14 +335,55 @@ VTKXMLLatticeExportModule::setupVTKPieceCross(ExportRegion &vtkPieceCross, TimeS
             connectivity.at(i) = offset + i;
         }
         vtkPieceCross.setConnectivity(ei, connectivity);
-
-        vtkPieceCross.setCellType(ei, 7);
+	if(numElNodes == 1){//Special case in which only point is used (frame elements)
+	  vtkPieceCross.setCellType(ei, 1);
+	}
+	else{
+	  vtkPieceCross.setCellType(ei, 7);
+	}
         offset += numElNodes;
         vtkPieceCross.setOffset(ei, offset);
     }
 
     this->exportCellVars(vtkPieceCross, region, cellVarsToExport, tStep);
+
+    NodalRecoveryModel *primVarSmoother = givePrimVarSmoother();
+    
+    this->exportPrimaryVarsCross(vtkPieceCross, region, primaryVarsToExport, *primVarSmoother, tStep);
 }
+
+
+void
+VTKXMLLatticeExportModule::exportPrimaryVarsCross(ExportRegion &vtkPiece, Set &region, IntArray& primaryVarsToExport, NodalRecoveryModel& smoother, TimeStep *tStep)
+{
+    Domain *d = emodel->giveDomain(1);
+    FloatArray valueArray;
+    smoother.clear(); // Makes sure primary smoother is up-to-date with potentially new mesh.
+
+    //This is a way of plotting cell variables in the form of points in the current state.
+    //Displacements are at nodes, but points are at midpoints of elements. Interpolate the displacements so that a fictious displacement at midpoint is obtained.
+    
+    //const IntArray& mapG2L = vtkPiece.getMapG2L();
+    //    const IntArray& mapL2G = vtkPiece.getMapL2G();
+
+    //    vtkPiece.setNumberOfPrimaryVarsToExport(primaryVarsToExport, mapL2G.giveSize() );
+    vtkPiece.setNumberOfPrimaryVarsToExport(primaryVarsToExport, d->giveNumberOfElements() );
+    FloatArray average;
+    for ( int i = 1, n = primaryVarsToExport.giveSize(); i <= n; i++ ) {
+        UnknownType type = ( UnknownType ) primaryVarsToExport.at(i);       
+        for ( int ielem = 1; ielem <= d->giveNumberOfElements(); ielem++ ) {
+	  average.zero();
+	  Element *elem = d->giveElement(ielem);
+	  for (int inode = 1; inode<=elem->giveNumberOfNodes();inode++){
+	    DofManager *dman = elem->giveNode(inode);
+	    this->getNodalVariableFromPrimaryField(valueArray, dman, tStep, type, region, smoother);
+	    average += 0.5*valueArray;
+	  }
+	  vtkPiece.setPrimaryVarInNode(type, ielem, std::move(average) );
+        }
+    }
+}
+
 
 
 void
@@ -809,6 +872,9 @@ VTKXMLLatticeExportModule::writeVTKPieceCross(ExportRegion &vtkPieceCross, TimeS
     this->giveDataHeaders(pointHeader, cellHeader);
 
     this->fileStreamCross << pointHeader.c_str();
+
+    writePrimaryVarsCross(vtkPieceCross);
+    
     this->fileStreamCross << "</PointData>\n";
     this->fileStreamCross << cellHeader.c_str();
 
@@ -820,6 +886,31 @@ VTKXMLLatticeExportModule::writeVTKPieceCross(ExportRegion &vtkPieceCross, TimeS
     vtkPieceCross.clear();
     return true;
 }
+
+
+void
+VTKXMLLatticeExportModule::writePrimaryVarsCross(ExportRegion &vtkPiece)
+{
+    for ( int i = 1; i <= primaryVarsToExport.giveSize(); i++ ) {
+        UnknownType type = ( UnknownType ) primaryVarsToExport.at(i);
+        InternalStateValueType valType = giveInternalStateValueType(type);
+        int ncomponents = giveInternalStateTypeSize(valType);
+        ( void ) ncomponents; //silence the warning
+        int numNodes = vtkPiece.giveNumberOfNodes();
+        const char *name = __UnknownTypeToString(type);
+        ( void ) name; //silence the warning
+
+        this->fileStreamCross << " <DataArray type=\"Float64\" Name=\"" << name << "\" NumberOfComponents=\"" << ncomponents << "\" format=\"ascii\"> ";
+        for ( int inode = 1; inode <= numNodes; inode++ ) {
+            FloatArray &valueArray = vtkPiece.givePrimaryVarInNode(type, inode);
+	    for ( int i = 1; i <= valueArray.giveSize(); i++ ) {
+	      this->fileStreamCross << scientific << valueArray.at(i) << " ";
+	    }
+        }
+        this->fileStreamCross << "</DataArray>\n";
+    }
+}
+
 
 void
 VTKXMLLatticeExportModule::writeCellVarsCross(ExportRegion &vtkPiece)
