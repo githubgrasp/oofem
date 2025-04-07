@@ -43,6 +43,7 @@
 //@{
 #define _IFT_Beam2d_Name "beam2d"
 #define _IFT_Beam2d_dofstocondense "dofstocondense"
+#define _IFT_Beam2d_cs "cs"
 //@}
 
 namespace oofem {
@@ -72,7 +73,7 @@ protected:
     DofManager *ghostNodes [ 2 ];
     /// number of condensed DOFs
     int numberOfCondensedDofs;
-
+    int cs_mode;
     static FEI2dLineLin interp_geom;
     static FEI2dLineHermite interp_beam;
 

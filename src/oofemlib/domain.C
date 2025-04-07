@@ -1030,6 +1030,7 @@ Domain :: giveDefaultNodeDofIDArry()
         defaultNodeDofIDArry = {D_u};
     } else if  ( dType == _2dBeamMode ) {
         defaultNodeDofIDArry = {D_u, D_w, R_v};
+        //defaultNodeDofIDArry = { D_u, D_v, R_v };
     } else if  ( dType == _2dLatticeMode ) {
         defaultNodeDofIDArry = {D_u, D_v, R_w};
     } else if  ( dType == _HeatTransferMode ) {
@@ -1334,7 +1335,7 @@ Domain :: createDofs()
             const std :: map< int, int > *dmanTypes = dman->giveDofTypeMap();
             if ( dmanTypes ) {
                 std :: map< int, int > :: const_iterator it = dmanTypes->find(id);
-                if ( it != dmanTypes->end() ) {
+                if ( it != dmanTypes->end()) {
                     dtype = ( dofType ) it->second;
                 }
             }

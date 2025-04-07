@@ -119,6 +119,13 @@ void DofManager :: computeLoadVector(FloatArray &answer, Load *load, CharType ty
 Dof *DofManager :: giveDofWithID(int dofID) const
 // Returns the degree of freedom of the receiver with 'dofID'.
 {
+    //printf( "Searching for DOF ID %d in DofManager %d\n", dofID, this->giveNumber() );
+
+    //// Print all available DOFs in this DofManager
+    //printf( "Available DOFs in this DofManager:\n" );
+    //for ( auto it = this->begin(); it != this->end(); ++it ) {
+    //    printf( "DOF ID: %d\n", ( *it )->giveDofID() );
+    //}
     auto pos = this->findDofWithDofId( ( DofIDItem ) dofID );
 
 #ifdef DEBUG
@@ -195,12 +202,14 @@ void DofManager :: giveLocationArray(const IntArray &dofIDArry, IntArray &locati
         locationArray.clear();
 
         for ( int dofid: dofIDArry ) {
-            auto pos = this->findDofWithDofId( ( DofIDItem ) dofid );
-            if ( pos == this->end() ) {
-                OOFEM_ERROR("incompatible dof (%d) requested", dofid);
-            }
-            (*pos)->giveEquationNumbers(mstrEqNmbrs, s);
-            locationArray.followedBy(mstrEqNmbrs);
+            //if ( dofid != 5 ) {
+                auto pos = this->findDofWithDofId( ( DofIDItem ) dofid );
+                if ( pos == this->end() ) {
+                    OOFEM_ERROR("incompatible dof (%d) requested", dofid);
+                }
+                (*pos)->giveEquationNumbers(mstrEqNmbrs, s);
+                locationArray.followedBy(mstrEqNmbrs);
+            //}
         }
     }
 }
@@ -834,6 +843,7 @@ void DofManager :: postInitialize()
 {
     hasSlaveDofs = false;
     for ( Dof *dof: *this ) {
+        /*printf( "Checking DOF: id=%d, primary=%d\n", dof->giveDofID(), dof->isPrimaryDof() );*/
         if ( !dof->isPrimaryDof() ) {
             hasSlaveDofs = true;
             continue;

@@ -1,9 +1,9 @@
 hangingnode01.out
 Test of hanging node in PlaneStress2d element
-LinearStatic nsteps 1 nmodules 1
-errorcheck
 #LinearStatic nsteps 1 nmodules 1
-#vtkxml tstep_all domain_all primvars 1 1 vars 2 1 4 stype 1
+#errorcheck
+LinearStatic nsteps 1 nmodules 1
+vtkxml tstep_all domain_all primvars 1 1 vars 2 1 4 stype 1
 domain 2dPlaneStress
 OutputManager tstep_all dofman_all element_all
 ndofman 5 nelem 1 ncrosssect 1 nmat 1 nbc 3 nic 0 nltf 1 nset 4

@@ -347,7 +347,7 @@ Element :: computeDofTransformationMatrix(FloatMatrix &answer, const IntArray &n
             this->giveInternalDofManDofIDMask(i, dofIDmask);
             if ( !this->giveInternalDofManager( nodes.at(i) )->computeM2GTransformation(dofManT, dofIDmask) ) {
                 dofManT.resize( dofIDmask.giveSize(), dofIDmask.giveSize() );
-                dofManT.zero();
+               dofManT.zero();
                 dofManT.beUnitMatrix();
             }
             nc = dofManT.giveNumberOfColumns();
@@ -397,7 +397,7 @@ Element :: giveLocationArray(IntArray &locationArray, const UnknownNumberingSche
     for ( int i = 1; i <= this->giveNumberOfDofManagers(); i++ ) {
         this->giveDofManDofIDMask(i, ids);
         this->giveDofManager(i)->giveLocationArray(ids, nodalArray, s);
-        locationArray.followedBy(nodalArray);
+        locationArray.followedBy(nodalArray); 
         if ( dofIdArray ) {
             this->giveDofManager(i)->giveMasterDofIDArray(ids, masterDofIDs);
             dofIdArray->followedBy(masterDofIDs);

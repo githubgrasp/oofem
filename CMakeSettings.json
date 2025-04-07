@@ -1,0 +1,42 @@
+﻿{
+  "configurations": [
+    {
+      "name": "x64-Debug",
+      "generator": "Visual Studio 17 2022 Win64",
+      "configurationType": "Debug",
+      "inheritEnvironments": [ "msvc_arm64_x64" ],
+      "buildRoot": "C:\\Users\\CMourlas001\\Source\\Repos\\oofem_Build2",
+      "intelliSenseMode": "windows-msvc-x64",
+      "cmakeCommandArgs": "C:\\Users\\CMourlas001\\Source\\Repos\\oofem_Build2",
+      "installRoot": "C:\\Users\\CMourlas001\\Source\\Repos\\oofem_Build2",
+      "variables": [
+        {
+          "name": "CMAKE_SHARED_LINKER_FLAGS_MINSIZEREL",
+          "value": "/INCREMENTAL:YES",
+          "type": "STRING"
+        },
+        {
+          "name": "CMAKE_SHARED_LINKER_FLAGS_RELEASE",
+          "value": "/INCREMENTAL:YES",
+          "type": "STRING"
+        },
+        {
+          "name": "USE_SHARED_LIB",
+          "value": "true",
+          "type": "BOOL"
+        }
+      ]
+    },
+    {
+      "name": "x64-Release",
+      "generator": "Visual Studio 17 2022 Win64",
+      "configurationType": "Release",
+      "buildRoot": "C:\\Users\\CMourlas001\\Source\\Repos\\oofem_Build",
+      "installRoot": "C:\\Users\\CMourlas001\\Source\\Repos\\oofem_Build",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "msvc_x64_x64" ]
+    }
+  ]
+}

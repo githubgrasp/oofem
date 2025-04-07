@@ -74,6 +74,7 @@ Beam2d :: Beam2d(int n, Domain *aDomain) : BeamBaseElement(n, aDomain), LayeredC
 
     ghostNodes [ 0 ] = ghostNodes [ 1 ] = NULL;
     numberOfCondensedDofs = 0;
+    cs_mode = 0;
 }
 
 
@@ -231,9 +232,20 @@ Beam2d :: computeGtoLRotationMatrix(FloatMatrix &answer)
 
     if ( this->hasDofs2Condense() ) {
         int condensedDofCounter = 0;
-        DofIDItem dofids[] = {
-            D_u, D_w, R_v
-        };
+        DofIDItem dofids[3];
+        if ( cs_mode == 0 ) {
+            dofids[0] = D_u;
+            dofids[1] = D_w;
+            dofids[2] = R_v;
+            //{
+            //     D_u, D_w, R_v
+            //    //D_u, D_v, R_v
+            //};
+        } else {
+            dofids[0] = D_u;
+            dofids[1] = D_v;
+            dofids[2] = R_v;
+        }
         FloatMatrix l2p(6, ndofs); // local -> primary
         l2p.zero();
         // loop over nodes
@@ -278,7 +290,8 @@ Beam2d :: computeStrainVectorInLayer(FloatArray &answer, const FloatArray &maste
 
     top    = this->giveCrossSection()->give(CS_TopZCoord, masterGp);
     bottom = this->giveCrossSection()->give(CS_BottomZCoord, masterGp);
-    layerZeta = slaveGp->giveNaturalCoordinate(3);
+    //layerZeta = slaveGp->giveNaturalCoordinate(3);
+    layerZeta   = slaveGp->giveNaturalCoordinate( 2 );
     layerZCoord = 0.5 * ( ( 1. - layerZeta ) * bottom + ( 1. + layerZeta ) * top );
 
     answer.resize(2); // {Exx,GMzx}
@@ -291,9 +304,11 @@ Beam2d :: computeStrainVectorInLayer(FloatArray &answer, const FloatArray &maste
 void
 Beam2d :: giveDofManDofIDMask(int inode, IntArray &answer) const
 {
-    answer = {
-        D_u, D_w, R_v
-    };
+    if ( cs_mode == 0 ) {
+        answer = { D_u, D_w, R_v };
+    } else { 
+        answer = { D_u, D_v, R_v };
+    }    
 }
 
 
@@ -302,12 +317,17 @@ Beam2d :: computeLength()
 {
     double dx, dy;
     Node *nodeA, *nodeB;
-
+    
     if ( length == 0. ) {
         nodeA   = this->giveNode(1);
         nodeB   = this->giveNode(2);
         dx      = nodeB->giveCoordinate(1) - nodeA->giveCoordinate(1);
-        dy      = nodeB->giveCoordinate(3) - nodeA->giveCoordinate(3);
+        if ( cs_mode == 0 ) {
+            dy = nodeB->giveCoordinate( 3 ) - nodeA->giveCoordinate( 3 );
+        } else {
+            // dy      = nodeB->giveCoordinate(3) - nodeA->giveCoordinate(3);
+            dy = nodeB->giveCoordinate( 2 ) - nodeA->giveCoordinate( 2 );
+        }        
         length  = sqrt(dx * dx + dy * dy);
     }
 
@@ -326,8 +346,13 @@ Beam2d :: givePitch()
         nodeB  = this->giveNode(2);
         xA     = nodeA->giveCoordinate(1);
         xB     = nodeB->giveCoordinate(1);
-        yA     = nodeA->giveCoordinate(3);
-        yB     = nodeB->giveCoordinate(3);
+        if ( cs_mode == 0 ) {
+            yA     = nodeA->giveCoordinate(3);
+            yB     = nodeB->giveCoordinate(3);
+        } else {
+            yA = nodeA->giveCoordinate( 2 );
+            yB = nodeB->giveCoordinate( 2 );
+        }  
         pitch  = atan2(yB - yA, xB - xA);
     }
 
@@ -382,6 +407,8 @@ Beam2d :: initializeFrom(InputRecord &ir)
 {
     // first call parent
     BeamBaseElement :: initializeFrom(ir);
+    cs_mode = 0;
+    IR_GIVE_OPTIONAL_FIELD( ir, cs_mode, _IFT_Beam2d_cs );
 
     if ( ir.hasField(_IFT_Beam2d_dofstocondense) ) {
         IntArray val;
@@ -389,10 +416,19 @@ Beam2d :: initializeFrom(InputRecord &ir)
         if ( val.giveSize() >= 6 ) {
             throw ValueInputException(ir, _IFT_Beam2d_dofstocondense, "wrong input data for condensed dofs");
         }
-
-        DofIDItem mask[] = {
-            D_u, D_w, R_v
-        };
+        DofIDItem mask[3];
+        if ( cs_mode == 0 ) {
+            mask[0] = D_u;
+            mask[1] = D_w;
+            mask[2] = R_v;
+                //D_u, D_v, R_v
+        } else {
+            mask[0] = D_u;
+            mask[1] = D_v;
+            mask[2] = R_v;
+                //D_u, D_v, R_v
+        }
+        
         this->numberOfCondensedDofs = val.giveSize();
         for ( int i = 1; i <= val.giveSize(); i++ ) {
             if ( val.at(i) <= 3 ) {
@@ -457,10 +493,23 @@ Beam2d :: computeBoundaryEdgeLoadVector(FloatArray &answer, BoundaryLoad *load, 
         const FloatArray &lcoords = gp->giveNaturalCoordinates();
         this->computeNmatrixAt(lcoords, N);
         if ( load->giveFormulationType() == Load :: FT_Entity ) {
-            load->computeValues(t, tStep, lcoords, { D_u, D_w, R_v }, mode);
+            if ( cs_mode == 0 ) {
+                load->computeValues(t, tStep, lcoords, { D_u, D_w, R_v }, mode);
+                //load->computeValues( t, tStep, lcoords, { D_u, D_v, R_v }, mode );
+            } else {
+                // load->computeValues(t, tStep, lcoords, { D_u, D_w, R_v }, mode);
+                load->computeValues( t, tStep, lcoords, { D_u, D_v, R_v }, mode );
+            }
+
         } else {
-            this->computeGlobalCoordinates(coords, lcoords);
-            load->computeValues(t, tStep, coords, { D_u, D_w, R_v }, mode);
+            this->computeGlobalCoordinates( coords, lcoords );
+            if ( cs_mode == 0 ) {
+                 load->computeValues(t, tStep, coords, { D_u, D_w, R_v }, mode);
+                //load->computeValues( t, tStep, coords, { D_u, D_v, R_v }, mode );
+            } else{
+                // load->computeValues(t, tStep, coords, { D_u, D_w, R_v }, mode);
+                load->computeValues( t, tStep, coords, { D_u, D_v, R_v }, mode );
+            }
         }
 
         if ( load->giveCoordSystMode() == Load :: CST_Global ) {

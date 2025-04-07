@@ -36,11 +36,12 @@
 #define hangingnode_h
 
 #include "node.h"
-
+#include "element.h"
 ///@name Input fields for HangingNode
 //@{
 #define _IFT_HangingNode_Name "hangingnode"
 #define _IFT_HangingNode_masterElement "masterelement"
+//#define _IFT_HangingNode_masterElement "masterelementrot"
 #define _IFT_HangingNode_masterRegion "masterregion"
 //@}
 
@@ -66,6 +67,7 @@ class OOFEM_EXPORT HangingNode : public Node
 protected:
     /// Number of the master element.
     int masterElement;
+    int masterElementRot;
     /// Region of the master element (used for automatic detection).
     int masterRegion;
 #ifdef __OOFEG
@@ -83,9 +85,16 @@ public:
     /// Destructor.
     virtual ~HangingNode(void) { }
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(InputRecord &ir) override;    
+    FloatArray HangingNode::computeTriangleRotations( DofIDItem id, FloatArray &hangingNodeCoords, const IntArray &hexaNodes, const FloatArray &translationContribution, Element *e );
     void postInitialize() override;
     int checkConsistency() override;
+    std::tuple<int, int, double> findMasterNodesWithAlignedCoordinates( const IntArray &masterNodes, FloatArray localLcoords, Element *e ) const;
+    FloatArray computeMasterContributionForRv( const IntArray &masterNodes, const FloatArray &translationContribution, const FloatArray &lcoords, Element *e ) const;
+    static double computeDistance( const FloatArray &masterGlobalCoords1, const FloatArray &masterGlobalCoords2 );
+    static double distance( const std::array<double, 3> &a, const std::array<double, 3> &b );
+    std::vector<int> HangingNode::findThreeClosestNodes( FloatArray &hangingNodeCoords, const IntArray &hexaNodes );
+    int HangingNode::findNormalDirection( const FloatArray &localLcoords1, const FloatArray &localLcoords2, const FloatArray &localLcoords3 );
     bool isDofTypeCompatible(dofType type) const override { return ( type == DT_master || type == DT_slave ); }
 
     const char *giveClassName() const override { return "HangingNode"; }
