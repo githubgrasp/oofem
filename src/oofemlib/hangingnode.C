@@ -43,6 +43,7 @@
 
 #include "array"
 #include "vector"
+#include <cmath>
 
 namespace oofem {
 REGISTER_DofManager(HangingNode);
@@ -321,7 +322,7 @@ FloatArray HangingNode::computeTriangleRotations( DofIDItem id, FloatArray &hang
     double Lb1    = computeDistance( masterGlobalCoords2, masterGlobalCoords3 );
     double Lc1    = computeDistance( masterGlobalCoords1, masterGlobalCoords3 );
     double S1     = ( La1 + Lb1 + Lc1 ) / 2.0;
-    double Omega1 = sqrt( S1 * ( S1 - La1 ) * ( S1 - Lb1 ) * ( S1 - Lc1 ) );
+    double Omega1 = std::sqrt( S1 * ( S1 - La1 ) * ( S1 - Lb1 ) * ( S1 - Lc1 ) );
 
     //std::array<double, 6> Array_Axes = { 0, 1, 2, 0, 1, 2 };
     fei->global2local( localLcoords1, masterGlobalCoords1, FEIElementGeometryWrapper( e ) );

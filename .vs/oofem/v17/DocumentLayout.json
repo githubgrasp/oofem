@@ -3,16 +3,20 @@
   "WorkspaceRootPath": "C:\\Users\\CMourlas001\\source\\repos\\oofem\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\CMourlas001\\source\\repos\\oofem\\src\\main\\main.C||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\main\\main.C||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\CMourlas001\\source\\repos\\oofem\\CMakeLists.txt||{8B382828-6202-11D1-8870-0000F87579D2}",
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CMakeLists.txt||{8B382828-6202-11D1-8870-0000F87579D2}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\CMourlas001\\source\\repos\\oofem\\CMakeSettings.json||{10608CD5-279C-4A28-BD5F-BA2CFCE06219}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:CMakeSettings.json||{10608CD5-279C-4A28-BD5F-BA2CFCE06219}"
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\CMourlas001\\source\\repos\\oofem\\src\\oofemlib\\vtkxmlexportmodule.C||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\oofemlib\\vtkxmlexportmodule.C||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\CMourlas001\\source\\repos\\oofem\\src\\dss\\CMakeLists.txt||{8B382828-6202-11D1-8870-0000F87579D2}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\dss\\CMakeLists.txt||{8B382828-6202-11D1-8870-0000F87579D2}"
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\CMourlas001\\source\\repos\\oofem\\src\\oofemlib\\hangingnode.C||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\oofemlib\\hangingnode.C||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
   "DocumentGroupContainers": [
@@ -22,42 +26,60 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 1,
           "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "main.C",
+              "DocumentMoniker": "C:\\Users\\CMourlas001\\source\\repos\\oofem\\src\\main\\main.C",
+              "RelativeDocumentMoniker": "src\\main\\main.C",
+              "ToolTip": "C:\\Users\\CMourlas001\\source\\repos\\oofem\\src\\main\\main.C",
+              "RelativeToolTip": "src\\main\\main.C",
+              "ViewState": "AgIAAJAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
+              "WhenOpened": "2025-04-07T12:57:46.717Z",
+              "EditorCaption": ""
+            },
             {
               "$type": "Document",
               "DocumentIndex": 2,
-              "Title": "CMakeLists.txt",
-              "DocumentMoniker": "C:\\Users\\CMourlas001\\source\\repos\\oofem\\src\\dss\\CMakeLists.txt",
-              "RelativeDocumentMoniker": "src\\dss\\CMakeLists.txt",
-              "ToolTip": "C:\\Users\\CMourlas001\\source\\repos\\oofem\\src\\dss\\CMakeLists.txt",
-              "RelativeToolTip": "src\\dss\\CMakeLists.txt",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAFAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003109|",
-              "WhenOpened": "2024-10-09T22:32:25.293Z",
+              "Title": "vtkxmlexportmodule.C",
+              "DocumentMoniker": "C:\\Users\\CMourlas001\\source\\repos\\oofem\\src\\oofemlib\\vtkxmlexportmodule.C",
+              "RelativeDocumentMoniker": "src\\oofemlib\\vtkxmlexportmodule.C",
+              "ToolTip": "C:\\Users\\CMourlas001\\source\\repos\\oofem\\src\\oofemlib\\vtkxmlexportmodule.C",
+              "RelativeToolTip": "src\\oofemlib\\vtkxmlexportmodule.C",
+              "ViewState": "AgIAAFoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
+              "WhenOpened": "2025-04-07T12:51:33.388Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "hangingnode.C",
+              "DocumentMoniker": "C:\\Users\\CMourlas001\\source\\repos\\oofem\\src\\oofemlib\\hangingnode.C",
+              "RelativeDocumentMoniker": "src\\oofemlib\\hangingnode.C",
+              "ToolTip": "C:\\Users\\CMourlas001\\source\\repos\\oofem\\src\\oofemlib\\hangingnode.C",
+              "RelativeToolTip": "src\\oofemlib\\hangingnode.C",
+              "ViewState": "AgIAAHsAAAAAAAAAAAAAAJMAAAAHAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
+              "WhenOpened": "2025-04-07T11:28:23.575Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "CMakeSettings.json",
-              "DocumentMoniker": "C:\\Users\\CMourlas001\\source\\repos\\oofem\\CMakeSettings.json",
-              "RelativeDocumentMoniker": "CMakeSettings.json",
-              "ToolTip": "C:\\Users\\CMourlas001\\source\\repos\\oofem\\CMakeSettings.json",
-              "RelativeToolTip": "CMakeSettings.json",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2024-10-09T22:23:38.943Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
               "Title": "CMakeLists.txt",
               "DocumentMoniker": "C:\\Users\\CMourlas001\\source\\repos\\oofem\\CMakeLists.txt",
               "RelativeDocumentMoniker": "CMakeLists.txt",
               "ToolTip": "C:\\Users\\CMourlas001\\source\\repos\\oofem\\CMakeLists.txt",
               "RelativeToolTip": "CMakeLists.txt",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAH4AAAASAAAAAAAAAA==",
+              "ViewState": "AgIAABUAAAAAAAAAAAAAAH4AAAASAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003109|",
               "WhenOpened": "2024-10-09T22:21:10.591Z",
               "EditorCaption": ""
