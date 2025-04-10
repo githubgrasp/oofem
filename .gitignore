@@ -55,3 +55,8 @@ tests/sm/crack0Step0.vtk
 tests/sm/crack1Step0.vtk
 tests/sm/crack2Step0.vtk
 tests/sm/t3d.bmf
+/.vs/oofem/v17/Browse.VC.db
+*.db-shm
+*.db-wal
+*.opendb
+/.vs/oofem/v17/DocumentLayout.backup.json
