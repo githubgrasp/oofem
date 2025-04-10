@@ -86,15 +86,15 @@ public:
     virtual ~HangingNode(void) { }
 
     void initializeFrom(InputRecord &ir) override;    
-    FloatArray HangingNode::computeTriangleRotations( DofIDItem id, FloatArray &hangingNodeCoords, const IntArray &hexaNodes, const FloatArray &translationContribution, Element *e );
+    FloatArray computeTriangleRotations( DofIDItem id, FloatArray &hangingNodeCoords, const IntArray &hexaNodes, const FloatArray &translationContribution, Element *e );
     void postInitialize() override;
     int checkConsistency() override;
     std::tuple<int, int, double> findMasterNodesWithAlignedCoordinates( const IntArray &masterNodes, FloatArray localLcoords, Element *e ) const;
     FloatArray computeMasterContributionForRv( const IntArray &masterNodes, const FloatArray &translationContribution, const FloatArray &lcoords, Element *e ) const;
     static double computeDistance( const FloatArray &masterGlobalCoords1, const FloatArray &masterGlobalCoords2 );
     static double distance( const std::array<double, 3> &a, const std::array<double, 3> &b );
-    std::vector<int> HangingNode::findThreeClosestNodes( FloatArray &hangingNodeCoords, const IntArray &hexaNodes );
-    int HangingNode::findNormalDirection( const FloatArray &localLcoords1, const FloatArray &localLcoords2, const FloatArray &localLcoords3 );
+    std::vector<int> findThreeClosestNodes( FloatArray &hangingNodeCoords, const IntArray &hexaNodes );
+    int findNormalDirection( const FloatArray &localLcoords1, const FloatArray &localLcoords2, const FloatArray &localLcoords3 );
     bool isDofTypeCompatible(dofType type) const override { return ( type == DT_master || type == DT_slave ); }
 
     const char *giveClassName() const override { return "HangingNode"; }
