@@ -43,6 +43,7 @@
 //@{
 #define _IFT_Beam2d_Name "beam2d"
 #define _IFT_Beam2d_dofstocondense "dofstocondense"
+#define _IFT_Beam2d_cs "cs"
 //@}
 
 namespace oofem {
@@ -72,7 +73,7 @@ protected:
     DofManager *ghostNodes [ 2 ];
     /// number of condensed DOFs
     int numberOfCondensedDofs;
-
+    int cs_mode;
     static FEI2dLineLin interp_geom;
     static FEI2dLineHermite interp_beam;
 
@@ -107,7 +108,6 @@ public:
             return ghostNodes [ 1 ];
         } else {
             OOFEM_ERROR("No such DOF available on Element %d", number);
-            return NULL;
         }
     }
     void giveInternalDofManDofIDMask(int i, IntArray &answer) const override {
@@ -134,6 +134,8 @@ public:
 
     double computeVolumeAround(GaussPoint *gp) override;
     void printOutputAt(FILE *file, TimeStep *tStep) override;
+
+    Element_Geometry_Type giveGeometryType() const override {return EGT_line_1;}
 
     const char *giveClassName() const override { return "Beam2d"; }
     const char *giveInputRecordName() const override { return _IFT_Beam2d_Name; }

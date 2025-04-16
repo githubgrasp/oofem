@@ -78,6 +78,19 @@ SlaveDof :: initialize(const IntArray &masterNodes, const IntArray &mstrDofID, c
         masterDofMans.at(i) = masterNodes.at(i);
         dofIDs.at(i) = id;
     }
+    //// Handle rotational DOF (Rv) case
+    //if ( this->dofID == R_v ) { 
+    //    double y1 = getYCoordinate( masterNodes.at( 1 ) ); // Get y-coordinates of master nodes
+    //    double y3 = getYCoordinate( masterNodes.at( 2 ) );
+
+    //    if ( fabs( y3 - y1 ) < 1e-12 ) {
+    //        OOFEM_ERROR( "Master nodes are too close, division by zero in Rv calculation." );
+    //    }
+
+    //    masterContribution.resize( 2 );
+    //    masterContribution.at( 1 ) = -1.0 / ( y3 - y1 );
+    //    masterContribution.at( 2 ) = 1.0 / ( y3 - y1 );
+    //}
 }
 
 int
@@ -202,14 +215,12 @@ double SlaveDof :: giveUnknown(PrimaryField &field, ValueModeType mode, TimeStep
 int SlaveDof :: __giveEquationNumber() const
 {
     OOFEM_ERROR("undefined");
-    return 0;
 }
 
 
 int SlaveDof :: __givePrescribedEquationNumber()
 {
     OOFEM_ERROR("undefined");
-    return 0;
 }
 
 void SlaveDof :: saveContext(DataStream &stream, ContextMode mode)
@@ -286,7 +297,12 @@ void SlaveDof :: restoreContext(DataStream &stream, ContextMode mode)
 inline Dof *
 SlaveDof :: giveMasterDof(int i)
 {
-    return dofManager->giveDomain()->giveDofManager( masterDofMans.at(i) )->giveDofWithID( dofIDs.at(i) );
+    if ( dofIDs.at( i ) <= 3 ) {
+        return dofManager->giveDomain()->giveDofManager( masterDofMans.at( i ) )->giveDofWithID( dofIDs.at( i ) );
+    } else {
+        //return nullptr;
+        return dofManager->giveDomain()->giveDofManager( masterDofMans.at( i ) )->giveDofWithID( 1 );
+    }
 }
 
 
