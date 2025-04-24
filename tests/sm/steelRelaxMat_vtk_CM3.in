@@ -4,7 +4,7 @@ relaxation of prestressing reinforcement, all dofs fixed
 StaticStructural nsteps 2 prescribedTimes 2 0.0001 0.0002 nmodules 1
 #
 #errorcheck
-vtkxml tstep_step 1 domain_all vars 2 1 4 primvars 1 1
+vtkxml tstep_step 1 domain_all vars 1 7 primvars 1 1
 #
 domain 2dPlaneStress 
 #
@@ -19,8 +19,8 @@ node   2   coords 2  1.0  0.0
 node   3   coords 2  0.0  1.0  
 node   4   coords 2  1.0  1.0 
 #
-hangingNode 5 coords 3  0.0  0.5 0.0 dofType 3 2 2 2 masterElement 2  dofidmask 3 1 2 5
-hangingNode 6 coords 3  1.0  0.5 0.0 dofType 3 2 2 2 masterElement 2  dofidmask 3 1 2 5
+hangingNode 5 coords 3  0.0  0.5 0.0 dofType 3 2 2 2 masterElement 2 masterElementRot 2  dofidmask 3 1 2 5
+hangingNode 6 coords 3  1.0  0.5 0.0 dofType 3 2 2 2 masterElement 2 masterElementRot 2  dofidmask 3 1 2 5
 #hangingNode 5 coords 2  0.0  0.5  dofType 2 2 2  masterElement 2  dofidmask 2 1 2 
 #hangingNode 6 coords 2  1.0  0.5  dofType 2 2 2  masterElement 2  dofidmask 2 1 2 
 #

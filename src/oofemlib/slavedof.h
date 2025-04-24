@@ -64,7 +64,7 @@ public:
      * @param aNode Node receiver will belong to.
      * @param id DofID of slave dof.
      */
-    SlaveDof(DofManager * aNode, DofIDItem id = Undef);
+    SlaveDof(DofManager *aNode, DofIDItem id = Undef);
     /// Destructor.
     virtual ~SlaveDof(void) { }
 
