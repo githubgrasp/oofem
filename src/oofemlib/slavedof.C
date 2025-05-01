@@ -91,8 +91,14 @@ SlaveDof :: giveNumberOfPrimaryMasterDofs()
       //}
 
     countOfPrimaryMasterDofs = 0;
-
     int c = 0;
+    for (int i = 1; i <= countOfMasterDofs; i++) {
+        int n = this->giveMasterDof(i)->giveNumberOfPrimaryMasterDofs();
+    //    printf("Master DOF %d has %d primary masters\n", i, n);
+        c += n;
+    }
+
+     c = 0;
     for ( int i = 1; i <= countOfMasterDofs; i++ ) {
         c += this->giveMasterDof(i)->giveNumberOfPrimaryMasterDofs();
     }
