@@ -1,0 +1,76 @@
+
+
+hangingNodeRotation_ltrspace.out
+relaxation of prestressing reinforcement, all dofs fixed
+#
+StaticStructural nsteps 2 prescribedTimes 2 0.0001 0.0002 nmodules 1
+#
+#errorcheck
+vtkxml tstep_step 1 domain_all vars 1 7 primvars 1 1
+#
+domain 3d
+#
+OutputManager tstep_all dofman_all element_all
+ndofman 10 nelem 6 ncrosssect 2 nmat 2 nbc 3 nic 0 nltf 1 nset 3
+#
+#
+# NODES
+#
+node 1 coords 3 0.0 0.0 0.0
+node 2 coords 3 1.0 0.0 0.0
+node 3 coords 3 1.0 1.0 0.0
+node 4 coords 3 0.0 1.0 0.0
+node 5 coords 3 0.0 0.0 1.0
+node 6 coords 3 1.0 0.0 1.0
+node 7 coords 3 1.0 1.0 1.0
+node 8 coords 3 0.0 1.0 1.0
+#
+hangingNode 9 coords 3 0.0 0.5 0.5 dofType 6 2 2 2 2 2 2 masterElement 5 masterElementRot 5 dofidmask 6 1 2 3 4 5 6
+hangingNode 10 coords 3  1.0  0.5 0.5 dofType 6 2 2 2 2 2 2  masterElement 3 masterElementRot 3 dofidmask 6 1 2 3 4 5 6
+#hangingNode 5 coords 2  0.0  0.5  dofType 2 2 2  masterElement 2  dofidmask 2 1 2 
+#hangingNode 6 coords 2  1.0  0.5  dofType 2 2 2  masterElement 2  dofidmask 2 1 2 
+#
+#
+# ELEMENTS
+#
+Beam3d 1 nodes 2 9 10 crossSect 2 refNode 6 
+#Beam2d         1   nodes 2   9 10      crossSect 2    
+#Truss2d         1   nodes 2   5 6      crossSect 2  cs 1 
+#Truss3d         1   nodes 2   5 6      crossSect 2  
+#lspace  2 nodes 8 1 2 3 4 5 6 7 8  crossSect 1
+ltrspace  2 nodes 4 1 2 4 5 crossSect 1
+ltrspace  3 nodes 4 2 3 4 7 crossSect 1
+ltrspace  4 nodes 4 2 5 6 7  crossSect 1
+ltrspace  5 nodes 4 2 4 5 7  crossSect 1
+ltrspace  6 nodes 4 4 7 8 5  crossSect 1
+#
+Set 1 nodes 2 1 4
+Set 2 nodes 2 5 8
+Set 3 nodes 2 2 3
+#
+# CROSSECTION
+#
+SimpleCS 1 thick 1.0 width 1.0 material 1
+SimpleCS 2 area 0.000314159 Iy 7.85398163397448e-09 Iz 7.85398163397448e-09 Ik 7.85398163397448e-09 beamShearCoeff 0.83333 thick 0.02 material 2
+#
+#
+# MATERIAL
+#
+IsoLE 1  d 0. n 0.2 E 30.e6 talpha 0.
+IsoLE 2 d 1. E 200.e6 n 0.3 tAlpha 0.
+#
+#
+BoundaryCondition 1 loadTimeFunction 1 dofs 2 1 2  values 2 0. 0. set 1
+BoundaryCondition 2 loadTimeFunction 1 dofs 1 1 values 1 0.  set 2
+#
+NodalLoad 3 loadTimeFunction 1 dofs 2 1 2 components 2 1.0 1.0 set 3
+#
+#
+# TIME FUNCTION
+#
+ConstantFunction 1 f(t) 1.0
+#
+#%BEGIN_CHECK% tolerance 5.e-3
+#ELEMENT tStep 1 number 1 gp 1 keyword 4 component 1 value 7.35062615e+02
+#ELEMENT tStep 1 number 2 gp 1 keyword 4 component 1 value 7.34992211e+02
+#%END_CHECK%
