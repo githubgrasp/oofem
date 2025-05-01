@@ -42,58 +42,65 @@
 #include "classfactory.h"
 
 namespace oofem {
-REGISTER_DofManager(HangingNode);
+REGISTER_DofManager( HangingNode );
 
-HangingNode :: HangingNode(int n, Domain *aDomain) : Node(n, aDomain)
+HangingNode ::HangingNode( int n, Domain *aDomain ) :
+    Node( n, aDomain )
 {
 #ifdef __OOFEG
     initialized = false;
 #endif
 }
 
-void HangingNode :: initializeFrom(InputRecord &ir)
+void HangingNode ::initializeFrom( InputRecord &ir )
 {
-    Node :: initializeFrom(ir);
+    Node ::initializeFrom( ir );
     this->masterElement = -1;
-    IR_GIVE_OPTIONAL_FIELD(ir, this->masterElement, _IFT_HangingNode_masterElement);
+    IR_GIVE_OPTIONAL_FIELD( ir, this->masterElement, _IFT_HangingNode_masterElement );
     this->masterRegion = 0;
-    IR_GIVE_OPTIONAL_FIELD(ir, this->masterRegion, _IFT_HangingNode_masterRegion);
+    IR_GIVE_OPTIONAL_FIELD( ir, this->masterRegion, _IFT_HangingNode_masterRegion );
 }
 
-int HangingNode :: checkConsistency()
+int HangingNode ::checkConsistency()
 {
-    if (this->masterElement !=-1){
+    if ( this->masterElement != -1 ) {
         return true;
     }
-        
-    Element *e = this->domain->giveGlobalElement(this->masterElement);
-    int result = Node :: checkConsistency();
+
+    Element *e = this->domain->giveGlobalElement( this->masterElement );
+    int result = Node ::checkConsistency();
 
 #if 0
     // Check if master is in same mode
     if ( parallel_mode != DofManager_local ) {
-        for ( int i = 1; i <= countOfMasterNodes; i++ ) {
-            if ( e->giveNode(i)->giveParallelMode() != parallel_mode ) {
-                OOFEM_WARNING("Mismatch in parallel mode of HangingNode and master");
-                return false;
-            }
-        }
+      for ( int i = 1; i <= countOfMasterNodes; i++ ) {
+	if ( e->giveNode(i)->giveParallelMode() != parallel_mode ) {
+	  OOFEM_WARNING("Mismatch in parallel mode of HangingNode and master");
+	  return false;
+	}
+      }
     }
 #endif
 
     // Check local coordinate systems
     for ( int i = 1; i <= e->giveNumberOfNodes(); ++i ) {
-        if ( !this->hasSameLCS( e->giveNode(i) ) ) {
-            OOFEM_WARNING("Different lcs for master/slave nodes.");
+        if ( !this->hasSameLCS( e->giveNode( i ) ) ) {
+            OOFEM_WARNING( "Different lcs for master/slave nodes." );
             result = false;
         }
     }
     return result;
 }
 
-void HangingNode :: postInitialize()
+void HangingNode ::postInitialize()
 {
-    Node :: postInitialize();
+    printf("DOFs for hanging node %d: has R_u=%d, R_v=%d, R_w=%d\n",
+        this->giveNumber(),
+        this->hasDofID(R_u),
+        this->hasDofID(R_v),
+        this->hasDofID(R_w));
+
+    Node ::postInitialize();
 
     Element *e;
     FEInterpolation *fei;
@@ -113,57 +120,233 @@ void HangingNode :: postInitialize()
         sp->init();
         // Closest point or containing point? It should be contained, but with numerical errors it might be slightly outside
         // so the closest point is more robust.
-        if ( !( e = sp->giveElementClosestToPoint(lcoords, closest, coordinates, this->masterRegion) ) ) {
-            OOFEM_ERROR("Couldn't find closest element (automatically).");
+        if ( !( e = sp->giveElementClosestToPoint( lcoords, closest, coordinates, this->masterRegion ) ) ) {
+            OOFEM_ERROR( "Couldn't find closest element (automatically)." );
         }
         this->masterElement = e->giveNumber();
-        #  ifdef DEBUG
-        OOFEM_LOG_INFO("Found element %d for hanging node %d\n", e->giveGlobalNumber(), this->giveNumber() );
-        #endif
-    } else if ( !( e = this->giveDomain()->giveGlobalElement(this->masterElement) ) ) {
-        OOFEM_ERROR("Requested element %d doesn't exist.", this->masterElement);
+#ifdef DEBUG
+        OOFEM_LOG_INFO( "Found element %d for hanging node %d\n", e->giveGlobalNumber(), this->giveNumber() );
+#endif
+    } else if ( !( e = this->giveDomain()->giveGlobalElement( this->masterElement ) ) ) {
+        OOFEM_ERROR( "Requested element %d doesn't exist.", this->masterElement );
     }
     if ( !( fei = e->giveInterpolation() ) ) {
-        OOFEM_ERROR("Requested element %d doesn't have a interpolator.", this->masterElement);
+        OOFEM_ERROR( "Requested element %d doesn't have a interpolator.", this->masterElement );
     }
 
     if ( lcoords.giveSize() == 0 ) { // we don't need to do this again if the spatial localizer was used.
-        fei->global2local( lcoords, coordinates, FEIElementGeometryWrapper(e) );
+        fei->global2local( lcoords, coordinates, FEIElementGeometryWrapper( e ) );
     }
 
     // Initialize slave dofs (inside check of consistency of receiver and master dof)
     const IntArray &masterNodes = e->giveDofManArray();
-    for ( Dof *dof: *this ) {
-        SlaveDof *sdof = dynamic_cast< SlaveDof * >(dof);
+    for ( Dof *dof : *this ) {
+        SlaveDof *sdof = dynamic_cast<SlaveDof *>( dof );
         if ( sdof ) {
             DofIDItem id = sdof->giveDofID();
-            fei = e->giveInterpolation(id);
+            if ( !( id == D_u || id == D_v || id == D_w ) ) continue;
+            fei = e->giveInterpolation( id );
             if ( !fei ) {
-                OOFEM_ERROR("Requested interpolation for dof id %d doesn't exist in element %d.",
-                             id, this->masterElement);
+                OOFEM_ERROR( "Requested interpolation for dof id %d doesn't exist in element %d.",
+                    id, this->masterElement );
             }
 #if 0 // This won't work (yet), as it requires some more general FEI classes, or something similar.
-            if ( fei->hasMultiField() ) {
-                FloatMatrix multiContribution;
-                IntArray masterDofIDs, masterNodesDup, dofids;
-                fei->evalMultiN(multiContribution, dofids, lcoords, FEIElementGeometryWrapper(e), 0.0);
-                masterContribution.flatten(multiContribution);
-                masterDofIDs.clear();
-                for ( int i = 0; i <= multiContribution.giveNumberOfColumns(); ++i ) {
-                    masterDofIDs.followedBy(dofids);
-                    masterNodesDup.followedBy(masterNodes);
-                }
-                sdof->initialize(masterNodesDup, & masterDofIDs, masterContribution);
-            } else { }
+	if ( fei->hasMultiField() ) {
+	  FloatMatrix multiContribution;
+	  IntArray masterDofIDs, masterNodesDup, dofids;
+	  fei->evalMultiN(multiContribution, dofids, lcoords, FEIElementGeometryWrapper(e), 0.0);
+	  masterContribution.flatten(multiContribution);
+	  masterDofIDs.clear();
+	  for ( int i = 0; i <= multiContribution.giveNumberOfColumns(); ++i ) {
+	    masterDofIDs.followedBy(dofids);
+	    masterNodesDup.followedBy(masterNodes);
+	  }
+	  sdof->initialize(masterNodesDup, & masterDofIDs, masterContribution);
+	} else { }
 #else
             // Note: There can be more masterNodes than masterContributions, since all the
             // FEI classes are based on that the first nodes correspond to the simpler/linear interpolation.
             // If this assumption is changed in FEIElementGeometryWrapper + friends,
             // masterNode will also need to be modified for each dof accordingly.
-            fei->evalN( masterContribution, lcoords, FEIElementGeometryWrapper(e) );
-            sdof->initialize(masterNodes, IntArray(), masterContribution);
+            fei->evalN( masterContribution, lcoords, FEIElementGeometryWrapper( e ) );
+            sdof->initialize( masterNodes, IntArray(), masterContribution );
+
 #endif
         }
     }
+
+    //	if (this->hasDofID(R_u) || this->hasDofID(R_v) || this->hasDofID(R_w)) {
+    Dof *dof;
+    const int nnodes = e->giveNumberOfNodes();
+
+    // Compute shape function gradients once
+    FloatMatrix dNdX;
+    fei->evaldNdx(dNdX, lcoords, FEIElementGeometryWrapper(e));
+
+    // === THETA_X = 0.5 * (du_z/dy - du_y/dz) ===
+    if (this->hasDofID(R_u)) {
+        printf("R_u is still active on node %d!\n", this->giveNumber());
+
+        FloatArray coeffs;
+        IntArray masterNodeIDs, masterDofIDs;
+
+        for (int i = 1; i <= nnodes; ++i) {
+            Node *masterNode = e->giveNode(i);
+            double dNdy = dNdX.at(i, 2);
+            double dNdz = dNdX.at(i, 3);
+
+            if (masterNode->hasDofID(D_w)) {
+                Dof *dof = masterNode->giveDofWithID(D_w);
+                if (dof) {
+                    int n = coeffs.giveSize();
+                    coeffs.resize(n + 1);
+                    coeffs.at(n + 1) = 0.5 * dNdy;
+                    masterNodeIDs.resizeWithValues(n + 1);
+                    masterNodeIDs.at(n + 1) = masterNode->giveNumber();
+                    masterDofIDs.resizeWithValues(n + 1);
+                    masterDofIDs.at(n + 1) = dof->giveDofID();
+                }
+            }
+            if (masterNode->hasDofID(D_v)) {
+                Dof *dof = masterNode->giveDofWithID(D_v);
+                if (dof) {
+                    int n = coeffs.giveSize();
+                    coeffs.resize(n + 1);
+                    coeffs.at(n + 1) = -0.5 * dNdz;
+                    masterNodeIDs.resizeWithValues(n + 1);
+                    masterNodeIDs.at(n + 1) = masterNode->giveNumber();
+                    masterDofIDs.resizeWithValues(n + 1);
+                    masterDofIDs.at(n + 1) = dof->giveDofID();
+                }
+            }
+        }
+
+
+
+        if (SlaveDof *sdof = dynamic_cast<SlaveDof *>(this->giveDofWithID(R_u))) {
+
+            if (coeffs.giveSize() != masterNodeIDs.giveSize() ||
+                coeffs.giveSize() != masterDofIDs.giveSize()) {
+                printf("Mismatched array sizes for slave DOF %d: coeffs=%d, nodeIDs=%d, dofIDs=%d\n",
+                    sdof->giveDofID(), coeffs.giveSize(), masterNodeIDs.giveSize(), masterDofIDs.giveSize());
+            }
+
+            for (int i = 1; i <= coeffs.giveSize(); ++i) {
+                printf("  coeff[%d] = %g\n", i, coeffs.at(i));
+            }
+
+            sdof->initialize(masterNodeIDs, masterDofIDs, coeffs);
+        }
+    }
+
+    // === THETA_Y = 0.5 * (du_x/dz - du_z/dx) ===
+    if (this->hasDofID(R_v)) {
+        printf("R_v is still active on node %d!\n", this->giveNumber());
+        FloatArray coeffs;
+        IntArray masterNodeIDs, masterDofIDs;
+
+        for (int i = 1; i <= nnodes; ++i) {
+            Node *masterNode = e->giveNode(i);
+            double dNdz = dNdX.at(i, 3);
+            double dNdx = dNdX.at(i, 1);
+
+            if (masterNode->hasDofID(D_u)) {
+                Dof *dof = masterNode->giveDofWithID(D_u);
+                if (dof) {
+                    int n = coeffs.giveSize();
+                    coeffs.resize(n + 1);
+                    coeffs.at(n + 1) = 0.5 * dNdz;
+                    masterNodeIDs.resizeWithValues(n + 1);
+                    masterNodeIDs.at(n + 1) = masterNode->giveNumber();
+                    masterDofIDs.resizeWithValues(n + 1);
+                    masterDofIDs.at(n + 1) = dof->giveDofID();
+                }
+            }
+            if (masterNode->hasDofID(D_w)) {
+                Dof *dof = masterNode->giveDofWithID(D_w);
+                if (dof) {
+                    int n = coeffs.giveSize();
+                    coeffs.resize(n + 1);
+                    coeffs.at(n + 1) = -0.5 * dNdx;
+                    masterNodeIDs.resizeWithValues(n + 1);
+                    masterNodeIDs.at(n + 1) = masterNode->giveNumber();
+                    masterDofIDs.resizeWithValues(n + 1);
+                    masterDofIDs.at(n + 1) = dof->giveDofID();
+                }
+            }
+        }
+
+        if (SlaveDof *sdof = dynamic_cast<SlaveDof *>(this->giveDofWithID(R_v))) {
+
+            if (coeffs.giveSize() != masterNodeIDs.giveSize() ||
+                coeffs.giveSize() != masterDofIDs.giveSize()) {
+                printf("Mismatched array sizes for slave DOF %d: coeffs=%d, nodeIDs=%d, dofIDs=%d\n",
+                    sdof->giveDofID(), coeffs.giveSize(), masterNodeIDs.giveSize(), masterDofIDs.giveSize());
+            }
+
+            for (int i = 1; i <= coeffs.giveSize(); ++i) {
+                printf("  coeff[%d] = %g\n", i, coeffs.at(i));
+            }
+
+            sdof->initialize(masterNodeIDs, masterDofIDs, coeffs);
+        }
+    }
+
+    // === THETA_Z = 0.5 * (du_y/dx - du_x/dy) ===
+    if (this->hasDofID(R_w)) {
+        printf("R_w is still active on node %d!\n", this->giveNumber());
+        FloatArray coeffs;
+        IntArray masterNodeIDs, masterDofIDs;
+
+        for (int i = 1; i <= nnodes; ++i) {
+            Node *masterNode = e->giveNode(i);
+            double dNdx = dNdX.at(i, 1);
+            double dNdy = dNdX.at(i, 2);
+
+            if (masterNode->hasDofID(D_v)) {
+                Dof *dof = masterNode->giveDofWithID(D_v);
+                if (dof) {
+                    int n = coeffs.giveSize();
+                    coeffs.resize(n + 1);
+                    coeffs.at(n + 1) = 0.5 * dNdx;
+                    masterNodeIDs.resizeWithValues(n + 1);
+                    masterNodeIDs.at(n + 1) = masterNode->giveNumber();
+                    masterDofIDs.resizeWithValues(n + 1);
+                    masterDofIDs.at(n + 1) = dof->giveDofID();
+                }
+            }
+            if (masterNode->hasDofID(D_u)) {
+                Dof *dof = masterNode->giveDofWithID(D_u);
+                if (dof) {
+                    int n = coeffs.giveSize();
+                    coeffs.resize(n + 1);
+                    coeffs.at(n + 1) = -0.5 * dNdy;
+                    masterNodeIDs.resizeWithValues(n + 1);
+                    masterNodeIDs.at(n + 1) = masterNode->giveNumber();
+                    masterDofIDs.resizeWithValues(n + 1);
+                    masterDofIDs.at(n + 1) = dof->giveDofID();
+                }
+            }
+        }
+
+        if (SlaveDof *sdof = dynamic_cast<SlaveDof *>(this->giveDofWithID(R_w))) {
+
+
+            if (coeffs.giveSize() != masterNodeIDs.giveSize() ||
+                coeffs.giveSize() != masterDofIDs.giveSize()) {
+                printf("Mismatched array sizes for slave DOF %d: coeffs=%d, nodeIDs=%d, dofIDs=%d\n",
+                    sdof->giveDofID(), coeffs.giveSize(), masterNodeIDs.giveSize(), masterDofIDs.giveSize());
+            }
+
+            for (int i = 1; i <= coeffs.giveSize(); ++i) {
+                printf("  coeff[%d] = %g\n", i, coeffs.at(i));
+            }
+
+            sdof->initialize(masterNodeIDs, masterDofIDs, coeffs);
+        }
+    }
+
+
 }
 } // end namespace oofem
+
