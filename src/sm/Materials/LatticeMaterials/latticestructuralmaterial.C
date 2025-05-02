@@ -124,9 +124,7 @@ namespace oofem {
             answer.at(2) = help.at(5);
             answer.at(3) = help.at(6);
             return 1;
-        } else   {
-	  OOFEM_WARNING("This quantity cannot be exported. Skip.\n");
-        }
+        } 
     }
 
 
