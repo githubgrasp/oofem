@@ -175,18 +175,17 @@ void HangingNode ::postInitialize()
         }
     }
 
-    //	if (this->hasDofID(R_u) || this->hasDofID(R_v) || this->hasDofID(R_w)) {
     Dof *dof;
     const int nnodes = e->giveNumberOfNodes();
 
+
+    //Deal with rotations.
     // Compute shape function gradients once
     FloatMatrix dNdX;
     fei->evaldNdx(dNdX, lcoords, FEIElementGeometryWrapper(e));
 
     // === THETA_X = 0.5 * (du_z/dy - du_y/dz) ===
     if (this->hasDofID(R_u)) {
-        printf("R_u is still active on node %d!\n", this->giveNumber());
-
         FloatArray coeffs;
         IntArray masterNodeIDs, masterDofIDs;
 
@@ -220,22 +219,13 @@ void HangingNode ::postInitialize()
         }
 
 
-
         if (SlaveDof *sdof = dynamic_cast<SlaveDof *>(this->giveDofWithID(R_u))) {
-
-            printf("Slave DOF: node %d, dofID %d\n", this->giveNumber(), sdof->giveDofID());
-            for (int i = 1; i <= coeffs.giveSize(); ++i) {
-                printf("  Master %d: node %d, dofID %d, coeff = %.4e\n",
-                    i, masterNodeIDs.at(i), masterDofIDs.at(i), coeffs.at(i));
-            }
-
             sdof->initialize(masterNodeIDs, masterDofIDs, coeffs);
         }
     }
 
     // === THETA_Y = 0.5 * (du_x/dz - du_z/dx) ===
     if (this->hasDofID(R_v)) {
-        printf("R_v is still active on node %d!\n", this->giveNumber());
         FloatArray coeffs;
         IntArray masterNodeIDs, masterDofIDs;
 
@@ -269,20 +259,12 @@ void HangingNode ::postInitialize()
         }
 
         if (SlaveDof *sdof = dynamic_cast<SlaveDof *>(this->giveDofWithID(R_v))) {
-
-            printf("Slave DOF: node %d, dofID %d\n", this->giveNumber(), sdof->giveDofID());
-            for (int i = 1; i <= coeffs.giveSize(); ++i) {
-                printf("  Master %d: node %d, dofID %d, coeff = %.4e\n",
-                    i, masterNodeIDs.at(i), masterDofIDs.at(i), coeffs.at(i));
-            }
-
             sdof->initialize(masterNodeIDs, masterDofIDs, coeffs);
         }
     }
 
     // === THETA_Z = 0.5 * (du_y/dx - du_x/dy) ===
     if (this->hasDofID(R_w)) {
-        printf("R_w is still active on node %d!\n", this->giveNumber());
         FloatArray coeffs;
         IntArray masterNodeIDs, masterDofIDs;
 
@@ -316,14 +298,6 @@ void HangingNode ::postInitialize()
         }
 
         if (SlaveDof *sdof = dynamic_cast<SlaveDof *>(this->giveDofWithID(R_w))) {
-
-            printf("Slave DOF: node %d, dofID %d\n", this->giveNumber(), sdof->giveDofID());
-            for (int i = 1; i <= coeffs.giveSize(); ++i) {
-                printf("  Master %d: node %d, dofID %d, coeff = %.4e\n",
-                    i, masterNodeIDs.at(i), masterDofIDs.at(i), coeffs.at(i));
-            }
-
-
             sdof->initialize(masterNodeIDs, masterDofIDs, coeffs);
         }
     }
