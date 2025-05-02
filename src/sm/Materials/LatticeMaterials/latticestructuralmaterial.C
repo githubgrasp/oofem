@@ -125,7 +125,7 @@ namespace oofem {
             answer.at(3) = help.at(6);
             return 1;
         } else   {
-            return StructuralMaterial::giveIPValue(answer, gp, type, atTime);
+	  OOFEM_WARNING("This quantity cannot be exported. Skip.\n");
         }
     }
 
