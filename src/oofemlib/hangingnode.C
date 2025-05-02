@@ -198,25 +198,23 @@ void HangingNode ::postInitialize()
             if (masterNode->hasDofID(D_w)) {
                 Dof *dof = masterNode->giveDofWithID(D_w);
                 if (dof) {
+                    coeffs.append(0.5 * dNdy);
                     int n = coeffs.giveSize();
-                    coeffs.resize(n + 1);
-                    coeffs.at(n + 1) = 0.5 * dNdy;
-                    masterNodeIDs.resizeWithValues(n + 1);
-                    masterNodeIDs.at(n + 1) = masterNode->giveNumber();
-                    masterDofIDs.resizeWithValues(n + 1);
-                    masterDofIDs.at(n + 1) = dof->giveDofID();
+                    masterNodeIDs.resizeWithValues(n);
+                    masterNodeIDs.at(n) = masterNode->giveNumber();
+                    masterDofIDs.resizeWithValues(n);
+                    masterDofIDs.at(n) = dof->giveDofID();
                 }
             }
             if (masterNode->hasDofID(D_v)) {
                 Dof *dof = masterNode->giveDofWithID(D_v);
-                if (dof) {
+                if (dof){
+                    coeffs.append(-0.5 * dNdz);
                     int n = coeffs.giveSize();
-                    coeffs.resize(n + 1);
-                    coeffs.at(n + 1) = -0.5 * dNdz;
-                    masterNodeIDs.resizeWithValues(n + 1);
-                    masterNodeIDs.at(n + 1) = masterNode->giveNumber();
-                    masterDofIDs.resizeWithValues(n + 1);
-                    masterDofIDs.at(n + 1) = dof->giveDofID();
+                    masterNodeIDs.resizeWithValues(n);
+                    masterNodeIDs.at(n) = masterNode->giveNumber();
+                    masterDofIDs.resizeWithValues(n);
+                    masterDofIDs.at(n) = dof->giveDofID();
                 }
             }
         }
@@ -225,14 +223,10 @@ void HangingNode ::postInitialize()
 
         if (SlaveDof *sdof = dynamic_cast<SlaveDof *>(this->giveDofWithID(R_u))) {
 
-            if (coeffs.giveSize() != masterNodeIDs.giveSize() ||
-                coeffs.giveSize() != masterDofIDs.giveSize()) {
-                printf("Mismatched array sizes for slave DOF %d: coeffs=%d, nodeIDs=%d, dofIDs=%d\n",
-                    sdof->giveDofID(), coeffs.giveSize(), masterNodeIDs.giveSize(), masterDofIDs.giveSize());
-            }
-
+            printf("Slave DOF: node %d, dofID %d\n", this->giveNumber(), sdof->giveDofID());
             for (int i = 1; i <= coeffs.giveSize(); ++i) {
-                printf("  coeff[%d] = %g\n", i, coeffs.at(i));
+                printf("  Master %d: node %d, dofID %d, coeff = %.4e\n",
+                    i, masterNodeIDs.at(i), masterDofIDs.at(i), coeffs.at(i));
             }
 
             sdof->initialize(masterNodeIDs, masterDofIDs, coeffs);
@@ -253,39 +247,33 @@ void HangingNode ::postInitialize()
             if (masterNode->hasDofID(D_u)) {
                 Dof *dof = masterNode->giveDofWithID(D_u);
                 if (dof) {
+                    coeffs.append(0.5 * dNdz);
                     int n = coeffs.giveSize();
-                    coeffs.resize(n + 1);
-                    coeffs.at(n + 1) = 0.5 * dNdz;
-                    masterNodeIDs.resizeWithValues(n + 1);
-                    masterNodeIDs.at(n + 1) = masterNode->giveNumber();
-                    masterDofIDs.resizeWithValues(n + 1);
-                    masterDofIDs.at(n + 1) = dof->giveDofID();
+                    masterNodeIDs.resizeWithValues(n);
+                    masterNodeIDs.at(n) = masterNode->giveNumber();
+                    masterDofIDs.resizeWithValues(n);
+                    masterDofIDs.at(n) = dof->giveDofID();
                 }
             }
             if (masterNode->hasDofID(D_w)) {
                 Dof *dof = masterNode->giveDofWithID(D_w);
                 if (dof) {
+                    coeffs.append(-0.5 * dNdx);
                     int n = coeffs.giveSize();
-                    coeffs.resize(n + 1);
-                    coeffs.at(n + 1) = -0.5 * dNdx;
-                    masterNodeIDs.resizeWithValues(n + 1);
-                    masterNodeIDs.at(n + 1) = masterNode->giveNumber();
-                    masterDofIDs.resizeWithValues(n + 1);
-                    masterDofIDs.at(n + 1) = dof->giveDofID();
+                    masterNodeIDs.resizeWithValues(n);
+                    masterNodeIDs.at(n) = masterNode->giveNumber();
+                    masterDofIDs.resizeWithValues(n);
+                    masterDofIDs.at(n) = dof->giveDofID();
                 }
             }
         }
 
         if (SlaveDof *sdof = dynamic_cast<SlaveDof *>(this->giveDofWithID(R_v))) {
 
-            if (coeffs.giveSize() != masterNodeIDs.giveSize() ||
-                coeffs.giveSize() != masterDofIDs.giveSize()) {
-                printf("Mismatched array sizes for slave DOF %d: coeffs=%d, nodeIDs=%d, dofIDs=%d\n",
-                    sdof->giveDofID(), coeffs.giveSize(), masterNodeIDs.giveSize(), masterDofIDs.giveSize());
-            }
-
+            printf("Slave DOF: node %d, dofID %d\n", this->giveNumber(), sdof->giveDofID());
             for (int i = 1; i <= coeffs.giveSize(); ++i) {
-                printf("  coeff[%d] = %g\n", i, coeffs.at(i));
+                printf("  Master %d: node %d, dofID %d, coeff = %.4e\n",
+                    i, masterNodeIDs.at(i), masterDofIDs.at(i), coeffs.at(i));
             }
 
             sdof->initialize(masterNodeIDs, masterDofIDs, coeffs);
@@ -306,41 +294,35 @@ void HangingNode ::postInitialize()
             if (masterNode->hasDofID(D_v)) {
                 Dof *dof = masterNode->giveDofWithID(D_v);
                 if (dof) {
+                    coeffs.append(0.5 * dNdx);
                     int n = coeffs.giveSize();
-                    coeffs.resize(n + 1);
-                    coeffs.at(n + 1) = 0.5 * dNdx;
-                    masterNodeIDs.resizeWithValues(n + 1);
-                    masterNodeIDs.at(n + 1) = masterNode->giveNumber();
-                    masterDofIDs.resizeWithValues(n + 1);
-                    masterDofIDs.at(n + 1) = dof->giveDofID();
+                    masterNodeIDs.resizeWithValues(n);
+                    masterNodeIDs.at(n) = masterNode->giveNumber();
+                    masterDofIDs.resizeWithValues(n);
+                    masterDofIDs.at(n) = dof->giveDofID();
                 }
             }
             if (masterNode->hasDofID(D_u)) {
                 Dof *dof = masterNode->giveDofWithID(D_u);
                 if (dof) {
+                    coeffs.append(-0.5 * dNdy);
                     int n = coeffs.giveSize();
-                    coeffs.resize(n + 1);
-                    coeffs.at(n + 1) = -0.5 * dNdy;
-                    masterNodeIDs.resizeWithValues(n + 1);
-                    masterNodeIDs.at(n + 1) = masterNode->giveNumber();
-                    masterDofIDs.resizeWithValues(n + 1);
-                    masterDofIDs.at(n + 1) = dof->giveDofID();
+                    masterNodeIDs.resizeWithValues(n);
+                    masterNodeIDs.at(n) = masterNode->giveNumber();
+                    masterDofIDs.resizeWithValues(n);
+                    masterDofIDs.at(n) = dof->giveDofID();
                 }
             }
         }
 
         if (SlaveDof *sdof = dynamic_cast<SlaveDof *>(this->giveDofWithID(R_w))) {
 
-
-            if (coeffs.giveSize() != masterNodeIDs.giveSize() ||
-                coeffs.giveSize() != masterDofIDs.giveSize()) {
-                printf("Mismatched array sizes for slave DOF %d: coeffs=%d, nodeIDs=%d, dofIDs=%d\n",
-                    sdof->giveDofID(), coeffs.giveSize(), masterNodeIDs.giveSize(), masterDofIDs.giveSize());
-            }
-
+            printf("Slave DOF: node %d, dofID %d\n", this->giveNumber(), sdof->giveDofID());
             for (int i = 1; i <= coeffs.giveSize(); ++i) {
-                printf("  coeff[%d] = %g\n", i, coeffs.at(i));
+                printf("  Master %d: node %d, dofID %d, coeff = %.4e\n",
+                    i, masterNodeIDs.at(i), masterDofIDs.at(i), coeffs.at(i));
             }
+
 
             sdof->initialize(masterNodeIDs, masterDofIDs, coeffs);
         }

@@ -25,8 +25,8 @@ node 6 coords 3 1.0 0.0 1.0
 node 7 coords 3 1.0 1.0 1.0
 node 8 coords 3 0.0 1.0 1.0
 #
-hangingNode 9 coords 3 0.0 0.5 0.5 dofType 6 2 2 2 2 2 2 masterElement 5 masterElementRot 5 dofidmask 6 1 2 3 4 5 6
-hangingNode 10 coords 3  1.0  0.5 0.5 dofType 6 2 2 2 2 2 2  masterElement 3 masterElementRot 3 dofidmask 6 1 2 3 4 5 6
+hangingNode 9 coords 3 0.0 0.5 0.5 dofType 6 2 2 2 2 2 2 dofidmask 6 1 2 3 4 5 6
+hangingNode 10 coords 3  1.0  0.5 0.5 dofType 6 2 2 2 2 2 2 dofidmask 6 1 2 3 4 5 6
 #hangingNode 5 coords 2  0.0  0.5  dofType 2 2 2  masterElement 2  dofidmask 2 1 2 
 #hangingNode 6 coords 2  1.0  0.5  dofType 2 2 2  masterElement 2  dofidmask 2 1 2 
 #
@@ -34,10 +34,6 @@ hangingNode 10 coords 3  1.0  0.5 0.5 dofType 6 2 2 2 2 2 2  masterElement 3 mas
 # ELEMENTS
 #
 Beam3d 1 nodes 2 9 10 crossSect 2 refNode 6 
-#Beam2d         1   nodes 2   9 10      crossSect 2    
-#Truss2d         1   nodes 2   5 6      crossSect 2  cs 1 
-#Truss3d         1   nodes 2   5 6      crossSect 2  
-#lspace  2 nodes 8 1 2 3 4 5 6 7 8  crossSect 1
 ltrspace  2 nodes 4 1 2 4 5 crossSect 1
 ltrspace  3 nodes 4 2 3 4 7 crossSect 1
 ltrspace  4 nodes 4 2 5 6 7  crossSect 1
