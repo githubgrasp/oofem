@@ -56,6 +56,11 @@
 #define _IFT_LatticeFrameSteelPlastic_iter "iter"
 #define _IFT_LatticeFrameSteelPlastic_sub "sub"
 #define _IFT_LatticeFrameSteelPlastic_plastic "plastic"
+#define _IFT_LatticeFrameSteelPlastic_h "h"
+#define _IFT_LatticeFrameSteelPlastic_htype "htype"
+#define _IFT_LatticeFrameSteelPlastic_h_eps "h_eps"
+#define _IFT_LatticeFrameSteelPlastic_h_function_eps "h(eps)"
+
 //@}
 
 namespace oofem {
@@ -85,7 +90,9 @@ protected:
 
     int tempReturnResult = LatticeFrameSteelPlasticStatus::RR_NotConverged;
 
+    double kappa = 0.;
 
+    double tempKappa = 0.;
 
 public:
 
@@ -100,6 +107,13 @@ public:
     void letTempReturnResultBe(const int result) { tempReturnResult = result; }
 
     int giveTempReturnResult() const { return tempReturnResult; }
+
+    void updateYourself(TimeStep *atTime);
+
+    void initTempStatus() override;
+
+    double giveKappa() const { return kappa; }
+    void   setTempKappa(double newKappa) { tempKappa = newKappa; }
 };
 
 
@@ -132,6 +146,15 @@ protected:
     ///maximum number Of SubIncrements
     double numberOfSubIncrements;
 
+    /// type of hardening function
+    int hType;
+
+    /// user-defined hardening (yield stress - kappa)
+    FloatArray h_eps, h_function_eps;
+
+    /// Hardening modulus.
+    double H = 0.;
+
 
     enum LatticeFrameSteelPlastic_ReturnResult { RR_NotConverged, RR_Converged };
     //   mutable LatticeFrameSteelPlastic_ReturnResult returnResult = RR_NotConverged; /// FIXME: This must be removed. Not thread safe. Shouldn't be stored at all.
@@ -143,9 +166,12 @@ protected:
 public:
     LatticeFrameSteelPlastic(int n, Domain *d) : LatticeFrameElastic(n, d) { };
 
-    FloatArrayF< 4 >computeFVector(const FloatArrayF< 4 > &sigma, GaussPoint *gp, TimeStep *tStep) const;
+    FloatArrayF< 5 >computeFVector(const FloatArrayF< 4 > &sigma, const double kappa, GaussPoint *gp, TimeStep *tStep) const;
+    FloatArrayF< 5 >computeMVector(const FloatArrayF< 4 > &sigma, const double kappa, GaussPoint *gp, TimeStep *tStep) const;
 
-    FloatMatrixF< 4, 4 >computeDMMatrix(const FloatArrayF< 4 > &sigma, GaussPoint *gp, TimeStep *tStep) const;
+    FloatMatrixF< 5, 5 >computeDMMatrix(const FloatArrayF< 4 > &sigma, const double kappa, GaussPoint *gp, TimeStep *tStep) const;
+
+    double computeDHardeningDKappa(const double kappa) const;
 
     FloatArrayF< 6 >giveThermalDilatationVector(GaussPoint *gp,  TimeStep *tStep) const override;
 
@@ -155,11 +181,11 @@ public:
 
     FloatArrayF< 6 >performPlasticityReturn(GaussPoint *gp, const FloatArrayF< 6 > &reducedStrain, TimeStep *tStep) const;
 
-    void performRegularReturn(FloatArrayF< 4 > &stress, double yieldValue, GaussPoint *gp, TimeStep *tStep) const;
+    double performRegularReturn(FloatArrayF< 4 > &stress, double yieldValue, GaussPoint *gp, TimeStep *tStep) const;
 
-    double computeYieldValue(const FloatArrayF< 4 > &sigma, GaussPoint *gp, TimeStep *tStep) const;
+    double computeYieldValue(const FloatArrayF< 4 > &sigma, const double kappa, GaussPoint *gp, TimeStep *tStep) const;
 
-    FloatMatrixF< 5, 5 >computeJacobian(const FloatArrayF< 4 > &sigma, const double deltaLambda, GaussPoint *gp, TimeStep *tStep) const;
+    FloatMatrixF< 6, 6 >computeJacobian(const FloatArrayF< 4 > &sigma, const double deltaLambda, double kappa, GaussPoint *gp, TimeStep *tStep) const;
 
     FloatArrayF< 6 >giveFrameForces3d(const FloatArrayF< 6 > &strain, GaussPoint *gp, TimeStep *tStep) override;
 
@@ -174,6 +200,8 @@ public:
     Interface *giveInterface(InterfaceType) override;
 
     bool hasMaterialModeCapability(MaterialMode mode) const override;
+
+    double computeHardening(const double kappa) const;
 
     MaterialStatus *CreateStatus(GaussPoint *gp) const override;
 
