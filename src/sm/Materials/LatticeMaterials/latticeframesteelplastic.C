@@ -682,7 +682,6 @@ namespace oofem {
     {
         LatticeMaterialStatus::updateYourself(atTime);
         this->kappa = this->tempKappa;
-        printf("kappa = %e\n", kappa);
     }
 
     void
@@ -690,6 +689,5 @@ namespace oofem {
     {
         LatticeMaterialStatus::initTempStatus();
         this->tempKappa = this->kappa;
-        printf("kappa = %e\n", kappa);
     }
 }
