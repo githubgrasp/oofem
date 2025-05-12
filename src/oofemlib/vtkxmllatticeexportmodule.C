@@ -51,6 +51,8 @@
  #include "../sm/Elements/LatticeElements/lattice2dboundary.h"
  #include "../sm/Elements/LatticeElements/lattice3dboundary.h"
  #include "../sm/Elements/LatticeElements/latticelink3dboundary.h"
+ #include "../sm/Elements/LatticeElements/latticeframe3d.h"
+ #include "../sm/Elements/LatticeElements/latticeframe3dnl.h"
 #endif
 
 #ifdef __TM_MODULE
@@ -239,73 +241,77 @@ VTKXMLLatticeExportModule::setupVTKPieceCross(ExportRegion &vtkPieceCross, TimeS
 {
     // Stores all neccessary data (of a region) in a VTKPiece so it can be exported later.
 
-    Domain *domain  = emodel->giveDomain(1);
+    Domain *domain = emodel->giveDomain( 1 );
 
-    IntArray elements = region.giveElementList();
+    IntArray elements    = region.giveElementList();
     int numberOfElements = elements.giveSize();
 
-    //Loop over the elements and get crossSectionNodes
+    // Loop over the elements and get crossSectionNodes
     int numberOfCrossSectionNodes = 0;
 
     IntArray crossSectionTable;
-    crossSectionTable.resize(numberOfElements);
+    crossSectionTable.resize( numberOfElements );
     int numberOfNodes = 0;
     for ( int ie = 1; ie <= numberOfElements; ie++ ) {
-        if (  dynamic_cast< LatticeStructuralElement * >( domain->giveElement(elements.at(ie) ) ) ) {
-            numberOfCrossSectionNodes = ( static_cast< LatticeStructuralElement * >( domain->giveElement(elements.at(ie) ) ) )->giveNumberOfCrossSectionNodes();
-        } else if ( dynamic_cast< LatticeTransportElement * >( domain->giveElement(elements.at(ie) ) ) ) {
-            numberOfCrossSectionNodes = ( static_cast< LatticeTransportElement * >( domain->giveElement(elements.at(ie) ) ) )->giveNumberOfCrossSectionNodes();
+        if ( dynamic_cast<LatticeStructuralElement *>( domain->giveElement( elements.at( ie ) ) ) ) {
+            numberOfCrossSectionNodes = ( static_cast<LatticeStructuralElement *>( domain->giveElement( elements.at( ie ) ) ) )->giveNumberOfCrossSectionNodes();
+        } else if ( dynamic_cast<LatticeTransportElement *>( domain->giveElement( elements.at( ie ) ) ) ) {
+            numberOfCrossSectionNodes = ( static_cast<LatticeTransportElement *>( domain->giveElement( elements.at( ie ) ) ) )->giveNumberOfCrossSectionNodes();
         }
-	/*Extention of lattice vtk output to deal with lattice elements in which not the cross-section is plotted, but only a point.
-	  This works with frame elements which are displayed as line segments.*/
-	if(numberOfCrossSectionNodes == 0){//This gives one point as default, so that a sphere can be plotted later.
-	  numberOfCrossSectionNodes = 1;
-	}
-	      
-        crossSectionTable.at(ie) = numberOfCrossSectionNodes;
+        /*Extention of lattice vtk output to deal with lattice elements in which not the cross-section is plotted, but only a point.
+          This works with frame elements which are displayed as line segments.*/
+        if ( numberOfCrossSectionNodes == 0 ) { // This gives one point as default, so that a sphere can be plotted later.
+            numberOfCrossSectionNodes = 1;
+        }
+
+        crossSectionTable.at( ie ) = numberOfCrossSectionNodes;
         numberOfNodes += numberOfCrossSectionNodes;
     }
 
     FloatMatrix nodeTable;
-    nodeTable.resize(numberOfNodes, 3);
+    nodeTable.resize( numberOfNodes, 3 );
 
     FloatArray crossSectionCoordinates;
-    FloatArray coords(3);
+    FloatArray coords( 3 );
 
-    //Store node coordinates in table
+    // Store node coordinates in table
     int nodeCounter = 0;
     for ( int ie = 1; ie <= elements.giveSize(); ie++ ) {
-        if (  dynamic_cast< LatticeStructuralElement * >( domain->giveElement(elements.at(ie) ) ) ) {
-            numberOfCrossSectionNodes =  ( static_cast< LatticeStructuralElement * >( domain->giveElement(elements.at(ie) ) ) )->giveNumberOfCrossSectionNodes();
-            ( static_cast< LatticeStructuralElement * >( domain->giveElement(elements.at(ie) ) ) )->giveCrossSectionCoordinates(crossSectionCoordinates);
-        } else if ( dynamic_cast< LatticeTransportElement * >( domain->giveElement(elements.at(ie) ) ) ) {
-            numberOfCrossSectionNodes = ( static_cast< LatticeTransportElement * >( domain->giveElement(elements.at(ie) ) ) )->giveNumberOfCrossSectionNodes();
-            ( static_cast< LatticeTransportElement * >( domain->giveElement(elements.at(ie) ) ) )->giveCrossSectionCoordinates(crossSectionCoordinates);
+        if ( dynamic_cast<LatticeStructuralElement *>( domain->giveElement( elements.at( ie ) ) ) ) {
+            numberOfCrossSectionNodes = ( static_cast<LatticeStructuralElement *>( domain->giveElement( elements.at( ie ) ) ) )->giveNumberOfCrossSectionNodes();
+            ( static_cast<LatticeStructuralElement *>( domain->giveElement( elements.at( ie ) ) ) )->giveCrossSectionCoordinates( crossSectionCoordinates );
+        } else if ( dynamic_cast<LatticeTransportElement *>( domain->giveElement( elements.at( ie ) ) ) ) {
+            numberOfCrossSectionNodes = ( static_cast<LatticeTransportElement *>( domain->giveElement( elements.at( ie ) ) ) )->giveNumberOfCrossSectionNodes();
+            ( static_cast<LatticeTransportElement *>( domain->giveElement( elements.at( ie ) ) ) )->giveCrossSectionCoordinates( crossSectionCoordinates );
         }
 
 
-	/*Extention of lattice vtk output to deal with lattice elements in which not the cross-section is plotted, but only a point.
-	  This works with frame elements which are displayed as line segments.*/
-	//TODO: I don't know why this is done here again as the number was extracted before. 
-	if(numberOfCrossSectionNodes == 0){//This gives one point as default, so that a sphere can be plotted later.
-	  numberOfCrossSectionNodes = 1;
-	  crossSectionCoordinates.resize(3);
+        /*Extention of lattice vtk output to deal with lattice elements in which not the cross-section is plotted, but only a point.
+          This works with frame elements which are displayed as line segments.*/
+        // TODO: I don't know why this is done here again as the number was extracted before.
+        if ( numberOfCrossSectionNodes == 0 ) { // This gives one point as default, so that a sphere can be plotted later.
+            numberOfCrossSectionNodes = 1;
+            crossSectionCoordinates.resize( 3 );
 
-	  if (  dynamic_cast< LatticeStructuralElement * >( domain->giveElement(elements.at(ie) ) ) ) {        
-            ( static_cast< LatticeStructuralElement * >( domain->giveElement(elements.at(ie) ) ) )->giveGpCoordinates(crossSectionCoordinates);
-	  } else if ( dynamic_cast< LatticeTransportElement * >( domain->giveElement(elements.at(ie) ) ) ) {
-            ( static_cast< LatticeTransportElement * >( domain->giveElement(elements.at(ie) ) ) )->giveGpCoordinates(crossSectionCoordinates);
-	  }
-	}
-	
-	
+            if ( dynamic_cast<LatticeStructuralElement *>( domain->giveElement( elements.at( ie ) ) ) ) {
+                ( static_cast<LatticeStructuralElement *>( domain->giveElement( elements.at( ie ) ) ) )->giveGpCoordinates( crossSectionCoordinates );
+            } else if ( dynamic_cast<LatticeTransportElement *>( domain->giveElement( elements.at( ie ) ) ) ) {
+                ( static_cast<LatticeTransportElement *>( domain->giveElement( elements.at( ie ) ) ) )->giveGpCoordinates( crossSectionCoordinates );
+            }
+        }
+
+
         for ( int is = 0; is < numberOfCrossSectionNodes; is++ ) {
             nodeCounter++;
-            nodeTable.at(nodeCounter, 1) = crossSectionCoordinates.at(3 * is + 1);
-            nodeTable.at(nodeCounter, 2) = crossSectionCoordinates.at(3 * is + 2);
-            nodeTable.at(nodeCounter, 3) = crossSectionCoordinates.at(3 * is + 3);
+            nodeTable.at( nodeCounter, 1 ) = crossSectionCoordinates.at( 3 * is + 1 );
+            nodeTable.at( nodeCounter, 2 ) = crossSectionCoordinates.at( 3 * is + 2 );
+            nodeTable.at( nodeCounter, 3 ) = crossSectionCoordinates.at( 3 * is + 3 );
         }
     }
+
+    if ( numberOfNodes != nodeCounter ){
+        OOFEM_ERROR( "mismatch of cross nodes:" );
+}
 
     if ( numberOfNodes > 0 && numberOfElements > 0 ) {
         // Export nodes as vtk vertices
@@ -349,7 +355,8 @@ VTKXMLLatticeExportModule::setupVTKPieceCross(ExportRegion &vtkPieceCross, TimeS
 
     NodalRecoveryModel *primVarSmoother = givePrimVarSmoother();
     
-    this->exportPrimaryVarsCross(vtkPieceCross, region, primaryVarsToExport, *primVarSmoother, tStep);
+    //
+    // this->exportPrimaryVarsCross(vtkPieceCross, region, primaryVarsToExport, *primVarSmoother, tStep);
 }
 
 
@@ -369,24 +376,34 @@ VTKXMLLatticeExportModule::exportPrimaryVarsCross(ExportRegion &vtkPiece, Set &r
 
     //    vtkPiece.setNumberOfPrimaryVarsToExport(primaryVarsToExport, mapL2G.giveSize() );
     vtkPiece.setNumberOfPrimaryVarsToExport(primaryVarsToExport, d->giveNumberOfElements() );
-    FloatArray average(3);
+
+    FloatArray saveAverage;
     for ( int i = 1, n = primaryVarsToExport.giveSize(); i <= n; i++ ) {
         UnknownType type = ( UnknownType ) primaryVarsToExport.at(i);
         int nodeCounter = 0;
         for ( int ielem = 1; ielem <= d->giveNumberOfElements(); ielem++ ) {
-	  average.zero();
+
+
+
+            saveAverage.zero();
 	  Element *elem = d->giveElement(ielem);
+
+          if (!(dynamic_cast<LatticeFrame3d *>(elem) || dynamic_cast<LatticeFrame3dNL *>(elem))) {
+              continue;
+          }
 
 	  for (int inode = 1; inode<=elem->giveNumberOfNodes();inode++){
 	    DofManager *dman = elem->giveNode(inode);
 	    this->getNodalVariableFromPrimaryField(valueArray, dman, tStep, type, region, smoother);
-	    average += 0.5*valueArray;
+	    saveAverage += valueArray;
 	  }
+          saveAverage.times(1.0 / elem->giveNumberOfNodes());
 
           //This is the problem. I need to store it in the cross-section node and not in the element.
           //For the special case, there are
           //Find the cross-section nodes and then loop over
           //Debug
+
          int numberOfCrossSectionNodes = 0;
           if (  dynamic_cast< LatticeStructuralElement * >(elem) ) {
             numberOfCrossSectionNodes =  ( static_cast< LatticeStructuralElement * >( elem) )->giveNumberOfCrossSectionNodes();
@@ -394,8 +411,11 @@ VTKXMLLatticeExportModule::exportPrimaryVarsCross(ExportRegion &vtkPiece, Set &r
               numberOfCrossSectionNodes = ( static_cast<LatticeTransportElement *>( elem ) )->giveNumberOfCrossSectionNodes();
           }
           for(int k = 1; k<=numberOfCrossSectionNodes; k++){
-              nodeCounter++;
-              vtkPiece.setPrimaryVarInNode(type, nodeCounter, average );
+              FloatArray average;
+              average = saveAverage;
+	    nodeCounter++;
+            printf("nodeCounter = %d\n", nodeCounter);
+	    vtkPiece.setPrimaryVarInNode(type, nodeCounter, std::move(average) );
           }
         }
     }
@@ -890,7 +910,7 @@ VTKXMLLatticeExportModule::writeVTKPieceCross(ExportRegion &vtkPieceCross, TimeS
 
     this->fileStreamCross << pointHeader.c_str();
 
-    writePrimaryVarsCross(vtkPieceCross);
+   // writePrimaryVarsCross(vtkPieceCross);
     
     this->fileStreamCross << "</PointData>\n";
     this->fileStreamCross << cellHeader.c_str();
