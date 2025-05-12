@@ -318,7 +318,7 @@ VTKXMLLatticeExportModule::setupVTKPieceCross(ExportRegion &vtkPieceCross, TimeS
         }
     }
 
-
+    
     //-------------------------------------------
     // Export all the cell data for the piece
     //-------------------------------------------
@@ -360,26 +360,43 @@ VTKXMLLatticeExportModule::exportPrimaryVarsCross(ExportRegion &vtkPiece, Set &r
     FloatArray valueArray;
     smoother.clear(); // Makes sure primary smoother is up-to-date with potentially new mesh.
 
+
     //This is a way of plotting cell variables in the form of points in the current state.
-    //Displacements are at nodes, but points are at midpoints of elements. Interpolate the displacements so that a fictious displacement at midpoint is obtained.
+    //Displacements are at nodes, but points are at midpoints of elements. Interpolate the displacements so that a fictious displacement at midpoint is obtained. This does not show th jump of rotations.
     
     //const IntArray& mapG2L = vtkPiece.getMapG2L();
     //    const IntArray& mapL2G = vtkPiece.getMapL2G();
 
     //    vtkPiece.setNumberOfPrimaryVarsToExport(primaryVarsToExport, mapL2G.giveSize() );
     vtkPiece.setNumberOfPrimaryVarsToExport(primaryVarsToExport, d->giveNumberOfElements() );
-    FloatArray average;
+    FloatArray average(3);
     for ( int i = 1, n = primaryVarsToExport.giveSize(); i <= n; i++ ) {
-        UnknownType type = ( UnknownType ) primaryVarsToExport.at(i);       
+        UnknownType type = ( UnknownType ) primaryVarsToExport.at(i);
+        int nodeCounter = 0;
         for ( int ielem = 1; ielem <= d->giveNumberOfElements(); ielem++ ) {
 	  average.zero();
 	  Element *elem = d->giveElement(ielem);
+
 	  for (int inode = 1; inode<=elem->giveNumberOfNodes();inode++){
 	    DofManager *dman = elem->giveNode(inode);
 	    this->getNodalVariableFromPrimaryField(valueArray, dman, tStep, type, region, smoother);
 	    average += 0.5*valueArray;
 	  }
-	  vtkPiece.setPrimaryVarInNode(type, ielem, std::move(average) );
+
+          //This is the problem. I need to store it in the cross-section node and not in the element.
+          //For the special case, there are
+          //Find the cross-section nodes and then loop over
+          //Debug
+         int numberOfCrossSectionNodes = 0;
+          if (  dynamic_cast< LatticeStructuralElement * >(elem) ) {
+            numberOfCrossSectionNodes =  ( static_cast< LatticeStructuralElement * >( elem) )->giveNumberOfCrossSectionNodes();
+          } else if ( dynamic_cast< LatticeTransportElement * >( elem ) ) {
+              numberOfCrossSectionNodes = ( static_cast<LatticeTransportElement *>( elem ) )->giveNumberOfCrossSectionNodes();
+          }
+          for(int k = 1; k<=numberOfCrossSectionNodes; k++){
+              nodeCounter++;
+              vtkPiece.setPrimaryVarInNode(type, nodeCounter, average );
+          }
         }
     }
 }
@@ -900,11 +917,20 @@ VTKXMLLatticeExportModule::writePrimaryVarsCross(ExportRegion &vtkPiece)
         const char *name = __UnknownTypeToString(type);
         ( void ) name; //silence the warning
 
+        if (!this->fileStreamCross.is_open()) {
+            OOFEM_ERROR("fileStreamCross is not open");
+        }
+
         this->fileStreamCross << " <DataArray type=\"Float64\" Name=\"" << name << "\" NumberOfComponents=\"" << ncomponents << "\" format=\"ascii\"> ";
         for ( int inode = 1; inode <= numNodes; inode++ ) {
             FloatArray &valueArray = vtkPiece.givePrimaryVarInNode(type, inode);
-	    for ( int i = 1; i <= valueArray.giveSize(); i++ ) {
-	      this->fileStreamCross << scientific << valueArray.at(i) << " ";
+
+            if (valueArray.giveSize() == 0) {
+                OOFEM_WARNING("Empty valueArray at node %d", inode);
+                continue;
+            }
+	    for ( int k = 1; k <= valueArray.giveSize(); k++ ) {
+	      this->fileStreamCross << scientific << valueArray.at(k) << " ";
 	    }
         }
         this->fileStreamCross << "</DataArray>\n";
@@ -928,8 +954,14 @@ VTKXMLLatticeExportModule::writeCellVarsCross(ExportRegion &vtkPiece)
         valueArray.resize(ncomponents);
         for ( int ielem = 1; ielem <= numCells; ielem++ ) {
             valueArray = vtkPiece.giveCellVar(type, ielem);
-            for ( int i = 1; i <= valueArray.giveSize(); i++ ) {
-                this->fileStreamCross << valueArray.at(i) << " ";
+
+            if (valueArray.giveSize() == 0){
+                OOFEM_WARNING("Empty valueArray at node %d", ielem);
+                continue;
+            }
+
+            for ( int k = 1; k <= valueArray.giveSize(); k++ ) {
+                this->fileStreamCross << valueArray.at(k) << " ";
             }
         }
         this->fileStreamCross << "</DataArray>\n";
