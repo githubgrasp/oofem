@@ -94,12 +94,6 @@ int HangingNode ::checkConsistency()
 
 void HangingNode ::postInitialize()
 {
-    printf("DOFs for hanging node %d: has R_u=%d, R_v=%d, R_w=%d\n",
-        this->giveNumber(),
-        this->hasDofID(R_u),
-        this->hasDofID(R_v),
-        this->hasDofID(R_w));
-
     Node ::postInitialize();
 
     Element *e;
