@@ -2291,7 +2291,10 @@ StructuralMaterial::computeStressIndependentStrainVector_3d(GaussPoint *gp, Time
 void
 StructuralMaterial::giveFullSymVectorForm(FloatArray &answer, const FloatArray &vec, MaterialMode matMode)
 {
-    if ( vec.giveSize() == 6 ) {
+    if ( vec.giveSize() == 0 ) {
+        return;
+    }
+    else if ( vec.giveSize() == 6 ) {
         // If we use default 3D implementation to treat e.g. plane strain.
         answer = vec;
     } else {
