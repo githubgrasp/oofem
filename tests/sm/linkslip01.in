@@ -42,7 +42,7 @@ linkslip 3 kn 6.135e10 kl 6.135e13 type 2 alpha 0.4 s1 1.e-3 s2 2e-3 s3 6.5e-3 t
 BoundaryCondition 1 loadTimeFunction 1 dofs 3 1 2 3 values 3 0 0 0 set 4
 BoundaryCondition 2 loadTimeFunction 1 dofs 2 2 3 values 2 0 0 set 5
 BoundaryCondition 3 loadTimeFunction 1 dofs 3 4 5 6 values 3 0 0 0 set 2
-BoundaryCondition 4 loadTimeFunction 1 dofs 1 1 values 1 8e-3 set 6
+BoundaryCondition 4 loadTimeFunction 1 dofs 1 1 values 1 -8e-3 set 6
 PiecewiseLinFunction 1 t 2 0.0 20.0 f(t) 2 0.0 1.0
 
 #%BEGIN_CHECK% tolerance 1.e1

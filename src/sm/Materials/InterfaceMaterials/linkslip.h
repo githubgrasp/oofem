@@ -58,7 +58,7 @@ namespace oofem {
  * This class implements a constitutive model for a bond link for connecting beam or truss and continuum elements.
  * The main idea is to use  the displacement jump in the direction of the rebar element (and two components, which are perpendicular to each other and lie
  * in a plane for which the direction along the rebar is normal to.
- * This constitutive model differs from the standard bond model, because only the first component of the jump is used to determine the bond stress.
+ * This constitutive model differs from the standard bond model, because only the first component of the jump is used to determine the bond stress. Elastic component of jump is ignored when evaluating the bond stress.
  *
  * @author: Peter Grassl
  */
@@ -142,7 +142,7 @@ public:
 
     FloatMatrixF< 3, 3 >give3dStiffnessMatrix_Eng(MatResponseMode rMode, GaussPoint *gp, TimeStep *tStep) const override;
 
-  FloatMatrixF< 1, 1 >give1dStiffnessMatrix_Eng(MatResponseMode rMode, GaussPoint *gp, TimeStep *tStep) const override;
+    FloatMatrixF< 1, 1 >give1dStiffnessMatrix_Eng(MatResponseMode rMode, GaussPoint *gp, TimeStep *tStep) const override;
 
     Interface *giveInterface(InterfaceType) override;
 

@@ -119,6 +119,7 @@ namespace oofem {
         for ( double s : this->reducedLatticeStrain ) {
             fprintf(file, "% .4e ", s);
         }
+	fprintf(file, "\n");
     }
 
 
