@@ -67,13 +67,12 @@ namespace oofem {
     {
         LatticeLinearElastic::initializeFrom(ir);
 
-        //Parameter which relates the shear stiffness to the normal stiffness. Default is 1000. Reread this again, because the
-        alphaOne = 1000.;
-        IR_GIVE_OPTIONAL_FIELD(ir, alphaOne, _IFT_LatticeSlip_a1); // Macro
 
-        //Parameter which is used for the definition of bending stiffness. Default is 1000.
-        alphaTwo = 1000.;
-        IR_GIVE_OPTIONAL_FIELD(ir, alphaTwo, _IFT_LatticeSlip_a2); // Macro
+        //Parameter which relates the shear stiffness to the normal stiffness. Reread this again because we use the stiffness matrix from latticelinearelastic material where the default is 1.
+        IR_GIVE_FIELD(ir, this->alphaOne, _IFT_LatticeSlip_a1); // Macro
+
+        //Parameter which is used for the definition of bending stiffness. Reread this again because we use the stiffness matrix from latticelinearelastic material where the default is 0. It cannot be zero for latticeslip.
+        IR_GIVE_FIELD(ir, this->alphaTwo, _IFT_LatticeSlip_a2); // Macro
 
         //Parameter which limits the stress in slip direction.
         IR_GIVE_FIELD(ir, tauMax, _IFT_LatticeSlip_t0); // Macro
