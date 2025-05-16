@@ -891,6 +891,7 @@ namespace oofem {
         //fprintf(file, "kappad %.8e ", this->kappaD);
         // fprintf(file, "damage %.8e ", this->damage);
         fprintf(file, ", kappaD %.8e, damage %.8e \n", this->kappaD, this->damage);
+	fprintf(file, "\n");
     }
 
     void

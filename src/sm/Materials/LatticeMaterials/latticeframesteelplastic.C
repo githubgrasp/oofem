@@ -669,6 +669,7 @@ namespace oofem {
             fprintf(file, "% .8e ", s);
         }
         fprintf(file, "kappa  % .8e ", this->kappa);
+	fprintf(file, "\n");
     }
 
 

@@ -1,0 +1,20 @@
+linearhardeningframesteel.out
+Cantilever test with latticeframesteelplastic material model
+NonLinearStatic nmsteps 1 nsteps 20  contextOutputStep 100
+nsteps 4 rtolv 1.e-0 maxiter 2000 stiffMode 1 controllmode 1 refloadmode 1 ddm 2 3 1 ddv 1 1 ddltf 1
+domain 3dLattice
+OutputManager tstep_all element_all dofman_all
+ndofman 3 nelem 2 ncrosssect 1 nmat 1 nbc 1 nic 0 nltf 1
+node 1 coords 3 0.000000e+00 0.000000e+00 0.000000e+00 bc 6 1 1 1 1 1 1 
+node 2 coords 3 0.500000e+00 0.000000e+00 0.000000e+00  
+node 3 coords 3 1.000000e+00 0.000000e+00 0.000000e+00 bc 6 0 0 0 0 0 0
+latticeframe3d 1 nodes 2 1 2 zaxis 3 0 0 1 crossSect 1 
+latticeframe3d 2 nodes 2 2 3 zaxis 3 0 0 1 crossSect 1
+latticecs 1 material 1 iy 0.083 iz 0.083 ik 0.167 shearCoeff 1. area 1.
+latticeframesteelplastic 1 d 1. E 1. n 0.15 talpha 0 nx0 1 mx0 1 my0 1 mz0 1 tol 1.e-6 iter 100 sub 10 h 0.3
+BoundaryCondition 1 loadTimeFunction 1 prescribedvalue 0.0
+ConstantFunction 1 f(t) 1.
+#%BEGIN_CHECK%
+#ELEMENT number 2 gp 1 keyword latticestrain component 1
+#ELEMENT number 2 gp 1 keyword latticestress component 1
+#%END_CHECK%
