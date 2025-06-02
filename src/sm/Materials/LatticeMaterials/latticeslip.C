@@ -117,7 +117,7 @@ namespace oofem {
         //evaluate tempKappa (no elastic strain in axial direction)
         double tempKappa = status->giveKappa() + fabs(totalStrain.at(1) - oldStrain.at(1) );
 
-
+        double deltaSlip = totalStrain.at(1) - oldStrain.at(1);
 
         /*First component is the slip one for which the stress should be limited using plasiticity (frictional slip between fibre and matrix). The other components are kept elastic. */
         FloatArrayF < 6 > stress;
@@ -129,7 +129,7 @@ namespace oofem {
 
         if ( f > 0 ) {//plastic response.
             //Reduced stress by increasing plastic strain.
-            stress.at(1) = sgn(stress.at(1) ) * bondStress;
+            stress.at(1) = sgn(stress.at(1)) * bondStress;
             status->setTempCrackFlag(1);
         }
 
