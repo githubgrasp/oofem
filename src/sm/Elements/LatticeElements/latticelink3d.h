@@ -89,6 +89,9 @@ public:
     virtual void giveGPCoordinates(FloatArray &coords);
 
     virtual void computeGeometryProperties();
+    void computeLumpedMassMatrix(FloatMatrix &answer, TimeStep *tStep) override;
+    void computeMassMatrix(FloatMatrix &answer, TimeStep *tStep) override
+    { this->computeLumpedMassMatrix(answer, tStep); }
 
     void giveInternalForcesVector(FloatArray &answer, TimeStep *tStep, int useUpdatedGpRecord = 0) override;
 

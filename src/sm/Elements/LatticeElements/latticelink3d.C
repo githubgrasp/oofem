@@ -143,6 +143,20 @@ namespace oofem {
         return;
     }
 
+    void
+    LatticeLink3d::computeLumpedMassMatrix(FloatMatrix &answer, TimeStep *tStep)
+    // Returns the lumped mass matrix of the receiver. This expression is
+    // valid in both local and global axes.
+    {
+        GaussPoint *gp = integrationRulesArray [ 0 ]->getIntegrationPoint(0);
+        double density = static_cast < LatticeCrossSection * > ( this->giveCrossSection() )->give('d', gp);
+        double halfMass = density * computeVolumeAround(gp) / 2.;
+        answer.resize(12, 12);
+        answer.zero();
+        answer.at(1, 1) = answer.at(2, 2) = answer.at(3, 3) = halfMass;
+        answer.at(7, 7) = answer.at(8, 8) = answer.at(9, 9) = halfMass;
+
+    }
 
     void
     LatticeLink3d::computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode,
@@ -328,8 +342,13 @@ namespace oofem {
         FloatArray normal(3), s(3), t(3);
 
         //Calculate normal vector
+        if(this->directionVector.computeNorm() < 1e-12) {
+            OOFEM_ERROR("LatticeLink3d: directionVector is zero. Check input or link setup.");
+        }
         normal = this->directionVector;
         normal.normalize();
+
+
 
         //Construct two perpendicular axis so that n is normal to the plane which they create
         //Check, if one of the components of the normal-direction is zero
