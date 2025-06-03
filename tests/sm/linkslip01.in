@@ -47,10 +47,10 @@ PiecewiseLinFunction 1 t 2 0.0 20.0 f(t) 2 0.0 1.0
 
 #%BEGIN_CHECK% tolerance 1.e1
 ##Bond stress values check
-#ELEMENT tStep 1 number 5 gp 1 keyword 99 component 1 value 9.54332268e+06
-#ELEMENT tStep 5 number 5 gp 1 keyword 99 component 1 value 1.54100000e+07
-#ELEMENT tStep 8 number 5 gp 1 keyword 99 component 1 value 1.32375379e+07
-#ELEMENT tStep 15 number 5 gp 1 keyword 99 component 1 value 7.35417846e+06
-#ELEMENT tStep 19 number 5 gp 1 keyword 99 component 1 value 6.16400000e+06
+#ELEMENT tStep 1 number 5 gp 1 keyword 99 component 1 value -9.54332268e+06
+#ELEMENT tStep 5 number 5 gp 1 keyword 99 component 1 value -1.54100000e+07
+#ELEMENT tStep 8 number 5 gp 1 keyword 99 component 1 value -1.32375379e+07
+#ELEMENT tStep 15 number 5 gp 1 keyword 99 component 1 value -7.35417846e+06
+#ELEMENT tStep 19 number 5 gp 1 keyword 99 component 1 value -6.16400000e+06
 ##
 #%END_CHECK%
