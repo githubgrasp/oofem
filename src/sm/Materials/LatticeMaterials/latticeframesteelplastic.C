@@ -84,6 +84,10 @@ namespace oofem {
 
         numberOfSubIncrements = 10;
         IR_GIVE_OPTIONAL_FIELD(ir, this->numberOfSubIncrements, _IFT_LatticeFrameSteelPlastic_sub); // Macro
+
+        this->hardeningLength = 0.;
+        IR_GIVE_OPTIONAL_FIELD(ir, this->hardeningLength, _IFT_LatticeFrameSteelPlastic_hlength); //length scale for hardening variable
+
         hType = 0;
         IR_GIVE_OPTIONAL_FIELD(ir, this->hType, _IFT_LatticeFrameSteelPlastic_htype); //hardening type
 
@@ -169,7 +173,7 @@ namespace oofem {
 
         if ( this->hType == 0 ) {
             hardening = 1. + this->H * kappa;
-        } else   {
+        } else {
             if ( kappa > h_eps.at(h_eps.giveSize() ) ) {
                 OOFEM_ERROR("kappa outside range of specified hardening law/n");
             }
@@ -254,7 +258,8 @@ namespace oofem {
         m.at(2) = 2. * mx / ( pow(mx0Reduced, 2.) * pow(hardening, 2.) );
         m.at(3) = 2. * my / ( pow(my0Reduced, 2.) * pow(hardening, 2.) );
         m.at(4) = 2. * mz / ( pow(mz0Reduced, 2.) * pow(hardening, 2.) );
-        m.at(5) = fabs(2. * nx / ( pow(nx0Reduced, 2.) * pow(hardening, 2.) ) );
+
+        m.at(5) = sqrt(pow(m.at(1), 2.) + pow(this->hardeningLength, 2.) * ( pow(m.at(2), 2.) + pow(m.at(3), 2.) +  pow(m.at(4), 2.) ) );
 
         return m;
     }
@@ -265,6 +270,8 @@ namespace oofem {
     FloatMatrixF < 5, 5 >
     LatticeFrameSteelPlastic::computeDMMatrix(const FloatArrayF < 4 > & stress, const double kappa, GaussPoint * gp, TimeStep * tStep) const
     {
+        auto mVector = computeMVector(stress, kappa, gp, tStep);
+
         FloatMatrixF < 5, 5 > dm;
 
         double hardening = computeHardening(kappa);
@@ -304,21 +311,36 @@ namespace oofem {
         dm.at(3, 3) = 2. / ( pow(my0Reduced, 2.) * pow(hardening, 2.) );
         dm.at(3, 4) = 0;
         dm.at(3, 5) = -4. * stress.at(3) / ( pow(my0Reduced, 2.) * pow(hardening, 3.) ) * dHardeningDKappa;
-        ;
+
 
         dm.at(4, 1) = 0;
         dm.at(4, 2) = 0;
         dm.at(4, 3) = 0;
         dm.at(4, 4) = 2. / ( pow(mz0Reduced, 2.) * pow(hardening, 2.) );
         dm.at(4, 5) = -4. * stress.at(4) / ( pow(mz0Reduced, 2.) * pow(hardening, 3.) ) * dHardeningDKappa;
-        ;
 
-        dm.at(5, 1) = sgn(stress.at(1) ) * 2. / ( pow(nx0Reduced, 2.) * pow(hardening, 2.) );
-        dm.at(5, 2) = 0.;
-        dm.at(5, 3) = 0.;
-        dm.at(5, 4) = 0.;
-        dm.at(5, 5) = -4.0 * fabs(stress.at(1) ) / ( pow(nx0, 2) * pow(hardening, 3.) ) * dHardeningDKappa;
 
+        if ( this->hardeningLength == 0. ) {
+            dm.at(5, 1) = sgn(stress.at(1) ) * dm.at(1, 1);
+            dm.at(5, 2) = 0.0;
+            dm.at(5, 3) = 0.0;
+            dm.at(5, 4) = 0.0;
+            dm.at(5, 5) = -4.0 * fabs(stress.at(1) ) / ( pow(nx0Reduced, 2.) * pow(hardening, 3.) ) * dHardeningDKappa;
+        } else if ( fabs(mVector.at(5) ) > 1.e-14 )         {
+            dm.at(5, 1) = mVector.at(1) * dm.at(1, 1) / mVector.at(5);
+            dm.at(5, 2) = mVector.at(2) * dm.at(2, 2) * pow(hardeningLength, 2.) / mVector.at(5);
+            dm.at(5, 3) = mVector.at(3) * dm.at(3, 3) * pow(hardeningLength, 2.) / mVector.at(5);
+            dm.at(5, 4) = mVector.at(4) * dm.at(4, 4) * pow(hardeningLength, 2.) / mVector.at(5);
+
+            double term1 = mVector.at(1) * ( -4. * stress.at(1) / ( pow(nx0Reduced, 2.) * pow(hardening, 3.) ) ) * dHardeningDKappa;
+            double term2 = mVector.at(2) * ( -4. * stress.at(2) / ( pow(mx0Reduced, 2.) * pow(hardening, 3.) ) ) * dHardeningDKappa;
+            double term3 = mVector.at(3) * ( -4. * stress.at(3) / ( pow(my0Reduced, 2.) * pow(hardening, 3.) ) ) * dHardeningDKappa;
+            double term4 = mVector.at(4) * ( -4. * stress.at(4) / ( pow(mz0Reduced, 2.) * pow(hardening, 3.) ) ) * dHardeningDKappa;
+
+            dm.at(5, 5) = ( term1 + pow(this->hardeningLength, 2.) * ( term2 + term3 + term4 ) ) / mVector.at(5);
+        } else   {
+            OOFEM_ERROR("mVector.at(5) in computeDMMatrix should not be zero\n");
+        }
         return dm;
     }
 
@@ -563,7 +585,6 @@ namespace oofem {
                 residuals.at(6) = computeYieldValue(tempStress, tempKappa, gp, tStep);
             }
         }
-
         status->letTempReturnResultBe(LatticeFrameSteelPlastic::RR_Converged);
 
         stress = tempStress;
@@ -669,7 +690,7 @@ namespace oofem {
             fprintf(file, "% .8e ", s);
         }
         fprintf(file, "kappa  % .8e ", this->kappa);
-	fprintf(file, "\n");
+        fprintf(file, "\n");
     }
 
 

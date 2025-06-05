@@ -57,6 +57,7 @@
 #define _IFT_LatticeFrameSteelPlastic_sub "sub"
 #define _IFT_LatticeFrameSteelPlastic_plastic "plastic"
 #define _IFT_LatticeFrameSteelPlastic_h "h"
+#define _IFT_LatticeFrameSteelPlastic_hlength "hlength"
 #define _IFT_LatticeFrameSteelPlastic_htype "htype"
 #define _IFT_LatticeFrameSteelPlastic_h_eps "h_eps"
 #define _IFT_LatticeFrameSteelPlastic_h_function_eps "h(eps)"
@@ -145,6 +146,8 @@ protected:
 
     ///maximum number Of SubIncrements
     double numberOfSubIncrements;
+
+    double hardeningLength;
 
     /// type of hardening function
     int hType;
