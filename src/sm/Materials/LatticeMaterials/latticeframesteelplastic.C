@@ -175,7 +175,7 @@ namespace oofem {
             hardening = 1. + this->H * kappa;
         } else {
             if ( kappa > h_eps.at(h_eps.giveSize() ) ) {
-                OOFEM_ERROR("kappa outside range of specified hardening law/n");
+	      OOFEM_ERROR("kappa=%e outside range of specified hardening law/n",kappa);
             }
 
             for ( int i = 1; i < h_eps.giveSize(); i++ ) {
