@@ -62,19 +62,6 @@ namespace oofem {
 
     LatticeFrame3dNL::LatticeFrame3dNL(int n, Domain *aDomain) : LatticeFrame3d(n, aDomain)
     {
-        rotationMatrixOne.resize(3, 3);
-        rotationMatrixOne.zero();
-        rotationMatrixOne.at(1, 1) = 1.;
-        rotationMatrixOne.at(2, 2) = 1.;
-        rotationMatrixOne.at(3, 3) = 1.;
-
-        rotationMatrixTwo.resize(3, 3);
-        rotationMatrixTwo.zero();
-        rotationMatrixTwo.at(1, 1) = 1.;
-        rotationMatrixTwo.at(2, 2) = 1.;
-        rotationMatrixTwo.at(3, 3) = 1.;
-
-
         numberOfDofMans = 2;
     }
 
@@ -82,7 +69,7 @@ namespace oofem {
     {}
 
     void
-    LatticeFrame3dNL::computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, int li, int ui)
+      LatticeFrame3dNL::computeNLBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, TimeStep *tStep)
     {
         answer.resize(6, 12);
         answer.zero();
@@ -98,11 +85,24 @@ namespace oofem {
         l2.times( ( 1. - this->s ) / 2.);
 
 
-        FloatArray c1(3);
-        c1.beProductOf(this->tempRotationMatrixOne, l1);
+	FloatMatrix rotationMatrix(3,3);
+	FloatArray spin(3);
+	FloatArray uTotal(12);
+        this->computeVectorOf(VM_Total, tStep, uTotal);       
+	spin.at(1) = uTotal.at(4);
+	spin.at(2) = uTotal.at(5);
+	spin.at(3) = uTotal.at(6);
+	this->computeGlobalRotationMatrix(rotationMatrix, spin);
+	FloatArray c1(3);
+	c1.beProductOf(rotationMatrix, l1);
 
+	
+	spin.at(1) = uTotal.at(10);
+	spin.at(2) = uTotal.at(11);
+	spin.at(3) = uTotal.at(12);
+	this->computeGlobalRotationMatrix(rotationMatrix, spin);
         FloatArray c2(3);
-        c2.beProductOf(this->tempRotationMatrixTwo, l2);
+        c2.beProductOf(rotationMatrix, l2);
 
         //Normal displacement jump in x-direction
         //First node
@@ -208,52 +208,7 @@ namespace oofem {
     // Updates the receiver at end of step.
     {
         LatticeFrame3d::updateYourself(tStep);
-
-        rotationMatrixOne = tempRotationMatrixOne;
-        rotationMatrixTwo = tempRotationMatrixTwo;
     }
-
-    void
-    LatticeFrame3dNL::updateRotationMatrices(TimeStep *tStep)
-    {
-        // test if not previously done
-        /* if ( tStep->giveSolutionStateCounter() == tempRotationCounter ) { */
-        /*        return; */
-        /* } */
-        //  @TODO: One should only compute this once per step. But this does not work.
-
-
-        FloatMatrix  localR(3, 3), help(3, 3), globalRTotal(3, 3), globalR(3, 3),  globalRInc(3, 3), globalRIncX(3, 3), globalRIncY(3, 3), globalRIncZ(3, 3);
-
-        FloatArray uInc(12);
-
-        this->computeVectorOf(VM_Incremental, tStep, uInc);
-
-
-        FloatMatrix r(12, 12), rT(12, 12);
-
-        //Node 1
-        FloatArray rotationOne(3);
-        rotationOne.at(1) = uInc.at(4);
-        rotationOne.at(2) = uInc.at(5);
-        rotationOne.at(3) = uInc.at(6);
-
-        computeGlobalRotationMatrix(globalRInc, rotationOne);
-        this->tempRotationMatrixOne.beProductOf(globalRInc, this->rotationMatrixOne);
-
-        //Node 2
-        FloatArray rotationTwo(3);
-        rotationTwo.at(1) = uInc.at(10);
-        rotationTwo.at(2) = uInc.at(11);
-        rotationTwo.at(3) = uInc.at(12);
-
-        computeGlobalRotationMatrix(globalRInc, rotationTwo);
-        this->tempRotationMatrixTwo.beProductOf(globalRInc, this->rotationMatrixTwo);
-
-	//        tempRotationCounter = tStep->giveSolutionStateCounter();
-    }
-
-
 
     void
     LatticeFrame3dNL::initForNewStep()
@@ -261,52 +216,69 @@ namespace oofem {
     //if current time step must be restarted
     {
         LatticeFrame3d::initForNewStep();
-
-        this->tempRotationMatrixOne = this->rotationMatrixOne;
-
-        this->tempRotationMatrixTwo = this->rotationMatrixTwo;
     }
 
-    void
-    LatticeFrame3dNL::computeGlobalRotationMatrix(FloatMatrix &answer, FloatArray &rotation)
-    {
-        answer.resize(3, 3);
-        answer.zero();
-        double thetaX, thetaY, thetaZ;
-        thetaX = rotation.at(1);
-        thetaY = rotation.at(2);
-        thetaZ = rotation.at(3);
 
-        //   First x, then y and finally z
-        answer.at(1, 1) = cos(thetaY) * cos(thetaZ);
-        answer.at(1, 2) = cos(thetaZ) * sin(thetaY) * sin(thetaX) - sin(thetaZ) * cos(thetaX);
-        answer.at(1, 3) = cos(thetaZ) * sin(thetaY) * cos(thetaX) + sin(thetaZ) * sin(thetaX);
+void
+LatticeFrame3dNL::computeGlobalRotationMatrix(FloatMatrix &answer, FloatArray &psi)
+{
+    FloatMatrix S(3, 3), SS(3, 3);
+    double psiSize;
 
-        answer.at(2, 1) = cos(thetaY) * sin(thetaZ);
-        answer.at(2, 2) = sin(thetaZ) * sin(thetaY) * sin(thetaX) + cos(thetaZ) * cos(thetaX);
-        answer.at(2, 3) = sin(thetaZ) * sin(thetaY) * cos(thetaX) - cos(thetaZ) * sin(thetaX);
+    if ( psi.giveSize() != 3 ) {
+        OOFEM_ERROR("psi param size mismatch");
+    }
 
-        answer.at(3, 1) = -sin(thetaY);
-        answer.at(3, 2) = cos(thetaY) * sin(thetaX);
-        answer.at(3, 3) = cos(thetaY) * cos(thetaX);
+    answer.resize(3, 3);
+    answer.zero();
 
+    psiSize = psi.computeNorm();
+    answer.at(1, 1) = answer.at(2, 2) = answer.at(3, 3) = 1.;
+
+    if ( psiSize <= 1.e-40 ) {
         return;
     }
 
+    this->computeSMtrx(S, psi);
+    SS.beProductOf(S, S);
+    S.times(sin(psiSize) / psiSize);
+    SS.times( ( 1. - cos(psiSize) ) / ( psiSize * psiSize ) );
+
+    answer.add(S);
+    answer.add(SS);
+}
 
 
+void
+LatticeFrame3dNL::computeSMtrx(FloatMatrix &answer, FloatArray &vec)
+{
+    if ( vec.giveSize() != 3 ) {
+        OOFEM_ERROR("vec param size mismatch");
+    }
+
+    answer.resize(3, 3);
+
+    answer.at(1, 1) = answer.at(2, 2) = answer.at(3, 3) = 0.;
+    answer.at(1, 2) = -vec.at(3);
+    answer.at(1, 3) =  vec.at(2);
+    answer.at(2, 1) =  vec.at(3);
+    answer.at(2, 3) = -vec.at(1);
+    answer.at(3, 1) = -vec.at(2);
+    answer.at(3, 2) =  vec.at(1);
+}
+
+ 
     void
     LatticeFrame3dNL::computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode,
                                              TimeStep *tStep)
     {
-        updateRotationMatrices(tStep);
-
+ 
         FloatMatrix d, bt, db, b;
         this->length = computeLength();
 
         answer.resize(12, 12);
         answer.zero();
-        this->computeBmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), b);
+        this->computeNLBmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), b, tStep);
 
         this->computeConstitutiveMatrixAt(d, rMode, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
 
@@ -329,7 +301,6 @@ namespace oofem {
     void
     LatticeFrame3dNL::computeStrainVector(FloatArray &answer, GaussPoint *gp, TimeStep *tStep)
     {
-        updateRotationMatrices(tStep);
 
         //Compute normalised displacement jumps in global coordinate system first and then rotate it to the local coordiante system.
 
@@ -348,11 +319,23 @@ namespace oofem {
 
         this->length = computeLength();
 
-        FloatArray c1(3);
-        c1.beProductOf(this->tempRotationMatrixOne, l1);
+	FloatMatrix rotationMatrix(3,3);
+	FloatArray spin(3);
+	FloatArray uTotal(12);
+        this->computeVectorOf(VM_Total, tStep, uTotal);       
+	spin.at(1) = u.at(4);
+	spin.at(2) = u.at(5);
+	spin.at(3) = u.at(6);
+	this->computeGlobalRotationMatrix(rotationMatrix, spin);
+	FloatArray c1(3);
+        c1.beProductOf(rotationMatrix, l1);
 
+	spin.at(1) = u.at(10);
+	spin.at(2) = u.at(11);
+	spin.at(3) = u.at(12);
+	this->computeGlobalRotationMatrix(rotationMatrix, spin);
         FloatArray c2(3);
-        c2.beProductOf(this->tempRotationMatrixTwo, l2);
+        c2.beProductOf(rotationMatrix, l2);
 
         answer.resize(6);
         answer.at(1) = u.at(7) - u.at(1) - c1.at(1) - c2.at(1) + l1.at(1) + l2.at(1);
@@ -401,7 +384,6 @@ namespace oofem {
     LatticeFrame3dNL::giveInternalForcesVector(FloatArray &answer,
                                                TimeStep *tStep, int useUpdatedGpRecord)
     {
-        updateRotationMatrices(tStep);
 
         FloatMatrix b, bt, bf, d;
         FloatArray u, stress, strain;
@@ -433,11 +415,21 @@ namespace oofem {
         }
 
 
+	FloatMatrix rotationMatrix(3,3);
+	FloatArray spin(3);
+	spin.at(1) = u.at(4);
+	spin.at(2) = u.at(5);
+	spin.at(3) = u.at(6);
+	this->computeGlobalRotationMatrix(rotationMatrix, spin);
         FloatArray c1(3);
-        c1.beProductOf(this->tempRotationMatrixOne, l1);
+        c1.beProductOf(rotationMatrix, l1);
 
+	spin.at(1) = u.at(10);
+	spin.at(2) = u.at(11);
+	spin.at(3) = u.at(12);
+	this->computeGlobalRotationMatrix(rotationMatrix, spin);
         FloatArray c2(3);
-        c2.beProductOf(this->tempRotationMatrixTwo, l2);
+        c2.beProductOf(rotationMatrix, l2);
 
         FloatMatrix rotMatrix(6, 6);
         computeGtoLStrainRotationMatrix(rotMatrix);

@@ -55,20 +55,6 @@ namespace oofem {
 class LatticeFrame3dNL : public LatticeFrame3d
 {
 private:
-    /// Last equilibriated rotation matrix one
-    FloatMatrix rotationMatrixOne;
-
-    /// Last equilibriated rotation matrix two
-    FloatMatrix rotationMatrixTwo;
-
-    /// Temporary rotation matrix one
-    FloatMatrix tempRotationMatrixOne;
-
-    /// Temporary rotation matrix two
-    FloatMatrix tempRotationMatrixTwo;
-
-    /// Time stamp of temporary centre triad.
-    StateCounterType tempRotationCounter;
 
 protected:
 
@@ -77,20 +63,18 @@ public:
     virtual ~LatticeFrame3dNL();
 
     const char *giveInputRecordName() const override { return _IFT_LatticeFrame3dNL_Name; }
-    const char *giveClassName() const override { return "latticeframe3dnl5"; }
+    const char *giveClassName() const override { return "latticeframe3dnl"; }
 
     void giveInternalForcesVector(FloatArray &answer, TimeStep *tStep, int useUpdatedGpRecord) override;
 
 protected:
 
-    void computeRotationMatrices(FloatMatrix &answerOne, FloatMatrix &answerTwo);
-    void computeGlobalRotationMatrix(FloatMatrix &answer, FloatArray &rotation);
-
-    void updateRotationMatrices(TimeStep *tStep);
+  void computeGlobalRotationMatrix(FloatMatrix &answer, FloatArray &rotation);
+  void computeSMtrx(FloatMatrix &answer, FloatArray &vec);
 
     bool computeGtoLStrainRotationMatrix(FloatMatrix &answer);
     bool computeGtoLRotationMatrix(FloatMatrix &) override;
-    virtual void computeBmatrixAt(GaussPoint *, FloatMatrix &, int = 1, int = ALL_STRAINS) override;
+  void computeNLBmatrixAt(GaussPoint *gp, FloatMatrix &, TimeStep *tStep);
 
     void updateYourself(TimeStep *tStep) override;
     void initForNewStep() override;
