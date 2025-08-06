@@ -19,7 +19,9 @@ Region :: Region(int n, Grid *aGrid) : GridComponent(n, aGrid)
 
 Region :: ~Region()
 // Destructor.
-{}
+{
+
+}
 
 
 int

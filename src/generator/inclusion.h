@@ -5,8 +5,11 @@
 #include "grid.h"
 #include "gridcomponent.h"
 
-#include "flotarry.h"
+#include "floatarray.h"
 #include "intarray.h"
+using oofem::FloatArray;
+using oofem::IntArray;
+
 
 #include "datareader.h"
 #include "oofemtxtdatareader.h"
@@ -37,7 +40,7 @@ public:
      */
     Inclusion(int n, Grid* aGrid);                      // constructor
     /// Destructor.
-    ~Inclusion();                                           // destructor
+    virtual ~Inclusion();                                           // destructor
 
     virtual int generatePoints() = 0;
 

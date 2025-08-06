@@ -23,7 +23,7 @@ class Vertex : public GridComponent
 
 protected:
     /// Array storing nodal coordinates.
-    FloatArray coordinates;
+  oofem::FloatArray coordinates;
     int number;
     double refinement;
     double radius;
@@ -40,7 +40,7 @@ public:
      */
     Vertex(int n, Grid* aGrid);                      // constructor
     /// Destructor.
-    ~Vertex();                                           // destructor
+    virtual ~Vertex();                                           // destructor
 
     // coordinates
     bool        hasCoordinates() { return true; }
@@ -53,10 +53,10 @@ public:
     double giveRadius (){return this->radius;} 
 
     /// Returns pointer to node coordinate array
-    void giveCoordinates(FloatArray &coord) { coord = this->coordinates; }
-    FloatArray *giveCoordinates() { return & coordinates; }
+  void giveCoordinates(oofem::FloatArray &coord) { coord = this->coordinates; }
+  oofem::FloatArray *giveCoordinates() { return & coordinates; }
 
-    void setCoordinates (FloatArray& _coords) {this->coordinates = _coords;}
+  void setCoordinates (oofem::FloatArray& _coords) {this->coordinates = _coords;}
 
     /// Sets i-th componet. The component will be futher managed and maintained by grid object. 
     
@@ -67,7 +67,7 @@ public:
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "Vertex"; }
 
-    IRResultType initializeFrom(InputRecord *ir);
+  void initializeFrom(oofem::InputRecord *ir);
     //virtual IntArray* ResolveDofIDArray (char* initString);
     /// prints receiver state on stdout. Usefull for debuging.
     void         printYourself();

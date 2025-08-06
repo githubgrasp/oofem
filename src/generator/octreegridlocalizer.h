@@ -2,7 +2,7 @@
 #define octreegridlocalizer_h
 
 #include "gridlocalizer.h"
-#include "compiler.h"
+//#include "compiler.h"
 
 #ifndef __MAKEDEPEND
  #include <set>
