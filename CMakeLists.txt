@@ -147,6 +147,8 @@ option (USE_PYBIND_BINDINGS "Enable Python Pybind11 bindings (OOFEM callable fro
 option (USE_PYTHON_EXTENSION "Enable Python extension for exposing C++ code to python. Uses Python.h library." OFF)
 option (USE_HDF5 "HDF5 support" OFF)
 option (USE_MPM "Enable experimental multiphysics module" OFF)
+option (USE_GENERATOR "Enable vertex generator" OFF)
+
 
 if (USE_PARALLEL)
     add_definitions (-D__PARALLEL_MODE)
@@ -276,6 +278,13 @@ if (USE_OOFEG)
     list (APPEND EXT_LIBS ${ESI_LIB} ${ELIXIR_LIB} ${CKIT_LIB} ${X11_LIBRARIES} ${X11_Xmu_LIB} ${X11_Xt_LIB} ${XAW_LIB})
     list (APPEND MODULE_LIST "oofeg")
 endif ()
+
+if (USE_GENERATOR)
+    include_directories ("${oofem_SOURCE_DIR}/src/generator")
+    add_subdirectory("${oofem_SOURCE_DIR}/src/generator")
+    list (APPEND MODULE_LIST "generator")
+endif ()
+
 
 #######################################################################
 ######################## External libraries ###########################
@@ -717,8 +726,7 @@ if (USE_MPM)
 endif ()
 set (oofempy)
 if (USE_BOOSTPYTHON_BINDINGS)
-    set (oofempy ${oofem_SOURCE_DIR}/bindings/Deprecated/python/oofemlib.cpp
-            ../../../../../Software/oofem/src/sm/Elements/LatticeElements/latticeframe3dnl3.C)
+    set (oofempy ${oofem_SOURCE_DIR}/bindings/Deprecated/python/oofemlib.cpp)
 endif ()
 
 
@@ -774,6 +782,8 @@ if (USE_SHARED_LIB)
             set_target_properties (mpm PROPERTIES COMPILE_FLAGS ${LIBOOFEM_EXPORT_CFLAGS})
         endif ()
 endif()
+
+
 
     generate_export_header (liboofem
         BASE_NAME OOFEM
