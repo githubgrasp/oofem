@@ -5,7 +5,7 @@
 #include "grid.h"
 #include "gridcomponent.h"
 
-#include "flotarry.h"
+#include "floatarray.h"
 #include "intarray.h"
 
 #include "datareader.h"
@@ -23,13 +23,13 @@ class Surface : public GridComponent
 {
 protected:
     /// Array storing nodal coordinates.
-    IntArray curves;
+  oofem::IntArray curves;
     int number;
     double refinement;
     double xedges, yedges, zedges;
     int boundaryFlag;
-    FloatArray boundaryShift;
-    FloatArray normal;
+  oofem::FloatArray boundaryShift;
+  oofem::FloatArray normal;
     
 public:
 
@@ -45,20 +45,20 @@ public:
     /// Returns i-th vertex of curve.
     int      giveLocalCurve(int i);
     /// Returns pointer to curve vertex array.
-    IntArray *giveLocalCurves() { return & curves; }
+  oofem::IntArray *giveLocalCurves() { return & curves; }
 
     int giveNumberOfLocalCurves();
 
     /// Define boundaries
-    void defineBoundaries(FloatArray &boundaries);
+  void defineBoundaries(oofem::FloatArray &boundaries);
     
-    void giveNormal(FloatArray &answer){answer = this->normal;}
+  void giveNormal(oofem::FloatArray &answer){answer = this->normal;}
     
     //Random approach to generate points on surfaces including period shift and mirroring
     int generatePoints();
     
     //Shorten code by putting routine to shift and mirror point separately
-    void mirrorShift(FloatArray& random, FloatArray& normal,FloatArray& specimenDimension,FloatArray& boundaries, int& vertexNumber, IntArray& periodicityFlag);
+  void mirrorShift(oofem::FloatArray& random, oofem::FloatArray& normal,oofem::FloatArray& specimenDimension,oofem::FloatArray& boundaries, int& vertexNumber, oofem::IntArray& periodicityFlag);
         
     Surface *ofType();
 
@@ -66,7 +66,7 @@ public:
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "Surface"; }
 
-    IRResultType initializeFrom(InputRecord *ir);
+  void initializeFrom(oofem::InputRecord *ir);
     //virtual IntArray* ResolveDofIDArray (char* initString);
     /// prints receiver state on stdout. Usefull for debuging.
     void         printYourself();

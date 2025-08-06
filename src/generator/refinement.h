@@ -5,8 +5,11 @@
 #include "grid.h"
 #include "gridcomponent.h"
 
-#include "flotarry.h"
+#include "floatarray.h"
 #include "intarray.h"
+
+using oofem::FloatArray;
+using oofem::IntArray;
 
 #include "datareader.h"
 #include "oofemtxtdatareader.h"
@@ -34,7 +37,7 @@ public:
      */
     Refinement(int n, Grid* aGrid);                      // constructor
     /// Destructor.
-    ~Refinement();                                           // destructor
+    virtual ~Refinement();                                           // destructor
 
     virtual double giveDiameter(FloatArray &coord) {return 0.;}
 

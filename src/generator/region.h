@@ -5,7 +5,7 @@
 #include "grid.h"
 #include "gridcomponent.h"
 
-#include "flotarry.h"
+#include "floatarray.h"
 #include "intarray.h"
 
 #include "datareader.h"
@@ -23,7 +23,7 @@ class Region : public GridComponent
 {
 protected:
     /// Array storing nodal coordinates.
-    IntArray surfaces;
+  oofem::IntArray surfaces;
     int number;
     double refinement;
     double xlength, ylength, zlength;
@@ -37,16 +37,16 @@ public:
      */
     Region(int n, Grid *aGrid);                      // constructor
     /// Destructor.
-    ~Region();                                           // destructor
+    virtual ~Region();                                           // destructor
 
     /// Returns i-th vertex of curve.
     int      giveLocalSurface(int i);
     /// Returns pointer to curve vertex array.
 
-    void giveLocalSurfaces(IntArray &surf) { surf = this->surfaces; }
+  void giveLocalSurfaces(oofem::IntArray &surf) { surf = this->surfaces; }
 
     /// Define boundaries
-    void defineBoundaries(FloatArray &boundaries);
+  void defineBoundaries(oofem::FloatArray &boundaries);
     
     //generate regular points
     int generateRegularPoints1();
@@ -77,12 +77,10 @@ public:
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "Region"; }
 
-    ///Returns the number of region
     int giveNumber() { return this->number; }
 
-    IRResultType initializeFrom(InputRecord *ir);
-    //virtual IntArray* ResolveDofIDArray (char* initString);
-    /// prints receiver state on stdout. Usefull for debuging.
+  void initializeFrom(oofem::InputRecord *ir);
+
     void         printYourself();
 };
 

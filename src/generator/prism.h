@@ -6,8 +6,11 @@
 
 #include "region.h"
 
-#include "flotarry.h"
+#include "floatarray.h"
 #include "intarray.h"
+
+using oofem::FloatArray;
+using oofem::IntArray;
 
 #include "datareader.h"
 #include "oofemtxtdatareader.h"
@@ -24,7 +27,7 @@ protected:
     /// Array storing nodal coordinates.
     int number;
     double refinement;
-    FloatArray box;
+  FloatArray box;
     double xlength, ylength, zlength;
 
 public:
@@ -45,7 +48,7 @@ public:
     void giveLocalSurfaces(IntArray &surf) { surf = this->surfaces; }
 
     /// Define boundaries
-    void defineBoundaries(FloatArray &boundaries);
+  void defineBoundaries(FloatArray &boundaries);
     
     //generate regular points
     int generateRegularPoints1();
@@ -54,7 +57,7 @@ public:
     //generate random points in periodic cell
     int generatePeriodicPoints();
 
-    void mirrorShiftSurface(FloatArray& random, FloatArray& normal,FloatArray& specimenDimension,FloatArray& boundaries, int& vertexNumber, IntArray& periodicityFlag);
+  void mirrorShiftSurface(oofem::FloatArray& random, oofem::FloatArray& normal,FloatArray& specimenDimension,FloatArray& boundaries, int& vertexNumber, IntArray& periodicityFlag);
     
     //generate random points
     int generatePoints();
@@ -81,7 +84,7 @@ public:
     ///Returns the number of region
     int giveNumber() { return this->number; }
 
-    IRResultType initializeFrom(InputRecord *ir);
+  void initializeFrom(oofem::InputRecord *ir);
     //virtual IntArray* ResolveDofIDArray (char* initString);
     /// prints receiver state on stdout. Usefull for debuging.
     void         printYourself();

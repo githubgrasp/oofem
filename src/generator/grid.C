@@ -7,7 +7,7 @@
 #include "inclusion.h"
 #include "refinement.h"
 #include "octreegridlocalizer.h"
-#include "oofem_limits.h"
+//#include "oofem_limits.h"
 #include "datareader.h"
 #include "domain.h"
 #include "sphere.h"
@@ -30,6 +30,7 @@
  #include <ctype.h>
 #endif
 
+using namespace oofem;
 
 //Definitions for random number generator
 #define IA 16807
@@ -108,31 +109,44 @@ GridLocalizer *Grid :: giveGridLocalizer()
 
 
 
-
-Vertex *Grid :: giveVertex(int n)
-// Returns the n-th vertex. 
+Vertex *Grid::giveVertex(int n)
 {
-    if ( vertexList->includes(n) ) {
-        return vertexList->at(n);
+    if (n >= 1 && n <= static_cast<int>(vertexList.size()) && vertexList[n - 1] != nullptr) {
+        return vertexList[n - 1];  // 1-based to 0-based
     } else {
-        printf("giveVertex: undefined vertex (%d)", n);
+        printf("giveVertex: undefined vertex (%d)\n", n);
         exit(1);
     }
 
-    return NULL;
+    return nullptr;
 }
+
+
+/* Vertex *Grid :: giveVertex(int n) */
+/* // Returns the n-th vertex.  */
+/* { */
+/*     if ( vertexList->includes(n) ) { */
+/*         return vertexList->at(n); */
+/*     } else { */
+/*         printf("giveVertex: undefined vertex (%d)", n); */
+/*         exit(1); */
+/*     } */
+
+/*     return NULL; */
+/* } */
+
 
 Vertex *Grid :: giveInputVertex(int n)
 // Returns the n-th vertex. Creates this node if it does not exist yet.
 {
-    if ( inputVertexList->includes(n) ) {
-        return inputVertexList->at(n);
+
+    if (n >= 1 && n <= static_cast<int>(inputVertexList.size()) && inputVertexList[n - 1] != nullptr) {
+        return inputVertexList[n - 1];  // 1-based to 0-based
     } else {
-        printf("giveInputVertex: undefined inputVertex (%d)", n);
+        printf("giveInputVertex: undefined inputVertex (%d)\n", n);
         exit(1);
     }
-
-    return NULL;
+    return nullptr;
 }
 
 
@@ -140,14 +154,23 @@ Vertex *Grid :: giveInputVertex(int n)
 Vertex *Grid :: giveControlVertex(int n)
 // Returns the n-th vertex. Creates this node if it does not exist yet.
 {
-    if ( controlVertexList->includes(n) ) {
-        return controlVertexList->at(n);
+
+    if (n >= 1 && n <= static_cast<int>(controlVertexList.size()) && controlVertexList[n - 1] != nullptr) {
+        return controlVertexList[n - 1];  // 1-based to 0-based
     } else {
-        printf("giveControlVertex: undefined inputVertex (%d)", n);
+        printf("giveControlVertex: undefined controlVertex (%d)\n", n);
         exit(1);
     }
+    return nullptr;
 
-    return NULL;
+  /* if ( controlVertexList->includes(n) ) { */
+    /*     return controlVertexList->at(n); */
+    /* } else { */
+    /*     printf("giveControlVertex: undefined inputVertex (%d)", n); */
+    /*     exit(1); */
+    /* } */
+
+    /* return NULL; */
 }
 
 
@@ -155,27 +178,47 @@ Vertex *Grid :: giveControlVertex(int n)
 Curve *Grid :: giveCurve(int n)
 // Returns the n-th element. Generates error if it is not defined yet.
 {
-    if ( curveList->includes(n) ) {
-        return curveList->at(n);
+
+    if (n >= 1 && n <= static_cast<int>(curveList.size()) && curveList[n - 1] != nullptr) {
+        return curveList[n - 1];  // 1-based to 0-based
     } else {
-        printf("giveCurve: undefined curve (%d)", n);
+        printf("giveCurve: undefined curve (%d)\n", n);
         exit(1);
     }
+    return nullptr;
 
-    return NULL;
+  
+    /* if ( curveList->includes(n) ) { */
+    /*     return curveList->at(n); */
+    /* } else { */
+    /*     printf("giveCurve: undefined curve (%d)", n); */
+    /*     exit(1); */
+    /* } */
+
+    /* return NULL; */
 }
 
 Surface *Grid :: giveSurface(int n)
 // Returns the n-th element. Generates error if it is not defined yet.
 {
-    if ( surfaceList->includes(n) ) {
-        return surfaceList->at(n);
+
+    if (n >= 1 && n <= static_cast<int>(surfaceList.size()) && surfaceList[n - 1] != nullptr) {
+        return surfaceList[n - 1];  // 1-based to 0-based
     } else {
-        printf("giveSurface: undefined surface (%d)", n);
+        printf("giveSurface: undefined surface (%d)\n", n);
         exit(1);
     }
+    return nullptr;
 
-    return NULL;
+
+  /* if ( surfaceList->includes(n) ) { */
+  /*       return surfaceList->at(n); */
+  /*   } else { */
+  /*       printf("giveSurface: undefined surface (%d)", n); */
+  /*       exit(1); */
+  /*   } */
+
+  /*   return NULL; */
 }
 
 double Grid :: giveDiameter(FloatArray &coords) {
@@ -191,40 +234,37 @@ double Grid :: giveDiameter(FloatArray &coords) {
 Region *Grid :: giveRegion(int n)
 // Returns the n-th element. Generates error if it is not defined yet.
 {
-    if ( regionList->includes(n) ) {
-        return regionList->at(n);
+    if (n >= 1 && n <= static_cast<int>(regionList.size()) && regionList[n - 1] != nullptr) {
+        return regionList[n - 1];  // 1-based to 0-based
     } else {
-printf("giveRegion: undefined region (%d)", n);
+        printf("giveRegion: undefined region (%d)\n", n);
         exit(1);
     }
-
-    return NULL;
+    return nullptr;
 }
 
 Inclusion *Grid :: giveInclusion(int n)
 // Returns the n-th element. Generates error if it is not defined yet.
 {
-    if ( inclusionList->includes(n) ) {
-        return inclusionList->at(n);
+  if (n >= 1 && n <= static_cast<int>(inclusionList.size()) && inclusionList[n - 1] != nullptr) {
+        return inclusionList[n - 1];  // 1-based to 0-based
     } else {
-        printf("giveInclusion: undefined inclusion (%d)", n);
+        printf("giveInclusion: undefined inclusion (%d)\n", n);
         exit(1);
     }
-
-    return NULL;
+    return nullptr;
 }
 
 Refinement *Grid :: giveRefinement(int n)
 // Returns the n-th element. Generates error if it is not defined yet.
 {
-    if ( refinementList->includes(n) ) {
-        return refinementList->at(n);
+  if (n >= 1 && n <= static_cast<int>(refinementList.size()) && refinementList[n - 1] != nullptr) {
+        return refinementList[n - 1];  // 1-based to 0-based
     } else {
-        printf("giveRefinement: undefined refinement (%d)", n);
+        printf("giveRefinement: undefined refinement (%d)\n", n);
         exit(1);
     }
-
-    return NULL;
+    return nullptr;
 }
 
 /* void Grid :: resizeVertices(int _newSize) { vertexList->growTo(_newSize); } */
@@ -296,7 +336,7 @@ int Grid :: generateRandomPoints()
   
   start = :: clock();
 
-  if(periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 0 & periodicityFlag.at(3) == 0 && randomFlag != 2){//Region without periodicity
+  if(periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 0 && randomFlag != 2){//Region without periodicity
 
     if(randomFlag == 1){ //Input vertices for Grassl's mesh approach
       this->generateInputPoints();
@@ -313,7 +353,7 @@ int Grid :: generateRandomPoints()
     }
     ec = :: clock();
     nsec = ( ec - sc ) / CLOCKS_PER_SEC;
-    OOFEM_LOG_INFO("Points for inclusions generated in %lds \n", nsec);
+    oofem::OOFEM_LOG_INFO("Points for inclusions generated in %lds \n", nsec);
     
     
     //Control vertices
@@ -665,11 +705,11 @@ int Grid :: generateRegularPoints()
 int Grid :: instanciateYourself(DataReader *dr)
 // Creates all objects mentioned in the data file.
 {
-    const char *__keyword, *__proc = "initializeFrom"; // Required by IR_GIVE_FIELD macro
-    IRResultType result;                            // Required by IR_GIVE_FIELD macro
+  //    const char *__keyword, *__proc = "initializeFrom"; // Required by IR_GIVE_FIELD macro
+    //    IRResultType result;                            // Required by IR_GIVE_FIELD macro
 
     int i, num;
-    char name [ MAX_NAME_LENGTH ];
+    std::string name;
 
     Vertex *vertex;
     Curve *curve;
@@ -683,19 +723,16 @@ int Grid :: instanciateYourself(DataReader *dr)
 
     RefinePrism *refineprism;
     
-    InputRecord *ir;
+    //    InputRecord *ir;
 
     /* read type of Grid to be solved
      * This information is currently not used, since we do not distinguish between different domain types.
      * However, later we should have different domain types which are inherited from domain.
      */
-    ir = dr->giveInputRecord(DataReader :: IR_domainRec, 1);
-    __keyword = "domain";
-    result = ir->giveField(name, MAX_NAME_LENGTH, IFT_type, "domain");
-    if ( result != IRRT_OK ) {
-        IR_IOERR(giveClassName(), __proc, IFT_type, "domain", ir, result);
-    }
-    ir->finish();
+    //    ir = dr->giveInputRecord(DataReader :: IR_domainRec, 1);
+    auto &ir = dr->giveInputRecord(oofem::DataReader::IR_domainRec, 1);
+    IR_GIVE_FIELD(ir, name, IFT_Domain_type);
+    ir.finish();
 
     // read
     ir = dr->giveInputRecord(DataReader :: IR_controlRec, 1);

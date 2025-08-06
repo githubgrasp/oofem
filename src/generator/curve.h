@@ -3,7 +3,7 @@
 
 
 #include "gridcomponent.h"
-#include "flotarry.h"
+#include "floatarray.h"
 #include "intarray.h"
 
 
@@ -15,18 +15,16 @@
  #include <stdio.h>
 #endif
 
-//class FloatArray;
-//class IntArray;
 
 class Curve : public GridComponent
 {
 protected:
     /// Array storing nodal coordinates.
-    IntArray vertices;
+  oofem::IntArray vertices;
     int number;
     double refinement;
     int randomswitch;
-    FloatArray normal;
+  oofem::FloatArray normal;
 
 public:
 
@@ -35,16 +33,16 @@ public:
      * @param n node number in domain aDomain
      * @param aDomain domain to which node belongs
      */
-    Curve(int n, Grid *aGrid);                   // constructor
-    /// Destructor.
-    ~Curve();                                           // destructor
+    Curve(int n, Grid *aGrid);                   
+
+    virtual ~Curve();
 
     /// Returns i-th vertex of curve.
     int      giveLocalVertex(int i);
     /// Returns pointer to curve vertex array.
-    IntArray *giveLocalVertices() { return & vertices; }
+  oofem::IntArray *giveLocalVertices() { return & vertices; }
 
-    Vertex *giveGlobalVertex(int i, AList< Vertex > *vertexList);
+    Vertex *giveGlobalVertex(int i, const std::vector<Vertex*> &vertexList);
 
     Curve *ofType();
 
@@ -57,17 +55,15 @@ public:
 
     //Generate periodicPoints
     int generatePeriodicPoints();
-
-    void mirrorShift(FloatArray& random, FloatArray& normal,FloatArray& specimenDimension,FloatArray& boundaries, int& vertexNumber, IntArray& periodicityFlag);
+  
+  void mirrorShift(oofem::FloatArray& random, oofem::FloatArray& normal,oofem::FloatArray& specimenDimension,oofem::FloatArray& boundaries, int& vertexNumber, oofem::IntArray& periodicityFlag);
    
-
-    //Give normal of curve
-    void giveNormal(FloatArray &answer){answer = this->normal;}
+  //Give normal of curve
+  void giveNormal(oofem::FloatArray &answer){answer = this->normal;}
     
-    IRResultType initializeFrom(InputRecord *ir);
-    //virtual IntArray* ResolveDofIDArray (char* initString);
-    /// prints receiver state on stdout. Usefull for debuging.
-    void         printYourself();
+  void initializeFrom(oofem::InputRecord *ir);
+
+  void printYourself();
 };
 
 

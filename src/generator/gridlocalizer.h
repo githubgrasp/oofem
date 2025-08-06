@@ -42,7 +42,7 @@
 #define gridlocalizer_h
 
 #include "gridcomponent.h"
-#include "compiler.h"
+//#include "compiler.h"
 
 #include "interface.h"
 #include "logger.h"
@@ -81,6 +81,8 @@ class GridLocalizer : public GridComponent
   
   /// Constructor
  GridLocalizer(int n, Grid *g) : GridComponent(n, g) { }
+
+  virtual ~GridLocalizer() = default;
   
   /**
      * Returns container (list) of all domain nodes within given box.
@@ -109,7 +111,7 @@ class GridLocalizer : public GridComponent
      * belonging to receiver. Receiver may use value-name extracting functions
      * to extract particular field from record.
      * @see readInteger, readDouble and similar functions */
-    virtual IRResultType initializeFrom(InputRecord *ir) { return IRRT_OK; }
+  virtual void initializeFrom(oofem::InputRecord *ir) { return; }
     
  protected:
 };

@@ -5,8 +5,11 @@
 
 #include "grid.h"
 
-#include "flotarry.h"
+#include "floatarray.h"
 #include "intarray.h"
+using oofem::FloatArray;
+using oofem::IntArray;
+
 
 #include "inputrecord.h"
 
@@ -50,7 +53,7 @@ public:
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "InterfaceSphere"; }
 
-    IRResultType initializeFrom(InputRecord *ir);
+  void initializeFrom(oofem::InputRecord *ir);
     //virtual IntArray* ResolveDofIDArray (char* initString);
     /// prints receiver state on stdout. Usefull for debuging.
     void         printYourself();

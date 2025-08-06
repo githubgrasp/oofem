@@ -5,7 +5,7 @@
 #include "grid.h"
 #include "region.h"
 
-#include "flotarry.h"
+#include "floatarray.h"
 #include "intarray.h"
 
 #include "inputrecord.h"
@@ -59,7 +59,7 @@ public:
     int giveNumber() { return this->number; }
 
     
-    IRResultType initializeFrom(InputRecord *ir);
+  void initializeFrom(oofem::InputRecord *ir);
     //virtual IntArray* ResolveDofIDArray (char* initString);
     /// prints receiver state on stdout. Usefull for debuging.
     void         printYourself();
