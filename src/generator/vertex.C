@@ -1,6 +1,5 @@
 #include "vertex.h"
 #include "gridcomponent.h"
-#include "alist.h"
 
 #ifndef __MAKEDEPEND
 #include <math.h>
@@ -32,45 +31,20 @@ double Vertex :: giveCoordinate(int i)
 }
 
 
-IRResultType
-Vertex :: initializeFrom(InputRecord *ir)
-// Gets from the source line from the data file all the data of the receiver.
+void
+Vertex :: initializeFrom(GeneratorInputRecord &ir)
 {
-    const char *__proc = "initializeFrom"; // Required by IR_GIVE_FIELD macro
-    IRResultType result;                // Required by IR_GIVE_FIELD macro
-
     int j, size;
-    FloatArray triplets;
-    // IntArray *dofIDArry;
+    oofem::FloatArray triplets;
 
-#  ifdef VERBOSE
-    // VERBOSE_PRINT1("Instanciating node ",number)
-#  endif
-
-    IR_GIVE_FIELD(ir, coordinates, IFT_Vertex_coords, "coords"); // Macro
+    IR_GIVE_FIELD(ir, coordinates, _IFT_Vertex_coords); // Macro
     refinement = 1.;
-    IR_GIVE_OPTIONAL_FIELD(ir, refinement, IFT_Vertex_refine, "refine"); // Macro
+    IR_GIVE_OPTIONAL_FIELD(ir, refinement, _IFT_Vertex_refine); // Macro
     radius = 0.;
-    IR_GIVE_OPTIONAL_FIELD(ir, radius, IFT_Vertex_radius, "radius"); // Macro
+    IR_GIVE_OPTIONAL_FIELD(ir, radius, _IFT_Vertex_radius); // Macro
 
-    //randomswitch = 0;
-    // IR_GIVE_OPTIONAL_FIELD(ir, randomswitch, IFT_Vertex_randomswitch, "randomswitch"); // Macro
 
-    return IRRT_OK;
+    return;
 }
 
 
-Vertex *Vertex :: ofType(){
-// Returns a new DofManager, which has the same number than the receiver,
-// but belongs to aClass (Node, ElementSide,..).
-
-  
-  Vertex *vertex;
-  
-  vertex = new Vertex(number,grid);
-  
-  return vertex;
-  
-  
-
-}

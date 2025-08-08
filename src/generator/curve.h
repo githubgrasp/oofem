@@ -16,6 +16,11 @@
 #endif
 
 
+#define _IFT_Curve_vertices "vertices"
+#define _IFT_Curve_refine "refine"
+#define _IFT_Curve_normal "normal"
+
+
 class Curve : public GridComponent
 {
 protected:
@@ -42,7 +47,6 @@ public:
     /// Returns pointer to curve vertex array.
   oofem::IntArray *giveLocalVertices() { return & vertices; }
 
-    Vertex *giveGlobalVertex(int i, const std::vector<Vertex*> &vertexList);
 
     Curve *ofType();
 
@@ -61,7 +65,7 @@ public:
   //Give normal of curve
   void giveNormal(oofem::FloatArray &answer){answer = this->normal;}
     
-  void initializeFrom(oofem::InputRecord *ir);
+  void initializeFrom(GeneratorInputRecord &ir);
 
   void printYourself();
 };

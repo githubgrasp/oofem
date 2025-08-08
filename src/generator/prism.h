@@ -9,17 +9,16 @@
 #include "floatarray.h"
 #include "intarray.h"
 
-using oofem::FloatArray;
-using oofem::IntArray;
-
-#include "datareader.h"
-#include "oofemtxtdatareader.h"
-#include "oofemtxtinputrecord.h"
+#include "generatordatareader.h"
+#include "generatortxtdatareader.h"
+#include "generatortxtinputrecord.h"
 
 #ifndef __MAKEDEPEND
  #include <stdio.h>
 #endif
 
+#define _IFT_Prism_box "box"
+#define _IFT_Prism_refine "refine"
 
 class Prism : public Region
 {
@@ -27,7 +26,7 @@ protected:
     /// Array storing nodal coordinates.
     int number;
     double refinement;
-  FloatArray box;
+  oofem::FloatArray box;
     double xlength, ylength, zlength;
 
 public:
@@ -45,10 +44,10 @@ public:
     int      giveLocalSurface(int i);
     /// Returns pointer to curve vertex array.
 
-    void giveLocalSurfaces(IntArray &surf) { surf = this->surfaces; }
+  void giveLocalSurfaces(oofem::IntArray &surf) { surf = this->surfaces; }
 
     /// Define boundaries
-  void defineBoundaries(FloatArray &boundaries);
+  void defineBoundaries(oofem::FloatArray &boundaries);
     
     //generate regular points
     int generateRegularPoints1();
@@ -57,7 +56,7 @@ public:
     //generate random points in periodic cell
     int generatePeriodicPoints();
 
-  void mirrorShiftSurface(oofem::FloatArray& random, oofem::FloatArray& normal,FloatArray& specimenDimension,FloatArray& boundaries, int& vertexNumber, IntArray& periodicityFlag);
+  void mirrorShiftSurface(oofem::FloatArray& random, oofem::FloatArray& normal,oofem::FloatArray& specimenDimension,oofem::FloatArray& boundaries, int& vertexNumber, oofem::IntArray& periodicityFlag);
     
     //generate random points
     int generatePoints();
@@ -84,7 +83,7 @@ public:
     ///Returns the number of region
     int giveNumber() { return this->number; }
 
-  void initializeFrom(oofem::InputRecord *ir);
+  void initializeFrom(GeneratorInputRecord &ir);
     //virtual IntArray* ResolveDofIDArray (char* initString);
     /// prints receiver state on stdout. Usefull for debuging.
     void         printYourself();

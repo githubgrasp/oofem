@@ -7,9 +7,6 @@
 
 #include "floatarray.h"
 #include "intarray.h"
-using oofem::FloatArray;
-using oofem::IntArray;
-
 
 #include "datareader.h"
 #include "oofemtxtdatareader.h"

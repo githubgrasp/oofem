@@ -1,11 +1,16 @@
 #ifndef grid_h
 #define grid_h
 
+#include "generatorlistutils.h"
+
+#include "floatarray.h"
 
 //#include "alist.h"
-#include "datareader.h"
+#include "generatordatareader.h"
 #include "gridtype.h"
 //#include "statecountertype.h"
+#include "logger.h"
+#include <iostream>
 
 #include "domain.h"
 #ifndef __MAKEDEPEND
@@ -14,6 +19,24 @@
  #include <map>
 #endif
 
+#define _IFT_Grid_type "type"
+#define _IFT_Grid_diam            "diam"
+#define _IFT_Grid_maxiter         "maxiter"
+#define _IFT_Grid_ranint          "ranint"
+#define _IFT_Grid_perflag         "perflag"
+#define _IFT_Grid_regflag         "regflag"
+#define _IFT_Grid_regtype         "regtype"
+#define _IFT_Grid_xyzedges        "xyzedges"
+#define _IFT_Grid_aggflag         "aggflag"
+#define _IFT_Grid_target          "target"
+#define _IFT_Grid_nvertex         "nvertex"
+#define _IFT_Grid_ncontrolvertex  "ncontrolvertex"
+#define _IFT_Grid_ncurve          "ncurve"
+#define _IFT_Grid_nsurface        "nsurface"
+#define _IFT_Grid_nregion         "nregion"
+#define _IFT_Grid_ninclusion      "ninclusion"
+#define _IFT_Grid_nrefinement     "nrefinement"
+#define _IFT_Grid_ranflag     "ranflag"
 
 class Vertex;
 class Curve;
@@ -86,7 +109,7 @@ private:
     int randomFlag;
 
     GridLocalizer *gridLocalizer;
-
+  
 public:
 
   oofem::IntArray xyzEdges;
@@ -192,33 +215,33 @@ public:
     int generatePoints();
 
 
-  int instanciateYourself(oofem::DataReader *dr);
+    int instanciateYourself(GeneratorDataReader *dr);
 
     double ran1(int *idum);
 
     /// Returns number of vertices.
-    int                giveNumberOfVertices() { return vertexList.size(); }
+  int                giveNumberOfVertices() { return generator::size1(vertexList); }
 
     /// Returns number of input vertices.
-    int                giveNumberOfInputVertices() { return inputVertexList.size(); }
+  int                giveNumberOfInputVertices() { return generator::size1(inputVertexList); }
 
     /// Returns number of input vertices.
-    int                giveNumberOfControlVertices() { return controlVertexList.size(); }
+  int                giveNumberOfControlVertices() { return generator::size1(controlVertexList); }
     
     /// Returns number of curves.
-    int                giveNumberOfCurves() { return curveList.size(); }
+  int                giveNumberOfCurves() { return generator::size1(curveList); }
 
     /// Returns number of surfaces
-    int                giveNumberOfSurfaces() { return surfaceList.size(); }
+  int                giveNumberOfSurfaces() { return generator::size1(surfaceList); }
 
     /// Returns number of regions
-    int                giveNumberOfRegions() { return regionList.size(); }
+  int                giveNumberOfRegions() { return generator::size1(regionList); }
 
     /// Returns number of cross section models in grid
-    int                giveNumberOfInclusions() { return inclusionList.size(); }
+  int                giveNumberOfInclusions() { return generator::size1(inclusionList); }
 
     /// Returns number of refinements in grid
-    int                giveNumberOfRefinements() { return refinementList.size(); }
+  int                giveNumberOfRefinements() { return generator::size1(refinementList); }
     
 
     /// Returns flag to indicate if mesh generation should be regular

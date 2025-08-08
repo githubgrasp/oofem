@@ -16,6 +16,10 @@
  #include <stdio.h>
 #endif
 
+#define _IFT_Region_surfaces "surfaces"
+#define _IFT_Region_refine "refine"
+
+
 //class FloatArray;
 //class IntArray;
 
@@ -79,9 +83,9 @@ public:
 
     int giveNumber() { return this->number; }
 
-  void initializeFrom(oofem::InputRecord *ir);
+  void initializeFrom(GeneratorInputRecord &ir);
 
-    void         printYourself();
+   void printYourself();
 };
 
 

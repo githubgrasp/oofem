@@ -42,15 +42,15 @@ int Prism :: generatePoints()
     int localSurface;
     int localCurve;
     int localVertex;
-    IntArray curves;
+    oofem::IntArray curves;
     double x, y, z;
 
     printf("Generating points for prism\n");
     
-    FloatArray boundaries;
+    oofem::FloatArray boundaries;
     this->defineBoundaries(boundaries);
 
-    FloatArray specimenDimension(3);
+    oofem::FloatArray specimenDimension(3);
     specimenDimension.at(1) = boundaries.at(2) - boundaries.at(1);
     specimenDimension.at(2) = boundaries.at(4) - boundaries.at(3);
     specimenDimension.at(3) = boundaries.at(6) - boundaries.at(5);
@@ -59,14 +59,14 @@ int Prism :: generatePoints()
     int randomIntegerTwo = grid->giveRandomInteger() - 2;
     int randomIntegerThree = grid->giveRandomInteger() - 3;
 
-    FloatArray random(3);
+    oofem::FloatArray random(3);
     int flag;
 
-    IntArray periodicityFlag(3);
+    oofem::IntArray periodicityFlag(3);
     grid->givePeriodicityFlag(periodicityFlag);
     
     double maxIter = grid->giveMaximumIterations();
-    FloatArray newRandom(3);
+    oofem::FloatArray newRandom(3);
 
     int randomFlag = grid->giveRandomFlag();
 
@@ -102,10 +102,10 @@ int Prism :: generatePoints()
       }	    
     }
     
-    int vertexNumber = grid->vertexList->giveSize();
+    int vertexNumber = generator::size1(grid->vertexList);
 
     int tempSize = 1e9;
-    grid->vertexList->growTo(tempSize);
+    generator::ensure_size1(grid->vertexList,tempSize);
     //Generation of vertices needs to be split into three parts. First the edges, then the surfaces and finally the region.
 
     printf("Start with regular points for edges.\n");
@@ -293,7 +293,7 @@ int Prism :: generatePoints()
     printf("Finished edges. Current number of points are %d\n", vertexNumber);
     
     printf("Start with surfaces\n");
-    FloatArray normal(3);
+    oofem::FloatArray normal(3);
     //Generate random vertices on surface
     if(periodicityFlag.at(1) == 0){//surface with normals 1,0,0 are generated
 
@@ -521,13 +521,13 @@ int Prism :: generatePoints()
 
     printf("Finished region. Current number of points are %d\n", vertexNumber);
     
-    grid->vertexList->growTo(vertexNumber);
+    generator::ensure_size1(grid->vertexList,vertexNumber);
 
     return 1;
 }
 
     
-void Prism :: defineBoundaries(FloatArray &boundaries)
+void Prism :: defineBoundaries(oofem::FloatArray &boundaries)
 //Determine the boundaries of the domain
 {
   boundaries.resize(6);
@@ -544,13 +544,13 @@ void Prism :: defineBoundaries(FloatArray &boundaries)
 
 
 
-void Prism :: mirrorShiftSurface(FloatArray& random, FloatArray& normal,FloatArray& specimenDimension,FloatArray& boundaries, int& vertexNumber, IntArray& periodicityFlag)
+void Prism :: mirrorShiftSurface(oofem::FloatArray& random, oofem::FloatArray& normal,oofem::FloatArray& specimenDimension,oofem::FloatArray& boundaries, int& vertexNumber, oofem::IntArray& periodicityFlag)
 {
 
   //Mirror (or periodic shift) with respect to two of the three axis.
 
   Vertex *vertex;
-  FloatArray newRandom(3);
+  oofem::FloatArray newRandom(3);
   int randomFlag = grid->giveRandomFlag();  
   
   if(normal.at(1) == 1 && normal.at(2) == 0 && normal.at(3) == 0){//y-z coordinate system
@@ -692,20 +692,17 @@ void Prism :: mirrorShiftSurface(FloatArray& random, FloatArray& normal,FloatArr
 }
 
 
-IRResultType
-Prism :: initializeFrom(InputRecord *ir)
+void
+Prism :: initializeFrom(GeneratorInputRecord &ir)
 // Gets from the source line from the data file all the data of the receiver.
 {
-    const char *__proc = "initializeFrom"; // Required by IR_GIVE_FIELD macro
-    IRResultType result;                // Required by IR_GIVE_FIELD macro
-
     //two points to define prism
-    IR_GIVE_FIELD(ir, this->box, IFT_Cylinder_line, "box");    
+    IR_GIVE_FIELD(ir, this->box, _IFT_Prism_box);    
     
     refinement = 1.;
-    IR_GIVE_OPTIONAL_FIELD(ir, refinement, IFT_Prism_refine, "refine"); // Macro
+    IR_GIVE_OPTIONAL_FIELD(ir, refinement, _IFT_Prism_refine); // Macro
 
-    return IRRT_OK;
+    return;
 }
 
 
@@ -730,12 +727,12 @@ int Prism :: generateRegularPoints1()
     int localSurface;
     int localCurve;
     int localVertex;
-    IntArray curves;
+    oofem::IntArray curves;
     double x, y, z;
 
-    FloatArray boundaries;
+    oofem::FloatArray boundaries;
     this->defineBoundaries(boundaries);
-    FloatArray random(3);
+    oofem::FloatArray random(3);
 
     int n1edges = grid->xyzEdges.at(1);
     int n2edges = grid->xyzEdges.at(2);
@@ -744,9 +741,9 @@ int Prism :: generateRegularPoints1()
     double n2length = fabs( boundaries.at(3) - boundaries.at(4) );
     double n3length = fabs( boundaries.at(5) - boundaries.at(6) );
 
-    int vertexNumber = grid->vertexList->giveSize();
+    int vertexNumber = generator::size1(grid->vertexList);
     int tempSize = 1e9;
-    grid->vertexList->growTo(tempSize);
+    generator::ensure_size1(grid->vertexList,tempSize);
 
     for ( int i = 0; i < 2 * n3edges - 1; i++ ) {
         random.at(3) = boundaries.at(5) + ( i + 1 ) * n3length / ( 2 * ( double ) n3edges );
@@ -801,7 +798,7 @@ int Prism :: generateRegularPoints1()
         }
     }
 
-    grid->vertexList->growTo(vertexNumber);
+    generator::ensure_size1(grid->vertexList,vertexNumber);
 
     return 1;
 }
@@ -818,13 +815,13 @@ int Prism :: generateRegularPoints2()
     int localSurface;
     int localCurve;
     int localVertex;
-    IntArray curves;
+    oofem::IntArray curves;
     double x, y, z;
 
-    FloatArray boundaries;
+    oofem::FloatArray boundaries;
     this->defineBoundaries(boundaries);
 
-    FloatArray random(3);
+    oofem::FloatArray random(3);
 
     int n1edges = grid->xyzEdges.at(1);
     int n2edges = grid->xyzEdges.at(2);
@@ -834,9 +831,9 @@ int Prism :: generateRegularPoints2()
     double n3length = fabs( boundaries.at(5) - boundaries.at(6) );
 
 
-    int vertexNumber = grid->vertexList->giveSize();
+    int vertexNumber = generator::size1(grid->vertexList);
     int tempSize = 1e9;
-    grid->vertexList->growTo(tempSize);
+    generator::ensure_size1(grid->vertexList,tempSize);
     for ( int i = 0; i < n3edges * 2 - 1; i++ ) {
         random.at(3) = boundaries.at(5) + ( i + 1 ) * n3length / ( ( double ) n3edges * 2 );
 
@@ -934,7 +931,7 @@ int Prism :: generateRegularPoints2()
         }
     }
 
-    grid->vertexList->growTo(vertexNumber);
+    generator::ensure_size1(grid->vertexList,vertexNumber);
 
     return 1;
 }
@@ -944,10 +941,10 @@ int Prism :: generatePeriodicPoints()
 {
     Vertex *vertex;
 
-    FloatArray boundaries;
+    oofem::FloatArray boundaries;
     this->defineBoundaries(boundaries);
 
-    FloatArray specimenDimension(3);
+    oofem::FloatArray specimenDimension(3);
     specimenDimension.at(1) = boundaries.at(2) - boundaries.at(1);
     specimenDimension.at(2) = boundaries.at(4) - boundaries.at(3);
     specimenDimension.at(3) = boundaries.at(6) - boundaries.at(5);
@@ -956,23 +953,23 @@ int Prism :: generatePeriodicPoints()
     int randomIntegerTwo = grid->giveRandomInteger() - 2;
     int randomIntegerThree = grid->giveRandomInteger() - 3;
 
-    FloatArray random(3);
-    FloatArray coordsAtPeriodicity(3);
+    oofem::FloatArray random(3);
+    oofem::FloatArray coordsAtPeriodicity(3);
     int flag;
 
-    IntArray periodicityFlag;
+    oofem::IntArray periodicityFlag;
     grid->givePeriodicityFlag(periodicityFlag);
     
     double maxIter = grid->giveMaximumIterations();
-    FloatArray mirroredRandom(3);
+    oofem::FloatArray mirroredRandom(3);
 
-    int vertexNumber = grid->vertexList->giveSize();
+    int vertexNumber = generator::size1(grid->vertexList);
     int tempSize = 1e9;
-    grid->vertexList->growTo(tempSize);
+    generator::ensure_size1(grid->vertexList,tempSize);
 
     int mult = 1;
     int tempIter = 0;
-    FloatArray randomPeriodic(3);
+    oofem::FloatArray randomPeriodic(3);
     for ( int i = 0; i < maxIter; i++ ) {
         //Generate random point
 
@@ -1024,7 +1021,7 @@ int Prism :: generatePeriodicPoints()
         }
     }
 
-    grid->vertexList->growTo(vertexNumber);
+    generator::ensure_size1(grid->vertexList,vertexNumber);
 
 
     return 1;

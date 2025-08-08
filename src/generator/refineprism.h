@@ -18,6 +18,11 @@
 #include <stdio.h>
 #endif
 
+
+#define _IFT_RefinePrism_box "box"
+#define _IFT_RefinePrism_refine "refine"
+
+
 class RefinePrism : public Refinement
 {
 
@@ -25,7 +30,7 @@ protected:
     /// Array storing nodal coordinates.
   int number;
   double refinement;
-  FloatArray box;
+  oofem::FloatArray box;
 
   
 public:
@@ -39,7 +44,7 @@ public:
     /// Destructor.
     ~RefinePrism();                                           // destructor
 
-    virtual double giveDiameter(FloatArray &coord) override;
+  virtual double giveDiameter(oofem::FloatArray &coord) override;
     
     RefinePrism* ofType();
 
@@ -47,7 +52,7 @@ public:
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "RefinePrism"; }
 
-  void initializeFrom(oofem::InputRecord *ir);
+  void initializeFrom(GeneratorInputRecord &ir);
     //virtual IntArray* ResolveDofIDArray (char* initString);
     /// prints receiver state on stdout. Usefull for debuging.
     void         printYourself();

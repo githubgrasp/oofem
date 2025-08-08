@@ -37,7 +37,7 @@ protected:
     /// link to octant childs
     oofemOctantRec *child [ 2 ] [ 2 ] [ 2 ];
     /// octant origin coordinates
-    FloatArray origin;
+  oofem::FloatArray origin;
     /// octant size
     double size;
 
@@ -50,20 +50,20 @@ public:
     enum boundingBoxStatus { BBS_OUTSIDECELL, BBS_INSIDECELL, BBS_CONTAINSCELL };
 
     /// constructor
-    oofemOctantRec(OctreeGridLocalizer *loc, oofemOctantRec *parent, FloatArray &origin, double size);
+  oofemOctantRec(OctreeGridLocalizer *loc, oofemOctantRec *parent, oofem::FloatArray &origin, double size);
     /// destructor
     ~oofemOctantRec();
 
     /// returns reference to parent; NULL if root
     oofemOctantRec *giveParent() { return this->parent; }
     /// returns the cell origin
-    void giveOrigin(FloatArray &answer) { answer = this->origin; }
+  void giveOrigin(oofem::FloatArray &answer) { answer = this->origin; }
     /// returns cell size
     double giveSize() { return this->size; }
     /** Returns nonzero if octant contains given point.
      * If not 3-coordinates are given, then missing coordinates are
      * not included in test */
-    int containsPoint(const FloatArray &coords);
+    int containsPoint(const oofem::FloatArray &coords);
     /// returns the child cell with given local cell coordinates
     oofemOctantRec *giveChild(int xi, int yi, int zi);
     /**
@@ -74,7 +74,7 @@ public:
      * child is set to NULL.
      * @return 1 if o.k, -1 if no childs exists (receiver is terminal octant), -2 point out of receiver volume
      */
-    int giveChildContainingPoint(oofemOctantRec **child, const FloatArray &coords);
+    int giveChildContainingPoint(oofemOctantRec **child, const oofem::FloatArray &coords);
     /// Returns nonzero if octant is terminal one (no children)
     int isTerminalOctant();
     /// Return reference to node List
@@ -85,12 +85,12 @@ public:
     /**
      * Divide receiver further, creating corresponding childs
      */
-    int divideLocally(int level, const IntArray &octantMask);
+    int divideLocally(int level, const oofem::IntArray &octantMask);
     /**
      * Test if receiver within bounding box (sphere)
      * @returns boundingBoxStatus status
      */
-    boundingBoxStatus testBoundingBox(const FloatArray &coords, double radius);
+    boundingBoxStatus testBoundingBox(const oofem::FloatArray &coords, double radius);
     /**
      * Adds given element to cell list of elements having IP within this cell.
      */
@@ -127,7 +127,7 @@ protected:
     /// Root cell of octree
     oofemOctantRec *rootCell;
     /// Octree degenerate mask
-    IntArray octreeMask;
+    oofem::IntArray octreeMask;
     /// Flag inficating elementIP tables are initialized
     int elementIPListsInitialized;
 public:
@@ -144,10 +144,10 @@ public:
      * Initialize receiver data structure if not done previously
      * Current implementation calls and returns the buildOctreeDataStructure service response.
      */
-    int init(bool force = false);
+    int init(bool force = false) override;
 
 
-    int checkNodesWithinBox(const FloatArray &coords, const double radius);
+    int checkNodesWithinBox(const oofem::FloatArray &coords, const double radius) override;
 
     /**
      * Returns container (list) of all grid nodes within given box.
@@ -155,7 +155,7 @@ public:
      * @param coords center of box of interest
      * @param radius radius of bounding sphere
      */
-    void giveAllNodesWithinBox(nodeContainerType &nodeList, const FloatArray &coords, const double radius);
+    void giveAllNodesWithinBox(nodeContainerType &nodeList, const oofem::FloatArray &coords, const double radius) override;
 
 
 
@@ -167,10 +167,10 @@ public:
      * @param radius radius of bounding sphere
      */
     void giveNodesWithinBox(nodeContainerType &nodeList, oofemOctantRec *currentCell,
-                            const FloatArray &coords, const double radius);
+                            const oofem::FloatArray &coords, const double radius);
 
 
-    void insertSequentialNode(int nodeNum, const FloatArray &coords);
+    void insertSequentialNode(int nodeNum, const oofem::FloatArray &coords) override;
 
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "OctreeGridLocalizer"; }
@@ -198,7 +198,7 @@ protected:
      * @param coords corresponding node coordinates
      * @return nonzero if node insertion was succesfull
      */
-    int insertNodeIntoOctree(oofemOctantRec *rootCell, int nodeNum, const FloatArray &coords);
+    int insertNodeIntoOctree(oofemOctantRec *rootCell, int nodeNum, const oofem::FloatArray &coords);
 
     /**
      * Finds the terminal octant containing the given point.
@@ -206,7 +206,7 @@ protected:
      * @param coords coordinates of point of interest
      * @return pointer to terminal octant, NULL if point outside startingCell
      */
-    oofemOctantRec *findTerminalContaining(oofemOctantRec *startCell, const FloatArray &coords);
+    oofemOctantRec *findTerminalContaining(oofemOctantRec *startCell, const oofem::FloatArray &coords);
 
 
     /**
@@ -218,9 +218,9 @@ protected:
      * @param minDist distance from the center of returned element
      * @param regionList only elements within given regions are considered, if NULL all regions are considered.
      */
-    void giveElementCloseToPointWithinOctant(oofemOctantRec *cell, const FloatArray &coords,
+    void giveElementCloseToPointWithinOctant(oofemOctantRec *cell, const oofem::FloatArray &coords,
                                              double &minDist, Element **answer,
-                                             const IntArray *regionList);
+                                             const oofem::IntArray *regionList);
     /**
      * Returns the octree depth for given cell. The depth is not parameter of octree cells, but is
      * computed from cell size and root cell size.
@@ -240,7 +240,7 @@ protected:
      * @param radius radius of bounding sphere
      * @param currentCell starting cell
      */
-    void giveListOfTerminalCellsInBoundingBox(std :: list< oofemOctantRec * > &cellList, const FloatArray &coords,
+    void giveListOfTerminalCellsInBoundingBox(std :: list< oofemOctantRec * > &cellList, const oofem::FloatArray &coords,
                                               const double radius, oofemOctantRec *currentCell);
 };
 

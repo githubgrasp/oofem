@@ -18,6 +18,10 @@
 #include <stdio.h>
 #endif
 
+#define _IFT_Sphere_centre "centre"
+#define _IFT_Sphere_refine "refine"
+#define _IFT_Sphere_radius "radius"
+
 //class FloatArray;
 //class IntArray;
 
@@ -26,7 +30,7 @@ class Sphere : public Region
 
 protected:
     /// Array storing nodal coordinates.
-  FloatArray centre;
+  oofem::FloatArray centre;
   double radius;
   int number;
   double refinement;
@@ -59,10 +63,9 @@ public:
     int giveNumber() { return this->number; }
 
     
-  void initializeFrom(oofem::InputRecord *ir);
-    //virtual IntArray* ResolveDofIDArray (char* initString);
-    /// prints receiver state on stdout. Usefull for debuging.
-    void         printYourself();
+  void initializeFrom(GeneratorInputRecord &ir);
+
+  void printYourself();
 
 };
 

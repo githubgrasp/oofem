@@ -31,7 +31,7 @@ int Sphere :: generatePoints()
    
   double myPi = 3.14159265;
   
-  FloatArray random(3);
+  oofem::FloatArray random(3);
   
   int flag;
 
@@ -40,7 +40,7 @@ int Sphere :: generatePoints()
    double maxIter= grid->giveMaximumIterations();
    int vertexNumber = grid->giveNumberOfVertices();
    int tempSize = 1.e9;
-   grid->vertexList->growTo(tempSize);
+   generator::ensure_size1(grid->vertexList,tempSize);
 
    double randomTheta;
    double randomPhi;
@@ -133,7 +133,7 @@ int Sphere :: generatePoints()
 	 }
      }
   
-  grid->vertexList->growTo(vertexNumber);
+     generator::ensure_size1(grid->vertexList,vertexNumber);
   
   return 1;
 }
@@ -148,19 +148,17 @@ int Sphere :: generatePeriodicPoints()
 
 
 
-IRResultType
-Sphere :: initializeFrom(InputRecord *ir)
+void
+Sphere :: initializeFrom(GeneratorInputRecord &ir)
 // Gets from the source line from the data file all the data of the receiver.
 {
-    const char *__proc = "initializeFrom"; // Required by IR_GIVE_FIELD macro
-    IRResultType result;                // Required by IR_GIVE_FIELD macro
 
-    IR_GIVE_FIELD(ir, centre, IFT_Sphere_centre, "centre");
-    IR_GIVE_FIELD(ir, radius, IFT_Sphere_radius, "radius");
+    IR_GIVE_FIELD(ir, centre, _IFT_Sphere_centre);
+    IR_GIVE_FIELD(ir, radius, _IFT_Sphere_radius);
     refinement = 1.;
-    IR_GIVE_OPTIONAL_FIELD(ir, refinement, IFT_Sphere_refine, "refine");
+    IR_GIVE_OPTIONAL_FIELD(ir, refinement, _IFT_Sphere_refine);
     
-    return IRRT_OK;
+    return;
 
 }
 

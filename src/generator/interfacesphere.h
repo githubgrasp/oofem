@@ -7,8 +7,6 @@
 
 #include "floatarray.h"
 #include "intarray.h"
-using oofem::FloatArray;
-using oofem::IntArray;
 
 
 #include "inputrecord.h"
@@ -21,12 +19,17 @@ using oofem::IntArray;
 #include <stdio.h>
 #endif
 
+#define _IFT_InterfaceSphere_centre "centre"
+#define _IFT_InterfaceSphere_refine "refine"
+#define _IFT_InterfaceSphere_radius "radius"
+#define _IFT_InterfaceSphere_itz "itz"
+
 class InterfaceSphere : public Inclusion
 {
 
 protected:
     /// Array storing nodal coordinates.
-  FloatArray centre;
+  oofem::FloatArray centre;
   double diameter;
   int number;
   double refinement;
@@ -49,14 +52,11 @@ public:
 
     InterfaceSphere *ofType();
 
-    // miscellaneous
-    /// Returns class name of the receiver.
     const char *giveClassName() const { return "InterfaceSphere"; }
 
-  void initializeFrom(oofem::InputRecord *ir);
-    //virtual IntArray* ResolveDofIDArray (char* initString);
-    /// prints receiver state on stdout. Usefull for debuging.
-    void         printYourself();
+  void initializeFrom(GeneratorInputRecord &ir);
+
+  void         printYourself();
 
 };
 
