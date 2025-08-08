@@ -8,9 +8,6 @@
 #include "floatarray.h"
 #include "intarray.h"
 
-using oofem::FloatArray;
-using oofem::IntArray;
-
 #include "datareader.h"
 #include "oofemtxtdatareader.h"
 #include "oofemtxtinputrecord.h"
@@ -39,7 +36,7 @@ public:
     /// Destructor.
     virtual ~Refinement();                                           // destructor
 
-    virtual double giveDiameter(FloatArray &coord) {return 0.;}
+  virtual double giveDiameter(oofem::FloatArray &coord) {return 0.;}
 
 };
 

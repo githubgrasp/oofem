@@ -5,7 +5,7 @@
 #include "grid.h"
 #include "inclusion.h"
 
-#include "flotarry.h"
+#include "floatarray.h"
 #include "intarray.h"
 
 #include "inputrecord.h"
@@ -18,6 +18,12 @@
 #include <stdio.h>
 #endif
 
+#define _IFT_InterfacePlane_line "line"
+#define _IFT_InterfacePlane_refine "refine"
+#define _IFT_InterfacePlane_diameter "diameter"
+#define _IFT_InterfacePlane_itz "itz"
+
+
 //class FloatArray;
 //class IntArray;
 
@@ -26,7 +32,7 @@ class InterfacePlane : public Inclusion
 
 protected:
     /// Array storing nodal coordinates.
-  FloatArray line; //Storing start and end point of axis of plane
+  oofem::FloatArray line; //Storing start and end point of axis of plane
   double diameter;
   int number;
   double refinement;
@@ -55,7 +61,7 @@ public:
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "InterfacePlane"; }
 
-    IRResultType initializeFrom(InputRecord *ir);
+    void initializeFrom(GeneratorInputRecord &ir);
     //virtual IntArray* ResolveDofIDArray (char* initString);
     /// prints receiver state on stdout. Usefull for debuging.
     void         printYourself();

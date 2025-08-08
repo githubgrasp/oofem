@@ -39,7 +39,7 @@ int InterfaceSphere :: generatePoints()
    
   double myPi = 3.14159265;
   
-  FloatArray random(3);
+  oofem::FloatArray random(3);
   
   int flag;
 
@@ -48,7 +48,7 @@ int InterfaceSphere :: generatePoints()
    double maxIter= grid->giveMaximumIterations();
    int vertexNumber = grid->giveNumberOfVertices();
    int tempSize = 1.e9;
-   grid->vertexList->growTo(tempSize);
+   generator::ensure_size1(grid->vertexList,tempSize);
 
    double randomTheta;
    double randomPhi;
@@ -106,7 +106,7 @@ int InterfaceSphere :: generatePoints()
    
    printf("Completed inclusion sphere surface\n");
 
-   grid->vertexList->growTo(vertexNumber);
+   generator::ensure_size1(grid->vertexList,vertexNumber);
     
   return 1;
 
@@ -258,24 +258,17 @@ int InterfaceSphere :: generatePoints()
 
 
 
-IRResultType
-InterfaceSphere :: initializeFrom(InputRecord *ir)
+void
+InterfaceSphere :: initializeFrom(GeneratorInputRecord &ir)
 // Gets from the source line from the data file all the data of the receiver.
-{
-    const char *__proc = "initializeFrom"; // Required by IR_GIVE_FIELD macro
-    IRResultType result;                // Required by IR_GIVE_FIELD macro
-
-    // int j, size;
-    // FloatArray vertices;
-    // IntArray *dofIDArry;
-    IR_GIVE_FIELD(ir, centre, IFT_InterfaceSphere_centre, "centre");    
-    IR_GIVE_FIELD(ir, radius, IFT_InterfaceSphere_diameter, "radius"); // Macro
+{ 
+    IR_GIVE_FIELD(ir, centre, _IFT_InterfaceSphere_centre);    
+    IR_GIVE_FIELD(ir, radius, _IFT_InterfaceSphere_radius); // Macro
     refinement = 1.;
-    IR_GIVE_OPTIONAL_FIELD(ir, refinement, IFT_InterfaceSphere_refine, "refine"); // Macro
+    IR_GIVE_OPTIONAL_FIELD(ir, refinement, _IFT_InterfaceSphere_refine); // Macro
     itzThickness = refinement*diameter;
-    IR_GIVE_OPTIONAL_FIELD(ir, itzThickness, IFT_InterfaceSphere_itz, "itz"); // Macro
-    return IRRT_OK;
-
+    IR_GIVE_OPTIONAL_FIELD(ir, itzThickness, _IFT_InterfaceSphere_itz); // Macro
+    return;
 }
 
 

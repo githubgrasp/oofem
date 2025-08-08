@@ -47,7 +47,8 @@ public:
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "GridComponent"; }
 
-void  initializeFrom(oofem::InputRecord *ir);
+  virtual void initializeFrom(GeneratorInputRecord &ir) = 0;  // pure virtual
+  
     //virtual IntArray* ResolveDofIDArray (char* initString);
     /// prints receiver state on stdout. Usefull for debuging.
     void         printYourself();

@@ -90,12 +90,12 @@ class GridLocalizer : public GridComponent
      * @param coords center of box of interest
      * @param radius radius of bounding sphere
      */
-    virtual void giveAllNodesWithinBox(nodeContainerType &nodeList, const FloatArray &coords, const double radius) = 0;
+  virtual void giveAllNodesWithinBox(nodeContainerType &nodeList, const oofem::FloatArray &coords, const double radius) = 0;
 
 
-    virtual int checkNodesWithinBox(const FloatArray &coords, const double radius) = 0;
+  virtual int checkNodesWithinBox(const oofem::FloatArray &coords, const double radius) = 0;
 
-    virtual void insertSequentialNode(int nodeNum, const FloatArray &coords) = 0;
+  virtual void insertSequentialNode(int nodeNum, const oofem::FloatArray &coords) = 0;
 
 
     /**
@@ -111,7 +111,7 @@ class GridLocalizer : public GridComponent
      * belonging to receiver. Receiver may use value-name extracting functions
      * to extract particular field from record.
      * @see readInteger, readDouble and similar functions */
-  virtual void initializeFrom(oofem::InputRecord *ir) { return; }
+  void initializeFrom(GeneratorInputRecord &ir) override { return; }
     
  protected:
 };

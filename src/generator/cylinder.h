@@ -17,6 +17,11 @@
 #include <stdio.h>
 #endif
 
+
+#define _IFT_Cylinder_line "line"
+#define _IFT_Cylinder_radius "radius"
+#define _IFT_Cylinder_refine "refine"
+
 //class FloatArray;
 //class IntArray;
 
@@ -25,7 +30,7 @@ class Cylinder : public Region
 
 protected:
     /// Array storing nodal coordinates.
-  FloatArray line; //Storing start and end point of axis of cylinder
+  oofem::FloatArray line; //Storing start and end point of axis of cylinder
   double diameter;
   int number;
   double refinement;
@@ -51,7 +56,7 @@ public:
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "Cylinder"; }
 
-  void initializeFrom(oofem::InputRecord *ir);
+  void initializeFrom(GeneratorInputRecord &ir);
 
     /// prints receiver state on stdout. Usefull for debuging.
     void         printYourself();

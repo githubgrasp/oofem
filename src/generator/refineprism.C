@@ -21,23 +21,21 @@ RefinePrism :: ~RefinePrism()
 
 }
 
-IRResultType
-RefinePrism :: initializeFrom(InputRecord *ir)
+void
+RefinePrism :: initializeFrom(GeneratorInputRecord &ir)
 // Gets from the source line from the data file all the data of the receiver.
 {
-    const char *__proc = "initializeFrom"; // Required by IR_GIVE_FIELD macro
-    IRResultType result;                // Required by IR_GIVE_FIELD macro
 
-    IR_GIVE_FIELD(ir, this->box, IFT_RefinePrism_box, "box");    
+    IR_GIVE_FIELD(ir, this->box, _IFT_RefinePrism_box);    
 
     refinement = 1.;
-    IR_GIVE_OPTIONAL_FIELD(ir, refinement, IFT_RefinePrism_refine, "refine"); // Macro
+    IR_GIVE_OPTIONAL_FIELD(ir, refinement, _IFT_RefinePrism_refine); // Macro
 
-    return IRRT_OK;
+    return;
 }
 
 double
-RefinePrism :: giveDiameter(FloatArray &coord){
+RefinePrism :: giveDiameter(oofem::FloatArray &coord){
  //check of coord is in prism
   double diam = 0.;
 

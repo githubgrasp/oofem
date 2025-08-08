@@ -6,14 +6,19 @@
 #include "floatarray.h"
 #include "intarray.h"
 
-#include "datareader.h"
-#include "oofemtxtdatareader.h"
-#include "oofemtxtinputrecord.h"
+#include "generatordatareader.h"
+#include "generatortxtdatareader.h"
+#include "generatortxtinputrecord.h"
 #include "gridcomponent.h"
 
 #ifndef __MAKEDEPEND
 #include <stdio.h>
 #endif
+
+#define _IFT_Vertex_coords "coords"
+#define _IFT_Vertex_refine "refine"
+#define _IFT_Vertex_radius "radius"
+
 
 //class FloatArray;
 //class IntArray;
@@ -67,7 +72,7 @@ public:
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "Vertex"; }
 
-  void initializeFrom(oofem::InputRecord *ir);
+  void initializeFrom(GeneratorInputRecord &ir);
     //virtual IntArray* ResolveDofIDArray (char* initString);
     /// prints receiver state on stdout. Usefull for debuging.
     void         printYourself();

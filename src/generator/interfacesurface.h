@@ -4,7 +4,7 @@
 #include "grid.h"
 #include "inclusion.h"
 
-#include "flotarry.h"
+#include "floatarray.h"
 #include "intarray.h"
 
 #include "inputrecord.h"
@@ -17,13 +17,18 @@
 #include <stdio.h>
 #endif
 
+
+#define _IFT_InterfaceSurface_curves "curves"
+#define _IFT_InterfaceSurface_refine "refine"
+ 
+
 class
 InterfaceSurface : public Inclusion
 {
 
 protected:
     /// Array storing nodal coordinates.
-    IntArray curves;
+  oofem::IntArray curves;
     int number;
     double refinement;
 
@@ -47,7 +52,7 @@ public:
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "InterfaceSurface"; }
 
-    IRResultType initializeFrom(InputRecord *ir);
+    void initializeFrom(GeneratorInputRecord &ir);
 
     /// prints receiver state on stdout. Usefull for debuging.
     void         printYourself();

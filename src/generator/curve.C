@@ -1,4 +1,4 @@
-#include "alist.h"
+#include "generatorlistutils.h"
 #include "curve.h"
 #include "vertex.h"
 #ifndef __MAKEDEPEND
@@ -30,23 +30,18 @@ Curve :: giveLocalVertex(int i)
 }
 
 
-IRResultType
-Curve :: initializeFrom(InputRecord *ir)
+void
+Curve :: initializeFrom(GeneratorInputRecord &ir)
 // Gets from the source line from the data file all the data of the receiver.
 {
-    const char *__proc = "initializeFrom"; // Required by IR_GIVE_FIELD macro
-    IRResultType result;                // Required by IR_GIVE_FIELD macro
 
-
-
-    IR_GIVE_FIELD(ir, vertices, IFT_Curve_vertices, "vertices"); // Macro
+    IR_GIVE_FIELD(ir, vertices, _IFT_Curve_vertices); // Macro
     refinement = 1.;
-    IR_GIVE_FIELD(ir, refinement, IFT_Curve_refine, "refine"); // Macro
-    //normal
+    IR_GIVE_FIELD(ir, refinement, _IFT_Curve_refine); // Macro
     normal.zero();
-    IR_GIVE_FIELD(ir, normal, IFT_Curve_refine, "normal"); // Macro
+    IR_GIVE_FIELD(ir, normal, _IFT_Curve_refine); // Macro
     
-    return IRRT_OK;
+    return;
 }
 
 
@@ -76,7 +71,7 @@ int Curve :: generatePoints()
 
   int randomIntegerOne = grid->giveRandomInteger() - 1;
 
-  FloatArray random(3);
+  oofem::FloatArray random(3);
   int flag;
 
   double boundaryFactor = this->refinement;
@@ -91,22 +86,22 @@ int Curve :: generatePoints()
   double x, y, z;
   double maxIter = grid->giveMaximumIterations();
 
-  IntArray periodicityFlag(3);
+  oofem::IntArray periodicityFlag(3);
   grid->givePeriodicityFlag(periodicityFlag);
 
   int randomFlag = grid->giveRandomFlag();
     
-  FloatArray boundaries;
+  oofem::FloatArray boundaries;
   grid->defineBoundaries(boundaries);
-  FloatArray specimenDimension(3);
+  oofem::FloatArray specimenDimension(3);
   specimenDimension.at(1) = boundaries.at(2) - boundaries.at(1);
   specimenDimension.at(2) = boundaries.at(4) - boundaries.at(3);
   specimenDimension.at(3) = boundaries.at(6) - boundaries.at(5);
 
-  FloatArray newRandom(3);
-  int vertexNumber = grid->vertexList->giveSize();
+  oofem::FloatArray newRandom(3);
+  int vertexNumber = grid->vertexList.size();
   int tempMax = 10000000;
-  grid->vertexList->growTo(tempMax);
+  generator::ensure_size1(grid->vertexList,tempMax);
 
   for ( int i = 0; i < maxIter; i++ ) {
     //Generate random point
@@ -325,17 +320,17 @@ int Curve :: generatePoints()
     }
   }	    
     
-  grid->vertexList->growTo(vertexNumber);
+  generator::ensure_size1(grid->vertexList,vertexNumber);
     
   return 1;
 }
 
 	
 void
-Curve :: mirrorShift(FloatArray &random, FloatArray &normal, FloatArray &specimenDimension, FloatArray &boundaries, int &vertexNumber, IntArray& periodicityFlag) {
+Curve :: mirrorShift(oofem::FloatArray &random, oofem::FloatArray &normal, oofem::FloatArray &specimenDimension, oofem::FloatArray &boundaries, int &vertexNumber, oofem::IntArray& periodicityFlag) {
   
   Vertex *vertex;
-  FloatArray newRandom(3);
+  oofem::FloatArray newRandom(3);
   int randomFlag = grid->giveRandomFlag();  
   
   //Do mirroring and shift
@@ -419,16 +414,4 @@ Curve :: mirrorShift(FloatArray &random, FloatArray &normal, FloatArray &specime
   return;
 }
 
-	    
-Vertex *Curve :: giveGlobalVertex(int n, AList< Vertex > *vertexList)
-// Returns the n-th vertex. Creates this node if it does not exist yet.
-{
-    if ( vertexList->includes(n) ) {
-        return vertexList->at(n);
-    } else {
-        printf("giveVertex: undefined vertex (%d)", n);
-        exit(1);
-    }
 
-    return NULL;
-}

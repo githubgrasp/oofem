@@ -1,3 +1,4 @@
+#include "generatorlistutils.h"
 #include "surface.h"
 #include "curve.h"
 #include "vertex.h"
@@ -24,7 +25,7 @@ int
 Surface :: giveLocalCurve(int i)
 // Returns the i-th coordinate of the receiver.
 {
-    if ( i > curves.giveSize() ) {
+  if ( i > curves.giveSize() ) {
         return 0.;
     }
 
@@ -48,34 +49,34 @@ Surface :: generatePoints()
   int localCurve;
   int localVertex;
 
-  IntArray periodicityFlag(3);
+  oofem::IntArray periodicityFlag(3);
   grid->givePeriodicityFlag(periodicityFlag);
   
   int randomFlag = grid->giveRandomFlag();
   
-  FloatArray boundaries;
+  oofem::FloatArray boundaries;
   this->defineBoundaries(boundaries);
-  FloatArray specimenDimension(3);
+  oofem::FloatArray specimenDimension(3);
   specimenDimension.at(1) = boundaries.at(2) - boundaries.at(1);
   specimenDimension.at(2) = boundaries.at(4) - boundaries.at(3);
   specimenDimension.at(3) = boundaries.at(6) - boundaries.at(5);
 
   //Get global dimensions
-  FloatArray globalBoundaries;
-  FloatArray globalDimension(3);
+  oofem::FloatArray globalBoundaries;
+  oofem::FloatArray globalDimension(3);
   grid->defineBoundaries(globalBoundaries);
   globalDimension.at(1) = globalBoundaries.at(2)-globalBoundaries.at(1);
   globalDimension.at(2) = globalBoundaries.at(4)-globalBoundaries.at(3);
   globalDimension.at(3) = globalBoundaries.at(6)-globalBoundaries.at(5);
   
-  FloatArray normal(3);
+  oofem::FloatArray normal(3);
   this->giveNormal(normal);
         
   int randomIntegerOne = grid->giveRandomInteger() - 1;
   int randomIntegerTwo = grid->giveRandomInteger() - 2;
   int randomIntegerThree = grid->giveRandomInteger() - 3;
 
-  FloatArray random(3),newRandom(3);
+  oofem::FloatArray random(3),newRandom(3);
     
   int flag=0;
 
@@ -89,7 +90,7 @@ Surface :: generatePoints()
   int vertexNumber = grid->giveNumberOfVertices();
 
   int tempSize = 10000000;
-  grid->vertexList->growTo(tempSize);
+  generator::ensure_size1(grid->vertexList,tempSize);
 
   double border = grid->diameter;
   
@@ -119,12 +120,14 @@ Surface :: generatePoints()
     flag = grid->giveGridLocalizer()->checkNodesWithinBox( random, boundaryFactor * grid->giveDiameter(random) );
 	
     if ( flag == 0 ) {
-      vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() );
-      vertex->setCoordinates(random);
-      grid->setVertex(vertexNumber + 1, vertex);
-      grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, random);
 
+
+      auto *v = new Vertex(vertexNumber+1, grid);
+      v->setCoordinates(random);
+      grid->setVertex(vertexNumber+1, v);
+      grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, random);
       vertexNumber++;
+      
       i = 0;	
 
       mirrorShift(random, normal,specimenDimension,boundaries,vertexNumber,periodicityFlag);
@@ -149,12 +152,14 @@ Surface :: generatePoints()
 	  newRandom.at(2) = random.at(2);
 	  newRandom.at(3) = random.at(3);
 	  
-	  vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() );
-	  vertex->setCoordinates(newRandom);
-	  grid->setVertex(vertexNumber + 1, vertex);
-	  //Set the node into the octree.
-	  grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, newRandom);
+
+	  auto *v = new Vertex(vertexNumber+1, grid);
+	  v->setCoordinates(newRandom);
+	  grid->setVertex(vertexNumber+1, v);
+	  grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, newRandom);
 	  vertexNumber++;
+
+	  
 	  mirrorShift(newRandom, normal,specimenDimension,boundaries,vertexNumber,periodicityFlag);
 	  
 	}
@@ -176,12 +181,14 @@ Surface :: generatePoints()
 	  newRandom.at(2) = random.at(2) + shift*globalDimension.at(2);
 	  newRandom.at(3) = random.at(3);
 	  
-	  vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() );
-	  vertex->setCoordinates(newRandom);
-	  grid->setVertex(vertexNumber + 1, vertex);
-	  //Set the node into the octree.
-	  grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, newRandom);
+
+	  auto *v = new Vertex(vertexNumber+1, grid);
+	  v->setCoordinates(newRandom);
+	  grid->setVertex(vertexNumber+1, v);
+	  grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, newRandom);
 	  vertexNumber++;
+
+
 	  
 	  mirrorShift(newRandom, normal,specimenDimension,boundaries,vertexNumber,periodicityFlag);	  
 	}
@@ -202,13 +209,13 @@ Surface :: generatePoints()
 	  newRandom.at(1) = random.at(1);
 	  newRandom.at(2) = random.at(2);
 	  newRandom.at(3) = random.at(3) + shift*globalDimension.at(3);
-	  
-	  vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() );
-	  vertex->setCoordinates(newRandom);
-	  grid->setVertex(vertexNumber + 1, vertex);
-	//Set the node into the octree.
-	  grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, newRandom);
+
+	  auto *v = new Vertex(vertexNumber+1, grid);
+	  v->setCoordinates(newRandom);
+	  grid->setVertex(vertexNumber+1, v);
+	  grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, newRandom);
 	  vertexNumber++;
+
 	
 	mirrorShift(newRandom, normal,specimenDimension,boundaries,vertexNumber,periodicityFlag);
       }
@@ -220,20 +227,20 @@ Surface :: generatePoints()
     }
   }
   
-  grid->vertexList->growTo(vertexNumber);
+  generator::ensure_size1(grid->vertexList,vertexNumber);
   
   return 1;
   
 }
 
 
-void Surface :: mirrorShift(FloatArray& random, FloatArray& normal,FloatArray& specimenDimension,FloatArray& boundaries, int& vertexNumber, IntArray& periodicityFlag)
+void Surface :: mirrorShift(oofem::FloatArray& random, oofem::FloatArray& normal,oofem::FloatArray& specimenDimension,oofem::FloatArray& boundaries, int& vertexNumber, oofem::IntArray& periodicityFlag)
 {
 
   //Mirror (or periodic shift) with respect to two of the three axis.
 
   Vertex *vertex;
-  FloatArray newRandom(3);
+  oofem::FloatArray newRandom(3);
   int randomFlag = grid->giveRandomFlag();  
   
   if(normal.at(1) == 1 && normal.at(2) == 0 && normal.at(3) == 0){//y-z coordinate system
@@ -271,11 +278,13 @@ void Surface :: mirrorShift(FloatArray& random, FloatArray& normal,FloatArray& s
 	      newRandom.at(3) = random.at(3) - 2. * ( random.at(3) - boundaries.at(6) );
 	    }
 	  }
-	  vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() );
-	  vertex->setCoordinates(newRandom);
-	  grid->setVertex(vertexNumber + 1, vertex);
-	  grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, newRandom);
+
+	  auto *v = new Vertex(vertexNumber+1, grid);
+	  v->setCoordinates(newRandom);
+	  grid->setVertex(vertexNumber+1, v);
+	  grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, newRandom);
 	  vertexNumber++;
+
 	}
       }
     }	    
@@ -316,11 +325,13 @@ void Surface :: mirrorShift(FloatArray& random, FloatArray& normal,FloatArray& s
 	      newRandom.at(3) = random.at(3) - 2. * ( random.at(3) - boundaries.at(6) );
 	    }
 	  }
-	  vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() );
-	  vertex->setCoordinates(newRandom);
-	  grid->setVertex(vertexNumber + 1, vertex);
-	  grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, newRandom);
+
+	  auto *v = new Vertex(vertexNumber+1, grid);
+	  v->setCoordinates(newRandom);
+	  grid->setVertex(vertexNumber+1, v);
+	  grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, newRandom);
 	  vertexNumber++;
+
 	}
       }
     }
@@ -362,11 +373,13 @@ void Surface :: mirrorShift(FloatArray& random, FloatArray& normal,FloatArray& s
 	  //z-direction
 	  newRandom.at(3) = random.at(3);
 
-	  vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() );
-	  vertex->setCoordinates(newRandom);
-	  grid->setVertex(vertexNumber + 1, vertex);
-	  grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, newRandom);
+
+	  auto *v = new Vertex(vertexNumber+1, grid);
+	  v->setCoordinates(newRandom);
+	  grid->setVertex(vertexNumber+1, v);
+	  grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, newRandom);
 	  vertexNumber++;
+
 	}		
       }
     }
@@ -374,15 +387,15 @@ void Surface :: mirrorShift(FloatArray& random, FloatArray& normal,FloatArray& s
   return;
 }
 
-void Surface :: defineBoundaries(FloatArray &boundaries)
+void Surface :: defineBoundaries(oofem::FloatArray &boundaries)
 //Determine the boundaries of the domain
 {
     Curve *curve;
     Vertex *vertex;
     Vertex *voronoiVertex;
     Element *element;
-    IntArray localVertices;
-    IntArray vertexFlag(2);
+    oofem::IntArray localVertices;
+    oofem::IntArray vertexFlag(2);
 
     int localSurface, localCurve, localVertex;
   
@@ -435,38 +448,23 @@ void Surface :: defineBoundaries(FloatArray &boundaries)
    
 
 
-IRResultType
-Surface :: initializeFrom(InputRecord *ir)
+void Surface :: initializeFrom(GeneratorInputRecord &ir)
 // Gets from the source line from the data file all the data of the receiver.
 {
-    const char *__proc = "initializeFrom"; // Required by IR_GIVE_FIELD macro
-    IRResultType result;                // Required by IR_GIVE_FIELD macro
-
-    IR_GIVE_FIELD(ir, curves, IFT_Surface_curves, "curves"); // Macro
+    IR_GIVE_FIELD(ir, curves, _IFT_Surface_curves); // Macro
     refinement = 1.;
-    IR_GIVE_OPTIONAL_FIELD(ir, refinement, IFT_Surface_refine, "refine"); // Macro
+    IR_GIVE_OPTIONAL_FIELD(ir, refinement, _IFT_Surface_refine); // Macro
 
     normal.zero();
-    IR_GIVE_OPTIONAL_FIELD(ir, normal, IFT_Surface_normal, "normal"); //Macro
+    IR_GIVE_OPTIONAL_FIELD(ir, normal, _IFT_Surface_normal); //Macro
     
-    IR_GIVE_OPTIONAL_FIELD(ir, boundaryFlag, IFT_Surface_boundaryflag, "boundaryflag"); // Macro
+    IR_GIVE_OPTIONAL_FIELD(ir, boundaryFlag, _IFT_Surface_boundaryflag); // Macro
     this->boundaryShift.resize(3);
     if ( this->boundaryFlag == 1 ) {
-      IR_GIVE_FIELD(ir, boundaryShift, IFT_Surface_boundaryshift, "boundaryshift"); // Macro
+      IR_GIVE_FIELD(ir, boundaryShift, _IFT_Surface_boundaryshift); // Macro
     }
 
-    return IRRT_OK;
+    return;
 }
 
 
-
-Surface *Surface :: ofType()
-// Returns a new DofManager, which has the same number than the receiver,
-// but belongs to aClass (Node, ElementSide,..).
-{
-    Surface *surface;
-
-    surface = new Surface(number, grid);
-
-    return surface;
-}

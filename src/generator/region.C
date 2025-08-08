@@ -1,3 +1,5 @@
+#include "generatorlistutils.h"
+#include "generatorerror.h"
 #include "region.h"
 #include "curve.h"
 #include "vertex.h"
@@ -45,13 +47,13 @@ int Region :: generatePoints()
     int localSurface;
     int localCurve;
     int localVertex;
-    IntArray curves;
+    oofem::IntArray curves;
     double x, y, z;
 
-    FloatArray boundaries;
+    oofem::FloatArray boundaries;
     this->defineBoundaries(boundaries);
 
-    FloatArray specimenDimension(3);
+    oofem::FloatArray specimenDimension(3);
     specimenDimension.at(1) = boundaries.at(2) - boundaries.at(1);
     specimenDimension.at(2) = boundaries.at(4) - boundaries.at(3);
     specimenDimension.at(3) = boundaries.at(6) - boundaries.at(5);
@@ -60,16 +62,16 @@ int Region :: generatePoints()
     int randomIntegerTwo = grid->giveRandomInteger() - 2;
     int randomIntegerThree = grid->giveRandomInteger() - 3;
 
-    FloatArray random(3);
+    oofem::FloatArray random(3);
     int flag;
 
 
 
-    IntArray periodicityFlag(3);
+    oofem::IntArray periodicityFlag(3);
     grid->givePeriodicityFlag(periodicityFlag);
     
     double maxIter = grid->giveMaximumIterations();
-    FloatArray newRandom(3);
+    oofem::FloatArray newRandom(3);
 
     int randomFlag = grid->giveRandomFlag();
 
@@ -81,10 +83,10 @@ int Region :: generatePoints()
       border = grid->diameter;
     }
     
-    int vertexNumber = grid->vertexList->giveSize();
+    int vertexNumber = generator::size1(grid->vertexList);
 
     int tempSize = 1e9;
-    grid->vertexList->growTo(tempSize);
+    generator::ensure_size1(grid->vertexList,tempSize);
     
     //Generate random vertices
     for ( int i = 0; i < maxIter; i++ ) {
@@ -170,13 +172,13 @@ int Region :: generatePoints()
 	    }
 	}
     }
-    grid->vertexList->growTo(vertexNumber);
+    generator::ensure_size1(grid->vertexList,vertexNumber);
 
     return 1;
 }
 
 
-void Region :: defineBoundaries(FloatArray &boundaries)
+void Region :: defineBoundaries(oofem::FloatArray &boundaries)
 //Determine the boundaries of the domain
 {
     Surface *surface;
@@ -184,12 +186,12 @@ void Region :: defineBoundaries(FloatArray &boundaries)
     Vertex *vertex;
     Vertex *voronoiVertex;
     Element *element;
-    IntArray localVertices;
-    IntArray vertexFlag(2);
+    oofem::IntArray localVertices;
+    oofem::IntArray vertexFlag(2);
 
     int localSurface, localCurve, localVertex;
   
-    IntArray surfaces;
+    oofem::IntArray surfaces;
     this->giveLocalSurfaces(surfaces);
 
     double x, y, z;
@@ -244,20 +246,16 @@ void Region :: defineBoundaries(FloatArray &boundaries)
 }
 
 
-IRResultType
-Region :: initializeFrom(InputRecord *ir)
+void
+Region :: initializeFrom(GeneratorInputRecord &ir)
 // Gets from the source line from the data file all the data of the receiver.
 {
-    const char *__proc = "initializeFrom"; // Required by IR_GIVE_FIELD macro
-    IRResultType result;                // Required by IR_GIVE_FIELD macro
 
-
-
-    IR_GIVE_FIELD(ir, surfaces, IFT_Region_surfaces, "surfaces"); // Macro
+    IR_GIVE_FIELD(ir, surfaces, _IFT_Region_surfaces); // Macro
     refinement = 1.;
-    IR_GIVE_OPTIONAL_FIELD(ir, refinement, IFT_Region_refine, "refine"); // Macro
+    IR_GIVE_OPTIONAL_FIELD(ir, refinement, _IFT_Region_refine); // Macro
 
-    return IRRT_OK;
+    return;
 }
 
 
@@ -283,12 +281,12 @@ int Region :: generateRegularPoints1()
     int localSurface;
     int localCurve;
     int localVertex;
-    IntArray curves;
+    oofem::IntArray curves;
     double x, y, z;
 
-    FloatArray boundaries;
+    oofem::FloatArray boundaries;
     grid->defineBoundaries(boundaries);
-    FloatArray random(3);
+    oofem::FloatArray random(3);
 
     int n1edges = grid->xyzEdges.at(1);
     int n2edges = grid->xyzEdges.at(2);
@@ -297,9 +295,9 @@ int Region :: generateRegularPoints1()
     double n2length = fabs( boundaries.at(3) - boundaries.at(4) );
     double n3length = fabs( boundaries.at(5) - boundaries.at(6) );
 
-    int vertexNumber = grid->vertexList->giveSize();
+    int vertexNumber = generator::size1(grid->vertexList);
     int tempSize = 1e9;
-    grid->vertexList->growTo(tempSize);
+    generator::ensure_size1(grid->vertexList,tempSize);
 
     for ( int i = 0; i < 2 * n3edges - 1; i++ ) {
         random.at(3) = boundaries.at(5) + ( i + 1 ) * n3length / ( 2 * ( double ) n3edges );
@@ -317,8 +315,7 @@ int Region :: generateRegularPoints1()
                          random.at(2) - grid->TOL > boundaries.at(4) ||
                          random.at(3) + grid->TOL < boundaries.at(5) ||
                          random.at(3) - grid->TOL > boundaries.at(6) ) {
-                        std :: cout << "The nodes are located in the wrong position" << '\n';
-                        exit(0);
+		      generator::error("The nodes are located in the wrong position");
                     }
 
                     vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() );
@@ -340,8 +337,7 @@ int Region :: generateRegularPoints1()
                          random.at(2) - grid->TOL > boundaries.at(4) ||
                          random.at(3) + grid->TOL < boundaries.at(5) ||
                          random.at(3) - grid->TOL > boundaries.at(6) ) {
-                        std :: cout << "The nodes are located in the wrong position" << '\n';
-                        exit(0);
+		      generator::error("The nodes are located in the wrong position");
                     }
 
                     vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() );
@@ -354,7 +350,7 @@ int Region :: generateRegularPoints1()
         }
     }
 
-    grid->vertexList->growTo(vertexNumber);
+    generator::ensure_size1(grid->vertexList,vertexNumber);
 
     return 1;
 }
@@ -371,13 +367,13 @@ int Region :: generateRegularPoints2()
     int localSurface;
     int localCurve;
     int localVertex;
-    IntArray curves;
+    oofem::IntArray curves;
     double x, y, z;
 
-    FloatArray boundaries;
+    oofem::FloatArray boundaries;
     grid->defineBoundaries(boundaries);
 
-    FloatArray random(3);
+    oofem::FloatArray random(3);
 
     int n1edges = grid->xyzEdges.at(1);
     int n2edges = grid->xyzEdges.at(2);
@@ -387,9 +383,9 @@ int Region :: generateRegularPoints2()
     double n3length = fabs( boundaries.at(5) - boundaries.at(6) );
 
 
-    int vertexNumber = grid->vertexList->giveSize();
+    int vertexNumber = generator::size1(grid->vertexList);
     int tempSize = 1e9;
-    grid->vertexList->growTo(tempSize);
+    generator::ensure_size1(grid->vertexList,tempSize);
     for ( int i = 0; i < n3edges * 2 - 1; i++ ) {
         random.at(3) = boundaries.at(5) + ( i + 1 ) * n3length / ( ( double ) n3edges * 2 );
 
@@ -412,8 +408,8 @@ int Region :: generateRegularPoints2()
                              random.at(2) - grid->TOL > boundaries.at(4) ||
                              random.at(3) + grid->TOL <  boundaries.at(5) ||
                              random.at(3) - grid->TOL > boundaries.at(6) ) {
-                            std :: cout << "The nodes are located in the wrong position" << '\n';
-                            exit(0);
+
+			  generator::error("The nodes are located in the wrong position");			  
                         }
                     }
                 } else   {
@@ -434,8 +430,7 @@ int Region :: generateRegularPoints2()
                              random.at(2) - grid->TOL > boundaries.at(4) ||
                              random.at(3) + grid->TOL < boundaries.at(5) ||
                              random.at(3) - grid->TOL > boundaries.at(6) ) {
-                            std :: cout << "The nodes are located in the wrong position" << '\n';
-                            exit(0);
+			  generator::error("The nodes are located in the wrong position");
                         }
                     }
                 }
@@ -458,8 +453,7 @@ int Region :: generateRegularPoints2()
                              random.at(2) - grid->TOL > boundaries.at(4) ||
                              random.at(3) + grid->TOL < boundaries.at(5) ||
                              random.at(3) - grid->TOL > boundaries.at(6) ) {
-                            std :: cout << "The nodes are located in the wrong position" << '\n';
-                            exit(0);
+			  generator::error("The nodes are located in the wrong position");
                         }
                     }
                 } else   {
@@ -478,8 +472,8 @@ int Region :: generateRegularPoints2()
                              random.at(2) - grid->TOL > boundaries.at(4) ||
                              random.at(3) + grid->TOL < boundaries.at(5) ||
                              random.at(3) - grid->TOL > boundaries.at(6) ) {
-                            std :: cout << "The nodes are located in the wrong position \n";
-                            exit(0);
+
+			  generator::error("The nodes are located in the wrong position\n");
                         }
                     }
                 }
@@ -487,7 +481,7 @@ int Region :: generateRegularPoints2()
         }
     }
 
-    grid->vertexList->growTo(vertexNumber);
+    generator::ensure_size1(grid->vertexList,vertexNumber);
 
     return 1;
 }
@@ -499,10 +493,10 @@ int Region :: generatePeriodicPoints()
 {
     Vertex *vertex;
 
-    FloatArray boundaries;
+    oofem::FloatArray boundaries;
     grid->defineBoundaries(boundaries);
 
-    FloatArray specimenDimension(3);
+    oofem::FloatArray specimenDimension(3);
     specimenDimension.at(1) = boundaries.at(2) - boundaries.at(1);
     specimenDimension.at(2) = boundaries.at(4) - boundaries.at(3);
     specimenDimension.at(3) = boundaries.at(6) - boundaries.at(5);
@@ -511,24 +505,24 @@ int Region :: generatePeriodicPoints()
     int randomIntegerTwo = grid->giveRandomInteger() - 2;
     int randomIntegerThree = grid->giveRandomInteger() - 3;
 
-    FloatArray random(3);
-    FloatArray coordsAtPeriodicity(3);
+    oofem::FloatArray random(3);
+    oofem::FloatArray coordsAtPeriodicity(3);
     int flag;
 
 
-    IntArray periodicityFlag;
+    oofem::IntArray periodicityFlag;
     grid->givePeriodicityFlag(periodicityFlag);
     
     double maxIter = grid->giveMaximumIterations();
-    FloatArray mirroredRandom(3);
+    oofem::FloatArray mirroredRandom(3);
 
-    int vertexNumber = grid->vertexList->giveSize();
+    int vertexNumber = generator::size1(grid->vertexList);
     int tempSize = 1e9;
-    grid->vertexList->growTo(tempSize);
+    generator::ensure_size1(grid->vertexList,tempSize);
 
     int mult = 1;
     int tempIter = 0;
-    FloatArray randomPeriodic(3);
+    oofem::FloatArray randomPeriodic(3);
     for ( int i = 0; i < maxIter; i++ ) {
         //Generate random point
 
@@ -580,7 +574,7 @@ int Region :: generatePeriodicPoints()
         }
     }
 
-    grid->vertexList->growTo(vertexNumber);
+    generator::ensure_size1(grid->vertexList,vertexNumber);
 
 
     return 1;
