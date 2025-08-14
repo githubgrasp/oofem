@@ -71,7 +71,10 @@ public:
     /// Assignment operator.
     GeneratorTXTInputRecord &operator = ( const GeneratorTXTInputRecord & );
 
-    std::unique_ptr<GeneratorInputRecord> clone() const override { return std::make_unique<GeneratorTXTInputRecord>(*this); }
+  std::unique_ptr<GeneratorInputRecord> clone() const override {
+    return std::unique_ptr<GeneratorInputRecord>(new GeneratorTXTInputRecord(*this));
+    }
+  
 
 public:
     /// Sets the record string.
@@ -82,9 +85,14 @@ public:
     void finish(bool wrn = true) override;
 
 public:
-    void giveRecordKeywordField(std :: string &answer, int &value) override;
+
+  void giveRawLine(std::string &dst) const override;
+
+  void giveRecordKeywordField(std :: string &answer, int &value) override;
     void giveRecordKeywordField(std :: string &answer) override;
-    void giveField(int &answer, InputFieldType id) override;
+ void giveRecordKeywordField(std::string &keyword, std::string &value) override;
+
+  void giveField(int &answer, InputFieldType id) override;
     void giveField(double &answer, InputFieldType id) override;
     void giveField(bool &answer, InputFieldType id) override;
     void giveField(std :: string &answer, InputFieldType id) override;
@@ -100,6 +108,7 @@ public:
     void printYourself() override;
 
     void setLineNumber(int lineNumber) { this->lineNumber = lineNumber; }
+
 
 protected:
     int giveKeywordIndx(const char *kwd);

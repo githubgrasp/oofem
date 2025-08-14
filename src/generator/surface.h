@@ -71,7 +71,7 @@ public:
     //Shorten code by putting routine to shift and mirror point separately
   void mirrorShift(oofem::FloatArray& random, oofem::FloatArray& normal,oofem::FloatArray& specimenDimension,oofem::FloatArray& boundaries, int& vertexNumber, oofem::IntArray& periodicityFlag);
         
-  Surface *ofType();
+  //  Surface *ofType();
 
   // miscellaneous
   /// Returns class name of the receiver.

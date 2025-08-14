@@ -37,13 +37,7 @@ Prism :: giveLocalSurface(int i)
 
 int Prism :: generatePoints()
 {
-    Vertex *vertex;
-
-    int localSurface;
-    int localCurve;
-    int localVertex;
     oofem::IntArray curves;
-    double x, y, z;
 
     printf("Generating points for prism\n");
     
@@ -102,10 +96,6 @@ int Prism :: generatePoints()
       }	    
     }
     
-    int vertexNumber = generator::size1(grid->vertexList);
-
-    int tempSize = 1e9;
-    generator::ensure_size1(grid->vertexList,tempSize);
     //Generation of vertices needs to be split into three parts. First the edges, then the surfaces and finally the region.
 
     printf("Start with regular points for edges.\n");
@@ -135,12 +125,9 @@ int Prism :: generatePoints()
 	    flag = grid->giveGridLocalizer()->checkNodesWithinBox( random, 0.99*newDiameter );
 	    
 	    if ( flag == 0 ) {
-	      vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() );
-	      vertex->setCoordinates(random);
-	      grid->setVertex(vertexNumber + 1, vertex);
-	      //Set the node into the octree.
-	      grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, random);
-	      vertexNumber++;
+
+
+	      grid->addVertex(random);
 	      
 	      for ( int x = -1; x< 2; x++){
 		if(x != 0) {
@@ -160,11 +147,8 @@ int Prism :: generatePoints()
 		  flag = 0;
 		  flag = grid->giveGridLocalizer()->checkNodesWithinBox( newRandom, 0.99*newDiameter ); //so that corner points are not duplicated
 		  if(flag == 0){
-		    vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() );
-		    vertex->setCoordinates(newRandom);
-		    grid->setVertex(vertexNumber + 1, vertex);
-		    grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, newRandom);
-		    vertexNumber++;
+		    grid->addVertex(newRandom);
+		    
 		  }
 		}
 	      }//end of shifting mirroring
@@ -191,12 +175,7 @@ int Prism :: generatePoints()
 	    flag = grid->giveGridLocalizer()->checkNodesWithinBox( random, 0.99*newDiameter );
 	    
 	    if ( flag == 0 ) {
-	      vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() );
-	      vertex->setCoordinates(random);
-	      grid->setVertex(vertexNumber + 1, vertex);
-	      //Set the node into the octree.
-	      grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, random);
-	      vertexNumber++;
+	      grid->addVertex(random);
 
 	      for ( int y = -1; y< 2; y++){
 		if(y != 0) {
@@ -217,11 +196,9 @@ int Prism :: generatePoints()
 		  flag = 0;
 		  flag = grid->giveGridLocalizer()->checkNodesWithinBox( newRandom, 0.99*newDiameter ); //so that corner points are not duplicated
 		  if(flag == 0){		  
-		    vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() );
-		    vertex->setCoordinates(newRandom);
-		    grid->setVertex(vertexNumber + 1, vertex);
-		    grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, newRandom);
-		    vertexNumber++;
+		    grid->addVertex(newRandom);
+
+
 		  }
 		}
 	      }//end of shifting/mirroring	      
@@ -250,12 +227,7 @@ int Prism :: generatePoints()
 	    flag = grid->giveGridLocalizer()->checkNodesWithinBox( random,  0.99*newDiameter );
 	    
 	    if ( flag == 0 ) {
-	      vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() );
-	      vertex->setCoordinates(random);
-	      grid->setVertex(vertexNumber + 1, vertex);
-	      //Set the node into the octree.
-	      grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, random);
-	      vertexNumber++;
+	      grid->addVertex(random);
 
 	      for ( int z = -1; z< 2; z++){
 		if(z != 0) {
@@ -276,11 +248,8 @@ int Prism :: generatePoints()
 		  flag = 0;
 		  flag = grid->giveGridLocalizer()->checkNodesWithinBox( newRandom, 0.99*newDiameter ); //so that corner points are not duplicated
 		  if(flag == 0){		  		  
-		    vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() );
-		    vertex->setCoordinates(newRandom);
-		    grid->setVertex(vertexNumber + 1, vertex);
-		    grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, newRandom);
-		    vertexNumber++;
+		    grid->addVertex(newRandom);
+
 		  }
 		}
 	      }//end of shifting/mirroring 	      
@@ -290,7 +259,7 @@ int Prism :: generatePoints()
       }
     }
 
-    printf("Finished edges. Current number of points are %d\n", vertexNumber);
+    printf("Finished edges. Current number of points are %d\n", grid->giveNumberOfVertices());
     
     printf("Start with surfaces\n");
     oofem::FloatArray normal(3);
@@ -311,33 +280,25 @@ int Prism :: generatePoints()
 	flag = grid->giveGridLocalizer()->checkNodesWithinBox( random, grid->giveDiameter(random) );
 	
 	if ( flag == 0 ) {
-	  vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() );
-	  vertex->setCoordinates(random);
-	  grid->setVertex(vertexNumber + 1, vertex);
-	  grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, random);
+	  grid->addVertex(random);
 	  
-	  vertexNumber++;
 	  i = 0;	  
 	  
-	  mirrorShiftSurface(random, normal,specimenDimension,boundaries,vertexNumber,periodicityFlag);
+	  mirrorShiftSurface(random, normal,specimenDimension,boundaries,periodicityFlag);
 
 	  //Shift node over to other side
 	  newRandom.at(1) = random.at(1) + specimenDimension.at(1);
 	  newRandom.at(2) = random.at(2);
 	  newRandom.at(3) = random.at(3);
-	  
-	  vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() );
-	  vertex->setCoordinates(newRandom);
-	  grid->setVertex(vertexNumber + 1, vertex);
-	  //Set the node into the octree.
-	  grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, newRandom);
-	  vertexNumber++;
-	  mirrorShiftSurface(newRandom, normal,specimenDimension,boundaries,vertexNumber,periodicityFlag);
+
+	  grid->addVertex(newRandom);
+
+	  mirrorShiftSurface(newRandom, normal,specimenDimension,boundaries,periodicityFlag);
 	}
       }
     }
 
-    printf("Finished surfaces with normal 1,0,0. Current number of points are %d\n", vertexNumber);
+    printf("Finished surfaces with normal 1,0,0. Current number of points are %d\n", grid->giveNumberOfVertices());
     
     if(periodicityFlag.at(2) == 0){//surface with normals 0,1,0 are generated
       //Define normal
@@ -353,33 +314,25 @@ int Prism :: generatePoints()
 	flag = grid->giveGridLocalizer()->checkNodesWithinBox( random, grid->giveDiameter(random) );
 	
 	if ( flag == 0 ) {
-	  vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() );
-	  vertex->setCoordinates(random);
-	  grid->setVertex(vertexNumber + 1, vertex);
-	  grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, random);
-	  
-	  vertexNumber++;
+	  grid->addVertex(random);
+
 	  i = 0;	  
 	  
-	  mirrorShiftSurface(random, normal,specimenDimension,boundaries,vertexNumber,periodicityFlag);
+	  mirrorShiftSurface(random, normal,specimenDimension,boundaries,periodicityFlag);
 
 	  //Shift node over to other side
 	  newRandom.at(1) = random.at(1);
 	  newRandom.at(2) = random.at(2) + specimenDimension.at(2);
 	  newRandom.at(3) = random.at(3);
+
+	  grid->addVertex(newRandom);
 	  
-	  vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() );
-	  vertex->setCoordinates(newRandom);
-	  grid->setVertex(vertexNumber + 1, vertex);
-	  //Set the node into the octree.
-	  grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, newRandom);
-	  vertexNumber++;
-	  mirrorShiftSurface(newRandom, normal,specimenDimension,boundaries,vertexNumber,periodicityFlag);
+	  mirrorShiftSurface(newRandom, normal,specimenDimension,boundaries,periodicityFlag);
 	}
       }
     }
 
-    printf("Finished surfaces with normal 0,1,0. Current number of points are %d\n", vertexNumber);
+    printf("Finished surfaces with normal 0,1,0. Current number of points are %d\n", grid->giveNumberOfVertices());
 
     if(periodicityFlag.at(3) == 0){//surface with normals 0,0,1 are generated
       //Define normal
@@ -396,32 +349,23 @@ int Prism :: generatePoints()
 	flag = grid->giveGridLocalizer()->checkNodesWithinBox( random, grid->giveDiameter(random) );
 	
 	if ( flag == 0 ) {
-	  vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() );
-	  vertex->setCoordinates(random);
-	  grid->setVertex(vertexNumber + 1, vertex);
-	  grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, random);
-	  
-	  vertexNumber++;
+	  grid->addVertex(random);
+
 	  i = 0;	  
 	  
-	  mirrorShiftSurface(random, normal,specimenDimension,boundaries,vertexNumber,periodicityFlag);
+	  mirrorShiftSurface(random, normal,specimenDimension,boundaries,periodicityFlag);
 
 	  //Shift node over to other side
 	  newRandom.at(1) = random.at(1);
 	  newRandom.at(2) = random.at(2);
 	  newRandom.at(3) = random.at(3) + specimenDimension.at(3);
 	  
-	  vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() );
-	  vertex->setCoordinates(newRandom);
-	  grid->setVertex(vertexNumber + 1, vertex);
-	  //Set the node into the octree.
-	  grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, newRandom);
-	  vertexNumber++;
-	  mirrorShiftSurface(newRandom, normal,specimenDimension,boundaries,vertexNumber,periodicityFlag);
+	  grid->addVertex(newRandom);
+	  mirrorShiftSurface(newRandom, normal,specimenDimension,boundaries,periodicityFlag);
 	}
       }
     }
-    printf("Finished surfaces with normal 0,0,1. Current number of points are %d\n", vertexNumber);
+    printf("Finished surfaces with normal 0,0,1. Current number of points are %d\n", grid->giveNumberOfVertices());
     
      printf("Start with region.\n");
     
@@ -438,12 +382,10 @@ int Prism :: generatePoints()
         flag = grid->giveGridLocalizer()->checkNodesWithinBox( random, grid->giveDiameter(random) );
 
         if ( flag == 0 ) {
-            vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() );
-            vertex->setCoordinates(random);
-            grid->setVertex(vertexNumber + 1, vertex);
-            grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, random);
+	  grid->addVertex(random);
+
+
 	    i = 0;
-            vertexNumber++;
 
             //Do now the mirroring and shifting.
 	    
@@ -498,12 +440,9 @@ int Prism :: generatePoints()
 			newRandom.at(3) = random.at(3) - 2.*(random.at(3) - boundaries.at(6));
 		      }
 		    }
+
+		    grid->addVertex(newRandom);
 		    
-		    vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() );
-		    vertex->setCoordinates(newRandom);
-		    grid->setVertex(vertexNumber + 1, vertex);
-		    grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, newRandom);
-		    vertexNumber++;
 		  }		  
 		}
 	      }
@@ -511,7 +450,7 @@ int Prism :: generatePoints()
 	}
 
 	if(i > mult*10000 && i < (mult+1)*10000) {
-	  std :: cout << "Placed " << vertexNumber << " points in region "<< this->giveNumber() <<"\n";
+	  std :: cout << "Placed " << grid->giveNumberOfVertices() << " points in region "<< this->giveNumber() <<"\n";
 	  std :: cout << "Current greatest iterator is " << i << ". Maximum allowed iterator is "<< grid->giveMaximumIterations() <<".\n";
 	  mult++;
 	}
@@ -519,9 +458,8 @@ int Prism :: generatePoints()
 	
     }
 
-    printf("Finished region. Current number of points are %d\n", vertexNumber);
+    printf("Finished region. Current number of points are %d\n", grid->giveNumberOfVertices());
     
-    generator::ensure_size1(grid->vertexList,vertexNumber);
 
     return 1;
 }
@@ -544,14 +482,12 @@ void Prism :: defineBoundaries(oofem::FloatArray &boundaries)
 
 
 
-void Prism :: mirrorShiftSurface(oofem::FloatArray& random, oofem::FloatArray& normal,oofem::FloatArray& specimenDimension,oofem::FloatArray& boundaries, int& vertexNumber, oofem::IntArray& periodicityFlag)
+void Prism :: mirrorShiftSurface(oofem::FloatArray& random, oofem::FloatArray& normal,oofem::FloatArray& specimenDimension,oofem::FloatArray& boundaries, oofem::IntArray& periodicityFlag)
 {
 
   //Mirror (or periodic shift) with respect to two of the three axis.
 
-  Vertex *vertex;
   oofem::FloatArray newRandom(3);
-  int randomFlag = grid->giveRandomFlag();  
   
   if(normal.at(1) == 1 && normal.at(2) == 0 && normal.at(3) == 0){//y-z coordinate system
     for ( int y = -1; y < 2; y++ ) {
@@ -588,11 +524,8 @@ void Prism :: mirrorShiftSurface(oofem::FloatArray& random, oofem::FloatArray& n
 	      newRandom.at(3) = random.at(3) - 2. * ( random.at(3) - boundaries.at(6) );
 	    }
 	  }
-	  vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() );
-	  vertex->setCoordinates(newRandom);
-	  grid->setVertex(vertexNumber + 1, vertex);
-	  grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, newRandom);
-	  vertexNumber++;
+
+	  grid->addVertex(newRandom);
 	}
       }
     }	    
@@ -633,11 +566,8 @@ void Prism :: mirrorShiftSurface(oofem::FloatArray& random, oofem::FloatArray& n
 	      newRandom.at(3) = random.at(3) - 2. * ( random.at(3) - boundaries.at(6) );
 	    }
 	  }
-	  vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() );
-	  vertex->setCoordinates(newRandom);
-	  grid->setVertex(vertexNumber + 1, vertex);
-	  grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, newRandom);
-	  vertexNumber++;
+	  grid->addVertex(newRandom);
+
 	}
       }
     }
@@ -678,12 +608,8 @@ void Prism :: mirrorShiftSurface(oofem::FloatArray& random, oofem::FloatArray& n
 	  }
 	  //z-direction
 	  newRandom.at(3) = random.at(3);
+	  grid->addVertex(newRandom);
 
-	  vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() );
-	  vertex->setCoordinates(newRandom);
-	  grid->setVertex(vertexNumber + 1, vertex);
-	  grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, newRandom);
-	  vertexNumber++;
 	}		
       }
     }
@@ -720,15 +646,7 @@ Prism *Prism :: ofType()
 
 int Prism :: generateRegularPoints1()
 {
-    Surface *surface;
-    Curve *curve;
-    Vertex *vertex;
-
-    int localSurface;
-    int localCurve;
-    int localVertex;
     oofem::IntArray curves;
-    double x, y, z;
 
     oofem::FloatArray boundaries;
     this->defineBoundaries(boundaries);
@@ -740,10 +658,6 @@ int Prism :: generateRegularPoints1()
     double n1length = fabs( boundaries.at(1) - boundaries.at(2) );
     double n2length = fabs( boundaries.at(3) - boundaries.at(4) );
     double n3length = fabs( boundaries.at(5) - boundaries.at(6) );
-
-    int vertexNumber = generator::size1(grid->vertexList);
-    int tempSize = 1e9;
-    generator::ensure_size1(grid->vertexList,tempSize);
 
     for ( int i = 0; i < 2 * n3edges - 1; i++ ) {
         random.at(3) = boundaries.at(5) + ( i + 1 ) * n3length / ( 2 * ( double ) n3edges );
@@ -765,11 +679,7 @@ int Prism :: generateRegularPoints1()
                         exit(0);
                     }
 
-                    vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() );
-                    vertex->setCoordinates(random);
-                    grid->setVertex(vertexNumber + 1, vertex);
-                    grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, random);
-                    vertexNumber++;
+		    grid->addVertex(random);
                 }
             }
         }  else {
@@ -788,17 +698,12 @@ int Prism :: generateRegularPoints1()
                         exit(0);
                     }
 
-                    vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() );
-                    vertex->setCoordinates(random);
-                    grid->setVertex(vertexNumber + 1, vertex);
-                    grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, random);
-                    vertexNumber++;
+		    		    grid->addVertex(random);
                 }
             }
         }
     }
 
-    generator::ensure_size1(grid->vertexList,vertexNumber);
 
     return 1;
 }
@@ -807,16 +712,9 @@ int Prism :: generateRegularPoints1()
 
 int Prism :: generateRegularPoints2()
 {
-    Surface *surface;
-    Curve *curve;
-    Vertex *vertex;
 
-    //  int firstVertex = giveLocalVertex(1);
-    int localSurface;
-    int localCurve;
-    int localVertex;
     oofem::IntArray curves;
-    double x, y, z;
+
 
     oofem::FloatArray boundaries;
     this->defineBoundaries(boundaries);
@@ -831,9 +729,6 @@ int Prism :: generateRegularPoints2()
     double n3length = fabs( boundaries.at(5) - boundaries.at(6) );
 
 
-    int vertexNumber = generator::size1(grid->vertexList);
-    int tempSize = 1e9;
-    generator::ensure_size1(grid->vertexList,tempSize);
     for ( int i = 0; i < n3edges * 2 - 1; i++ ) {
         random.at(3) = boundaries.at(5) + ( i + 1 ) * n3length / ( ( double ) n3edges * 2 );
 
@@ -844,11 +739,8 @@ int Prism :: generateRegularPoints2()
                     for ( int l = 0; l < n1edges - 1; l++ ) {
                         random.at(1) = boundaries.at(1) + ( 1 + l ) * n1length / ( ( double ) n1edges );
                         random.at(2) = boundaries.at(3) + ( 1 + j ) * n2length / ( ( double ) n2edges * 2 );
-                        vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() );
-                        vertex->setCoordinates(random);
-                        grid->setVertex(vertexNumber + 1, vertex);
-                        grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, random);
-                        vertexNumber++;
+
+		    grid->addVertex(random);
 
                         if ( random.at(1) + grid->TOL <  boundaries.at(1) ||
                              random.at(1) - grid->TOL > boundaries.at(2) ||
@@ -866,11 +758,8 @@ int Prism :: generateRegularPoints2()
                     while ( k < n1edges ) {
                         random.at(1) = boundaries.at(1) + ( k + 0.5 ) * n1length / ( ( double ) n1edges );
                         k++;
-                        vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() );
-                        vertex->setCoordinates(random);
-                        grid->setVertex(vertexNumber + 1, vertex);
-                        grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, random);
-                        vertexNumber++;
+		    grid->addVertex(random);
+
 
                         if ( random.at(1) + grid->TOL < boundaries.at(1) ||
                              random.at(1) - grid->TOL > boundaries.at(2) ||
@@ -890,11 +779,9 @@ int Prism :: generateRegularPoints2()
                     for ( int m = 0; m < n1edges; m++ ) {
                         random.at(1) = boundaries.at(1) + ( 0.5 + m ) * n1length / ( ( double ) n1edges );
                         random.at(2) = boundaries.at(3) + ( n + 1 ) * n2length / ( ( double ) n2edges * 2 );
-                        vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() );
-                        vertex->setCoordinates(random);
-                        grid->setVertex(vertexNumber + 1, vertex);
-                        grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, random);
-                        vertexNumber++;
+
+		    grid->addVertex(random);
+
 
                         if ( random.at(1) + grid->TOL < boundaries.at(1) ||
                              random.at(1) - grid->TOL > boundaries.at(2) ||
@@ -910,11 +797,8 @@ int Prism :: generateRegularPoints2()
                     for ( int s = 0; s < n1edges - 1; s++ ) {
                         random.at(1) =  boundaries.at(1) + ( s + 1 ) * n1length / ( ( double ) n1edges );
                         random.at(2) =  boundaries.at(3) + ( n + 1 ) * n2length / ( ( double ) n2edges * 2 );
-                        vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() );
-                        vertex->setCoordinates(random);
-                        grid->setVertex(vertexNumber + 1, vertex);
-                        grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, random);
-                        vertexNumber++;
+
+		    grid->addVertex(random);
 
                         if ( random.at(1) + grid->TOL < boundaries.at(1) ||
                              random.at(1) - grid->TOL > boundaries.at(2) ||
@@ -931,7 +815,6 @@ int Prism :: generateRegularPoints2()
         }
     }
 
-    generator::ensure_size1(grid->vertexList,vertexNumber);
 
     return 1;
 }
@@ -939,7 +822,7 @@ int Prism :: generateRegularPoints2()
 
 int Prism :: generatePeriodicPoints()
 {
-    Vertex *vertex;
+  //    Vertex *vertex;
 
     oofem::FloatArray boundaries;
     this->defineBoundaries(boundaries);
@@ -963,10 +846,6 @@ int Prism :: generatePeriodicPoints()
     double maxIter = grid->giveMaximumIterations();
     oofem::FloatArray mirroredRandom(3);
 
-    int vertexNumber = generator::size1(grid->vertexList);
-    int tempSize = 1e9;
-    generator::ensure_size1(grid->vertexList,tempSize);
-
     int mult = 1;
     int tempIter = 0;
     oofem::FloatArray randomPeriodic(3);
@@ -982,11 +861,7 @@ int Prism :: generatePeriodicPoints()
         flag = grid->giveGridLocalizer()->checkNodesWithinBox( random, this->refinement * grid->giveDiameter(random) );
 
         if ( flag == 0 ) {
-            vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() );
-            vertex->setCoordinates(random);
-            grid->setVertex(vertexNumber + 1, vertex);
-            grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, random);
-            vertexNumber++;
+		    grid->addVertex(random);
 
             //Do the periodic shift
             for ( int x = -1; x < 2; x++ ) {
@@ -997,15 +872,11 @@ int Prism :: generatePeriodicPoints()
                             randomPeriodic.at(2) = random.at(2) + y * specimenDimension.at(2);
                             randomPeriodic.at(3) = random.at(3) + z * specimenDimension.at(3);
 
-                            vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() );
-                            vertex->setCoordinates(randomPeriodic);
-                            grid->setVertex(vertexNumber + 1, vertex);
-                            grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, randomPeriodic);
-                            vertexNumber++;
+			    grid->addVertex(random);
 
 			    //Print every 1m node message. Debug. 
 			    if(tempIter > mult*10) {
-			      std :: cout << "Placed " << vertexNumber << " points in region "<< this->giveNumber() <<"\n";
+			      std :: cout << "Placed " << grid->giveNumberOfVertices() << " points in region "<< this->giveNumber() <<"\n";
 			      std :: cout << "Current greatest iterator is " << tempIter << ". Maximum allowed iterator is "<< grid->giveMaximumIterations() <<".\n";
 			      mult++;
 			    }
@@ -1020,8 +891,6 @@ int Prism :: generatePeriodicPoints()
             i = 0;
         }
     }
-
-    generator::ensure_size1(grid->vertexList,vertexNumber);
 
 
     return 1;

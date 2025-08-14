@@ -61,8 +61,8 @@ public:
   void giveCoordinates(oofem::FloatArray &coord) { coord = this->coordinates; }
   oofem::FloatArray *giveCoordinates() { return & coordinates; }
 
-  void setCoordinates (oofem::FloatArray& _coords) {this->coordinates = _coords;}
-
+ void setCoordinates(const oofem::FloatArray& coords) { this->coordinates = coords; }
+  
     /// Sets i-th componet. The component will be futher managed and maintained by grid object. 
     
     

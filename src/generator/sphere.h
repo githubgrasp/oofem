@@ -53,7 +53,7 @@ public:
 
     int generatePeriodicPoints();
 
-    Sphere *ofType();
+  //    Sphere *ofType();
 
     // miscellaneous
     /// Returns class name of the receiver.

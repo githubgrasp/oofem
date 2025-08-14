@@ -56,7 +56,7 @@ public:
     //generate random points in periodic cell
     int generatePeriodicPoints();
 
-  void mirrorShiftSurface(oofem::FloatArray& random, oofem::FloatArray& normal,oofem::FloatArray& specimenDimension,oofem::FloatArray& boundaries, int& vertexNumber, oofem::IntArray& periodicityFlag);
+  void mirrorShiftSurface(oofem::FloatArray& random, oofem::FloatArray& normal,oofem::FloatArray& specimenDimension,oofem::FloatArray& boundaries, oofem::IntArray& periodicityFlag);
     
     //generate random points
     int generatePoints();

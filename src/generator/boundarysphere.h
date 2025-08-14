@@ -5,7 +5,7 @@
 #include "grid.h"
 #include "inclusion.h"
 
-#include "flotarry.h"
+#include "floatarray.h"
 #include "intarray.h"
 
 #include "inputrecord.h"
@@ -26,7 +26,7 @@ class BoundarySphere : public Inclusion
 
 protected:
     /// Array storing nodal coordinates.
-  FloatArray centre;
+  oofem::FloatArray centre;
   double radius;
   int number;
   double refinement;
@@ -59,7 +59,7 @@ public:
     int giveNumber() { return this->number; }
 
     
-    IRResultType initializeFrom(InputRecord *ir);
+    void initializeFrom(GeneratorInputRecord *ir);
     //virtual IntArray* ResolveDofIDArray (char* initString);
     /// prints receiver state on stdout. Usefull for debuging.
     void         printYourself();

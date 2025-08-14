@@ -19,7 +19,7 @@
  #include <map>
 #endif
 
-#define _IFT_Grid_type "type"
+#define _IFT_Grid_domain "domain"
 #define _IFT_Grid_diam            "diam"
 #define _IFT_Grid_maxiter         "maxiter"
 #define _IFT_Grid_ranint          "ranint"
@@ -76,7 +76,9 @@ private:
 
     /** Grid type. This determines the dimension of the problem
      */
-    gridType dType;
+    int dimension;
+
+  int vertexCount = 0;
 
     /**
      * Associated Engineering model. An abstraction for type of analysis which will be prformed.
@@ -175,6 +177,9 @@ public:
 
     int giveMaximumIterations() { return this->maxIter; }
 
+  void addVertex(const oofem::FloatArray& coords);
+
+    void exportVTK(const std::string& path);
 
     Vertex *giveVertex(int n);
 
@@ -220,7 +225,7 @@ public:
     double ran1(int *idum);
 
     /// Returns number of vertices.
-  int                giveNumberOfVertices() { return generator::size1(vertexList); }
+  int                giveNumberOfVertices() const { return vertexCount; }
 
     /// Returns number of input vertices.
   int                giveNumberOfInputVertices() { return generator::size1(inputVertexList); }
@@ -305,9 +310,7 @@ public:
     void setRefinement(int i, Refinement *obj);
     
 
-    gridType         giveGridType()        { return dType; }
-    /// Sets grid type
-    void               setGridType(gridType _dType)         { this->dType = _dType; }
+   int         giveGridType()        { return this->dimension; }
 
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "Grid"; }

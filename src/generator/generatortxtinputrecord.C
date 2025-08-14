@@ -39,6 +39,8 @@
 #include "dictionary.h"
 #include "range.h"
 #include "scalarfunction.h"
+#include "generatorerror.h"
+
 
 #include <cstdlib>
 #include <cstdio>
@@ -86,6 +88,17 @@ GeneratorTXTInputRecord :: operator = ( const GeneratorTXTInputRecord & src )
     return * this;
 }
 
+static inline void trim_right(std::string &s) {
+    while (!s.empty() && (s.back() == '\r' || s.back() == '\n')) s.pop_back();
+}
+  
+
+void GeneratorTXTInputRecord::giveRawLine(std::string &dst) const
+{
+    dst = this->record;   // the original line as read by the reader
+    trim_right(dst);      // drop trailing \r/\n so fopen gets a clean name
+}
+  
 void
 GeneratorTXTInputRecord :: setRecordString(std :: string newRec)
 {
@@ -113,6 +126,21 @@ GeneratorTXTInputRecord :: giveRecordKeywordField(std :: string &answer, int &va
         throw BadFormatInputException(*this, "RecordID", lineNumber);
     }
 }
+
+
+void
+GeneratorTXTInputRecord::giveRecordKeywordField(std::string &keyword, std::string &value)
+{
+    if (tokenizer.giveNumberOfTokens() >= 2) {
+        keyword = std::string(tokenizer.giveToken(1));
+        value   = std::string(tokenizer.giveToken(2));
+        setReadFlag(1);
+        setReadFlag(2);
+    } else {
+        throw BadFormatInputException(*this, "RecordID", lineNumber);
+    }
+}
+
 
 void
 GeneratorTXTInputRecord :: giveRecordKeywordField(std :: string &answer)

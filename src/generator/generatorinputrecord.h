@@ -99,6 +99,7 @@ public:
     /** Creates a newly allocated copy of the receiver */
     virtual std::unique_ptr<GeneratorInputRecord> clone() const = 0;
 
+  
     /// Returns string representation of record in OOFEMs text format.
     virtual std :: string giveRecordAsString() const = 0;
 
@@ -108,14 +109,17 @@ public:
      * @param id field keyword
      */
 
-  void giveRawLine(std::string &out) const;
+  virtual void giveRawLine(std::string &out) const;
 
   //@{
     /// Reads the record id field  (type of record) and its corresponding number.
     virtual void giveRecordKeywordField(std :: string &answer, int &value) = 0;
     /// Reads the record id field  (type of record).
     virtual void giveRecordKeywordField(std :: string &answer) = 0;
-    /// Reads the integer field value.
+
+    virtual void giveRecordKeywordField(std::string& kw, std::string& arg) = 0;
+
+  /// Reads the integer field value.
     virtual void giveField(int &answer, InputFieldType id) = 0;
     /// Reads the double field value.
     virtual void giveField(double &answer, InputFieldType id) = 0;

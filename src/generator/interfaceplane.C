@@ -49,8 +49,6 @@ int InterfacePlane :: generatePoints()
    double maxIter = grid->giveMaximumIterations();
    oofem::FloatArray mirroredRandom(3);
    int vertexNumber = grid->giveNumberOfVertices();
-   int tempSize = 10000000;
-   generator::ensure_size1(grid->vertexList,tempSize);
 
    double randomAngleOne;
    double randomAngleTwo;
@@ -126,8 +124,6 @@ int InterfacePlane :: generatePoints()
    
    printf("Completed inclusion loops\n");
 
-   generator::ensure_size1(grid->vertexList,vertexNumber);
-   
    return 1;
 }
 

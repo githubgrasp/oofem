@@ -17,7 +17,7 @@
 #include "refineprism.h"
 #include "cylinder.h"
 #include <iostream>
-
+#include "generatorerror.h"
 
 #ifndef __MAKEDEPEND
  #include <string.h>
@@ -30,6 +30,11 @@
  #include <cstdlib>
  #include <ctype.h>
 #endif
+
+#include <fstream>
+#include <iomanip>
+
+
 
 //Definitions for random number generator
 #define IA 16807
@@ -68,15 +73,6 @@ Grid :: Grid(int i)
 Grid :: ~Grid()
 // Destructor.
 {
-    /* delete vertexList; */
-    /* delete inputVertexList; */
-    /* delete controlVertexList; */
-    /* delete curveList; */
-    /* delete surfaceList; */
-    /* delete regionList; */
-    /* delete inclusionList; */
-    /* delete refinementList; */
-
     for (auto v : vertexList) delete v;
     for (auto v : inputVertexList) delete v;
     for (auto v : controlVertexList) delete v;
@@ -86,9 +82,7 @@ Grid :: ~Grid()
     for (auto i : inclusionList) delete i;
     for (auto r : refinementList) delete r;
 
-    delete gridLocalizer;
-    
-    delete gridLocalizer;
+    delete gridLocalizer;    
     
 }
 
@@ -121,20 +115,6 @@ Vertex *Grid::giveVertex(int n)
 }
 
 
-/* Vertex *Grid :: giveVertex(int n) */
-/* // Returns the n-th vertex.  */
-/* { */
-/*     if ( vertexList->includes(n) ) { */
-/*         return vertexList->at(n); */
-/*     } else { */
-/*         printf("giveVertex: undefined vertex (%d)", n); */
-/*         exit(1); */
-/*     } */
-
-/*     return NULL; */
-/* } */
-
-
 Vertex *Grid :: giveInputVertex(int n)
 // Returns the n-th vertex. Creates this node if it does not exist yet.
 {
@@ -161,15 +141,6 @@ Vertex *Grid :: giveControlVertex(int n)
         exit(1);
     }
     return nullptr;
-
-  /* if ( controlVertexList->includes(n) ) { */
-    /*     return controlVertexList->at(n); */
-    /* } else { */
-    /*     printf("giveControlVertex: undefined inputVertex (%d)", n); */
-    /*     exit(1); */
-    /* } */
-
-    /* return NULL; */
 }
 
 
@@ -186,15 +157,6 @@ Curve *Grid :: giveCurve(int n)
     }
     return nullptr;
 
-  
-    /* if ( curveList->includes(n) ) { */
-    /*     return curveList->at(n); */
-    /* } else { */
-    /*     printf("giveCurve: undefined curve (%d)", n); */
-    /*     exit(1); */
-    /* } */
-
-    /* return NULL; */
 }
 
 Surface *Grid :: giveSurface(int n)
@@ -208,16 +170,6 @@ Surface *Grid :: giveSurface(int n)
         exit(1);
     }
     return nullptr;
-
-
-  /* if ( surfaceList->includes(n) ) { */
-  /*       return surfaceList->at(n); */
-  /*   } else { */
-  /*       printf("giveSurface: undefined surface (%d)", n); */
-  /*       exit(1); */
-  /*   } */
-
-  /*   return NULL; */
 }
 
 double Grid :: giveDiameter(oofem::FloatArray &coords) {
@@ -231,7 +183,6 @@ double Grid :: giveDiameter(oofem::FloatArray &coords) {
 
 
 Region *Grid :: giveRegion(int n)
-// Returns the n-th element. Generates error if it is not defined yet.
 {
   if (n >= 1 && n <= static_cast<int>(generator::size1(regionList)) && regionList[n - 1] != nullptr) {
         return regionList[n - 1];  // 1-based to 0-based
@@ -243,7 +194,6 @@ Region *Grid :: giveRegion(int n)
 }
 
 Inclusion *Grid :: giveInclusion(int n)
-// Returns the n-th element. Generates error if it is not defined yet.
 {
   if (n >= 1 && n <= static_cast<int>(generator::size1(inclusionList)) && inclusionList[n - 1] != nullptr) {
         return inclusionList[n - 1];  // 1-based to 0-based
@@ -255,7 +205,6 @@ Inclusion *Grid :: giveInclusion(int n)
 }
 
 Refinement *Grid :: giveRefinement(int n)
-// Returns the n-th element. Generates error if it is not defined yet.
 {
   if (n >= 1 && n <= static_cast<int>(generator::size1(refinementList)) && refinementList[n - 1] != nullptr) {
         return refinementList[n - 1];  // 1-based to 0-based
@@ -266,14 +215,6 @@ Refinement *Grid :: giveRefinement(int n)
     return nullptr;
 }
 
-/* void Grid :: resizeVertices(int _newSize) { vertexList->growTo(_newSize); } */
-/* void Grid :: resizeInputVertices(int _newSize) { inputVertexList->growTo(_newSize); } */
-/* void Grid :: resizeControlVertices(int _newSize) { controlVertexList->growTo(_newSize); } */
-/* void Grid :: resizeCurves(int _newSize) { curveList->growTo(_newSize); } */
-/* void Grid :: resizeSurfaces(int _newSize) { surfaceList->growTo(_newSize); } */
-/* void Grid :: resizeRegions(int _newSize) { regionList->growTo(_newSize); } */
-/* void Grid :: resizeInclusions(int _newSize) { inclusionList->growTo(_newSize); } */
-/* void Grid :: resizeRefinements(int _newSize) { refinementList->growTo(_newSize); } */
 
 void Grid :: resizeVertices(int _newSize) { vertexList.resize(_newSize, nullptr); }
 void Grid :: resizeInputVertices(int _newSize) { inputVertexList.resize(_newSize, nullptr); }
@@ -287,6 +228,7 @@ void Grid :: resizeRefinements(int _newSize) { refinementList.resize(_newSize, n
 
 void Grid :: setVertex(int i, Vertex *obj) {
   generator::put1_replace(vertexList, i, obj);
+  if (i > vertexCount) vertexCount = i;
 }
 
 void Grid :: setInputVertex(int i, Vertex *obj) {
@@ -585,11 +527,30 @@ int Grid :: generateRandomPoints()
   
 }
 
+// grid.C
+void Grid::addVertex(const oofem::FloatArray& coords) {
+  
+  if (vertexList.capacity() < static_cast<size_t>(vertexCount + 1)) {
+   vertexList.reserve(vertexCount + 10000); // choose a chunk size that fits your cases
+  }
+
+  const int num = vertexCount + 1;           // true next id
+  auto* v = new Vertex(num, this);
+  v->setCoordinates(coords);                 // prefer const-ref setter
+  
+  setVertex(num, v);                         // stores (may resize/replace)
+  this->vertexCount = num;                         // <-- bump the real count
+  
+  if (auto* loc = giveGridLocalizer()) {
+    loc->insertSequentialNode(num, coords);
+  }
+  return;
+}
+
+
 void Grid :: generateControlPoints()
 {
-    Vertex *vertex;
 
-    int vertexNumber = generator::size1(this->vertexList);
     
     oofem::FloatArray boundaries;
     defineBoundaries(boundaries);
@@ -605,16 +566,7 @@ void Grid :: generateControlPoints()
     int controlVertexNumber = generator::size1(this->controlVertexList);
     for ( int i = 0; i < controlVertexNumber; i++ ) {
       this->giveControlVertex(i+1)->giveCoordinates(coords);
-
-
-
-      auto *v = new Vertex(vertexNumber+1, this);
-      v->setCoordinates(coords);
-      this->setVertex(vertexNumber+1, v);
-      this->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, coords);
-      vertexNumber++;
-
-
+      this->addVertex(coords);
 
       if(this->randomFlag == 0){ //Here it is assumed that for Grassl's meshing approach control nodes are on the surface, and for Bolander's approach they are not.
 	//Do now the mirroring.
@@ -626,13 +578,7 @@ void Grid :: generateControlPoints()
 	  mirroredCoords.at(1) = coords.at(1) - 2. * ( coords.at(1) - boundaries.at(k) );
 	  mirroredCoords.at(2) = coords.at(2);
 	  mirroredCoords.at(3) = coords.at(3);
-
-
-	  auto *v = new Vertex(vertexNumber+1, this);
-	  v->setCoordinates(mirroredCoords);
-	  this->setVertex(vertexNumber+1, v);
-	  this->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, mirroredCoords);
-	  vertexNumber++;
+	  this->addVertex(mirroredCoords);
 	  
 	}
 	
@@ -641,12 +587,7 @@ void Grid :: generateControlPoints()
 	  mirroredCoords.at(1) = coords.at(1);
 	  mirroredCoords.at(2) = coords.at(2) - 2. * ( coords.at(2) - boundaries.at(k) );
 	  mirroredCoords.at(3) = coords.at(3);
-
-	  auto *v = new Vertex(vertexNumber+1, this);
-	  v->setCoordinates(mirroredCoords);
-	  this->setVertex(vertexNumber+1, v);
-	  this->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, mirroredCoords);
-	  vertexNumber++;
+	  this->addVertex(mirroredCoords);
 	  
 	}
 	
@@ -655,12 +596,9 @@ void Grid :: generateControlPoints()
 	  mirroredCoords.at(1) = coords.at(1);
 	  mirroredCoords.at(2) = coords.at(2);
 	  mirroredCoords.at(3) = coords.at(3) - 2. * ( coords.at(3) - boundaries.at(k) );
-
-	  auto *v = new Vertex(vertexNumber+1, this);
-	  v->setCoordinates(mirroredCoords);
-	  this->setVertex(vertexNumber+1, v);
-	  this->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, mirroredCoords);
-	  vertexNumber++;
+	 this->addVertex(mirroredCoords);
+	  
+	  
 	}
       }
     }
@@ -673,25 +611,18 @@ void Grid :: generateControlPoints()
 
 void Grid :: generateInputPoints()
 {
-    Vertex *vertex;
 
-    int vertexNumber = generator::size1(this->vertexList);
-    
+    printf("At the start of generateInputPoints = %d\n", this->giveNumberOfVertices());
     //Generate control vertices
     oofem::FloatArray coords(3);
     
     int inputVertexNumber = generator::size1(this->inputVertexList);
     for ( int i = 0; i < inputVertexNumber; i++ ) {
       this->giveInputVertex(i+1)->giveCoordinates(coords);
-
-      auto *v = new Vertex(vertexNumber+1, this);
-      v->setCoordinates(coords);
-      this->setVertex(vertexNumber+1, v);
-      this->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, coords);
-      vertexNumber++;
-
+      this->addVertex(coords);
+      
     }
-    
+    printf("At the end of generateInputPoints = %d\n", this->giveNumberOfVertices());
   return;
 }
 
@@ -702,8 +633,6 @@ int Grid :: generateRegularPoints()
     //Regular approach for both normal and periodic
     clock_t start;
     clock_t sc;
-    clock_t ec;
-    long nsec;
 
     start = :: clock();
     //The old method is reviced, the only generation needed is the region one.
@@ -720,6 +649,9 @@ int Grid :: generateRegularPoints()
         }
     }
     sc = :: clock();
+    double elapsed_sec = double(sc - start) / CLOCKS_PER_SEC;
+    std::cout << "Generation took " << elapsed_sec << " seconds\n";
+
     return 1;
 }
 
@@ -728,52 +660,43 @@ int Grid :: generateRegularPoints()
 int Grid :: instanciateYourself(GeneratorDataReader *dr)
 // Creates all objects mentioned in the data file.
 {
-  //    const char *__keyword, *__proc = "initializeFrom"; // Required by IR_GIVE_FIELD macro
-    //    IRResultType result;                            // Required by IR_GIVE_FIELD macro
-
-    int i, num;
+    int i;
     std::string name;
-
-    Vertex *vertex;
-    Curve *curve;
-    Surface *surface;
-    Prism *prism;
-    Sphere *sphere;
-    Cylinder *cylinder;
     
-    InterfaceSphere *intersphere;
-    InterfaceCylinder *intercylinder;
-
-    RefinePrism *refineprism;
-    
-    //    InputRecord *ir;
-
-    /* read type of Grid to be solved
+     /* read type of Grid to be solved
      * This information is currently not used, since we do not distinguish between different domain types.
      * However, later we should have different domain types which are inherited from domain.
      */
-    //    ir = dr->giveInputRecord(DataReader :: IR_domainRec, 1);
-    auto &ir = dr->giveInputRecord(GeneratorDataReader::GIR_domainRec, 1); 
 
-    IR_GIVE_FIELD(ir, name, _IFT_Grid_type);
-    ir.finish();
+    
+    auto &irDomainRec = dr->giveInputRecord(GeneratorDataReader::GIR_domainRec, 1); 
+    IR_GIVE_FIELD(irDomainRec, dimension, _IFT_Grid_domain);
+    irDomainRec.finish();
+    
+    
+    printf("And here and have read domain as dimension=%d\n", dimension);
 
+    
     // read
-    ir = dr->giveInputRecord(GeneratorDataReader :: GIR_controlRec, 1);
-    IR_GIVE_FIELD(ir, diameter, _IFT_Grid_diam); // Macro
+    auto &irControlRec = dr->giveInputRecord(GeneratorDataReader :: GIR_controlRec, 1);
+    printf("Now in control line here:\n");
+    irControlRec.printYourself();
+
+    
+    
+    IR_GIVE_FIELD(irControlRec, diameter, _IFT_Grid_diam); // Macro
     TOL = 1.e-6 * diameter;
 
-    //    IR_GIVE_FIELD(ir, density, IFT_dens, "dens"); // Macro
 
     maxIter = 1.e6;
-    IR_GIVE_OPTIONAL_FIELD(ir, maxIter, _IFT_Grid_maxiter); // Macro
+    IR_GIVE_OPTIONAL_FIELD(irControlRec, maxIter, _IFT_Grid_maxiter); // Macro
 
     //This will need to be removed later again, once the aggregate generator works
     aggregateFlag = 0;
-    IR_GIVE_OPTIONAL_FIELD(ir, aggregateFlag, _IFT_Grid_aggflag); // Macro
+    IR_GIVE_OPTIONAL_FIELD(irControlRec, aggregateFlag, _IFT_Grid_aggflag); // Macro
 
     if ( aggregateFlag == 1 ) {
-        IR_GIVE_OPTIONAL_FIELD(ir, targetAggregates, _IFT_Grid_aggflag); // Macro
+        IR_GIVE_OPTIONAL_FIELD(irControlRec, targetAggregates, _IFT_Grid_aggflag); // Macro
     }
 
     // We need to write the generator so that it can be used for both periodic and normal meshes.
@@ -783,7 +706,7 @@ int Grid :: instanciateYourself(GeneratorDataReader *dr)
 
     //when regularFlag=1 regular generator is used.
     this->regularFlag = 0;
-    IR_GIVE_OPTIONAL_FIELD(ir, this->regularFlag, _IFT_Grid_regflag); // Macro
+    IR_GIVE_OPTIONAL_FIELD(irControlRec, this->regularFlag, _IFT_Grid_regflag); // Macro
     if ( regularFlag < 0 || regularFlag > 1 ) {
         printf("Error: Unknown regular flag. Should be 0 or 1.\n");
         exit(0);
@@ -792,16 +715,16 @@ int Grid :: instanciateYourself(GeneratorDataReader *dr)
     //Only needed for the regular generator, but then it should be mandatory
     if ( this->regularFlag == 1 ) {
         xyzEdges.resize(0);
-        IR_GIVE_FIELD(ir, xyzEdges, _IFT_Grid_xyzedges); // Macro
+        IR_GIVE_FIELD(irControlRec, xyzEdges, _IFT_Grid_xyzedges); // Macro
 
         regType = 0;
-        IR_GIVE_FIELD(ir, regType, _IFT_Grid_regtype); // Macro
+        IR_GIVE_FIELD(irControlRec, regType, _IFT_Grid_regtype); // Macro
     }
 
     
     //when periodicityFlag=1 periodic cell generator is used.
     periodicityFlag.zero();
-    IR_GIVE_OPTIONAL_FIELD(ir, periodicityFlag, _IFT_Grid_perflag); // Macro
+    IR_GIVE_OPTIONAL_FIELD(irControlRec, periodicityFlag, _IFT_Grid_perflag); // Macro
     if ( periodicityFlag.giveSize() != 3 ) {
         printf("Error: Unknown periodicity flag. Should have three components.\n");
         exit(0);
@@ -812,7 +735,7 @@ int Grid :: instanciateYourself(GeneratorDataReader *dr)
     //1 - Grassl's way of generating meshes. Nodes on boundaries. Better for coupled analyses.
     //2 - Grassl's way of generating meshes, but periodic nodes on boundaries.
     randomFlag = 0;
-    IR_GIVE_OPTIONAL_FIELD(ir, randomFlag, _IFT_Grid_ranflag); // Macro
+    IR_GIVE_OPTIONAL_FIELD(irControlRec, randomFlag, _IFT_Grid_ranflag); // Macro
     if ( randomFlag < 0 || randomFlag > 2 ) {
         printf("Error: Unknown random flag. Should be 0, 1 or 2.\n");
         exit(0);
@@ -823,40 +746,36 @@ int Grid :: instanciateYourself(GeneratorDataReader *dr)
     //Simply set it to a negative value and this is used to generate the random numbers.
     //If it is not set, then time is used to generate the interger, which is used to generate the random numbers.
     randomInteger = 0;
-    IR_GIVE_OPTIONAL_FIELD(ir, randomInteger, _IFT_Grid_ranint); // Macro
+    IR_GIVE_OPTIONAL_FIELD(irControlRec, randomInteger, _IFT_Grid_ranint); // Macro
     if ( randomInteger >= 0 ) {
         randomInteger = -time(NULL);
         printf("random integer is determined as %d\n", randomInteger);
     }
 
-    ir.finish();
+    irControlRec.finish();
 
     // read domain description
-    int nvertex, ncontrolvertex=0, nelem, ncurve, nsurface, nregion, ninclusion,nrefinement;
-    ir = dr->giveInputRecord(GeneratorDataReader :: GIR_domainCompRec, 1);
-    IR_GIVE_FIELD(ir, nvertex, _IFT_Grid_nvertex); // Macro
-    IR_GIVE_OPTIONAL_FIELD(ir, ncontrolvertex, _IFT_Grid_ncontrolvertex); // Macro
-    IR_GIVE_FIELD(ir, ncurve, _IFT_Grid_ncurve); // Macro
-    IR_GIVE_FIELD(ir, nsurface, _IFT_Grid_nsurface); // Macro
-    IR_GIVE_FIELD(ir, nregion, _IFT_Grid_nregion); // Macro
-
-
-    IR_GIVE_FIELD(ir, ninclusion, _IFT_Grid_ninclusion); // Macro
-    IR_GIVE_FIELD(ir, nrefinement, _IFT_Grid_nrefinement); // Macro
-    ir.finish();
+    int nvertex, ncontrolvertex=0, ncurve, nsurface, nregion, ninclusion,nrefinement;
+    auto &irDomainCompRec = dr->giveInputRecord(GeneratorDataReader :: GIR_domainCompRec, 1);
+    IR_GIVE_FIELD(irDomainCompRec, nvertex, _IFT_Grid_nvertex); // Macro
+    IR_GIVE_OPTIONAL_FIELD(irDomainCompRec, ncontrolvertex, _IFT_Grid_ncontrolvertex); // Macro
+    IR_GIVE_FIELD(irDomainCompRec, ncurve, _IFT_Grid_ncurve); // Macro
+    IR_GIVE_FIELD(irDomainCompRec, nsurface, _IFT_Grid_nsurface); // Macro
+    IR_GIVE_FIELD(irDomainCompRec, nregion, _IFT_Grid_nregion); // Macro
+    IR_GIVE_FIELD(irDomainCompRec, ninclusion, _IFT_Grid_ninclusion); // Macro
+    IR_GIVE_FIELD(irDomainCompRec, nrefinement, _IFT_Grid_nrefinement); // Macro
+    irDomainCompRec.finish();
 
     //read vertices
-    //    inputVertexList->growTo(nvertex);
     inputVertexList.resize(nvertex, nullptr);
     
     for ( i = 0; i < nvertex; i++ ) {
 
-
-    auto &ir = dr->giveInputRecord(GeneratorDataReader::GIR_vertexRec, i + 1);
+    auto &irVertexRec = dr->giveInputRecord(GeneratorDataReader::GIR_vertexRec, i + 1);
 
     std::string name;
     int num = 0;
-    IR_GIVE_RECORD_KEYWORD_FIELD(ir, name, num);
+    IR_GIVE_RECORD_KEYWORD_FIELD(irVertexRec, name, num);
 
     if (num < 1 || num > nvertex) {
         std::cerr << "instanciateYourself: Invalid vertex number (num=" << num << ")\n";
@@ -869,25 +788,24 @@ int Grid :: instanciateYourself(GeneratorDataReader *dr)
     }
 
     Vertex *vertex = new Vertex(num, this);
-    vertex->initializeFrom(ir);
+    vertex->initializeFrom(irVertexRec);
     setInputVertex(num, vertex); // 1-based -> vector[num-1]
 
-    ir.finish();
+    irVertexRec.finish();
 
     }
 
 
     //read control vertices
-    //    controlVertexList->growTo(ncontrolvertex);
     controlVertexList.resize(ncontrolvertex, nullptr);
 
     for ( i = 0; i < ncontrolvertex; i++ ) {
 
-    auto &ir = dr->giveInputRecord(GeneratorDataReader::GIR_vertexRec, i + 1);
+    auto &irControlVertexRec = dr->giveInputRecord(GeneratorDataReader::GIR_controlVertexRec, i + 1);
 
     std::string name;
     int num = 0;
-    IR_GIVE_RECORD_KEYWORD_FIELD(ir, name, num);
+    IR_GIVE_RECORD_KEYWORD_FIELD(irControlVertexRec, name, num);
 
     // 1) validate number BEFORE touching containers
     if (num < 1 || num > ncontrolvertex) {
@@ -903,23 +821,22 @@ int Grid :: instanciateYourself(GeneratorDataReader *dr)
 
     // 3) create, init, and insert
     Vertex *vertex = new Vertex(num, this);
-    vertex->initializeFrom(ir);
-    setInputVertex(num, vertex); // 1-based -> vector[num-1]
+    vertex->initializeFrom(irControlVertexRec);
+    setInputVertex(num, vertex);
 
-    ir.finish();
+    irControlVertexRec.finish();
 
     }
     
     // read curves
-    //    curveList->growTo(ncurve);
     curveList.resize(ncurve, nullptr);
     for ( i = 0; i < ncurve; i++ ) {
 
-    auto &ir = dr->giveInputRecord(GeneratorDataReader::GIR_curveRec, i + 1);
+    auto &irCurveRec = dr->giveInputRecord(GeneratorDataReader::GIR_curveRec, i + 1);
 
     std::string name;
     int num = 0;
-    IR_GIVE_RECORD_KEYWORD_FIELD(ir, name, num);
+    IR_GIVE_RECORD_KEYWORD_FIELD(irCurveRec, name, num);
 
     if (num < 1 || num > ncurve) {
         std::cerr << "instanciateYourself: Invalid curve number (num=" << num << ")\n";
@@ -932,17 +849,17 @@ int Grid :: instanciateYourself(GeneratorDataReader *dr)
     }
 
     Curve *curve = new Curve(num, this);
-    curve->initializeFrom(ir);
+    curve->initializeFrom(irCurveRec);
     setCurve(num, curve);
-    ir.finish();
+    irCurveRec.finish();
     }
 
     surfaceList.resize(nsurface, nullptr);
     for ( i = 0; i < nsurface; i++ ) {
-      auto &ir = dr->giveInputRecord(GeneratorDataReader::GIR_surfaceRec, i + 1);
+      auto &irSurfaceRec = dr->giveInputRecord(GeneratorDataReader::GIR_surfaceRec, i + 1);
       std::string name;
       int num = 0;
-      IR_GIVE_RECORD_KEYWORD_FIELD(ir, name, num);
+      IR_GIVE_RECORD_KEYWORD_FIELD(irSurfaceRec, name, num);
 
       if (num < 1 || num > nsurface) {
         std::cerr << "instanciateYourself: Invalid curve number (num=" << num << ")\n";
@@ -955,20 +872,20 @@ int Grid :: instanciateYourself(GeneratorDataReader *dr)
     }
 
     Surface *surface = new Surface(num, this);
-    surface->initializeFrom(ir);
+    surface->initializeFrom(irSurfaceRec);
     setSurface(num, surface);
-    ir.finish();
+    irSurfaceRec.finish();
     }
 
 
 regionList.resize(nregion, nullptr);
 
 for (int i = 0; i < nregion; ++i) {
-    auto &ir = dr->giveInputRecord(GeneratorDataReader::GIR_regionRec, i + 1);
+    auto &irRegionRec = dr->giveInputRecord(GeneratorDataReader::GIR_regionRec, i + 1);
 
     std::string name;
     int num = 0;
-    IR_GIVE_RECORD_KEYWORD_FIELD(ir, name, num);
+    IR_GIVE_RECORD_KEYWORD_FIELD(irRegionRec, name, num);
 
     if (num < 1 || num > nregion) {
         std::cerr << "instanciateYourself: Invalid region number (num=" << num << ")\n";
@@ -991,20 +908,20 @@ for (int i = 0; i < nregion; ++i) {
         std::exit(EXIT_FAILURE);
     }
 
-    r->initializeFrom(ir);
+    r->initializeFrom(irRegionRec);
     setRegion(num, r);
-    ir.finish();
+    irRegionRec.finish();
 }
 
 
 inclusionList.resize(ninclusion, nullptr);
 
 for (int i = 0; i < ninclusion; ++i) {
-    auto &ir = dr->giveInputRecord(GeneratorDataReader::GIR_inclusionRec, i + 1);
+    auto &irInclusionRec = dr->giveInputRecord(GeneratorDataReader::GIR_inclusionRec, i + 1);
 
     std::string name;
     int num = 0;
-    IR_GIVE_RECORD_KEYWORD_FIELD(ir, name, num);
+    IR_GIVE_RECORD_KEYWORD_FIELD(irInclusionRec, name, num);
 
     // 1) validate number
     if (num < 1 || num > ninclusion) {
@@ -1030,20 +947,20 @@ for (int i = 0; i < ninclusion; ++i) {
     }
 
     // 4) init + store
-    inc->initializeFrom(ir);
+    inc->initializeFrom(irInclusionRec);
     setInclusion(num, inc);
 
-    ir.finish();
+    irInclusionRec.finish();
 }
     
  refinementList.resize(nrefinement, nullptr);
 
  for (int i = 0; i < nrefinement; ++i) {
-   auto &ir = dr->giveInputRecord(GeneratorDataReader::GIR_refinementRec, i + 1);
+   auto &irRefinementRec = dr->giveInputRecord(GeneratorDataReader::GIR_refinementRec, i + 1);
    
    std::string name;
    int num = 0;
-   IR_GIVE_RECORD_KEYWORD_FIELD(ir, name, num);
+   IR_GIVE_RECORD_KEYWORD_FIELD(irRefinementRec, name, num);
    
    // 1) validate number
    if (num < 1 || num > nrefinement) {
@@ -1067,10 +984,10 @@ for (int i = 0; i < ninclusion; ++i) {
     }
 
     // 4) init + store
-    ref->initializeFrom(ir);
+    ref->initializeFrom(irRefinementRec);
     setRefinement(num, ref);
 
-    ir.finish();
+    irRefinementRec.finish();
 }
 
 
@@ -1085,13 +1002,48 @@ for (int i = 0; i < ninclusion; ++i) {
 
 
 
+
+void Grid::exportVTK(const std::string& path)
+{
+    std::ofstream out(path);
+    if (!out) {
+        std::cerr << "Failed to open " << path << " for writing\n";
+        return;
+    }
+
+    const int n = this->giveNumberOfVertices();
+    out << "# vtk DataFile Version 3.0\n";
+    out << "grid points\n";
+    out << "ASCII\n";
+    out << "DATASET POLYDATA\n";
+    out << "POINTS " << n << " float\n";
+
+    for (int i = 1; i <= n; ++i) {
+        const oofem::FloatArray* c = this->giveVertex(i)->giveCoordinates();
+        double x = c->giveSize() >= 1 ? c->at(1) : 0.0;
+        double y = c->giveSize() >= 2 ? c->at(2) : 0.0;
+        double z = c->giveSize() >= 3 ? c->at(3) : 0.0; // pad to 3D
+        out << std::setprecision(9) << x << " " << y << " " << z << "\n";
+    }
+
+    // Add a vertex cell for each point so they render as glyphs
+    out << "VERTICES " << n << " " << 2*n << "\n";
+    for (int i = 0; i < n; ++i) {
+        out << "1 " << i << "\n";
+    }
+
+    // Optional: save the original 1-based IDs as point data
+    out << "POINT_DATA " << n << "\n";
+    out << "SCALARS id int 1\n";
+    out << "LOOKUP_TABLE default\n";
+    for (int i = 1; i <= n; ++i) out << i << "\n";
+}
+
+
 void Grid :: defineBoundaries(oofem::FloatArray &boundaries)
 //Determine the boundaries of the domain
-{  
-    Region *region;
-    Surface *surface;
-  
-    int localSurface, localCurve, localVertex;
+{
+
     if(this->giveNumberOfRegions() >0){
       if(this->giveNumberOfRegions() != 1){
 	printf("Error. Cannot defined boundaries for multiple regions yet!\n");
@@ -1110,8 +1062,6 @@ void Grid :: defineBoundaries(oofem::FloatArray &boundaries)
     return;
 }
 
-
-
 void Grid :: giveOutput(FILE *outputStream)
 {
     int dimension = 3;
@@ -1123,13 +1073,9 @@ void Grid :: giveOutput(FILE *outputStream)
         fprintf( outputStream, "%.16e %.16e %.16e\n", ( this->giveVertex(i + 1) )->giveCoordinate(1), ( this->giveVertex(i + 1) )->giveCoordinate(2), ( this->giveVertex(i + 1) )->giveCoordinate(3) );
     }
 
-
-    //temporary measure to be able to generate simple aggregate placement.
+    //@todo: temporary measure to be able to generate simple aggregate placement.
     //Needs to be moved to aggregate generator later
     if ( aggregateFlag == 1 ) {
-
-      
-
       
       oofem::FloatArray boundaries;
         defineBoundaries(boundaries);
@@ -1210,7 +1156,5 @@ double Grid :: ran1(int *idum)
         return temp;
     }
 }
-
-
 
 //#endif
