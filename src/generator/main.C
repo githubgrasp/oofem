@@ -62,6 +62,10 @@
 #include <cstring>
 #include <iostream>
 #include <string>
+#include <fstream>
+#include <string>
+#include <cctype>
+
 
 #include "floatarray.h"
 #include "intarray.h"
@@ -74,8 +78,31 @@
 // your domain
 #include "grid.h"
 
-// If your IR_* macros ever need this:
 const char* giveClassName() { return "Main"; }
+
+static inline void rtrim(std::string &s) {
+    while (!s.empty() && (s.back()=='\r' || s.back()=='\n' || s.back()==' ' || s.back()=='\t'))
+        s.pop_back();
+}
+static inline bool is_comment_or_empty(const std::string& s) {
+    for (unsigned char ch : s) {
+        if (!std::isspace(ch)) return ch == '#';
+    }
+    return true;
+}
+static std::string read_first_line_filename(const char* path) {
+    std::ifstream in(path);
+    if (!in) generator::errorf("Can't open input file (%s)", path);
+
+    std::string line;
+    while (std::getline(in, line)) {
+        rtrim(line);
+        if (!is_comment_or_empty(line)) return line;
+    }
+    return {};
+}
+
+
 
 int main(int argc, char* argv[])
 {
@@ -86,20 +113,62 @@ int main(int argc, char* argv[])
 
     const char* inputFileName = argv[1];
 
+
+    // read the output file name directly from the first non-empty, non-comment /* line */
+    /* std::string outFileName = read_first_line_filename(inputFileName); */
+    /* if (outFileName.empty()) { */
+    /*   generator::error("Output filename missing in first line of input file"); */
+    /* } */
+    
+    /* FILE* outputStream = std::fopen(outFileName.c_str(), "w"); */
+    /* if (!outputStream) { */
+    /*   std::perror(("Can't open output file: " + outFileName).c_str()); */
+    /*   return EXIT_FAILURE; */
+    /* } */
+
+
+    
     // Concrete reader (your copied/renamed version of OOFEMTXTDataReader)
     GeneratorTXTDataReader dr(inputFileName);
 
+/*     auto &irOut = dr.giveInputRecord(GeneratorDataReader::GIR_outFileRec, 1); */
 
-    // --- read output file record
-    auto &irOut = dr.giveInputRecord(GeneratorDataReader::GIR_outManRec, 1);
-    std::string outFileName;
-    irOut.giveRawLine(outFileName);   // no keyword, just the line
+/*     std::string outFileName; */
+/*     irOut.giveRawLine(outFileName);   // fill it first */
 
-    if (outFileName.empty()) {
-      generator::error("Output filename missing in first line of input file");
-    }
+/*     // debug */
+/*     std::cout << "first line = [" << outFileName << "] len=" << outFileName.size() << "\n"; */
+/*     for (unsigned char c : outFileName) std::cout << std::hex << (int)c << ' '; */
+/*     std::cout << std::dec << "\n"; */
 
-    irOut.finish();
+/* // trim trailing CR/LF/spaces */
+/* while (!outFileName.empty() && (outFileName.back()=='\r' || outFileName.back()=='\n' || outFileName.back()==' ')) */
+/*     outFileName.pop_back(); */
+
+/* if (outFileName.empty()) { */
+/*     generator::error("Output filename missing in first line of input file"); */
+/* } */
+
+    /* FILE* outputStream = std::fopen(outFileName.c_str(), "w"); */
+    /* if (!outputStream) { */
+    /*   std::perror(("Can't open output file: " + outFileName).c_str()); */
+    /*   return EXIT_FAILURE; */
+    /* } */
+
+ // irOut.finish(); 
+
+
+    /* // --- read output file record */
+    /* auto &irOut = dr.giveInputRecord(GeneratorDataReader::GIR_outManRec, 1); */
+    /* std::string outFileName; */
+    /* printf("line = %s\n", outFileName.c_str()); */
+    /* irOut.giveRawLine(outFileName);   // no keyword, just the line */
+
+    /* if (outFileName.empty()) { */
+    /*   generator::error("Output filename missing in first line of input file"); */
+    /* } */
+
+
     
     /* auto &irOut = dr.giveInputRecord(GeneratorDataReader::GIR_outManRec, 1); */
 
@@ -107,11 +176,11 @@ int main(int argc, char* argv[])
     /* IR_GIVE_FIELD(irOut, outFileName, _IFT_outfile); */
     /* irOut.finish(); */
 
-    FILE* outputStream = std::fopen(outFileName.c_str(), "w");
-    if (!outputStream) {
-      std::cerr << "Can't open output file: " << outFileName << "\n";
-      return EXIT_FAILURE;
-    }
+    /* FILE* outputStream = std::fopen(outFileName.c_str(), "w"); */
+    /* if (!outputStream) { */
+    /*   std::cerr << "Can't open output file: " << outFileName << "\n"; */
+    /*   return EXIT_FAILURE; */
+    /* } */
 
 
     /* if (!outputStream) { */
@@ -126,7 +195,18 @@ int main(int argc, char* argv[])
     // If yours still takes DataReader*, this still compiles because of inheritance.
     grid.instanciateYourself(&dr);
 
+
+    
     grid.generatePoints();
+    grid.exportVTK("points.vtk");    
+
+    FILE* outputStream = std::fopen(dr.giveOutputFileName().c_str(), "w");
+    if (!outputStream) {
+      std::perror(("Can't open output file: " + dr.giveOutputFileName()).c_str());
+      return EXIT_FAILURE;
+    }
+
+    
     grid.giveOutput(outputStream);
 
     std::fclose(outputStream);

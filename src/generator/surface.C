@@ -44,10 +44,6 @@ int Surface :: giveNumberOfLocalCurves()
 int
 Surface :: generatePoints()
 {
-  Curve *curve;
-
-  int localCurve;
-  int localVertex;
 
   oofem::IntArray periodicityFlag(3);
   grid->givePeriodicityFlag(periodicityFlag);
@@ -72,7 +68,7 @@ Surface :: generatePoints()
   oofem::FloatArray normal(3);
   this->giveNormal(normal);
         
-  int randomIntegerOne = grid->giveRandomInteger() - 1;
+
   int randomIntegerTwo = grid->giveRandomInteger() - 2;
   int randomIntegerThree = grid->giveRandomInteger() - 3;
 
@@ -83,8 +79,6 @@ Surface :: generatePoints()
   double shift = 0.;
   
   double boundaryFactor = this->refinement;
-
-  Vertex *vertex;
 
   double maxIter = grid->giveMaximumIterations();
   int vertexNumber = grid->giveNumberOfVertices();
@@ -122,11 +116,13 @@ Surface :: generatePoints()
     if ( flag == 0 ) {
 
 
-      auto *v = new Vertex(vertexNumber+1, grid);
-      v->setCoordinates(random);
-      grid->setVertex(vertexNumber+1, v);
-      grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, random);
-      vertexNumber++;
+      /* auto *v = new Vertex(vertexNumber+1, grid); */
+      /* v->setCoordinates(random); */
+      /* grid->setVertex(vertexNumber+1, v); */
+      /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, random); */
+      /* vertexNumber++; */
+
+      grid->addVertex(random);
       
       i = 0;	
 
@@ -153,12 +149,14 @@ Surface :: generatePoints()
 	  newRandom.at(3) = random.at(3);
 	  
 
-	  auto *v = new Vertex(vertexNumber+1, grid);
-	  v->setCoordinates(newRandom);
-	  grid->setVertex(vertexNumber+1, v);
-	  grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, newRandom);
-	  vertexNumber++;
+	  /* auto *v = new Vertex(vertexNumber+1, grid); */
+	  /* v->setCoordinates(newRandom); */
+	  /* grid->setVertex(vertexNumber+1, v); */
+	  /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, newRandom); */
+	  /* vertexNumber++; */
 
+	  grid->addVertex(newRandom);
+	  
 	  
 	  mirrorShift(newRandom, normal,specimenDimension,boundaries,vertexNumber,periodicityFlag);
 	  
@@ -182,13 +180,13 @@ Surface :: generatePoints()
 	  newRandom.at(3) = random.at(3);
 	  
 
-	  auto *v = new Vertex(vertexNumber+1, grid);
-	  v->setCoordinates(newRandom);
-	  grid->setVertex(vertexNumber+1, v);
-	  grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, newRandom);
-	  vertexNumber++;
+	  /* auto *v = new Vertex(vertexNumber+1, grid); */
+	  /* v->setCoordinates(newRandom); */
+	  /* grid->setVertex(vertexNumber+1, v); */
+	  /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, newRandom); */
+	  /* vertexNumber++; */
 
-
+	  grid->addVertex(newRandom);
 	  
 	  mirrorShift(newRandom, normal,specimenDimension,boundaries,vertexNumber,periodicityFlag);	  
 	}
@@ -210,13 +208,15 @@ Surface :: generatePoints()
 	  newRandom.at(2) = random.at(2);
 	  newRandom.at(3) = random.at(3) + shift*globalDimension.at(3);
 
-	  auto *v = new Vertex(vertexNumber+1, grid);
-	  v->setCoordinates(newRandom);
-	  grid->setVertex(vertexNumber+1, v);
-	  grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, newRandom);
-	  vertexNumber++;
+	  /* auto *v = new Vertex(vertexNumber+1, grid); */
+	  /* v->setCoordinates(newRandom); */
+	  /* grid->setVertex(vertexNumber+1, v); */
+	  /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, newRandom); */
+	  /* vertexNumber++; */
 
-	
+	  grid->addVertex(newRandom);
+
+	  
 	mirrorShift(newRandom, normal,specimenDimension,boundaries,vertexNumber,periodicityFlag);
       }
       else{
@@ -239,9 +239,7 @@ void Surface :: mirrorShift(oofem::FloatArray& random, oofem::FloatArray& normal
 
   //Mirror (or periodic shift) with respect to two of the three axis.
 
-  Vertex *vertex;
   oofem::FloatArray newRandom(3);
-  int randomFlag = grid->giveRandomFlag();  
   
   if(normal.at(1) == 1 && normal.at(2) == 0 && normal.at(3) == 0){//y-z coordinate system
     for ( int y = -1; y < 2; y++ ) {
@@ -279,11 +277,13 @@ void Surface :: mirrorShift(oofem::FloatArray& random, oofem::FloatArray& normal
 	    }
 	  }
 
-	  auto *v = new Vertex(vertexNumber+1, grid);
-	  v->setCoordinates(newRandom);
-	  grid->setVertex(vertexNumber+1, v);
-	  grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, newRandom);
-	  vertexNumber++;
+	  /* auto *v = new Vertex(vertexNumber+1, grid); */
+	  /* v->setCoordinates(newRandom); */
+	  /* grid->setVertex(vertexNumber+1, v); */
+	  /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, newRandom); */
+	  /* vertexNumber++; */
+
+	  grid->addVertex(newRandom);
 
 	}
       }
@@ -326,12 +326,14 @@ void Surface :: mirrorShift(oofem::FloatArray& random, oofem::FloatArray& normal
 	    }
 	  }
 
-	  auto *v = new Vertex(vertexNumber+1, grid);
-	  v->setCoordinates(newRandom);
-	  grid->setVertex(vertexNumber+1, v);
-	  grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, newRandom);
-	  vertexNumber++;
+	  /* auto *v = new Vertex(vertexNumber+1, grid); */
+	  /* v->setCoordinates(newRandom); */
+	  /* grid->setVertex(vertexNumber+1, v); */
+	  /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, newRandom); */
+	  /* vertexNumber++; */
 
+	  grid->addVertex(newRandom);
+	  
 	}
       }
     }
@@ -374,12 +376,14 @@ void Surface :: mirrorShift(oofem::FloatArray& random, oofem::FloatArray& normal
 	  newRandom.at(3) = random.at(3);
 
 
-	  auto *v = new Vertex(vertexNumber+1, grid);
-	  v->setCoordinates(newRandom);
-	  grid->setVertex(vertexNumber+1, v);
-	  grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, newRandom);
-	  vertexNumber++;
+	  /* auto *v = new Vertex(vertexNumber+1, grid); */
+	  /* v->setCoordinates(newRandom); */
+	  /* grid->setVertex(vertexNumber+1, v); */
+	  /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, newRandom); */
+	  /* vertexNumber++; */
 
+	  grid->addVertex(newRandom);
+	  
 	}		
       }
     }
@@ -391,13 +395,10 @@ void Surface :: defineBoundaries(oofem::FloatArray &boundaries)
 //Determine the boundaries of the domain
 {
     Curve *curve;
-    Vertex *vertex;
-    Vertex *voronoiVertex;
-    Element *element;
     oofem::IntArray localVertices;
     oofem::IntArray vertexFlag(2);
 
-    int localSurface, localCurve, localVertex;
+    int localCurve, localVertex;
   
     double x, y, z;
 

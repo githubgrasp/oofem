@@ -20,8 +20,6 @@ Cylinder :: ~Cylinder()
 {
 }
 
-
-
 int Cylinder :: generatePoints()
 {
   
@@ -35,14 +33,10 @@ int Cylinder :: generatePoints()
   oofem::FloatArray random(3);
   int flag;
   
-  
   Vertex *vertex;
   
   double distance;
   double maxIter = grid->giveMaximumIterations();
-  int vertexNumber = grid->giveNumberOfVertices();
-  int tempSize = 1.e6;
-  generator::ensure_size1(grid->vertexList,tempSize);
 
    double randomTheta;
    double randomRadius;
@@ -61,14 +55,8 @@ int Cylinder :: generatePoints()
    flag = grid->giveGridLocalizer()->checkNodesWithinBox( random, grid->giveDiameter(random) );
    
    if(flag == 0){
-     vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType()); 
-     vertex->setCoordinates(random);
-     grid->setVertex(vertexNumber+1, vertex);
-     grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random);
-   
-     vertexNumber++;
+     grid->addVertex(random);
    }
-   
    printf("Second point\n");
    random.at(1) = this->line.at(4);
    random.at(2) = this->line.at(5);
@@ -79,14 +67,12 @@ int Cylinder :: generatePoints()
    flag = grid->giveGridLocalizer()->checkNodesWithinBox( random, grid->giveDiameter(random) );
    
    if(flag == 0){
-   vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType()); 
-   vertex->setCoordinates(random);
-   grid->setVertex(vertexNumber+1, vertex);
-   grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random);
-   
-   vertexNumber++;
+
+     grid->addVertex(random);
    }
-   
+
+   printf("Placed vertices at the end cylinders in the centre of circles. Vertex number = %d\n", grid->giveNumberOfVertices());
+
    printf("Start to generate points on circles\n");
 
    printf("Start with circle one\n");
@@ -103,16 +89,12 @@ int Cylinder :: generatePoints()
      flag = grid->giveGridLocalizer()->checkNodesWithinBox( random, 0.9*spacing );
      
      if(flag == 0){
-       vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType()); 
-       vertex->setCoordinates(random);
-       grid->setVertex(vertexNumber+1, vertex);
-       grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random);
-       vertexNumber++;
+       grid->addVertex(random);
      }
 
    }
 
-   printf("Circle one completed. Vertex number = %d\n", vertexNumber);
+   printf("Placed vertices for circle one. Vertex number = %d\n", grid->giveNumberOfVertices());
 
 
    printf("Start with circle two\n");
@@ -128,17 +110,13 @@ int Cylinder :: generatePoints()
      flag = grid->giveGridLocalizer()->checkNodesWithinBox( random, 0.9*spacing );
      
      if(flag == 0){
-       vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType()); 
-       vertex->setCoordinates(random);
-       grid->setVertex(vertexNumber+1, vertex);
-       grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random);
-       vertexNumber++;
+       grid->addVertex(random);
+
      }
    }
 
-   printf("Circle two completed. Vertex number = %d\n", vertexNumber);
+   printf("Placed vertices on circle two. Vertex number = %d\n", grid->giveNumberOfVertices());
 
-   
    printf("Start with disk one\n");
 
    
@@ -157,26 +135,18 @@ int Cylinder :: generatePoints()
      
      if(flag == 0){
        i = 0;
-       
-       vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType()); 
-       vertex->setCoordinates(random);
-       grid->setVertex(vertexNumber+1, vertex);
-       grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random);
-       vertexNumber++;
-       
+
+       grid->addVertex(random);
+
        //Mirror point with respect to circle
        random.at(2) = this->line.at(2) + (2.*this->radius-randomRadius)*cos(randomTheta);
        random.at(3) = this->line.at(3) + (2.*this->radius-randomRadius)*sin(randomTheta);
-       vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType()); 
-       vertex->setCoordinates(random);
-       grid->setVertex(vertexNumber+1, vertex);
-       grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random);
-       vertexNumber++;
+       grid->addVertex(random);
 
      }
    }
-   printf("Disk one completed. Vertex number = %d\n", vertexNumber);
 
+   printf("Placed vertices on disk one. Vertex number = %d\n", grid->giveNumberOfVertices());
    
    printf("Start with disk two\n");
 
@@ -197,25 +167,16 @@ int Cylinder :: generatePoints()
      if(flag == 0){
        i = 0;
        
-       vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType()); 
-       vertex->setCoordinates(random);
-       grid->setVertex(vertexNumber+1, vertex);
-       grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random);
-       vertexNumber++;
+       grid->addVertex(random);
        
        //Mirror point with respect to circle
        random.at(2) = this->line.at(5) + (2.*this->radius-randomRadius)*cos(randomTheta);
        random.at(3) = this->line.at(6) + (2.*this->radius-randomRadius)*sin(randomTheta);
-       vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType()); 
-       vertex->setCoordinates(random);
-       grid->setVertex(vertexNumber+1, vertex);
-       grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random);
-       vertexNumber++;
+       grid->addVertex(random);
 
      }
    }
-   printf("Disk two completed. Vertex number = %d\n", vertexNumber);
-
+   printf("Placed vertices on disk two. Vertex number = %d\n", grid->giveNumberOfVertices());
    
    printf("now the surface of the cylinder\n");
    spacing = 0.*refinement*grid->diameter;
@@ -235,33 +196,22 @@ int Cylinder :: generatePoints()
      if(flag == 0){
        i = 0;
        
-       vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType()); 
-       vertex->setCoordinates(random);
-       grid->setVertex(vertexNumber+1, vertex);
-       grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random);
-       vertexNumber++;
+       grid->addVertex(random);
        
        //Mirror point with respect to first end circles
        random.at(1) = 2.*line.at(1) - randomXCoord;
-       vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType()); 
-       vertex->setCoordinates(random);
-       grid->setVertex(vertexNumber+1, vertex);
-       grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random);
-       vertexNumber++;
+
+       grid->addVertex(random);
 
        //Mirror point with respect to second end circle
        random.at(1) = 2.*line.at(4) - randomXCoord;
-       vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType()); 
-       vertex->setCoordinates(random);
-       grid->setVertex(vertexNumber+1, vertex);
-       grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random);
-       vertexNumber++;
+
+       grid->addVertex(random);
        
      }
    }
+   printf("Surface is completed. Vertex number = %d\n", grid->giveNumberOfVertices());
 
-   printf("Surface is completed. Vertex number = %d\n", vertexNumber);
-   
    printf("now the inside of the cylinder\n");
 
    spacing = refinement*grid->diameter;
@@ -287,72 +237,48 @@ int Cylinder :: generatePoints()
      
      if(flag == 0){
        i = 0;
-       
-       vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType()); 
-       vertex->setCoordinates(random);
-       grid->setVertex(vertexNumber+1, vertex);
-       grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random);
-       vertexNumber++;
+
+       grid->addVertex(random);
 
        //Mirror original point with respect to cylinder surface
        random.at(1) = randomXCoord;
        random.at(2) = this->line.at(2) + (2.*this->radius-randomRadius)*cos(randomTheta);
        random.at(3) = this->line.at(3) + (2.*this->radius-randomRadius)*sin(randomTheta);
-       vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType()); 
-       vertex->setCoordinates(random);
-       grid->setVertex(vertexNumber+1, vertex);
-       grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random);
-       vertexNumber++;
-     
+
+       grid->addVertex(random);
+
        //Mirror original point with respect to first end circles
        random.at(1) = 2.*line.at(1) - randomXCoord;
        random.at(2) = randomYCoord;
        random.at(3) = randomZCoord;
-       vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType()); 
-       vertex->setCoordinates(random);
-       grid->setVertex(vertexNumber+1, vertex);
-       grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random);
-       vertexNumber++;
+
+       grid->addVertex(random);
 
        //Mirror mirrored point (first end circle) with respect to cylinder surface
        random.at(1) = 2.*line.at(1) - randomXCoord;
        random.at(2) = this->line.at(2) + (2.*this->radius-randomRadius)*cos(randomTheta);
        random.at(3) = this->line.at(3) + (2.*this->radius-randomRadius)*sin(randomTheta);
-       vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType()); 
-       vertex->setCoordinates(random);
-       grid->setVertex(vertexNumber+1, vertex);
-       grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random);
-       vertexNumber++;
+       grid->addVertex(random);
        
        //Mirror original point with respect to second end circle
        random.at(1) = 2.*line.at(4) - randomXCoord;
        random.at(2) = randomYCoord;
        random.at(3) = randomZCoord;
 
-       vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType()); 
-       vertex->setCoordinates(random);
-       grid->setVertex(vertexNumber+1, vertex);
-       grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random);
-       vertexNumber++;
+       grid->addVertex(random);
 
        //Mirror mirrored point (second end circle) with respect to cylinder surface
        random.at(1) = 2.*line.at(4) - randomXCoord;
        random.at(2) = this->line.at(2) + (2.*this->radius-randomRadius)*cos(randomTheta);
        random.at(3) = this->line.at(3) + (2.*this->radius-randomRadius)*sin(randomTheta);
-       vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType()); 
-       vertex->setCoordinates(random);
-       grid->setVertex(vertexNumber+1, vertex);
-       grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random);
-       vertexNumber++;
+       grid->addVertex(random);
               
      }
    }
    
-   printf("Inside is completed. Vertex number = %d\n", vertexNumber);
-   
-   printf("Completed cylinder point generation.\n");
+   printf("Inside is completed. Vertex number = %d\n", grid->giveNumberOfVertices());
 
-   generator::ensure_size1(grid->vertexList,vertexNumber);
+   printf("Completed cylinder point generation.\n");
 
    
    return 1;

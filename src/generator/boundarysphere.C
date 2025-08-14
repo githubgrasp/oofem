@@ -31,16 +31,13 @@ int BoundarySphere :: generatePoints()
    
   double myPi = 3.14159265;
   
-  FloatArray random(3);
-  
+  oofem::FloatArray random(3);
   int flag;
 
   Vertex *vertex;
   
    double maxIter= grid->giveMaximumIterations();
    int vertexNumber = grid->giveNumberOfVertices();
-   int tempSize = 1.e9;
-   grid->vertexList->growTo(tempSize);
 
    double randomTheta;
    double randomPhi;
@@ -53,13 +50,8 @@ int BoundarySphere :: generatePoints()
    random.at(2) = this->centre.at(2);
    random.at(3) = this->centre.at(3);
    
-   vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType()); 
-   vertex->setCoordinates(random);
-   grid->setVertex(vertexNumber+1, vertex);
-   grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random);
+   grid->addVertex(random);
    
-   vertexNumber++;
-
    printf("Points on sphere surface\n");
        
    for(int i= 0;i<maxIter;i++){   
@@ -113,29 +105,17 @@ int BoundarySphere :: generatePoints()
 
 	 if(flag == 0){
 	   i = 0;
-
-	   vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType()); 
-	   vertex->setCoordinates(random);
-	   grid->setVertex(vertexNumber+1, vertex);
-	   grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random);
-	   vertexNumber++;
+	   grid->addVertex(random);
 
 	   //Mirror vertices with respect to the boundary sphere surface
 	   random.at(1) = this->centre.at(1) + (2.*this->radius-randomRadius)*cos(randomTheta)*sin(randomPhi);
 	   random.at(2) = this->centre.at(2) + (2.*this->radius-randomRadius)*sin(randomTheta)*sin(randomPhi);
 	   random.at(3) = this->centre.at(3) + (2.*this->radius-randomRadius)*cos(randomPhi);
-	   vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType()); 
-	   vertex->setCoordinates(random);
-	   grid->setVertex(vertexNumber+1, vertex);
-	   grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random);
-	   vertexNumber++;
+	   grid->addVertex(random);
+
 	   
 	 }
-     }
-  
-  
-  grid->vertexList->growTo(vertexNumber);
-  
+     }  
   
   return 1;
 }

@@ -57,13 +57,7 @@ protected:
 public:
     /// Determines the type of input record.
     enum GeneratorInputRecordType {
-        GIR_domainRec, GIR_outManRec, GIR_domainCompRec, GIR_geometryRec, GIR_gbpmRec,
-        GIR_emodelRec, GIR_mstepRec, GIR_expModuleRec, GIR_dofmanRec, GIR_elemRec,
-        GIR_crosssectRec, GIR_matRec, GIR_nlocBarRec, GIR_bcRec, GIR_icRec, GIR_funcRec, GIR_setRec,
-        GIR_xfemManRec, GIR_enrichFuncRec, GIR_geoRec, GIR_enrichItemRec,
-        GIR_enrichFrontRec, GIR_propagationLawRec, GIR_grcrackNucleationRec, GIR_fracManRec, GIR_failCritRec,
-        GIR_contactManRec, GIR_contactDefRec,
-	GIR_controlRec, GIR_vertexRec, GIR_curveRec, GIR_surfaceRec, GIR_regionRec, GIR_inclusionRec, GIR_aggregateRec, GIR_refinementRec
+      GIR_domainRec, GIR_controlRec, GIR_domainCompRec, GIR_vertexRec, GIR_controlVertexRec, GIR_curveRec, GIR_surfaceRec, GIR_regionRec, GIR_inclusionRec, GIR_aggregateRec, GIR_refinementRec
     };
 
     GeneratorDataReader() { }

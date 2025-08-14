@@ -20,7 +20,7 @@ set(GENERATOR_SOURCES
     generatorinputrecord.C
     generatortxtdatareader.C
     generatortxtinputrecord.C
- )
+   )
 
 add_library(generator STATIC ${GENERATOR_SOURCES})
 target_link_libraries(generator PUBLIC liboofem)

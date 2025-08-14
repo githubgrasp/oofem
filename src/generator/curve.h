@@ -48,7 +48,7 @@ public:
   oofem::IntArray *giveLocalVertices() { return & vertices; }
 
 
-    Curve *ofType();
+  //    Curve *ofType();
 
     // miscellaneous
     /// Returns class name of the receiver.

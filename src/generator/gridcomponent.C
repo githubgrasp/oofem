@@ -12,9 +12,3 @@ GridComponent :: GridComponent(int n, Grid* aGrid) //, coordinates()
   number = n;
 }
 
-
-GridComponent :: ~GridComponent()
-// Destructor.
-{
-}
-

@@ -75,7 +75,7 @@ public:
     ///Returns the z length
     double giveZLength() { return this->zlength; }
 
-    Region *ofType();
+  //    Region *ofType();
 
     // miscellaneous
     /// Returns class name of the receiver.

@@ -35,7 +35,7 @@
 #include "generatorerror.h"
 #include "generatortxtdatareader.h"
 #include "error.h"
-
+#include <iostream>
 #include <string>
 
 GeneratorTXTDataReader :: GeneratorTXTDataReader(std :: string inputfilename) : GeneratorDataReader(),
@@ -97,7 +97,7 @@ GeneratorTXTDataReader :: ~GeneratorTXTDataReader()
 GeneratorInputRecord &
 GeneratorTXTDataReader :: giveInputRecord(GeneratorInputRecordType typeId, int recordId)
 {
-    if ( this->it == this->recordList.end() ) {
+  if ( this->it == this->recordList.end() ) {
       generator::error("Out of input records, file contents must be missing");
     }
     return *this->it++;

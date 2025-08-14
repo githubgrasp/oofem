@@ -39,7 +39,8 @@ public:
      */
     GridComponent(int n, Grid* aGrid);                      // constructor
     /// Destructor.
-    ~GridComponent();                                           // destructor
+  virtual ~GridComponent() = default; 
+
 
     GridComponent *ofType();
 

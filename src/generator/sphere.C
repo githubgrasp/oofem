@@ -2,7 +2,8 @@
 #include "curve.h"
 #include "vertex.h"
 #include "record.h"
-
+//@Todo
+//This is a ball and should be named so.
 
 #ifndef __MAKEDEPEND
 #include <math.h>
@@ -53,12 +54,21 @@ int Sphere :: generatePoints()
    random.at(2) = this->centre.at(2);
    random.at(3) = this->centre.at(3);
    
-   vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType()); 
-   vertex->setCoordinates(random);
-   grid->setVertex(vertexNumber+1, vertex);
-   grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random);
+		    /* auto *v = new Vertex(vertexNumber+1, grid); */
+		    /* v->setCoordinates(random); */
+		    /* grid->setVertex(vertexNumber+1, v); */
+		    /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, random); */
+		    /* vertexNumber++; */
+
+		    grid->addVertex(random);
+		    
+
+   /* vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType());  */
+   /* vertex->setCoordinates(random); */
+   /* grid->setVertex(vertexNumber+1, vertex); */
+   /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random); */
    
-   vertexNumber++;
+   /* vertexNumber++; */
 
    printf("Points on sphere surface\n");
        
@@ -80,12 +90,21 @@ int Sphere :: generatePoints()
      
      if(flag == 0){
        i = 0;
+
+		    /* auto *v = new Vertex(vertexNumber+1, grid); */
+		    /* v->setCoordinates(random); */
+		    /* grid->setVertex(vertexNumber+1, v); */
+		    /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, random); */
+		    /* vertexNumber++; */
+
+
+		    grid->addVertex(random);
        
-       vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType()); 
-       vertex->setCoordinates(random);
-       grid->setVertex(vertexNumber+1, vertex);
-       grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random);
-       vertexNumber++; 
+       /* vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType());  */
+       /* vertex->setCoordinates(random); */
+       /* grid->setVertex(vertexNumber+1, vertex); */
+       /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random); */
+       /* vertexNumber++;  */
      }
    }
    
@@ -114,21 +133,40 @@ int Sphere :: generatePoints()
 	 if(flag == 0){
 	   i = 0;
 
-	   vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType()); 
-	   vertex->setCoordinates(random);
-	   grid->setVertex(vertexNumber+1, vertex);
-	   grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random);
-	   vertexNumber++;
+		    /* auto *v = new Vertex(vertexNumber+1, grid); */
+		    /* v->setCoordinates(random); */
+		    /* grid->setVertex(vertexNumber+1, v); */
+		    /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, random); */
+		    /* vertexNumber++; */
+
+
+	   grid->addVertex(random);
+	   
+	   /* vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType());  */
+	   /* vertex->setCoordinates(random); */
+	   /* grid->setVertex(vertexNumber+1, vertex); */
+	   /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random); */
+	   /* vertexNumber++; */
 
 	   //Mirror vertices with respect to the  sphere surface
 	   random.at(1) = this->centre.at(1) + (2.*this->radius-randomRadius)*cos(randomTheta)*sin(randomPhi);
 	   random.at(2) = this->centre.at(2) + (2.*this->radius-randomRadius)*sin(randomTheta)*sin(randomPhi);
 	   random.at(3) = this->centre.at(3) + (2.*this->radius-randomRadius)*cos(randomPhi);
-	   vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType()); 
-	   vertex->setCoordinates(random);
-	   grid->setVertex(vertexNumber+1, vertex);
-	   grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random);
-	   vertexNumber++;
+
+	   /* v = new Vertex(vertexNumber+1, grid); */
+	   /* v->setCoordinates(random); */
+	   /* grid->setVertex(vertexNumber+1, v); */
+	   /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, random); */
+	   /* vertexNumber++; */
+
+
+	   grid->addVertex(random);
+	   
+	   /* vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType());  */
+	   /* vertex->setCoordinates(random); */
+	   /* grid->setVertex(vertexNumber+1, vertex); */
+	   /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random); */
+	   /* vertexNumber++; */
 	   
 	 }
      }
@@ -164,13 +202,13 @@ Sphere :: initializeFrom(GeneratorInputRecord &ir)
 
 
 
-Sphere *Sphere :: ofType()
-// Returns a new DofManager, which has the same number than the receiver,
-// but belongs to aClass (Node, ElementSide,..).
-{
-    Sphere *sphere;
+/* Sphere *Sphere :: ofType() */
+/* // Returns a new DofManager, which has the same number than the receiver, */
+/* // but belongs to aClass (Node, ElementSide,..). */
+/* { */
+/*     Sphere *sphere; */
     
-    sphere = new Sphere(number,grid);
+/*     sphere = new Sphere(number,grid); */
 
-    return sphere;
-}
+/*     return sphere; */
+/* } */

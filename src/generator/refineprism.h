@@ -52,7 +52,7 @@ public:
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "RefinePrism"; }
 
-  void initializeFrom(GeneratorInputRecord &ir);
+  void initializeFrom(GeneratorInputRecord &ir) override;
     //virtual IntArray* ResolveDofIDArray (char* initString);
     /// prints receiver state on stdout. Usefull for debuging.
     void         printYourself();
