@@ -20,17 +20,11 @@ InterfaceCylinder :: ~InterfaceCylinder()
 {
 }
 
-
-
 int InterfaceCylinder :: generatePoints()
 {
 
   printf("In generatePoints in InterfaceCylinder\n");
   
-  
-  /* int randomIntegerOne= grid->giveRandomInteger()-1; */
-  /* int randomIntegerTwo= grid->giveRandomInteger()-2; */
-  /* int randomIntegerThree= grid->giveRandomInteger()-3; */
   
   double myPi = 3.14159265;
   
@@ -55,20 +49,8 @@ int InterfaceCylinder :: generatePoints()
 
    if(flag == 0){
 
-     /* auto *v = new Vertex(vertexNumber+1, grid); */
-     /* v->setCoordinates(random); */
-     /* grid->setVertex(vertexNumber+1, v); */
-     /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, random); */
-     /* vertexNumber++; */
-
      grid->addVertex(random);
-     
-     /* vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType());  */
-     /* vertex->setCoordinates(random); */
-     /* grid->setVertex(vertexNumber+1, vertex); */
-     /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random);    */
-     /* vertexNumber++; */
-     
+          
    }
 
    printf("Second point\n");
@@ -81,20 +63,9 @@ int InterfaceCylinder :: generatePoints()
 
    if(flag == 0){
 
-     /* auto *v = new Vertex(vertexNumber+1, grid); */
-     /* v->setCoordinates(random); */
-     /* grid->setVertex(vertexNumber+1, v); */
-     /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, random); */
-     /* vertexNumber++; */
-
 
      grid->addVertex(random);
      
-     /* vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType());  */
-     /* vertex->setCoordinates(random); */
-     /* grid->setVertex(vertexNumber+1, vertex); */
-     /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random);    */
-     /* vertexNumber++; */
    }
 
   
@@ -114,39 +85,14 @@ int InterfaceCylinder :: generatePoints()
      
      if(flag == 0){
        
-       /* vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType());  */
-       /* vertex->setCoordinates(random); */
-       /* grid->setVertex(vertexNumber+1, vertex); */
-       /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random); */
-       /* vertexNumber++; */
-
-
        grid->addVertex(random);
 
-       /* auto *v = new Vertex(vertexNumber+1, grid); */
-       /* v->setCoordinates(random); */
-       /* grid->setVertex(vertexNumber+1, v); */
-       /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, random); */
-       /* vertexNumber++; */
-       
        //Generate point on other side
        random.at(2) = this->line.at(2) + (this->radius+this->itzThickness)*cos(randomTheta);
        random.at(3) = this->line.at(3) + (this->radius+this->itzThickness)*sin(randomTheta);
 
        grid->addVertex(random);
        
-       /* auto *v = new Vertex(vertexNumber+1, grid); */
-       /* v->setCoordinates(random); */
-       /* grid->setVertex(vertexNumber+1, v); */
-       /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, random); */
-       /* vertexNumber++; */
-       
-
-       /* vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType());  */
-       /* vertex->setCoordinates(random); */
-       /* grid->setVertex(vertexNumber+1, vertex); */
-       /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random); */
-       /* vertexNumber++;          */
      }
      else{
        printf("SHOULD NOT BE HERE\n");
@@ -174,38 +120,12 @@ int InterfaceCylinder :: generatePoints()
      if(flag == 0){
 
        grid->addVertex(random);
-       
-       /* auto *v = new Vertex(vertexNumber+1, grid); */
-       /* v->setCoordinates(random); */
-       /* grid->setVertex(vertexNumber+1, v); */
-       /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, random); */
-       /* vertexNumber++; */
-
-       
-       /* vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType());  */
-       /* vertex->setCoordinates(random); */
-       /* grid->setVertex(vertexNumber+1, vertex); */
-       /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random); */
-       /* vertexNumber++;  */
 
        //Generate point on other side
        random.at(2) = this->line.at(2) + (this->radius+itzThickness)*cos(randomTheta);
        random.at(3) = this->line.at(3) + (this->radius+itzThickness)*sin(randomTheta);
 
        grid->addVertex(random);
-       
-       /* auto *v = new Vertex(vertexNumber+1, grid); */
-       /* v->setCoordinates(random); */
-       /* grid->setVertex(vertexNumber+1, v); */
-       /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, random); */
-       /* vertexNumber++; */
-
-       
-       /* vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType());  */
-       /* vertex->setCoordinates(random); */
-       /* grid->setVertex(vertexNumber+1, vertex); */
-       /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random); */
-       /* vertexNumber++; */
 
      }
      else{
@@ -224,12 +144,8 @@ int InterfaceCylinder :: generatePoints()
        for ( int k = 0; k < intervals; k++ ) {
            randomXCoord   = this->line.at( 1 ) + ( line.at( 4 ) - line.at( 1 ) ) / intervalsX * i;
            random.at( 1 ) = randomXCoord;
-           //       if(i % 2 == 0){
+
            randomTheta = 2 * myPi / intervals * k;
-           // }
-           // else{
-           // 	 randomTheta = myPi/intervals + 2*myPi/intervals*k;
-           // }
            random.at( 2 ) = this->line.at( 2 ) + this->radius * cos( randomTheta );
            random.at( 3 ) = this->line.at( 3 ) + this->radius * sin( randomTheta );
 
@@ -242,36 +158,10 @@ int InterfaceCylinder :: generatePoints()
 
                grid->addVertex( random );
 
-               /* auto *v = new Vertex(vertexNumber+1, grid); */
-               /* v->setCoordinates(random); */
-               /* grid->setVertex(vertexNumber+1, v); */
-               /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, random); */
-               /* vertexNumber++; */
-
-
-               /* vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType());  */
-               /* vertex->setCoordinates(random); */
-               /* grid->setVertex(vertexNumber+1, vertex); */
-               /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random); */
-               /* vertexNumber++; */
-
                random.at( 2 ) = this->line.at( 2 ) + ( this->radius + itzThickness ) * cos( randomTheta );
                random.at( 3 ) = this->line.at( 3 ) + ( this->radius + itzThickness ) * sin( randomTheta );
 
                grid->addVertex( random );
-
-               /* auto *v = new Vertex(vertexNumber+1, grid); */
-               /* v->setCoordinates(random); */
-               /* grid->setVertex(vertexNumber+1, v); */
-               /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, random); */
-               /* vertexNumber++; */
-
-
-               /* vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType());  */
-               /* vertex->setCoordinates(random); */
-               /* grid->setVertex(vertexNumber+1, vertex); */
-               /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random); */
-               /* vertexNumber++; */
 
                if ( k == 0 ) {
                    random.at( 2 ) = this->line.at( 2 );
@@ -279,18 +169,6 @@ int InterfaceCylinder :: generatePoints()
 
                    grid->addVertex( random );
 
-                   /* auto *v = new Vertex(vertexNumber+1, grid); */
-                   /* v->setCoordinates(random); */
-                   /* grid->setVertex(vertexNumber+1, v); */
-                   /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, random); */
-                   /* vertexNumber++; */
-
-
-                   /* vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType());  */
-                   /* vertex->setCoordinates(random); */
-                   /* grid->setVertex(vertexNumber+1, vertex); */
-                   /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random); */
-                   /* vertexNumber++; */
                }
                // Mirror point with respect to first end circles
                random.at( 1 ) = 2. * line.at( 1 ) - randomXCoord;
@@ -299,49 +177,15 @@ int InterfaceCylinder :: generatePoints()
 
                grid->addVertex( random );
 
-
-               /* vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType());  */
-               /* vertex->setCoordinates(random); */
-               /* grid->setVertex(vertexNumber+1, vertex); */
-               /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random); */
-               /* vertexNumber++; */
-
                random.at( 2 ) = this->line.at( 2 ) + ( this->radius + this->itzThickness ) * cos( randomTheta );
                random.at( 3 ) = this->line.at( 3 ) + ( this->radius + this->itzThickness ) * sin( randomTheta );
 
                grid->addVertex( random );
 
-               /* auto *v = new Vertex(vertexNumber+1, grid); */
-               /* v->setCoordinates(random); */
-               /* grid->setVertex(vertexNumber+1, v); */
-               /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, random); */
-               /* vertexNumber++; */
-
-
-               /* vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType());  */
-               /* vertex->setCoordinates(random); */
-               /* grid->setVertex(vertexNumber+1, vertex); */
-               /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random); */
-               /* vertexNumber++; */
-
                random.at( 2 ) = this->line.at( 2 );
                random.at( 3 ) = this->line.at( 3 );
 
                grid->addVertex( random );
-
-               /* auto *v = new Vertex(vertexNumber+1, grid); */
-               /* v->setCoordinates(random); */
-               /* grid->setVertex(vertexNumber+1, v); */
-               /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, random); */
-               /* vertexNumber++; */
-
-
-               /* vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType());  */
-               /* vertex->setCoordinates(random); */
-               /* grid->setVertex(vertexNumber+1, vertex); */
-               /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random); */
-               /* vertexNumber++; */
-
 
                // Mirror point with respect to second end circle
                random.at( 1 ) = 2. * line.at( 4 ) - randomXCoord;
@@ -350,45 +194,17 @@ int InterfaceCylinder :: generatePoints()
 
                grid->addVertex( random );
 
-               /* auto *v = new Vertex(vertexNumber+1, grid); */
-               /* v->setCoordinates(random); */
-               /* grid->setVertex(vertexNumber+1, v); */
-               /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, random); */
-               /* vertexNumber++; */
-
-               /* vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType());  */
-               /* vertex->setCoordinates(random); */
-               /* grid->setVertex(vertexNumber+1, vertex); */
-               /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random); */
-               /* vertexNumber++; */
-
                random.at( 2 ) = this->line.at( 2 ) + ( this->radius + this->itzThickness ) * cos( randomTheta );
                random.at( 3 ) = this->line.at( 3 ) + ( this->radius + this->itzThickness ) * sin( randomTheta );
 
                grid->addVertex( random );
 
-               /* auto *v = new Vertex(vertexNumber+1, grid); */
-               /* v->setCoordinates(random); */
-               /* grid->setVertex(vertexNumber+1, v); */
-               /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, random); */
-               /* vertexNumber++; */
-
-
-               /* vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType());  */
-               /* vertex->setCoordinates(random); */
-               /* grid->setVertex(vertexNumber+1, vertex); */
-               /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random); */
-               /* vertexNumber++; */
 
                random.at( 2 ) = this->line.at( 2 );
                random.at( 3 ) = this->line.at( 3 );
 
                grid->addVertex( random );
-               /* vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType());  */
-               /* vertex->setCoordinates(random); */
-               /* grid->setVertex(vertexNumber+1, vertex); */
-               /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random); */
-               /* vertexNumber++; */
+
            } else {
                printf( "SHOULD NOT BE HERE\n" );
            }

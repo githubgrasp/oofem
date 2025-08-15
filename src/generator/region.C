@@ -77,10 +77,6 @@ int Region :: generatePoints()
       border = grid->diameter;
     }
     
-    int vertexNumber = generator::size1(grid->vertexList);
-
-    int tempSize = 1e9;
-    generator::ensure_size1(grid->vertexList,tempSize);
     
     //Generate random vertices
     for ( int i = 0; i < maxIter; i++ ) {
@@ -95,19 +91,9 @@ int Region :: generatePoints()
 
         if ( flag == 0 ) {
 
-	  /* auto *v = new Vertex(vertexNumber+1, grid); */
-	  /* v->setCoordinates(random); */
-	  /* grid->setVertex(vertexNumber+1, v); */
-	  /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, random); */
-	  /* vertexNumber++; */
 
 	  grid->addVertex(random);
 	  
-            /* vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() ); */
-            /* vertex->setCoordinates(random); */
-            /* grid->setVertex(vertexNumber + 1, vertex); */
-            /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, random); */
-            /* vertexNumber++; */
 
 	    i = 0;
 
@@ -164,31 +150,13 @@ int Region :: generatePoints()
 			newRandom.at(3) = random.at(3) - 2.*(random.at(3) - boundaries.at(6));
 		      }
 		    }
-
-
-		    /* auto *v = new Vertex(vertexNumber+1, grid); */
-		    /* v->setCoordinates(newRandom); */
-		    /* grid->setVertex(vertexNumber+1, v); */
-		    /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, newRandom); */
-		    /* vertexNumber++; */
-
-		    grid->addVertex(newRandom);
-		    
-		    /* vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() ); */
-		    /* vertex->setCoordinates(newRandom); */
-		    /* grid->setVertex(vertexNumber + 1, vertex); */
-		    /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, newRandom); */
-		    /* vertexNumber++; */
-
-
-		    
+		    grid->addVertex(newRandom);		    		    
 		  }		  
 		}
 	      }
 	    }
 	}
     }
-    generator::ensure_size1(grid->vertexList,vertexNumber);
 
     return 1;
 }
@@ -272,19 +240,6 @@ Region :: initializeFrom(GeneratorInputRecord &ir)
 }
 
 
-
-/* Region *Region :: ofType() */
-/* // Returns a new DofManager, which has the same number than the receiver, */
-/* // but belongs to aClass (Node, ElementSide,..). */
-/* { */
-/*     Region *region; */
-
-/*     region = new Region(number, grid); */
-
-/*     return region; */
-/* } */
-
-
 int Region :: generateRegularPoints1()
 {
     Curve *curve;
@@ -303,9 +258,6 @@ int Region :: generateRegularPoints1()
     double n2length = fabs( boundaries.at(3) - boundaries.at(4) );
     double n3length = fabs( boundaries.at(5) - boundaries.at(6) );
 
-    int vertexNumber = generator::size1(grid->vertexList);
-    int tempSize = 1e9;
-    generator::ensure_size1(grid->vertexList,tempSize);
 
     for ( int i = 0; i < 2 * n3edges - 1; i++ ) {
         random.at(3) = boundaries.at(5) + ( i + 1 ) * n3length / ( 2 * ( double ) n3edges );
@@ -325,19 +277,6 @@ int Region :: generateRegularPoints1()
                          random.at(3) - grid->TOL > boundaries.at(6) ) {
 		      generator::error("The nodes are located in the wrong position");
                     }
-
-                    /* vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() ); */
-                    /* vertex->setCoordinates(random); */
-                    /* grid->setVertex(vertexNumber + 1, vertex); */
-                    /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, random); */
-                    /* vertexNumber++; */
-
-		    /* auto *v = new Vertex(vertexNumber+1, grid); */
-		    /* v->setCoordinates(random); */
-		    /* grid->setVertex(vertexNumber+1, v); */
-		    /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, random); */
-		    /* vertexNumber++; */
-
 		    grid->addVertex(random);
 		    
                 }
@@ -356,26 +295,13 @@ int Region :: generateRegularPoints1()
                          random.at(3) - grid->TOL > boundaries.at(6) ) {
 		      generator::error("The nodes are located in the wrong position");
                     }
-
-		    /* auto *v = new Vertex(vertexNumber+1, grid); */
-		    /* v->setCoordinates(random); */
-		    /* grid->setVertex(vertexNumber+1, v); */
-		    /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, random); */
-		    /* vertexNumber++; */
 		    
 		    grid->addVertex(random);
 		    
-		    /* vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() ); */
-                    /* vertex->setCoordinates(random); */
-                    /* grid->setVertex(vertexNumber + 1, vertex); */
-                    /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, random); */
-                    /* vertexNumber++; */
                 }
             }
         }
     }
-
-    generator::ensure_size1(grid->vertexList,vertexNumber);
 
     return 1;
 }
@@ -408,9 +334,7 @@ int Region :: generateRegularPoints2()
     double n3length = fabs( boundaries.at(5) - boundaries.at(6) );
 
 
-    int vertexNumber = generator::size1(grid->vertexList);
-    int tempSize = 1e9;
-    generator::ensure_size1(grid->vertexList,tempSize);
+
     for ( int i = 0; i < n3edges * 2 - 1; i++ ) {
         random.at(3) = boundaries.at(5) + ( i + 1 ) * n3length / ( ( double ) n3edges * 2 );
 
@@ -423,19 +347,9 @@ int Region :: generateRegularPoints2()
                         random.at(2) = boundaries.at(3) + ( 1 + j ) * n2length / ( ( double ) n2edges * 2 );
 
 
-		    /* auto *v = new Vertex(vertexNumber+1, grid); */
-		    /* v->setCoordinates(random); */
-		    /* grid->setVertex(vertexNumber+1, v); */
-		    /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, random); */
-		    /* vertexNumber++; */
 
 		    		    grid->addVertex(random);
 			
-                        /* vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() ); */
-                        /* vertex->setCoordinates(random); */
-                        /* grid->setVertex(vertexNumber + 1, vertex); */
-                        /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, random); */
-                        /* vertexNumber++; */
 
                         if ( random.at(1) + grid->TOL <  boundaries.at(1) ||
                              random.at(1) - grid->TOL > boundaries.at(2) ||
@@ -454,18 +368,6 @@ int Region :: generateRegularPoints2()
                         random.at(1) = boundaries.at(1) + ( k + 0.5 ) * n1length / ( ( double ) n1edges );
                         k++;
 
-			
-                        /* vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() ); */
-                        /* vertex->setCoordinates(random); */
-                        /* grid->setVertex(vertexNumber + 1, vertex); */
-                        /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, random); */
-                        /* vertexNumber++; */
-
-		    /* auto *v = new Vertex(vertexNumber+1, grid); */
-		    /* v->setCoordinates(random); */
-		    /* grid->setVertex(vertexNumber+1, v); */
-		    /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, random); */
-		    /* vertexNumber++; */
 
 		    grid->addVertex(random);
 			
@@ -487,17 +389,6 @@ int Region :: generateRegularPoints2()
                         random.at(1) = boundaries.at(1) + ( 0.5 + m ) * n1length / ( ( double ) n1edges );
                         random.at(2) = boundaries.at(3) + ( n + 1 ) * n2length / ( ( double ) n2edges * 2 );
 
-                        /* vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() ); */
-                        /* vertex->setCoordinates(random); */
-                        /* grid->setVertex(vertexNumber + 1, vertex); */
-                        /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, random); */
-                        /* vertexNumber++; */
-
-		    /* auto *v = new Vertex(vertexNumber+1, grid); */
-		    /* v->setCoordinates(random); */
-		    /* grid->setVertex(vertexNumber+1, v); */
-		    /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, random); */
-		    /* vertexNumber++; */
 		    grid->addVertex(random);
 			
 
@@ -514,21 +405,8 @@ int Region :: generateRegularPoints2()
                     for ( int s = 0; s < n1edges - 1; s++ ) {
                         random.at(1) =  boundaries.at(1) + ( s + 1 ) * n1length / ( ( double ) n1edges );
                         random.at(2) =  boundaries.at(3) + ( n + 1 ) * n2length / ( ( double ) n2edges * 2 );
-
-
-		    /* auto *v = new Vertex(vertexNumber+1, grid); */
-		    /* v->setCoordinates(random); */
-		    /* grid->setVertex(vertexNumber+1, v); */
-		    /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, random); */
-		    /* vertexNumber++; */
-
-		    		    grid->addVertex(random);
-			
-                        /* vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() ); */
-                        /* vertex->setCoordinates(random); */
-                        /* grid->setVertex(vertexNumber + 1, vertex); */
-                        /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, random); */
-                        /* vertexNumber++; */
+						
+			grid->addVertex(random);
 
                         if ( random.at(1) + grid->TOL < boundaries.at(1) ||
                              random.at(1) - grid->TOL > boundaries.at(2) ||
@@ -545,7 +423,6 @@ int Region :: generateRegularPoints2()
         }
     }
 
-    generator::ensure_size1(grid->vertexList,vertexNumber);
 
     return 1;
 }
@@ -580,9 +457,6 @@ int Region :: generatePeriodicPoints()
     double maxIter = grid->giveMaximumIterations();
     oofem::FloatArray mirroredRandom(3);
 
-    int vertexNumber = generator::size1(grid->vertexList);
-    int tempSize = 1e9;
-    generator::ensure_size1(grid->vertexList,tempSize);
 
     int mult = 1;
     int tempIter = 0;
@@ -600,21 +474,8 @@ int Region :: generatePeriodicPoints()
 
         if ( flag == 0 ) {
 
-		    /* auto *v = new Vertex(vertexNumber+1, grid); */
-		    /* v->setCoordinates(random); */
-		    /* grid->setVertex(vertexNumber+1, v); */
-		    /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, random); */
-		    /* vertexNumber++; */
-
 		    grid->addVertex(random);
-		    
-	  
-            /* vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() ); */
-            /* vertex->setCoordinates(random); */
-            /* grid->setVertex(vertexNumber + 1, vertex); */
-            /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, random); */
-            /* vertexNumber++; */
-
+		    	  
             //Do the periodic shift
             for ( int x = -1; x < 2; x++ ) {
                 for ( int y = -1; y < 2; y++ ) {
@@ -624,23 +485,11 @@ int Region :: generatePeriodicPoints()
                             randomPeriodic.at(2) = random.at(2) + y * specimenDimension.at(2);
                             randomPeriodic.at(3) = random.at(3) + z * specimenDimension.at(3);
 
-		    /* auto *v = new Vertex(vertexNumber+1, grid); */
-		    /* v->setCoordinates(randomPeriodic); */
-		    /* grid->setVertex(vertexNumber+1, v); */
-		    /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, randomPeriodic); */
-		    /* vertexNumber++; */
-
 		    grid->addVertex(randomPeriodic);
 		    
-                            /* vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() ); */
-                            /* vertex->setCoordinates(randomPeriodic); */
-                            /* grid->setVertex(vertexNumber + 1, vertex); */
-                            /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, randomPeriodic); */
-                            /* vertexNumber++; */
-
 			    //Print every 1m node message. Debug. 
 			    if(tempIter > mult*10) {
-			      std :: cout << "Placed " << vertexNumber << " points in region "<< this->giveNumber() <<"\n";
+			      std :: cout << "Placed " << grid->giveNumberOfVertices() << " points in region "<< this->giveNumber() <<"\n";
 			      std :: cout << "Current greatest iterator is " << tempIter << ". Maximum allowed iterator is "<< grid->giveMaximumIterations() <<".\n";
 			      mult++;
 			    }
@@ -655,8 +504,6 @@ int Region :: generatePeriodicPoints()
             i = 0;
         }
     }
-
-    generator::ensure_size1(grid->vertexList,vertexNumber);
 
 
     return 1;

@@ -60,7 +60,7 @@ public:
     //Generate periodicPoints
     int generatePeriodicPoints();
   
-  void mirrorShift(oofem::FloatArray& random, oofem::FloatArray& normal,oofem::FloatArray& specimenDimension,oofem::FloatArray& boundaries, int& vertexNumber, oofem::IntArray& periodicityFlag);
+  void mirrorShift(oofem::FloatArray& random, oofem::FloatArray& normal,oofem::FloatArray& specimenDimension,oofem::FloatArray& boundaries, oofem::IntArray& periodicityFlag);
    
   //Give normal of curve
   void giveNormal(oofem::FloatArray &answer){answer = this->normal;}

@@ -99,9 +99,6 @@ int Curve :: generatePoints()
   specimenDimension.at(3) = boundaries.at(6) - boundaries.at(5);
 
   oofem::FloatArray newRandom(3);
-  int vertexNumber = grid->vertexList.size();
-  int tempMax = 10000000;
-  generator::ensure_size1(grid->vertexList,tempMax);
 
   for ( int i = 0; i < maxIter; i++ ) {
     //Generate random point
@@ -115,25 +112,13 @@ int Curve :: generatePoints()
 
     if ( flag == 0 ) {
 
-      /* auto *v = new Vertex(vertexNumber+1, grid); */
-      /* v->setCoordinates(newRandom); */
-      /* grid->setVertex(vertexNumber+1, v); */
-      /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, random); */
-      /* vertexNumber++; */
 
       		    grid->addVertex(random);
-      
-      /* vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() ); */
-      /* vertex->setCoordinates(random); */
-      /* grid->setVertex(vertexNumber + 1, vertex); */
-      /* //Set the node into the octree. */
-      /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, random); */
-      /* vertexNumber++; */
 
       i = 0;
 
 
-      mirrorShift(random, normal,specimenDimension,boundaries,vertexNumber,periodicityFlag);
+      mirrorShift(random, normal,specimenDimension,boundaries,periodicityFlag);
 
       //Option random=2, for which periodic points are shifted across the specimen.
       if(randomFlag ==2){	      
@@ -159,72 +144,34 @@ int Curve :: generatePoints()
 	  newRandom.at(3) = random.at(3);
 
 
-	  /* v = new Vertex(vertexNumber+1, grid); */
-	  /* v->setCoordinates(newRandom); */
-	  /* grid->setVertex(vertexNumber+1, v); */
-	  /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, newRandom); */
-	  /* vertexNumber++; */
-
 		    grid->addVertex(newRandom);
-	  
-	  /* vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() ); */
-	  /* vertex->setCoordinates(newRandom); */
-	  /* grid->setVertex(vertexNumber + 1, vertex); */
-	  /* //Set the node into the octree. */
-	  /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, newRandom); */
-	  /* vertexNumber++; */
 	  
 	  i = 0;
 	  
-	  mirrorShift(newRandom, normal,specimenDimension,boundaries,vertexNumber,periodicityFlag);
+	  mirrorShift(newRandom, normal,specimenDimension,boundaries,periodicityFlag);
 
 	  //Shift in z-direction
 	  newRandom.at(1) = random.at(1);
 	  newRandom.at(2) = random.at(2);
 	  newRandom.at(3) = random.at(3) + shiftZ*specimenDimension.at(3);
 
-	  /* auto *v = new Vertex(vertexNumber+1, grid); */
-	  /* v->setCoordinates(newRandom); */
-	  /* grid->setVertex(vertexNumber+1, v); */
-	  /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, newRandom); */
-	  /* vertexNumber++; */
-
 		    grid->addVertex(newRandom);
-	  
-	  /* vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() ); */
-	  /* vertex->setCoordinates(newRandom); */
-	  /* grid->setVertex(vertexNumber + 1, vertex); */
-	  /* //Set the node into the octree. */
-	  /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, newRandom); */
-	  /* vertexNumber++; */
 
 	  i = 0;
 	  
-	  mirrorShift(newRandom, normal,specimenDimension,boundaries,vertexNumber,periodicityFlag);
+	  mirrorShift(newRandom, normal,specimenDimension,boundaries,periodicityFlag);
 
 	  //Shift in z and y-direction
 	  newRandom.at(1) = random.at(1);
 	  newRandom.at(2) = random.at(2) + shiftY*specimenDimension.at(2);
 	  newRandom.at(3) = random.at(3) + shiftZ*specimenDimension.at(3);
 
-	  /* v = new Vertex(vertexNumber+1, grid); */
-	  /* v->setCoordinates(newRandom); */
-	  /* grid->setVertex(vertexNumber+1, v); */
-	  /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, newRandom); */
-	  /* vertexNumber++;	   */
-
 	  grid->addVertex(newRandom);
 	  
-	  /* vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() ); */
-	  /* vertex->setCoordinates(newRandom); */
-	  /* grid->setVertex(vertexNumber + 1, vertex); */
-	  /* //Set the node into the octree. */
-	  /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, newRandom); */
-	  /* vertexNumber++; */
 
 	  i = 0;
 	  
-	  mirrorShift(newRandom, normal,specimenDimension,boundaries,vertexNumber,periodicityFlag);
+	  mirrorShift(newRandom, normal,specimenDimension,boundaries,periodicityFlag);
 	}
 	else if( normal.at(1) == 0 && normal.at(2) == 1 && normal.at(3) == 0){//y-direction
 	  
@@ -247,24 +194,11 @@ int Curve :: generatePoints()
 	  newRandom.at(2) = random.at(2);
 	  newRandom.at(3) = random.at(3);
 
-	  /* auto *v = new Vertex(vertexNumber+1, grid); */
-	  /* v->setCoordinates(newRandom); */
-	  /* grid->setVertex(vertexNumber+1, v); */
-	  /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, newRandom); */
-	  /* vertexNumber++;	   */
-
 	  grid->addVertex(newRandom);
 	  
-	  /* vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() ); */
-	  /* vertex->setCoordinates(newRandom); */
-	  /* grid->setVertex(vertexNumber + 1, vertex); */
-	  /* //Set the node into the octree. */
-	  /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, newRandom); */
-	  /* vertexNumber++; */
-
 	  i = 0;
 	  
-	  mirrorShift(newRandom, normal,specimenDimension,boundaries,vertexNumber,periodicityFlag);
+	  mirrorShift(newRandom, normal,specimenDimension,boundaries,periodicityFlag);
 
 		
 	  //Shift in z-direction
@@ -272,24 +206,11 @@ int Curve :: generatePoints()
 	  newRandom.at(2) = random.at(2);
 	  newRandom.at(3) = random.at(3) + shiftZ*specimenDimension.at(3);
 
-	  /* v = new Vertex(vertexNumber+1, grid); */
-	  /* v->setCoordinates(newRandom); */
-	  /* grid->setVertex(vertexNumber+1, v); */
-	  /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, newRandom); */
-	  /* vertexNumber++;	   */
-
 	  grid->addVertex(newRandom);
-	  
-	  /* vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() ); */
-	  /* vertex->setCoordinates(newRandom); */
-	  /* grid->setVertex(vertexNumber + 1, vertex); */
-	  /* //Set the node into the octree. */
-	  /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, newRandom); */
-	  /* vertexNumber++; */
 
 	  i = 0;
 		  
-	  mirrorShift(newRandom, normal,specimenDimension,boundaries,vertexNumber,periodicityFlag);
+	  mirrorShift(newRandom, normal,specimenDimension,boundaries,periodicityFlag);
 
 
 	  //Shift in x and z-direction
@@ -297,24 +218,12 @@ int Curve :: generatePoints()
 	  newRandom.at(2) = random.at(2);
 	  newRandom.at(3) = random.at(3) + shiftZ*specimenDimension.at(3);
 
-	  /* v = new Vertex(vertexNumber+1, grid); */
-	  /* v->setCoordinates(newRandom); */
-	  /* grid->setVertex(vertexNumber+1, v); */
-	  /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, newRandom); */
-	  /* vertexNumber++;	   */
-
 	  grid->addVertex(newRandom);
 	  
-	  /* vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() ); */
-	  /* vertex->setCoordinates(newRandom); */
-	  /* grid->setVertex(vertexNumber + 1, vertex); */
-	  /* //Set the node into the octree. */
-	  /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, newRandom); */
-	  /* vertexNumber++; */
 
 	  i = 0;
 		  
-	  mirrorShift(newRandom, normal,specimenDimension,boundaries,vertexNumber,periodicityFlag);		  
+	  mirrorShift(newRandom, normal,specimenDimension,boundaries,periodicityFlag);		  
 	}
 	else if( normal.at(1) == 0 && normal.at(2) == 0 && normal.at(3) == 1){//z-direction
 	  
@@ -338,50 +247,23 @@ int Curve :: generatePoints()
 	  newRandom.at(3) = random.at(3);
 
 
-	  /* auto *v = new Vertex(vertexNumber+1, grid); */
-	  /* v->setCoordinates(newRandom); */
-	  /* grid->setVertex(vertexNumber+1, v); */
-	  /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, newRandom); */
-	  /* vertexNumber++;	   */
 
 	  grid->addVertex(newRandom);
-	  
-	  /* vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() ); */
-	  /* vertex->setCoordinates(newRandom); */
-	  /* grid->setVertex(vertexNumber + 1, vertex); */
-	  /* //Set the node into the octree. */
-	  /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, newRandom); */
-	  /* vertexNumber++; */
 
 	  i = 0;
-	  
-	  
-	  mirrorShift(newRandom, normal,specimenDimension,boundaries,vertexNumber,periodicityFlag);
+	  	  
+	  mirrorShift(newRandom, normal,specimenDimension,boundaries,periodicityFlag);
 	
 	  //Shift in y-direction
 	  newRandom.at(1) = random.at(1);
 	  newRandom.at(2) = random.at(2) + shiftY*specimenDimension.at(2);
 	  newRandom.at(3) = random.at(3);
-		
-	  /* vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() ); */
-	  /* vertex->setCoordinates(newRandom); */
-	  /* grid->setVertex(vertexNumber + 1, vertex); */
-	  /* //Set the node into the octree. */
-	  /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, newRandom); */
-	  /* vertexNumber++; */
-
-
-	  /* v = new Vertex(vertexNumber+1, grid); */
-	  /* v->setCoordinates(newRandom); */
-	  /* grid->setVertex(vertexNumber+1, v); */
-	  /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, newRandom); */
-	  /* vertexNumber++;	   */
 
 	  grid->addVertex(newRandom);
 	  
 	  i = 0;
 	  
-	  mirrorShift(newRandom, normal,specimenDimension,boundaries,vertexNumber,periodicityFlag);
+	  mirrorShift(newRandom, normal,specimenDimension,boundaries,periodicityFlag);
 	  
 	  
 	  //Shift in x and y-direction
@@ -389,24 +271,12 @@ int Curve :: generatePoints()
 	  newRandom.at(2) = random.at(2) + shiftY*specimenDimension.at(2);
 	  newRandom.at(3) = random.at(3);
 
-	  /* v = new Vertex(vertexNumber+1, grid); */
-	  /* v->setCoordinates(newRandom); */
-	  /* grid->setVertex(vertexNumber+1, v); */
-	  /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, newRandom); */
-	  /* vertexNumber++;	   */
 
 	  grid->addVertex(newRandom);
-	  
-	  /* vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() ); */
-	  /* vertex->setCoordinates(newRandom); */
-	  /* grid->setVertex(vertexNumber + 1, vertex); */
-	  /* //Set the node into the octree. */
-	  /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, newRandom); */
-	  /* vertexNumber++; */
 
 	  i = 0;
 	  
-	  mirrorShift(newRandom, normal,specimenDimension,boundaries,vertexNumber,periodicityFlag);
+	  mirrorShift(newRandom, normal,specimenDimension,boundaries,periodicityFlag);
 	}	    
 	else{
 	  printf("Error: Unknown direction.\n");
@@ -416,14 +286,13 @@ int Curve :: generatePoints()
     }
   }	    
     
-  generator::ensure_size1(grid->vertexList,vertexNumber);
     
   return 1;
 }
 
 	
 void
-Curve :: mirrorShift(oofem::FloatArray &random, oofem::FloatArray &normal, oofem::FloatArray &specimenDimension, oofem::FloatArray &boundaries, int &vertexNumber, oofem::IntArray& periodicityFlag) {
+Curve :: mirrorShift(oofem::FloatArray &random, oofem::FloatArray &normal, oofem::FloatArray &specimenDimension, oofem::FloatArray &boundaries, oofem::IntArray& periodicityFlag) {
   
   Vertex *vertex;
   oofem::FloatArray newRandom(3);
@@ -447,19 +316,8 @@ Curve :: mirrorShift(oofem::FloatArray &random, oofem::FloatArray &normal, oofem
 	newRandom.at(2) = random.at(2);
 	newRandom.at(3) = random.at(3);
 
-	  /* auto *v = new Vertex(vertexNumber+1, grid); */
-	  /* v->setCoordinates(newRandom); */
-	  /* grid->setVertex(vertexNumber+1, v); */
-	  /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, newRandom); */
-	  /* vertexNumber++; */
 
 	  grid->addVertex(newRandom);
-	
-	/* vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() ); */
-	/* vertex->setCoordinates(newRandom); */
-	/* grid->setVertex(vertexNumber + 1, vertex); */
-	/* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, newRandom); */
-	/* vertexNumber++;		   */
       }
   }
   
@@ -482,19 +340,8 @@ Curve :: mirrorShift(oofem::FloatArray &random, oofem::FloatArray &normal, oofem
 	newRandom.at(1) = random.at(1);
 	newRandom.at(3) = random.at(3);
 
-	  /* auto *v = new Vertex(vertexNumber+1, grid); */
-	  /* v->setCoordinates(newRandom); */
-	  /* grid->setVertex(vertexNumber+1, v); */
-	  /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, newRandom); */
-	  /* vertexNumber++; */
 
 	  grid->addVertex(newRandom);
-	  
-	/* vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() ); */
-	/* vertex->setCoordinates(newRandom); */
-	/* grid->setVertex(vertexNumber + 1, vertex); */
-	/* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, newRandom); */
-	/* vertexNumber++;	 */
       }
   }
   
@@ -516,19 +363,8 @@ Curve :: mirrorShift(oofem::FloatArray &random, oofem::FloatArray &normal, oofem
 	newRandom.at(1) = random.at(1);
 	newRandom.at(2) = random.at(2);
 
-	  /* auto *v = new Vertex(vertexNumber+1, grid); */
-	  /* v->setCoordinates(newRandom); */
-	  /* grid->setVertex(vertexNumber+1, v); */
-	  /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, newRandom); */
-	  /* vertexNumber++; */
-
 	  grid->addVertex(newRandom);
 	  
-	/* vertex = ( Vertex * ) ( Vertex(vertexNumber + 1, grid).ofType() ); */
-	/* vertex->setCoordinates(newRandom); */
-	/* grid->setVertex(vertexNumber + 1, vertex); */
-	/* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber + 1, newRandom); */
-	/* vertexNumber++; */
 	
       }
   }
