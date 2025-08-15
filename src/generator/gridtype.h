@@ -49,7 +49,7 @@
  * number of DOFs per node and side and to determine their corresponding physical meaning.
  */
 #define gridType_DEF \
-    ENUM_ITEM(_unknownGrid) \
+        ENUM_ITEM(_unknownGrid) \
 
 enum gridType {
     gridType_DEF

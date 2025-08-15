@@ -4,139 +4,128 @@
 #include "record.h"
 
 #ifndef __MAKEDEPEND
-#include <math.h>
-#include <stdlib.h>
-#include "octreegridlocalizer.h"
+ #include <math.h>
+ #include <stdlib.h>
+ #include "octreegridlocalizer.h"
  #include <iostream>
 #endif
 
-Sphere :: Sphere(int n,Grid* aGrid) : Region(n,aGrid)
+Sphere::Sphere(int n, Grid *aGrid) : Region(n, aGrid)
 {
-  this->number = n;  
+    this->number = n;
 }
 
-Sphere :: ~Sphere()
+Sphere::~Sphere()
+{}
+
+int Sphere::generatePoints()
 {
-}
+    //minimum points
+    int randomIntegerOne = grid->giveRandomInteger() - 1;
+    int randomIntegerTwo = grid->giveRandomInteger() - 2;
+    int randomIntegerThree = grid->giveRandomInteger() - 3;
 
-int Sphere :: generatePoints()
-{
+    double myPi = 3.14159265;
 
-  //minimum points
-  int randomIntegerOne= grid->giveRandomInteger()-1;
-  int randomIntegerTwo= grid->giveRandomInteger()-2;
-  int randomIntegerThree = grid->giveRandomInteger()-3;
-   
-  double myPi = 3.14159265;
-  
-  oofem::FloatArray random(3);
-  
-  int flag;
+    oofem::FloatArray random(3);
 
-  Vertex *vertex;
-  
-   double maxIter= grid->giveMaximumIterations();
+    int flag;
 
-   double randomTheta;
-   double randomPhi;
-   double randomRadius;
+    Vertex *vertex;
 
-   //Place vertices
+    double maxIter = grid->giveMaximumIterations();
 
-   //A) Centre
-   random.at(1) = this->centre.at(1);
-   random.at(2) = this->centre.at(2);
-   random.at(3) = this->centre.at(3);
+    double randomTheta;
+    double randomPhi;
+    double randomRadius;
 
-		    grid->addVertex(random);
+    //Place vertices
 
-   printf("Points on sphere surface\n");
-       
-   for(int i= 0;i<maxIter;i++){   
-     
-     randomTheta = 2*myPi*grid->ran1(&randomIntegerOne);
-     randomPhi = acos(2*grid->ran1(&randomIntegerTwo)-1);
-     
-     random.at(1) = this->centre.at(1) + this->radius*cos(randomTheta)*sin(randomPhi);
-     random.at(2) = this->centre.at(2) + this->radius*sin(randomTheta)*sin(randomPhi);
-     random.at(3) = this->centre.at(3) + this->radius*cos(randomPhi);
-     
-     //Check if this is far enough from the others.
-     
-     flag = 0;
-     flag = grid->giveGridLocalizer()->checkNodesWithinBox( random, refinement*grid->diameter );
-     
-     
-     
-     if(flag == 0){
-       i = 0;
+    //A) Centre
+    random.at(1) = this->centre.at(1);
+    random.at(2) = this->centre.at(2);
+    random.at(3) = this->centre.at(3);
 
-		    grid->addVertex(random);
-       
-     }
-   }
-   
-   printf("Completed sphere surface\n");
-   printf("number of vertices=%d\n",grid->giveNumberOfVertices());
-   
-   printf("Points in sphere\n");
-   
-     for(int i= 0;i<maxIter;i++){   
-   
-       randomTheta = 2*myPi*grid->ran1(&randomIntegerOne);
-       randomPhi = acos(2*grid->ran1(&randomIntegerTwo)-1);
-       randomRadius = (this->radius-grid->diameter)*pow(grid->ran1(&randomIntegerThree),1./3.);
-     	 
-       random.at(1) = this->centre.at(1) + randomRadius*cos(randomTheta)*sin(randomPhi);
-       random.at(2) = this->centre.at(2) + randomRadius*sin(randomTheta)*sin(randomPhi);
-       random.at(3) = this->centre.at(3) + randomRadius*cos(randomPhi);
-	 
-       //Check if this is far enough from the others.
+    grid->addVertex(random);
 
-       flag = 0;
-       flag = grid->giveGridLocalizer()->checkNodesWithinBox( random, grid->diameter );
+    printf("Points on sphere surface\n");
+
+    for (int i = 0; i < maxIter; i++) {
+        randomTheta = 2 * myPi * grid->ran1(& randomIntegerOne);
+        randomPhi = acos(2 * grid->ran1(& randomIntegerTwo) - 1);
+
+        random.at(1) = this->centre.at(1) + this->radius * cos(randomTheta) * sin(randomPhi);
+        random.at(2) = this->centre.at(2) + this->radius * sin(randomTheta) * sin(randomPhi);
+        random.at(3) = this->centre.at(3) + this->radius * cos(randomPhi);
+
+        //Check if this is far enough from the others.
+
+        flag = 0;
+        flag = grid->giveGridLocalizer()->checkNodesWithinBox(random, refinement * grid->diameter);
 
 
 
-	 if(flag == 0){
-	   i = 0;
+        if ( flag == 0 ) {
+            i = 0;
 
-	   grid->addVertex(random);	   
+            grid->addVertex(random);
+        }
+    }
 
-	   //Mirror vertices with respect to the  sphere surface
-	   random.at(1) = this->centre.at(1) + (2.*this->radius-randomRadius)*cos(randomTheta)*sin(randomPhi);
-	   random.at(2) = this->centre.at(2) + (2.*this->radius-randomRadius)*sin(randomTheta)*sin(randomPhi);
-	   random.at(3) = this->centre.at(3) + (2.*this->radius-randomRadius)*cos(randomPhi);
+    printf("Completed sphere surface\n");
+    printf("number of vertices=%d\n", grid->giveNumberOfVertices() );
 
-	   grid->addVertex(random);	   
-	   
-	 }
-     }
-  
-  
-  return 1;
+    printf("Points in sphere\n");
+
+    for (int i = 0; i < maxIter; i++) {
+        randomTheta = 2 * myPi * grid->ran1(& randomIntegerOne);
+        randomPhi = acos(2 * grid->ran1(& randomIntegerTwo) - 1);
+        randomRadius = ( this->radius - grid->diameter ) * pow(grid->ran1(& randomIntegerThree), 1. / 3.);
+
+        random.at(1) = this->centre.at(1) + randomRadius * cos(randomTheta) * sin(randomPhi);
+        random.at(2) = this->centre.at(2) + randomRadius * sin(randomTheta) * sin(randomPhi);
+        random.at(3) = this->centre.at(3) + randomRadius * cos(randomPhi);
+
+        //Check if this is far enough from the others.
+
+        flag = 0;
+        flag = grid->giveGridLocalizer()->checkNodesWithinBox(random, grid->diameter);
+
+        if ( flag == 0 ) {
+            i = 0;
+
+            grid->addVertex(random);
+
+            //Mirror vertices with respect to the  sphere surface
+            random.at(1) = this->centre.at(1) + ( 2. * this->radius - randomRadius ) * cos(randomTheta) * sin(randomPhi);
+            random.at(2) = this->centre.at(2) + ( 2. * this->radius - randomRadius ) * sin(randomTheta) * sin(randomPhi);
+            random.at(3) = this->centre.at(3) + ( 2. * this->radius - randomRadius ) * cos(randomPhi);
+
+            grid->addVertex(random);
+        }
+    }
+
+
+    return 1;
 }
 
 
 
-int Sphere :: generatePeriodicPoints()
+int Sphere::generatePeriodicPoints()
 {
-  
-  return 1;
+    return 1;
 }
 
 
 
 void
-Sphere :: initializeFrom(GeneratorInputRecord &ir)
+Sphere::initializeFrom(GeneratorInputRecord &ir)
 // Gets from the source line from the data file all the data of the receiver.
 {
-
     IR_GIVE_FIELD(ir, centre, _IFT_Sphere_centre);
     IR_GIVE_FIELD(ir, radius, _IFT_Sphere_radius);
     refinement = 1.;
     IR_GIVE_OPTIONAL_FIELD(ir, refinement, _IFT_Sphere_refine);
-    
-    return;
 
+    return;
 }

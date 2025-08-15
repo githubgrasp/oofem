@@ -77,7 +77,7 @@ typedef const char *InputFieldType;
  * and its number (__value param). Includes also the error reporting.
  */
 #define IR_GIVE_RECORD_KEYWORD_FIELD(__ir, __name, __value) \
-    __ir.giveRecordKeywordField(__name, __value);
+        __ir.giveRecordKeywordField(__name, __value);
 
 
 
@@ -93,15 +93,15 @@ typedef const char *InputFieldType;
 class GeneratorInputRecord
 {
 public:
-  /// Destructor
+    /// Destructor
     virtual ~GeneratorInputRecord() = default;
 
     /** Creates a newly allocated copy of the receiver */
-    virtual std::unique_ptr<GeneratorInputRecord> clone() const = 0;
+    virtual std::unique_ptr< GeneratorInputRecord >clone() const = 0;
 
-  
+
     /// Returns string representation of record in OOFEMs text format.
-    virtual std :: string giveRecordAsString() const = 0;
+    virtual std::string giveRecordAsString() const = 0;
 
     /**@name Compulsory field extraction methods
      * Reads the field value identified by keyword
@@ -109,38 +109,38 @@ public:
      * @param id field keyword
      */
 
-  virtual void giveRawLine(std::string &out) const;
+    virtual void giveRawLine(std::string &out) const;
 
-  //@{
+    //@{
     /// Reads the record id field  (type of record) and its corresponding number.
-    virtual void giveRecordKeywordField(std :: string &answer, int &value) = 0;
+    virtual void giveRecordKeywordField(std::string &answer, int &value) = 0;
     /// Reads the record id field  (type of record).
-    virtual void giveRecordKeywordField(std :: string &answer) = 0;
+    virtual void giveRecordKeywordField(std::string &answer) = 0;
 
-    virtual void giveRecordKeywordField(std::string& kw, std::string& arg) = 0;
+    virtual void giveRecordKeywordField(std::string &kw, std::string &arg) = 0;
 
-  /// Reads the integer field value.
+    /// Reads the integer field value.
     virtual void giveField(int &answer, InputFieldType id) = 0;
     /// Reads the double field value.
     virtual void giveField(double &answer, InputFieldType id) = 0;
     /// Reads the bool field value.
     virtual void giveField(bool &answer, InputFieldType id) = 0;
     /// Reads the string field value.
-    virtual void giveField(std :: string &answer, InputFieldType id) = 0;
+    virtual void giveField(std::string &answer, InputFieldType id) = 0;
     /// Reads the FloatArray field value.
-  virtual void giveField(oofem::FloatArray &answer, InputFieldType id) = 0;
+    virtual void giveField(oofem::FloatArray &answer, InputFieldType id) = 0;
     /// Reads the IntArray field value.
-  virtual void giveField(oofem::IntArray &answer, InputFieldType id) = 0;
+    virtual void giveField(oofem::IntArray &answer, InputFieldType id) = 0;
     /// Reads the FloatMatrix field value.
-  virtual void giveField(oofem::FloatMatrix &answer, InputFieldType id) = 0;
+    virtual void giveField(oofem::FloatMatrix &answer, InputFieldType id) = 0;
     /// Reads the vector of strings.
-    virtual void giveField(std :: vector< std :: string > &answer, InputFieldType id) = 0;
+    virtual void giveField(std::vector< std::string > &answer, InputFieldType id) = 0;
     /// Reads the Dictionary field value.
-  virtual void giveField(oofem::Dictionary &answer, InputFieldType id) = 0;
+    virtual void giveField(oofem::Dictionary &answer, InputFieldType id) = 0;
     /// Reads the std::list<Range> field value.
-  virtual void giveField(std :: list< oofem::Range > &answer, InputFieldType id) = 0;
+    virtual void giveField(std::list< oofem::Range > &answer, InputFieldType id) = 0;
     /// Reads the ScalarFunction field value.
-  virtual void giveField(oofem::ScalarFunction &function, InputFieldType id) = 0;
+    virtual void giveField(oofem::ScalarFunction &function, InputFieldType id) = 0;
     //@}
 
     /**@name Optional field extraction methods
@@ -156,21 +156,21 @@ public:
     /// Reads the bool field value.
     void giveOptionalField(bool &answer, InputFieldType id);
     /// Reads the string field value.
-    void giveOptionalField(std :: string &answer, InputFieldType id);
+    void giveOptionalField(std::string &answer, InputFieldType id);
     /// Reads the FloatArray field value.
-  void giveOptionalField(oofem::FloatArray &answer, InputFieldType id);
+    void giveOptionalField(oofem::FloatArray &answer, InputFieldType id);
     /// Reads the IntArray field value.
-  void giveOptionalField(oofem::IntArray &answer, InputFieldType id);
+    void giveOptionalField(oofem::IntArray &answer, InputFieldType id);
     /// Reads the FloatMatrix field value.
-  void giveOptionalField(oofem::FloatMatrix &answer, InputFieldType id);
+    void giveOptionalField(oofem::FloatMatrix &answer, InputFieldType id);
     /// Reads the vector of strings.
-    void giveOptionalField(std :: vector< std :: string > &answer, InputFieldType id);
+    void giveOptionalField(std::vector< std::string > &answer, InputFieldType id);
     /// Reads the Dictionary field value.
-  void giveOptionalField(oofem::Dictionary &answer, InputFieldType id);
+    void giveOptionalField(oofem::Dictionary &answer, InputFieldType id);
     /// Reads the std::list<Range> field value.
-  void giveOptionalField(std :: list< oofem::Range > &answer, InputFieldType id);
+    void giveOptionalField(std::list< oofem::Range > &answer, InputFieldType id);
     /// Reads the ScalarFunction field value.
-  void giveOptionalField(oofem::ScalarFunction &function, InputFieldType id);
+    void giveOptionalField(oofem::ScalarFunction &function, InputFieldType id);
     //@}
 
     /// Returns true if record contains field identified by idString keyword.
@@ -183,7 +183,7 @@ public:
     virtual void finish(bool wrn = true) = 0;
 
 private:
-  std::string rawLine;  // store the line from the data reader
+    std::string rawLine; // store the line from the data reader
 };
 
 
@@ -204,7 +204,7 @@ protected:
 
 public:
     MissingKeywordInputException(const GeneratorInputRecord &ir, std::string keyword, int number);
-    const char* what() const noexcept override;
+    const char * what() const noexcept override;
 };
 
 
@@ -215,7 +215,7 @@ protected:
 
 public:
     BadFormatInputException(const GeneratorInputRecord &ir, std::string keyword, int number);
-    const char* what() const noexcept override;
+    const char * what() const noexcept override;
 };
 
 
@@ -226,7 +226,7 @@ protected:
 
 public:
     ValueInputException(const GeneratorInputRecord &ir, std::string keyword, const std::string &reason);
-    const char* what() const noexcept override;
+    const char * what() const noexcept override;
 };
 
 #endif // generatorinputrecord_h

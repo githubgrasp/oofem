@@ -50,14 +50,14 @@ class GeneratorDataReader
 {
 protected:
     /// Output file name (first line in OOFEM input files).
-    std :: string outputFileName;
+    std::string outputFileName;
     /// Description line (second line in OOFEM input files).
-    std :: string description;
+    std::string description;
 
 public:
     /// Determines the type of input record.
     enum GeneratorInputRecordType {
-      GIR_domainRec, GIR_controlRec, GIR_domainCompRec, GIR_vertexRec, GIR_controlVertexRec, GIR_curveRec, GIR_surfaceRec, GIR_regionRec, GIR_inclusionRec, GIR_aggregateRec, GIR_refinementRec
+        GIR_domainRec, GIR_controlRec, GIR_domainCompRec, GIR_vertexRec, GIR_controlVertexRec, GIR_curveRec, GIR_surfaceRec, GIR_regionRec, GIR_inclusionRec, GIR_aggregateRec, GIR_refinementRec
     };
 
     GeneratorDataReader() { }
@@ -75,7 +75,7 @@ public:
      * Peak in advance into the record list.
      * @return True if next keyword is a set.
      */
-    virtual bool peakNext(const std :: string &keyword) { return false; }
+    virtual bool peakNext(const std::string &keyword) { return false; }
 
     /**
      * Allows to detach all data connections.
@@ -83,11 +83,11 @@ public:
     virtual void finish() = 0;
 
     /// Gives the reference file name (e.g. file name)
-    virtual std :: string giveReferenceName() const = 0;
+    virtual std::string giveReferenceName() const = 0;
     /// Gives the output file name
-    std :: string giveOutputFileName() { return this->outputFileName; }
+    std::string giveOutputFileName() { return this->outputFileName; }
     /// Gives the problem description
-    std :: string giveDescription() { return this->description; }
+    std::string giveDescription() { return this->description; }
 };
 
 #endif // datareader_h

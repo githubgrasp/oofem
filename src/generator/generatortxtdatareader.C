@@ -38,48 +38,48 @@
 #include <iostream>
 #include <string>
 
-GeneratorTXTDataReader :: GeneratorTXTDataReader(std :: string inputfilename) : GeneratorDataReader(),
-    dataSourceName(std :: move(inputfilename)), recordList()
+GeneratorTXTDataReader::GeneratorTXTDataReader(std::string inputfilename) : GeneratorDataReader(),
+    dataSourceName(std::move(inputfilename) ), recordList()
 {
-    std :: list< std :: pair< int, std :: string > >lines;
+    std::list < std::pair < int, std::string >> lines;
     // Read all the lines in the main input file:
     {
-        std :: ifstream inputStream(dataSourceName);
+        std::ifstream inputStream(dataSourceName);
         if ( !inputStream.is_open() ) {
-	  generator::errorf("Can't open input stream (%s)", dataSourceName.c_str());
+            generator::errorf("Can't open input stream (%s)", dataSourceName.c_str() );
         }
 
         int lineNumber = 0;
-        std :: string line;
+        std::string line;
 
         this->giveRawLineFromInput(inputStream, lineNumber, outputFileName);
         this->giveRawLineFromInput(inputStream, lineNumber, description);
 
-        while (this->giveLineFromInput(inputStream, lineNumber, line)) {
-            lines.emplace_back(make_pair(lineNumber, line));
+        while ( this->giveLineFromInput(inputStream, lineNumber, line) ) {
+            lines.emplace_back(make_pair(lineNumber, line) );
         }
     }
     // Check for included files: @include "somefile"
     for ( auto it = lines.begin(); it != lines.end(); ++it ) {
         if ( it->second.compare(0, 8, "@include") == 0 ) {
-            std :: string fname = it->second.substr(10, it->second.length()-11);
-            printf("Reading included file: %s\n", fname.c_str());
+            std::string fname = it->second.substr(10, it->second.length() - 11);
+            printf("Reading included file: %s\n", fname.c_str() );
 
             // Remove the include line
             lines.erase(it++);
             // Add all the included lines:
             int includedLine = 0;
-            std :: string line;
-            std :: ifstream includedStream(fname);
+            std::string line;
+            std::ifstream includedStream(fname);
             if ( !includedStream.is_open() ) {
-	      generator::errorf("Can't open input stream (%s)", fname.c_str());
+                generator::errorf("Can't open input stream (%s)", fname.c_str() );
             }
-            while (this->giveLineFromInput(includedStream, includedLine, line)) {
-                lines.emplace(it, make_pair(includedLine, line));
+            while ( this->giveLineFromInput(includedStream, includedLine, line) ) {
+                lines.emplace(it, make_pair(includedLine, line) );
             }
         }
     }
-    ///@todo This could be parallelized, but I'm not sure it is worth it 
+    ///@todo This could be parallelized, but I'm not sure it is worth it
     /// (might make debugging faulty input files harder for users as well)
     for ( auto &line: lines ) {
         //printf("line: %s\n", line.second.c_str());
@@ -88,41 +88,40 @@ GeneratorTXTDataReader :: GeneratorTXTDataReader(std :: string inputfilename) : 
     this->it = this->recordList.begin();
 }
 
-GeneratorTXTDataReader :: GeneratorTXTDataReader(const GeneratorTXTDataReader &x) : GeneratorTXTDataReader(x.dataSourceName) {}
+GeneratorTXTDataReader::GeneratorTXTDataReader(const GeneratorTXTDataReader &x) : GeneratorTXTDataReader(x.dataSourceName) {}
 
-GeneratorTXTDataReader :: ~GeneratorTXTDataReader()
-{
-}
+GeneratorTXTDataReader::~GeneratorTXTDataReader()
+{}
 
 GeneratorInputRecord &
-GeneratorTXTDataReader :: giveInputRecord(GeneratorInputRecordType typeId, int recordId)
+GeneratorTXTDataReader::giveInputRecord(GeneratorInputRecordType typeId, int recordId)
 {
-  if ( this->it == this->recordList.end() ) {
-      generator::error("Out of input records, file contents must be missing");
+    if ( this->it == this->recordList.end() ) {
+        generator::error("Out of input records, file contents must be missing");
     }
-    return *this->it++;
+    return * this->it++;
 }
 
 bool
-GeneratorTXTDataReader :: peakNext(const std :: string &keyword)
+GeneratorTXTDataReader::peakNext(const std::string &keyword)
 {
-    std :: string nextKey;
+    std::string nextKey;
     this->it->giveRecordKeywordField(nextKey);
-    return keyword.compare( nextKey ) == 0;
+    return keyword.compare(nextKey) == 0;
 }
 
 void
-GeneratorTXTDataReader :: finish()
+GeneratorTXTDataReader::finish()
 {
     if ( this->it != this->recordList.end() ) {
         printf("There are unread lines in the input file\n"
-            "The most common cause are missing entries in the domain record, e.g. 'nset'");
+               "The most common cause are missing entries in the domain record, e.g. 'nset'");
     }
     this->recordList.clear();
 }
 
 bool
-GeneratorTXTDataReader :: giveLineFromInput(std :: ifstream &stream, int &lineNum, std :: string &line)
+GeneratorTXTDataReader::giveLineFromInput(std::ifstream &stream, int &lineNum, std::string &line)
 {
     bool flag = false; //0-tolower, 1-remain with capitals
 
@@ -137,26 +136,27 @@ GeneratorTXTDataReader :: giveLineFromInput(std :: ifstream &stream, int &lineNu
         }
 
         if ( !flag ) {
-            c = (char)tolower(c); // convert line to lowercase
+            c = ( char ) tolower(c); // convert line to lowercase
         }
     }
     return true;
 }
 
 bool
-GeneratorTXTDataReader :: giveRawLineFromInput(std :: ifstream &stream, int &lineNum, std :: string &line)
+GeneratorTXTDataReader::giveRawLineFromInput(std::ifstream &stream, int &lineNum, std::string &line)
 {
     do {
         lineNum++;
-        std :: getline(stream, line);
+        std::getline(stream, line);
         if ( !stream ) {
             return false;
-        } if ( line.length() > 0 ) {
+        }
+        if ( line.length() > 0 ) {
             if ( line.back() == '\\' ) {
-                std :: string continuedLine;
+                std::string continuedLine;
                 do {
                     lineNum++;
-                    std :: getline(stream, continuedLine);
+                    std::getline(stream, continuedLine);
                     if ( !stream ) {
                         return false;
                     }
@@ -168,4 +168,3 @@ GeneratorTXTDataReader :: giveRawLineFromInput(std :: ifstream &stream, int &lin
     } while ( line.length() == 0 || line [ 0 ] == '#' ); // skip comments
     return true;
 }
-

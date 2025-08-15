@@ -34,14 +34,14 @@ class Surface : public GridComponent
 {
 protected:
     /// Array storing nodal coordinates.
-  oofem::IntArray curves;
+    oofem::IntArray curves;
     int number;
     double refinement;
     double xedges, yedges, zedges;
     int boundaryFlag;
-  oofem::FloatArray boundaryShift;
-  oofem::FloatArray normal;
-    
+    oofem::FloatArray boundaryShift;
+    oofem::FloatArray normal;
+
 public:
 
     /**
@@ -56,31 +56,31 @@ public:
     /// Returns i-th vertex of curve.
     int      giveLocalCurve(int i);
     /// Returns pointer to curve vertex array.
-  oofem::IntArray *giveLocalCurves() { return & curves; }
+    oofem::IntArray *giveLocalCurves() { return & curves; }
 
     int giveNumberOfLocalCurves();
 
     /// Define boundaries
-  void defineBoundaries(oofem::FloatArray &boundaries);
-    
-  void giveNormal(oofem::FloatArray &answer){answer = this->normal;}
-    
+    void defineBoundaries(oofem::FloatArray &boundaries);
+
+    void giveNormal(oofem::FloatArray &answer) { answer = this->normal; }
+
     //Random approach to generate points on surfaces including period shift and mirroring
     int generatePoints();
-    
+
     //Shorten code by putting routine to shift and mirror point separately
-  void mirrorShift(oofem::FloatArray& random, oofem::FloatArray& normal,oofem::FloatArray& specimenDimension,oofem::FloatArray& boundaries, oofem::IntArray& periodicityFlag);
-        
-  //  Surface *ofType();
+    void mirrorShift(oofem::FloatArray &random, oofem::FloatArray &normal, oofem::FloatArray &specimenDimension, oofem::FloatArray &boundaries, oofem::IntArray &periodicityFlag);
 
-  // miscellaneous
-  /// Returns class name of the receiver.
-  const char *giveClassName() const { return "Surface"; }
+    //  Surface *ofType();
 
-  void initializeFrom(GeneratorInputRecord &ir);
+    // miscellaneous
+    /// Returns class name of the receiver.
+    const char *giveClassName() const { return "Surface"; }
 
-  /// prints receiver state on stdout. Usefull for debuging.
-  void         printYourself();
+    void initializeFrom(GeneratorInputRecord &ir);
+
+    /// prints receiver state on stdout. Usefull for debuging.
+    void         printYourself();
 };
 
 

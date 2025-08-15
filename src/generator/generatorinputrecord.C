@@ -38,143 +38,143 @@
 #include "generatorinputrecord.h"
 
 void
-GeneratorInputRecord :: giveOptionalField(int &answer, InputFieldType id)
+GeneratorInputRecord::giveOptionalField(int &answer, InputFieldType id)
 {
     if ( this->hasField(id) ) {
         try {
             this->giveField(answer, id);
-        } catch ( MissingKeywordInputException & ) { }
+        } catch(MissingKeywordInputException &) { }
     }
 }
 
 void
-GeneratorInputRecord :: giveOptionalField(double &answer, InputFieldType id)
+GeneratorInputRecord::giveOptionalField(double &answer, InputFieldType id)
 {
     if ( this->hasField(id) ) {
         try {
             this->giveField(answer, id);
-        } catch ( MissingKeywordInputException & ) { }
+        } catch(MissingKeywordInputException &) { }
     }
 }
 
 void
-GeneratorInputRecord :: giveOptionalField(bool &answer, InputFieldType id)
+GeneratorInputRecord::giveOptionalField(bool &answer, InputFieldType id)
 {
     if ( this->hasField(id) ) {
         try {
             this->giveField(answer, id);
-        } catch ( MissingKeywordInputException & ) { }
+        } catch(MissingKeywordInputException &) { }
     }
 }
 
 void
-GeneratorInputRecord :: giveOptionalField(std :: string &answer, InputFieldType id)
+GeneratorInputRecord::giveOptionalField(std::string &answer, InputFieldType id)
 {
     if ( this->hasField(id) ) {
         try {
             this->giveField(answer, id);
-        } catch ( MissingKeywordInputException & ) { }
+        } catch(MissingKeywordInputException &) { }
     }
 }
 
 void
-GeneratorInputRecord :: giveOptionalField(oofem::FloatArray &answer, InputFieldType id)
+GeneratorInputRecord::giveOptionalField(oofem::FloatArray &answer, InputFieldType id)
 {
     if ( this->hasField(id) ) {
         try {
             this->giveField(answer, id);
-        } catch ( MissingKeywordInputException & ) { }
+        } catch(MissingKeywordInputException &) { }
     }
 }
 
 void
-GeneratorInputRecord :: giveOptionalField(oofem::IntArray &answer, InputFieldType id)
+GeneratorInputRecord::giveOptionalField(oofem::IntArray &answer, InputFieldType id)
 {
     if ( this->hasField(id) ) {
         try {
             this->giveField(answer, id);
-        } catch ( MissingKeywordInputException & ) { }
+        } catch(MissingKeywordInputException &) { }
     }
 }
 
 void
-GeneratorInputRecord :: giveOptionalField(oofem::FloatMatrix &answer, InputFieldType id)
+GeneratorInputRecord::giveOptionalField(oofem::FloatMatrix &answer, InputFieldType id)
 {
     if ( this->hasField(id) ) {
         try {
             this->giveField(answer, id);
-        } catch ( MissingKeywordInputException & ) { }
+        } catch(MissingKeywordInputException &) { }
     }
 }
 
 void
-GeneratorInputRecord :: giveOptionalField(std :: vector< std :: string > &answer, InputFieldType id)
+GeneratorInputRecord::giveOptionalField(std::vector < std::string > & answer, InputFieldType id)
 {
     if ( this->hasField(id) ) {
         try {
             this->giveField(answer, id);
-        } catch ( MissingKeywordInputException & ) { }
+        } catch(MissingKeywordInputException &) { }
     }
 }
 
 void
-GeneratorInputRecord :: giveOptionalField(oofem::Dictionary &answer, InputFieldType id)
+GeneratorInputRecord::giveOptionalField(oofem::Dictionary &answer, InputFieldType id)
 {
     if ( this->hasField(id) ) {
         try {
             this->giveField(answer, id);
-        } catch ( MissingKeywordInputException & ) { }
+        } catch(MissingKeywordInputException &) { }
     }
 }
 
 void
-GeneratorInputRecord :: giveOptionalField(std :: list< oofem::Range > &answer, InputFieldType id)
+GeneratorInputRecord::giveOptionalField(std::list < oofem::Range > & answer, InputFieldType id)
 {
     if ( this->hasField(id) ) {
         try {
             this->giveField(answer, id);
-        } catch ( MissingKeywordInputException & ) { }
+        } catch(MissingKeywordInputException &) { }
     }
 }
 
 void
-GeneratorInputRecord :: giveOptionalField(oofem::ScalarFunction &answer, InputFieldType id)
+GeneratorInputRecord::giveOptionalField(oofem::ScalarFunction &answer, InputFieldType id)
 {
     if ( this->hasField(id) ) {
         try {
             this->giveField(answer, id);
-        } catch ( MissingKeywordInputException & ) { }
+        } catch(MissingKeywordInputException &) { }
     }
 }
 
 
-InputException::InputException(const GeneratorInputRecord& ir, std::string keyword, int number) : 
-    record(ir.giveRecordAsString()), keyword(std::move(keyword)), number(number)
+InputException::InputException(const GeneratorInputRecord &ir, std::string keyword, int number) :
+    record(ir.giveRecordAsString() ), keyword(std::move(keyword) ), number(number)
 { }
 
 
-MissingKeywordInputException::MissingKeywordInputException(const GeneratorInputRecord& ir, std::string kw, int n) :
+MissingKeywordInputException::MissingKeywordInputException(const GeneratorInputRecord &ir, std::string kw, int n) :
     InputException(ir, std::move(kw), n)
 {
     msg = "Missing keyword \"" + keyword + "\" on input " + std::to_string(number) + \
-          "\nRecord: \"" + record.substr(0, 50) + (record.size()>50?"...":"")+ "\"";
+          "\nRecord: \"" + record.substr(0, 50) + ( record.size() > 50?"...":"" ) + "\"";
 }
 
 
-BadFormatInputException::BadFormatInputException(const GeneratorInputRecord& ir, std::string kw, int n) :
+BadFormatInputException::BadFormatInputException(const GeneratorInputRecord &ir, std::string kw, int n) :
     InputException(ir, std::move(kw), n)
 {
     msg = "Bad format for keyword \"" + keyword + "\" on input " + std::to_string(number) + \
-          "\nRecord: \"" + record.substr(0, 50) + (record.size()>50?"...":"") + "\"";
+          "\nRecord: \"" + record.substr(0, 50) + ( record.size() > 50?"...":"" ) + "\"";
 }
 
 
-ValueInputException::ValueInputException(const GeneratorInputRecord& ir, std::string kw, const std::string &reason) :
+ValueInputException::ValueInputException(const GeneratorInputRecord &ir, std::string kw, const std::string &reason) :
     InputException(ir, std::move(kw), -1)
 {
     msg = "Value input error for keyword \"" + keyword + "\"" + \
           "\nReason: \"" + reason + "\"\n" + \
-          "\nRecord: \"" + record.substr(0, 50) + (record.size()>50?"...":"") + "\"";
+          "\nRecord: \"" + record.substr(0, 50) + ( record.size() > 50?"...":"" ) + "\"";
 }
 
 void GeneratorInputRecord::giveRawLine(std::string &out) const
@@ -184,28 +184,29 @@ void GeneratorInputRecord::giveRawLine(std::string &out) const
     // --- trim leading whitespace
     out.erase(out.begin(),
               std::find_if(out.begin(), out.end(),
-                           [](unsigned char ch) { return !std::isspace(ch); }));
+                           [] ( unsigned char ch ) { return !std::isspace(ch);
+                           }) );
 
     // --- trim trailing whitespace
     out.erase(std::find_if(out.rbegin(), out.rend(),
-                           [](unsigned char ch) { return !std::isspace(ch); }).base(),
-              out.end());
+                           [] ( unsigned char ch ) { return !std::isspace(ch);
+                           }).base(),
+              out.end() );
 }
 
 
-const char* MissingKeywordInputException::what() const noexcept
-{ 
-    return msg.c_str();
-}
-
-
-const char* BadFormatInputException::what() const noexcept
+const char * MissingKeywordInputException::what() const noexcept
 {
     return msg.c_str();
 }
 
-const char* ValueInputException::what() const noexcept
+
+const char * BadFormatInputException::what() const noexcept
 {
     return msg.c_str();
 }
 
+const char * ValueInputException::what() const noexcept
+{
+    return msg.c_str();
+}

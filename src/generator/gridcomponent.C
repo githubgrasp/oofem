@@ -2,13 +2,12 @@
 
 
 #ifndef __MAKEDEPEND
-#include <math.h>
-#include <stdlib.h>
+ #include <math.h>
+ #include <stdlib.h>
 #endif
 
-GridComponent :: GridComponent(int n, Grid* aGrid) //, coordinates()
+GridComponent::GridComponent(int n, Grid *aGrid)   //, coordinates()
 {
-  grid = aGrid;
-  number = n;
+    grid = aGrid;
+    number = n;
 }
-

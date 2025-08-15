@@ -14,7 +14,7 @@
 #include "oofemtxtinputrecord.h"
 
 #ifndef __MAKEDEPEND
-#include <stdio.h>
+ #include <stdio.h>
 #endif
 
 
@@ -27,13 +27,12 @@
 
 class Cylinder : public Region
 {
-
 protected:
     /// Array storing nodal coordinates.
-  oofem::FloatArray line; //Storing start and end point of axis of cylinder
-  double diameter;
-  int number;
-  double refinement;
+    oofem::FloatArray line; //Storing start and end point of axis of cylinder
+    double diameter;
+    int number;
+    double refinement;
 
 public:
 
@@ -42,13 +41,13 @@ public:
      * @param n node number in domain aDomain
      * @param aDomain domain to which node belongs
      */
-    Cylinder(int n, Grid* aGrid);                      // constructor
+    Cylinder(int n, Grid *aGrid);                      // constructor
     /// Destructor.
     ~Cylinder();                                           // destructor
 
 
-    double giveDiameter(){return this->diameter;}
-    
+    double giveDiameter() { return this->diameter; }
+
     virtual int generatePoints();
 
     Cylinder *ofType();
@@ -56,18 +55,11 @@ public:
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "Cylinder"; }
 
-  void initializeFrom(GeneratorInputRecord &ir);
+    void initializeFrom(GeneratorInputRecord &ir);
 
     /// prints receiver state on stdout. Usefull for debuging.
     void         printYourself();
-
 };
 
 
 #endif // cylinder_h
-
-
-
-
-
-

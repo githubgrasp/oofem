@@ -14,21 +14,20 @@
 #include "oofemtxtinputrecord.h"
 
 #ifndef __MAKEDEPEND
-#include <stdio.h>
+ #include <stdio.h>
 #endif
 
 
 #define _IFT_InterfaceSurface_curves "curves"
 #define _IFT_InterfaceSurface_refine "refine"
- 
+
 
 class
 InterfaceSurface : public Inclusion
 {
-
 protected:
     /// Array storing nodal coordinates.
-  oofem::IntArray curves;
+    oofem::IntArray curves;
     int number;
     double refinement;
 
@@ -40,11 +39,11 @@ public:
      * @param aGrid grid to which node belongs
      */
 
-    InterfaceSurface(int n, Grid* aGrid);                      // constructor
+    InterfaceSurface(int n, Grid *aGrid);                      // constructor
 
     /// Destructor.
     ~InterfaceSurface();                                           // destructor
-    
+
     int generatePoints();
 
     InterfaceSurface *ofType();
@@ -56,13 +55,6 @@ public:
 
     /// prints receiver state on stdout. Usefull for debuging.
     void         printYourself();
-
 };
 
 #endif // node_h
-
-
-
-
-
-
