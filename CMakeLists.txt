@@ -148,6 +148,7 @@ option (USE_PYTHON_EXTENSION "Enable Python extension for exposing C++ code to p
 option (USE_HDF5 "HDF5 support" OFF)
 option (USE_MPM "Enable experimental multiphysics module" OFF)
 option (USE_GENERATOR "Enable vertex generator" OFF)
+option (USE_CONVERTER "Enable mesh converter" OFF)
 
 
 if (USE_PARALLEL)
@@ -284,6 +285,13 @@ if (USE_GENERATOR)
     add_subdirectory("${oofem_SOURCE_DIR}/src/generator")
     list (APPEND MODULE_LIST "generator")
 endif ()
+
+if (USE_CONVERTER)
+    include_directories ("${oofem_SOURCE_DIR}/src/converter")
+    add_subdirectory("${oofem_SOURCE_DIR}/src/converter")
+    list (APPEND MODULE_LIST "converter")
+endif ()
+
 
 
 #######################################################################

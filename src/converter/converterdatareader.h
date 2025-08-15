@@ -1,0 +1,93 @@
+/*
+ *
+ *                 #####    #####   ######  ######  ###   ###
+ *               ##   ##  ##   ##  ##      ##      ## ### ##
+ *              ##   ##  ##   ##  ####    ####    ##  #  ##
+ *             ##   ##  ##   ##  ##      ##      ##     ##
+ *            ##   ##  ##   ##  ##      ##      ##     ##
+ *            #####    #####   ##      ######  ##     ##
+ *
+ *
+ *             OOFEM : Object Oriented Finite Element Code
+ *
+ *               Copyright (C) 1993 - 2013   Borek Patzak
+ *
+ *
+ *
+ *       Czech Technical University, Faculty of Civil Engineering,
+ *   Department of Structural Mechanics, 166 29 Prague, Czech Republic
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2.1 of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ */
+
+#ifndef converterdatareader_h
+#define converterdatareader_h
+
+#include "oofemenv.h"
+#include "converterinputrecord.h"
+
+/**
+ * Class representing the abstraction for input data source.
+ * Its role is to provide input records for particular components.
+ * The input records are identified by record type and component number.
+ * The order of input records is in fact determined by the coded sequence of
+ * component initialization. The input record identification facilitates the
+ * implementation of database readers with direct or random access.
+ */
+class ConverterDataReader
+{
+protected:
+    /// Output file name (first line in OOFEM input files).
+    std::string outputFileName;
+    /// Description line (second line in OOFEM input files).
+    std::string description;
+
+public:
+    /// Determines the type of input record.
+    enum ConverterInputRecordType {
+        GIR_domainRec, GIR_controlRec, GIR_domainCompRec, GIR_vertexRec, GIR_controlVertexRec, GIR_curveRec, GIR_surfaceRec, GIR_regionRec, GIR_inclusionRec, GIR_aggregateRec, GIR_refinementRec
+    };
+
+    ConverterDataReader() { }
+    virtual ~ConverterDataReader() { }
+
+    /**
+     * Returns input record corresponding to given InputRecordType value and its record_id.
+     * The returned InputRecord reference is valid only until the next call.
+     * @param irType Determines type of record to be returned.
+     * @param recordId Determines the record  number corresponding to component number.
+     */
+    virtual ConverterInputRecord &giveInputRecord(ConverterInputRecordType irType, int recordId) = 0;
+
+    /**
+     * Peak in advance into the record list.
+     * @return True if next keyword is a set.
+     */
+    virtual bool peakNext(const std::string &keyword) { return false; }
+
+    /**
+     * Allows to detach all data connections.
+     */
+    virtual void finish() = 0;
+
+    /// Gives the reference file name (e.g. file name)
+    virtual std::string giveReferenceName() const = 0;
+    /// Gives the output file name
+    std::string giveOutputFileName() { return this->outputFileName; }
+    /// Gives the problem description
+    std::string giveDescription() { return this->description; }
+};
+
+#endif // converterdatareader_h
