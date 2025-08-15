@@ -81,10 +81,7 @@ Surface :: generatePoints()
   double boundaryFactor = this->refinement;
 
   double maxIter = grid->giveMaximumIterations();
-  int vertexNumber = grid->giveNumberOfVertices();
 
-  int tempSize = 10000000;
-  generator::ensure_size1(grid->vertexList,tempSize);
 
   double border = grid->diameter;
   
@@ -116,17 +113,12 @@ Surface :: generatePoints()
     if ( flag == 0 ) {
 
 
-      /* auto *v = new Vertex(vertexNumber+1, grid); */
-      /* v->setCoordinates(random); */
-      /* grid->setVertex(vertexNumber+1, v); */
-      /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, random); */
-      /* vertexNumber++; */
 
       grid->addVertex(random);
       
       i = 0;	
 
-      mirrorShift(random, normal,specimenDimension,boundaries,vertexNumber,periodicityFlag);
+      mirrorShift(random, normal,specimenDimension,boundaries,periodicityFlag);
 
     
     //Option random=2, for which periodic points are shifted across the specimen.
@@ -149,16 +141,9 @@ Surface :: generatePoints()
 	  newRandom.at(3) = random.at(3);
 	  
 
-	  /* auto *v = new Vertex(vertexNumber+1, grid); */
-	  /* v->setCoordinates(newRandom); */
-	  /* grid->setVertex(vertexNumber+1, v); */
-	  /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, newRandom); */
-	  /* vertexNumber++; */
-
 	  grid->addVertex(newRandom);
-	  
-	  
-	  mirrorShift(newRandom, normal,specimenDimension,boundaries,vertexNumber,periodicityFlag);
+	  	  
+	  mirrorShift(newRandom, normal,specimenDimension,boundaries,periodicityFlag);
 	  
 	}
 	else if( normal.at(1) == 0 && normal.at(2) == 1 && normal.at(3) == 0){//y-direction
@@ -179,16 +164,9 @@ Surface :: generatePoints()
 	  newRandom.at(2) = random.at(2) + shift*globalDimension.at(2);
 	  newRandom.at(3) = random.at(3);
 	  
-
-	  /* auto *v = new Vertex(vertexNumber+1, grid); */
-	  /* v->setCoordinates(newRandom); */
-	  /* grid->setVertex(vertexNumber+1, v); */
-	  /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, newRandom); */
-	  /* vertexNumber++; */
-
 	  grid->addVertex(newRandom);
 	  
-	  mirrorShift(newRandom, normal,specimenDimension,boundaries,vertexNumber,periodicityFlag);	  
+	  mirrorShift(newRandom, normal,specimenDimension,boundaries,periodicityFlag);	  
 	}
 	else if( normal.at(1) == 0 && normal.at(2) == 0 && normal.at(3) == 1){//z-direction
 
@@ -208,16 +186,10 @@ Surface :: generatePoints()
 	  newRandom.at(2) = random.at(2);
 	  newRandom.at(3) = random.at(3) + shift*globalDimension.at(3);
 
-	  /* auto *v = new Vertex(vertexNumber+1, grid); */
-	  /* v->setCoordinates(newRandom); */
-	  /* grid->setVertex(vertexNumber+1, v); */
-	  /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, newRandom); */
-	  /* vertexNumber++; */
-
 	  grid->addVertex(newRandom);
 
 	  
-	mirrorShift(newRandom, normal,specimenDimension,boundaries,vertexNumber,periodicityFlag);
+	mirrorShift(newRandom, normal,specimenDimension,boundaries,periodicityFlag);
       }
       else{
 	printf("Error: Unknown direction.\n");
@@ -226,15 +198,13 @@ Surface :: generatePoints()
       }
     }
   }
-  
-  generator::ensure_size1(grid->vertexList,vertexNumber);
-  
+    
   return 1;
   
 }
 
 
-void Surface :: mirrorShift(oofem::FloatArray& random, oofem::FloatArray& normal,oofem::FloatArray& specimenDimension,oofem::FloatArray& boundaries, int& vertexNumber, oofem::IntArray& periodicityFlag)
+void Surface :: mirrorShift(oofem::FloatArray& random, oofem::FloatArray& normal,oofem::FloatArray& specimenDimension,oofem::FloatArray& boundaries, oofem::IntArray& periodicityFlag)
 {
 
   //Mirror (or periodic shift) with respect to two of the three axis.
@@ -276,12 +246,6 @@ void Surface :: mirrorShift(oofem::FloatArray& random, oofem::FloatArray& normal
 	      newRandom.at(3) = random.at(3) - 2. * ( random.at(3) - boundaries.at(6) );
 	    }
 	  }
-
-	  /* auto *v = new Vertex(vertexNumber+1, grid); */
-	  /* v->setCoordinates(newRandom); */
-	  /* grid->setVertex(vertexNumber+1, v); */
-	  /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, newRandom); */
-	  /* vertexNumber++; */
 
 	  grid->addVertex(newRandom);
 
@@ -326,12 +290,6 @@ void Surface :: mirrorShift(oofem::FloatArray& random, oofem::FloatArray& normal
 	    }
 	  }
 
-	  /* auto *v = new Vertex(vertexNumber+1, grid); */
-	  /* v->setCoordinates(newRandom); */
-	  /* grid->setVertex(vertexNumber+1, v); */
-	  /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, newRandom); */
-	  /* vertexNumber++; */
-
 	  grid->addVertex(newRandom);
 	  
 	}
@@ -374,13 +332,6 @@ void Surface :: mirrorShift(oofem::FloatArray& random, oofem::FloatArray& normal
 	  }
 	  //z-direction
 	  newRandom.at(3) = random.at(3);
-
-
-	  /* auto *v = new Vertex(vertexNumber+1, grid); */
-	  /* v->setCoordinates(newRandom); */
-	  /* grid->setVertex(vertexNumber+1, v); */
-	  /* grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1, newRandom); */
-	  /* vertexNumber++; */
 
 	  grid->addVertex(newRandom);
 	  

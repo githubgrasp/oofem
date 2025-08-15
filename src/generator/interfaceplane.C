@@ -48,7 +48,6 @@ int InterfacePlane :: generatePoints()
    double x,y,z;
    double maxIter = grid->giveMaximumIterations();
    oofem::FloatArray mirroredRandom(3);
-   int vertexNumber = grid->giveNumberOfVertices();
 
    double randomAngleOne;
    double randomAngleTwo;
@@ -84,14 +83,7 @@ int InterfacePlane :: generatePoints()
      random.at(2) = this->line.at(2);
      random.at(3) = this->line.at(3);
      
-     vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType()); 
-     vertex->setCoordinates(random);
-     grid->setVertex(vertexNumber+1, vertex);
-     grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random);
-     
-     //	 i = 0;
-     vertexNumber++;
-     
+     grid->addVertex(random);
           
      for(int k = 0;k<numberOfIntervalsTwo;k++){
   
@@ -106,16 +98,11 @@ int InterfacePlane :: generatePoints()
 	 //Check if this is far enough from the others
  	 flag = 0;
 	        
-	 vertex = ( Vertex * ) ( Vertex(vertexNumber+1,grid).ofType()); 
-	 vertex->setCoordinates(random);
-	 grid->setVertex(vertexNumber+1, vertex);
-	 grid->giveGridLocalizer()->insertSequentialNode(vertexNumber+1,random);
+	 grid->addVertex(random);
+
 	 
-	 
-	 //	 i = 0;
-	 vertexNumber++;
 	 if(i==0||i==numberOfIntervalsOne){
-	   printf("VertexNumbers for surface elements of cylindrical inclusion = %d\n", vertexNumber);
+	   printf("VertexNumbers for surface elements of cylindrical inclusion = %d\n", grid->giveNumberOfVertices());
 	 }
  
        }//end of two layers

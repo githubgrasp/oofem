@@ -100,17 +100,6 @@ oofemOctantRec :: giveNodeList() {
     return nodeList;
 }
 
-// std :: set< int > *
-// oofemOctantRec :: giveIPElementList() {
-//     if ( elementList == NULL ) {
-//         elementList = new std :: set< int >;
-//     }
-
-//     return elementList;
-// }
-
-
-
 oofemOctantRec *
 oofemOctantRec :: giveChild(int xi, int yi, int zi)
 {
@@ -268,13 +257,6 @@ oofemOctantRec :: testBoundingBox(const oofem::FloatArray &coords, double radius
             return BBS_CONTAINSCELL;
         }
 
-        /*
-         * if ((this->origin.at(1) < (coords.at(1)-radius))  &&  ((this->origin.at(1)+this->size) > (coords.at(1)+radius)) &&
-         *  (this->origin.at(2) < (coords.at(2)-radius))  &&  ((this->origin.at(2)+this->size) > (coords.at(2)+radius)) &&
-         *  (this->origin.at(3) < (coords.at(3)-radius))  &&  ((this->origin.at(3)+this->size) > (coords.at(3)+radius)))
-         * return BBS_INSIDECELL;
-         * else return BBS_CONTAINSCELL;
-         */
     } else { // BBox center not inside cell, but may hit cell
         // test if bounding sphere hits boundary surface
         int inBounds = 1;
@@ -310,8 +292,6 @@ OctreeGridLocalizer :: findTerminalContaining(oofemOctantRec *startCell, const o
 
         return currCell;
     } else {
-        // coords.printYourself();
-        //OOFEM_ERROR ("findTerminalContaining: start cell not containing the given point");
         return NULL;
     }
 }
@@ -390,18 +370,6 @@ OctreeGridLocalizer :: buildOctreeDataStructure()
         this->rootCell->divideLocally(1, this->octreeMask);
     }
 
-    // // insert grid nodes into tree
-    // for ( i = 1; i <= nnode; i++ ) {
-    //     dman = grid->giveVertex(i);
-    //  //        if ( ( dman->giveClassID() == NodeClass ) || ( dman->giveClassID() == RigidArmNodeClass ) ) {
-    //         coords = ( ( ( Vertex * ) dman )->giveCoordinates() );
-    //         this->insertNodeIntoOctree(this->rootCell, i, * coords);
-    //      //        }
-    // }
-
-    // insert IP records into tree (the tree topology is determined by nodes)
-    //    this->initElementIPDataStructure();
-
     ec = :: clock();
 
     // compute max. tree depth
@@ -414,118 +382,6 @@ OctreeGridLocalizer :: buildOctreeDataStructure()
     return 1;
 }
 
-
-// int
-// OctreeGridLocalizer :: initElementIPDataStructure()
-// {
-//     // Original implementation
-//     //
-//     int i, j, nip;
-//     int nelems = this->grid->giveNumberOfElements();
-//     Element *ielem;
-//     IntegrationRule *iRule;
-//     GaussPoint *jGp;
-//     FloatArray jGpCoords;
-
-//     if ( this->elementIPListsInitialized ) {
-//         return 1;
-//     }
-
-//     // insert IP records into tree (the tree topology is determined by nodes)
-//     for ( i = 1; i <= nelems; i++ ) {
-//         // only default IP are taken into account
-//         ielem = this->giveGrid()->giveElement(i);
-//         iRule = ielem->giveDefaultIntegrationRulePtr();
-//         nip = iRule->getNumberOfIntegrationPoints();
-//         if ( nip ) {
-//             for ( j = 0; j < iRule->getNumberOfIntegrationPoints(); j++ ) {
-//                 jGp = iRule->getIntegrationPoint(j);
-//                 if ( ielem->computeGlobalCoordinates( jGpCoords, * ( jGp->giveCoordinates() ) ) ) {
-//                     this->insertIPElementIntoOctree(this->rootCell, i, jGpCoords);
-//                 } else {
-//                     OOFEM_ERROR("initElementIPDataStructure: computeGlobalCoordinates failed");
-//                 }
-//             }
-//         } else {
-//             // there are no IP (belonging to default integration rule of an element)
-//             // but the element should be present in octree data structure
-//             // this is needed by some services (giveElementContainingPoint, for example)
-//             FloatArray *nc;
-//             for ( j = 1; j <= ielem->giveNumberOfNodes(); j++ ) {
-//                 nc = ielem->giveNode(j)->giveCoordinates();
-//                 this->insertIPElementIntoOctree(this->rootCell, i, * nc);
-//             }
-//         }
-//     }
-
-//     // Initializes the element lists  in octree data structure.
-//     // This implementation requires that the list of nodes in terminate cells exists
-//     // simply all shared elements to nodes in terminal cell are added.
-//     // If this is added to existing implementation based on adding elements only if integration point is in the cell
-//     // This leads to more complete element list in terminal cell.
-//     // Can improve the searching for background element, but will deteriorate
-//     // the performance of closest IP search and serch of elements in given volume.
-
-//     // Note: since in general, the integration point of an element may fall into
-//     // an octant, where are not the element nodes, the original algorithm is
-//     // necessary.
-
-//     //this->insertElementsUsingNodalConnectivitiesIntoOctree (this->rootCell);
-
-
-//     this->elementIPListsInitialized = 1;
-//     return 1;
-// }
-
-
-
-// int
-// OctreeGridLocalizer :: insertIPElementIntoOctree(oofemOctantRec *rootCell, int elemNum, const FloatArray &coords)
-// {
-//     oofemOctantRec *currCell;
-
-//     // found terminal octant containing IP
-//     currCell = this->findTerminalContaining(rootCell, coords);
-
-//     currCell->addElementIP(elemNum);
-//     return 1;
-// }
-
-// void
-// OctreeGridLocalizer :: insertElementsUsingNodalConnectivitiesIntoOctree(oofemOctantRec *currCell)
-// {
-//     int i, j, k;
-
-//     if ( currCell->isTerminalOctant() ) {
-//         nodeContainerType *cellNodes = currCell->giveNodeList();
-//         nodeContainerType :: iterator pos;
-//         const IntArray *dofmanConnectivity;
-//         int size;
-
-//         if ( !cellNodes->empty() ) {
-//             for ( pos = cellNodes->begin(); pos != cellNodes->end(); ++pos ) {
-//                 // loop over cell nodes and ask connectivity table for shared elements
-//                 dofmanConnectivity = grid->giveConnectivityTable()->giveDofManConnectivityArray(* pos);
-//                 if ( dofmanConnectivity ) {
-//                     size = dofmanConnectivity->giveSize();
-//                     for ( i = 1; i <= size; i++ ) {
-//                         currCell->addElementIP( dofmanConnectivity->at(i) );
-//                     }
-//                 }
-//             }
-//         }
-//     } else {
-//         for ( i = 0; i <= octreeMask.at(1); i++ ) {
-//             for ( j = 0; j <= octreeMask.at(2); j++ ) {
-//                 for ( k = 0; k <= octreeMask.at(3); k++ ) {
-//                     if ( currCell->giveChild(i, j, k) ) {
-//                         this->insertElementsUsingNodalConnectivitiesIntoOctree( currCell->giveChild(i, j, k) );
-//                     }
-//                 }
-//             }
-//         }
-//     }
-// }
 
 void
 OctreeGridLocalizer :: insertSequentialNode(int nodeNum, const oofem::FloatArray &coords)
@@ -589,603 +445,6 @@ OctreeGridLocalizer :: insertNodeIntoOctree(oofemOctantRec *rootCell, int nodeNu
     return 1;
 }
 
-
-
-
-
-
-// Element *
-// OctreeGridLocalizer :: giveElementContainingPoint(const FloatArray &coords, const IntArray *regionList)
-// {
-//     Element *answer;
-//     //GridLocalizerInterface* interface;
-//     oofemOctantRec *currCell, *childCell = NULL;
-
-//     this->init();
-
-//     // found terminal octant containing point
-//     currCell = this->findTerminalContaining(rootCell, coords);
-//     if ( currCell == NULL ) {
-//         currCell = rootCell;
-//     }
-
-//     while ( currCell != NULL ) {
-//         // loop over all elements in currCell, skip search on child cell already scanned
-//         answer = this->giveElementContainingPoint(currCell, coords, childCell, regionList);
-//         if ( answer ) {
-//             return answer;
-//         }
-
-//         childCell = currCell;
-//         // terminal cell does not contain node and its connected elements containing the given point
-//         // search at parent level
-//         currCell = currCell->giveParent();
-//     }
-
-//     // return NULL -> there is any element containing point.
-//     return NULL;
-// }
-
-
-// Element *
-// OctreeGridLocalizer :: giveElementContainingPoint(oofemOctantRec *cell, const FloatArray &coords,
-//                                                      oofemOctantRec *scannedChild, const IntArray *regionList)
-// {
-//     elementContainerType *elementList = cell->giveIPElementList();
-
-//     // recursive implementation
-//     if ( cell->isTerminalOctant() && ( !elementList->empty() ) ) {
-//         int ielem;
-//         Element *ielemptr;
-//         GridLocalizerInterface *interface;
-//         elementContainerType :: iterator pos;
-
-//         for ( pos = elementList->begin(); pos !=  elementList->end(); ++pos ) {
-//             ielem = * pos;
-//             ielemptr = this->giveGrid()->giveElement(ielem);
-
-//             /* HUHU CHEATING */
-// #ifdef __PARALLEL_MODE
-//             if ( ielemptr->giveParallelMode() == Element_remote ) {
-//                 continue;
-//             }
-
-// #endif
-
-//             interface = ( GridLocalizerInterface * ) ielemptr->giveInterface(GridLocalizerInterfaceType);
-//             if ( interface ) {
-//                 if ( regionList && ( regionList->findFirstIndexOf( ielemptr->giveRegionNumber() ) == 0 ) ) {
-//                     continue;
-//                 }
-
-//                 if ( interface->GridLocalizerI_BBoxContainsPoint(coords) == 0 ) {
-//                     continue;
-//                 }
-
-//                 if ( interface->GridLocalizerI_containsPoint(coords) ) {
-//                     return ielemptr;
-//                 }
-//             }
-//         }
-
-//         return NULL;
-//     } else {
-//         int i, j, k;
-//         Element *answer;
-//         // receiver is not terminal octant -> call same service on childs
-//         for ( i = 0; i <= octreeMask.at(1); i++ ) {
-//             for ( j = 0; j <= octreeMask.at(2); j++ ) {
-//                 for ( k = 0; k <= octreeMask.at(3); k++ ) {
-//                     if ( cell->giveChild(i, j, k) ) {
-//                         if ( scannedChild == cell->giveChild(i, j, k) ) {
-//                             continue;
-//                         }
-
-//                         answer = this->giveElementContainingPoint(cell->giveChild(i, j, k), coords, NULL, regionList);
-//                         if ( answer ) {
-//                             return answer;
-//                         }
-//                     }
-//                 }
-//             }
-//         }
-//     }
-
-//     return NULL;
-// }
-
-
-// //
-// //  WARNING !! LIMITED IMPLEMENTATION HERE !!
-// //
-// //  a close element in the same region (or in other if check using region list is not applied)
-// //  but topologically of large distance from the point may be returned;
-// //  maybe nonlocal barrier should be used
-// //
-
-// Element *
-// OctreeGridLocalizer :: giveElementCloseToPoint(const FloatArray &coords, const IntArray *regionList)
-// {
-//     Element *ielemptr, *answer;
-//     double currDist, minDist = 1.1 * rootCell->giveSize();
-//     elementContainerType :: iterator pos;
-//     elementContainerType *elementList;
-//     oofemOctantRec *currCell;
-
-//     this->init();
-
-//     // found terminal octant containing point
-//     currCell = this->findTerminalContaining(rootCell, coords);
-//     // point may be out of octree
-//     if ( currCell != NULL ) {
-//         elementList = currCell->giveIPElementList();
-//         if ( !elementList->empty() ) {
-//             GridLocalizerInterface *interface;
-
-//             for ( pos = elementList->begin(); pos !=  elementList->end(); ++pos ) {
-//                 ielemptr = this->giveGrid()->giveElement(* pos);
-
-//                 /* HUHU CHEATING */
-// #ifdef __PARALLEL_MODE
-//                 if ( ielemptr->giveParallelMode() == Element_remote ) {
-//                     continue;
-//                 }
-
-// #endif
-
-//                 interface = ( GridLocalizerInterface * ) ielemptr->giveInterface(GridLocalizerInterfaceType);
-//                 if ( interface ) {
-//                     if ( regionList && ( regionList->findFirstIndexOf( ielemptr->giveRegionNumber() ) == 0 ) ) {
-//                         continue;
-//                     }
-
-//                     currDist = interface->GridLocalizerI_giveDistanceFromParametricCenter(coords);
-//                     if ( currDist < minDist ) {
-//                         answer = ielemptr;
-//                         minDist = currDist;
-//                     }
-//                 } else {
-//                     OOFEM_ERROR("giveElementCloseToPoint: no interface");
-//                 }
-//             }
-
-//             if ( minDist == 0.0 || currCell == rootCell ) {
-//                 return answer;
-//             }
-//         }
-//     }
-
-//     oofemOctantRec :: boundingBoxStatus BBStatus;
-//     FloatArray bborigin = coords;
-
-//     // construct bounding box and test its position within currCell
-//     BBStatus = currCell->testBoundingBox(bborigin, minDist);
-//     if ( BBStatus == oofemOctantRec :: BBS_INSIDECELL ) {
-//         return answer;
-//     } else if ( BBStatus == oofemOctantRec :: BBS_CONTAINSCELL ) {
-//         std :: list< oofemOctantRec * >cellList;
-//         std :: list< oofemOctantRec * > :: iterator cellListIt;
-
-//         // found terminal octant containing point
-//         oofemOctantRec *startCell = this->findTerminalContaining(rootCell, coords);
-//         if ( startCell == NULL ) {
-//             startCell = rootCell;
-//         }
-
-//         // go up, until cell containing bbox is found
-//         if ( startCell != rootCell ) {
-//             while ( startCell->testBoundingBox(coords, minDist) != oofemOctantRec :: BBS_INSIDECELL ) {
-//                 startCell = startCell->giveParent();
-//                 if ( startCell == rootCell ) {
-//                     break;
-//                 }
-//             }
-//         }
-
-//         this->giveListOfTerminalCellsInBoundingBox(cellList, bborigin, minDist, startCell);
-
-//         for ( cellListIt = cellList.begin(); cellListIt != cellList.end(); ++cellListIt ) {
-//             if ( currCell == ( * cellListIt ) ) {
-//                 continue;
-//             }
-
-//             this->giveElementCloseToPointWithinOctant( ( * cellListIt ), coords, minDist, & answer, regionList );
-//         }
-//     }
-
-//     return answer;
-// }
-
-
-// void
-// OctreeGridLocalizer :: giveElementCloseToPointWithinOctant(oofemOctantRec *cell, const FloatArray &coords,
-//                                                               double &minDist, Element **answer,
-//                                                               const IntArray *regionList)
-// {
-//     if ( cell->isTerminalOctant() ) {
-//         Element *ielemptr;
-//         GridLocalizerInterface *interface;
-//         elementContainerType *elementList = cell->giveIPElementList();
-//         elementContainerType :: iterator pos;
-//         double currDist;
-
-//         if ( !elementList->empty() ) {
-//             for ( pos = elementList->begin(); pos !=  elementList->end(); ++pos ) {
-//                 ielemptr = this->giveGrid()->giveElement(* pos);
-
-//                 /* HUHU CHEATING */
-// #ifdef __PARALLEL_MODE
-//                 if ( ielemptr->giveParallelMode() == Element_remote ) {
-//                     continue;
-//                 }
-
-// #endif
-
-//                 interface = ( GridLocalizerInterface * ) ielemptr->giveInterface(GridLocalizerInterfaceType);
-//                 if ( interface ) {
-//                     if ( regionList && ( regionList->findFirstIndexOf( ielemptr->giveRegionNumber() ) == 0 ) ) {
-//                         continue;
-//                     }
-
-//                     currDist = interface->GridLocalizerI_giveDistanceFromParametricCenter(coords);
-//                     if ( currDist < minDist ) {
-//                         * answer = ielemptr;
-//                         minDist = currDist;
-//                     }
-//                 } else {
-//                     OOFEM_ERROR("giveElementCloseToPointWithinOctant: no interface");
-//                 }
-//             }
-//         }
-
-//         return;
-//     } else {
-//         int i, j, k;
-//         oofemOctantRec :: boundingBoxStatus BBStatus;
-
-//         for ( i = 0; i <= octreeMask.at(1); i++ ) {
-//             for ( j = 0; j <= octreeMask.at(2); j++ ) {
-//                 for ( k = 0; k <= octreeMask.at(3); k++ ) {
-//                     if ( cell->giveChild(i, j, k) ) {
-//                         // test if box hits the cell
-//                         BBStatus = cell->giveChild(i, j, k)->testBoundingBox(coords, minDist);
-//                         if ( ( BBStatus == oofemOctantRec :: BBS_INSIDECELL ) || ( BBStatus == oofemOctantRec :: BBS_CONTAINSCELL ) ) {
-//                             // if yes call this method for such cell
-//                             this->giveElementCloseToPointWithinOctant(cell->giveChild(i, j, k), coords, minDist, answer, regionList);
-//                         }
-//                     }
-//                 }
-//             }
-//         }
-//     }
-
-//     return;
-// }
-
-
-
-// GaussPoint *
-// OctreeGridLocalizer :: giveClosestIP(const FloatArray &coords, int region)
-// {
-//     int j;
-//     double dist, minDist;
-//     oofemOctantRec *currCell;
-//     GaussPoint *nearestGp, *jGp;
-//     oofemOctantRec :: boundingBoxStatus BBStatus;
-//     elementContainerType :: iterator pos;
-//     elementContainerType *elementList;
-//     Element *ielem;
-//     FloatArray jGpCoords;
-//     IntegrationRule *iRule;
-
-//     this->init();
-
-//     // list of already tested elements
-//     // elementContainerType visitedElems;
-//     minDist = 1.1 * rootCell->giveSize();
-//     // found terminal octant containing point
-//     currCell = this->findTerminalContaining(rootCell, coords);
-//     elementList = currCell->giveIPElementList();
-//     // find nearest ip in this terminal cell
-//     if ( !elementList->empty() ) {
-//         for ( pos = elementList->begin(); pos !=  elementList->end(); ++pos ) {
-//             ielem = grid->giveElement(* pos);
-
-//             /* HUHU CHEATING */
-// #ifdef __PARALLEL_MODE
-//             if ( ielem->giveParallelMode() == Element_remote ) {
-//                 continue;
-//             }
-
-// #endif
-
-//             //igp   = ipContainer[i].giveGp();
-//             if ( ( region > 0 ) && ( region != ielem->giveRegionNumber() ) ) {
-//                 continue;
-//             }
-
-//             // test if element already visited
-//             // if (!visitedElems.insert(*pos).second) continue;
-//             iRule = ielem->giveDefaultIntegrationRulePtr();
-//             for ( j = 0; j < iRule->getNumberOfIntegrationPoints(); j++ ) {
-//                 jGp = iRule->getIntegrationPoint(j);
-//                 if ( ielem->computeGlobalCoordinates( jGpCoords, * ( jGp->giveCoordinates() ) ) ) {
-//                     // compute distance
-//                     dist = coords.distance(jGpCoords);
-//                     if ( dist < minDist ) {
-//                         minDist   = dist;
-//                         nearestGp = jGp;
-//                     }
-//                 } else {
-//                     OOFEM_ERROR("giveClosestIP: computeGlobalCoordinates failed");
-//                 }
-//             }
-//         }
-//     }
-
-//     FloatArray bborigin = coords;
-//     // all cell element ip's scanned
-//     // construct bounding box and test its position within currCell
-//     BBStatus = currCell->testBoundingBox(bborigin, minDist);
-//     if ( BBStatus == oofemOctantRec :: BBS_INSIDECELL ) {
-//         return nearestGp;
-//     } else if ( BBStatus == oofemOctantRec :: BBS_CONTAINSCELL ) {
-//         std :: list< oofemOctantRec * >cellList;
-//         std :: list< oofemOctantRec * > :: iterator cellListIt;
-
-//         // found terminal octant containing point
-//         oofemOctantRec *startCell = this->findTerminalContaining(rootCell, coords);
-//         // go up, until cell containing bbox is found
-//         if ( startCell != rootCell ) {
-//             while ( startCell->testBoundingBox(coords, minDist) != oofemOctantRec :: BBS_INSIDECELL ) {
-//                 startCell = startCell->giveParent();
-//                 if ( startCell == rootCell ) {
-//                     break;
-//                 }
-//             }
-//         }
-
-//         this->giveListOfTerminalCellsInBoundingBox(cellList, bborigin, minDist, startCell);
-
-//         for ( cellListIt = cellList.begin(); cellListIt != cellList.end(); ++cellListIt ) {
-//             if ( currCell == ( * cellListIt ) ) {
-//                 continue;
-//             }
-
-//             this->giveClosestIPWithinOctant( ( * cellListIt ), coords, region, minDist, & nearestGp );
-//         }
-
-//         return nearestGp;
-
-//         /*
-//          * // found terminal octant containing point
-//          * oofemOctantRec* startCell = this->findTerminalContaining (rootCell, coords);
-//          * // go up, until cell containing bbox is found
-//          * if (startCell != rootCell) {
-//          * while (startCell->testBoundingBox (coords, minDist) != oofemOctantRec::BBS_INSIDECELL) {
-//          *  startCell = startCell->giveParent();
-//          *  if (startCell == rootCell) break;
-//          * }
-//          * }
-//          *
-//          * // loop over all child (if any) and found all nodes meeting the criteria
-//          * // this->giveClosestIPWithinOctant (startCell, visitedElems, coords, region, minDist, &nearestGp);
-//          * this->giveClosestIPWithinOctant (startCell, coords, region, minDist, &nearestGp);
-//          *
-//          * return nearestGp;
-//          */
-
-
-//         /*
-//          * set <int> nearElementList;
-//          * // find all elements within bbox and find nearest ip
-//          * this->giveAllElementsWithIpWithinBox (nearElementList, bborigin, minDist);
-//          * // loop over those elements and find nearest ip and return it
-//          * // check for region also
-//          * if (!nearElementList.empty()) {
-//          *
-//          *  for (pos=nearElementList.begin(); pos !=  nearElementList.end(); ++pos) {
-//          *    ielem = grid->giveElement(*pos);
-//          *    //igp   = ipContainer[i].giveGp();
-//          *      if (region == ielem->giveRegionNumber()) {
-//          *        iRule = ielem->giveDefaultIntegrationRulePtr ();
-//          *         for (j=0 ; j < iRule->getNumberOfIntegrationPoints() ; j++) {
-//          *          jGp = iRule->getIntegrationPoint(j) ;
-//          *          if (ielem->computeGlobalCoordinates (jGpCoords, *(jGp->giveCoordinates()))) {
-//          *            // compute distance
-//          *            dist = coords.distance(jGpCoords);
-//          *            if (dist < minDist) {
-//          *               minDist   = dist;
-//          *              nearestGp = jGp;
-//          *            }
-//          *     } else OOFEM_ERROR ("giveClosestIP: computeGlobalCoordinates failed");
-//          *        }
-//          *      }
-//          *    }
-//          * }
-//          */
-//     } else {
-//         OOFEM_ERROR("giveClosestIP: octree inconsistency found");
-//     }
-
-//     return NULL;
-// }
-
-// void
-// OctreeGridLocalizer :: giveClosestIPWithinOctant(oofemOctantRec *currentCell, //elementContainerType& visitedElems,
-//                                                     const FloatArray &coords,
-//                                                     int region, double &dist, GaussPoint **answer)
-// {
-//     if ( currentCell->isTerminalOctant() ) {
-//         int j;
-//         double currDist;
-//         elementContainerType :: iterator pos;
-//         elementContainerType *elementList;
-//         //FloatArray *ipCoords;
-//         Element *ielem;
-//         IntegrationRule *iRule;
-//         FloatArray jGpCoords;
-
-//         // loop over cell elements and check if they meet the criteria
-//         elementList = currentCell->giveIPElementList();
-//         if ( !elementList->empty() ) {
-//             for ( pos = elementList->begin(); pos !=  elementList->end(); ++pos ) {
-//                 // ask for element
-//                 ielem = grid->giveElement(* pos);
-
-//                 /* HUHU CHEATING */
-// #ifdef __PARALLEL_MODE
-//                 if ( ielem->giveParallelMode() == Element_remote ) {
-//                     continue;
-//                 }
-
-// #endif
-
-//                 if ( ( region > 0 ) && ( region != ielem->giveRegionNumber() ) ) {
-//                     continue;
-//                 }
-
-//                 // test if element already visited
-//                 // if (!visitedElems.insert(*pos).second) continue;
-//                 // is one of his ip's  within given bbox -> inset it into elemSet
-//                 iRule = ielem->giveDefaultIntegrationRulePtr();
-//                 for ( j = 0; j < iRule->getNumberOfIntegrationPoints(); j++ ) {
-//                     if ( ielem->computeGlobalCoordinates( jGpCoords, * ( iRule->getIntegrationPoint(j)->giveCoordinates() ) ) ) {
-//                         currDist = coords.distance(jGpCoords);
-//                         // multiple insertion are handled by STL set implementation
-//                         if ( currDist <= dist ) {
-//                             dist = currDist;
-//                             * answer = iRule->getIntegrationPoint(j);
-//                         }
-//                     } else {
-//                         OOFEM_ERROR("giveClosestIPWithinOctant: computeGlobalCoordinates failed");
-//                     }
-//                 }
-//             }
-//         }
-
-//         return;
-//     } else {
-//         int i, j, k;
-//         oofemOctantRec :: boundingBoxStatus BBStatus;
-
-//         for ( i = 0; i <= octreeMask.at(1); i++ ) {
-//             for ( j = 0; j <= octreeMask.at(2); j++ ) {
-//                 for ( k = 0; k <= octreeMask.at(3); k++ ) {
-//                     if ( currentCell->giveChild(i, j, k) ) {
-//                         // test if box hits the cell
-//                         BBStatus = currentCell->giveChild(i, j, k)->testBoundingBox(coords, dist);
-//                         if ( ( BBStatus == oofemOctantRec :: BBS_INSIDECELL ) || ( BBStatus == oofemOctantRec :: BBS_CONTAINSCELL ) ) {
-//                             // if yes call this method for such cell
-//                             //this->giveClosestIPWithinOctant (currentCell->giveChild(i,j,k), visitedElems, coords, region, dist, answer);
-//                             this->giveClosestIPWithinOctant(currentCell->giveChild(i, j, k), coords, region, dist, answer);
-//                         }
-//                     }
-//                 }
-//             }
-//         }
-//     }
-// }
-
-
-
-
-// void
-// OctreeGridLocalizer :: giveAllElementsWithIpWithinBox(elementContainerType &elemSet, const FloatArray &coords,
-//                                                          const double radius)
-// {
-//     this->init();
-//     // found terminal octant containing point
-//     oofemOctantRec *currCell = this->findTerminalContaining(rootCell, coords);
-//     // go up, until cell containing bbox is found
-//     if ( currCell != rootCell ) {
-//         while ( currCell->testBoundingBox(coords, radius) != oofemOctantRec :: BBS_INSIDECELL ) {
-//             currCell = currCell->giveParent();
-//             if ( currCell == rootCell ) {
-//                 break;
-//             }
-//         }
-//     }
-
-//     // loop over all child (if any) and found all nodes meeting the criteria
-//     this->giveElementsWithIPWithinBox(elemSet, currCell, coords, radius);
-//     if ( elemSet.empty() ) {
-//         OOFEM_ERROR("OctreeGridLocalizer::giveAllElementsWithIpWithinBox empty set found");
-//     }
-// }
-
-
-
-// void
-// OctreeGridLocalizer :: giveElementsWithIPWithinBox(elementContainerType &elemSet, oofemOctantRec *currentCell,
-//                                                       const FloatArray &coords, const double radius)
-// {
-//     if ( currentCell->isTerminalOctant() ) {
-//         int j;
-//         double currDist;
-//         elementContainerType :: iterator pos;
-//         elementContainerType *elementList;
-//         //FloatArray *ipCoords;
-//         Element *ielem;
-//         IntegrationRule *iRule;
-//         FloatArray jGpCoords;
-
-//         // loop over cell elements and check if they meet the criteria
-//         elementList = currentCell->giveIPElementList();
-//         if ( !elementList->empty() ) {
-//             for ( pos = elementList->begin(); pos !=  elementList->end(); ++pos ) {
-//                 // test if element is already present
-//                 if ( elemSet.find(* pos) != elemSet.end() ) {
-//                     continue;
-//                 }
-
-//                 // ask for element
-//                 ielem = grid->giveElement(* pos);
-
-//                 /* HUHU CHEATING
-//                  #ifdef __PARALLEL_MODE
-//                  *       if(ielem -> giveParallelMode() == Element_remote)continue;
-//                  #endif
-//                  */
-//                 // is one of his ip's  within given bbox -> inset it into elemSet
-//                 iRule = ielem->giveDefaultIntegrationRulePtr();
-//                 for ( j = 0; j < iRule->getNumberOfIntegrationPoints(); j++ ) {
-//                     if ( ielem->computeGlobalCoordinates( jGpCoords, * ( iRule->getIntegrationPoint(j)->giveCoordinates() ) ) ) {
-//                         currDist = coords.distance(jGpCoords);
-//                         // multiple insertion are handled by STL set implementation
-//                         if ( currDist <= radius ) {
-//                             elemSet.insert(* pos);
-//                         }
-//                     } else {
-//                         OOFEM_ERROR("giveElementsWithIPWithinBox: computeGlobalCoordinates failed");
-//                     }
-//                 }
-//             }
-//         }
-//     } else {
-//         int i, j, k;
-//         oofemOctantRec :: boundingBoxStatus BBStatus;
-
-
-//         for ( i = 0; i <= octreeMask.at(1); i++ ) {
-//             for ( j = 0; j <= octreeMask.at(2); j++ ) {
-//                 for ( k = 0; k <= octreeMask.at(3); k++ ) {
-//                     if ( currentCell->giveChild(i, j, k) ) {
-//                         // test if box hits the cell
-//                         BBStatus = currentCell->giveChild(i, j, k)->testBoundingBox(coords, radius);
-//                         if ( ( BBStatus == oofemOctantRec :: BBS_INSIDECELL ) || ( BBStatus == oofemOctantRec :: BBS_CONTAINSCELL ) ) {
-//                             // if yes call this method for such cell
-//                             this->giveElementsWithIPWithinBox(elemSet, currentCell->giveChild(i, j, k), coords, radius);
-//                         }
-//                     }
-//                 }
-//             }
-//         }
-//     }
-// }
-
-
-
 int
 OctreeGridLocalizer :: checkNodesWithinBox(const oofem::FloatArray &coords, const double radius)
 {
@@ -1200,66 +459,87 @@ OctreeGridLocalizer :: checkNodesWithinBox(const oofem::FloatArray &coords, cons
 
 
 void
-OctreeGridLocalizer :: giveAllNodesWithinBox(nodeContainerType &nodeSet, const oofem::FloatArray &coords, const double radius)
+OctreeGridLocalizer::giveAllNodesWithinBox(nodeContainerType& nodeSet,
+                                           const oofem::FloatArray& coords,
+                                           const double radius)
 {
     this->init();
-    // found terminal octant containing point
-    oofemOctantRec *currCell = this->findTerminalContaining(rootCell, coords);
-    // go up, until cell containing bbox is found
-    if ( currCell != rootCell ) {
-        while ( currCell->testBoundingBox(coords, radius) != oofemOctantRec :: BBS_INSIDECELL ) {
-            currCell = currCell->giveParent();
-            if ( currCell == rootCell ) {
-                break;
-            }
+
+    // Start from the terminal cell containing the center (or root if outside)
+    oofemOctantRec* curr = this->findTerminalContaining(rootCell, coords);
+    if (!curr) curr = rootCell;
+
+    // Ascend until the bounding sphere is fully inside the cell
+    if (curr != rootCell) {
+        while (curr->testBoundingBox(coords, radius) != oofemOctantRec::BBS_INSIDECELL) {
+            curr = curr->giveParent();
+            if (curr == rootCell) break;
         }
     }
 
-    // loop over all child (if any) and found all nodes meeting the criteria
-    this->giveNodesWithinBox(nodeSet, currCell, coords, radius);
+    // Now traverse from 'curr' downward and collect nodes
+    this->giveNodesWithinBox(nodeSet, curr, coords, radius);
 }
 
+
+
+
 void
-OctreeGridLocalizer :: giveNodesWithinBox(nodeContainerType &nodeList, oofemOctantRec *currentCell,
-                                          const oofem::FloatArray &coords, const double radius)
+OctreeGridLocalizer::giveNodesWithinBox(nodeContainerType& out,
+                                        oofemOctantRec* startCell,
+                                        const oofem::FloatArray& coords,
+                                        const double radius)
 {
-    nodeContainerType *cellNodes = currentCell->giveNodeList();
-    nodeContainerType :: iterator pos;
+    // Precompute radius^2
+    const double r2 = radius * radius;
 
-    if ( currentCell->isTerminalOctant() ) {
-      oofem::FloatArray *nodeCoords;
-        if ( !cellNodes->empty() ) {
-            for ( pos = cellNodes->begin(); pos != cellNodes->end(); ++pos ) {
-                // loop over cell nodes and check if they meet the criteria
-                nodeCoords = grid->giveVertex(* pos)->giveCoordinates();
-                // is node within bbox
-                if ( nodeCoords->distance(coords) <= radius ) {
-                    // if yes, append them into set
-                    nodeList.push_back(* pos);
-                }
-            }
-        }
-    } else {
-        int i, j, k;
-        oofemOctantRec :: boundingBoxStatus BBStatus;
+    // Simple explicit stack (vector is way faster than recursion here)
+    struct Frame { oofemOctantRec* cell; };
+    std::vector<Frame> stack;
+    stack.reserve(64);
+    stack.push_back({ startCell });
 
-        for ( i = 0; i <= octreeMask.at(1); i++ ) {
-            for ( j = 0; j <= octreeMask.at(2); j++ ) {
-                for ( k = 0; k <= octreeMask.at(3); k++ ) {
-                    if ( currentCell->giveChild(i, j, k) ) {
-                        // test if box hits the cell
-                        BBStatus = currentCell->giveChild(i, j, k)->testBoundingBox(coords, radius);
-                        if ( ( BBStatus == oofemOctantRec :: BBS_INSIDECELL ) || ( BBStatus == oofemOctantRec :: BBS_CONTAINSCELL ) ) {
-                            // if yes call this method for such cell
-                            this->giveNodesWithinBox(nodeList, currentCell->giveChild(i, j, k), coords, radius);
-                        }
+    while (!stack.empty()) {
+        oofemOctantRec* cell = stack.back().cell;
+        stack.pop_back();
+
+        // Cheap prune using your existing test (keeps behavior identical)
+        auto hit = cell->testBoundingBox(coords, radius);
+        if (hit == oofemOctantRec::BBS_OUTSIDECELL) continue;
+
+        if (cell->isTerminalOctant()) {
+            // Terminal: test nodes
+            nodeContainerType* cellNodes = cell->giveNodeList();
+            if (cellNodes && !cellNodes->empty()) {
+                // Compare squared distances; avoid sqrt() in FloatArray::distance
+                for (int nid : *cellNodes) {
+                    const oofem::FloatArray* nc = grid->giveVertex(nid)->giveCoordinates();
+
+                    double d2 = 0.0;
+                    const int D = nc->giveSize(); // usually 3
+                    for (int i = 1; i <= D; ++i) {
+                        if (!this->giveOctreeMaskValue(i)) continue; // skip degenerate axes
+                        const double d = nc->at(i) - coords.at(i);
+                        d2 += d * d;
+                    }
+
+                    if (d2 <= r2) {
+                        out.push_back(nid);
                     }
                 }
             }
+        } else {
+            // Push existing children
+            for (int i = 0; i <= octreeMask.at(1); ++i)
+            for (int j = 0; j <= octreeMask.at(2); ++j)
+            for (int k = 0; k <= octreeMask.at(3); ++k) {
+                if (auto* ch = cell->giveChild(i, j, k)) {
+                    stack.push_back({ ch });
+                }
+            }
         }
     }
 }
-
 
 int
 OctreeGridLocalizer :: giveCellDepth(oofemOctantRec *cell)

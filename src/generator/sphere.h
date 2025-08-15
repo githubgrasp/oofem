@@ -53,8 +53,6 @@ public:
 
     int generatePeriodicPoints();
 
-  //    Sphere *ofType();
-
     // miscellaneous
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "Sphere"; }
