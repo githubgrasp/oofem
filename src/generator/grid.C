@@ -49,7 +49,7 @@
 
 
 
-Grid :: Grid(int i)
+Grid::Grid(int i)
 // Constructor. Creates a new domain.
 {
     //  maxIter = 0;
@@ -64,37 +64,52 @@ Grid :: Grid(int i)
     /* refinementList                = new AList< Refinement >(0); */
 
 
-    
+
     gridLocalizer      = NULL;
 
     TOL = 0.;
 }
 
-Grid :: ~Grid()
+Grid::~Grid()
 // Destructor.
 {
-    for (auto v : vertexList) delete v;
-    for (auto v : inputVertexList) delete v;
-    for (auto v : controlVertexList) delete v;
-    for (auto c : curveList) delete c;
-    for (auto s : surfaceList) delete s;
-    for (auto r : regionList) delete r;
-    for (auto i : inclusionList) delete i;
-    for (auto r : refinementList) delete r;
+    for (auto v : vertexList) {
+        delete v;
+    }
+    for (auto v : inputVertexList) {
+        delete v;
+    }
+    for (auto v : controlVertexList) {
+        delete v;
+    }
+    for (auto c : curveList) {
+        delete c;
+    }
+    for (auto s : surfaceList) {
+        delete s;
+    }
+    for (auto r : regionList) {
+        delete r;
+    }
+    for (auto i : inclusionList) {
+        delete i;
+    }
+    for (auto r : refinementList) {
+        delete r;
+    }
 
-    delete gridLocalizer;    
-    
+    delete gridLocalizer;
 }
 
 
 
-GridLocalizer *Grid :: giveGridLocalizer()
+GridLocalizer *Grid::giveGridLocalizer()
 //
 // return connectivity Table - if no defined - creates new one
 //
 {
     if ( gridLocalizer == NULL ) {
-      gridLocalizer = new OctreeGridLocalizer(1, this);
+        gridLocalizer = new OctreeGridLocalizer(1, this);
     }
 
     return gridLocalizer;
@@ -104,8 +119,8 @@ GridLocalizer *Grid :: giveGridLocalizer()
 
 Vertex *Grid::giveVertex(int n)
 {
-  if (n >= 1 && n <= static_cast<int>(generator::size1(vertexList)) && vertexList[n - 1] != nullptr) {
-        return vertexList[n - 1];  // 1-based to 0-based
+    if ( n >= 1 && n <= static_cast < int > ( generator::size1(vertexList) ) && vertexList [ n - 1 ] != nullptr ) {
+        return vertexList [ n - 1 ];  // 1-based to 0-based
     } else {
         printf("giveVertex: undefined vertex (%d)\n", n);
         exit(1);
@@ -115,12 +130,11 @@ Vertex *Grid::giveVertex(int n)
 }
 
 
-Vertex *Grid :: giveInputVertex(int n)
+Vertex *Grid::giveInputVertex(int n)
 // Returns the n-th vertex. Creates this node if it does not exist yet.
 {
-
-  if (n >= 1 && n <= static_cast<int>(generator::size1(inputVertexList)) && inputVertexList[n - 1] != nullptr) {
-        return inputVertexList[n - 1];  // 1-based to 0-based
+    if ( n >= 1 && n <= static_cast < int > ( generator::size1(inputVertexList) ) && inputVertexList [ n - 1 ] != nullptr ) {
+        return inputVertexList [ n - 1 ];  // 1-based to 0-based
     } else {
         printf("giveInputVertex: undefined inputVertex (%d)\n", n);
         exit(1);
@@ -130,12 +144,11 @@ Vertex *Grid :: giveInputVertex(int n)
 
 
 
-Vertex *Grid :: giveControlVertex(int n)
+Vertex *Grid::giveControlVertex(int n)
 // Returns the n-th vertex. Creates this node if it does not exist yet.
 {
-
-  if (n >= 1 && n <= static_cast<int>(generator::size1(controlVertexList)) && controlVertexList[n - 1] != nullptr) {
-        return controlVertexList[n - 1];  // 1-based to 0-based
+    if ( n >= 1 && n <= static_cast < int > ( generator::size1(controlVertexList) ) && controlVertexList [ n - 1 ] != nullptr ) {
+        return controlVertexList [ n - 1 ];  // 1-based to 0-based
     } else {
         printf("giveControlVertex: undefined controlVertex (%d)\n", n);
         exit(1);
@@ -145,26 +158,23 @@ Vertex *Grid :: giveControlVertex(int n)
 
 
 
-Curve *Grid :: giveCurve(int n)
+Curve *Grid::giveCurve(int n)
 // Returns the n-th element. Generates error if it is not defined yet.
 {
-
-  if (n >= 1 && n <= static_cast<int>(generator::size1(curveList)) && curveList[n - 1] != nullptr) {
-        return curveList[n - 1];  // 1-based to 0-based
+    if ( n >= 1 && n <= static_cast < int > ( generator::size1(curveList) ) && curveList [ n - 1 ] != nullptr ) {
+        return curveList [ n - 1 ];  // 1-based to 0-based
     } else {
         printf("giveCurve: undefined curve (%d)\n", n);
         exit(1);
     }
     return nullptr;
-
 }
 
-Surface *Grid :: giveSurface(int n)
+Surface *Grid::giveSurface(int n)
 // Returns the n-th element. Generates error if it is not defined yet.
 {
-
-  if (n >= 1 && n <= static_cast<int>(generator::size1(surfaceList)) && surfaceList[n - 1] != nullptr) {
-        return surfaceList[n - 1];  // 1-based to 0-based
+    if ( n >= 1 && n <= static_cast < int > ( generator::size1(surfaceList) ) && surfaceList [ n - 1 ] != nullptr ) {
+        return surfaceList [ n - 1 ];  // 1-based to 0-based
     } else {
         printf("giveSurface: undefined surface (%d)\n", n);
         exit(1);
@@ -172,20 +182,20 @@ Surface *Grid :: giveSurface(int n)
     return nullptr;
 }
 
-double Grid :: giveDiameter(oofem::FloatArray &coords) {
-  double diam = this->diameter;
-  for (int n=1;n<=this->giveNumberOfRefinements();n++){
-    diam = this->giveRefinement(n)->giveDiameter(coords);
-  }
+double Grid::giveDiameter(oofem::FloatArray &coords) {
+    double diam = this->diameter;
+    for (int n = 1; n <= this->giveNumberOfRefinements(); n++) {
+        diam = this->giveRefinement(n)->giveDiameter(coords);
+    }
 
-  return diam;
+    return diam;
 }
 
 
-Region *Grid :: giveRegion(int n)
+Region *Grid::giveRegion(int n)
 {
-  if (n >= 1 && n <= static_cast<int>(generator::size1(regionList)) && regionList[n - 1] != nullptr) {
-        return regionList[n - 1];  // 1-based to 0-based
+    if ( n >= 1 && n <= static_cast < int > ( generator::size1(regionList) ) && regionList [ n - 1 ] != nullptr ) {
+        return regionList [ n - 1 ];  // 1-based to 0-based
     } else {
         printf("giveRegion: undefined region (%d)\n", n);
         exit(1);
@@ -193,10 +203,10 @@ Region *Grid :: giveRegion(int n)
     return nullptr;
 }
 
-Inclusion *Grid :: giveInclusion(int n)
+Inclusion *Grid::giveInclusion(int n)
 {
-  if (n >= 1 && n <= static_cast<int>(generator::size1(inclusionList)) && inclusionList[n - 1] != nullptr) {
-        return inclusionList[n - 1];  // 1-based to 0-based
+    if ( n >= 1 && n <= static_cast < int > ( generator::size1(inclusionList) ) && inclusionList [ n - 1 ] != nullptr ) {
+        return inclusionList [ n - 1 ];  // 1-based to 0-based
     } else {
         printf("giveInclusion: undefined inclusion (%d)\n", n);
         exit(1);
@@ -204,10 +214,10 @@ Inclusion *Grid :: giveInclusion(int n)
     return nullptr;
 }
 
-Refinement *Grid :: giveRefinement(int n)
+Refinement *Grid::giveRefinement(int n)
 {
-  if (n >= 1 && n <= static_cast<int>(generator::size1(refinementList)) && refinementList[n - 1] != nullptr) {
-        return refinementList[n - 1];  // 1-based to 0-based
+    if ( n >= 1 && n <= static_cast < int > ( generator::size1(refinementList) ) && refinementList [ n - 1 ] != nullptr ) {
+        return refinementList [ n - 1 ];  // 1-based to 0-based
     } else {
         printf("giveRefinement: undefined refinement (%d)\n", n);
         exit(1);
@@ -216,342 +226,326 @@ Refinement *Grid :: giveRefinement(int n)
 }
 
 
-void Grid :: resizeVertices(int _newSize) { vertexList.resize(_newSize, nullptr); }
-void Grid :: resizeInputVertices(int _newSize) { inputVertexList.resize(_newSize, nullptr); }
-void Grid :: resizeControlVertices(int _newSize) { controlVertexList.resize(_newSize, nullptr); }
-void Grid :: resizeCurves(int _newSize) { curveList.resize(_newSize, nullptr); }
-void Grid :: resizeSurfaces(int _newSize) { surfaceList.resize(_newSize, nullptr); }
-void Grid :: resizeRegions(int _newSize) { regionList.resize(_newSize, nullptr); }
-void Grid :: resizeInclusions(int _newSize) { inclusionList.resize(_newSize, nullptr); }
-void Grid :: resizeRefinements(int _newSize) { refinementList.resize(_newSize, nullptr); }
+void Grid::resizeVertices(int _newSize) { vertexList.resize(_newSize, nullptr); }
+void Grid::resizeInputVertices(int _newSize) { inputVertexList.resize(_newSize, nullptr); }
+void Grid::resizeControlVertices(int _newSize) { controlVertexList.resize(_newSize, nullptr); }
+void Grid::resizeCurves(int _newSize) { curveList.resize(_newSize, nullptr); }
+void Grid::resizeSurfaces(int _newSize) { surfaceList.resize(_newSize, nullptr); }
+void Grid::resizeRegions(int _newSize) { regionList.resize(_newSize, nullptr); }
+void Grid::resizeInclusions(int _newSize) { inclusionList.resize(_newSize, nullptr); }
+void Grid::resizeRefinements(int _newSize) { refinementList.resize(_newSize, nullptr); }
 
 
-void Grid :: setVertex(int i, Vertex *obj) {
-  generator::put1_replace(vertexList, i, obj);
-  if (i > vertexCount) vertexCount = i;
+void Grid::setVertex(int i, Vertex *obj) {
+    generator::put1_replace(vertexList, i, obj);
+    if ( i > vertexCount ) {
+        vertexCount = i;
+    }
 }
 
-void Grid :: setInputVertex(int i, Vertex *obj) {
-  generator::put1_replace(inputVertexList, i, obj);
+void Grid::setInputVertex(int i, Vertex *obj) {
+    generator::put1_replace(inputVertexList, i, obj);
 }
 
-void Grid :: setControlVertex(int i, Vertex *obj) {
-  generator::put1_replace(controlVertexList, i, obj);
+void Grid::setControlVertex(int i, Vertex *obj) {
+    generator::put1_replace(controlVertexList, i, obj);
 }
 
-void Grid::setCurve(int i, Curve* obj){
-  generator::put1_replace(curveList, i, obj);
+void Grid::setCurve(int i, Curve *obj) {
+    generator::put1_replace(curveList, i, obj);
 }
 
-void Grid :: setSurface(int i, Surface *obj) {
-  generator::put1_replace(surfaceList, i, obj);
+void Grid::setSurface(int i, Surface *obj) {
+    generator::put1_replace(surfaceList, i, obj);
 }
 
-void Grid :: setRegion(int i, Region *obj) {
-  generator::put1_replace(regionList, i, obj);
+void Grid::setRegion(int i, Region *obj) {
+    generator::put1_replace(regionList, i, obj);
 }
 
-void Grid :: setInclusion(int i, Inclusion *obj) {
-  generator::put1_replace(inclusionList, i, obj);
+void Grid::setInclusion(int i, Inclusion *obj) {
+    generator::put1_replace(inclusionList, i, obj);
 }
 
-void Grid :: setRefinement(int i, Refinement *obj) {
-  generator::put1_replace(refinementList, i, obj);
+void Grid::setRefinement(int i, Refinement *obj) {
+    generator::put1_replace(refinementList, i, obj);
 }
 
-int Grid :: generatePoints()
+int Grid::generatePoints()
 {
-  //@todo: Is the regular generation the same for normal and periodic?
-  if ( this->regularFlag == 1 ) { //regular
-    this->generateRegularPoints();
-  } else { //random (irregular or periodic)
-    this->generateRandomPoints();
-  }
-  return 1;
+    //@todo: Is the regular generation the same for normal and periodic?
+    if ( this->regularFlag == 1 ) { //regular
+        this->generateRegularPoints();
+    } else { //random (irregular or periodic)
+        this->generateRandomPoints();
+    }
+    return 1;
 }
 
-int Grid :: generateRandomPoints()
+int Grid::generateRandomPoints()
 {
-  //Generation of mixture of periodic and random points.
-  //Consider only four cases so far
-  //1) no direction periodic, 2) x-direction periodic, 3) x- and y- direction periodic, 4) all direction periodic 
-  oofem::IntArray periodicityFlag;
-  this->givePeriodicityFlag(periodicityFlag);
-  
-  oofem::FloatArray lineNormal;
-  oofem::FloatArray surfaceNormal;
-  // measure time consumed by point generation
-  clock_t start;
-  clock_t sc;
-  clock_t ec;
-  long nsec;
-  
-  start = :: clock();
+    //Generation of mixture of periodic and random points.
+    //Consider only four cases so far
+    //1) no direction periodic, 2) x-direction periodic, 3) x- and y- direction periodic, 4) all direction periodic
+    oofem::IntArray periodicityFlag;
+    this->givePeriodicityFlag(periodicityFlag);
 
-  if(periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 0 && randomFlag != 2){//Region without periodicity
+    oofem::FloatArray lineNormal;
+    oofem::FloatArray surfaceNormal;
+    // measure time consumed by point generation
+    clock_t start;
+    clock_t sc;
+    clock_t ec;
+    long nsec;
 
-    if(randomFlag == 1){ //Input vertices for Grassl's mesh approach
-      this->generateInputPoints();
-    }
+    start = ::clock();
+
+    if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 0 && randomFlag != 2 ) {//Region without periodicity
+        if ( randomFlag == 1 ) { //Input vertices for Grassl's mesh approach
+            this->generateInputPoints();
+        }
 
 
-    //generate inclusions
-    sc = :: clock();
-    //Inclusions
-    //@todo: Inclusions need to have a random and regular point generation
-    for ( int i = 0; i < this->giveNumberOfInclusions(); i++ ) {
-      ( this->giveInclusion(i + 1) )->generatePoints();
-      printf( "numberOfVertices = %d\n", this->giveNumberOfVertices() );
-    }
-    ec = :: clock();
-    nsec = ( ec - sc ) / CLOCKS_PER_SEC;
-    printf("Points for inclusions generated in %lds \n", nsec);
-    
-    
-    //Control vertices
-    this->generateControlPoints(); //This should now include also periodic shifts
-    
-    if(randomFlag == 1){ //Input vertices for Grassl's mesh approach
-      //Curves
-      sc = :: clock();
-      for (int i = 0; i < this->giveNumberOfCurves(); i++ ) {
-	(this->giveCurve(i+1))->generatePoints();
-	printf("numberOfVertices = %d\n", this->giveNumberOfVertices());
-      }
-      ec = :: clock();
-      nsec = ( ec - sc ) / CLOCKS_PER_SEC;
-      printf("Points on curves generated in %lds \n", nsec);
-      
-      
-      //Surfaces
-      sc = :: clock();
-      for (int i = 0; i < this->giveNumberOfSurfaces(); i++ ) {
-	(this->giveSurface(i+1))->generatePoints();
-	printf("numberOfVertices = %d\n", this->giveNumberOfVertices());
-      }
-      ec = :: clock();
-      nsec = ( ec - sc ) / CLOCKS_PER_SEC;
-      printf("Points on surfaces generated in %lds \n", nsec);
-    }
-    
-    //Regions
-    sc = :: clock();
-    for ( int i = 0; i < this->giveNumberOfRegions(); i++ ) {
-      ( this->giveRegion(i + 1) )->generatePoints();
-      printf( "numberOfVertices = %d\n", this->giveNumberOfVertices() );
-    }
-    ec = :: clock();
-    nsec = ( ec - sc ) / CLOCKS_PER_SEC;
-    printf("Points in regions generated in %lds \n", nsec);
-    
-    nsec = ( ec - start ) / CLOCKS_PER_SEC;
-    printf("All points generated in %lds \n", nsec);
-    
-  }
-  else if( this->randomFlag == 2 ){//Generate periodic surfaces for Adam
-    
-    /*Each direction should be generated only once and then shifted by the specimen dimension*/
-    oofem::IntArray lineCounter(3);
-    oofem::FloatArray lineNormal(3);
-    lineCounter.zero();
-    
-    this->generateInputPoints();
-    
-    this->generateControlPoints(); //This should now include also periodic shifts
+        //generate inclusions
+        sc = ::clock();
+        //Inclusions
+        //@todo: Inclusions need to have a random and regular point generation
+        for ( int i = 0; i < this->giveNumberOfInclusions(); i++ ) {
+            ( this->giveInclusion(i + 1) )->generatePoints();
+            printf("numberOfVertices = %d\n", this->giveNumberOfVertices() );
+        }
+        ec = ::clock();
+        nsec = ( ec - sc ) / CLOCKS_PER_SEC;
+        printf("Points for inclusions generated in %lds \n", nsec);
 
-    sc = :: clock();
-    for (int i = 0; i < this->giveNumberOfCurves(); i++ ) {
-      this->giveCurve(i+1)->giveNormal(lineNormal);
-      if(lineNormal.at(1) == 1 && lineNormal.at(2) == 0 && lineNormal.at(3) == 0 && lineCounter.at(1) == 0){  
-	(this->giveCurve(i+1))->generatePoints();
-	printf("numberOfVertices = %d\n", this->giveNumberOfVertices());
-	lineCounter.at(1) = 1;
-      }
-      else if(lineNormal.at(1) == 0 && lineNormal.at(2) == 1 && lineNormal.at(3) == 0 && lineCounter.at(2) == 0){
-	(this->giveCurve(i+1))->generatePoints();
-	printf("numberOfVertices = %d\n", this->giveNumberOfVertices());
-	lineCounter.at(2) = 1;
-      }
-      else if(lineNormal.at(1) == 0 && lineNormal.at(2) == 0 && lineNormal.at(3) == 1 && lineCounter.at(3) == 0){
-	(this->giveCurve(i+1))->generatePoints();
-	printf("numberOfVertices = %d\n", this->giveNumberOfVertices());
-	lineCounter.at(3) = 1;	
-      }
-    }
-    ec = :: clock();
-    nsec = ( ec - sc ) / CLOCKS_PER_SEC;
-    printf("Points on curves generated in %lds \n", nsec);
-    
-    //Surfaces
-    oofem::IntArray surfaceCounter(3);
-    oofem::FloatArray surfaceNormal(3);
-    surfaceCounter.zero();
 
-    sc = :: clock();
-    for (int i = 0; i < this->giveNumberOfSurfaces(); i++ ) {
-      this->giveSurface(i+1)->giveNormal(surfaceNormal);      
-      if(surfaceNormal.at(1) == 1 && surfaceNormal.at(2) == 0 && surfaceNormal.at(3) == 0 && surfaceCounter.at(1) == 0){
-	(this->giveSurface(i+1))->generatePoints();
-	printf("numberOfVertices = %d\n", this->giveNumberOfVertices());
-	surfaceCounter.at(1) = 1;
-      }
-      else if(surfaceNormal.at(1) == 0 && surfaceNormal.at(2) == 1 && surfaceNormal.at(3) == 0 && surfaceCounter.at(2) == 0){
-	(this->giveSurface(i+1))->generatePoints();
-	printf("numberOfVertices = %d\n", this->giveNumberOfVertices());
-	surfaceCounter.at(2) = 1;       
-      }
-      else if(surfaceNormal.at(1) == 0 && surfaceNormal.at(2) == 0 && surfaceNormal.at(3) == 1 && surfaceCounter.at(3) == 0){
-	(this->giveSurface(i+1))->generatePoints();
-	printf("numberOfVertices = %d\n", this->giveNumberOfVertices());
-	surfaceCounter.at(3) = 1;
-      }      
-    }
-    ec = :: clock();
-    nsec = ( ec - sc ) / CLOCKS_PER_SEC;
-    printf("Points on surfaces generated in %lds \n", nsec);
+        //Control vertices
+        this->generateControlPoints(); //This should now include also periodic shifts
 
-    //Regions
-    sc = :: clock();
-    for ( int i = 0; i < this->giveNumberOfRegions(); i++ ) {
-      ( this->giveRegion(i + 1) )->generatePoints();
-      printf( "numberOfVertices = %d\n", this->giveNumberOfVertices() );
-    }
-    ec = :: clock();
-    nsec = ( ec - sc ) / CLOCKS_PER_SEC;
-    printf("Points in regions generated in %lds \n", nsec);
-    
-    nsec = ( ec - start ) / CLOCKS_PER_SEC;
-    printf("All points generated in %lds \n", nsec);
-        
-  }  
-  else if( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 0){
-    //This is the case of a region with periodicity in x-direction, as is the case for a periodic beam
-    sc = :: clock();
+        if ( randomFlag == 1 ) { //Input vertices for Grassl's mesh approach
+            //Curves
+            sc = ::clock();
+            for (int i = 0; i < this->giveNumberOfCurves(); i++ ) {
+                ( this->giveCurve(i + 1) )->generatePoints();
+                printf("numberOfVertices = %d\n", this->giveNumberOfVertices() );
+            }
+            ec = ::clock();
+            nsec = ( ec - sc ) / CLOCKS_PER_SEC;
+            printf("Points on curves generated in %lds \n", nsec);
 
-    //Curves
-    for (int i = 0; i < this->giveNumberOfCurves(); i++ ) {
-      this->giveCurve(i+1)->giveNormal(lineNormal);
-      if( lineNormal.at(1) == 1 && lineNormal.at(2) == 0 && lineNormal.at(3) == 0){// line in x-direction
-	  (this->giveCurve(i+1))->generatePoints();
-	  printf("numberOfVertices = %d\n", this->giveNumberOfVertices());
-      }           
-      ec = :: clock();
-      nsec = ( ec - sc ) / CLOCKS_PER_SEC;
-      printf("Points on curves generated in %lds \n", nsec);
+
+            //Surfaces
+            sc = ::clock();
+            for (int i = 0; i < this->giveNumberOfSurfaces(); i++ ) {
+                ( this->giveSurface(i + 1) )->generatePoints();
+                printf("numberOfVertices = %d\n", this->giveNumberOfVertices() );
+            }
+            ec = ::clock();
+            nsec = ( ec - sc ) / CLOCKS_PER_SEC;
+            printf("Points on surfaces generated in %lds \n", nsec);
+        }
+
+        //Regions
+        sc = ::clock();
+        for ( int i = 0; i < this->giveNumberOfRegions(); i++ ) {
+            ( this->giveRegion(i + 1) )->generatePoints();
+            printf("numberOfVertices = %d\n", this->giveNumberOfVertices() );
+        }
+        ec = ::clock();
+        nsec = ( ec - sc ) / CLOCKS_PER_SEC;
+        printf("Points in regions generated in %lds \n", nsec);
+
+        nsec = ( ec - start ) / CLOCKS_PER_SEC;
+        printf("All points generated in %lds \n", nsec);
+    } else if ( this->randomFlag == 2 )    {//Generate periodic surfaces for Adam
+        /*Each direction should be generated only once and then shifted by the specimen dimension*/
+        oofem::IntArray lineCounter(3);
+        oofem::FloatArray lineNormal(3);
+        lineCounter.zero();
+
+        this->generateInputPoints();
+
+        this->generateControlPoints(); //This should now include also periodic shifts
+
+        sc = ::clock();
+        for (int i = 0; i < this->giveNumberOfCurves(); i++ ) {
+            this->giveCurve(i + 1)->giveNormal(lineNormal);
+            if ( lineNormal.at(1) == 1 && lineNormal.at(2) == 0 && lineNormal.at(3) == 0 && lineCounter.at(1) == 0 ) {
+                ( this->giveCurve(i + 1) )->generatePoints();
+                printf("numberOfVertices = %d\n", this->giveNumberOfVertices() );
+                lineCounter.at(1) = 1;
+            } else if ( lineNormal.at(1) == 0 && lineNormal.at(2) == 1 && lineNormal.at(3) == 0 && lineCounter.at(2) == 0 )      {
+                ( this->giveCurve(i + 1) )->generatePoints();
+                printf("numberOfVertices = %d\n", this->giveNumberOfVertices() );
+                lineCounter.at(2) = 1;
+            } else if ( lineNormal.at(1) == 0 && lineNormal.at(2) == 0 && lineNormal.at(3) == 1 && lineCounter.at(3) == 0 )      {
+                ( this->giveCurve(i + 1) )->generatePoints();
+                printf("numberOfVertices = %d\n", this->giveNumberOfVertices() );
+                lineCounter.at(3) = 1;
+            }
+        }
+        ec = ::clock();
+        nsec = ( ec - sc ) / CLOCKS_PER_SEC;
+        printf("Points on curves generated in %lds \n", nsec);
+
+        //Surfaces
+        oofem::IntArray surfaceCounter(3);
+        oofem::FloatArray surfaceNormal(3);
+        surfaceCounter.zero();
+
+        sc = ::clock();
+        for (int i = 0; i < this->giveNumberOfSurfaces(); i++ ) {
+            this->giveSurface(i + 1)->giveNormal(surfaceNormal);
+            if ( surfaceNormal.at(1) == 1 && surfaceNormal.at(2) == 0 && surfaceNormal.at(3) == 0 && surfaceCounter.at(1) == 0 ) {
+                ( this->giveSurface(i + 1) )->generatePoints();
+                printf("numberOfVertices = %d\n", this->giveNumberOfVertices() );
+                surfaceCounter.at(1) = 1;
+            } else if ( surfaceNormal.at(1) == 0 && surfaceNormal.at(2) == 1 && surfaceNormal.at(3) == 0 && surfaceCounter.at(2) == 0 )      {
+                ( this->giveSurface(i + 1) )->generatePoints();
+                printf("numberOfVertices = %d\n", this->giveNumberOfVertices() );
+                surfaceCounter.at(2) = 1;
+            } else if ( surfaceNormal.at(1) == 0 && surfaceNormal.at(2) == 0 && surfaceNormal.at(3) == 1 && surfaceCounter.at(3) == 0 )      {
+                ( this->giveSurface(i + 1) )->generatePoints();
+                printf("numberOfVertices = %d\n", this->giveNumberOfVertices() );
+                surfaceCounter.at(3) = 1;
+            }
+        }
+        ec = ::clock();
+        nsec = ( ec - sc ) / CLOCKS_PER_SEC;
+        printf("Points on surfaces generated in %lds \n", nsec);
+
+        //Regions
+        sc = ::clock();
+        for ( int i = 0; i < this->giveNumberOfRegions(); i++ ) {
+            ( this->giveRegion(i + 1) )->generatePoints();
+            printf("numberOfVertices = %d\n", this->giveNumberOfVertices() );
+        }
+        ec = ::clock();
+        nsec = ( ec - sc ) / CLOCKS_PER_SEC;
+        printf("Points in regions generated in %lds \n", nsec);
+
+        nsec = ( ec - start ) / CLOCKS_PER_SEC;
+        printf("All points generated in %lds \n", nsec);
+    } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 0 )     {
+        //This is the case of a region with periodicity in x-direction, as is the case for a periodic beam
+        sc = ::clock();
+
+        //Curves
+        for (int i = 0; i < this->giveNumberOfCurves(); i++ ) {
+            this->giveCurve(i + 1)->giveNormal(lineNormal);
+            if ( lineNormal.at(1) == 1 && lineNormal.at(2) == 0 && lineNormal.at(3) == 0 ) {// line in x-direction
+                ( this->giveCurve(i + 1) )->generatePoints();
+                printf("numberOfVertices = %d\n", this->giveNumberOfVertices() );
+            }
+            ec = ::clock();
+            nsec = ( ec - sc ) / CLOCKS_PER_SEC;
+            printf("Points on curves generated in %lds \n", nsec);
+        }
+
+        //Surfaces
+        sc = ::clock();
+        for (int i = 0; i < this->giveNumberOfSurfaces(); i++ ) {
+            this->giveSurface(i + 1)->giveNormal(surfaceNormal);
+            if ( !( surfaceNormal.at(1) == 1 && surfaceNormal.at(2) == 0 && surfaceNormal.at(3) == 0 ) ) {// all surfaces without normal in x-direction
+                ( this->giveSurface(i + 1) )->generatePoints();
+                printf("numberOfVertices = %d\n", this->giveNumberOfVertices() );
+            }
+        }
+        ec = ::clock();
+        nsec = ( ec - sc ) / CLOCKS_PER_SEC;
+        printf("Points on surfaces generated in %lds \n", nsec);
+
+        //Regions
+        sc = ::clock();
+        for ( int i = 0; i < this->giveNumberOfRegions(); i++ ) {
+            ( this->giveRegion(i + 1) )->generatePoints();
+        }
+        ec = ::clock();
+        nsec = ( ec - sc ) / CLOCKS_PER_SEC;
+        printf("Points in regions generated in %lds \n", nsec);
+    } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 0 )      {
+        //Region with periodicity in x and y directions. This could be the case of a slab.
+
+        this->generateControlPoints(); //This should now include also periodic shifts
+
+        //Surfaces
+        sc = ::clock();
+        for (int i = 0; i < this->giveNumberOfSurfaces(); i++ ) {
+            this->giveSurface(i + 1)->giveNormal(surfaceNormal);
+            if ( surfaceNormal.at(1) == 0 && surfaceNormal.at(2) == 0 && surfaceNormal.at(3) == 1 ) {// all surfaces without normal in x-direction
+                ( this->giveSurface(i + 1) )->generatePoints();
+                printf("numberOfVertices = %d\n", this->giveNumberOfVertices() );
+            }
+        }
+        ec = ::clock();
+        nsec = ( ec - sc ) / CLOCKS_PER_SEC;
+        printf("Points on surfaces generated in %lds \n", nsec);
+
+        //Regions
+        sc = ::clock();
+        for ( int i = 0; i < this->giveNumberOfRegions(); i++ ) {
+            ( this->giveRegion(i + 1) )->generatePoints();
+        }
+        ec = ::clock();
+        nsec = ( ec - sc ) / CLOCKS_PER_SEC;
+        printf("Points in regions generated in %lds \n", nsec);
+    } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 1 )      {
+        //Region with periodicity in all directions.
+
+        sc = ::clock();
+        this->generateControlPoints();
+        ec = ::clock();
+        nsec = ( ec - sc ) / CLOCKS_PER_SEC;
+        printf("Control points generated in %lds \n", nsec);
+
+        sc = ::clock();
+        //Inclusions
+        //@todo: Inclusions need to have a random and regular point generation
+        for ( int i = 0; i < this->giveNumberOfInclusions(); i++ ) {
+            ( this->giveInclusion(i + 1) )->generatePeriodicPoints();
+            printf("numberOfVertices = %d\n", this->giveNumberOfVertices() );
+        }
+        ec = ::clock();
+        nsec = ( ec - sc ) / CLOCKS_PER_SEC;
+        printf("Points for inclusions generated in %lds \n", nsec);
+
+        //Regions
+        sc = ::clock();
+        for ( int i = 0; i < this->giveNumberOfRegions(); i++ ) {
+            ( this->giveRegion(i + 1) )->generatePoints();
+        }
+        ec = ::clock();
+        nsec = ( ec - sc ) / CLOCKS_PER_SEC;
+        printf("Points in regions generated in %lds \n", nsec);
+    } else   {//should not be here
+        printf("Something wrong with mixed point generation and periodic flag in grid->generateRandomPoints\n");
     }
 
-    //Surfaces
-    sc = :: clock();
-    for (int i = 0; i < this->giveNumberOfSurfaces(); i++ ) {
-       this->giveSurface(i+1)->giveNormal(surfaceNormal);
-      if( !(surfaceNormal.at(1) == 1 && surfaceNormal.at(2) == 0 && surfaceNormal.at(3) == 0)){// all surfaces without normal in x-direction
-	(this->giveSurface(i+1))->generatePoints();
-	printf("numberOfVertices = %d\n", this->giveNumberOfVertices());
-      }
-    }
-    ec = :: clock();
-    nsec = ( ec - sc ) / CLOCKS_PER_SEC;
-    printf("Points on surfaces generated in %lds \n", nsec);
-    
-    //Regions
-    sc = :: clock();
-    for ( int i = 0; i < this->giveNumberOfRegions(); i++ ) {
-      ( this->giveRegion(i + 1) )->generatePoints();
-    }
-    ec = :: clock();
-    nsec = ( ec - sc ) / CLOCKS_PER_SEC;
-    printf("Points in regions generated in %lds \n", nsec);
-  }
-  else if(periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 0){
-    //Region with periodicity in x and y directions. This could be the case of a slab.
-    
-    this->generateControlPoints(); //This should now include also periodic shifts
-    
-    //Surfaces
-    sc = :: clock();
-    for (int i = 0; i < this->giveNumberOfSurfaces(); i++ ) {
-      this->giveSurface(i+1)->giveNormal(surfaceNormal);
-      if( surfaceNormal.at(1) == 0 && surfaceNormal.at(2) == 0 && surfaceNormal.at(3) == 1){// all surfaces without normal in x-direction
-	(this->giveSurface(i+1))->generatePoints();
-	printf("numberOfVertices = %d\n", this->giveNumberOfVertices());
-      }
-    }
-    ec = :: clock();
-    nsec = ( ec - sc ) / CLOCKS_PER_SEC;
-    printf("Points on surfaces generated in %lds \n", nsec);
-        
-    //Regions
-    sc = :: clock();
-    for ( int i = 0; i < this->giveNumberOfRegions(); i++ ) {
-      ( this->giveRegion(i + 1) )->generatePoints();
-    }
-    ec = :: clock();
-    nsec = ( ec - sc ) / CLOCKS_PER_SEC;
-    printf("Points in regions generated in %lds \n", nsec);
-    
-  }
-  else if(periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 1){
-    //Region with periodicity in all directions.
-
-    sc = :: clock();
-    this->generateControlPoints();
-    ec = :: clock();
-    nsec = ( ec - sc ) / CLOCKS_PER_SEC;
-    printf("Control points generated in %lds \n", nsec);
-        
-    sc = :: clock();
-    //Inclusions
-    //@todo: Inclusions need to have a random and regular point generation
-    for ( int i = 0; i < this->giveNumberOfInclusions(); i++ ) {
-        ( this->giveInclusion(i + 1) )->generatePeriodicPoints();
-        printf( "numberOfVertices = %d\n", this->giveNumberOfVertices() );
-    }
-    ec = :: clock();
-    nsec = ( ec - sc ) / CLOCKS_PER_SEC;
-    printf("Points for inclusions generated in %lds \n", nsec);
-
-    //Regions
-    sc = :: clock();
-    for ( int i = 0; i < this->giveNumberOfRegions(); i++ ) {
-        ( this->giveRegion(i + 1) )->generatePoints();
-    }
-    ec = :: clock();
-    nsec = ( ec - sc ) / CLOCKS_PER_SEC;
-    printf("Points in regions generated in %lds \n", nsec);    
-  }
-  else{//should not be here
-    printf("Something wrong with mixed point generation and periodic flag in grid->generateRandomPoints\n");
-  }
-
-  return 1;
-  
+    return 1;
 }
 
 // grid.C
-void Grid::addVertex(const oofem::FloatArray& coords) {
-  
-  if (vertexList.capacity() < static_cast<size_t>(vertexCount + 1)) {
-   vertexList.reserve(vertexCount + 10000); // choose a chunk size that fits your cases
-  }
+void Grid::addVertex(const oofem::FloatArray &coords) {
+    if ( vertexList.capacity() < static_cast < size_t > ( vertexCount + 1 ) ) {
+        vertexList.reserve(vertexCount + 10000); // choose a chunk size that fits your cases
+    }
 
-  const int num = vertexCount + 1;           // true next id
-  auto* v = new Vertex(num, this);
-  v->setCoordinates(coords);                 // prefer const-ref setter
-  
-  setVertex(num, v);                         // stores (may resize/replace)
-  this->vertexCount = num;                         // <-- bump the real count
-  
-  if (auto* loc = giveGridLocalizer()) {
-    loc->insertSequentialNode(num, coords);
-  }
-  return;
+    const int num = vertexCount + 1;         // true next id
+    auto * v = new Vertex(num, this);
+    v->setCoordinates(coords);               // prefer const-ref setter
+
+    setVertex(num, v);                       // stores (may resize/replace)
+    this->vertexCount = num;                       // <-- bump the real count
+
+    if ( auto *loc = giveGridLocalizer() ) {
+        loc->insertSequentialNode(num, coords);
+    }
+    return;
 }
 
 
-void Grid :: generateControlPoints()
+void Grid::generateControlPoints()
 {
-
-    
     oofem::FloatArray boundaries;
     defineBoundaries(boundaries);
 
@@ -559,97 +553,91 @@ void Grid :: generateControlPoints()
     specimenDimension.at(1) = boundaries.at(2) - boundaries.at(1);
     specimenDimension.at(2) = boundaries.at(4) - boundaries.at(3);
     specimenDimension.at(3) = boundaries.at(6) - boundaries.at(5);
-    
+
     //Generate control vertices
     oofem::FloatArray coords(3), mirroredCoords(3);
-    
+
     int controlVertexNumber = generator::size1(this->controlVertexList);
     for ( int i = 0; i < controlVertexNumber; i++ ) {
-      this->giveControlVertex(i+1)->giveCoordinates(coords);
-      this->addVertex(coords);
+        this->giveControlVertex(i + 1)->giveCoordinates(coords);
+        this->addVertex(coords);
 
-      if(this->randomFlag == 0){ //Here it is assumed that for Grassl's meshing approach control nodes are on the surface, and for Bolander's approach they are not.
-	//Do now the mirroring.
-	//It works only for rectangular specimen in a cartesian coordinate system.
-	//x-direction
+        if ( this->randomFlag == 0 ) { //Here it is assumed that for Grassl's meshing approach control nodes are on the surface, and for Bolander's approach they are not.
+            //Do now the mirroring.
+            //It works only for rectangular specimen in a cartesian coordinate system.
+            //x-direction
 
 
-      for ( int k = 1; k <= 2; k++ ) {
-	  mirroredCoords.at(1) = coords.at(1) - 2. * ( coords.at(1) - boundaries.at(k) );
-	  mirroredCoords.at(2) = coords.at(2);
-	  mirroredCoords.at(3) = coords.at(3);
-	  this->addVertex(mirroredCoords);
-	  
-	}
-	
-	//y-direction
-	for ( int k = 3; k <= 4; k++ ) {
-	  mirroredCoords.at(1) = coords.at(1);
-	  mirroredCoords.at(2) = coords.at(2) - 2. * ( coords.at(2) - boundaries.at(k) );
-	  mirroredCoords.at(3) = coords.at(3);
-	  this->addVertex(mirroredCoords);
-	  
-	}
-	
-	//z-direction
-	for ( int k = 5; k <= 6; k++ ) {
-	  mirroredCoords.at(1) = coords.at(1);
-	  mirroredCoords.at(2) = coords.at(2);
-	  mirroredCoords.at(3) = coords.at(3) - 2. * ( coords.at(3) - boundaries.at(k) );
-	 this->addVertex(mirroredCoords);
-	  
-	  
-	}
-      }
+            for ( int k = 1; k <= 2; k++ ) {
+                mirroredCoords.at(1) = coords.at(1) - 2. * ( coords.at(1) - boundaries.at(k) );
+                mirroredCoords.at(2) = coords.at(2);
+                mirroredCoords.at(3) = coords.at(3);
+                this->addVertex(mirroredCoords);
+            }
+
+            //y-direction
+            for ( int k = 3; k <= 4; k++ ) {
+                mirroredCoords.at(1) = coords.at(1);
+                mirroredCoords.at(2) = coords.at(2) - 2. * ( coords.at(2) - boundaries.at(k) );
+                mirroredCoords.at(3) = coords.at(3);
+                this->addVertex(mirroredCoords);
+            }
+
+            //z-direction
+            for ( int k = 5; k <= 6; k++ ) {
+                mirroredCoords.at(1) = coords.at(1);
+                mirroredCoords.at(2) = coords.at(2);
+                mirroredCoords.at(3) = coords.at(3) - 2. * ( coords.at(3) - boundaries.at(k) );
+                this->addVertex(mirroredCoords);
+            }
+        }
     }
-      
-  return;
+
+    return;
 }
 
 
 
 
-void Grid :: generateInputPoints()
+void Grid::generateInputPoints()
 {
-
-    printf("At the start of generateInputPoints = %d\n", this->giveNumberOfVertices());
+    printf("At the start of generateInputPoints = %d\n", this->giveNumberOfVertices() );
     //Generate control vertices
     oofem::FloatArray coords(3);
-    
+
     int inputVertexNumber = generator::size1(this->inputVertexList);
     for ( int i = 0; i < inputVertexNumber; i++ ) {
-      this->giveInputVertex(i+1)->giveCoordinates(coords);
-      this->addVertex(coords);
-      
+        this->giveInputVertex(i + 1)->giveCoordinates(coords);
+        this->addVertex(coords);
     }
-    printf("At the end of generateInputPoints = %d\n", this->giveNumberOfVertices());
-  return;
+    printf("At the end of generateInputPoints = %d\n", this->giveNumberOfVertices() );
+    return;
 }
 
 
 
-int Grid :: generateRegularPoints()
+int Grid::generateRegularPoints()
 {
     //Regular approach for both normal and periodic
     clock_t start;
     clock_t sc;
 
-    start = :: clock();
+    start = ::clock();
     //The old method is reviced, the only generation needed is the region one.
     //The user has to set in the input a larger region, than the one in the converter, in order to avoid boundary discrepancies.
     //Regions
     for ( int i = 0; i < this->giveNumberOfRegions(); i++ ) {
         if ( regType == 1 ) { //BCC
             ( this->giveRegion(i + 1) )->generateRegularPoints1();
-        } else if ( regType == 2 )     { //FCC
+        } else if ( regType == 2 ) {     //FCC
             ( this->giveRegion(i + 1) )->generateRegularPoints2();
-        } else   {
+        } else {
             printf("Error: The regular grid type was not determined\n");
             exit(0);
         }
     }
-    sc = :: clock();
-    double elapsed_sec = double(sc - start) / CLOCKS_PER_SEC;
+    sc = ::clock();
+    double elapsed_sec = double( sc - start ) / CLOCKS_PER_SEC;
     std::cout << "Generation took " << elapsed_sec << " seconds\n";
 
     return 1;
@@ -657,33 +645,33 @@ int Grid :: generateRegularPoints()
 
 
 
-int Grid :: instanciateYourself(GeneratorDataReader *dr)
+int Grid::instanciateYourself(GeneratorDataReader *dr)
 // Creates all objects mentioned in the data file.
 {
     int i;
     std::string name;
-    
-     /* read type of Grid to be solved
+
+    /* read type of Grid to be solved
      * This information is currently not used, since we do not distinguish between different domain types.
      * However, later we should have different domain types which are inherited from domain.
      */
 
-    
-    auto &irDomainRec = dr->giveInputRecord(GeneratorDataReader::GIR_domainRec, 1); 
+
+    auto &irDomainRec = dr->giveInputRecord(GeneratorDataReader::GIR_domainRec, 1);
     IR_GIVE_FIELD(irDomainRec, dimension, _IFT_Grid_domain);
     irDomainRec.finish();
-    
-    
+
+
     printf("And here and have read domain as dimension=%d\n", dimension);
 
-    
+
     // read
-    auto &irControlRec = dr->giveInputRecord(GeneratorDataReader :: GIR_controlRec, 1);
+    auto &irControlRec = dr->giveInputRecord(GeneratorDataReader::GIR_controlRec, 1);
     printf("Now in control line here:\n");
     irControlRec.printYourself();
 
-    
-    
+
+
     IR_GIVE_FIELD(irControlRec, diameter, _IFT_Grid_diam); // Macro
     TOL = 1.e-6 * diameter;
 
@@ -721,7 +709,7 @@ int Grid :: instanciateYourself(GeneratorDataReader *dr)
         IR_GIVE_FIELD(irControlRec, regType, _IFT_Grid_regtype); // Macro
     }
 
-    
+
     //when periodicityFlag=1 periodic cell generator is used.
     periodicityFlag.zero();
     IR_GIVE_OPTIONAL_FIELD(irControlRec, periodicityFlag, _IFT_Grid_perflag); // Macro
@@ -740,7 +728,7 @@ int Grid :: instanciateYourself(GeneratorDataReader *dr)
         printf("Error: Unknown random flag. Should be 0, 1 or 2.\n");
         exit(0);
     }
-    
+
 
     //This is useful to be able to regenerate the same mesh.
     //Simply set it to a negative value and this is used to generate the random numbers.
@@ -755,8 +743,8 @@ int Grid :: instanciateYourself(GeneratorDataReader *dr)
     irControlRec.finish();
 
     // read domain description
-    int nvertex, ncontrolvertex=0, ncurve, nsurface, nregion, ninclusion,nrefinement;
-    auto &irDomainCompRec = dr->giveInputRecord(GeneratorDataReader :: GIR_domainCompRec, 1);
+    int nvertex, ncontrolvertex = 0, ncurve, nsurface, nregion, ninclusion, nrefinement;
+    auto &irDomainCompRec = dr->giveInputRecord(GeneratorDataReader::GIR_domainCompRec, 1);
     IR_GIVE_FIELD(irDomainCompRec, nvertex, _IFT_Grid_nvertex); // Macro
     IR_GIVE_OPTIONAL_FIELD(irDomainCompRec, ncontrolvertex, _IFT_Grid_ncontrolvertex); // Macro
     IR_GIVE_FIELD(irDomainCompRec, ncurve, _IFT_Grid_ncurve); // Macro
@@ -768,31 +756,29 @@ int Grid :: instanciateYourself(GeneratorDataReader *dr)
 
     //read vertices
     inputVertexList.resize(nvertex, nullptr);
-    
+
     for ( i = 0; i < nvertex; i++ ) {
+        auto &irVertexRec = dr->giveInputRecord(GeneratorDataReader::GIR_vertexRec, i + 1);
 
-    auto &irVertexRec = dr->giveInputRecord(GeneratorDataReader::GIR_vertexRec, i + 1);
+        std::string name;
+        int num = 0;
+        IR_GIVE_RECORD_KEYWORD_FIELD(irVertexRec, name, num);
 
-    std::string name;
-    int num = 0;
-    IR_GIVE_RECORD_KEYWORD_FIELD(irVertexRec, name, num);
+        if ( num < 1 || num > nvertex ) {
+            std::cerr << "instanciateYourself: Invalid vertex number (num=" << num << ")\n";
+            std::exit(EXIT_FAILURE);
+        }
 
-    if (num < 1 || num > nvertex) {
-        std::cerr << "instanciateYourself: Invalid vertex number (num=" << num << ")\n";
-        std::exit(EXIT_FAILURE);
-    }
+        if ( generator::includes1(inputVertexList, num) ) {
+            std::cerr << "instanciateYourself: Vertex entry already exists (num=" << num << ")\n";
+            std::exit(EXIT_FAILURE);
+        }
 
-    if (generator::includes1(inputVertexList, num)) {
-        std::cerr << "instanciateYourself: Vertex entry already exists (num=" << num << ")\n";
-        std::exit(EXIT_FAILURE);
-    }
+        Vertex *vertex = new Vertex(num, this);
+        vertex->initializeFrom(irVertexRec);
+        setInputVertex(num, vertex); // 1-based -> vector[num-1]
 
-    Vertex *vertex = new Vertex(num, this);
-    vertex->initializeFrom(irVertexRec);
-    setInputVertex(num, vertex); // 1-based -> vector[num-1]
-
-    irVertexRec.finish();
-
+        irVertexRec.finish();
     }
 
 
@@ -800,200 +786,197 @@ int Grid :: instanciateYourself(GeneratorDataReader *dr)
     controlVertexList.resize(ncontrolvertex, nullptr);
 
     for ( i = 0; i < ncontrolvertex; i++ ) {
+        auto &irControlVertexRec = dr->giveInputRecord(GeneratorDataReader::GIR_controlVertexRec, i + 1);
 
-    auto &irControlVertexRec = dr->giveInputRecord(GeneratorDataReader::GIR_controlVertexRec, i + 1);
+        std::string name;
+        int num = 0;
+        IR_GIVE_RECORD_KEYWORD_FIELD(irControlVertexRec, name, num);
 
-    std::string name;
-    int num = 0;
-    IR_GIVE_RECORD_KEYWORD_FIELD(irControlVertexRec, name, num);
+        // 1) validate number BEFORE touching containers
+        if ( num < 1 || num > ncontrolvertex ) {
+            std::cerr << "instanciateYourself: Invalid vertex number (num=" << num << ")\n";
+            std::exit(EXIT_FAILURE);
+        }
 
-    // 1) validate number BEFORE touching containers
-    if (num < 1 || num > ncontrolvertex) {
-        std::cerr << "instanciateYourself: Invalid vertex number (num=" << num << ")\n";
-        std::exit(EXIT_FAILURE);
+        // 2) duplicate check
+        if ( generator::includes1(inputVertexList, num) ) {
+            std::cerr << "instanciateYourself: Vertex entry already exists (num=" << num << ")\n";
+            std::exit(EXIT_FAILURE);
+        }
+
+        // 3) create, init, and insert
+        Vertex *vertex = new Vertex(num, this);
+        vertex->initializeFrom(irControlVertexRec);
+        setInputVertex(num, vertex);
+
+        irControlVertexRec.finish();
     }
 
-    // 2) duplicate check
-    if (generator::includes1(inputVertexList, num)) {
-        std::cerr << "instanciateYourself: Vertex entry already exists (num=" << num << ")\n";
-        std::exit(EXIT_FAILURE);
-    }
-
-    // 3) create, init, and insert
-    Vertex *vertex = new Vertex(num, this);
-    vertex->initializeFrom(irControlVertexRec);
-    setInputVertex(num, vertex);
-
-    irControlVertexRec.finish();
-
-    }
-    
     // read curves
     curveList.resize(ncurve, nullptr);
     for ( i = 0; i < ncurve; i++ ) {
+        auto &irCurveRec = dr->giveInputRecord(GeneratorDataReader::GIR_curveRec, i + 1);
 
-    auto &irCurveRec = dr->giveInputRecord(GeneratorDataReader::GIR_curveRec, i + 1);
+        std::string name;
+        int num = 0;
+        IR_GIVE_RECORD_KEYWORD_FIELD(irCurveRec, name, num);
 
-    std::string name;
-    int num = 0;
-    IR_GIVE_RECORD_KEYWORD_FIELD(irCurveRec, name, num);
+        if ( num < 1 || num > ncurve ) {
+            std::cerr << "instanciateYourself: Invalid curve number (num=" << num << ")\n";
+            std::exit(EXIT_FAILURE);
+        }
 
-    if (num < 1 || num > ncurve) {
-        std::cerr << "instanciateYourself: Invalid curve number (num=" << num << ")\n";
-        std::exit(EXIT_FAILURE);
-    }
+        if ( generator::includes1(curveList, num) ) {
+            std::cerr << "instanciateYourself: Curve entry already exists (num=" << num << ")\n";
+            std::exit(EXIT_FAILURE);
+        }
 
-    if (generator::includes1(curveList, num)) {
-        std::cerr << "instanciateYourself: Curve entry already exists (num=" << num << ")\n";
-        std::exit(EXIT_FAILURE);
-    }
-
-    Curve *curve = new Curve(num, this);
-    curve->initializeFrom(irCurveRec);
-    setCurve(num, curve);
-    irCurveRec.finish();
+        Curve *curve = new Curve(num, this);
+        curve->initializeFrom(irCurveRec);
+        setCurve(num, curve);
+        irCurveRec.finish();
     }
 
     surfaceList.resize(nsurface, nullptr);
     for ( i = 0; i < nsurface; i++ ) {
-      auto &irSurfaceRec = dr->giveInputRecord(GeneratorDataReader::GIR_surfaceRec, i + 1);
-      std::string name;
-      int num = 0;
-      IR_GIVE_RECORD_KEYWORD_FIELD(irSurfaceRec, name, num);
+        auto &irSurfaceRec = dr->giveInputRecord(GeneratorDataReader::GIR_surfaceRec, i + 1);
+        std::string name;
+        int num = 0;
+        IR_GIVE_RECORD_KEYWORD_FIELD(irSurfaceRec, name, num);
 
-      if (num < 1 || num > nsurface) {
-        std::cerr << "instanciateYourself: Invalid curve number (num=" << num << ")\n";
-        std::exit(EXIT_FAILURE);
+        if ( num < 1 || num > nsurface ) {
+            std::cerr << "instanciateYourself: Invalid curve number (num=" << num << ")\n";
+            std::exit(EXIT_FAILURE);
+        }
+
+        if ( generator::includes1(surfaceList, num) ) {
+            std::cerr << "instanciateYourself: Curve entry already exists (num=" << num << ")\n";
+            std::exit(EXIT_FAILURE);
+        }
+
+        Surface *surface = new Surface(num, this);
+        surface->initializeFrom(irSurfaceRec);
+        setSurface(num, surface);
+        irSurfaceRec.finish();
     }
 
-    if (generator::includes1(surfaceList, num)) {
-        std::cerr << "instanciateYourself: Curve entry already exists (num=" << num << ")\n";
-        std::exit(EXIT_FAILURE);
+
+    regionList.resize(nregion, nullptr);
+
+    for (int i = 0; i < nregion; ++i) {
+        auto &irRegionRec = dr->giveInputRecord(GeneratorDataReader::GIR_regionRec, i + 1);
+
+        std::string name;
+        int num = 0;
+        IR_GIVE_RECORD_KEYWORD_FIELD(irRegionRec, name, num);
+
+        if ( num < 1 || num > nregion ) {
+            std::cerr << "instanciateYourself: Invalid region number (num=" << num << ")\n";
+            std::exit(EXIT_FAILURE);
+        }
+        if ( generator::includes1(regionList, num) ) {
+            std::cerr << "instanciateYourself: Region entry already exists (num=" << num << ")\n";
+            std::exit(EXIT_FAILURE);
+        }
+
+        Region *r = nullptr;
+        if ( name == "prism" ) {
+            r = new Prism(num, this);
+        } else if ( name == "cylinder" ) {
+            r = new Cylinder(num, this);
+        } else if ( name == "sphere" ) {
+            r = new Sphere(num, this);
+        } else {
+            std::cerr << "instanciateYourself: Unknown region type '" << name << "'\n";
+            std::exit(EXIT_FAILURE);
+        }
+
+        r->initializeFrom(irRegionRec);
+        setRegion(num, r);
+        irRegionRec.finish();
     }
 
-    Surface *surface = new Surface(num, this);
-    surface->initializeFrom(irSurfaceRec);
-    setSurface(num, surface);
-    irSurfaceRec.finish();
+
+    inclusionList.resize(ninclusion, nullptr);
+
+    for (int i = 0; i < ninclusion; ++i) {
+        auto &irInclusionRec = dr->giveInputRecord(GeneratorDataReader::GIR_inclusionRec, i + 1);
+
+        std::string name;
+        int num = 0;
+        IR_GIVE_RECORD_KEYWORD_FIELD(irInclusionRec, name, num);
+
+        // 1) validate number
+        if ( num < 1 || num > ninclusion ) {
+            std::cerr << "instanciateYourself: Invalid inclusion number (num=" << num << ")\n";
+            std::exit(EXIT_FAILURE);
+        }
+
+        // 2) duplicate check
+        if ( generator::includes1(inclusionList, num) ) {
+            std::cerr << "instanciateYourself: Inclusion entry already exists (num=" << num << ")\n";
+            std::exit(EXIT_FAILURE);
+        }
+
+        // 3) create the right type
+        Inclusion *inc = nullptr;
+        if ( name == "intersphere" ) {
+            inc = new InterfaceSphere(num, this);
+        } else if ( name == "interfacecylinder" ) {
+            inc = new InterfaceCylinder(num, this);
+        } else {
+            std::cerr << "instanciateYourself: Unknown inclusion type '" << name << "'\n";
+            std::exit(EXIT_FAILURE);
+        }
+
+        // 4) init + store
+        inc->initializeFrom(irInclusionRec);
+        setInclusion(num, inc);
+
+        irInclusionRec.finish();
+    }
+
+    refinementList.resize(nrefinement, nullptr);
+
+    for (int i = 0; i < nrefinement; ++i) {
+        auto &irRefinementRec = dr->giveInputRecord(GeneratorDataReader::GIR_refinementRec, i + 1);
+
+        std::string name;
+        int num = 0;
+        IR_GIVE_RECORD_KEYWORD_FIELD(irRefinementRec, name, num);
+
+        // 1) validate number
+        if ( num < 1 || num > nrefinement ) {
+            std::cerr << "instanciateYourself: Invalid refinement number (num=" << num << ")\n";
+            std::exit(EXIT_FAILURE);
+        }
+
+        // 2) duplicate check
+        if ( generator::includes1(refinementList, num) ) {
+            std::cerr << "instanciateYourself: Refinement entry already exists (num=" << num << ")\n";
+            std::exit(EXIT_FAILURE);
+        }
+
+        // 3) construct by keyword
+        Refinement *ref = nullptr;
+        if ( name == "refineprism" ) {
+            ref = new RefinePrism(num, this);
+        } else {
+            std::cerr << "instanciateYourself: Unknown refinement type '" << name << "'\n";
+            std::exit(EXIT_FAILURE);
+        }
+
+        // 4) init + store
+        ref->initializeFrom(irRefinementRec);
+        setRefinement(num, ref);
+
+        irRefinementRec.finish();
     }
 
 
-regionList.resize(nregion, nullptr);
-
-for (int i = 0; i < nregion; ++i) {
-    auto &irRegionRec = dr->giveInputRecord(GeneratorDataReader::GIR_regionRec, i + 1);
-
-    std::string name;
-    int num = 0;
-    IR_GIVE_RECORD_KEYWORD_FIELD(irRegionRec, name, num);
-
-    if (num < 1 || num > nregion) {
-        std::cerr << "instanciateYourself: Invalid region number (num=" << num << ")\n";
-        std::exit(EXIT_FAILURE);
-    }
-    if (generator::includes1(regionList, num)) {
-        std::cerr << "instanciateYourself: Region entry already exists (num=" << num << ")\n";
-        std::exit(EXIT_FAILURE);
-    }
-
-    Region* r = nullptr;
-    if (name == "prism") {
-        r = new Prism(num, this);
-    } else if (name == "cylinder") {
-        r = new Cylinder(num, this);
-    } else if (name == "sphere") {
-        r = new Sphere(num, this);
-    } else {
-        std::cerr << "instanciateYourself: Unknown region type '" << name << "'\n";
-        std::exit(EXIT_FAILURE);
-    }
-
-    r->initializeFrom(irRegionRec);
-    setRegion(num, r);
-    irRegionRec.finish();
-}
-
-
-inclusionList.resize(ninclusion, nullptr);
-
-for (int i = 0; i < ninclusion; ++i) {
-    auto &irInclusionRec = dr->giveInputRecord(GeneratorDataReader::GIR_inclusionRec, i + 1);
-
-    std::string name;
-    int num = 0;
-    IR_GIVE_RECORD_KEYWORD_FIELD(irInclusionRec, name, num);
-
-    // 1) validate number
-    if (num < 1 || num > ninclusion) {
-        std::cerr << "instanciateYourself: Invalid inclusion number (num=" << num << ")\n";
-        std::exit(EXIT_FAILURE);
-    }
-
-    // 2) duplicate check
-    if (generator::includes1(inclusionList, num)) {
-        std::cerr << "instanciateYourself: Inclusion entry already exists (num=" << num << ")\n";
-        std::exit(EXIT_FAILURE);
-    }
-
-    // 3) create the right type
-    Inclusion *inc = nullptr;
-    if (name == "intersphere") {
-        inc = new InterfaceSphere(num, this);
-    } else if (name == "interfacecylinder") {
-        inc = new InterfaceCylinder(num, this);
-    } else {
-        std::cerr << "instanciateYourself: Unknown inclusion type '" << name << "'\n";
-        std::exit(EXIT_FAILURE);
-    }
-
-    // 4) init + store
-    inc->initializeFrom(irInclusionRec);
-    setInclusion(num, inc);
-
-    irInclusionRec.finish();
-}
-    
- refinementList.resize(nrefinement, nullptr);
-
- for (int i = 0; i < nrefinement; ++i) {
-   auto &irRefinementRec = dr->giveInputRecord(GeneratorDataReader::GIR_refinementRec, i + 1);
-   
-   std::string name;
-   int num = 0;
-   IR_GIVE_RECORD_KEYWORD_FIELD(irRefinementRec, name, num);
-   
-   // 1) validate number
-   if (num < 1 || num > nrefinement) {
-     std::cerr << "instanciateYourself: Invalid refinement number (num=" << num << ")\n";
-     std::exit(EXIT_FAILURE);
-   }
-
-   // 2) duplicate check
-    if (generator::includes1(refinementList, num)) {
-        std::cerr << "instanciateYourself: Refinement entry already exists (num=" << num << ")\n";
-        std::exit(EXIT_FAILURE);
-    }
-
-    // 3) construct by keyword
-    Refinement *ref = nullptr;
-    if (name == "refineprism") {
-        ref = new RefinePrism(num, this);
-    } else {
-        std::cerr << "instanciateYourself: Unknown refinement type '" << name << "'\n";
-        std::exit(EXIT_FAILURE);
-    }
-
-    // 4) init + store
-    ref->initializeFrom(irRefinementRec);
-    setRefinement(num, ref);
-
-    irRefinementRec.finish();
-}
 
 
 
-    
-  
     this->giveGridLocalizer()->init(true);
 
     return 1;
@@ -1003,10 +986,10 @@ for (int i = 0; i < ninclusion; ++i) {
 
 
 
-void Grid::exportVTK(const std::string& path)
+void Grid::exportVTK(const std::string &path)
 {
     std::ofstream out(path);
-    if (!out) {
+    if ( !out ) {
         std::cerr << "Failed to open " << path << " for writing\n";
         return;
     }
@@ -1019,7 +1002,7 @@ void Grid::exportVTK(const std::string& path)
     out << "POINTS " << n << " float\n";
 
     for (int i = 1; i <= n; ++i) {
-        const oofem::FloatArray* c = this->giveVertex(i)->giveCoordinates();
+        const oofem::FloatArray *c = this->giveVertex(i)->giveCoordinates();
         double x = c->giveSize() >= 1 ? c->at(1) : 0.0;
         double y = c->giveSize() >= 2 ? c->at(2) : 0.0;
         double z = c->giveSize() >= 3 ? c->at(3) : 0.0; // pad to 3D
@@ -1027,7 +1010,7 @@ void Grid::exportVTK(const std::string& path)
     }
 
     // Add a vertex cell for each point so they render as glyphs
-    out << "VERTICES " << n << " " << 2*n << "\n";
+    out << "VERTICES " << n << " " << 2 * n << "\n";
     for (int i = 0; i < n; ++i) {
         out << "1 " << i << "\n";
     }
@@ -1036,48 +1019,47 @@ void Grid::exportVTK(const std::string& path)
     out << "POINT_DATA " << n << "\n";
     out << "SCALARS id int 1\n";
     out << "LOOKUP_TABLE default\n";
-    for (int i = 1; i <= n; ++i) out << i << "\n";
+    for (int i = 1; i <= n; ++i) {
+        out << i << "\n";
+    }
 }
 
 
-void Grid :: defineBoundaries(oofem::FloatArray &boundaries)
+void Grid::defineBoundaries(oofem::FloatArray &boundaries)
 //Determine the boundaries of the domain
 {
-
-    if(this->giveNumberOfRegions() >0){
-      if(this->giveNumberOfRegions() != 1){
-	printf("Error. Cannot defined boundaries for multiple regions yet!\n");
-	exit(1);
-      }
-      this->giveRegion(1)->defineBoundaries(boundaries);
-    }
-    else if(this->giveNumberOfSurfaces() >0){
-      if(this->giveNumberOfSurfaces() !=1){
-	printf("Error. Cannot defined boundaries for multiple surfaces yet!\n");
-	exit(1);
-      }
-      this->giveSurface(1)->defineBoundaries(boundaries);
-      return;
+    if ( this->giveNumberOfRegions() > 0 ) {
+        if ( this->giveNumberOfRegions() != 1 ) {
+            printf("Error. Cannot defined boundaries for multiple regions yet!\n");
+            exit(1);
+        }
+        this->giveRegion(1)->defineBoundaries(boundaries);
+    } else if ( this->giveNumberOfSurfaces() > 0 )       {
+        if ( this->giveNumberOfSurfaces() != 1 ) {
+            printf("Error. Cannot defined boundaries for multiple surfaces yet!\n");
+            exit(1);
+        }
+        this->giveSurface(1)->defineBoundaries(boundaries);
+        return;
     }
     return;
 }
 
-void Grid :: giveOutput(FILE *outputStream)
+void Grid::giveOutput(FILE *outputStream)
 {
     int dimension = 3;
     fprintf(outputStream, "%d\n", dimension);
 
-    fprintf( outputStream, "%d\n", this->giveNumberOfVertices() );
+    fprintf(outputStream, "%d\n", this->giveNumberOfVertices() );
 
     for ( int i = 0; i < this->giveNumberOfVertices(); i++ ) {
-        fprintf( outputStream, "%.16e %.16e %.16e\n", ( this->giveVertex(i + 1) )->giveCoordinate(1), ( this->giveVertex(i + 1) )->giveCoordinate(2), ( this->giveVertex(i + 1) )->giveCoordinate(3) );
+        fprintf(outputStream, "%.16e %.16e %.16e\n", ( this->giveVertex(i + 1) )->giveCoordinate(1), ( this->giveVertex(i + 1) )->giveCoordinate(2), ( this->giveVertex(i + 1) )->giveCoordinate(3) );
     }
 
     //@todo: temporary measure to be able to generate simple aggregate placement.
     //Needs to be moved to aggregate generator later
     if ( aggregateFlag == 1 ) {
-      
-      oofem::FloatArray boundaries;
+        oofem::FloatArray boundaries;
         defineBoundaries(boundaries);
         FILE *aggregateStream;
         if ( ( aggregateStream = fopen("aggregate.dat", "w") ) == NULL ) {
@@ -1115,13 +1097,13 @@ void Grid :: giveOutput(FILE *outputStream)
 }
 
 
-double Grid :: ran1(int *idum)
+double Grid::ran1(int *idum)
 {
     // random number generator from "Numerical recipes book"
     int j;
     long k;
     static long iy = 0;
-    static long iv [ NTAB ];
+    static long iv[ NTAB ];
     float temp;
 
     if ( * idum <= 0 || !iy ) {

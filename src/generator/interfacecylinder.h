@@ -15,7 +15,7 @@
 #include "oofemtxtinputrecord.h"
 
 #ifndef __MAKEDEPEND
-#include <stdio.h>
+ #include <stdio.h>
 #endif
 
 #define _IFT_InterfaceCylinder_line "line"
@@ -29,15 +29,14 @@
 
 class InterfaceCylinder : public Inclusion
 {
-
 protected:
     /// Array storing nodal coordinates.
-  oofem::FloatArray line; //Storing start and end point of axis of cylinder
-  double diameter;
-  int number;
-  double refinement;
-  double itzThickness;
-  int nInterval;
+    oofem::FloatArray line; //Storing start and end point of axis of cylinder
+    double diameter;
+    int number;
+    double refinement;
+    double itzThickness;
+    int nInterval;
 
 public:
 
@@ -46,14 +45,14 @@ public:
      * @param n node number in domain aDomain
      * @param aDomain domain to which node belongs
      */
-    InterfaceCylinder(int n, Grid* aGrid);                      // constructor
+    InterfaceCylinder(int n, Grid *aGrid);                      // constructor
     /// Destructor.
     ~InterfaceCylinder();                                           // destructor
 
 
-    double giveDiameter(){return this->diameter;}
-    double giveITZThickness(){return this->itzThickness;}
-    
+    double giveDiameter() { return this->diameter; }
+    double giveITZThickness() { return this->itzThickness; }
+
     int generatePoints();
 
     InterfaceCylinder *ofType();
@@ -62,17 +61,10 @@ public:
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "InterfaceCylinder"; }
 
-  void initializeFrom(GeneratorInputRecord &ir);
+    void initializeFrom(GeneratorInputRecord &ir);
 
     void         printYourself();
-
 };
 
 
 #endif // node_h
-
-
-
-
-
-

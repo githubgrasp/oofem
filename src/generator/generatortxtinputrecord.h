@@ -53,11 +53,11 @@ protected:
      * This also enables to perform additional check for input records, since
      * unread fields can be detected
      */
-  oofem::Tokenizer tokenizer;
-    std :: vector< bool >readFlag;
+    oofem::Tokenizer tokenizer;
+    std::vector< bool >readFlag;
 
     /// Record representation.
-    std :: string record;
+    std::string record;
 
     int lineNumber;
 
@@ -65,44 +65,44 @@ public:
     /// Constructor. Creates an empty input record.
     GeneratorTXTInputRecord();
     /// Constructor. Creates the input record corresponding to given string.
-    GeneratorTXTInputRecord(int linenumber, std :: string source);
+    GeneratorTXTInputRecord(int linenumber, std::string source);
     /// Copy constructor.
     GeneratorTXTInputRecord(const GeneratorTXTInputRecord &);
     /// Assignment operator.
-    GeneratorTXTInputRecord &operator = ( const GeneratorTXTInputRecord & );
+    GeneratorTXTInputRecord &operator=(const GeneratorTXTInputRecord &);
 
-  std::unique_ptr<GeneratorInputRecord> clone() const override {
-    return std::unique_ptr<GeneratorInputRecord>(new GeneratorTXTInputRecord(*this));
+    std::unique_ptr< GeneratorInputRecord >clone() const override {
+        return std::unique_ptr< GeneratorInputRecord >(new GeneratorTXTInputRecord(* this) );
     }
-  
+
 
 public:
     /// Sets the record string.
-    void setRecordString(std :: string newStr);
+    void setRecordString(std::string newStr);
     /// Returns record string.
-    std :: string giveRecordAsString() const override { return this->record; }
+    std::string giveRecordAsString() const override { return this->record; }
 
     void finish(bool wrn = true) override;
 
 public:
 
-  void giveRawLine(std::string &dst) const override;
+    void giveRawLine(std::string &dst) const override;
 
-  void giveRecordKeywordField(std :: string &answer, int &value) override;
-    void giveRecordKeywordField(std :: string &answer) override;
- void giveRecordKeywordField(std::string &keyword, std::string &value) override;
+    void giveRecordKeywordField(std::string &answer, int &value) override;
+    void giveRecordKeywordField(std::string &answer) override;
+    void giveRecordKeywordField(std::string &keyword, std::string &value) override;
 
-  void giveField(int &answer, InputFieldType id) override;
+    void giveField(int &answer, InputFieldType id) override;
     void giveField(double &answer, InputFieldType id) override;
     void giveField(bool &answer, InputFieldType id) override;
-    void giveField(std :: string &answer, InputFieldType id) override;
-  void giveField(oofem::FloatArray &answer, InputFieldType id) override;
-  void giveField(oofem::IntArray &answer, InputFieldType id) override;
-  void giveField(oofem::FloatMatrix &answer, InputFieldType id) override;
-    void giveField(std :: vector< std :: string > &answer, InputFieldType id) override;
-  void giveField(oofem::Dictionary &answer, InputFieldType id) override;
-  void giveField(std :: list< oofem::Range > &answer, InputFieldType id) override;
-  void giveField(oofem::ScalarFunction &answer, InputFieldType id) override;
+    void giveField(std::string &answer, InputFieldType id) override;
+    void giveField(oofem::FloatArray &answer, InputFieldType id) override;
+    void giveField(oofem::IntArray &answer, InputFieldType id) override;
+    void giveField(oofem::FloatMatrix &answer, InputFieldType id) override;
+    void giveField(std::vector< std::string > &answer, InputFieldType id) override;
+    void giveField(oofem::Dictionary &answer, InputFieldType id) override;
+    void giveField(std::list< oofem::Range > &answer, InputFieldType id) override;
+    void giveField(oofem::ScalarFunction &answer, InputFieldType id) override;
 
     bool hasField(InputFieldType id) override;
     void printYourself() override;
@@ -134,6 +134,6 @@ protected:
      * @param ans Float matrix.
      * @return Nonzero on success.
      */
-  int readMatrix(const char *helpSource, int r, int c, oofem::FloatMatrix &ans);
+    int readMatrix(const char *helpSource, int r, int c, oofem::FloatMatrix &ans);
 };
 #endif // generatortxtinputrecord_h

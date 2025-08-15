@@ -2,25 +2,24 @@
 #include "gridcomponent.h"
 
 #ifndef __MAKEDEPEND
-#include <math.h>
-#include <stdlib.h>
+ #include <math.h>
+ #include <stdlib.h>
 #endif
 
-Vertex :: Vertex(int n, Grid* aGrid) : GridComponent(n,aGrid) //, coordinates()
+Vertex::Vertex(int n, Grid *aGrid) : GridComponent(n, aGrid)  //, coordinates()
 {
-  this->number = n;  
-  }
-
-
-
-
-Vertex :: ~Vertex()
-// Destructor.
-{
+    this->number = n;
 }
 
 
-double Vertex :: giveCoordinate(int i)
+
+
+Vertex::~Vertex()
+// Destructor.
+{}
+
+
+double Vertex::giveCoordinate(int i)
 // Returns the i-th coordinate of the receiver.
 {
     if ( i > coordinates.giveSize() ) {
@@ -32,7 +31,7 @@ double Vertex :: giveCoordinate(int i)
 
 
 void
-Vertex :: initializeFrom(GeneratorInputRecord &ir)
+Vertex::initializeFrom(GeneratorInputRecord &ir)
 {
     int j, size;
     oofem::FloatArray triplets;
@@ -46,5 +45,3 @@ Vertex :: initializeFrom(GeneratorInputRecord &ir)
 
     return;
 }
-
-

@@ -1,7 +1,6 @@
 #ifndef sphere_h
 #define sphere_h
 
-
 #include "grid.h"
 #include "region.h"
 
@@ -15,7 +14,7 @@
 #include "oofemtxtinputrecord.h"
 
 #ifndef __MAKEDEPEND
-#include <stdio.h>
+ #include <stdio.h>
 #endif
 
 #define _IFT_Sphere_centre "centre"
@@ -27,13 +26,12 @@
 
 class Sphere : public Region
 {
-
 protected:
     /// Array storing nodal coordinates.
-  oofem::FloatArray centre;
-  double radius;
-  int number;
-  double refinement;
+    oofem::FloatArray centre;
+    double radius;
+    int number;
+    double refinement;
 
 
 public:
@@ -43,12 +41,12 @@ public:
      * @param n node number in domain aDomain
      * @param aDomain domain to which node belongs
      */
-    Sphere(int n, Grid* aGrid);                      // constructor
+    Sphere(int n, Grid *aGrid);                      // constructor
     /// Destructor.
     ~Sphere();                                           // destructor
 
-    double giveRadius(){return this->radius;}
-    
+    double giveRadius() { return this->radius; }
+
     virtual int generatePoints();
 
     int generatePeriodicPoints();
@@ -60,17 +58,10 @@ public:
     ///Returns the number of region
     int giveNumber() { return this->number; }
 
-    
-  void initializeFrom(GeneratorInputRecord &ir);
 
-  void printYourself();
+    void initializeFrom(GeneratorInputRecord &ir);
 
+    void printYourself();
 };
 
 #endif // sphere_h
-
-
-
-
-
-

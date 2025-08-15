@@ -15,7 +15,7 @@
 #include "oofemtxtinputrecord.h"
 
 #ifndef __MAKEDEPEND
-#include <stdio.h>
+ #include <stdio.h>
 #endif
 
 #define _IFT_InterfacePlane_line "line"
@@ -29,14 +29,13 @@
 
 class InterfacePlane : public Inclusion
 {
-
 protected:
     /// Array storing nodal coordinates.
-  oofem::FloatArray line; //Storing start and end point of axis of plane
-  double diameter;
-  int number;
-  double refinement;
-  double itzThickness;
+    oofem::FloatArray line; //Storing start and end point of axis of plane
+    double diameter;
+    int number;
+    double refinement;
+    double itzThickness;
 
 public:
 
@@ -45,14 +44,14 @@ public:
      * @param n node number in domain aDomain
      * @param aDomain domain to which node belongs
      */
-    InterfacePlane(int n, Grid* aGrid);                      // constructor
+    InterfacePlane(int n, Grid *aGrid);                      // constructor
     /// Destructor.
     ~InterfacePlane();                                           // destructor
 
 
-    double giveDiameter(){return this->diameter;}
-    double giveITZThickness(){return this->itzThickness;}
-    
+    double giveDiameter() { return this->diameter; }
+    double giveITZThickness() { return this->itzThickness; }
+
     int generatePoints();
 
     InterfacePlane *ofType();
@@ -65,14 +64,7 @@ public:
     //virtual IntArray* ResolveDofIDArray (char* initString);
     /// prints receiver state on stdout. Usefull for debuging.
     void         printYourself();
-
 };
 
 
 #endif // node_h
-
-
-
-
-
-

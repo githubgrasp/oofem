@@ -78,7 +78,7 @@ private:
      */
     int dimension;
 
-  int vertexCount = 0;
+    int vertexCount = 0;
 
     /**
      * Associated Engineering model. An abstraction for type of analysis which will be prformed.
@@ -104,32 +104,32 @@ private:
 
     int regularFlag;
 
-  oofem::IntArray periodicityFlag;
+    oofem::IntArray periodicityFlag;
 
     int couplingFlag;
 
     int randomFlag;
 
     GridLocalizer *gridLocalizer;
-  
+
 public:
 
-  oofem::IntArray xyzEdges;
+    oofem::IntArray xyzEdges;
     double TOL;
 
     double diameter;
 
 
-    std::vector<Vertex*> vertexList;
-    std::vector<Vertex*> inputVertexList;
-    std::vector<Vertex*> controlVertexList;
-    std::vector<Curve*> curveList;
-    std::vector<Surface*> surfaceList;
-    std::vector<Region*> regionList;
-    std::vector<Inclusion*> inclusionList;
-    std::vector<Refinement*> refinementList;
+    std::vector< Vertex * >vertexList;
+    std::vector< Vertex * >inputVertexList;
+    std::vector< Vertex * >controlVertexList;
+    std::vector< Curve * >curveList;
+    std::vector< Surface * >surfaceList;
+    std::vector< Region * >regionList;
+    std::vector< Inclusion * >inclusionList;
+    std::vector< Refinement * >refinementList;
 
-  
+
     // /// Vertex list
     // AList< Vertex > *vertexList;
 
@@ -177,16 +177,16 @@ public:
 
     int giveMaximumIterations() { return this->maxIter; }
 
-  void addVertex(const oofem::FloatArray& coords);
+    void addVertex(const oofem::FloatArray &coords);
 
-    void exportVTK(const std::string& path);
+    void exportVTK(const std::string &path);
 
     Vertex *giveVertex(int n);
 
     Vertex *giveInputVertex(int n);
 
     Vertex *giveControlVertex(int n);
-    
+
     Curve *giveCurve(int n);
 
     Surface *giveSurface(int n);
@@ -203,20 +203,20 @@ public:
     GridLocalizer *giveGridLocalizer();
 
     void generateInputPoints();
-      
+
     void generateControlPoints();
 
     void generatePeriodicControlPoints();
-    
+
     int generatePeriodicPoints();
 
     int generateRegularPoints();
 
     int generateRandomPoints();
 
-    //some directions are with mirroring others with shift. Ideally, this should be the only function later on. 
+    //some directions are with mirroring others with shift. Ideally, this should be the only function later on.
     int generateMixedPoints();
-    
+
     int generatePoints();
 
 
@@ -225,39 +225,39 @@ public:
     double ran1(int *idum);
 
     /// Returns number of vertices.
-  int                giveNumberOfVertices() const { return vertexCount; }
+    int                giveNumberOfVertices() const { return vertexCount; }
 
     /// Returns number of input vertices.
-  int                giveNumberOfInputVertices() { return generator::size1(inputVertexList); }
+    int                giveNumberOfInputVertices() { return generator::size1(inputVertexList); }
 
     /// Returns number of input vertices.
-  int                giveNumberOfControlVertices() { return generator::size1(controlVertexList); }
-    
+    int                giveNumberOfControlVertices() { return generator::size1(controlVertexList); }
+
     /// Returns number of curves.
-  int                giveNumberOfCurves() { return generator::size1(curveList); }
+    int                giveNumberOfCurves() { return generator::size1(curveList); }
 
     /// Returns number of surfaces
-  int                giveNumberOfSurfaces() { return generator::size1(surfaceList); }
+    int                giveNumberOfSurfaces() { return generator::size1(surfaceList); }
 
     /// Returns number of regions
-  int                giveNumberOfRegions() { return generator::size1(regionList); }
+    int                giveNumberOfRegions() { return generator::size1(regionList); }
 
     /// Returns number of cross section models in grid
-  int                giveNumberOfInclusions() { return generator::size1(inclusionList); }
+    int                giveNumberOfInclusions() { return generator::size1(inclusionList); }
 
     /// Returns number of refinements in grid
-  int                giveNumberOfRefinements() { return generator::size1(refinementList); }
-    
+    int                giveNumberOfRefinements() { return generator::size1(refinementList); }
+
 
     /// Returns flag to indicate if mesh generation should be regular
     int                giveRegularFlag() { return this->regularFlag; }
 
 
     /// Returns flag to indicate if mesh generation should be regular
-  void                givePeriodicityFlag(oofem::IntArray& answer) { answer = this->periodicityFlag;}
+    void                givePeriodicityFlag(oofem::IntArray &answer) { answer = this->periodicityFlag; }
 
-    
-        /// Returns flag to indicate if mesh generation should be regular
+
+    /// Returns flag to indicate if mesh generation should be regular
     int                giveRandomFlag() { return this->randomFlag; }
 
 
@@ -274,7 +274,7 @@ public:
 
     /// Resizes the internal data structure to accomodate space for _newSize dofManagers
     void resizeControlVertices(int _newSize);
-    
+
     /// Resizes the internal data structure to accomodate space for _newSize elements
     void resizeCurves(int _newSize);
     /// Resizes the internal data structure to accomodate space for _newSize cross section models
@@ -288,7 +288,7 @@ public:
     /// Resizes the internal data structure to accomodate space for _newSize materials
     void resizeRefinements(int _newSize);
 
-    
+
 
     /// Sets i-th componet. The component will be futher managed and maintained by grid object.
     void setVertex(int i, Vertex *obj);
@@ -308,19 +308,18 @@ public:
 
     /// Sets i-th componet. The component will be futher managed and maintained by grid object.
     void setRefinement(int i, Refinement *obj);
-    
 
-   int         giveGridType()        { return this->dimension; }
+
+    int         giveGridType()        { return this->dimension; }
 
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "Grid"; }
 
-  void defineBoundaries(oofem::FloatArray &boundaries);
+    void defineBoundaries(oofem::FloatArray &boundaries);
 
-  double giveDiameter(oofem::FloatArray &coords);
-    
-  void giveOutput(FILE *outputStream);
+    double giveDiameter(oofem::FloatArray &coords);
 
+    void giveOutput(FILE *outputStream);
 };
 
 #endif // grid_h

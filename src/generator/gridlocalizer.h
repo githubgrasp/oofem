@@ -47,9 +47,9 @@
 #include "interface.h"
 #include "logger.h"
 #ifndef __MAKEDEPEND
-#include <stdio.h>
-#include <set>
-#include <list>
+ #include <stdio.h>
+ #include <set>
+ #include <list>
 #endif
 
 class Grid;
@@ -64,38 +64,37 @@ class oofemOctantRec;
  */
 class GridLocalizer : public GridComponent
 {
-  
- protected:
+protected:
 
- public:
-  
-  /**
-   * Typedefs to introduce the container type for element numbers, returned by some services
-   */
-  typedef std :: set< int > elementContainerType;
-  /**
-   * Typedefs to introduce the container type for nodal numbers, returned by some services
-   */
-  typedef std :: list< int > nodeContainerType;
-  
-  
-  /// Constructor
- GridLocalizer(int n, Grid *g) : GridComponent(n, g) { }
+public:
 
-  virtual ~GridLocalizer() = default;
-  
-  /**
+    /**
+     * Typedefs to introduce the container type for element numbers, returned by some services
+     */
+    typedef std::set< int >elementContainerType;
+    /**
+     * Typedefs to introduce the container type for nodal numbers, returned by some services
+     */
+    typedef std::list< int >nodeContainerType;
+
+
+    /// Constructor
+    GridLocalizer(int n, Grid *g) : GridComponent(n, g) { }
+
+    virtual ~GridLocalizer() = default;
+
+    /**
      * Returns container (list) of all domain nodes within given box.
      * @param NODESet answer containing the list of nodes meeting the criteria
      * @param coords center of box of interest
      * @param radius radius of bounding sphere
      */
-  virtual void giveAllNodesWithinBox(nodeContainerType &nodeList, const oofem::FloatArray &coords, const double radius) = 0;
+    virtual void giveAllNodesWithinBox(nodeContainerType &nodeList, const oofem::FloatArray &coords, const double radius) = 0;
 
 
-  virtual int checkNodesWithinBox(const oofem::FloatArray &coords, const double radius) = 0;
+    virtual int checkNodesWithinBox(const oofem::FloatArray &coords, const double radius) = 0;
 
-  virtual void insertSequentialNode(int nodeNum, const oofem::FloatArray &coords) = 0;
+    virtual void insertSequentialNode(int nodeNum, const oofem::FloatArray &coords) = 0;
 
 
     /**
@@ -103,27 +102,17 @@ class GridLocalizer : public GridComponent
      * If force is set to true, the initialization is enforced (useful if domain geometry has changed)
      * Returns nonzero if successful.
      */
-    virtual int init(bool force = false) {return 1;} 
-    
+    virtual int init(bool force = false) { return 1; }
+
     /** Initializes receiver acording to object description stored in input record.
      * This function is called immediately after creating object using
      * constructor. Input record can be imagined as data record in component database
      * belonging to receiver. Receiver may use value-name extracting functions
      * to extract particular field from record.
      * @see readInteger, readDouble and similar functions */
-  void initializeFrom(GeneratorInputRecord &ir) override { return; }
-    
- protected:
+    void initializeFrom(GeneratorInputRecord &ir) override { return; }
+
+protected:
 };
 
 #endif // gridlocalizer_h
-
-
-
-
-
-
-
-
-
-

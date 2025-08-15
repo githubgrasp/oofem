@@ -13,7 +13,7 @@
 #include "inputrecord.h"
 
 #ifndef __MAKEDEPEND
-#include <stdio.h>
+ #include <stdio.h>
 #endif
 
 //class FloatArray;
@@ -21,15 +21,14 @@
 
 class GridComponent
 {
-
 protected:
     /// Array storing nodal coordinates.
-  oofem::FloatArray coordinates;
+    oofem::FloatArray coordinates;
     int number;
     double refinement;
     double radius;
-    
-    Grid* grid;
+
+    Grid *grid;
 public:
 
     /**
@@ -37,9 +36,9 @@ public:
      * @param n node number in grid aGrid
      * @param aGrid grid to which node belongs
      */
-    GridComponent(int n, Grid* aGrid);                      // constructor
+    GridComponent(int n, Grid *aGrid);                      // constructor
     /// Destructor.
-  virtual ~GridComponent() = default; 
+    virtual ~GridComponent() = default;
 
 
     GridComponent *ofType();
@@ -48,19 +47,12 @@ public:
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "GridComponent"; }
 
-  virtual void initializeFrom(GeneratorInputRecord &ir) = 0;  // pure virtual
-  
+    virtual void initializeFrom(GeneratorInputRecord &ir) = 0; // pure virtual
+
     //virtual IntArray* ResolveDofIDArray (char* initString);
     /// prints receiver state on stdout. Usefull for debuging.
     void         printYourself();
-
 };
 
 
 #endif // node_h
-
-
-
-
-
-

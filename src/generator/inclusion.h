@@ -13,7 +13,7 @@
 #include "oofemtxtinputrecord.h"
 
 #ifndef __MAKEDEPEND
-#include <stdio.h>
+ #include <stdio.h>
 #endif
 
 //class FloatArray;
@@ -21,7 +21,6 @@
 
 class Inclusion : public GridComponent
 {
-
 protected:
     /// Array storing nodal coordinates.
 
@@ -35,21 +34,14 @@ public:
      * @param n node number in domain aDomain
      * @param aDomain domain to which node belongs
      */
-    Inclusion(int n, Grid* aGrid);                      // constructor
+    Inclusion(int n, Grid *aGrid);                      // constructor
     /// Destructor.
     virtual ~Inclusion();                                           // destructor
 
     virtual int generatePoints() = 0;
 
-    virtual int generatePeriodicPoints(){return 0;}
-
+    virtual int generatePeriodicPoints() { return 0; }
 };
 
 
 #endif // node_h
-
-
-
-
-
-

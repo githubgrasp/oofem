@@ -100,7 +100,7 @@
 
 
 
-// void 
+// void
 // GridLocalizer::giveAllElementsWithNodesWithinBox(elementContainerType &elemSet, const FloatArray &coords,
 //                                                     const double radius)
 // {
@@ -114,7 +114,7 @@
 //   //  ConnectivityTable* ct = domain->giveConnectivityTable();
 
 //   this->giveAllNodesWithinBox (nodesWithinBox, coords, radius);
-  
+
 //   for (it=nodesWithinBox.begin(); it != nodesWithinBox.end(); ++it) {
 //    dofmanConnectivity = ct->giveDofManConnectivityArray (*it);
 //    for (i=1; i<=dofmanConnectivity->giveSize(); i++) elemSet.insert(dofmanConnectivity->at(i));

@@ -13,12 +13,11 @@
 #include "oofemtxtinputrecord.h"
 
 #ifndef __MAKEDEPEND
-#include <stdio.h>
+ #include <stdio.h>
 #endif
 
 class Refinement : public GridComponent
 {
-
 protected:
     /// Array storing nodal coordinates.
 
@@ -32,19 +31,12 @@ public:
      * @param n node number in domain aDomain
      * @param aDomain domain to which node belongs
      */
-    Refinement(int n, Grid* aGrid);                      // constructor
+    Refinement(int n, Grid *aGrid);                      // constructor
     /// Destructor.
     virtual ~Refinement();                                           // destructor
 
-  virtual double giveDiameter(oofem::FloatArray &coord) {return 0.;}
-
+    virtual double giveDiameter(oofem::FloatArray &coord) { return 0.; }
 };
 
 
 #endif // node_h
-
-
-
-
-
-

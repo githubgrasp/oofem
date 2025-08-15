@@ -35,29 +35,29 @@ protected:
     /// link to parent cell record
     oofemOctantRec *parent;
     /// link to octant childs
-    oofemOctantRec *child [ 2 ] [ 2 ] [ 2 ];
+    oofemOctantRec *child[ 2 ] [ 2 ] [ 2 ];
     /// octant origin coordinates
-  oofem::FloatArray origin;
+    oofem::FloatArray origin;
     /// octant size
     double size;
 
     /// octant node list
-    std :: list< int > *nodeList;
+    std::list< int > *nodeList;
     /// element list, containing all elements having ip in cell
-    std :: set< int > *elementList;
+    std::set< int > *elementList;
 
 public:
     enum boundingBoxStatus { BBS_OUTSIDECELL, BBS_INSIDECELL, BBS_CONTAINSCELL };
 
     /// constructor
-  oofemOctantRec(OctreeGridLocalizer *loc, oofemOctantRec *parent, oofem::FloatArray &origin, double size);
+    oofemOctantRec(OctreeGridLocalizer *loc, oofemOctantRec *parent, oofem::FloatArray &origin, double size);
     /// destructor
     ~oofemOctantRec();
 
     /// returns reference to parent; NULL if root
     oofemOctantRec *giveParent() { return this->parent; }
     /// returns the cell origin
-  void giveOrigin(oofem::FloatArray &answer) { answer = this->origin; }
+    void giveOrigin(oofem::FloatArray &answer) { answer = this->origin; }
     /// returns cell size
     double giveSize() { return this->size; }
     /** Returns nonzero if octant contains given point.
@@ -78,9 +78,9 @@ public:
     /// Returns nonzero if octant is terminal one (no children)
     int isTerminalOctant();
     /// Return reference to node List
-    std :: list< int > *giveNodeList();
+    std::list< int > *giveNodeList();
     /// Return reference to IPelement set
-    std :: set< int > *giveIPElementList();
+    std::set< int > *giveIPElementList();
 
     /**
      * Divide receiver further, creating corresponding childs
@@ -240,7 +240,7 @@ protected:
      * @param radius radius of bounding sphere
      * @param currentCell starting cell
      */
-    void giveListOfTerminalCellsInBoundingBox(std :: list< oofemOctantRec * > &cellList, const oofem::FloatArray &coords,
+    void giveListOfTerminalCellsInBoundingBox(std::list< oofemOctantRec * > &cellList, const oofem::FloatArray &coords,
                                               const double radius, oofemOctantRec *currentCell);
 };
 

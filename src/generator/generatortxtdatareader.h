@@ -51,30 +51,30 @@
 class GeneratorTXTDataReader : public GeneratorDataReader
 {
 protected:
-    std :: string dataSourceName;
-    std :: list< GeneratorTXTInputRecord > recordList;
+    std::string dataSourceName;
+    std::list< GeneratorTXTInputRecord >recordList;
 
     /// Keeps track of the current position in the list
-    std :: list< GeneratorTXTInputRecord > :: iterator it;
+    std::list< GeneratorTXTInputRecord >::iterator it;
 
 public:
     /// Constructor.
-    GeneratorTXTDataReader(std :: string inputfilename);
-    GeneratorTXTDataReader(const GeneratorTXTDataReader & x);
+    GeneratorTXTDataReader(std::string inputfilename);
+    GeneratorTXTDataReader(const GeneratorTXTDataReader &x);
     virtual ~GeneratorTXTDataReader();
 
     GeneratorInputRecord &giveInputRecord(GeneratorInputRecordType, int recordId) override;
-    bool peakNext(const std :: string &keyword) override;
+    bool peakNext(const std::string &keyword) override;
     void finish() override;
-    std :: string giveReferenceName() const override { return dataSourceName; }
+    std::string giveReferenceName() const override { return dataSourceName; }
 
 protected:
     /**
      * Reads one line from inputStream
      * Parts within quotations have case preserved.
      */
-    bool giveLineFromInput(std :: ifstream &stream, int &lineNum, std :: string &line);
+    bool giveLineFromInput(std::ifstream &stream, int &lineNum, std::string &line);
     /// Reads one line from stream.
-    bool giveRawLineFromInput(std :: ifstream &stream, int &lineNum, std :: string &line);
+    bool giveRawLineFromInput(std::ifstream &stream, int &lineNum, std::string &line);
 };
 #endif // generatortxtdatareader_h

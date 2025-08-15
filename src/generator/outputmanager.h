@@ -41,7 +41,7 @@
 #define outputmanager_h
 
 #ifndef __MAKEDEPEND
-#include <stdio.h>
+ #include <stdio.h>
 #endif
 #include "domain.h"
 #include "engngm.h"
@@ -148,21 +148,17 @@ public:
     const char *giveClassName() const { return "OutputManager"; }
 
     /**
-       Receiver becomes shallow copy of the argument. Shallow here menas that only
-       tstep_all_out_flag, tstep_step_out, dofman_all_out_flag, and element_all_out_flag are copied.
+     * Receiver becomes shallow copy of the argument. Shallow here menas that only
+     * tstep_all_out_flag, tstep_step_out, dofman_all_out_flag, and element_all_out_flag are copied.
      */
-    void beCopyOf (OutputManager* om) {
-      this->tstep_all_out_flag = om->tstep_all_out_flag;
-      this->tstep_step_out = om->tstep_step_out;
-      this->dofman_all_out_flag = om->dofman_all_out_flag;
-      this->element_all_out_flag = om->element_all_out_flag;
+    void beCopyOf(OutputManager *om) {
+        this->tstep_all_out_flag = om->tstep_all_out_flag;
+        this->tstep_step_out = om->tstep_step_out;
+        this->dofman_all_out_flag = om->dofman_all_out_flag;
+        this->element_all_out_flag = om->element_all_out_flag;
     }
 protected:
-
 };
 
 
 #endif // outputmanager_h
-
-
-

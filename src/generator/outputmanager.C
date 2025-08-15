@@ -3,7 +3,7 @@
 #include "engngm.h"
 #include "logger.h"
 
-OutputManager :: OutputManager(Domain *d) : dofman_out(), dofman_except(), element_out(), element_except()
+OutputManager::OutputManager(Domain *d) : dofman_out(), dofman_except(), element_out(), element_except()
 {
     domain = d;
     tstep_all_out_flag = 0;
@@ -12,7 +12,7 @@ OutputManager :: OutputManager(Domain *d) : dofman_out(), dofman_except(), eleme
 }
 
 IRResultType
-OutputManager :: initializeFrom(InputRecord *ir)
+OutputManager::initializeFrom(InputRecord *ir)
 {
     const char *__proc = "initializeFrom"; // Required by IR_GIVE_FIELD macro
     IRResultType result;                // Required by IR_GIVE_FIELD macro
@@ -44,7 +44,7 @@ OutputManager :: initializeFrom(InputRecord *ir)
 }
 
 void
-OutputManager :: doDofManOutput(FILE *file, TimeStep *tStep)
+OutputManager::doDofManOutput(FILE *file, TimeStep *tStep)
 {
     int i, ndofman = domain->giveNumberOfDofManagers();
 
@@ -77,7 +77,7 @@ OutputManager :: doDofManOutput(FILE *file, TimeStep *tStep)
 }
 
 void
-OutputManager :: doElementOutput(FILE *file, TimeStep *tStep)
+OutputManager::doElementOutput(FILE *file, TimeStep *tStep)
 {
     int i, nelem = domain->giveNumberOfElements();
     if ( !testTimeStepOutput(tStep) ) {
@@ -110,7 +110,7 @@ OutputManager :: doElementOutput(FILE *file, TimeStep *tStep)
 }
 
 int
-OutputManager :: _testDofManOutput(int number)
+OutputManager::_testDofManOutput(int number)
 {
     int selected = 0;
 
@@ -127,7 +127,7 @@ OutputManager :: _testDofManOutput(int number)
         selected  = 1;
     } else {
         // test for particular dofman selection
-        dynaList< Range > :: iterator dofmanOutIter;
+        dynaList < Range > ::iterator dofmanOutIter;
 
         for ( dofmanOutIter = dofman_out.begin(); dofmanOutIter != dofman_out.end(); ++dofmanOutIter ) {
             if ( ( * dofmanOutIter ).test(number) ) {
@@ -143,8 +143,8 @@ OutputManager :: _testDofManOutput(int number)
     }
 
     // if selected check exclude list
-    dynaList< Range > *list2 = & ( this->dofman_except );
-    dynaList< Range > :: iterator dofmanExceptIter;
+    dynaList < Range > * list2 = & ( this->dofman_except );
+    dynaList < Range > ::iterator dofmanExceptIter;
 
     for ( dofmanExceptIter = list2->begin(); dofmanExceptIter != list2->end(); ++dofmanExceptIter ) {
         // test if excluded
@@ -159,7 +159,7 @@ OutputManager :: _testDofManOutput(int number)
 
 
 int
-OutputManager :: _testElementOutput(int number)
+OutputManager::_testElementOutput(int number)
 {
     int selected = 0;
 
@@ -177,7 +177,7 @@ OutputManager :: _testElementOutput(int number)
         selected  = 1;
     } else {
         // test for particular element selection
-        dynaList< Range > :: iterator elemOutIter;
+        dynaList < Range > ::iterator elemOutIter;
 
         for ( elemOutIter = element_out.begin(); elemOutIter != element_out.end(); ++elemOutIter ) {
             if ( ( * elemOutIter ).test(number) ) {
@@ -193,7 +193,7 @@ OutputManager :: _testElementOutput(int number)
     }
 
     // if selected check exclude list
-    dynaList< Range > :: iterator elemExceptIter;
+    dynaList < Range > ::iterator elemExceptIter;
 
     for ( elemExceptIter = element_except.begin(); elemExceptIter != element_except.end(); ++elemExceptIter ) {
         // test if excluded
@@ -207,7 +207,7 @@ OutputManager :: _testElementOutput(int number)
 }
 
 int
-OutputManager :: testTimeStepOutput(TimeStep *tStep)
+OutputManager::testTimeStepOutput(TimeStep *tStep)
 {
     if ( tstep_all_out_flag ) {
         return 1;
@@ -219,10 +219,10 @@ OutputManager :: testTimeStepOutput(TimeStep *tStep)
         }
     }
 
-    dynaList< Range > :: iterator tstepsIter;
+    dynaList < Range > ::iterator tstepsIter;
     for ( tstepsIter = tsteps_out.begin(); tstepsIter != tsteps_out.end(); ++tstepsIter ) {
         // test if INCLUDED
-        if ( ( * tstepsIter ).test( tStep->giveNumber() ) ) {
+        if ( ( * tstepsIter ).test(tStep->giveNumber() ) ) {
             return 1;
         }
     }
@@ -231,7 +231,7 @@ OutputManager :: testTimeStepOutput(TimeStep *tStep)
 }
 
 int
-OutputManager :: testDofManOutput(int num, TimeStep *tStep)
+OutputManager::testDofManOutput(int num, TimeStep *tStep)
 {
     if ( testTimeStepOutput(tStep) ) {
         if ( _testDofManOutput(num) ) {
@@ -243,7 +243,7 @@ OutputManager :: testDofManOutput(int num, TimeStep *tStep)
 }
 
 int
-OutputManager :: testElementOutput(int num, TimeStep *tStep)
+OutputManager::testElementOutput(int num, TimeStep *tStep)
 {
     if ( testTimeStepOutput(tStep) ) {
         if ( _testElementOutput(num) ) {
@@ -253,4 +253,3 @@ OutputManager :: testElementOutput(int num, TimeStep *tStep)
 
     return 0;
 }
-

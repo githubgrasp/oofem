@@ -49,13 +49,13 @@
 #include <ostream>
 #include <sstream>
 
-GeneratorTXTInputRecord :: GeneratorTXTInputRecord() : tokenizer(), record()
+GeneratorTXTInputRecord::GeneratorTXTInputRecord() : tokenizer(), record()
 { }
 
-GeneratorTXTInputRecord :: GeneratorTXTInputRecord(const GeneratorTXTInputRecord &src) : tokenizer(),
+GeneratorTXTInputRecord::GeneratorTXTInputRecord(const GeneratorTXTInputRecord &src) : tokenizer(),
     record(src.record), lineNumber(src.lineNumber)
 {
-    tokenizer.tokenizeLine( this->record );
+    tokenizer.tokenizeLine(this->record);
     int ntok = tokenizer.giveNumberOfTokens();
     readFlag.resize(ntok);
     for ( int i = 0; i < ntok; i++ ) {
@@ -63,10 +63,10 @@ GeneratorTXTInputRecord :: GeneratorTXTInputRecord(const GeneratorTXTInputRecord
     }
 }
 
-GeneratorTXTInputRecord :: GeneratorTXTInputRecord(int linenumber, std :: string source) : tokenizer(),
-    record(std :: move(source)), lineNumber(linenumber)
+GeneratorTXTInputRecord::GeneratorTXTInputRecord(int linenumber, std::string source) : tokenizer(),
+    record(std::move(source) ), lineNumber(linenumber)
 {
-    tokenizer.tokenizeLine( this->record );
+    tokenizer.tokenizeLine(this->record);
     int ntok = tokenizer.giveNumberOfTokens();
     readFlag.resize(ntok);
     for ( int i = 0; i < ntok; i++ ) {
@@ -75,10 +75,10 @@ GeneratorTXTInputRecord :: GeneratorTXTInputRecord(int linenumber, std :: string
 }
 
 GeneratorTXTInputRecord &
-GeneratorTXTInputRecord :: operator = ( const GeneratorTXTInputRecord & src )
+GeneratorTXTInputRecord::operator = ( const GeneratorTXTInputRecord &src )
 {
     this->record = src.record;
-    tokenizer.tokenizeLine( this->record );
+    tokenizer.tokenizeLine(this->record);
     int ntok = tokenizer.giveNumberOfTokens();
     readFlag.resize(ntok);
     for ( int i = 0; i < ntok; i++ ) {
@@ -89,21 +89,23 @@ GeneratorTXTInputRecord :: operator = ( const GeneratorTXTInputRecord & src )
 }
 
 static inline void trim_right(std::string &s) {
-    while (!s.empty() && (s.back() == '\r' || s.back() == '\n')) s.pop_back();
+    while ( !s.empty() && ( s.back() == '\r' || s.back() == '\n' ) ) {
+        s.pop_back();
+    }
 }
-  
+
 
 void GeneratorTXTInputRecord::giveRawLine(std::string &dst) const
 {
     dst = this->record;   // the original line as read by the reader
     trim_right(dst);      // drop trailing \r/\n so fopen gets a clean name
 }
-  
+
 void
-GeneratorTXTInputRecord :: setRecordString(std :: string newRec)
+GeneratorTXTInputRecord::setRecordString(std::string newRec)
 {
-    this->record = std :: move(newRec);
-    tokenizer.tokenizeLine( this->record );
+    this->record = std::move(newRec);
+    tokenizer.tokenizeLine(this->record);
     int ntok = tokenizer.giveNumberOfTokens();
     readFlag.resize(ntok);
     for ( int i = 0; i < ntok; i++ ) {
@@ -112,13 +114,13 @@ GeneratorTXTInputRecord :: setRecordString(std :: string newRec)
 }
 
 void
-GeneratorTXTInputRecord :: giveRecordKeywordField(std :: string &answer, int &value)
+GeneratorTXTInputRecord::giveRecordKeywordField(std::string &answer, int &value)
 {
     if ( tokenizer.giveNumberOfTokens() > 0 ) {
-        answer = std :: string( tokenizer.giveToken(1) );
+        answer = std::string(tokenizer.giveToken(1) );
         setReadFlag(1);
         auto ptr = scanInteger(tokenizer.giveToken(2), value);
-        if ( ptr == nullptr || *ptr != 0 ) {
+        if ( ptr == nullptr || * ptr != 0 ) {
             throw BadFormatInputException(*this, "RecordID", lineNumber);
         }
         setReadFlag(2);
@@ -131,9 +133,9 @@ GeneratorTXTInputRecord :: giveRecordKeywordField(std :: string &answer, int &va
 void
 GeneratorTXTInputRecord::giveRecordKeywordField(std::string &keyword, std::string &value)
 {
-    if (tokenizer.giveNumberOfTokens() >= 2) {
-        keyword = std::string(tokenizer.giveToken(1));
-        value   = std::string(tokenizer.giveToken(2));
+    if ( tokenizer.giveNumberOfTokens() >= 2 ) {
+        keyword = std::string(tokenizer.giveToken(1) );
+        value   = std::string(tokenizer.giveToken(2) );
         setReadFlag(1);
         setReadFlag(2);
     } else {
@@ -143,10 +145,10 @@ GeneratorTXTInputRecord::giveRecordKeywordField(std::string &keyword, std::strin
 
 
 void
-GeneratorTXTInputRecord :: giveRecordKeywordField(std :: string &answer)
+GeneratorTXTInputRecord::giveRecordKeywordField(std::string &answer)
 {
     if ( tokenizer.giveNumberOfTokens() > 0 ) {
-        answer = std :: string( tokenizer.giveToken(1) );
+        answer = std::string(tokenizer.giveToken(1) );
         setReadFlag(1);
     } else {
         throw BadFormatInputException(*this, "RecordID", lineNumber);
@@ -154,12 +156,12 @@ GeneratorTXTInputRecord :: giveRecordKeywordField(std :: string &answer)
 }
 
 void
-GeneratorTXTInputRecord :: giveField(int &answer, InputFieldType id)
+GeneratorTXTInputRecord::giveField(int &answer, InputFieldType id)
 {
     int indx = this->giveKeywordIndx(id);
     if ( indx ) {
         auto ptr = scanInteger(tokenizer.giveToken(indx + 1), answer);
-        if ( ptr == nullptr || *ptr != 0 ) {
+        if ( ptr == nullptr || * ptr != 0 ) {
             throw BadFormatInputException(*this, id, lineNumber);
         }
 
@@ -171,12 +173,12 @@ GeneratorTXTInputRecord :: giveField(int &answer, InputFieldType id)
 }
 
 void
-GeneratorTXTInputRecord :: giveField(double &answer, InputFieldType id)
+GeneratorTXTInputRecord::giveField(double &answer, InputFieldType id)
 {
     int indx = this->giveKeywordIndx(id);
     if ( indx ) {
         auto ptr = scanDouble(tokenizer.giveToken(indx + 1), answer);
-        if ( ptr == nullptr || *ptr != 0 ) {
+        if ( ptr == nullptr || * ptr != 0 ) {
             throw BadFormatInputException(*this, id, lineNumber);
         }
 
@@ -188,13 +190,13 @@ GeneratorTXTInputRecord :: giveField(double &answer, InputFieldType id)
 }
 
 void
-GeneratorTXTInputRecord :: giveField(bool &answer, InputFieldType id)
+GeneratorTXTInputRecord::giveField(bool &answer, InputFieldType id)
 {
     int indx = this->giveKeywordIndx(id);
     if ( indx ) {
         int val;
         auto ptr = scanInteger(tokenizer.giveToken(indx + 1), val);
-        if ( ptr == nullptr || *ptr != 0 ) {
+        if ( ptr == nullptr || * ptr != 0 ) {
             throw BadFormatInputException(*this, id, lineNumber);
         }
 
@@ -207,7 +209,7 @@ GeneratorTXTInputRecord :: giveField(bool &answer, InputFieldType id)
 }
 
 void
-GeneratorTXTInputRecord :: giveField(std :: string &answer, InputFieldType id)
+GeneratorTXTInputRecord::giveField(std::string &answer, InputFieldType id)
 {
     int indx = 0;
     if ( id ) {
@@ -223,7 +225,7 @@ GeneratorTXTInputRecord :: giveField(std :: string &answer, InputFieldType id)
 
     const char *_token = tokenizer.giveToken(indx);
     if ( _token ) {
-        answer = std :: string( tokenizer.giveToken(indx) );
+        answer = std::string(tokenizer.giveToken(indx) );
         setReadFlag(indx);
     } else {
         answer = "";
@@ -232,14 +234,14 @@ GeneratorTXTInputRecord :: giveField(std :: string &answer, InputFieldType id)
 }
 
 void
-GeneratorTXTInputRecord :: giveField(oofem::IntArray &answer, InputFieldType id)
+GeneratorTXTInputRecord::giveField(oofem::IntArray &answer, InputFieldType id)
 {
     int indx = this->giveKeywordIndx(id);
     if ( indx ) {
         int size;
         setReadFlag(indx);
         auto ptr = scanInteger(tokenizer.giveToken(++indx), size);
-        if ( ptr == nullptr || *ptr != 0) {
+        if ( ptr == nullptr || * ptr != 0 ) {
             throw BadFormatInputException(*this, id, lineNumber);
         }
 
@@ -249,28 +251,27 @@ GeneratorTXTInputRecord :: giveField(oofem::IntArray &answer, InputFieldType id)
         for ( int i = 1; i <= size; i++ ) {
             int value;
             ptr = scanInteger(tokenizer.giveToken(indx + i), value);
-            if ( ptr == nullptr || *ptr != 0 ) {
+            if ( ptr == nullptr || * ptr != 0 ) {
                 throw BadFormatInputException(*this, id, lineNumber);
             }
 
             answer.at(i) = value;
             setReadFlag(indx + i);
         }
-
     } else {
         throw MissingKeywordInputException(*this, id, lineNumber);
     }
 }
 
 void
-GeneratorTXTInputRecord :: giveField(oofem::FloatArray &answer, InputFieldType id)
+GeneratorTXTInputRecord::giveField(oofem::FloatArray &answer, InputFieldType id)
 {
     int indx = this->giveKeywordIndx(id);
     if ( indx ) {
         int size;
         setReadFlag(indx);
         auto ptr = scanInteger(tokenizer.giveToken(++indx), size);
-        if ( ptr == nullptr || *ptr != 0 ) {
+        if ( ptr == nullptr || * ptr != 0 ) {
             throw BadFormatInputException(*this, id, lineNumber);
         }
 
@@ -280,21 +281,20 @@ GeneratorTXTInputRecord :: giveField(oofem::FloatArray &answer, InputFieldType i
         for ( int i = 1; i <= size; i++ ) {
             double value;
             auto ptr = scanDouble(tokenizer.giveToken(indx + i), value);
-            if ( ptr == nullptr || *ptr != 0 ) {
+            if ( ptr == nullptr || * ptr != 0 ) {
                 throw BadFormatInputException(*this, id, lineNumber);
             }
 
             answer.at(i) = value;
             setReadFlag(indx + i);
         }
-
     } else {
         throw MissingKeywordInputException(*this, id, lineNumber);
     }
 }
 
 void
-GeneratorTXTInputRecord :: giveField(oofem::FloatMatrix &answer, InputFieldType id)
+GeneratorTXTInputRecord::giveField(oofem::FloatMatrix &answer, InputFieldType id)
 {
     int indx = this->giveKeywordIndx(id);
     if ( indx ) {
@@ -302,13 +302,13 @@ GeneratorTXTInputRecord :: giveField(oofem::FloatMatrix &answer, InputFieldType 
         setReadFlag(indx);
 
         auto ptr = scanInteger(tokenizer.giveToken(++indx), nrows);
-        if ( ptr == nullptr || *ptr != 0 ) {
+        if ( ptr == nullptr || * ptr != 0 ) {
             throw BadFormatInputException(*this, id, lineNumber);
         }
 
         setReadFlag(indx);
         ptr = scanInteger(tokenizer.giveToken(++indx), ncols);
-        if ( ptr == nullptr || *ptr != 0 ) {
+        if ( ptr == nullptr || * ptr != 0 ) {
             throw BadFormatInputException(*this, id, lineNumber);
         }
 
@@ -325,37 +325,36 @@ GeneratorTXTInputRecord :: giveField(oofem::FloatMatrix &answer, InputFieldType 
 }
 
 void
-GeneratorTXTInputRecord :: giveField(std :: vector< std :: string > &answer, InputFieldType id)
+GeneratorTXTInputRecord::giveField(std::vector < std::string > & answer, InputFieldType id)
 {
     int indx = this->giveKeywordIndx(id);
     if ( indx ) {
         int size;
         setReadFlag(indx);
         auto ptr = scanInteger(tokenizer.giveToken(++indx), size);
-        if ( ptr == nullptr || *ptr != 0 ) {
+        if ( ptr == nullptr || * ptr != 0 ) {
             throw BadFormatInputException(*this, id, lineNumber);
         }
         answer.reserve(size);
         setReadFlag(indx);
         for ( int i = 1; i <= size; i++ ) {
-            answer.push_back( tokenizer.giveToken(indx + i) );
+            answer.push_back(tokenizer.giveToken(indx + i) );
             setReadFlag(indx + i);
         }
-
     } else {
         throw MissingKeywordInputException(*this, id, lineNumber);
     }
 }
 
 void
-GeneratorTXTInputRecord :: giveField(oofem::Dictionary &answer, InputFieldType id)
+GeneratorTXTInputRecord::giveField(oofem::Dictionary &answer, InputFieldType id)
 {
     int indx = this->giveKeywordIndx(id);
     if ( indx ) {
         setReadFlag(indx);
         int size;
         auto ptr = scanInteger(tokenizer.giveToken(++indx), size);
-        if ( ptr == nullptr || *ptr != 0 ) {
+        if ( ptr == nullptr || * ptr != 0 ) {
             throw BadFormatInputException(*this, id, lineNumber);
         }
 
@@ -364,16 +363,16 @@ GeneratorTXTInputRecord :: giveField(oofem::Dictionary &answer, InputFieldType i
         answer.clear();
         for ( int i = 1; i <= size; i++ ) {
             int key = 0;
-            const char * token = tokenizer.giveToken(++indx);
-            auto ptr1 = scanInteger( token, key );
-            if ( ptr1 == nullptr || *ptr1 != 0 ) {
+            const char *token = tokenizer.giveToken(++indx);
+            auto ptr1 = scanInteger(token, key);
+            if ( ptr1 == nullptr || * ptr1 != 0 ) {
                 key = token [ 0 ];
-               // throw BadFormatInputException(*this, id, lineNumber);
+                // throw BadFormatInputException(*this, id, lineNumber);
             }
             double value;
             setReadFlag(indx);
             auto ptr = scanDouble(tokenizer.giveToken(++indx), value);
-            if ( ptr == nullptr || *ptr != 0 ) {
+            if ( ptr == nullptr || * ptr != 0 ) {
                 throw BadFormatInputException(*this, id, lineNumber);
             }
 
@@ -386,7 +385,7 @@ GeneratorTXTInputRecord :: giveField(oofem::Dictionary &answer, InputFieldType i
 }
 
 void
-GeneratorTXTInputRecord :: giveField(std :: list< oofem::Range > &list, InputFieldType id)
+GeneratorTXTInputRecord::giveField(std::list < oofem::Range > & list, InputFieldType id)
 {
     int indx = this->giveKeywordIndx(id);
     if ( indx ) {
@@ -403,7 +402,7 @@ GeneratorTXTInputRecord :: giveField(std :: list< oofem::Range > &list, InputFie
         rec++;
         // read ranges
         while ( readRange(& rec, li, hi) ) {
-	  oofem::Range range(li, hi);
+            oofem::Range range(li, hi);
             list.push_back(range);
         }
 
@@ -424,7 +423,7 @@ GeneratorTXTInputRecord :: giveField(std :: list< oofem::Range > &list, InputFie
 }
 
 void
-GeneratorTXTInputRecord :: giveField(oofem::ScalarFunction &answer, InputFieldType id)
+GeneratorTXTInputRecord::giveField(oofem::ScalarFunction &answer, InputFieldType id)
 {
     const char *rec;
     int indx = this->giveKeywordIndx(id);
@@ -436,24 +435,24 @@ GeneratorTXTInputRecord :: giveField(oofem::ScalarFunction &answer, InputFieldTy
             // reference to function
             int refVal;
             auto ptr = scanInteger(rec + 1, refVal);
-            if ( ptr == nullptr || *ptr != 0 ) {
+            if ( ptr == nullptr || * ptr != 0 ) {
                 throw BadFormatInputException(*this, id, lineNumber);
             }
             setReadFlag(indx);
             answer.setReference(refVal);
         } else if ( * rec == '$' ) {
             // simple expression
-            std :: string expr;
+            std::string expr;
 
-            expr = std :: string( tokenizer.giveToken(indx) );
+            expr = std::string(tokenizer.giveToken(indx) );
             setReadFlag(indx);
-            std :: string _v = expr.substr(1, expr.size() - 2);
+            std::string _v = expr.substr(1, expr.size() - 2);
 
             answer.setSimpleExpression(_v); // get rid of enclosing '$'
         } else {
             double val;
             auto ptr = scanDouble(tokenizer.giveToken(indx), val);
-            if ( ptr == nullptr || *ptr != 0 ) {
+            if ( ptr == nullptr || * ptr != 0 ) {
                 throw BadFormatInputException(*this, id, lineNumber);
             }
 
@@ -466,7 +465,7 @@ GeneratorTXTInputRecord :: giveField(oofem::ScalarFunction &answer, InputFieldTy
 }
 
 bool
-GeneratorTXTInputRecord :: hasField(InputFieldType id)
+GeneratorTXTInputRecord::hasField(InputFieldType id)
 {
     //returns nonzero if id is present in source
     int indx = this->giveKeywordIndx(id);
@@ -478,13 +477,13 @@ GeneratorTXTInputRecord :: hasField(InputFieldType id)
 }
 
 void
-GeneratorTXTInputRecord :: printYourself()
+GeneratorTXTInputRecord::printYourself()
 {
-    printf( "%s", this->record.c_str() );
+    printf("%s", this->record.c_str() );
 }
 
 const char *
-GeneratorTXTInputRecord :: scanInteger(const char *source, int &value)
+GeneratorTXTInputRecord::scanInteger(const char *source, int &value)
 {
     //
     // reads integer value from source, returns pointer to char after this number
@@ -501,7 +500,7 @@ GeneratorTXTInputRecord :: scanInteger(const char *source, int &value)
 }
 
 const char *
-GeneratorTXTInputRecord :: scanDouble(const char *source, double &value)
+GeneratorTXTInputRecord::scanDouble(const char *source, double &value)
 {
     //
     // reads double value from source, returns pointer to char after this number
@@ -518,11 +517,11 @@ GeneratorTXTInputRecord :: scanDouble(const char *source, double &value)
 }
 
 int
-GeneratorTXTInputRecord :: giveKeywordIndx(const char *kwd)
+GeneratorTXTInputRecord::giveKeywordIndx(const char *kwd)
 {
     int ntokens = tokenizer.giveNumberOfTokens();
     for ( int i = 1; i <= ntokens; i++ ) {
-        if ( strcmp( kwd, tokenizer.giveToken(i) ) == 0 ) {
+        if ( strcmp(kwd, tokenizer.giveToken(i) ) == 0 ) {
             return i;
         }
     }
@@ -531,13 +530,13 @@ GeneratorTXTInputRecord :: giveKeywordIndx(const char *kwd)
 }
 
 void
-GeneratorTXTInputRecord :: finish(bool wrn)
+GeneratorTXTInputRecord::finish(bool wrn)
 {
     if ( !wrn ) {
         return;
     }
 
-    std :: ostringstream buff;
+    std::ostringstream buff;
     bool pf = true, wf = false;
     int ntokens = tokenizer.giveNumberOfTokens();
     for ( int i = 0; i < ntokens; i++ ) {
@@ -566,12 +565,12 @@ GeneratorTXTInputRecord :: finish(bool wrn)
     }
 
     if ( wf ) {
-        printf( buff.str().c_str() );
+        printf(buff.str().c_str() );
     }
 }
 
 int
-GeneratorTXTInputRecord :: readRange(const char **helpSource, int &li, int &hi)
+GeneratorTXTInputRecord::readRange(const char **helpSource, int &li, int &hi)
 {
     char *endptr;
     // skip whitespaces
@@ -619,7 +618,7 @@ GeneratorTXTInputRecord :: readRange(const char **helpSource, int &li, int &hi)
 }
 
 int
-GeneratorTXTInputRecord :: readMatrix(const char *helpSource, int r, int c, oofem::FloatMatrix &ans)
+GeneratorTXTInputRecord::readMatrix(const char *helpSource, int r, int c, oofem::FloatMatrix &ans)
 {
     const char *endptr = helpSource;
 
@@ -640,7 +639,7 @@ GeneratorTXTInputRecord :: readMatrix(const char *helpSource, int r, int c, oofe
         // read row by row separated by semicolon
         for ( int i = 1; i <= r; i++ ) {
             for ( int j = 1; j <= c; j++ ) {
-                endptr = scanDouble( endptr, ans.at(i, j) );
+                endptr = scanDouble(endptr, ans.at(i, j) );
             }
 
             if ( i < r ) {
@@ -674,5 +673,4 @@ GeneratorTXTInputRecord :: readMatrix(const char *helpSource, int r, int c, oofe
     } else {
         return 0;
     }
-
 }

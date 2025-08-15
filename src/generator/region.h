@@ -27,7 +27,7 @@ class Region : public GridComponent
 {
 protected:
     /// Array storing nodal coordinates.
-  oofem::IntArray surfaces;
+    oofem::IntArray surfaces;
     int number;
     double refinement;
     double xlength, ylength, zlength;
@@ -47,11 +47,11 @@ public:
     int      giveLocalSurface(int i);
     /// Returns pointer to curve vertex array.
 
-  void giveLocalSurfaces(oofem::IntArray &surf) { surf = this->surfaces; }
+    void giveLocalSurfaces(oofem::IntArray &surf) { surf = this->surfaces; }
 
     /// Define boundaries
-  void defineBoundaries(oofem::FloatArray &boundaries);
-    
+    void defineBoundaries(oofem::FloatArray &boundaries);
+
     //generate regular points
     int generateRegularPoints1();
     int generateRegularPoints2();
@@ -65,7 +65,7 @@ public:
     //generate mixed points.
     //This means that some direction are periodic and others are not
     int generateMixedPoints();
-    
+
     ///Returns the x length
     double giveXLength() { return this->xlength; }
 
@@ -75,7 +75,7 @@ public:
     ///Returns the z length
     double giveZLength() { return this->zlength; }
 
-  //    Region *ofType();
+    //    Region *ofType();
 
     // miscellaneous
     /// Returns class name of the receiver.
@@ -83,9 +83,9 @@ public:
 
     int giveNumber() { return this->number; }
 
-  void initializeFrom(GeneratorInputRecord &ir);
+    void initializeFrom(GeneratorInputRecord &ir);
 
-   void printYourself();
+    void printYourself();
 };
 
 

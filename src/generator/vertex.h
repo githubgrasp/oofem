@@ -12,7 +12,7 @@
 #include "gridcomponent.h"
 
 #ifndef __MAKEDEPEND
-#include <stdio.h>
+ #include <stdio.h>
 #endif
 
 #define _IFT_Vertex_coords "coords"
@@ -25,10 +25,9 @@
 
 class Vertex : public GridComponent
 {
-
 protected:
     /// Array storing nodal coordinates.
-  oofem::FloatArray coordinates;
+    oofem::FloatArray coordinates;
     int number;
     double refinement;
     double radius;
@@ -36,14 +35,14 @@ protected:
 public:
 
 
-       
+
 
     /**
      * Constructor. Creates a node belonging to domain.
      * @param n node number in grid aGrid
      * @param aGrid grid to which node belongs
      */
-    Vertex(int n, Grid* aGrid);                      // constructor
+    Vertex(int n, Grid *aGrid);                      // constructor
     /// Destructor.
     virtual ~Vertex();                                           // destructor
 
@@ -53,37 +52,30 @@ public:
     double      giveCoordinate(int i);
 
 
-    double giveRefinement (){return this->refinement;}
-    
-    double giveRadius (){return this->radius;} 
+    double giveRefinement() { return this->refinement; }
+
+    double giveRadius() { return this->radius; }
 
     /// Returns pointer to node coordinate array
-  void giveCoordinates(oofem::FloatArray &coord) { coord = this->coordinates; }
-  oofem::FloatArray *giveCoordinates() { return & coordinates; }
+    void giveCoordinates(oofem::FloatArray &coord) { coord = this->coordinates; }
+    oofem::FloatArray *giveCoordinates() { return & coordinates; }
 
- void setCoordinates(const oofem::FloatArray& coords) { this->coordinates = coords; }
-  
-    /// Sets i-th componet. The component will be futher managed and maintained by grid object. 
-    
-    
+    void setCoordinates(const oofem::FloatArray &coords) { this->coordinates = coords; }
+
+    /// Sets i-th componet. The component will be futher managed and maintained by grid object.
+
+
     Vertex *ofType();
 
     // miscellaneous
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "Vertex"; }
 
-  void initializeFrom(GeneratorInputRecord &ir);
+    void initializeFrom(GeneratorInputRecord &ir);
     //virtual IntArray* ResolveDofIDArray (char* initString);
     /// prints receiver state on stdout. Usefull for debuging.
     void         printYourself();
-
 };
 
 
 #endif // node_h
-
-
-
-
-
-
