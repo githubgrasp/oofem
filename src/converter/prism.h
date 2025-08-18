@@ -17,6 +17,10 @@
  #include <stdio.h>
 #endif
 
+#define _IFT_Prism_box "box"
+#define _IFT_Prism_refine "refine"
+
+  
 class GridLocalizer;
 
 //class oofem::FloatArray;
@@ -55,8 +59,8 @@ public:
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "Prism"; }
 
-    IRResultType initializeFrom(InputRecord *ir);
-    //virtual oofem::IntArray* ResolveDofIDArray (char* initString);
+    void initializeFrom(ConverterInputRecord &ir);
+
     /// prints receiver state on stdout. Usefull for debuging.
     void         printYourself();
 

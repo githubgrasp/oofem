@@ -15,6 +15,10 @@
  #include <stdio.h>
 #endif
 
+#define _IFT_Vertex_coords "coords"
+#define _IFT_Vertex_refine "refine"
+#define _IFT_Vertex_radius "radius"
+
 class Vertex : public GridComponent
 {
 protected:
@@ -124,17 +128,14 @@ public:
     void updateCellElements(oofem::IntArray &elements);
 
     void giveCellElements(oofem::IntArray &elements) { elements = this->cellElements; }
-
     
     Vertex *ofType();
 
-    /// Returns class name of the receiver.
     const char *giveClassName() const { return "Vertex"; }
 
-    IRResultType initializeFrom(InputRecord *ir);
+    void initializeFrom(ConverterInputRecord &ir);
 
-    /// prints receiver state on stdout. Usefull for debuging.
-    void         printYourself();
+    void  printYourself();
 };
 
 #endif // node_h

@@ -47,7 +47,7 @@
 #include <iostream>
 #endif
 
-oofemOctantRec :: oofemOctantRec(OctreeGridLocalizer *loc, oofemOctantRec *parent, FloatArray &origin, double size)
+oofemOctantRec :: oofemOctantRec(OctreeGridLocalizer *loc, oofemOctantRec *parent, oofem::FloatArray &origin, double size)
 {
     int i, j, k;
 
@@ -127,7 +127,7 @@ oofemOctantRec :: giveChild(int xi, int yi, int zi)
 
 
 int
-oofemOctantRec :: containsPoint(const FloatArray &coords)
+oofemOctantRec :: containsPoint(const oofem::FloatArray &coords)
 {
     int i;
 
@@ -148,10 +148,10 @@ oofemOctantRec :: containsPoint(const FloatArray &coords)
 
 
 int
-oofemOctantRec :: giveChildContainingPoint(oofemOctantRec **child, const FloatArray &coords)
+oofemOctantRec :: giveChildContainingPoint(oofemOctantRec **child, const oofem::FloatArray &coords)
 {
     int i;
-    IntArray ind(3);
+    oofem::IntArray ind(3);
 
     if ( this->containsPoint(coords) ) {
         if ( this->isTerminalOctant() ) {
@@ -188,14 +188,14 @@ oofemOctantRec :: isTerminalOctant() {
 }
 
 int
-oofemOctantRec :: divideLocally(int level, const IntArray &octantMask)
+oofemOctantRec :: divideLocally(int level, const oofem::IntArray &octantMask)
 {
     int i, j, k, result = 1;
 
     if ( this->isTerminalOctant() ) {
         // create corresponding child octants
         int i, j, k;
-        FloatArray childOrigin(3);
+        oofem::FloatArray childOrigin(3);
 
         for ( i = 0; i <= octantMask.at(1); i++ ) {
             for ( j = 0; j <= octantMask.at(2); j++ ) {
@@ -229,14 +229,14 @@ oofemOctantRec :: divideLocally(int level, const IntArray &octantMask)
 
 
 oofemOctantRec :: boundingBoxStatus
-oofemOctantRec :: testBoundingBox(const FloatArray &coords, double radius)
+oofemOctantRec :: testBoundingBox(const oofem::FloatArray &coords, double radius)
 {
     int i, test = 1, nsd, size = coords.giveSize();
     double dist;
 
     nsd = localizer->giveOctreeMaskValue(1) + localizer->giveOctreeMaskValue(2) + localizer->giveOctreeMaskValue(3);
 
-    FloatArray cellCenter = this->origin;
+    oofem::FloatArray cellCenter = this->origin;
     // first simple test to exclude too far bboxes, but detect preciselly the corner bboxes
     double cellRadius = sqrt( nsd * ( this->size / 2.0 ) * ( this->size / 2. ) );
     for ( i = 1; i < 4; i++ ) {
@@ -296,7 +296,7 @@ oofemOctantRec :: testBoundingBox(const FloatArray &coords, double radius)
 
 
 oofemOctantRec *
-OctreeGridLocalizer :: findTerminalContaining(oofemOctantRec *startCell, const FloatArray &coords) {
+OctreeGridLocalizer :: findTerminalContaining(oofemOctantRec *startCell, const oofem::FloatArray &coords) {
     int result;
     oofemOctantRec *currCell = startCell;
     if ( startCell->containsPoint(coords) ) {
@@ -331,7 +331,7 @@ OctreeGridLocalizer :: buildOctreeDataStructure(int nodeType)
   }    
   
   double rootSize, resolutionLimit;
-    FloatArray minc(3), maxc(3), * coords;
+    oofem::FloatArray minc(3), maxc(3), * coords;
     Vertex *dman;
 
     // test if tree already built
@@ -382,7 +382,7 @@ OctreeGridLocalizer :: buildOctreeDataStructure(int nodeType)
 
     // //Peter: Try to fix problem with initial size. Shift cell in all three directions.
 
-    // FloatArray distances(3);
+    // oofem::FloatArray distances(3);
     // for(int i=1;i<=3;i++){
     //   distances.at(i) = maxc.at(i)-minc.at(i);
     //   maxc.at(i)+=2.*distances.at(i);
@@ -454,7 +454,7 @@ OctreeGridLocalizer :: buildOctreeDataStructure(int nodeType)
 
 
 void
-OctreeGridLocalizer :: insertSequentialNode(int nodeNum, const FloatArray &coords, int nodeType)
+OctreeGridLocalizer :: insertSequentialNode(int nodeNum, const oofem::FloatArray &coords, int nodeType)
 {
   
   this->insertNodeIntoOctree(this->rootCell, nodeNum, coords, nodeType);
@@ -465,14 +465,14 @@ OctreeGridLocalizer :: insertSequentialNode(int nodeNum, const FloatArray &coord
 
 
 int
-OctreeGridLocalizer :: insertNodeIntoOctree(oofemOctantRec *rootCell, int nodeNum, const FloatArray &coords, int nodeType)
+OctreeGridLocalizer :: insertNodeIntoOctree(oofemOctantRec *rootCell, int nodeNum, const oofem::FloatArray &coords, int nodeType)
 {
     int nCellItems, cellDepth, result;
     oofemOctantRec *currCell;
     nodeContainerType *cellNodeList;
     nodeContainerType :: const_iterator pos;
     Vertex *dman;
-    FloatArray *nodeCoords;
+    oofem::FloatArray *nodeCoords;
    
     // found terminal octant containing node
     currCell = this->findTerminalContaining(rootCell, coords);
@@ -525,7 +525,7 @@ OctreeGridLocalizer :: insertNodeIntoOctree(oofemOctantRec *rootCell, int nodeNu
 
 
 int
-OctreeGridLocalizer :: checkNodesWithinBox(const FloatArray &coords, const double radius, int nodeType)
+OctreeGridLocalizer :: checkNodesWithinBox(const oofem::FloatArray &coords, const double radius, int nodeType)
 {
 
   nodeContainerType nodeSet;
@@ -540,7 +540,7 @@ OctreeGridLocalizer :: checkNodesWithinBox(const FloatArray &coords, const doubl
 
 
 void
-OctreeGridLocalizer :: giveAllNodesWithinBox(nodeContainerType &nodeSet, const FloatArray &coords, const double radius, int nodeType)
+OctreeGridLocalizer :: giveAllNodesWithinBox(nodeContainerType &nodeSet, const oofem::FloatArray &coords, const double radius, int nodeType)
 {
   this->init(0,nodeType);
     // found terminal octant containing point
@@ -561,13 +561,13 @@ OctreeGridLocalizer :: giveAllNodesWithinBox(nodeContainerType &nodeSet, const F
 
 void
 OctreeGridLocalizer :: giveNodesWithinBox(nodeContainerType &nodeList, oofemOctantRec *currentCell,
-					  const FloatArray &coords, const double radius, int nodeType)
+					  const oofem::FloatArray &coords, const double radius, int nodeType)
 {
     nodeContainerType *cellNodes = currentCell->giveNodeList();
     nodeContainerType :: iterator pos;
 
     if ( currentCell->isTerminalOctant() ) {
-        FloatArray *nodeCoords;
+        oofem::FloatArray *nodeCoords;
         if ( !cellNodes->empty() ) {
             for ( pos = cellNodes->begin(); pos != cellNodes->end(); ++pos ) {
                 // loop over cell nodes and check if they meet the criteria
@@ -631,7 +631,7 @@ OctreeGridLocalizer :: giveMaxTreeDepthFrom(oofemOctantRec *root, int &maxDepth)
 
 
 void
-OctreeGridLocalizer :: giveListOfTerminalCellsInBoundingBox(std :: list< oofemOctantRec * > &cellList, const FloatArray &coords,
+OctreeGridLocalizer :: giveListOfTerminalCellsInBoundingBox(std :: list< oofemOctantRec * > &cellList, const oofem::FloatArray &coords,
                                                                const double radius, oofemOctantRec *currentCell)
 {
     int i, j, k;

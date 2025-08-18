@@ -35,7 +35,7 @@ public:
     /// Destructor.
     ~Region();                                           // destructor
 
-    virtual IRResultType initializeFrom(InputRecord *ir) = 0;
+    virtual void initializeFrom(ConverterInputRecord &ir) = 0;
 
     virtual void defineBoundaries(oofem::FloatArray &boundaries) = 0;
 

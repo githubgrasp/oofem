@@ -4,7 +4,7 @@
 #include "grid.h"
 #include "region.h"
 
-#include "floatarry.h"
+#include "floatarray.h"
 #include "intarray.h"
 
 #include "converterinputrecord.h"
@@ -17,8 +17,9 @@
 #include <stdio.h>
 #endif
 
-//class oofem::FloatArray;
-//class IntArray;
+#define _IFT_Cylinder_line "line"
+#define _IFT_Cylinder_radius "radius"
+#define _IFT_Cylinder_refine "refine"
 
 class Cylinder : public Region
 {
@@ -52,7 +53,7 @@ public:
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "Cylinder"; }
 
-    IRResultType initializeFrom(InputRecord *ir);
+    void initializeFrom(ConverterInputRecord &ir);
     //virtual IntArray* ResolveDofIDArray (char* initString);
     /// prints receiver state on stdout. Usefull for debuging.
     void         printYourself();

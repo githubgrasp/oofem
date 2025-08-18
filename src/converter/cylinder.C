@@ -19,22 +19,15 @@ Cylinder :: ~Cylinder()
 }
 
 
-IRResultType
-Cylinder :: initializeFrom(InputRecord *ir)
+void
+Cylinder :: initializeFrom(ConverterInputRecord &ir)
 // Gets from the source line from the data file all the data of the receiver.
 {
-    const char *__proc = "initializeFrom"; // Required by IR_GIVE_FIELD macro
-    IRResultType result;                // Required by IR_GIVE_FIELD macro
-
-    // int j, size;
-    // oofem::FloatArray vertices;
-    // IntArray *dofIDArry;
-    IR_GIVE_FIELD(ir, line, IFT_Cylinder_line, "line");    
-    IR_GIVE_FIELD(ir, radius, IFT_Cylinder_radius, "radius"); // Macro
+    IR_GIVE_FIELD(ir, line, _IFT_Cylinder_line);    
+    IR_GIVE_FIELD(ir, radius, _IFT_Cylinder_radius); // Macro
     refinement = 1.;
-    IR_GIVE_OPTIONAL_FIELD(ir, refinement, IFT_Cylinder_refine, "refine"); // Macro
-   return IRRT_OK;
-
+    IR_GIVE_OPTIONAL_FIELD(ir, refinement, _IFT_Cylinder_refine); // Macro
+   return;
 }
 
 
@@ -60,10 +53,10 @@ void Cylinder :: findOutsiders(oofem::FloatArray &boundaries)
     //For nodes: 0 = inside,  1 = outside, 2 = on boundary
    //For elements: 0 = inside, 1 = completetly outside (one node could be on boundary), 2 = one node inside and one outside, 3 = on boundary 
 
-    IntArray nodes;
+    oofem::IntArray nodes;
     oofem::FloatArray coords, coordsOne, coordsTwo;
     int outsideFlag;
-    IntArray locationArray(2);
+    oofem::IntArray locationArray(2);
 
     double newTol = 1.e3*this->grid->giveTol();
 
@@ -186,10 +179,10 @@ void Cylinder :: findOutsiders(oofem::FloatArray &boundaries)
 int
 Cylinder :: modifyVoronoiCrossSection(int elementNumber)
 {
-    IntArray crossSectionElements;
-    IntArray crossSectionVertices;
+    oofem::IntArray crossSectionElements;
+    oofem::IntArray crossSectionVertices;
 
-    IntArray nodes(2);
+    oofem::IntArray nodes(2);
 
     oofem::FloatArray coords(3);
 
@@ -235,7 +228,7 @@ Cylinder :: modifyVoronoiCrossSection(int elementNumber)
 
     //Resize cross-section elements
     int newSize = elementSize - elementCounter;
-    IntArray modifiedCrossSectionElements(newSize);
+    oofem::IntArray modifiedCrossSectionElements(newSize);
     int help = 0;
     for ( int i = 0; i < elementSize; i++ ) {
         if ( crossSectionElements.at(i + 1) == 0 ) {
@@ -256,7 +249,7 @@ Cylinder :: modifyVoronoiCrossSection(int elementNumber)
     }
 
     //Write modified vertex vector
-    IntArray modifiedCrossSectionVertices(vertexSize - nodeCounter);
+    oofem::IntArray modifiedCrossSectionVertices(vertexSize - nodeCounter);
     help = 0;
     for ( int i = 0; i < vertexSize; i++ ) {
         if ( crossSectionVertices.at(i + 1) == 0 ) {
@@ -282,10 +275,10 @@ int
 Cylinder :: areaCheck(int elementNumber)
 {
 
-    IntArray crossSectionElements;
-    IntArray crossSectionVertices;
+    oofem::IntArray crossSectionElements;
+    oofem::IntArray crossSectionVertices;
 
-    IntArray nodes(2);
+    oofem::IntArray nodes(2);
 
     oofem::FloatArray coords(3);
 

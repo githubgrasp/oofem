@@ -18,6 +18,11 @@
 #include <stdio.h>
 #endif
 
+#define _IFT_InterfaceCylinder_line "line"
+#define _IFT_InterfaceCylinder_radius "radius"
+#define _IFT_InterfaceCylinder_refine "refine"
+#define _IFT_InterfaceCylinder_itz "itz"
+
 //class FloatArray;
 //class oofem::IntArray;
 
@@ -56,7 +61,7 @@ public:
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "InterfaceCylinder"; }
 
-    IRResultType initializeFrom(InputRecord *ir);
+    void initializeFrom(ConverterInputRecord &ir);
     //virtual oofem::IntArray* ResolveDofIDArray (char* initString);
     /// prints receiver state on stdout. Usefull for debuging.
     void         printYourself();

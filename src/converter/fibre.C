@@ -27,16 +27,13 @@ Fibre :: ~Fibre()
 
 };
 
-IRResultType
-Fibre :: initializeFrom(InputRecord *ir)
+void
+Fibre :: initializeFrom(ConverterInputRecord &ir)
 // Gets from the source Fibre from the data file all the data of the receiver.
 {
-    const char *__proc = "initializeFrom"; // Required by IR_GIVE_FIELD macro
-    IRResultType result;                // Required by IR_GIVE_FIELD macro
-    
-    IR_GIVE_FIELD(ir, m_endpoints, IFT_Fibre_endpoints, "endpoints");
-    IR_GIVE_FIELD(ir, diameter, IFT_Fibre_diameter, "diameter");
-    oofem::FloatArray tool(3);
+  IR_GIVE_FIELD(ir, m_endpoints, _IFT_Fibre_endpoints);
+  IR_GIVE_FIELD(ir, diameter, _IFT_Fibre_diameter);
+  oofem::FloatArray tool(3);
     coordP=tool;
     coordQ=tool;// to allocate the size
     direction_vector=tool;
@@ -48,16 +45,13 @@ Fibre :: initializeFrom(InputRecord *ir)
     coordQ.at(2)=m_endpoints.at(5);
     coordQ.at(3)=m_endpoints.at(6);
 
-
-
     PointP =  grid->createInterNode(coordP);
     PointQ =  grid->createInterNode(coordQ);
     
     //computation of the direction vector
     length=computedistance(coordP,coordQ);
     direction_vector=(1./length)*(coordQ-coordP);
-    return IRRT_OK;
-    
+    return;    
 };
 
 // tool functions
@@ -65,7 +59,7 @@ void Fibre :: findDelaunayVertex()
 {
     int N (m_IntersectionPoints.size());
     oofem::FloatArray coordsOne, coordsTwo;
-    IntArray nodeCandidates;
+    oofem::IntArray nodeCandidates;
     int index_SearchedPoint=1, index_SearchedPointTwo=1;
     if (N>0)
     {
@@ -129,12 +123,12 @@ void Fibre :: findIntersect()
         int num = m_DelaunayVertices.at(NbDelVertices-1);
         
         // finding of neighbourgh nodes
-        IntArray NeighbLines;// warning : index start 0
+	oofem::IntArray NeighbLines;// warning : index start 0
         grid->giveDelaunayVertex(m_DelaunayVertices.at(NbDelVertices-1))->giveLocalLines(NeighbLines);
         
-        IntArray nodes(2);
+	oofem::IntArray nodes(2);
         int NbofNeighbour = NeighbLines.giveSize();
-        IntArray Nb_neighbour(NbofNeighbour);
+	oofem::IntArray Nb_neighbour(NbofNeighbour);
 
         for(int i=0;i<NbofNeighbour;i++)
         {
@@ -176,8 +170,8 @@ void Fibre :: findIntersect()
             diffMU=coordM-coordU;
             diffIJ=coordI-coordJ;
             diffQU=coordQ-coordU;
-            scalar1=dotProduct(diffIJ,diffMU,3);
-            scalar2=dotProduct(diffIJ,diffQU,3);
+            scalar1=diffIJ.dotProduct(diffMU,3);
+            scalar2=diffIJ.dotProduct(diffQU,3);
             
             
             if (!scalar2==0) // either parallel lines...

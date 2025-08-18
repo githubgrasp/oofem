@@ -33,20 +33,17 @@ double Vertex :: giveCoordinate(int i)
     return coordinates.at(i);
 }
 
-IRResultType
-Vertex :: initializeFrom(InputRecord *ir)
+void
+Vertex :: initializeFrom(ConverterInputRecord &ir)
 // Gets from the source line from the data file all the data of the receiver.
 {
-    const char *__proc = "initializeFrom"; // Required by IR_GIVE_FIELD macro
-    IRResultType result;                // Required by IR_GIVE_FIELD macro
-
-    IR_GIVE_FIELD(ir, coordinates, IFT_Vertex_coords, "coords"); // Macro
+    IR_GIVE_FIELD(ir, coordinates, _IFT_Vertex_coords); // Macro
     refinement = 1.;
-    IR_GIVE_OPTIONAL_FIELD(ir, refinement, IFT_Vertex_refine, "refine"); // Macro
+    IR_GIVE_OPTIONAL_FIELD(ir, refinement, _IFT_Vertex_refine); // Macro
     radius = 0.;
-    IR_GIVE_OPTIONAL_FIELD(ir, radius, IFT_Vertex_radius, "radius"); // Macro
+    IR_GIVE_OPTIONAL_FIELD(ir, radius, _IFT_Vertex_radius); // Macro
 
-    return IRRT_OK;
+    return;
 }
 
 Vertex *Vertex :: ofType()

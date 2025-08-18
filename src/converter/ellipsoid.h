@@ -1,11 +1,10 @@
 #ifndef ELLIPSOID_H_INCLUDED
 #define ELLIPSOID_H_INCLUDED
 
-
 #include "grid.h"
 #include "inclusion.h"
 
-#include "flotarry.h"
+#include "floatarray.h"
 #include "intarray.h"
 #include "floatmatrix.h"
 
@@ -18,6 +17,14 @@
 #ifndef __MAKEDEPEND
 #include <stdio.h>
 #endif
+
+    
+#define _IFT_Ellipsoid_centre "centre"
+#define _IFT_Ellipsoid_radii "radii"
+#define _IFT_Ellipsoid_angles "angles"
+#define _IFT_Ellipsoid_refine "refine"
+#define _IFT_Ellipsoid_itz "itz"
+
 
 
 class Ellipsoid : public Inclusion
@@ -62,14 +69,11 @@ public:
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "Ellipsoid"; }
 
-    IRResultType initializeFrom(InputRecord *ir);
-    //virtual IntArray* ResolveDofIDArray (char* initString);
-    /// prints receiver state on stdout. Usefull for debuging.
-    void         printYourself();
-
-    // to know whether a point is inside the ellipsoid
-    int isInside(double coord_x,double coord_y,double coord_z);
-    // 1 means inside , 0 outisde , 2 in the ITZ (if specified)
+    void initializeFrom(ConverterInputRecord &ir);
+  
+  // to know whether a point is inside the ellipsoid
+  // 1 means inside , 0 outisde , 2 in the ITZ (if specified)
+  int isInside(double coord_x,double coord_y,double coord_z); 
 
 };
 

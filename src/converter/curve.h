@@ -15,6 +15,9 @@
 #include <stdio.h>
 #endif
 
+#define _IFT_Curve_vertices "vertices"
+#define _IFT_Curve_refine "refine"
+
 //class oofem::FloatArray;
 //class oofem::IntArray;
 
@@ -43,13 +46,11 @@ public:
     /// Returns pointer to curve vertex array.
     oofem::IntArray *giveLocalVertices() { return & vertices; }
 
-    Vertex *giveGlobalVertex(int i, AList <Vertex> *vertexList);
-
     Curve *ofType();
 
     const char *giveClassName() const { return "Curve"; }
     
-    IRResultType initializeFrom(InputRecord *ir);
+  void initializeFrom(ConverterInputRecord &ir);
 
     void         printYourself();
 

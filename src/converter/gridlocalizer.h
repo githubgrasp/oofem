@@ -108,7 +108,7 @@ class GridLocalizer : public GridComponent
      * belonging to receiver. Receiver may use value-name extracting functions
      * to extract particular field from record.
      * @see readInteger, readDouble and similar functions */
-    virtual IRResultType initializeFrom(InputRecord *ir) { return IRRT_OK; }
+    virtual void initializeFrom(ConverterInputRecord &ir) { return; }
     
  protected:
 };
