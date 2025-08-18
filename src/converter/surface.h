@@ -16,6 +16,9 @@
 #include <stdio.h>
 #endif
 
+#define _IFT_Surface_curves "curves"
+#define _IFT_Surface_refine "refine"
+
 //class oofem::FloatArray;
 //class oofem::IntArray;
 
@@ -55,7 +58,7 @@ public:
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "Surface"; }
 
-    IRResultType initializeFrom(InputRecord *ir);
+    void initializeFrom(ConverterInputRecord &ir);
     //virtual oofem::IntArray* ResolveDofIDArray (char* initString);
     /// prints receiver state on stdout. Usefull for debuging.
     void         printYourself();

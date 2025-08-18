@@ -12,13 +12,13 @@
 #include "fibre.h"
 #include "line.h"
 #include "tetra.h"
-#include "src/oofemlib/oofem_limits.h"
-#include "src/oofemlib/datareader.h"
+#include "converterdatareader.h"
 #include "octreegridlocalizer.h"
 #include "error.h"
-#include "src/oofemlib/floatarray.h"
+#include "floatarray.h"
 #include "prism.h"
-
+#include "convertererror.h"
+#include <sstream>
 
 #ifndef __MAKEDEPEND
  #include <string.h>
@@ -48,29 +48,29 @@
 Grid :: Grid(int i)
 // Constructor. Creates a new grid.
 {
-    delaunayLineList          = new AList< Line >(0);
-    voronoiLineList           = new AList< Line >(0);
+    /* delaunayLineList          = new AList< Line >(0); */
+    /* voronoiLineList           = new AList< Line >(0); */
     
-    // elements to model fibres
-    latticeBeamList           = new AList< Line >(0);
-    latticeLinkList           = new AList< Line >(0); // first element of the linkLine=reinforcement node ; 2nd = delaunayVertex
+    /* // elements to model fibres */
+    /* latticeBeamList           = new AList< Line >(0); */
+    /* latticeLinkList           = new AList< Line >(0); // first element of the linkLine=reinforcement node ; 2nd = delaunayVertex */
     
-    delaunayVertexList           = new AList< Vertex >(0);
-    voronoiVertexList            = new AList< Vertex >(0);
-    reinforcementNodeList            = new AList< Vertex >(0);
+    /* delaunayVertexList           = new AList< Vertex >(0); */
+    /* voronoiVertexList            = new AList< Vertex >(0); */
+    /* reinforcementNodeList            = new AList< Vertex >(0); */
 
-    vertexList                   = new AList< Vertex >(0);
-    curveList                    = new AList< Curve >(0);
-    surfaceList                  = new AList< Surface >(0);
-    regionList                   = new AList< Region >(0);
-    inclusionList                = new AList< Inclusion >(0);
-    fibreList                    = new AList< Fibre >(0);
-    interNodeList                = new AList< Vertex >(0);
-    delaunayTetraList            = new AList< Tetra >(0);
+    /* vertexList                   = new AList< Vertex >(0); */
+    /* curveList                    = new AList< Curve >(0); */
+    /* surfaceList                  = new AList< Surface >(0); */
+    /* regionList                   = new AList< Region >(0); */
+    /* inclusionList                = new AList< Inclusion >(0); */
+    /* fibreList                    = new AList< Fibre >(0); */
+    /* interNodeList                = new AList< Vertex >(0); */
+    /* delaunayTetraList            = new AList< Tetra >(0); */
 
     delaunayLocalizer      = NULL;
     voronoiLocalizer       = NULL;
-    
+    reinforcementLocalizer = NULL;
 }
 
 Grid :: ~Grid()
@@ -176,104 +176,105 @@ Grid :: ~Grid()
 }
 
 
-void Grid :: resolveGridType(char name[])
+
+void Grid :: resolveGridType(const std::string& name)
 {
     //Find the right grid type
-    if ( !strncasecmp(name, "3dSM", 4) ) {
+    if ( !strncasecmp(name.c_str(), "3dSM", 4) ) {
         gridType = _3dSM;
-    } else if ( !strncasecmp(name, "3dTM", 4) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dTM", 4) ) {
         gridType = _3dTM;
-    } else if ( !strncasecmp(name, "3dcoupledSMTM", 13) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dcoupledSMTM", 13) ) {
         gridType = _3dSMTM;
-    } else if ( !strncasecmp(name, "3dperSM", 7) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dperSM", 7) ) {
         gridType = _3dPerSM;
-    } else if ( !strncasecmp(name, "3dperTM", 7) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dperTM", 7) ) {
         gridType = _3dPerTM;
-    } else if ( !strncasecmp(name, "3dpercoupledSMTM", 15) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dpercoupledSMTM", 15) ) {
         gridType = _3dPerSMTM;
-    } else if ( !strncasecmp(name, "3dfpz", 5) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dfpz", 5) ) {
         gridType = _3dFPZ;
-    } else if ( !strncasecmp(name, "3dfibrefpz", 10) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dfibrefpz", 10) ) {
         gridType = _3dFPZFibre;
-    } else if ( !strncasecmp(name, "3dfibrebenchmark", 10) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dfibrebenchmark", 10) ) {
         gridType = _3dFibreBenchmark;
-    } else if ( !strncasecmp(name, "3dwong", 6) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dwong", 6) ) {
       gridType = _3dWong;
-    } else if ( !strncasecmp(name, "3dperporeTM", 11) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dperporeTM", 11) ) {
         gridType = _3dPerPoreTM;
-    } else if ( !strncasecmp(name, "3dperporeSMTM", 13) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dperporeSMTM", 13) ) {
         gridType = _3dPerPoreSMTM;
-    } else if ( !strncasecmp(name, "3dperporeSM", 11) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dperporeSM", 11) ) {
         gridType = _3dPerPoreSM;
-    } else if ( !strncasecmp(name, "3dbentoniteSM", 13) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dbentoniteSM", 13) ) {
         gridType = _3dBentoniteSM;
-    } else if ( !strncasecmp(name, "3dbentoniteTM", 13) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dbentoniteTM", 13) ) {
         gridType = _3dBentoniteTM;
-    } else if ( !strncasecmp(name, "3dbentoniteCoupled", 18) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dbentoniteCoupled", 18) ) {
         gridType = _3dBentoniteSMTM;
-    } else if ( !strncasecmp(name, "3dCantSM", 8) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dCantSM", 8) ) {
         gridType = _3dCantSM;
-    } else if ( !strncasecmp(name, "3dCantTM", 8) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dCantTM", 8) ) {
         gridType = _3dCantTM;
-    } else if ( !strncasecmp(name, "3dCantExtraTM", 13) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dCantExtraTM", 13) ) {
         gridType = _3dCantExtraTM;
-    } else if ( !strncasecmp(name, "3dCantCoupledSMTM", 13) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dCantCoupledSMTM", 13) ) {
         gridType = _3dCantSMTM;
-    } else if ( !strncasecmp(name, "3dSphere", 8) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dSphere", 8) ) {
         gridType = _3dSphere;
-    } else if ( !strncasecmp(name, "3dCylinder", 10) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dCylinder", 10) ) {
         gridType = _3dCylinder;
-    } else if ( !strncasecmp(name, "3dPerTetraSM", 12) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dPerTetraSM", 12) ) {
         gridType = _3dPerTetraSM;
-    } else if ( !strncasecmp(name, "3dTetraSM", 9) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dTetraSM", 9) ) {
         gridType = _3dTetraSM;
-    } else if ( !strncasecmp(name, "3dRCPerSM", 9 ) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dRCPerSM", 9 ) ) {
         gridType = _3dRCPerSM;
-    } else if ( !strncasecmp(name, "3dRCPer2SM", 9 ) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dRCPer2SM", 9 ) ) {
         gridType = _3dRCPer2SM;
-    } else if ( !strncasecmp(name, "3dRCSM", 6 ) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dRCSM", 6 ) ) {
         gridType = _3dRCSM;
-    } else if ( !strncasecmp(name, "3dTension", 9 ) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dTension", 9 ) ) {
         gridType = _3dTension;    
-    } else if ( !strncasecmp(name, "3dGopSha", 8 ) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dGopSha", 8 ) ) {
       gridType = _3dGopSha;
-    } else if ( !strncasecmp(name, "3dKupfer", 8 ) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dKupfer", 8 ) ) {
       gridType = _3dKupfer;
-    } else if ( !strncasecmp(name, "3dImran", 8 ) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dImran", 8 ) ) {
       gridType = _3dImran;
-    // } else if ( !strncasecmp(name, "3dNotch", 7 ) ) {
+    // } else if ( !strncasecmp(name.c_str(), "3dNotch", 7 ) ) {
     //   gridType = _3dNotch;
      }
     else {
-      OOFEM_ERROR2("Unknown grid type %s\n", name);
+      converter::errorf("Unknown grid type %s\n", name.c_str());
     }
     return;
 }
 
-void Grid :: resolveMacroType(char name[])
+void Grid :: resolveMacroType(const std::string& name)
 {
     //Find the right macro element type
-    if ( !strncasecmp(name, "truss", 5) ) {
+    if ( !strncasecmp(name.c_str(), "truss", 5) ) {
         macroType = _Truss;
         boundElemName = "ltrspaceboundarytruss";
         boundBeamElemName = "libeam3dboundarytruss";
-    } else if ( !strncasecmp(name, "membrane", 8) ) {
+    } else if ( !strncasecmp(name.c_str(), "membrane", 8) ) {
         macroType = _Membrane;
         boundElemName = "ltrspaceboundarymembrane";
         boundBeamElemName = "libeam3dboundarymembrane";
-    } else if ( !strncasecmp(name, "beam", 4) ) {
+    } else if ( !strncasecmp(name.c_str(), "beam", 4) ) {
         macroType = _Beam;
         boundElemName = "ltrspaceboundarybeam";
         boundBeamElemName = "libeam3dboundarybeam";
-    } else if ( !strncasecmp(name, "plate", 5) ) {
+    } else if ( !strncasecmp(name.c_str(), "plate", 5) ) {
         macroType = _Plate;
         boundElemName = "ltrspaceboundaryplate";
         boundBeamElemName = "libeam3dboundaryplate";
-    } else if ( !strncasecmp(name, "3dVoigt", 7) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dVoigt", 7) ) {
         macroType = _3dVoigt;
         boundElemName = "ltrspaceboundaryvoigt";
         boundBeamElemName = "libeam3dboundaryvoigt";
-    } else if ( !strncasecmp(name, "3d", 2) ) {
+    } else if ( !strncasecmp(name.c_str(), "3d", 2) ) {
         macroType = _3d;
         boundElemName = "ltrspaceboundary";
         boundBeamElemName = "libeam3dboundary";
@@ -285,14 +286,10 @@ void Grid :: resolveMacroType(char name[])
     return;
 }
 
-int Grid :: instanciateYourself(DataReader *dr, char nodeFileName[], char delaunayFileName[], char voronoiFileName[])
+int Grid :: instanciateYourself(ConverterDataReader *dr, char nodeFileName[], char delaunayFileName[], char voronoiFileName[])
 {
 
-    const char *__keyword, *__proc = "initializeFrom"; // Required by IR_GIVE_FIELD macro
-    IRResultType result;                          // Required by IR_GIVE_FIELD macro
-
     int i, num;
-    char name [ MAX_NAME_LENGTH ];
 
     Vertex *vertex;
     Curve *curve;
@@ -317,29 +314,51 @@ int Grid :: instanciateYourself(DataReader *dr, char nodeFileName[], char delaun
 
     Tetra *delaunayTetra;
     
-    InputRecord *ir;
+    auto &irDomainRec = dr->giveInputRecord(ConverterDataReader :: CIR_domainRec, 1);
 
 
-    ir = dr->giveInputRecord(DataReader :: IR_domainRec, 1);
-    __keyword = "grid";
-    result = ir->giveField(name, MAX_NAME_LENGTH, IFT_Grid_type, "grid");
-    if ( result != IRRT_OK ) {
-        IR_IOERR(giveClassName(), __proc, IFT_Grid_type, "grid", ir, result);
+    std::string line;
+    irDomainRec.giveRawLine(line);
+    irDomainRec.finish();
+
+    std::istringstream is(line);
+    std::string kw, gridType;
+    if (!(is >> kw >> gridType) || strcasecmp(kw.c_str(), "grid") != 0) {
+        converter::errorf("Expected 'grid <type>' on record %d, got: [%s]",
+                          /* if you expose a line number, use it here */ 0, line.c_str());
     }
-    ir->finish();
 
-    resolveGridType(name);
+
+
+    /* std::string gridType; */
+    /* irDomainRec.giveField(gridType, _IFT_Grid_type); */
+    
+    /* if (gridType.empty()) { */
+    /*   converter::error("Missing required field 'grid' in domain record"); */
+    /* } */
+    
+    //    irDomainRec.finish();
+
+
+    /* __keyword = "grid"; */
+    /* result = irDomainRec->giveField(name, MAX_NAME_LENGTH, _IFT_Grid_type, "grid"); */
+    /* if ( result != IRRT_OK ) { */
+    /*     IR_IOERR(giveClassName(), __proc, _IFT_Grid_type, "grid", ir, result); */
+    /* } */
+    /* irDomainRec->finish(); */
+
+    resolveGridType(gridType);
 
     // read control data
-    ir = dr->giveInputRecord(DataReader :: IR_controlRec, 1);
+    auto &irControlRec = dr->giveInputRecord(ConverterDataReader :: CIR_controlRec, 1);
 
 
-    IR_GIVE_FIELD(ir, diameter, IFT_Grid_diam, "diam"); // Macro
+    IR_GIVE_FIELD(irControlRec, diameter, _IFT_Grid_diam); // Macro
     TOL = 1.e-6 * diameter;
 
 
     randomInteger = 0;
-    IR_GIVE_OPTIONAL_FIELD(ir, randomInteger, IFT_Grid_ranint, "ranint"); // Macro
+    IR_GIVE_OPTIONAL_FIELD(irControlRec, randomInteger, _IFT_Grid_ranint); // Macro
     if ( randomInteger >= 0 ) {
         randomInteger = -time(NULL);
     }
@@ -348,98 +367,107 @@ int Grid :: instanciateYourself(DataReader *dr, char nodeFileName[], char delaun
     //when regularFlag=1 regular generator is used.
     //when regularFlag=2, generator with nodes on surfaces and edges was used.
     regularFlag = 0;
-    IR_GIVE_OPTIONAL_FIELD(ir, regularFlag, IFT_Grid_regflag, "regflag"); // Macro
+    IR_GIVE_OPTIONAL_FIELD(irControlRec, regularFlag, _IFT_Grid_regflag); // Macro
     if ( regularFlag < 0 || regularFlag > 2 ) {
-        OOFEM_ERROR("Error: Unknown regular flag. Should be 0, 1 or 2.\n");
+        converter::error("Error: Unknown regular flag. Should be 0, 1 or 2.\n");
     }
 
     //when periodicityFlag=1 periodic cell generator is used.
     //Periodicity can be enforced in certain directions only. 
     periodicityFlag.zero();
-    IR_GIVE_OPTIONAL_FIELD(ir, periodicityFlag, IFT_Grid_perflag, "perflag"); // Macro
+    IR_GIVE_OPTIONAL_FIELD(irControlRec, periodicityFlag, _IFT_Grid_perflag); // Macro
     if ( periodicityFlag.giveSize() != 3) {
-        OOFEM_ERROR("Error: Unknown size of periodicity flag. It needs to be of size 3. If periodicity in all directions is desired then enter \"perflag 3 1 1 1\"\n");
+        converter::error("Error: Unknown size of periodicity flag. It needs to be of size 3. If periodicity in all directions is desired then enter \"perflag 3 1 1 1\"\n");
     }
 
-    //Determine macro element type
-    char macroName [ MAX_NAME_LENGTH ];
-    ir->giveOptionalField(macroName, MAX_NAME_LENGTH, IFT_Grid_macrotype, "macrotype");
-    resolveMacroType(macroName);
+    /* //Determine macro element type */
+    /* char macroName [ MAX_NAME_LENGTH ]; */
+    /* irControlRec->giveOptionalField(macroName, MAX_NAME_LENGTH, _IFT_Grid_macrotype); */
+    /* resolveMacroType(macroName); */
+
+    std::string macroType;
+    try {
+      irControlRec.giveField(macroType, _IFT_Grid_macrotype);
+      resolveMacroType(macroType);
+    } catch (const MissingKeywordInputException&) {
+      resolveMacroType("");                 // no macrotype provided → default
+    }
+
+
 
     //when couplingFlag=1 coupling is implemented
     couplingFlag = 0;
-    IR_GIVE_OPTIONAL_FIELD(ir, couplingFlag, IFT_Grid_coupflag, "coupflag"); // Macro
+    IR_GIVE_OPTIONAL_FIELD(irControlRec, couplingFlag, _IFT_Grid_coupflag); // Macro
     if ( couplingFlag < 0 || couplingFlag > 1 ) {
-        OOFEM_ERROR("Error: Unknown coupling flag. Should be 0 or 1.\n");
+        converter::error("Error: Unknown coupling flag. Should be 0 or 1.\n");
     }
 
 
      //meshType: 0 for lattice, 1 for continuum (tetrahedra)
     meshType = 0;
-    IR_GIVE_OPTIONAL_FIELD(ir, meshType, IFT_Grid_meshtype, "meshtype"); // Macro
+    IR_GIVE_OPTIONAL_FIELD(irControlRec, meshType, _IFT_Grid_meshtype); // Macro
     if ( meshType < 0 || meshType > 1 ) {
-        OOFEM_ERROR("Error: Unknown meshtype. Should be\n0 for lattice\n or\n 1 for tetra.\n");
+        converter::error("Error: Unknown meshtype. Should be\n0 for lattice\n or\n 1 for tetra.\n");
     }
     
     //Input for the pores
-    IR_GIVE_OPTIONAL_FIELD(ir, poreMean, IFT_Grid_poremean, "poremean"); // Macro
-    IR_GIVE_OPTIONAL_FIELD(ir, poreCOV, IFT_Grid_porecov, "porecov"); // Macro
-    IR_GIVE_OPTIONAL_FIELD(ir, poreMax, IFT_Grid_poremax, "poremax"); // Macro
-    IR_GIVE_OPTIONAL_FIELD(ir, poreMin, IFT_Grid_poremin, "poremin"); // Macro
+    IR_GIVE_OPTIONAL_FIELD(irControlRec, poreMean, _IFT_Grid_poremean); // Macro
+    IR_GIVE_OPTIONAL_FIELD(irControlRec, poreCOV, _IFT_Grid_porecov); // Macro
+    IR_GIVE_OPTIONAL_FIELD(irControlRec, poreMax, _IFT_Grid_poremax); // Macro
+    IR_GIVE_OPTIONAL_FIELD(irControlRec, poreMin, _IFT_Grid_poremin); // Macro
 
     //Input for the throats
-    IR_GIVE_OPTIONAL_FIELD(ir, throatMean, IFT_Grid_poremean, "throatmean"); // Macro
-    IR_GIVE_OPTIONAL_FIELD(ir, throatCOV, IFT_Grid_porecov, "throatcov"); // Macro
-    IR_GIVE_OPTIONAL_FIELD(ir, throatMax, IFT_Grid_poremax, "throatmax"); // Macro
-    IR_GIVE_OPTIONAL_FIELD(ir, throatMin, IFT_Grid_poremin, "throatmin"); // Macro
+    IR_GIVE_OPTIONAL_FIELD(irControlRec, throatMean, _IFT_Grid_throatmean); // Macro
+    IR_GIVE_OPTIONAL_FIELD(irControlRec, throatCOV, _IFT_Grid_throatcov); // Macro
+    IR_GIVE_OPTIONAL_FIELD(irControlRec, throatMax, _IFT_Grid_throatmax); // Macro
+    IR_GIVE_OPTIONAL_FIELD(irControlRec, throatMin, _IFT_Grid_throatmin); // Macro
 
     //Lammat parameters
     this->contactAngle = 0.;
-    IR_GIVE_OPTIONAL_FIELD(ir, contactAngle, IFT_Grid_contactangle, "contactangle"); // Macro
+    IR_GIVE_OPTIONAL_FIELD(irControlRec, contactAngle, _IFT_Grid_contactangle); // Macro
     this->surfaceTension = 0.0;
-    IR_GIVE_OPTIONAL_FIELD(ir, surfaceTension, IFT_Grid_surfacetension, "surfacetension"); // Macro
+    IR_GIVE_OPTIONAL_FIELD(irControlRec, surfaceTension, _IFT_Grid_surfacetension); // Macro
 
     //Input for the mechanical elements cross sections
-    IR_GIVE_OPTIONAL_FIELD(ir, mechMean, IFT_Grid_mechmean, "mechmean"); // Macro
-    IR_GIVE_OPTIONAL_FIELD(ir, mechCOV, IFT_Grid_mechcov, "mechcov"); // Macro
-    IR_GIVE_OPTIONAL_FIELD(ir, mechMax, IFT_Grid_mechmax, "mechmax"); // Macro
-    IR_GIVE_OPTIONAL_FIELD(ir, mechMin, IFT_Grid_mechmin, "mechmin"); // Macro
+    IR_GIVE_OPTIONAL_FIELD(irControlRec, mechMean, _IFT_Grid_mechmean); // Macro
+    IR_GIVE_OPTIONAL_FIELD(irControlRec, mechCOV, _IFT_Grid_mechcov); // Macro
+    IR_GIVE_OPTIONAL_FIELD(irControlRec, mechMax, _IFT_Grid_mechmax); // Macro
+    IR_GIVE_OPTIONAL_FIELD(irControlRec, mechMin, _IFT_Grid_mechmin); // Macro
 
     //Input for elastic material
-    IR_GIVE_OPTIONAL_FIELD(ir, youngModulus, IFT_Grid_young, "young"); // Macro
+    IR_GIVE_OPTIONAL_FIELD(irControlRec, youngModulus, _IFT_Grid_young); // Macro
     this->gammaOne = 1.;
-    IR_GIVE_OPTIONAL_FIELD(ir, gammaOne, IFT_Grid_gamma1, "gamma1"); // Macro
+    IR_GIVE_OPTIONAL_FIELD(irControlRec, gammaOne, _IFT_Grid_gamma1); // Macro
 
     this->gammaTwo = 1.;
-    IR_GIVE_OPTIONAL_FIELD(ir, gammaTwo, IFT_Grid_gamma2, "gamma2"); // Macro
+    IR_GIVE_OPTIONAL_FIELD(irControlRec, gammaTwo, _IFT_Grid_gamma2); // Macro
 
     this->confinement = 0.;
-    IR_GIVE_OPTIONAL_FIELD(ir, confinement, IFT_Grid_conf, "conf"); // Macro
+    IR_GIVE_OPTIONAL_FIELD(irControlRec, confinement, _IFT_Grid_conf); // Macro
 
-    //Inut for plastic varaiables
-
+    //Inut for plastic variables
     this->tanBeta = 0.3;
-    IR_GIVE_OPTIONAL_FIELD(ir, tanBeta, IFT_Grid_tanbeta, "tanbeta"); // Macro
+    IR_GIVE_OPTIONAL_FIELD(irControlRec, tanBeta, _IFT_Grid_tanbeta); // Macro
 
     this->tanPhi = 0.3;
-    IR_GIVE_OPTIONAL_FIELD(ir, tanPhi, IFT_Grid_tanphi, "tanphi"); // Macro
+    IR_GIVE_OPTIONAL_FIELD(irControlRec, tanPhi, _IFT_Grid_tanphi); // Macro
 
     //input for throat change rate
-    IR_GIVE_OPTIONAL_FIELD(ir, deltarad, IFT_Grid_poremean, "deltarad"); // Macro
+    IR_GIVE_OPTIONAL_FIELD(irControlRec, deltarad, _IFT_Grid_deltarad); // Macro
 
-    ir->finish();
+    irControlRec.finish();
 
     // read grid components
     int nvertex, nelem, ncurve, nsurface, nregion, ninclusion,nfibre;
-    ir = dr->giveInputRecord(DataReader :: IR_domainCompRec, 1);
-    IR_GIVE_FIELD(ir, nvertex, IFT_Grid_nvertex, "nvertex"); // Macro
-    IR_GIVE_FIELD(ir, ncurve, IFT_Grid_ncurve, "ncurve"); // Macro
-    IR_GIVE_FIELD(ir, nsurface, IFT_Grid_nsurface, "nsurface"); // Macro
-    IR_GIVE_FIELD(ir, nregion, IFT_Grid_nregion, "nregion"); // Macro
-    IR_GIVE_FIELD(ir, ninclusion, IFT_Grid_ninclusion, "ninclusion"); // Macro
-    IR_GIVE_OPTIONAL_FIELD(ir, nfibre, IFT_Grid_nfiber, "nfibre"); // Macro
+    auto &irDomainCompRec = dr->giveInputRecord(ConverterDataReader :: CIR_domainCompRec, 1);
+    IR_GIVE_FIELD(irDomainCompRec, nvertex, _IFT_Grid_nvertex); // Macro
+    IR_GIVE_FIELD(irDomainCompRec, ncurve, _IFT_Grid_ncurve); // Macro
+    IR_GIVE_FIELD(irDomainCompRec, nsurface, _IFT_Grid_nsurface); // Macro
+    IR_GIVE_FIELD(irDomainCompRec, nregion, _IFT_Grid_nregion); // Macro
+    IR_GIVE_FIELD(irDomainCompRec, ninclusion, _IFT_Grid_ninclusion); // Macro
+    IR_GIVE_OPTIONAL_FIELD(irDomainCompRec, nfibre, _IFT_Grid_nfiber); // Macro
 
-    ir->finish();
+    irDomainCompRec.finish();
 
     //=========================
     //Instanciate localizers
@@ -462,172 +490,335 @@ int Grid :: instanciateYourself(DataReader *dr, char nodeFileName[], char delaun
     //===============
     vertexList->growTo(nvertex);
     for ( i = 0; i < nvertex; i++ ) {
-        ir = dr->giveInputRecord(DataReader :: IR_vertexRec, i + 1);
+        auto &irVertexRec = dr->giveInputRecord(ConverterDataReader :: CIR_vertexRec, i + 1);
 
-        IR_GIVE_RECORD_KEYWORD_FIELD(ir, name, num, MAX_NAME_LENGTH);
+        IR_GIVE_RECORD_KEYWORD_FIELD(irVertexRec, name, num, MAX_NAME_LENGTH);
 
-        ( vertex = ( Vertex * ) ( Vertex(num, this).ofType() ) )->initializeFrom(ir);
+        ( vertex = ( Vertex * ) ( Vertex(num, this).ofType() ) )->initializeFrom(irVertexRec);
 
         if ( ( num < 1 ) || ( num > nvertex ) ) {
-            OOFEM_ERROR2("instanciateYourself: Invalid vertex number (num=%d)", num);
+            converter::errorf("instanciateYourself: Invalid vertex number (num=%d)", num);
         }
 
         if ( !vertexList->includes(num) ) {
             setVertex(num, vertex);
         } else {
-            OOFEM_ERROR2("instanciateYourself: Vertex entry already exist (num=%d)", num);
+            converter::errorf("instanciateYourself: Vertex entry already exist (num=%d)", num);
         }
-        ir->finish();
+        irVertexRec.finish();
     }
 
-    //===================
-    // read curves
-    //==================
-    curveList->growTo(ncurve);
+
+
+/* // Before the loop: make room for 1..nvertex (index 0 unused) */
+/* vertexList.assign(nvertex, nullptr); */
+
+/* for (int i = 0; i < nvertex; ++i) { */
+/*     auto &irVertexRec = dr->giveInputRecord(ConverterDataReader::CIR_vertexRec, i + 1); */
+/* ooo */
+/*     std::string kw; int num = 0; */
+/*     irVertexRec.giveRecordKeywordField(kw, num); // expects: "vertex <num>" */
+/*     // (If you still use the old macro: IR_GIVE_RECORD_KEYWORD_FIELD(irVertexRec, name, num, MAX_NAME_LENGTH);) */
+
+/*     if (num < 1 || num > nvertex) { */
+/*         converter::errorf("instanciateYourself: Invalid vertex number (num=%d)", num); */
+/*     } */
+/*     if (vertexList[num] != nullptr) { */
+/*         converter::errorf("instanciateYourself: Vertex entry already exists (num=%d)", num); */
+/*     } */
+
+/*     auto *v = new Vertex(num, this); */
+/*     v->initializeFrom(irVertexRec);   // reads coords etc. */
+/*     vertexList[num] = v;              // store it at its 1-based id */
+
+/*     irVertexRec.finish(); */
+/* } */
+
+
+    curveList.resize(ncurve, nullptr);
     for ( i = 0; i < ncurve; i++ ) {
-        ir = dr->giveInputRecord(DataReader :: IR_curveRec, i + 1);
+        auto &irCurveRec = dr->giveInputRecord(GeneratorDataReader::GIR_curveRec, i + 1);
 
-        IR_GIVE_RECORD_KEYWORD_FIELD(ir, name, num, MAX_NAME_LENGTH);
+        std::string name;
+        int num = 0;
+        IR_GIVE_RECORD_KEYWORD_FIELD(irCurveRec, name, num);
 
-
-        ( curve = ( Curve * ) ( Curve(num, this).ofType() ) )->initializeFrom(ir);
-
-        if ( ( num < 1 ) || ( num > ncurve ) ) {
-            OOFEM_ERROR2("instanciateYourself: Invalid curve number (num=%d)", num);
+        if ( num < 1 || num > ncurve ) {
+            std::cerr << "instanciateYourself: Invalid curve number (num=" << num << ")\n";
+            std::exit(EXIT_FAILURE);
         }
 
-        if ( !curveList->includes(num) ) {
-            setCurve(num, curve);
-        } else {
-            OOFEM_ERROR2("instanciateYourself: Curve entry already exist (num=%d)", num);
+        if ( generator::includes1(curveList, num) ) {
+            std::cerr << "instanciateYourself: Curve entry already exists (num=" << num << ")\n";
+            std::exit(EXIT_FAILURE);
         }
-        ir->finish();
+
+        Curve *curve = new Curve(num, this);
+        curve->initializeFrom(irCurveRec);
+        setCurve(num, curve);
+        irCurveRec.finish();
     }
 
-    //===========================
-    // read surfaces
-    //=============================
-    surfaceList->growTo(nsurface);
+
+    
+    /* //=================== */
+    /* // read curves */
+    /* //================== */
+    /* curveList->growTo(ncurve); */
+    /* for ( i = 0; i < ncurve; i++ ) { */
+    /*     auto &irCurveRec = dr->giveInputRecord(ConverterDataReader :: CIR_curveRec, i + 1); */
+
+    /*     IR_GIVE_RECORD_KEYWORD_FIELD(irCurveRec, name, num, MAX_NAME_LENGTH); */
+
+
+    /*     ( curve = ( Curve * ) ( Curve(num, this).ofType() ) )->initializeFrom(irCurveRec); */
+
+    /*     if ( ( num < 1 ) || ( num > ncurve ) ) { */
+    /*         converter::errorf("instanciateYourself: Invalid curve number (num=%d)", num); */
+    /*     } */
+
+    /*     if ( !curveList->includes(num) ) { */
+    /*         setCurve(num, curve); */
+    /*     } else { */
+    /*         converter::errorf("instanciateYourself: Curve entry already exist (num=%d)", num); */
+    /*     } */
+    /*     irCurveRec.finish(); */
+    /* } */
+
+
+
+    surfaceList.resize(nsurface, nullptr);
     for ( i = 0; i < nsurface; i++ ) {
-        ir = dr->giveInputRecord(DataReader :: IR_surfaceRec, i + 1);
+        auto &irSurfaceRec = dr->giveInputRecord(GeneratorDataReader::GIR_surfaceRec, i + 1);
+        std::string name;
+        int num = 0;
+        IR_GIVE_RECORD_KEYWORD_FIELD(irSurfaceRec, name, num);
 
-        IR_GIVE_RECORD_KEYWORD_FIELD(ir, name, num, MAX_NAME_LENGTH);
-
-
-        ( surface = ( Surface * ) ( Surface(num, this).ofType() ) )->initializeFrom(ir);
-
-        if ( ( num < 1 ) || ( num > nsurface ) ) {
-            OOFEM_ERROR2("instanciateYourself: Invalid curve number (num=%d)", num);
+        if ( num < 1 || num > nsurface ) {
+            std::cerr << "instanciateYourself: Invalid curve number (num=" << num << ")\n";
+            std::exit(EXIT_FAILURE);
         }
 
-        if ( !surfaceList->includes(num) ) {
-            setSurface(num, surface);
+        if ( generator::includes1(surfaceList, num) ) {
+            std::cerr << "instanciateYourself: Curve entry already exists (num=" << num << ")\n";
+            std::exit(EXIT_FAILURE);
+        }
+
+        Surface *surface = new Surface(num, this);
+        surface->initializeFrom(irSurfaceRec);
+        setSurface(num, surface);
+        irSurfaceRec.finish();
+    }
+
+
+    /* //=========================== */
+    /* // read surfaces */
+    /* //============================= */
+    /* surfaceList->growTo(nsurface); */
+    /* for ( i = 0; i < nsurface; i++ ) { */
+    /*     auto &irSurfaceRec = dr->giveInputRecord(ConverterDataReader :: CIR_surfaceRec, i + 1); */
+
+    /*     IR_GIVE_RECORD_KEYWORD_FIELD(irSurfaceRec, name, num, MAX_NAME_LENGTH); */
+
+
+    /*     ( surface = ( Surface * ) ( Surface(num, this).ofType() ) )->initializeFrom(ir); */
+
+    /*     if ( ( num < 1 ) || ( num > nsurface ) ) { */
+    /*         converter::errorf("instanciateYourself: Invalid curve number (num=%d)", num); */
+    /*     } */
+
+    /*     if ( !surfaceList->includes(num) ) { */
+    /*         setSurface(num, surface); */
+    /*     } else { */
+    /*         converter::errorf("instanciateYourself: Surface entry already exist (num=%d)", num); */
+    /*     } */
+    /*     irSurfaceRec.finish(); */
+    /* } */
+
+
+    regionList.resize(nregion, nullptr);
+
+    for (int i = 0; i < nregion; ++i) {
+        auto &irRegionRec = dr->giveInputRecord(GeneratorDataReader::GIR_regionRec, i + 1);
+
+        std::string name;
+        int num = 0;
+        IR_GIVE_RECORD_KEYWORD_FIELD(irRegionRec, name, num);
+
+        if ( num < 1 || num > nregion ) {
+            std::cerr << "instanciateYourself: Invalid region number (num=" << num << ")\n";
+            std::exit(EXIT_FAILURE);
+        }
+        if ( generator::includes1(regionList, num) ) {
+            std::cerr << "instanciateYourself: Region entry already exists (num=" << num << ")\n";
+            std::exit(EXIT_FAILURE);
+        }
+
+        Region *r = nullptr;
+        if ( name == "prism" || name== "region" ) {
+            r = new Prism(num, this);
+        } else if ( name == "cylinder" ) {
+            r = new Cylinder(num, this);
+        } else if ( name == "bsphere" ) {
+            r = new Sphere(num, this);
         } else {
-            OOFEM_ERROR2("instanciateYourself: Surface entry already exist (num=%d)", num);
+            std::cerr << "instanciateYourself: Unknown region type '" << name << "'\n";
+            std::exit(EXIT_FAILURE);
         }
-        ir->finish();
+	
+        r->initializeFrom(irRegionRec);
+        setRegion(num, r);
+        irRegionRec.finish();
     }
 
-    //============================
-    // read regions
-    //============================
-    regionList->growTo(nregion);
-    for ( i = 0; i < nregion; i++ ) {
-        ir = dr->giveInputRecord(DataReader :: IR_regionRec, i + 1);
-        IR_GIVE_RECORD_KEYWORD_FIELD(ir, name, num, MAX_NAME_LENGTH);
 
-	if ( !strcmp(name, "prism") || !strcmp(name, "region") ) {//Keep region for now so that old input files still work
-	  ( prism = ( Prism * ) ( Prism(num, this).ofType() ) )->initializeFrom(ir);
 
-	  if ( ( num < 1 ) || ( num > nregion ) ) {
-            OOFEM_ERROR2("instanciateYourself: Invalid curve number (num=%d)", num);
-	  }
+    /* //============================ */
+    /* // read regions */
+    /* //============================ */
+    /* regionList->growTo(nregion); */
+    /* for ( i = 0; i < nregion; i++ ) { */
+    /*     auto &irRegionRec = dr->giveInputRecord(ConverterDataReader :: CIR_regionRec, i + 1); */
+    /*     IR_GIVE_RECORD_KEYWORD_FIELD(irRegionRec, name, num, MAX_NAME_LENGTH); */
+
+    /* 	if ( !strcmp(name, "prism") || !strcmp(name, "region") ) {//Keep region for now so that old input files still work */
+    /* 	  ( prism = ( Prism * ) ( Prism(num, this).ofType() ) )->initializeFrom(irRegionRec); */
+
+    /* 	  if ( ( num < 1 ) || ( num > nregion ) ) { */
+    /*         converter::errorf("instanciateYourself: Invalid curve number (num=%d)", num); */
+    /* 	  } */
 	  
-	  if ( !regionList->includes(num) ) {
-            setRegion(num, prism);
-	  } else {
-            OOFEM_ERROR2("instanciateYourself: Region entry already exist (num=%d)", num);
-	  }
-	}
-	else if( !strcmp(name, "bsphere") ){
-	  ( boundarysphere = ( BoundarySphere * ) ( BoundarySphere(num, this).ofType() ) )->initializeFrom(ir);
+    /* 	  if ( !regionList->includes(num) ) { */
+    /*         setRegion(num, prism); */
+    /* 	  } else { */
+    /*         converter::errorf("instanciateYourself: Region entry already exist (num=%d)", num); */
+    /* 	  } */
+    /* 	} */
+    /* 	else if( !strcmp(name, "bsphere") ){ */
+    /* 	  ( boundarysphere = ( BoundarySphere * ) ( BoundarySphere(num, this).ofType() ) )->initializeFrom(irRegionRec); */
 
-	  if ( ( num < 1 ) || ( num > nregion ) ) {
-            OOFEM_ERROR2("instanciateYourself: Invalid curve number (num=%d)", num);
-	  }
+    /* 	  if ( ( num < 1 ) || ( num > nregion ) ) { */
+    /*         converter::errorf("instanciateYourself: Invalid curve number (num=%d)", num); */
+    /* 	  } */
 	  
-	  if ( !regionList->includes(num) ) {
-            setRegion(num, boundarysphere);
-	  }
-	}
-	else if( !strcmp(name, "cylinder") ){
-	    ( cylinder = ( Cylinder * ) ( Cylinder(num, this).ofType() ) )->initializeFrom(ir);
+    /* 	  if ( !regionList->includes(num) ) { */
+    /*         setRegion(num, boundarysphere); */
+    /* 	  } */
+    /* 	} */
+    /* 	else if( !strcmp(name, "cylinder") ){ */
+    /* 	    ( cylinder = ( Cylinder * ) ( Cylinder(num, this).ofType() ) )->initializeFrom(irRegionRec); */
 
-	    if ( ( num < 1 ) || ( num > nregion ) ) {
-	        OOFEM_ERROR2("instanciateYourself: Invalid curve number (num=%d)", num);
-	    }
+    /* 	    if ( ( num < 1 ) || ( num > nregion ) ) { */
+    /* 	        converter::errorf("instanciateYourself: Invalid curve number (num=%d)", num); */
+    /* 	    } */
 	  
-	    if ( !regionList->includes(num) ) {
-	        setRegion(num, cylinder);
-	    }
+    /* 	    if ( !regionList->includes(num) ) { */
+    /* 	        setRegion(num, cylinder); */
+    /* 	    } */
 
-	    else {
-	        OOFEM_ERROR2("instanciateYourself: Region entry already exist (num=%d)", num);
-	    }
+    /* 	    else { */
+    /* 	        converter::errorf("instanciateYourself: Region entry already exist (num=%d)", num); */
+    /* 	    } */
 
-	}
-        ir->finish();
-    }
+    /* 	} */
+    /*     irRegionRec.finish(); */
+    /* } */
 
-    //==================================
-    // read inclusions
-    //=================================
-    inclusionList->growTo(ninclusion);
-    printf("\n number of inclusions detected : %d \n ",this->giveNumberOfInclusions());
-    for ( i = 0; i < ninclusion; i++ ) {
-        ir = dr->giveInputRecord(DataReader :: IR_inclusionRec, i + 1);
-        IR_GIVE_RECORD_KEYWORD_FIELD(ir, name, num, MAX_NAME_LENGTH);
 
-        if ( !strcmp(name, "sphere") ) {
-            ( interfacesphere = ( InterfaceSphere * ) ( InterfaceSphere(num, this).ofType() ) )->initializeFrom(ir);
-            if ( ( num < 1 ) || ( num > ninclusion ) ) {
-                OOFEM_ERROR2("instanciateYourself: Invalid inclusion number (num=%d)", num);
-            }
-            if ( !inclusionList->includes(num) ) {
-                setInclusion(num, interfacesphere);
-            } else {
-                printf("instanciateYourself: Inclusion entry already exist (num=%d)", num);
-                exit(0);
-            }
-        } else if ( !strcmp(name, "interfacecylinder") ) {
-            ( interfacecylinder = ( InterfaceCylinder * ) ( InterfaceCylinder(num, this).ofType() ) )->initializeFrom(ir);
-            if ( ( num < 1 ) || ( num > ninclusion ) ) {
-                printf("instanciateYourself: Invalid inclusion number (num=%d)", num);
-                exit(0);
-            }
-            if ( !inclusionList->includes(num) ) {
-                setInclusion(num, interfacecylinder);
-            } else {
-                printf("instanciateYourself: Inclusion entry already exist (num=%d)", num);
-                exit(0);
-            }
-        } else if ( !strcmp(name, "ellipsoid") ) {
-            
-            ( ellipsoid = ( Ellipsoid * ) ( Ellipsoid(num, this).ofType() ) )->initializeFrom(ir);
-            
-            if ( ( num < 1 ) || ( num > ninclusion ) ) {
-                OOFEM_ERROR2("instanciateYourself: Invalid inclusion number (num=%d)", num);
-            }
-            if ( !inclusionList->includes(num) ) {
-                setInclusion(num, ellipsoid);
-            } else {
-                printf("instanciateYourself: Inclusion entry already exist (num=%d)", num);
-                exit(0);
-            }
+
+
+    inclusionList.resize(ninclusion, nullptr);
+
+    for (int i = 0; i < ninclusion; ++i) {
+        auto &irInclusionRec = dr->giveInputRecord(GeneratorDataReader::GIR_inclusionRec, i + 1);
+
+        std::string name;
+        int num = 0;
+        IR_GIVE_RECORD_KEYWORD_FIELD(irInclusionRec, name, num);
+
+        // 1) validate number
+        if ( num < 1 || num > ninclusion ) {
+            std::cerr << "instanciateYourself: Invalid inclusion number (num=" << num << ")\n";
+            std::exit(EXIT_FAILURE);
         }
 
-        ir->finish();
+        // 2) duplicate check
+        if ( generator::includes1(inclusionList, num) ) {
+            std::cerr << "instanciateYourself: Inclusion entry already exists (num=" << num << ")\n";
+            std::exit(EXIT_FAILURE);
+        }
+
+        // 3) create the right type
+        Inclusion *inc = nullptr;
+        if ( name == "intersphere" ) {
+            inc = new InterfaceSphere(num, this);
+        } else if ( name == "interfacecylinder" ) {
+            inc = new InterfaceCylinder(num, this);
+        } else if ( name == "ellipsoid" ) {
+            inc = new Ellipsoid(num, this);
+        } else {
+            std::cerr << "instanciateYourself: Unknown inclusion type '" << name << "'\n";
+            std::exit(EXIT_FAILURE);
+        }
+
+        // 4) init + store
+        inc->initializeFrom(irInclusionRec);
+        setInclusion(num, inc);
+
+        irInclusionRec.finish();
     }
+
+
+
+    /* //================================== */
+    /* // read inclusions */
+    /* //================================= */
+    /* inclusionList->growTo(ninclusion); */
+    /* printf("\n number of inclusions detected : %d \n ",this->giveNumberOfInclusions()); */
+    /* for ( i = 0; i < ninclusion; i++ ) { */
+    /*     auto &irInclusionRec = dr->giveInputRecord(ConverterDataReader :: CIR_inclusionRec, i + 1); */
+    /*     IR_GIVE_RECORD_KEYWORD_FIELD(irInclusionRec, name, num, MAX_NAME_LENGTH); */
+
+    /*     if ( !strcmp(name, "sphere") ) { */
+    /*         ( interfacesphere = ( InterfaceSphere * ) ( InterfaceSphere(num, this).ofType() ) )->initializeFrom(irInclusionRec); */
+    /*         if ( ( num < 1 ) || ( num > ninclusion ) ) { */
+    /*             converter::errorf("instanciateYourself: Invalid inclusion number (num=%d)", num); */
+    /*         } */
+    /*         if ( !inclusionList->includes(num) ) { */
+    /*             setInclusion(num, interfacesphere); */
+    /*         } else { */
+    /*             printf("instanciateYourself: Inclusion entry already exist (num=%d)", num); */
+    /*             exit(0); */
+    /*         } */
+    /*     } else if ( !strcmp(name, "interfacecylinder") ) { */
+    /*         ( interfacecylinder = ( InterfaceCylinder * ) ( InterfaceCylinder(num, this).ofType() ) )->initializeFrom(irInclusionRec); */
+    /*         if ( ( num < 1 ) || ( num > ninclusion ) ) { */
+    /*             printf("instanciateYourself: Invalid inclusion number (num=%d)", num); */
+    /*             exit(0); */
+    /*         } */
+    /*         if ( !inclusionList->includes(num) ) { */
+    /*             setInclusion(num, interfacecylinder); */
+    /*         } else { */
+    /*             printf("instanciateYourself: Inclusion entry already exist (num=%d)", num); */
+    /*             exit(0); */
+    /*         } */
+    /*     } else if ( !strcmp(name, "ellipsoid") ) { */
+            
+    /*         ( ellipsoid = ( Ellipsoid * ) ( Ellipsoid(num, this).ofType() ) )->initializeFrom(irInclusionRec); */
+            
+    /*         if ( ( num < 1 ) || ( num > ninclusion ) ) { */
+    /*             converter::errorf("instanciateYourself: Invalid inclusion number (num=%d)", num); */
+    /*         } */
+    /*         if ( !inclusionList->includes(num) ) { */
+    /*             setInclusion(num, ellipsoid); */
+    /*         } else { */
+    /*             printf("instanciateYourself: Inclusion entry already exist (num=%d)", num); */
+    /*             exit(0); */
+    /*         } */
+    /*     } */
+
+    /*     irInclusionRec.finish(); */
+    /* } */
 
     
     //====================================
@@ -888,11 +1079,11 @@ int Grid :: instanciateYourself(DataReader *dr, char nodeFileName[], char delaun
     
     for ( i = 0; i < nfibre; i++ ) {
       //          printf("\n initialization of fibre number   %d \n ",i+1);
-        ir = dr->giveInputRecord(DataReader :: IR_fibreRec, i + 1);
-        IR_GIVE_RECORD_KEYWORD_FIELD(ir, name, num, MAX_NAME_LENGTH);
-        ( fibre = ( Fibre * ) ( Fibre(num, this).ofType() ) )->initializeFrom(ir);
+        irFibreREc = dr->giveInputRecord(ConverterDataReader :: CIR_fibreRec, i + 1);
+        IR_GIVE_RECORD_KEYWORD_FIELD(irFibreRec, name, num, MAX_NAME_LENGTH);
+        ( fibre = ( Fibre * ) ( Fibre(num, this).ofType() ) )->initializeFrom(irFibreRec);
         if ( ( num < 1 ) || ( num > nfibre) ) {
-            OOFEM_ERROR2("instanciateYourself: Invalid fibre number (num=%d)", num);
+            converter::errorf("instanciateYourself: Invalid fibre number (num=%d)", num);
         }
         if ( !fibreList->includes(num) ) {
             
@@ -903,7 +1094,7 @@ int Grid :: instanciateYourself(DataReader *dr, char nodeFileName[], char delaun
         }
     
     
-        ir->finish();
+        irFibreRec.finish();
     }
     
     //==================================
@@ -1031,7 +1222,7 @@ Vertex *Grid::createInterNode(oofem::FloatArray coordS)
 
 
 Vertex *Grid :: giveVertex(int n)
-// Returns the n-th vertex. Generates error if it is not defined yet.
+// Returns the n-th vertex. Generates converter::error if it is not defined yet.
 {
     if ( vertexList->includes(n) ) {
         return vertexList->at(n);
@@ -1149,7 +1340,7 @@ Line *Grid :: giveVoronoiLine(int n)
     if ( voronoiLineList->includes(n) ) {
         return voronoiLineList->at(n);
     } else {
-        OOFEM_ERROR2("giveVoronoiLine: undefined line (%d)\n", n);
+        converter::errorf("giveVoronoiLine: undefined line (%d)\n", n);
     }
 
     return NULL;
@@ -1198,7 +1389,7 @@ Line *Grid :: givelatticeBeam(int n)
     if ( latticeBeamList->includes(n) ) {
         return latticeBeamList->at(n);
     } else {
-        OOFEM_ERROR2("givelatticeBeam: undefined line (%d)\n", n);
+        converter::errorf("givelatticeBeam: undefined line (%d)\n", n);
     }
     
     return NULL;
@@ -1210,7 +1401,7 @@ Line *Grid :: givelatticeLink(int n)
     if (latticeLinkList->includes(n) ) {
         return latticeLinkList->at(n);
     } else {
-        OOFEM_ERROR2("givelatticeLink: undefined line (%d)\n", n);
+        converter::errorf("givelatticeLink: undefined line (%d)\n", n);
     }
     
     return NULL;
@@ -1222,7 +1413,7 @@ Vertex *Grid :: giveInterNode(int n)
     if (interNodeList->includes(n) ) {
         return interNodeList->at(n);
     } else {
-        OOFEM_ERROR2("giveInterNode: undefined reinforcement (%d)\n", n);
+        converter::errorf("giveInterNode: undefined reinforcement (%d)\n", n);
     }
     
     return NULL;
@@ -1469,7 +1660,7 @@ void Grid :: giveOofemOutput(char *fileName)
     /*   give3DNotchOutput(fileName); */
     /* } */
     else {
-        OOFEM_ERROR("Unknown grid type\n");
+        converter::error("Unknown grid type\n");
     }
     return;
 };
@@ -1483,7 +1674,7 @@ void Grid :: giveVtkOutput(char *fileName)
         strcpy(fileName1, fileName);
         strcat(fileName1, ".voronoicell.vtu");
         if ( ( outputStream = fopen(fileName1, "w") ) == NULL ) {
-            OOFEM_ERROR2("Can't open output file %s", fileName1);
+            converter::errorf("Can't open output file %s", fileName1);
         }
         giveVoronoiCellVTKOutput(outputStream);
     }
@@ -1534,7 +1725,7 @@ Grid :: give3DSMOutput(char *fileName)
 
     FILE *outputStream;
     if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        OOFEM_ERROR2("Can't open output file %s", fileName);
+        converter::errorf("Can't open output file %s", fileName);
     }
 
     int numberOfNodes, numberOfLines;
@@ -1612,7 +1803,7 @@ Grid :: give3DTMOutput(char *fileName)
 
     FILE *outputStream;
     if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        OOFEM_ERROR2("Cannot open output file %s", fileName);
+        converter::errorf("Cannot open output file %s", fileName);
     }
 
     int numberOfNodes, numberOfLines;
@@ -1695,7 +1886,7 @@ Grid :: give3DSMTMOutput(char *fileName)
 
     FILE *outputStream;
     if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        OOFEM_ERROR2("Cannot open output file %s", fileName);
+        converter::errorf("Cannot open output file %s", fileName);
     }
 
     FILE *outputStreamSM;
@@ -1703,7 +1894,7 @@ Grid :: give3DSMTMOutput(char *fileName)
     strcpy(fileName1, fileName);
     strcat(fileName1, ".sm");
     if ( ( outputStreamSM = fopen(fileName1, "w") ) == NULL ) {
-        OOFEM_ERROR2("Cannot open output file %s", fileName1);
+        converter::errorf("Cannot open output file %s", fileName1);
     }
 
     FILE *outputStreamTM;
@@ -1711,7 +1902,7 @@ Grid :: give3DSMTMOutput(char *fileName)
     strcpy(fileName2, fileName);
     strcat(fileName2, ".tm");
     if ( ( outputStreamTM = fopen(fileName2, "w") ) == NULL ) {
-        OOFEM_ERROR2("Cannot open output file %s", fileName2);
+        converter::errorf("Cannot open output file %s", fileName2);
     }
 
     int numberOfNodes, numberOfLines;
@@ -1864,7 +2055,7 @@ Grid :: give3DPeriodicSMTMOutput(char *fileName)
 
     FILE *outputStream;
     if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        OOFEM_ERROR2("Cannot open output file %s", fileName);
+        converter::errorf("Cannot open output file %s", fileName);
     }
 
     FILE *outputStreamSM;
@@ -1872,7 +2063,7 @@ Grid :: give3DPeriodicSMTMOutput(char *fileName)
     strcpy(fileName1, fileName);
     strcat(fileName1, ".sm");
     if ( ( outputStreamSM = fopen(fileName1, "w") ) == NULL ) {
-        OOFEM_ERROR2("Cannot open output file %s", fileName1);
+        converter::errorf("Cannot open output file %s", fileName1);
     }
 
     FILE *outputStreamTM;
@@ -1880,7 +2071,7 @@ Grid :: give3DPeriodicSMTMOutput(char *fileName)
     strcpy(fileName2, fileName);
     strcat(fileName2, ".tm");
     if ( ( outputStreamTM = fopen(fileName2, "w") ) == NULL ) {
-        OOFEM_ERROR2("Cannot open output file %s", fileName2);
+        converter::errorf("Cannot open output file %s", fileName2);
     }
 
 
@@ -2138,7 +2329,7 @@ Grid :: give3DPeriodicSMOutput(char *fileName)
 
     FILE *outputStream;
     if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        OOFEM_ERROR2("Cannot open output file %s", fileName);
+        converter::errorf("Cannot open output file %s", fileName);
     }
 
     oofem::FloatArray boundaries(3);
@@ -2260,7 +2451,7 @@ Grid :: give3DPeriodicTMOutput(char *fileName)
 
     FILE *outputStream;
     if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        OOFEM_ERROR2("Cannot open output file %s", fileName);
+        converter::errorf("Cannot open output file %s", fileName);
     }
 
     oofem::FloatArray boundaries(3);
@@ -2375,7 +2566,7 @@ Grid :: give3DPeriodicPoreSMTMOutput(char *fileName)
 
     FILE *outputStream;
     if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        OOFEM_ERROR2("Cannot open output file %s", fileName);
+        converter::errorf("Cannot open output file %s", fileName);
     }
 
     FILE *outputStreamSM;
@@ -2383,7 +2574,7 @@ Grid :: give3DPeriodicPoreSMTMOutput(char *fileName)
     strcpy(fileName1, fileName);
     strcat(fileName1, ".sm");
     if ( ( outputStreamSM = fopen(fileName1, "w") ) == NULL ) {
-        OOFEM_ERROR2("Cannot open output file %s", fileName1);
+        converter::errorf("Cannot open output file %s", fileName1);
     }
 
     FILE *outputStreamTM;
@@ -2391,7 +2582,7 @@ Grid :: give3DPeriodicPoreSMTMOutput(char *fileName)
     strcpy(fileName2, fileName);
     strcat(fileName2, ".tm");
     if ( ( outputStreamTM = fopen(fileName2, "w") ) == NULL ) {
-        OOFEM_ERROR2("Cannot open output file %s", fileName2);
+        converter::errorf("Cannot open output file %s", fileName2);
     }
 
 
@@ -2446,7 +2637,7 @@ Grid :: give3DPeriodicPoreSMTMOutput(char *fileName)
 
 
     if ( numberOfPeriodicLines % 2 != 0 ) {
-        OOFEM_ERROR("In give3DElasticDiscreteSMOutput: The number of perdiodic lines is not even");
+        converter::error("In give3DElasticDiscreteSMOutput: The number of perdiodic lines is not even");
     }
 
     //Determine the number of the diameter values for the pipes that will have to be generated.
@@ -2632,7 +2823,7 @@ Grid :: give3DPeriodicPoreSMTMOutput(char *fileName)
     //Check if the number of the periodic Voronoi Lines is odd.
     //The generation continues if the number is even, otherwise it exits.
     if ( numberOfPeriodicLines % 2 != 0 ) {
-        OOFEM_ERROR("In give3DPeriodicPoreSMTMOutput: The number of perdiodic lines is not even");
+        converter::error("In give3DPeriodicPoreSMTMOutput: The number of perdiodic lines is not even");
     }
 
     //Determine the number of the diameter values for the pipes that will have to be generated.
@@ -2846,7 +3037,7 @@ Grid :: give3DPeriodicPoreSMTMOutput(char *fileName)
                     fprintf( outputStreamTM, "%d ", crossSectionElements.at(m + 1) );
                 } else {
                     if ( this->giveDelaunayLine( crossSectionElements.at(m + 1) )->givePeriodicElement() == 0 ) {
-                        OOFEM_ERROR2("Clang the element is an outsider one %d", i + 1);
+                        converter::errorf("Clang the element is an outsider one %d", i + 1);
                     }
                     fprintf( outputStreamTM, "%d ", this->giveDelaunayLine( crossSectionElements.at(m + 1) )->givePeriodicElement() );
                 }
@@ -2874,7 +3065,7 @@ Grid :: give3DPeriodicPoreSMTMOutput(char *fileName)
                     fprintf( outputStreamTM, "%d ", crossSectionElements.at(m + 1) );
                 } else {
                     if ( this->giveDelaunayLine( crossSectionElements.at(m + 1) )->givePeriodicElement() == 0 ) {
-                        OOFEM_ERROR2("Clang the element is an outsider one %d", i + 1);
+                        converter::errorf("Clang the element is an outsider one %d", i + 1);
                     }
                     fprintf( outputStreamTM, "%d ", this->giveDelaunayLine( crossSectionElements.at(m + 1) )->givePeriodicElement() );
                 }
@@ -2908,7 +3099,7 @@ Grid :: give3DBentoniteCoupledOutput(char *fileName)
 
     FILE *outputStream;
     if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        OOFEM_ERROR2("Cannot open output file %s", fileName);
+        converter::errorf("Cannot open output file %s", fileName);
     }
 
     FILE *outputStreamSM;
@@ -2916,7 +3107,7 @@ Grid :: give3DBentoniteCoupledOutput(char *fileName)
     strcpy(fileName1, fileName);
     strcat(fileName1, ".sm");
     if ( ( outputStreamSM = fopen(fileName1, "w") ) == NULL ) {
-        OOFEM_ERROR2("Cannot open output file %s", fileName1);
+        converter::errorf("Cannot open output file %s", fileName1);
     }
 
     FILE *outputStreamTM;
@@ -2924,7 +3115,7 @@ Grid :: give3DBentoniteCoupledOutput(char *fileName)
     strcpy(fileName2, fileName);
     strcat(fileName2, ".tm");
     if ( ( outputStreamTM = fopen(fileName2, "w") ) == NULL ) {
-        OOFEM_ERROR2("Cannot open output file %s", fileName2);
+        converter::errorf("Cannot open output file %s", fileName2);
     }
 
 
@@ -2981,7 +3172,7 @@ Grid :: give3DBentoniteCoupledOutput(char *fileName)
 
 
     if ( numberOfPeriodicLines % 2 != 0 ) {
-        OOFEM_ERROR("In give3DElasticDiscreteSMOutput: The number of perdiodic lines is not even");
+        converter::error("In give3DElasticDiscreteSMOutput: The number of perdiodic lines is not even");
     }
 
     //Determine the number of the diameter values for the pipes that will have to be generated.
@@ -3182,7 +3373,7 @@ Grid :: give3DBentoniteCoupledOutput(char *fileName)
     //Check if the number of the periodic Voronoi Lines is odd.
     //The generation continues if the number is even, otherwise it exits.
     if ( numberOfPeriodicLines % 2 != 0 ) {
-        OOFEM_ERROR("In give3DPeriodicPoreSMTMOutput: The number of perdiodic lines is not even");
+        converter::error("In give3DPeriodicPoreSMTMOutput: The number of perdiodic lines is not even");
     }
 
     //Determine the number of the diameter values for the pipes that will have to be generated.
@@ -3375,7 +3566,7 @@ Grid :: give3DBentoniteCoupledOutput(char *fileName)
                     fprintf( outputStreamTM, "%d ", cellElements.at(m + 1) );
 		  } else {
                     if ( this->giveDelaunayLine( cellElements.at(m + 1) )->givePeriodicElement() == 0 ) {
-		      OOFEM_ERROR2("Error: the element %d is outside", i + 1);
+		      converter::errorf("Error: the element %d is outside", i + 1);
                     }
                     fprintf( outputStreamTM, "%d ", this->giveDelaunayLine( cellElements.at(m + 1) )->givePeriodicElement() );
 		  }
@@ -3389,7 +3580,7 @@ Grid :: give3DBentoniteCoupledOutput(char *fileName)
                     fprintf( outputStreamTM, "%d ", cellElements.at(m + 1) );
 		  } else {
                     if ( this->giveDelaunayLine( cellElements.at(m + 1) )->givePeriodicElement() == 0 ) {
-		      OOFEM_ERROR2("Error: the element %d is outside", i + 1);
+		      converter::errorf("Error: the element %d is outside", i + 1);
                     }
                     fprintf( outputStreamTM, "%d ", this->giveDelaunayLine( cellElements.at(m + 1) )->givePeriodicElement() );
 		  }
@@ -3416,7 +3607,7 @@ Grid :: give3DBentoniteCoupledOutput(char *fileName)
                     fprintf( outputStreamTM, "%d ", crossSectionElements.at(m + 1) );
                 } else {
                     if ( this->giveDelaunayLine( crossSectionElements.at(m + 1) )->givePeriodicElement() == 0 ) {
-                        OOFEM_ERROR2("Error: the element %d is outside", i + 1);
+                        converter::errorf("Error: the element %d is outside", i + 1);
                     }
                     fprintf( outputStreamTM, "%d ", this->giveDelaunayLine( crossSectionElements.at(m + 1) )->givePeriodicElement() );
                 }
@@ -3444,7 +3635,7 @@ Grid :: give3DBentoniteCoupledOutput(char *fileName)
                     fprintf( outputStreamTM, "%d ", crossSectionElements.at(m + 1) );
                 } else {
                     if ( this->giveDelaunayLine( crossSectionElements.at(m + 1) )->givePeriodicElement() == 0 ) {
-                        OOFEM_ERROR2("Error: the element is outside %d", i + 1);
+                        converter::errorf("Error: the element is outside %d", i + 1);
                     }
                     fprintf( outputStreamTM, "%d ", this->giveDelaunayLine( crossSectionElements.at(m + 1) )->givePeriodicElement() );
                 }
@@ -3478,7 +3669,7 @@ Grid :: give3DPeriodicPoreSMOutput(char *fileName)
 {
     FILE *outputStream;
     if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        OOFEM_ERROR2("Cannot open output file %s", fileName);
+        converter::errorf("Cannot open output file %s", fileName);
     }
 
     oofem::FloatArray boundaries(3);
@@ -3519,7 +3710,7 @@ Grid :: give3DPeriodicPoreSMOutput(char *fileName)
     //Check if the number of the periodic Delaunay Lines is odd.
     //The generation continues if the number is even, otherwise it exits.
     if ( numberOfPeriodicLines % 2 != 0 ) {
-        OOFEM_ERROR("In give3DPlasticDiscreteTriaxialSMOutput: The number of perdiodic lines is not even");
+        converter::error("In give3DPlasticDiscreteTriaxialSMOutput: The number of perdiodic lines is not even");
     }
 
     //Determine the number of the diameter values for the pipes that will have to be generated.
@@ -3686,7 +3877,7 @@ Grid :: give3DBentoniteSMOutput(char *fileName)
 
     FILE *outputStream;
     if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        OOFEM_ERROR2("Cannot open output file %s", fileName);
+        converter::errorf("Cannot open output file %s", fileName);
     }
 
     oofem::FloatArray boundaries(3);
@@ -3806,7 +3997,7 @@ Grid :: give3DBentoniteTMOutput(char *fileName)
 
     FILE *outputStream;
     if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        OOFEM_ERROR2("Cannot open output file %s", fileName);
+        converter::errorf("Cannot open output file %s", fileName);
     }
 
     FILE *outputStreamLengths;
@@ -3814,7 +4005,7 @@ Grid :: give3DBentoniteTMOutput(char *fileName)
     strcpy(fileName1, fileName);
     strcat(fileName1, "_Lengths.dat");
     if ( ( outputStreamLengths = fopen(fileName1, "w") ) == NULL ) {
-        OOFEM_ERROR2("Cannot open output file %s", fileName1);
+        converter::errorf("Cannot open output file %s", fileName1);
     }
 
     oofem::FloatArray boundaries(3);
@@ -3867,7 +4058,7 @@ Grid :: give3DBentoniteTMOutput(char *fileName)
     //Check if the number of the periodic Voronoi Lines is odd.
     //The generation continues if the number is even, otherwise it exits.
     if ( numberOfPeriodicLines % 2 != 0 ) {
-        OOFEM_ERROR("In give3DPeriodicPoreTMOutput: The number of perdiodic lines is not even");
+        converter::error("In give3DPeriodicPoreTMOutput: The number of perdiodic lines is not even");
     }
 
     //Determine the number of the diameter values for the pipes that will have to be generated.
@@ -4126,7 +4317,7 @@ Grid :: give3DCantileverTMOutput(char *fileName)
 {
     FILE *outputStream;
     if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        OOFEM_ERROR2("Cannot open output file %s", fileName);
+        converter::errorf("Cannot open output file %s", fileName);
     }
 
     oofem::FloatArray boundaries(3);
@@ -4247,7 +4438,7 @@ Grid :: give3DCantileverTMExtraOutput(char *fileName)
 {
     FILE *outputStream;
     if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        OOFEM_ERROR2("Cannot open output file %s", fileName);
+        converter::errorf("Cannot open output file %s", fileName);
     }
 
 
@@ -4376,7 +4567,7 @@ Grid :: give3DCantileverSMOutput(char *fileName)
 
     FILE *outputStream;
     if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        OOFEM_ERROR2("Cannot open output file %s", fileName);
+        converter::errorf("Cannot open output file %s", fileName);
     }
 
     oofem::FloatArray boundaries(3);
@@ -4533,7 +4724,7 @@ Grid :: give3DCantileverSMTMOutput(char *fileName)
 
     FILE *outputStream;
     if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        OOFEM_ERROR2("Cannot open output file %s", fileName);
+        converter::errorf("Cannot open output file %s", fileName);
     }
 
 
@@ -4542,7 +4733,7 @@ Grid :: give3DCantileverSMTMOutput(char *fileName)
     strcpy(fileName1, fileName);
     strcat(fileName1, ".sm");
     if ( ( outputStreamSM = fopen(fileName1, "w") ) == NULL ) {
-        OOFEM_ERROR2("Cannot open output file %s", fileName1);
+        converter::errorf("Cannot open output file %s", fileName1);
     }
 
     FILE *outputStreamTM;
@@ -4550,7 +4741,7 @@ Grid :: give3DCantileverSMTMOutput(char *fileName)
     strcpy(fileName2, fileName);
     strcat(fileName2, ".tm");
     if ( ( outputStreamTM = fopen(fileName2, "w") ) == NULL ) {
-        OOFEM_ERROR2("Cannot open output file %s", fileName2);
+        converter::errorf("Cannot open output file %s", fileName2);
     }
 
     oofem::FloatArray boundaries(3);
@@ -4835,7 +5026,7 @@ Grid :: give3DFPZOutput(char *fileName)
 
     FILE *outputStream;
     if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        OOFEM_ERROR2("Cannot open output file %s", fileName);
+        converter::errorf("Cannot open output file %s", fileName);
     }
 
     oofem::FloatArray boundaries(3);
@@ -4953,7 +5144,7 @@ Grid :: give3DFPZFibreOutput(char *fileName)
 
     FILE *outputStream;
     if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        OOFEM_ERROR2("Cannot open output file %s", fileName);
+        converter::errorf("Cannot open output file %s", fileName);
     }
     
     printf("Starting writing data in output file \n");
@@ -5296,7 +5487,7 @@ Grid :: give3DFibreBenchmarkOutput(char *fileName)
 
     FILE *outputStream;
     if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        OOFEM_ERROR2("Cannot open output file %s", fileName);
+        converter::errorf("Cannot open output file %s", fileName);
     }
     
     printf("Starting writing data in output file \n");
@@ -5578,7 +5769,7 @@ Grid :: give3DWongOutput(char *fileName)
 
     FILE *outputStream;
     if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        OOFEM_ERROR2("Cannot open output file %s", fileName);
+        converter::errorf("Cannot open output file %s", fileName);
     }
 
     FILE *outputStreamSM;
@@ -5586,7 +5777,7 @@ Grid :: give3DWongOutput(char *fileName)
     strcpy(fileName1, fileName);
     strcat(fileName1, ".sm");
     if ( ( outputStreamSM = fopen(fileName1, "w") ) == NULL ) {
-        OOFEM_ERROR2("Cannot open output file %s", fileName1);
+        converter::errorf("Cannot open output file %s", fileName1);
     }
 
     FILE *outputStreamTM;
@@ -5594,7 +5785,7 @@ Grid :: give3DWongOutput(char *fileName)
     strcpy(fileName2, fileName);
     strcat(fileName2, ".tm");
     if ( ( outputStreamTM = fopen(fileName2, "w") ) == NULL ) {
-        OOFEM_ERROR2("Cannot open output file %s", fileName2);
+        converter::errorf("Cannot open output file %s", fileName2);
     }
 
     oofem::FloatArray boundaries(3);
@@ -5929,7 +6120,7 @@ Grid :: give3DPeriodicPoreTMOutput(char *fileName)
 
     FILE *outputStream;
     if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        OOFEM_ERROR2("Cannot open output file %s", fileName);
+        converter::errorf("Cannot open output file %s", fileName);
     }
 
     FILE *outputStreamLengths;
@@ -5937,7 +6128,7 @@ Grid :: give3DPeriodicPoreTMOutput(char *fileName)
     strcpy(fileName1, fileName);
     strcat(fileName1, "_Lengths.dat");
     if ( ( outputStreamLengths = fopen(fileName1, "w") ) == NULL ) {
-        OOFEM_ERROR2("Cannot open output file %s", fileName1);
+        converter::errorf("Cannot open output file %s", fileName1);
     }
 
     oofem::FloatArray boundaries(3);
@@ -5990,7 +6181,7 @@ Grid :: give3DPeriodicPoreTMOutput(char *fileName)
     //Check if the number of the periodic Voronoi Lines is odd.
     //The generation continues if the number is even, otherwise it exits.
     if ( numberOfPeriodicLines % 2 != 0 ) {
-        OOFEM_ERROR("In give3DPeriodicPoreTMOutput: The number of perdiodic lines is not even");
+        converter::error("In give3DPeriodicPoreTMOutput: The number of perdiodic lines is not even");
     }
 
     //Determine the number of the diameter values for the pipes that will have to be generated.
@@ -6249,7 +6440,7 @@ Grid :: give3DSphereOutput(char *fileName)
 
     FILE *outputStream;
     if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        OOFEM_ERROR2("Cannot open output file %s", fileName);
+        converter::errorf("Cannot open output file %s", fileName);
     }
 
     int numberOfNodes, numberOfLines;
@@ -6402,7 +6593,7 @@ Grid :: give3DCylinderOutput(char *fileName)
 
     FILE *outputStream;
     if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        OOFEM_ERROR2("Cannot open output file %s", fileName);
+        converter::errorf("Cannot open output file %s", fileName);
     }
 
     int numberOfNodes, numberOfLines;
@@ -6622,7 +6813,7 @@ Grid :: give3DTensionOutput(char *fileName)
 
     FILE *outputStream;
     if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        OOFEM_ERROR2("Cannot open output file %s", fileName);
+        converter::errorf("Cannot open output file %s", fileName);
     }
 
     int numberOfNodes, numberOfLines;
@@ -6852,7 +7043,7 @@ Grid :: give3DPeriodicTetraSMOutput(char *fileName)
 {
     FILE *outputStream;
     if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        OOFEM_ERROR2("Cannot open output file %s", fileName);
+        converter::errorf("Cannot open output file %s", fileName);
     }
 
     oofem::IntArray periodicFlag(3);
@@ -7133,7 +7324,7 @@ Grid :: give3DTetraSMOutput(char *fileName)
 
     FILE *outputStream;
     if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        OOFEM_ERROR2("Cannot open output file %s", fileName);
+        converter::errorf("Cannot open output file %s", fileName);
     }
 
     oofem::FloatArray boundaries(3);
@@ -7221,7 +7412,7 @@ Grid :: give3DRCSMOutput(char *fileName)
 {
     FILE *outputStream;
     if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        OOFEM_ERROR2("Cannot open output file %s", fileName);
+        converter::errorf("Cannot open output file %s", fileName);
     }
     printf("Processing nodes\n");
 
@@ -7521,7 +7712,7 @@ Grid :: give3DRCPeriodicSMOutput(char *fileName)
 {
     FILE *outputStream;
     if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        OOFEM_ERROR2("Cannot open output file %s", fileName);
+        converter::errorf("Cannot open output file %s", fileName);
     }
     printf("Processing nodes\n");
 
@@ -8220,7 +8411,7 @@ Grid :: give3DRCPeriodicSMOutput2(char *fileName)
 {
     FILE *outputStream;
     if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        OOFEM_ERROR2("Cannot open output file %s", fileName);
+        converter::errorf("Cannot open output file %s", fileName);
     }
     printf("Processing nodes\n");
 
@@ -8907,7 +9098,7 @@ Grid :: give3DGopShaOutput(char *fileName)
 
     FILE *outputStream;
     if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        OOFEM_ERROR2("Cannot open output file %s", fileName);
+        converter::errorf("Cannot open output file %s", fileName);
     }
 
     int numberOfNodes, numberOfLines;
@@ -9195,7 +9386,7 @@ Grid :: give3DKupferOutput(char *fileName)
 
     FILE *outputStream;
     if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        OOFEM_ERROR2("Cannot open output file %s", fileName);
+        converter::errorf("Cannot open output file %s", fileName);
     }
 
     int numberOfNodes, numberOfLines;
@@ -9393,7 +9584,7 @@ Grid :: giveVoronoiPOVOutput(char *fileName)
     strcat(fileName1, ".vor.line.pov");
     FILE *outputStream1;
     if ( ( outputStream1 = fopen(fileName1, "w") ) == NULL ) {
-        OOFEM_ERROR2("Can't open output file %s", fileName1);
+        converter::errorf("Can't open output file %s", fileName1);
     }
 
     char fileName2 [ MAX_FILENAME_LENGTH + 10 ];
@@ -9401,7 +9592,7 @@ Grid :: giveVoronoiPOVOutput(char *fileName)
     strcat(fileName2, ".vor.cross.pov");
     FILE *outputStream2;
     if ( ( outputStream2 = fopen(fileName2, "w") ) == NULL ) {
-        OOFEM_ERROR2("Can't open output file %s", fileName2);
+        converter::errorf("Can't open output file %s", fileName2);
     }
 
 
@@ -9433,7 +9624,7 @@ Grid :: giveDelaunayPOVOutput(char *fileName)
     strcat(fileName1, ".del.line.pov");
     FILE *outputStream1;
     if ( ( outputStream1 = fopen(fileName1, "w") ) == NULL ) {
-        OOFEM_ERROR2("Can't open output file %s", fileName1);
+        converter::errorf("Can't open output file %s", fileName1);
     }
 
     char fileName2 [ MAX_FILENAME_LENGTH + 10 ];
@@ -9441,7 +9632,7 @@ Grid :: giveDelaunayPOVOutput(char *fileName)
     strcat(fileName2, ".del.cross.pov");
     FILE *outputStream2;
     if ( ( outputStream2 = fopen(fileName2, "w") ) == NULL ) {
-        OOFEM_ERROR2("Can't open output file %s", fileName2);
+        converter::errorf("Can't open output file %s", fileName2);
     }
 
     char fileName3 [ MAX_FILENAME_LENGTH + 10 ];
@@ -9449,7 +9640,7 @@ Grid :: giveDelaunayPOVOutput(char *fileName)
     strcat(fileName3, ".crack.pov");
     FILE *outputStream3;
     if ( ( outputStream3 = fopen(fileName3, "w") ) == NULL ) {
-        OOFEM_ERROR2("Can't open output file %s", fileName3);
+        converter::errorf("Can't open output file %s", fileName3);
     }
 
 
@@ -10405,7 +10596,7 @@ void Grid :: giveVtkOutput2(char *fileName, int nb_of_mt )
         strcpy(fileName1, fileName);
         strcat(fileName1, ".voronoicell.vtu");
         if ( ( outputStream = fopen(fileName1, "w") ) == NULL ) {
-            OOFEM_ERROR2("Can't open output file %s", fileName1);
+            converter::errorf("Can't open output file %s", fileName1);
         }
         giveVoronoiCellVTKOutput(outputStream);
     }

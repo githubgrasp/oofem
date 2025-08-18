@@ -7,18 +7,21 @@
 #include "grid.h"
 #include "vertex.h"
 #include "gridcomponent.h"
-#include "floatarry.h"
+#include "floatarray.h"
 #include "intarray.h"
 
 #include "converterdatareader.h"
-#include "converteroofemtxtdatareader.h"
-#include "converteroofemtxtinputrecord.h"
+#include "convertertxtdatareader.h"
+#include "convertertxtinputrecord.h"
 
+#define  _IFT_Fibre_endpoints "endpoints"
+#define  _IFT_Fibre_diameter "diameter"
 
 
 #ifndef __MAKEDEPEND
 #include <stdio.h>
 #endif
+
 
 // warning 1 : vector indices starts at O, for the other type : at 1
 
@@ -89,7 +92,7 @@ public:
     
     Fibre *ofType();
     
-    IRResultType initializeFrom(InputRecord *ir);
+    void initializeFrom(ConverterInputRecord &ir);
     void discretizeYouself();//
 
     

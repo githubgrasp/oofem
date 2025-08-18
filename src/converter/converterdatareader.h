@@ -57,7 +57,7 @@ protected:
 public:
     /// Determines the type of input record.
     enum ConverterInputRecordType {
-        GIR_domainRec, GIR_controlRec, GIR_domainCompRec, GIR_vertexRec, GIR_controlVertexRec, GIR_curveRec, GIR_surfaceRec, GIR_regionRec, GIR_inclusionRec, GIR_aggregateRec, GIR_refinementRec
+        CIR_domainRec, CIR_controlRec, CIR_domainCompRec, CIR_vertexRec, CIR_controlVertexRec, CIR_curveRec, CIR_surfaceRec, CIR_regionRec, CIR_inclusionRec, CIR_aggregateRec, CIR_refinementRec
     };
 
     ConverterDataReader() { }

@@ -18,6 +18,11 @@
 #include <stdio.h>
 #endif
 
+#define _IFT_InterfaceSphere_centre "centre"
+#define _IFT_InterfaceSphere_diameter "radius"
+#define _IFT_InterfaceSphere_refine "refine"
+#define _IFT_InterfaceSphere_itz "itz"
+
 //class FloatArray;
 //class IntArray;
 
@@ -46,7 +51,7 @@ public:
 
     double giveRadius(){return this->radius;}
     double giveITZThickness(){return this->itzThickness;}
-    void giveCentre(FloatArray& cent){cent = centre;}
+  void giveCentre(oofem::FloatArray& cent){cent = centre;}
 
     
 
@@ -56,7 +61,7 @@ public:
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "InterfaceSphere"; }
 
-    IRResultType initializeFrom(InputRecord *ir);
+    void initializeFrom(ConverterInputRecord &ir);
     //virtual IntArray* ResolveDofIDArray (char* initString);
     /// prints receiver state on stdout. Usefull for debuging.
     void         printYourself();

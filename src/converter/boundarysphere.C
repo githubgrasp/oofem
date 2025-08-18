@@ -19,26 +19,12 @@ BoundarySphere :: ~BoundarySphere()
 }
 
 
-IRResultType
-BoundarySphere :: initializeFrom(InputRecord *ir)
-// Gets from the source line from the data file all the data of the receiver.
+void
+BoundarySphere :: initializeFrom(ConverterInputRecord &ir)
 {
-    const char *__proc = "initializeFrom"; // Required by IR_GIVE_FIELD macro
-    IRResultType result;                // Required by IR_GIVE_FIELD macro
-
-    // int j, size;
-    // oofem::FloatArray vertices;
-    // IntArray *dofIDArry;
-    IR_GIVE_FIELD(ir, centre, IFT_BoundarySphere_centre, "centre");    
-    IR_GIVE_FIELD(ir, radius, IFT_BoundarySphere_radius, "radius"); // Macro
-   return IRRT_OK;
-   
-   //Print command for double
-   //   printf("diameter = %e\n", diameter);
-   //Print command for integer
-   //   printf("number = %d\n", number);
-   //Print command for array
-   //   centre.printYourself();
+  IR_GIVE_FIELD(ir, centre, _IFT_BoundarySphere_centre);    
+  IR_GIVE_FIELD(ir, radius, _IFT_BoundarySphere_radius);
+  return;
 }
 
 

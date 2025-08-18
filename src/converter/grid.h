@@ -17,6 +17,45 @@
 #include <list>
 #endif
 
+#define _IFT_Grid_diam "diam"
+#define _IFT_Grid_ranint "ranint"
+#define _IFT_Grid_regflag "regflag"
+#define _IFT_Grid_perflag "perflag"
+#define _IFT_Grid_macrotype "macrotype"
+#define _IFT_Grid_coupflag "coupflag"
+#define _IFT_Grid_meshtype "meshtype"
+#define _IFT_Grid_poremean "poremean"
+#define _IFT_Grid_porecov "porecov"
+#define _IFT_Grid_poremax "poremax"
+#define _IFT_Grid_poremin "poremin"
+#define _IFT_Grid_throatmean "throatmean"
+#define _IFT_Grid_throatcov "throatcov"
+#define _IFT_Grid_throatmax "throatmax"
+#define _IFT_Grid_throatmin "throatmin"
+
+#define _IFT_Grid_contactangle "contactangle"
+#define _IFT_Grid_surfacetension "surfacetension"
+
+#define _IFT_Grid_mechmean "mechmean"
+#define _IFT_Grid_mechcov "mechcov"
+#define _IFT_Grid_mechmax "mechmax"
+#define _IFT_Grid_mechmin "mechmin"
+
+#define _IFT_Grid_young "young"
+#define _IFT_Grid_gamma1 "gamma1"
+#define _IFT_Grid_gamma2 "gamma2"
+#define _IFT_Grid_conf "conf"
+#define _IFT_Grid_tanbeta "tanbeta"
+#define _IFT_Grid_tanphi "tanphi"
+#define _IFT_Grid_deltarad "deltarad"
+
+#define _IFT_Grid_nvertex "nvertex"
+#define _IFT_Grid_ncurve "ncurve"
+#define _IFT_Grid_nsurface "nsurface"
+#define _IFT_Grid_nregion "nregion"
+#define _IFT_Grid_ninclusion "ninclusion"
+#define _IFT_Grid_nfiber "nfibre"
+
 class Vertex;
 class Curve;
 class Surface;
@@ -191,9 +230,10 @@ public:
 
     void giveVoronoiElementVTKOutput(FILE *outputStream);
 
-    void resolveGridType(char name[]);
+  void resolveGridType(const std::string &name);
 
-    void resolveMacroType(char name[]);
+  
+    void resolveMacroType(const std::string &name);
 
     Vertex *giveVertex(int n);
 

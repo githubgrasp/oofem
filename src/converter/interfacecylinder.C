@@ -19,21 +19,17 @@ InterfaceCylinder :: ~InterfaceCylinder()
 }
 
 
-IRResultType
-InterfaceCylinder :: initializeFrom(InputRecord *ir)
+void
+InterfaceCylinder :: initializeFrom(ConverterInputRecord &ir)
 // Gets from the source line from the data file all the data of the receiver.
 {
-    const char *__proc = "initializeFrom"; // Required by IR_GIVE_FIELD macro
-    IRResultType result;                // Required by IR_GIVE_FIELD macro
-
-    IR_GIVE_FIELD(ir, line, IFT_InterfaceCylinder_line, "line");
-    IR_GIVE_FIELD(ir, radius, IFT_InterfaceCylinder_radius, "radius"); // Macro
+    IR_GIVE_FIELD(ir, line, _IFT_InterfaceCylinder_line);
+    IR_GIVE_FIELD(ir, radius, _IFT_InterfaceCylinder_radius); // Macro
     refinement = 1.;
-    IR_GIVE_OPTIONAL_FIELD(ir, refinement, IFT_InterfaceCylinder_refine, "refine"); // Macro
+    IR_GIVE_OPTIONAL_FIELD(ir, refinement, _IFT_InterfaceCylinder_refine); // Macro
     itzThickness = refinement*grid->giveDiameter();
-    IR_GIVE_OPTIONAL_FIELD(ir, itzThickness, IFT_InterfaceCylinder_itz, "itz"); // Macro
-    return IRRT_OK;
-
+    IR_GIVE_OPTIONAL_FIELD(ir, itzThickness, _IFT_InterfaceCylinder_itz); // Macro
+    return;
 }
 
 

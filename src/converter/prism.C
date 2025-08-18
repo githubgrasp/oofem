@@ -34,18 +34,15 @@ Prism :: giveLocalSurface(int i)
     return surfaces.at(i);
 }
 
-IRResultType
-Prism :: initializeFrom(InputRecord *ir)
+void
+Prism :: initializeFrom(ConverterInputRecord &ir)
 // Gets from the source line from the data file all the data of the receiver.
 {
-    const char *__proc = "initializeFrom"; // Required by IR_GIVE_FIELD macro
-    IRResultType result;                // Required by IR_GIVE_FIELD macro
-
-    IR_GIVE_FIELD(ir, this->box, IFT_Cylinder_line, "box");    
+    IR_GIVE_FIELD(ir, this->box, _IFT_Prism_box);    
 
     refinement = 1.;
-    IR_GIVE_OPTIONAL_FIELD(ir, refinement, IFT_Prism_refine, "refine"); // Macro
-    return IRRT_OK;
+    IR_GIVE_OPTIONAL_FIELD(ir, refinement, _IFT_Prism_refine); // Macro
+    return;
 }
 
 Prism *Prism :: ofType()

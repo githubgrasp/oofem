@@ -5,7 +5,7 @@
 #include "grid.h"
 #include "gridcomponent.h"
 
-#include "flotarry.h"
+#include "floatarray.h"
 #include "intarray.h"
 
 #include "converterdatareader.h"

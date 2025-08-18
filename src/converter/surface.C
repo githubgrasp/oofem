@@ -37,21 +37,14 @@ int Surface :: giveNumberOfLocalCurves()
 }
 
 
-IRResultType
-Surface :: initializeFrom(InputRecord *ir)
+void
+Surface :: initializeFrom(ConverterInputRecord &ir)
 // Gets from the source line from the data file all the data of the receiver.
 {
-    const char *__proc = "initializeFrom"; // Required by IR_GIVE_FIELD macro
-    IRResultType result;                // Required by IR_GIVE_FIELD macro
-
-    //    int j, size;
-    //    FloatArray vertices;
-    // IntArray *dofIDArry;
-    
-    IR_GIVE_FIELD(ir, curves, IFT_Surface_curves, "curves"); // Macro
+    IR_GIVE_FIELD(ir, curves, _IFT_Surface_curves); // Macro
     refinement = 1.;
-    IR_GIVE_OPTIONAL_FIELD(ir, refinement, IFT_Surface_refine, "refine"); // Macro
-    return IRRT_OK;
+    IR_GIVE_OPTIONAL_FIELD(ir, refinement, _IFT_Surface_refine); // Macro
+    return;
 }
 
 

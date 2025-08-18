@@ -18,6 +18,9 @@
 #include <stdio.h>
 #endif
 
+#define _IFT_BoundarySphere_centre "centre"
+#define _IFT_BoundarySphere_radius "radius"
+
 class BoundarySphere : public Region
 {
 
@@ -53,7 +56,7 @@ public:
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "BoundarySphere"; }
 
-    IRResultType initializeFrom(InputRecord *ir);
+    void initializeFrom(ConverterInputRecord &ir);
     //virtual IntArray* ResolveDofIDArray (char* initString);
     /// prints receiver state on stdout. Usefull for debuging.
     void         printYourself();
@@ -68,7 +71,7 @@ public:
 };
 
 
-#endif // node_h
+#endif // boundaryspeher_h
 
 
 
