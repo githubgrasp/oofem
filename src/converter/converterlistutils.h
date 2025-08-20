@@ -2,9 +2,13 @@
 #include <vector>
 #include <iostream>
 #include <cstdlib>
+#include "convertererror.h"
 
 namespace converter {
-template< class T >
+
+
+
+  template< class T >
 inline bool includes1(const std::vector< T * > &v, int i) {
     return i >= 1 && static_cast< size_t >( i ) <= v.size() && v [ i - 1 ] != nullptr;
 }
@@ -50,4 +54,13 @@ template< class T >
 inline int size1(const std::vector< T * > &v) {
     return static_cast< int >( v.size() );
 }
+
+template <class T>
+inline T* require_at1(std::vector<T*>& v, int i, const char* what) {
+    if (includes1(v, i)) return at1(v, i);
+    errorf("%s: undefined id (%d)", what, i);
+    return nullptr;
+}
+
+
 } // namespace converter

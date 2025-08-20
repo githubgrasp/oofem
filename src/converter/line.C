@@ -4,6 +4,7 @@
  #include <math.h>
  #include <stdlib.h>
  #include <iostream>
+#include "floatmatrix.h"
 #endif
 
 Line :: Line(int n, Grid *aGrid) : GridComponent(n, aGrid) //, coordinates()
@@ -190,7 +191,7 @@ int Line:: delaunayAreaCheck()
     t.normalize();
 
     //Set up rotation matrix
-    FloatMatrix lcs(3, 3);
+    oofem::FloatMatrix lcs(3, 3);
 
     for ( int i = 1; i <= 3; i++ ) {
         lcs.at(1, i) = normal.at(i);

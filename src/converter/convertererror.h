@@ -5,7 +5,9 @@
 #include <string>
 
 namespace converter {
-// Simple message (no formatting)
+
+
+  // Simple message (no formatting)
 [[noreturn]] inline void error(const std::string &msg) {
     std::fputs(msg.c_str(), stderr);
     std::fputc('\n', stderr);
@@ -26,4 +28,12 @@ namespace converter {
 [[noreturn]] inline void error4(const char *fmt, int a, int b, int c) {
     errorf(fmt, a, b, c);
 }
+
+inline FILE* fopen_or_die(const std::string& name, const char* mode) {
+    if (FILE* f = std::fopen(name.c_str(), mode)) return f;
+    errorf("Cannot open output file %s", name.c_str());
+    return nullptr; // unreachable
+}
+
+  
 } // namespace converter

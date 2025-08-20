@@ -10,6 +10,8 @@
 #include <time.h> 
 #include <stdlib.h>
 #include <ctime>
+#include <thread>
+#include <chrono>
 
 using namespace std;
   
@@ -66,7 +68,8 @@ int main(int argc, char* argv[])
   double *randomNumbers = new double [nRandom];
   //  double *sumArray = new double [nRandom];
 
-  sleep(2);
+  std::this_thread::sleep_for(std::chrono::seconds(2));
+  //  sleep(2);
 
   long randomIntegerOne = -time(NULL);
   

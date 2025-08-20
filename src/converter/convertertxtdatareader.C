@@ -32,8 +32,8 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "generatorerror.h"
-#include "generatortxtdatareader.h"
+#include "convertererror.h"
+#include "convertertxtdatareader.h"
 #include "error.h"
 #include <iostream>
 #include <string>
@@ -46,7 +46,7 @@ ConverterTXTDataReader::ConverterTXTDataReader(std::string inputfilename) : Conv
     {
         std::ifstream inputStream(dataSourceName);
         if ( !inputStream.is_open() ) {
-            generator::errorf("Can't open input stream (%s)", dataSourceName.c_str() );
+            converter::errorf("Can't open input stream (%s)", dataSourceName.c_str() );
         }
 
         int lineNumber = 0;
@@ -72,7 +72,7 @@ ConverterTXTDataReader::ConverterTXTDataReader(std::string inputfilename) : Conv
             std::string line;
             std::ifstream includedStream(fname);
             if ( !includedStream.is_open() ) {
-                generator::errorf("Can't open input stream (%s)", fname.c_str() );
+                converter::errorf("Can't open input stream (%s)", fname.c_str() );
             }
             while ( this->giveLineFromInput(includedStream, includedLine, line) ) {
                 lines.emplace(it, make_pair(includedLine, line) );
@@ -97,7 +97,7 @@ ConverterInputRecord &
 ConverterTXTDataReader::giveInputRecord(ConverterInputRecordType typeId, int recordId)
 {
     if ( this->it == this->recordList.end() ) {
-        generator::error("Out of input records, file contents must be missing");
+        converter::error("Out of input records, file contents must be missing");
     }
     return * this->it++;
 }

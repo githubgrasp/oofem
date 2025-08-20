@@ -32,14 +32,14 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "generatortxtinputrecord.h"
+#include "convertertxtinputrecord.h"
 #include "intarray.h"
 #include "floatarray.h"
 #include "floatmatrix.h"
 #include "dictionary.h"
 #include "range.h"
 #include "scalarfunction.h"
-#include "generatorerror.h"
+#include "convertererror.h"
 
 
 #include <cstdlib>

@@ -1,4 +1,3 @@
-#include "alist.h"
 #include "tetra.h"
 #include "vertex.h"
 #ifndef __MAKEDEPEND
@@ -42,7 +41,7 @@ void Tetra :: giveCoordinates(oofem::FloatArray& coords)
 //gives the coordinates of the nodes of the tetra in a vector
 {
   coords.resize(12);
-  FloatArray nodeCoords;
+  oofem::FloatArray nodeCoords;
   for(int i = 1; i<=4; i++){    
     this->grid->giveDelaunayVertex(vertices.at(i))->giveCoordinates(nodeCoords);
     coords.at(1+(i-1)*3) = nodeCoords.at(1);
