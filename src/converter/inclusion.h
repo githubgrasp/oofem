@@ -37,6 +37,8 @@ public:
     ~Inclusion();                                           // destructor
 
     virtual const char *giveClassName() const = 0;
+
+  virtual void initializeFrom(ConverterInputRecord &ir)=0;
 };
 
 

@@ -12,8 +12,6 @@ line.C
 lognormalGenerator.C
 main.C
 octreegridlocalizer.C
-outputmanager.C
-overlap.C
 prism.C
 region.C
 surface.C
@@ -22,6 +20,7 @@ vertex.C
 converterinputrecord.C
 convertertxtinputrecord.C
 convertertxtdatareader.C
+boundarysphere.C
 )
 
 add_library(converter STATIC ${CONVERTER_SOURCES})

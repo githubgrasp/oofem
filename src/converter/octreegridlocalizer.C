@@ -37,14 +37,14 @@
 #include "element.h"
 #include "grid.h"
 #include "integrationrule.h"
-#include "gausspnt.h"
 #include "vertex.h"
 #include "node.h"
-#include "conTable.h"
 #include "mathfem.h"
 #ifndef __MAKEDEPEND
 #include <time.h>
 #include <iostream>
+#include <algorithm>
+#include "convertererror.h"
 #endif
 
 oofemOctantRec :: oofemOctantRec(OctreeGridLocalizer *loc, oofemOctantRec *parent, oofem::FloatArray &origin, double size)
@@ -119,7 +119,7 @@ oofemOctantRec :: giveChild(int xi, int yi, int zi)
     if ( ( xi >= 0 ) && ( xi < 2 ) && ( yi >= 0 ) && ( yi < 2 ) && ( zi >= 0 ) && ( zi < 2 ) ) {
         return this->child [ xi ] [ yi ] [ zi ];
     } else {
-        OOFEM_ERROR4("oofemOctantRec::giveChild invalid child index (%d,%d,%d)", xi, yi, zi);
+      converter::error4("oofemOctantRec::giveChild invalid child index (%d,%d,%d)", xi, yi, zi);
     }
 
     return NULL;
@@ -304,7 +304,7 @@ OctreeGridLocalizer :: findTerminalContaining(oofemOctantRec *startCell, const o
         while ( !currCell->isTerminalOctant() ) {
             result = currCell->giveChildContainingPoint(& currCell, coords);
             if ( result == -2 ) {
-                OOFEM_ERROR("findTerminalContaining: internal error - octree inconsistency");
+	      converter::error("findTerminalContaining: internal error - octree inconsistency");
             }
         }
 
@@ -394,11 +394,11 @@ OctreeGridLocalizer :: buildOctreeDataStructure(int nodeType)
     // determine root size
     rootSize = 0.0;
     for ( i = 1; i <= 3; i++ ) {
-        rootSize = 1.00001 * max( rootSize, maxc.at(i) - minc.at(i) );
+      rootSize = 1.00001 * std::max( rootSize, maxc.at(i) - minc.at(i) );
     }
 
     // check for degenerated grid
-    resolutionLimit = min(1.e-3, rootSize / 1.e6);
+    resolutionLimit = std::min(1.e-3, rootSize / 1.e6);
     for ( i = 1; i <= 3; i++ ) {
         if ( ( maxc.at(i) - minc.at(i) ) > resolutionLimit ) {
             this->octreeMask.at(i) = 1;
@@ -447,7 +447,7 @@ OctreeGridLocalizer :: buildOctreeDataStructure(int nodeType)
     this->giveMaxTreeDepthFrom(this->rootCell, treeDepth);
     // compute processor time used by the program
     long nsec = ( ec - sc ) / CLOCKS_PER_SEC;
-    OOFEM_LOG_INFO("Octree init [depth %d in %lds]\n", treeDepth, nsec);
+    printf("Octree init [depth %d in %lds]\n", treeDepth, nsec);
 
     return 1;
 }
@@ -513,7 +513,7 @@ OctreeGridLocalizer :: insertNodeIntoOctree(oofemOctantRec *rootCell, int nodeNu
         // find child containing new node
         result = currCell->giveChildContainingPoint(& currCell, coords);
         if ( result != 1 ) {
-            OOFEM_ERROR("insertNodeIntoOctree: internal error - octree inconsistency");
+	  converter::error("insertNodeIntoOctree: internal error - octree inconsistency");
         }
     }
 
@@ -616,7 +616,7 @@ void
 OctreeGridLocalizer :: giveMaxTreeDepthFrom(oofemOctantRec *root, int &maxDepth)
 {
     int i, j, k, depth = this->giveCellDepth(root);
-    maxDepth = max(maxDepth, depth);
+    maxDepth = std::max(maxDepth, depth);
 
     for ( i = 0; i <= octreeMask.at(1); i++ ) {
         for ( j = 0; j <= octreeMask.at(2); j++ ) {

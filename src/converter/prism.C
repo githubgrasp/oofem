@@ -315,7 +315,7 @@ int Prism::giveCornerSwitches(oofem::IntArray& switches, const oofem::FloatArray
             return 0;
         }
     } else {
-            OOFEM_ERROR("No periodicity detected.\n");
+      converter::error("No periodicity detected.\n");
             return 0;
     }
 }
@@ -499,7 +499,7 @@ int Prism::giveEdgeSwitches(oofem::IntArray& switches, const oofem::FloatArray& 
             return 0;
         }
     } else {
-        OOFEM_ERROR("No periodicity detected\n");
+      converter::error("No periodicity detected\n");
         return 0;
     }
 }
@@ -846,7 +846,7 @@ void Prism :: findOutsiders(oofem::FloatArray &boundaries)
     boundaryNumber = -1;
     for ( int i = 0; i < this->grid->giveNumberOfLatticeBeams(); i++ ) {
       outsideFlag = 0;
-      this->grid->givelatticeBeam(i + 1)->giveLocalVertices(nodes);
+      this->grid->giveLatticeBeam(i + 1)->giveLocalVertices(nodes);
       if ( (this->grid->giveReinforcementNode( nodes.at(1) )->giveOutsideFlag() == 1 &&
 	    this->grid->giveReinforcementNode( nodes.at(2) )->giveOutsideFlag() == 0 ) ||
 	   (this->grid->giveReinforcementNode( nodes.at(1) )->giveOutsideFlag() == 0 &&
@@ -902,14 +902,14 @@ void Prism :: findOutsiders(oofem::FloatArray &boundaries)
 		 this->grid->giveReinforcementNode( nodes.at(2) )->giveOutsideFlag() == 2 ) {
 	outsideFlag = 3;
       }
-      this->grid->givelatticeBeam(i + 1)->setOutsideFlag(outsideFlag);
+      this->grid->giveLatticeBeam(i + 1)->setOutsideFlag(outsideFlag);
     }
     
     //link elements
     boundaryNumber = -1;
     for ( int i = 0; i < this->grid->giveNumberOfLatticeLinks(); i++ ) {
       outsideFlag = 0;
-      this->grid->givelatticeLink(i + 1)->giveLocalVertices(nodes);
+      this->grid->giveLatticeLink(i + 1)->giveLocalVertices(nodes);
       if ( (this->grid->giveReinforcementNode( nodes.at(1) )->giveOutsideFlag() == 1 &&
 	    this->grid->giveDelaunayVertex( nodes.at(2) )->giveOutsideFlag() == 0 ) ||
 	   (this->grid->giveReinforcementNode( nodes.at(1) )->giveOutsideFlag() == 0 &&
@@ -960,7 +960,7 @@ void Prism :: findOutsiders(oofem::FloatArray &boundaries)
 		 this->grid->giveDelaunayVertex( nodes.at(2) )->giveOutsideFlag() == 2 ) {
 	outsideFlag = 3;
       }
-      this->grid->givelatticeLink(i + 1)->setOutsideFlag(outsideFlag);
+      this->grid->giveLatticeLink(i + 1)->setOutsideFlag(outsideFlag);
     }
   }
     
@@ -1002,7 +1002,7 @@ void Prism :: findOutsiders(oofem::FloatArray &boundaries)
 		periodicNode = * nodeSet.begin();
 	      }else {
 		newCoords.printYourself();
-		OOFEM_ERROR2( "Could not find periodic node for delaunay elements. Node set is %d", nodeSet.size() );
+		converter::errorf( "Could not find periodic node for delaunay elements. Node set is %d", nodeSet.size() );
 	      }
 	      this->grid->giveDelaunayVertex( nodes.at(m + 1) )->setPeriodicNode(periodicNode);
 	      this->grid->giveDelaunayVertex( nodes.at(m + 1) )->setLocation(location);
@@ -1069,7 +1069,7 @@ void Prism :: findOutsiders(oofem::FloatArray &boundaries)
 		} else {
 		  newCoords.printYourself();
 		  newNodes.at(1) = 0;
-		  OOFEM_ERROR2( "Could not find periodic node of cross-section elements of delaunay elements. Node set is %d", nodeSet.size() );
+		  converter::errorf( "Could not find periodic node of cross-section elements of delaunay elements. Node set is %d", nodeSet.size() );
 		  break;
 		}
 	      }
@@ -1096,9 +1096,9 @@ void Prism :: findOutsiders(oofem::FloatArray &boundaries)
     //Beam elements
     periodicNode = 0;
     for ( int i = 0; i < this->grid->giveNumberOfLatticeBeams(); i++ ) {
-      if (this->grid->givelatticeBeam(i + 1)->giveOutsideFlag() != 1 ) {
-	if (this->grid->givelatticeBeam(i + 1)->giveOutsideFlag() == 2 ) {
-	  this->grid->givelatticeBeam(i + 1)->giveLocalVertices(nodes);
+      if (this->grid->giveLatticeBeam(i + 1)->giveOutsideFlag() != 1 ) {
+	if (this->grid->giveLatticeBeam(i + 1)->giveOutsideFlag() == 2 ) {
+	  this->grid->giveLatticeBeam(i + 1)->giveLocalVertices(nodes);
 	  location = 0;
 	  for ( int m = 0; m < 2; m++ ) {
 	    if (this->grid->giveReinforcementNode( nodes.at(m + 1) )->giveOutsideFlag() == 1 ||
@@ -1123,7 +1123,7 @@ void Prism :: findOutsiders(oofem::FloatArray &boundaries)
 	      this->grid->giveReinforcementNode(periodicNode)->giveLocalLines(lineCandidates);
 	      oofem::IntArray mirrorNodes(2);
 	      for ( int k = 0; k < lineCandidates.giveSize(); k++ ) {
-		this->grid->givelatticeBeam( lineCandidates.at(k + 1) )->giveLocalVertices(mirrorNodes);
+		this->grid->giveLatticeBeam( lineCandidates.at(k + 1) )->giveLocalVertices(mirrorNodes);
 		for ( int z = 0; z < 2; z++ ) {
 		  this->grid->giveReinforcementNode( mirrorNodes.at(z + 1) )->giveCoordinates(mirrorCoords);
 		  location = this->giveSwitches(switches, mirrorCoords);
@@ -1134,7 +1134,7 @@ void Prism :: findOutsiders(oofem::FloatArray &boundaries)
 		       fabs( mirrorCoords.at(2) - coordsInside.at(2) ) <this->grid->giveTol() &&
 		       fabs( mirrorCoords.at(3) - coordsInside.at(3) ) <this->grid->giveTol() ) {
 		    //Found mirror element
-		    this->grid->givelatticeBeam(i + 1)->setPeriodicElement( lineCandidates.at(k + 1) );
+		    this->grid->giveLatticeBeam(i + 1)->setPeriodicElement( lineCandidates.at(k + 1) );
 		    break;
 		  }
 		}
@@ -1151,9 +1151,9 @@ void Prism :: findOutsiders(oofem::FloatArray &boundaries)
                 
     //Link elements
     for ( int i = 0; i < this->grid->giveNumberOfLatticeLinks(); i++ ) {
-      if (this->grid->givelatticeLink(i + 1)->giveOutsideFlag() != 1 ) {
-	if (this->grid->givelatticeLink(i + 1)->giveOutsideFlag() == 2 ) {
-	  this->grid->givelatticeLink(i + 1)->giveLocalVertices(nodes);
+      if (this->grid->giveLatticeLink(i + 1)->giveOutsideFlag() != 1 ) {
+	if (this->grid->giveLatticeLink(i + 1)->giveOutsideFlag() == 2 ) {
+	  this->grid->giveLatticeLink(i + 1)->giveLocalVertices(nodes);
 	  location = 0;
                     
 	  int m=0;
@@ -1177,7 +1177,7 @@ void Prism :: findOutsiders(oofem::FloatArray &boundaries)
 	    this->grid->giveReinforcementNode(periodicNode)->giveLocalLinks(lineCandidates);
 	    oofem::IntArray mirrorNodes(2);
 	    for ( int k = 0; k < lineCandidates.giveSize(); k++ ) {
-	      this->grid->givelatticeLink( lineCandidates.at(k + 1) )->giveLocalVertices(mirrorNodes);
+	      this->grid->giveLatticeLink( lineCandidates.at(k + 1) )->giveLocalVertices(mirrorNodes);
 	      for ( int z = 0; z < 2; z++ ) {
 		if (z==0) {
 		  this->grid->giveReinforcementNode( mirrorNodes.at(z + 1) )->giveCoordinates(mirrorCoords);}
@@ -1190,7 +1190,7 @@ void Prism :: findOutsiders(oofem::FloatArray &boundaries)
 		     fabs( mirrorCoords.at(2) - coordsInside.at(2) ) <this->grid->giveTol() &&
 		     fabs( mirrorCoords.at(3) - coordsInside.at(3) ) <this->grid->giveTol() ) {
 		  //Found mirror element
-		  this->grid->givelatticeLink(i + 1)->setPeriodicElement( lineCandidates.at(k + 1) );
+		  this->grid->giveLatticeLink(i + 1)->setPeriodicElement( lineCandidates.at(k + 1) );
 		  break;
 		}
 	      }
@@ -1211,7 +1211,7 @@ void Prism :: findOutsiders(oofem::FloatArray &boundaries)
 	      periodicNode = * nodeSet.begin();
 	    } else {
 	      newCoords.printYourself();
-	      OOFEM_ERROR2( "Could not find periodic node for link elments. Node set is %d", nodeSet.size() );
+	      converter::errorf( "Could not find periodic node for link elments. Node set is %d", nodeSet.size() );
 	    }
 	    this->grid->giveDelaunayVertex( nodes.at(m + 1) )->setPeriodicNode(periodicNode);
 	    this->grid->giveDelaunayVertex( nodes.at(m + 1) )->setLocation(location);
@@ -1223,7 +1223,7 @@ void Prism :: findOutsiders(oofem::FloatArray &boundaries)
 	    this->grid->giveDelaunayVertex(periodicNode)->giveLocalLinks(lineCandidates);
 	    oofem::IntArray mirrorNodes(2);
 	    for ( int k = 0; k < lineCandidates.giveSize(); k++ ) {
-	      this->grid->givelatticeLink( lineCandidates.at(k + 1) )->giveLocalVertices(mirrorNodes);
+	      this->grid->giveLatticeLink( lineCandidates.at(k + 1) )->giveLocalVertices(mirrorNodes);
 	      for ( int z = 0; z < 2; z++ ) {
 		if (z==0) {
 		  this->grid->giveReinforcementNode( mirrorNodes.at(z + 1) )->giveCoordinates(mirrorCoords);}
@@ -1236,7 +1236,7 @@ void Prism :: findOutsiders(oofem::FloatArray &boundaries)
 		     fabs( mirrorCoords.at(2) - coordsInside.at(2) ) <this->grid->giveTol() &&
 		     fabs( mirrorCoords.at(3) - coordsInside.at(3) ) < this->grid->giveTol() ) {
 		  //Found mirror element
-		  this->grid->givelatticeLink(i + 1)->setPeriodicElement( lineCandidates.at(k + 1) );
+		  this->grid->giveLatticeLink(i + 1)->setPeriodicElement( lineCandidates.at(k + 1) );
 		  break;
 		}
 	      }
@@ -1296,7 +1296,7 @@ void Prism :: findOutsiders(oofem::FloatArray &boundaries)
 	      if ( nodeSet.size() == 1 ) { //Found nodes
 		periodicNode = * nodeSet.begin();
 	      } else {
-		OOFEM_ERROR2( "Could not find periodic node. Node set is %d", nodeSet.size() );
+		converter::errorf( "Could not find periodic node. Node set is %d", nodeSet.size() );
 	      }
 	      this->grid->giveDelaunayVertex( nodes.at(k + 1) )->setPeriodicNode(periodicNode);
 	      this->grid->giveDelaunayVertex( nodes.at(k + 1) )->setLocation(location);
@@ -1329,7 +1329,7 @@ void Prism :: findOutsiders(oofem::FloatArray &boundaries)
 		if ( nodeSet.size() == 1 ) { //Found nodes
 		  periodicNode = * nodeSet.begin();
 		} else {
-		  OOFEM_ERROR2( "Could not find periodic node for voronoi lines. Node set is %d", nodeSet.size() );
+		  converter::errorf( "Could not find periodic node for voronoi lines. Node set is %d", nodeSet.size() );
 		}
 		this->grid->giveVoronoiVertex( nodes.at(m + 1) )->setPeriodicNode(periodicNode);
 		this->grid->giveVoronoiVertex( nodes.at(m + 1) )->setLocation(location);
@@ -1396,7 +1396,7 @@ void Prism :: findOutsiders(oofem::FloatArray &boundaries)
 		if ( nodeSet.size() == 1 ) { //Found nodes
 		  newNodes.at(m + 1) = * nodeSet.begin();
 		} else {
-		  OOFEM_ERROR2( "Could not find periodic node. Node set is %d", nodeSet.size() );
+		  converter::errorf( "Could not find periodic node. Node set is %d", nodeSet.size() );
 		}
 	      }
 	      this->grid->giveDelaunayVertex( newNodes.at(1) )->giveLocalLines(lineCandidates);

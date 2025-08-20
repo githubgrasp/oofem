@@ -69,7 +69,8 @@ public:
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "Ellipsoid"; }
 
-    void initializeFrom(ConverterInputRecord &ir);
+
+    void initializeFrom(ConverterInputRecord &ir) override;
   
   // to know whether a point is inside the ellipsoid
   // 1 means inside , 0 outisde , 2 in the ITZ (if specified)

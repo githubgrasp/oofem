@@ -143,7 +143,7 @@ private:
     std::vector< Line * >voronoiLineList;
     
   //  AList< Fibre > *fibreList;
-    std::vector< Line * >fibreList;
+    std::vector< Fibre * >fibreList;
 
   // AList< Tetra > *delaunayTetraList;
     std::vector< Tetra * >delaunayTetraList;
@@ -212,9 +212,9 @@ public:
     
     int giveRandomInteger() { return this->randomInteger; }
 
-    void giveVoronoiPOVOutput(char *filename);
+    void giveVoronoiPOVOutput(const std::string& filename);
 
-    void giveDelaunayPOVOutput(char *filename);
+    void giveDelaunayPOVOutput(const std::string& filename);
 
     void giveVoronoiCellVTKOutput(FILE *outputStream);
 
@@ -258,8 +258,8 @@ public:
 
 
     Line *giveVoronoiLine(int n);
-    Line *givelatticeLink(int n);
-    Line * givelatticeBeam(int n);
+    Line *giveLatticeLink(int n);
+    Line * giveLatticeBeam(int n);
     Vertex *giveReinforcementNode(int n);
     Vertex *giveInterNode(int n);
     
@@ -276,7 +276,7 @@ public:
     void orderDelaunayCrossSectionVertices(int elementNumber);
 
 
-    int instanciateYourself(ConverterDataReader *dr, char nodeFileName[], char delaunayFileName[], char voronoiFileName[]);
+    int instanciateYourself(ConverterDataReader *dr, const char nodeFileName[], const char delaunayFileName[], const char voronoiFileName[]);
 
     double ran1(long *idum);
 
@@ -350,105 +350,104 @@ public:
     void setInclusion(int i, Inclusion *obj);
     
     void setFibre(int i, Fibre *obj);
-    void setlatticeLink(int i,Line *obj);
-    void setlatticeBeam(int i,Line *obj);
-    void setreinforcementNode(int i,Vertex *obj);
-    void setinterNode(int i,Vertex *obj);
+    void setLatticeLink(int i,Line *obj);
+    void setLatticeBeam(int i,Line *obj);
+    void setReinforcementNode(int i,Vertex *obj);
+    void setInterNode(int i,Vertex *obj);
 
 
     const char *giveClassName() const { return "Grid"; }
 
-    void giveOutput(char *fileName);
+    void giveOutput(const std::string& fileName);
 
-    void giveOofemOutput(char *fileName);
+    void giveOofemOutput(const std::string& fileName);
 
-    void giveVtkOutput(char *fileName);
-    void giveVtkOutput2(char *fileName, int nb_of_mt );// alternative function to obtain VTK files for each material
+    void giveVtkOutput(const std::string& fileName);
+    void giveVtkOutput2(const std::string& fileName, int nb_of_mt );// alternative function to obtain VTK files for each material
     
-    void giveVtkOutputTetra(char *fileName, int nb_of_mt);
+    void giveVtkOutputTetra(const std::string& fileName, int nb_of_mt);
     
-    void givePOVOutput(char *fileName);
+    void givePOVOutput(const std::string& fileName);
 
+    void give3DSMOutput(const std::string& fileName);
 
-    void give3DSMOutput(char *fileName);
+    void give3DSMTMOutput(const std::string& fileName);
 
-    void give3DSMTMOutput(char *fileName);
+    void give3DPeriodicSMTMOutput(const std::string& fileName);
 
-    void give3DPeriodicSMTMOutput(char *fileName);
+    void give3DTMOutput(const std::string& fileName);
 
-    void give3DTMOutput(char *fileName);
+    void give3DPeriodicSMOutput(const std::string& fileName);
 
-    void give3DPeriodicSMOutput(char *fileName);
+    void give3DPeriodicTMOutput(const std::string& fileName);
 
-    void give3DPeriodicTMOutput(char *fileName);
+    void give3DPeriodicPoreTMOutput(const std::string& fileName);
 
-    void give3DPeriodicPoreTMOutput(char *fileName);
+    void give3DPeriodicPoreSMOutput(const std::string& fileName);
 
-    void give3DPeriodicPoreSMOutput(char *fileName);
+    void give3DPeriodicPoreSMTMOutput(const std::string& fileName);
 
-    void give3DPeriodicPoreSMTMOutput(char *fileName);
+    void give3DBentoniteSMOutput(const std::string& fileName);
 
-    void give3DBentoniteSMOutput(char *fileName);
+    void give3DBentoniteTMOutput(const std::string& fileName);
 
-    void give3DBentoniteTMOutput(char *fileName);
+    void give3DBentoniteCoupledOutput(const std::string& fileName);
 
-    void give3DBentoniteCoupledOutput(char *fileName);
+    void give3DFPZOutput(const std::string& fileName);
 
-    void give3DFPZOutput(char *fileName);
-
-    void give3DFPZFibreOutput(char *fileName);
+    void give3DFPZFibreOutput(const std::string& fileName);
 
     //Analysis to test if single fibre solution can be reproduced
-    void give3DFibreBenchmarkOutput(char *fileName);
+    void give3DFibreBenchmarkOutput(const std::string& fileName);
     
     //Analysis for Concreep paper
-    void give3DWongOutput(char *fileName);
+    void give3DWongOutput(const std::string& fileName);
 
     //SM mesh for Cantilver benchmark of 3D Lattice paper
-    void give3DCantileverSMOutput(char *fileName);
+    void give3DCantileverSMOutput(const std::string& fileName);
 
     //TM mesh for Cantilver benchmark of 3D Lattice paper for CMAME
-    void give3DCantileverTMOutput(char *fileName);
+    void give3DCantileverTMOutput(const std::string& fileName);
 
     //TM mesh for extra Cantilver benchmark of 3D Lattice paper for CMAME
-    void give3DCantileverTMExtraOutput(char *fileName);
+    void give3DCantileverTMExtraOutput(const std::string& fileName);
 
     //SMTM mesh for Cantilver benchmark of 3D Lattice paper for CMAME
-    void give3DCantileverSMTMOutput(char *fileName);
+    void give3DCantileverSMTMOutput(const std::string& fileName);
 
-    void give3DSphereOutput(char *fileName);
+    void give3DSphereOutput(const std::string& fileName);
 
-    void give3DCylinderOutput(char *fileName);
+    void give3DCylinderOutput(const std::string& fileName);
 
     //Periodic SM mesh for tetrahedra
-    void give3DPeriodicTetraSMOutput(char *fileName);
+    void give3DPeriodicTetraSMOutput(const std::string& fileName);
 
     //Random SM mesh for tetrahedra
-    void  give3DTetraSMOutput(char *fileName);
+    void  give3DTetraSMOutput(const std::string& fileName);
 
     //Periodic SM mesh for reinforced concrete (concrete with tetrahedra, reinforcement with beams, bond with link elements)
-    void give3DRCPeriodicSMOutput(char *fileName);
+    void give3DRCPeriodicSMOutput(const std::string& fileName);
 
     //Alternative periodic SM mesh for reinforced concrete (concrete with tetrahedra, reinforcement with beams, bond with link elements). Hanging nodes are used.
-    void give3DRCPeriodicSMOutput2(char *fileName);
+    void give3DRCPeriodicSMOutput2(const std::string& fileName);
 
     //Random SM mesh for reinforced concrete
-    void give3DRCSMOutput(char *fileName);
+    void give3DRCSMOutput(const std::string& fileName);
 
     //SM mesh direct tension
-    void give3DTensionOutput(char *fileName);
+    void give3DTensionOutput(const std::string& fileName);
 
     //Random SM mesh for GopSha experiment
-    void give3DGopShaOutput(char *fileName);
+    void give3DGopShaOutput(const std::string& fileName);
 
     //Random SM mesh for Kupfer experiment
-    void give3DKupferOutput(char *fileName);
+    void give3DKupferOutput(const std::string& fileName);
 
     //Random SM mesh for Imran experiment
-    void give3DImranOutput(char *fileName);
+    void give3DImranOutput(const std::string& fileName);
 
     //Random SM mesh for Notch conference
-    void give3DNotchOutput(char *fileName);
+    void give3DNotchOutput(const std::string& fileName);
   
     double normalCdfInverse(double cdf, double a, double b);
 

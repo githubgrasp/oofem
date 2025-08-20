@@ -35,7 +35,7 @@
 #include <string>
 #include <algorithm>
 #include <cctype>
-#include "generatorinputrecord.h"
+#include "converterinputrecord.h"
 
 void
 ConverterInputRecord::giveOptionalField(int &answer, InputFieldType id)

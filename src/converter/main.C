@@ -8,8 +8,7 @@
 #include "convertertxtdatareader.h"
 #include "convertertxtinputrecord.h"
 #include "converterinputrecord.h"
-#include "generatorinputrecord.h"
-#include "generatorerror.h"
+#include "convertererror.h"
 
 #include "vertex.h"
 #include "grid.h"
@@ -38,7 +37,7 @@ int main(int argc, char *argv[]) {
     // Set output file name from first line of control file
     const std::string outName = dr.giveOutputFileName();
     if (outName.empty()) {
-        generator::error("Output filename missing in first line of input file");
+        converter::error("Output filename missing in first line of input file");
     }
 
     clock_t start = std::clock();
@@ -51,7 +50,7 @@ int main(int argc, char *argv[]) {
     grid->generateOutput();
 
     // If your Grid::giveOutput expects a C string filename:
-    grid->giveOutput(const_cast<char*>(outName.c_str()));
+    grid->giveOutput(outName);
 
     std::printf("Conversion complete\n");
 

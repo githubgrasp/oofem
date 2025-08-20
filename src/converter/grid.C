@@ -1,3 +1,4 @@
+#include "converterlistutils.h"
 #include "grid.h"
 #include "ellipsoid.h"
 #include "vertex.h"
@@ -286,7 +287,7 @@ void Grid :: resolveMacroType(const std::string& name)
     return;
 }
 
-int Grid :: instanciateYourself(ConverterDataReader *dr, char nodeFileName[], char delaunayFileName[], char voronoiFileName[])
+int Grid :: instanciateYourself(ConverterDataReader *dr, const char nodeFileName[], const char delaunayFileName[], const char voronoiFileName[])
 {
 
     int i, num;
@@ -488,27 +489,52 @@ int Grid :: instanciateYourself(ConverterDataReader *dr, char nodeFileName[], ch
     //================
     // read nodes
     //===============
-    vertexList->growTo(nvertex);
+    /* vertexList->growTo(nvertex); */
+    /* for ( i = 0; i < nvertex; i++ ) { */
+    /*     auto &irVertexRec = dr->giveInputRecord(ConverterDataReader :: CIR_vertexRec, i + 1); */
+
+    /*     IR_GIVE_RECORD_KEYWORD_FIELD(irVertexRec, name, num, MAX_NAME_LENGTH); */
+
+    /*     ( vertex = ( Vertex * ) ( Vertex(num, this).ofType() ) )->initializeFrom(irVertexRec); */
+
+    /*     if ( ( num < 1 ) || ( num > nvertex ) ) { */
+    /*         converter::errorf("instanciateYourself: Invalid vertex number (num=%d)", num); */
+    /*     } */
+
+    /*     if ( !vertexList->includes(num) ) { */
+    /*         setVertex(num, vertex); */
+    /*     } else { */
+    /*         converter::errorf("instanciateYourself: Vertex entry already exist (num=%d)", num); */
+    /*     } */
+    /*     irVertexRec.finish(); */
+    /* } */
+
+
+    vertexList.resize(nvertex, nullptr);
     for ( i = 0; i < nvertex; i++ ) {
-        auto &irVertexRec = dr->giveInputRecord(ConverterDataReader :: CIR_vertexRec, i + 1);
+        auto &irVertexRec = dr->giveInputRecord(ConverterDataReader::CIR_vertexRec, i + 1);
 
-        IR_GIVE_RECORD_KEYWORD_FIELD(irVertexRec, name, num, MAX_NAME_LENGTH);
+        std::string name;
+        int num = 0;
+        IR_GIVE_RECORD_KEYWORD_FIELD(irVertexRec, name, num);
 
-        ( vertex = ( Vertex * ) ( Vertex(num, this).ofType() ) )->initializeFrom(irVertexRec);
-
-        if ( ( num < 1 ) || ( num > nvertex ) ) {
-            converter::errorf("instanciateYourself: Invalid vertex number (num=%d)", num);
+        if ( num < 1 || num > nvertex ) {
+            std::cerr << "instanciateYourself: Invalid vertex number (num=" << num << ")\n";
+            std::exit(EXIT_FAILURE);
         }
 
-        if ( !vertexList->includes(num) ) {
-            setVertex(num, vertex);
-        } else {
-            converter::errorf("instanciateYourself: Vertex entry already exist (num=%d)", num);
+        if ( converter::includes1(vertexList, num) ) {
+            std::cerr << "instanciateYourself: Curve entry already exists (num=" << num << ")\n";
+            std::exit(EXIT_FAILURE);
         }
+
+        Vertex *curve = new Vertex(num, this);
+        vertex->initializeFrom(irVertexRec);
+        setVertex(num, curve);
         irVertexRec.finish();
     }
 
-
+    
 
 /* // Before the loop: make room for 1..nvertex (index 0 unused) */
 /* vertexList.assign(nvertex, nullptr); */
@@ -537,7 +563,7 @@ int Grid :: instanciateYourself(ConverterDataReader *dr, char nodeFileName[], ch
 
     curveList.resize(ncurve, nullptr);
     for ( i = 0; i < ncurve; i++ ) {
-        auto &irCurveRec = dr->giveInputRecord(GeneratorDataReader::GIR_curveRec, i + 1);
+        auto &irCurveRec = dr->giveInputRecord(ConverterDataReader::CIR_curveRec, i + 1);
 
         std::string name;
         int num = 0;
@@ -548,7 +574,7 @@ int Grid :: instanciateYourself(ConverterDataReader *dr, char nodeFileName[], ch
             std::exit(EXIT_FAILURE);
         }
 
-        if ( generator::includes1(curveList, num) ) {
+        if ( converter::includes1(curveList, num) ) {
             std::cerr << "instanciateYourself: Curve entry already exists (num=" << num << ")\n";
             std::exit(EXIT_FAILURE);
         }
@@ -589,7 +615,7 @@ int Grid :: instanciateYourself(ConverterDataReader *dr, char nodeFileName[], ch
 
     surfaceList.resize(nsurface, nullptr);
     for ( i = 0; i < nsurface; i++ ) {
-        auto &irSurfaceRec = dr->giveInputRecord(GeneratorDataReader::GIR_surfaceRec, i + 1);
+        auto &irSurfaceRec = dr->giveInputRecord(ConverterDataReader::CIR_surfaceRec, i + 1);
         std::string name;
         int num = 0;
         IR_GIVE_RECORD_KEYWORD_FIELD(irSurfaceRec, name, num);
@@ -599,7 +625,7 @@ int Grid :: instanciateYourself(ConverterDataReader *dr, char nodeFileName[], ch
             std::exit(EXIT_FAILURE);
         }
 
-        if ( generator::includes1(surfaceList, num) ) {
+        if ( converter::includes1(surfaceList, num) ) {
             std::cerr << "instanciateYourself: Curve entry already exists (num=" << num << ")\n";
             std::exit(EXIT_FAILURE);
         }
@@ -639,7 +665,7 @@ int Grid :: instanciateYourself(ConverterDataReader *dr, char nodeFileName[], ch
     regionList.resize(nregion, nullptr);
 
     for (int i = 0; i < nregion; ++i) {
-        auto &irRegionRec = dr->giveInputRecord(GeneratorDataReader::GIR_regionRec, i + 1);
+        auto &irRegionRec = dr->giveInputRecord(ConverterDataReader::CIR_regionRec, i + 1);
 
         std::string name;
         int num = 0;
@@ -649,7 +675,7 @@ int Grid :: instanciateYourself(ConverterDataReader *dr, char nodeFileName[], ch
             std::cerr << "instanciateYourself: Invalid region number (num=" << num << ")\n";
             std::exit(EXIT_FAILURE);
         }
-        if ( generator::includes1(regionList, num) ) {
+        if ( converter::includes1(regionList, num) ) {
             std::cerr << "instanciateYourself: Region entry already exists (num=" << num << ")\n";
             std::exit(EXIT_FAILURE);
         }
@@ -660,7 +686,7 @@ int Grid :: instanciateYourself(ConverterDataReader *dr, char nodeFileName[], ch
         } else if ( name == "cylinder" ) {
             r = new Cylinder(num, this);
         } else if ( name == "bsphere" ) {
-            r = new Sphere(num, this);
+            r = new BoundarySphere(num, this);
         } else {
             std::cerr << "instanciateYourself: Unknown region type '" << name << "'\n";
             std::exit(EXIT_FAILURE);
@@ -725,12 +751,10 @@ int Grid :: instanciateYourself(ConverterDataReader *dr, char nodeFileName[], ch
     /* } */
 
 
-
-
     inclusionList.resize(ninclusion, nullptr);
 
     for (int i = 0; i < ninclusion; ++i) {
-        auto &irInclusionRec = dr->giveInputRecord(GeneratorDataReader::GIR_inclusionRec, i + 1);
+        auto &irInclusionRec = dr->giveInputRecord(ConverterDataReader::CIR_inclusionRec, i + 1);
 
         std::string name;
         int num = 0;
@@ -743,7 +767,7 @@ int Grid :: instanciateYourself(ConverterDataReader *dr, char nodeFileName[], ch
         }
 
         // 2) duplicate check
-        if ( generator::includes1(inclusionList, num) ) {
+        if ( converter::includes1(inclusionList, num) ) {
             std::cerr << "instanciateYourself: Inclusion entry already exists (num=" << num << ")\n";
             std::exit(EXIT_FAILURE);
         }
@@ -843,18 +867,64 @@ int Grid :: instanciateYourself(ConverterDataReader *dr, char nodeFileName[], ch
     vertexField >> junk;
     vertexField >> nDelaunayVertices;
 
-    delaunayVertexList->growTo(nDelaunayVertices);
-    for ( int i = 0; i < nDelaunayVertices; i++ ) {
-        vertexField >> coords.at(1) >> coords.at(2) >> coords.at(3);
-        if ( !delaunayVertexList->includes(i + 1) ) {
-            delaunayVertex = ( Vertex * ) ( Vertex(i + 1, this).ofType() );
-            delaunayVertex->setCoordinates(coords);
-            setDelaunayVertex(i + 1, delaunayVertex);
-        } else {
-            printf("instanciateYourself: DelaunayVertex entry already exist (num=%d)", i + 1);
-            exit(0);
-        }
+
+delaunayVertexList.resize(nDelaunayVertices, nullptr);
+for (int i = 0; i < nDelaunayVertices; ++i) {
+    // read 3 coords
+    double x, y, z;
+    if (!(vertexField >> x >> y >> z)) {
+        std::cerr << "instanciateYourself: failed to read coordinates for Delaunay vertex "
+                  << (i + 1) << "\n";
+        std::exit(EXIT_FAILURE);
     }
+
+    if (converter::includes1(delaunayVertexList, i + 1)) {
+        std::cerr << "instanciateYourself: DelaunayVertex entry already exists (num="
+                  << (i + 1) << ")\n";
+        std::exit(EXIT_FAILURE);
+    }
+
+    // create and store vertex
+    auto *v = new Vertex(i + 1, this);
+    oofem::FloatArray coords(3);  // or reuse an existing FloatArray 'coords'
+    coords.at(1) = x; coords.at(2) = y; coords.at(3) = z;
+    v->setCoordinates(coords);
+    setDelaunayVertex(i + 1, v);  // internally uses converter::put1 / put1_replace
+}
+    
+
+    /* delaunayVertexList.resize(nDelaunayVertices, nullptr); */
+    /* for ( i = 0; i < nvertex; i++ ) { */
+    /*     vertexField >> coords.at(1) >> coords.at(2) >> coords.at(3); */
+
+    /*     if ( i+1 < 1 || i+1 > nvertex ) { */
+    /*         std::cerr << "instanciateYourself: Invalid vertex number (num=" << i+1 << ")\n"; */
+    /*         std::exit(EXIT_FAILURE); */
+    /*     } */
+
+    /*     if ( converter::includes1(delaunayVertexList, i+1) ) { */
+    /*         std::cerr << "instanciateYourself: Curve entry already exists (num=" << i+1 << ")\n"; */
+    /*         std::exit(EXIT_FAILURE); */
+    /*     } */
+
+    /*     Vertex *curve = new Vertex(i+1, this); */
+    /*     vertex->initializeFrom(irVertexRec); */
+    /*     setDelaunayVertex(i+1, vertex); */
+    /* } */
+
+    
+    /* delaunayVertexList->growTo(nDelaunayVertices); */
+    /* for ( int i = 0; i < nDelaunayVertices; i++ ) { */
+    /*     vertexField >> coords.at(1) >> coords.at(2) >> coords.at(3); */
+    /*     if ( !delaunayVertexList->includes(i + 1) ) { */
+    /*         delaunayVertex = ( Vertex * ) ( Vertex(i + 1, this).ofType() ); */
+    /*         delaunayVertex->setCoordinates(coords); */
+    /*         setDelaunayVertex(i + 1, delaunayVertex); */
+    /*     } else { */
+    /*         printf("instanciateYourself: DelaunayVertex entry already exist (num=%d)", i + 1); */
+    /*         exit(0); */
+    /*     } */
+    /* } */
 
     delaunayLocalizer->init(true);
 
@@ -877,176 +947,397 @@ int Grid :: instanciateYourself(ConverterDataReader *dr, char nodeFileName[], ch
 
       }
 
-      IntArray delaunayVertices(4);
-      delaunayField >> nDelaunayTetras; //1st Line of delaunay.dat
-      delaunayTetraList->growTo(nDelaunayTetras);
-      for ( int i = 0; i < nDelaunayTetras; i++ ) {
-	delaunayField >> delaunayVertices.at(1) >> delaunayVertices.at(2) >> delaunayVertices.at(3) >> delaunayVertices.at(4);
-	for (int k = 0; k<4;k++){
-	  delaunayVertices.at(k+1)++;
-	}
-	delaunayTetra = ( Tetra * ) ( Tetra(i + 1, this).ofType() );
-	delaunayTetra->setLocalVertices(delaunayVertices);
-	this->setDelaunayTetra(i + 1, delaunayTetra);
 
-	for (int k = 0; k<4;k++){
-	  this->giveDelaunayVertex( delaunayVertices.at(k+1) )->setLocalTetra(i + 1);
-	}
-      
-      }
-    }//end of Delaunay tetrahedra input reading
+// First value in delaunay.dat is the number of tets
+int nDelaunayTetras = 0;
+if (!(delaunayField >> nDelaunayTetras)) {
+    std::cerr << "Failed to read number of Delaunay tetrahedra.\n";
+    std::exit(EXIT_FAILURE);
+}
 
-   
-    //=========================================
-    // read Voronoi vertices
-    //======================================
-    
-    std :: ifstream voronoiField(voronoiFileName);
-    if ( !voronoiField.is_open() ) {
-        std :: cout << "In grid.C: Unable to open file " << voronoiFileName << "\n";
-        std :: exit(1);
+// 1‑based storage with nullptr padding
+delaunayTetraList.resize(nDelaunayTetras, nullptr);
+
+oofem::IntArray delaunayVertices(4); // 1..4
+for (int i = 0; i < nDelaunayTetras; ++i) {
+    int a, b, c, d;
+    if (!(delaunayField >> a >> b >> c >> d)) {
+        std::cerr << "Failed to read vertex indices for Delaunay tetra " << (i + 1) << ".\n";
+        std::exit(EXIT_FAILURE);
     }
 
+    // input is 0‑based; convert to 1‑based for internal use
+    delaunayVertices.at(1) = a + 1;
+    delaunayVertices.at(2) = b + 1;
+    delaunayVertices.at(3) = c + 1;
+    delaunayVertices.at(4) = d + 1;
+
+    // create and store the tetra
+    auto *t = new Tetra(i + 1, this);
+    t->setLocalVertices(delaunayVertices);
+    setDelaunayTetra(i + 1, t);  // should use converter::put1_replace internally
+
+    // register connectivity on each referenced vertex
+    for (int k = 1; k <= 4; ++k) {
+        const int vid = delaunayVertices.at(k);
+        auto *v = giveDelaunayVertex(vid);
+        if (!v) {
+            std::cerr << "Delaunay tetra " << (i + 1)
+                      << " references missing Delaunay vertex " << vid << ".\n";
+            std::exit(EXIT_FAILURE);
+        }
+        v->setLocalTetra(i + 1);
+    }
+ }
+    }
+
+      
+    /*   IntArray delaunayVertices(4); */
+    /*   delaunayField >> nDelaunayTetras; //1st Line of delaunay.dat */
+    /*   delaunayTetraList->growTo(nDelaunayTetras); */
+    /*   for ( int i = 0; i < nDelaunayTetras; i++ ) { */
+    /* 	delaunayField >> delaunayVertices.at(1) >> delaunayVertices.at(2) >> delaunayVertices.at(3) >> delaunayVertices.at(4); */
+    /* 	for (int k = 0; k<4;k++){ */
+    /* 	  delaunayVertices.at(k+1)++; */
+    /* 	} */
+    /* 	delaunayTetra = ( Tetra * ) ( Tetra(i + 1, this).ofType() ); */
+    /* 	delaunayTetra->setLocalVertices(delaunayVertices); */
+    /* 	this->setDelaunayTetra(i + 1, delaunayTetra); */
+
+    /* 	for (int k = 0; k<4;k++){ */
+    /* 	  this->giveDelaunayVertex( delaunayVertices.at(k+1) )->setLocalTetra(i + 1); */
+    /* 	} */
+      
+    /*   } */
+    /* }//end of Delaunay tetrahedra input reading */
+
+
+// =========================================
+// read Voronoi vertices
+// =========================================
+
+ std::ifstream voronoiField(voronoiFileName);
+ if (!voronoiField.is_open()) {
+   converter::errorf("In grid.C: Unable to open file %s", voronoiFileName);
+ }
     voronoiField.precision(16);
 
-    int nVoronoiVertices;
-    int nDelaunayLines;
-    IntArray voronoiNodes;
-    voronoiField >> junk; //1st line of voronoi.dat
-    voronoiField >> nVoronoiVertices; //2nd Line of Voronoi.dat
+    junk = 0;
+    int nVoronoiVertices = 0;
 
-    voronoiVertexList->growTo(nVoronoiVertices);
-    for ( int i = 0; i < nVoronoiVertices; i++ ) {
-        voronoiField >> coords.at(1) >> coords.at(2) >> coords.at(3);
-        voronoiVertex = ( Vertex * ) ( Vertex(i + 1, this).ofType() ); //here the coordinates are put in the list Vertex
-        voronoiVertex->setCoordinates(coords);
-        setVoronoiVertex(i + 1, voronoiVertex);
+    // First two header lines in voronoi.dat
+    if (!(voronoiField >> junk)) {
+        converter::error("Voronoi file: failed to read header line 1");
+    }
+    if (!(voronoiField >> nVoronoiVertices) || nVoronoiVertices < 0) {
+        converter::error("Voronoi file: invalid vertex count on header line 2");
     }
 
-    voronoiLocalizer->init(true);
+    // Allocate 1-based slots [1..n]
+    voronoiVertexList.resize(nVoronoiVertices, nullptr);
 
-    printf("Finished Voronoi vertices\n");
+    //    oofem::FloatArray coords(3);
+    for (int i = 0; i < nVoronoiVertices; ++i) {
+        if (!(voronoiField >> coords.at(1) >> coords.at(2) >> coords.at(3))) {
+            converter::errorf("Voronoi file: unexpected EOF reading vertex %d/%d",
+                              i + 1, nVoronoiVertices);
+        }
+
+        const int id = i + 1; // 1-based id
+
+        if (converter::includes1(voronoiVertexList, id)) {
+            converter::errorf("Voronoi vertex %d duplicated", id);
+        }
+
+        auto* v = new Vertex(id, this);
+        v->setCoordinates(coords);
+        setVoronoiVertex(id, v);
+    }
+
+    if (voronoiLocalizer) {
+        voronoiLocalizer->init(true);
+    }
+
+    std::printf("Finished Voronoi vertices (%d)\n", nVoronoiVertices);
+
+
+
+ 
+    /* //========================================= */
+    /* // read Voronoi vertices */
+    /* //====================================== */
+    
+    /* std :: ifstream voronoiField(voronoiFileName); */
+    /* if ( !voronoiField.is_open() ) { */
+    /*     std :: cout << "In grid.C: Unable to open file " << voronoiFileName << "\n"; */
+    /*     std :: exit(1); */
+    /* } */
+
+    /* voronoiField.precision(16); */
+
+    /* int nVoronoiVertices; */
+    /* int nDelaunayLines; */
+    /* IntArray voronoiNodes; */
+    /* voronoiField >> junk; //1st line of voronoi.dat */
+    /* voronoiField >> nVoronoiVertices; //2nd Line of Voronoi.dat */
+
+    /* voronoiVertexList->growTo(nVoronoiVertices); */
+    /* for ( int i = 0; i < nVoronoiVertices; i++ ) { */
+    /*     voronoiField >> coords.at(1) >> coords.at(2) >> coords.at(3); */
+    /*     voronoiVertex = ( Vertex * ) ( Vertex(i + 1, this).ofType() ); //here the coordinates are put in the list Vertex */
+    /*     voronoiVertex->setCoordinates(coords); */
+    /*     setVoronoiVertex(i + 1, voronoiVertex); */
+    /* } */
+
+    /* voronoiLocalizer->init(true); */
+
+    /* printf("Finished Voronoi vertices\n"); */
+
+
 
     //==========================
     //Read Delaunay lines
     //==========================
+    int nDelaunayLines;
     voronoiField >> nDelaunayLines; //1st line after the Voronoi nodes Coordinates
 
     int newSize, outsideFlag, boundaryTypeFlag = 0;
     oofem::FloatArray temp;
-    //int nDelaunayLines;
+
     int size;
-    IntArray delaunayNodes(2);
+    oofem::IntArray delaunayNodes(2);
     double boundaryDiameter, radius;
     oofem::FloatArray centreLine;
     int realNumber = 0;
     int edgeFlagCounter = 0;
     double area = 0;
 
-    IntArray edgeFlag( curveList->giveSize() );
+    /* oofem::IntArray edgeFlag( curveList.size1() ); */
+    /* delaunayLineList->growTo(nDelaunayLines); */
+    /* voronoiLineList->growTo(100 * nDelaunayLines); */
+    /* int voronoiLineCounter = 0; */
+    /* for ( int i = 0; i < nDelaunayLines; i++ ) { */
+    /*     voronoiField >> size; // its the first number in each series after nDelaunayLines */
+    /*     voronoiField >> delaunayNodes.at(1) >> delaunayNodes.at(2); //2nd and 3rd in that line (delaunay nodes) */
 
-    delaunayLineList->growTo(nDelaunayLines);
-    voronoiLineList->growTo(100 * nDelaunayLines);
-    int voronoiLineCounter = 0;
-    for ( int i = 0; i < nDelaunayLines; i++ ) {
-        voronoiField >> size; // its the first number in each series after nDelaunayLines
-        voronoiField >> delaunayNodes.at(1) >> delaunayNodes.at(2); //2nd and 3rd in that line (delaunay nodes)
+    /*     //Numbering: Qhull delaunay nodes start at zero. Voronoi nodes start at 1. */
+    /*     //Modify Delaunay numbering so that it starts at 1 as well. */
+    /*     for ( int m = 0; m < 2; m++ ) { */
+    /*         delaunayNodes.at(m + 1) = delaunayNodes.at(m + 1) + 1; */
+    /*     } */
+    /*     delaunayLine = ( Line * ) ( Line(i + 1, this).ofType() ); */
+    /*     delaunayLine->setVertices(delaunayNodes); */
 
-        //Numbering: Qhull delaunay nodes start at zero. Voronoi nodes start at 1.
-        //Modify Delaunay numbering so that it starts at 1 as well.
-        for ( int m = 0; m < 2; m++ ) {
-            delaunayNodes.at(m + 1) = delaunayNodes.at(m + 1) + 1;
-        }
-        delaunayLine = ( Line * ) ( Line(i + 1, this).ofType() );
-        delaunayLine->setVertices(delaunayNodes);
+    /*     this->giveDelaunayVertex( delaunayNodes.at(1) )->setLocalLine(i + 1); */
+    /*     this->giveDelaunayVertex( delaunayNodes.at(2) )->setLocalLine(i + 1); */
 
-        this->giveDelaunayVertex( delaunayNodes.at(1) )->setLocalLine(i + 1);
-        this->giveDelaunayVertex( delaunayNodes.at(2) )->setLocalLine(i + 1);
+    /*     //==================== */
+    /*     //Read Voronoi nodes */
+    /*     //==================== */
+    /*     int deleteDelaunayFlag = 0; */
+    /*     voronoiNodes.resize(size - 2); */
+    /*     for ( int k = 0; k < size - 2; k++ ) { */
+    /*         voronoiField >> voronoiNodes.at(k + 1); */
+    /*     } */
 
-        //====================
-        //Read Voronoi nodes
-        //====================
-        int deleteDelaunayFlag = 0;
-        voronoiNodes.resize(size - 2);
-        for ( int k = 0; k < size - 2; k++ ) {
-            voronoiField >> voronoiNodes.at(k + 1);
-        }
+    /*     delaunayLine->updateCrossSectionVertices(voronoiNodes); */
 
-        delaunayLine->updateCrossSectionVertices(voronoiNodes);
+    /*     //========================= */
+    /*     //Create the Voronoi lines */
+    /*     //========================= */
+    /*     oofem::IntArray nodesA(2); */
+    /*     oofem::IntArray crossSectionElements( voronoiNodes.giveSize() ); */
+    /*     for ( int m = 0; m < voronoiNodes.giveSize(); m++ ) { */
+    /*         if ( m < voronoiNodes.giveSize() - 1 ) { */
+    /*             nodesA.at(1) = voronoiNodes.at(m + 1); */
+    /*             nodesA.at(2) = voronoiNodes.at(m + 2); */
+    /*         } else if ( m == voronoiNodes.giveSize() - 1 ) { */
+    /*             nodesA.at(1) = voronoiNodes.at(m + 1); */
+    /*             nodesA.at(2) = voronoiNodes.at(1); */
+    /*         } */
 
-        //=========================
-        //Create the Voronoi lines
-        //=========================
-        IntArray nodesA(2);
-        IntArray crossSectionElements( voronoiNodes.giveSize() );
-        for ( int m = 0; m < voronoiNodes.giveSize(); m++ ) {
-            if ( m < voronoiNodes.giveSize() - 1 ) {
-                nodesA.at(1) = voronoiNodes.at(m + 1);
-                nodesA.at(2) = voronoiNodes.at(m + 2);
-            } else if ( m == voronoiNodes.giveSize() - 1 ) {
-                nodesA.at(1) = voronoiNodes.at(m + 1);
-                nodesA.at(2) = voronoiNodes.at(1);
-            }
+    /*         //It should be enough to do it for one node */
+    /*         oofem::IntArray localVoronoiLines; */
+    /*         oofem::IntArray localVertices; */
+    /*         int flag = 0; */
+    /*         if ( nodesA.at(1) != 0 ) { */
+    /*             this->giveVoronoiVertex( nodesA.at(1) )->giveLocalLines(localVoronoiLines); */
+    /*         } else if ( nodesA.at(2) != 0 ) { */
+    /*             this->giveVoronoiVertex( nodesA.at(2) )->giveLocalLines(localVoronoiLines); */
+    /*         } else { */
+    /*             printf("error: cannot have two zero nodes\n"); */
+    /*             exit(1); */
+    /*         } */
 
-            //It should be enough to do it for one node
-            IntArray localVoronoiLines;
-            IntArray localVertices;
-            int flag = 0;
-            if ( nodesA.at(1) != 0 ) {
-                this->giveVoronoiVertex( nodesA.at(1) )->giveLocalLines(localVoronoiLines);
-            } else if ( nodesA.at(2) != 0 ) {
-                this->giveVoronoiVertex( nodesA.at(2) )->giveLocalLines(localVoronoiLines);
-            } else {
-                printf("error: cannot have two zero nodes\n");
-                exit(1);
-            }
+    /*         //Check if the line already exists. */
+    /*         for ( int k = 0; k < localVoronoiLines.giveSize(); k++ ) { */
+    /*             this->giveVoronoiLine( localVoronoiLines.at(k + 1) )->giveLocalVertices(localVertices); */
+    /*             if ( ( localVertices.at(1) == nodesA.at(1) ) && ( localVertices.at(2) == nodesA.at(2) ) || */
+    /*                  ( localVertices.at(1) == nodesA.at(2) ) && ( localVertices.at(2) == nodesA.at(1) ) ) { */
+    /*                 flag = 1; */
+    /*                 this->giveVoronoiLine( localVoronoiLines.at(k + 1) )->updateCrossSectionVertices(delaunayNodes); */
+    /*                 this->giveVoronoiLine( localVoronoiLines.at(k + 1) )->updateCrossSectionElement(i + 1); */
+    /*                 delaunayLine->updateCrossSectionElement( localVoronoiLines.at(k + 1) ); */
+    /*             } */
+    /*         } */
 
-            //Check if the line already exists.
-            for ( int k = 0; k < localVoronoiLines.giveSize(); k++ ) {
-                this->giveVoronoiLine( localVoronoiLines.at(k + 1) )->giveLocalVertices(localVertices);
-                if ( ( localVertices.at(1) == nodesA.at(1) ) && ( localVertices.at(2) == nodesA.at(2) ) ||
-                     ( localVertices.at(1) == nodesA.at(2) ) && ( localVertices.at(2) == nodesA.at(1) ) ) {
-                    flag = 1;
-                    this->giveVoronoiLine( localVoronoiLines.at(k + 1) )->updateCrossSectionVertices(delaunayNodes);
-                    this->giveVoronoiLine( localVoronoiLines.at(k + 1) )->updateCrossSectionElement(i + 1);
-                    delaunayLine->updateCrossSectionElement( localVoronoiLines.at(k + 1) );
-                }
-            }
+    /*         //Generate the Voronoi line */
+    /*         if ( flag == 0 ) { */
+    /*             voronoiLine = ( Line * ) ( Line(voronoiLineCounter + 1, this).ofType() ); */
+    /*             voronoiLine->setVertices(nodesA); */
 
-            //Generate the Voronoi line
-            if ( flag == 0 ) {
-                voronoiLine = ( Line * ) ( Line(voronoiLineCounter + 1, this).ofType() );
-                voronoiLine->setVertices(nodesA);
-
-                //New function
-                voronoiLine->updateCrossSectionVertices(delaunayNodes);
-                voronoiLine->updateCrossSectionElement(i + 1);
-                this->setVoronoiLine(voronoiLineCounter + 1, voronoiLine);
-                voronoiLineCounter++;
-                delaunayLine->updateCrossSectionElement(voronoiLineCounter);
+    /*             //New function */
+    /*             voronoiLine->updateCrossSectionVertices(delaunayNodes); */
+    /*             voronoiLine->updateCrossSectionElement(i + 1); */
+    /*             this->setVoronoiLine(voronoiLineCounter + 1, voronoiLine); */
+    /*             voronoiLineCounter++; */
+    /*             delaunayLine->updateCrossSectionElement(voronoiLineCounter); */
 
 
-                //Set the Voronoi line in both Voronoi nodes. This is needed for check if line already exist.
-                //Both nodes are required since it is not determined in which order they might appear.
-                if ( nodesA.at(1) != 0 ) {
-                    this->giveVoronoiVertex( nodesA.at(1) )->setLocalLine(voronoiLineCounter);
-                }
-                if ( nodesA.at(2) != 0 ) {
-                    this->giveVoronoiVertex( nodesA.at(2) )->setLocalLine(voronoiLineCounter);
-                }
-            }
-        }
+    /*             //Set the Voronoi line in both Voronoi nodes. This is needed for check if line already exist. */
+    /*             //Both nodes are required since it is not determined in which order they might appear. */
+    /*             if ( nodesA.at(1) != 0 ) { */
+    /*                 this->giveVoronoiVertex( nodesA.at(1) )->setLocalLine(voronoiLineCounter); */
+    /*             } */
+    /*             if ( nodesA.at(2) != 0 ) { */
+    /*                 this->giveVoronoiVertex( nodesA.at(2) )->setLocalLine(voronoiLineCounter); */
+    /*             } */
+    /*         } */
+    /*     } */
 
-        this->setDelaunayLine(i + 1, delaunayLine);
+    /*     this->setDelaunayLine(i + 1, delaunayLine); */
+    /* } */
+    /* voronoiLineList->growTo(voronoiLineCounter); */
+    /* printf("Finished Voronoi lines\n"); */
+
+
+    // Optional: if you still need a per-curve flag array, keep it as a vector.
+// std::vector<int> edgeFlag(curveList.size() + 1, 0); // 1-based, ignore index 0
+
+// Delaunay lines are known up-front -> resize to exact size (1-based with nullptrs)
+delaunayLineList.resize(nDelaunayLines, nullptr);
+
+// Voronoi lines are discovered as we go -> reserve capacity only (no size change)
+voronoiLineList.reserve(100 * nDelaunayLines);
+
+int voronoiLineCounter = 0;
+
+for (int i = 0; i < nDelaunayLines; ++i) {
+    int size = 0;
+    voronoiField >> size;  // first number of the series after nDelaunayLines
+
+    // Delaunay endpoints for this edge (Qhull gives 0-based indices)
+    oofem::IntArray delaunayNodes(2);
+    voronoiField >> delaunayNodes.at(1) >> delaunayNodes.at(2);
+    // Convert to 1-based
+    delaunayNodes.at(1) += 1;
+    delaunayNodes.at(2) += 1;
+
+    // Create and store the Delaunay line (id = i+1)
+    auto* delaunayLine = new Line(i + 1, this);
+    delaunayLine->setVertices(delaunayNodes);
+
+    // Register this line at both Delaunay vertices
+    this->giveDelaunayVertex(delaunayNodes.at(1))->setLocalLine(i + 1);
+    this->giveDelaunayVertex(delaunayNodes.at(2))->setLocalLine(i + 1);
+
+    // ------------------------
+    // Read Voronoi nodes list
+    // ------------------------
+    // 'size' counts: 2 (delaunay nodes) + NvoronoiNodes
+    const int nVorNodes = size - 2;
+    oofem::IntArray voronoiNodes(nVorNodes);
+    for (int k = 0; k < nVorNodes; ++k) {
+        voronoiField >> voronoiNodes.at(k + 1);
+        // Note: Voronoi node indices are already 1-based in your format, 0 means at infinity.
     }
-    voronoiLineList->growTo(voronoiLineCounter);
-    printf("Finished Delaunay lines\n");
+
+    // Stash polygon on the Delaunay line for cross-section
+    delaunayLine->updateCrossSectionVertices(voronoiNodes);
+
+    // --------------------------------
+    // Build Voronoi edges around face
+    // --------------------------------
+    oofem::IntArray nodesA(2);
+    for (int m = 0; m < nVorNodes; ++m) {
+        // consecutive pair, wrapping at the end
+        nodesA.at(1) = voronoiNodes.at(m + 1);
+        nodesA.at(2) = (m < nVorNodes - 1) ? voronoiNodes.at(m + 2) : voronoiNodes.at(1);
+
+        // Collect candidate Voronoi lines touching one of the endpoints (prefer a non-zero node)
+        oofem::IntArray localVoronoiLines;
+        if (nodesA.at(1) != 0) {
+            this->giveVoronoiVertex(nodesA.at(1))->giveLocalLines(localVoronoiLines);
+        } else if (nodesA.at(2) != 0) {
+            this->giveVoronoiVertex(nodesA.at(2))->giveLocalLines(localVoronoiLines);
+        } else {
+            std::fprintf(stderr, "error: cannot have two zero Voronoi nodes\n");
+            std::exit(1);
+        }
+
+        // See if this Voronoi edge already exists (order-insensitive match)
+        bool exists = false;
+        for (int k = 0; k < localVoronoiLines.giveSize(); ++k) {
+            const int lid = localVoronoiLines.at(k + 1);
+            oofem::IntArray localVertices;
+            this->giveVoronoiLine(lid)->giveLocalVertices(localVertices);
+
+            const bool same =
+                (localVertices.at(1) == nodesA.at(1) && localVertices.at(2) == nodesA.at(2)) ||
+                (localVertices.at(1) == nodesA.at(2) && localVertices.at(2) == nodesA.at(1));
+
+            if (same) {
+                exists = true;
+                // Update cross-section coupling both ways
+                this->giveVoronoiLine(lid)->updateCrossSectionVertices(delaunayNodes);
+                this->giveVoronoiLine(lid)->updateCrossSectionElement(i + 1);
+                delaunayLine->updateCrossSectionElement(lid);
+                break;
+            }
+        }
+
+        // Create new Voronoi line if it doesn't exist
+        if (!exists) {
+            const int newId = ++voronoiLineCounter;
+            auto* vorLine = new Line(newId, this);
+            vorLine->setVertices(nodesA);
+
+            // Couple to the Delaunay line (cross-section)
+            vorLine->updateCrossSectionVertices(delaunayNodes);
+            vorLine->updateCrossSectionElement(i + 1);
+            delaunayLine->updateCrossSectionElement(newId);
+
+            // Store (1-based vector with helpers)
+            converter::put1_replace(voronoiLineList, newId, vorLine);
+
+            // Register this Voronoi line at its endpoints (if finite)
+            if (nodesA.at(1) != 0) {
+                this->giveVoronoiVertex(nodesA.at(1))->setLocalLine(newId);
+            }
+            if (nodesA.at(2) != 0) {
+                this->giveVoronoiVertex(nodesA.at(2))->setLocalLine(newId);
+            }
+        }
+    }
+
+    // Finally store the Delaunay line (1-based)
+    converter::put1_replace(delaunayLineList, i + 1, delaunayLine);
+}
+
+// No need to "growTo" the voronoi list—it's already sized by put1_replace.
+// If you want to compact the capacity to the actual count (purely cosmetic):
+// voronoiLineList.shrink_to_fit();
+
+std::printf("Finished Voronoi lines\n");
+
+
+
 
     //Go through all Delaunay vertices and set Voronoi nodes belonging to the cell.
     //This is needed later for VTK files. However, polyhedra are still not supported in VTK files
-    IntArray localLines;
+    oofem::IntArray localLines;
     localLines.zero();
-    IntArray crossSectionNodes;
+    oofem::IntArray crossSectionNodes;
     crossSectionNodes.zero();
     for ( int i = 0; i < nDelaunayVertices; i++ ) {
         this->giveDelaunayVertex(i + 1)->giveLocalLines(localLines);
@@ -1059,7 +1350,7 @@ int Grid :: instanciateYourself(ConverterDataReader *dr, char nodeFileName[], ch
 
     //Go through all Voronoi vertices and set Delaunay elements belonging to the cell.
     //This is needed for some coupling approaches.
-    IntArray crossSectionElements;
+    oofem::IntArray crossSectionElements;
     crossSectionElements.zero();
     for ( int i = 0; i < nVoronoiVertices; i++ ) {
         this->giveVoronoiVertex(i + 1)->giveLocalLines(localLines);
@@ -1069,33 +1360,62 @@ int Grid :: instanciateYourself(ConverterDataReader *dr, char nodeFileName[], ch
         }
     }
 
-    
-    
-    //==================================
-    // read fibres
-    //=================================
-    fibreList->growTo(nfibre);
-    printf("\n number of fibres detected : %d \n ",this->giveNumberOfFibres());
-    
-    for ( i = 0; i < nfibre; i++ ) {
-      //          printf("\n initialization of fibre number   %d \n ",i+1);
-        irFibreREc = dr->giveInputRecord(ConverterDataReader :: CIR_fibreRec, i + 1);
-        IR_GIVE_RECORD_KEYWORD_FIELD(irFibreRec, name, num, MAX_NAME_LENGTH);
-        ( fibre = ( Fibre * ) ( Fibre(num, this).ofType() ) )->initializeFrom(irFibreRec);
-        if ( ( num < 1 ) || ( num > nfibre) ) {
-            converter::errorf("instanciateYourself: Invalid fibre number (num=%d)", num);
-        }
-        if ( !fibreList->includes(num) ) {
-            
-            setFibre(num,fibre);// add to the list of fibre
-        } else {
-            printf("instanciateYourself: Fibre entry already exist (num=%d)", num);
-            exit(0);
-        }
-    
-    
-        irFibreRec.finish();
+
+
+
+// If you know nfibre up front, pre-size with nullptrs (1‑based storage via helpers still works fine):
+fibreList.resize(nfibre, nullptr);
+
+std::printf("\n number of fibres detected : %d \n", (int)fibreList.size());
+
+for (int i = 0; i < nfibre; ++i) {
+    // Read: "fibre <num>  ..." record i+1
+    auto &irFibreRec = dr->giveInputRecord(ConverterDataReader::CIR_fibreRec, i + 1);
+
+    std::string kw;
+    int num = 0;
+    irFibreRec.giveRecordKeywordField(kw, num);   // expects keyword + id (e.g., "fibre 7")
+
+    if (num < 1 || num > nfibre) {
+        converter::errorf("instanciateYourself: Invalid fibre number (num=%d)", num);
     }
+    if (converter::includes1(fibreList, num)) {
+        converter::errorf("instanciateYourself: Fibre entry already exists (num=%d)", num);
+    }
+
+    auto *fibre = new Fibre(num, this);
+    fibre->initializeFrom(irFibreRec);
+
+    // Store safely (resizes as needed and deletes any previous ptr in slot)
+    converter::put1_replace(fibreList, num, fibre);
+
+ }     
+    
+    /* //================================== */
+    /* // read fibres */
+    /* //================================= */
+    /* fibreList->growTo(nfibre); */
+    /* printf("\n number of fibres detected : %d \n ",this->giveNumberOfFibres()); */
+    
+    /* for ( i = 0; i < nfibre; i++ ) { */
+    /*   //          printf("\n initialization of fibre number   %d \n ",i+1); */
+    /*     irFibreREc = dr->giveInputRecord(ConverterDataReader :: CIR_fibreRec, i + 1); */
+    /*     IR_GIVE_RECORD_KEYWORD_FIELD(irFibreRec, name, num, MAX_NAME_LENGTH); */
+    /*     ( fibre = ( Fibre * ) ( Fibre(num, this).ofType() ) )->initializeFrom(irFibreRec); */
+    /*     if ( ( num < 1 ) || ( num > nfibre) ) { */
+    /*         converter::errorf("instanciateYourself: Invalid fibre number (num=%d)", num); */
+    /*     } */
+    /*     if ( !fibreList->includes(num) ) { */
+            
+    /*         setFibre(num,fibre);// add to the list of fibre */
+    /*     } else { */
+    /*         printf("instanciateYourself: Fibre entry already exist (num=%d)", num); */
+    /*         exit(0); */
+    /*     } */
+    
+    
+    /*     irFibreRec.finish(); */
+    /* } */
     
     //==================================
     // generation of the Lines between Reinforcements nodes (beam elements) , and between Reinf and Del vertices (links)
@@ -1105,7 +1425,7 @@ int Grid :: instanciateYourself(ConverterDataReader *dr, char nodeFileName[], ch
     int indexOfBeamElements,indexOfLinkElements,indexOfReinforcementNodes;
     int globalIndex = 0;
     int beamElementCounter=0,linkElementCounter=0;
-    IntArray beamNodes(2),linkNodes(2);
+    oofem::IntArray beamNodes(2),linkNodes(2);
     double portionOfFibre;
     oofem::FloatArray coordP1,coordP2;
     double fibre_diameter;
@@ -1116,8 +1436,8 @@ int Grid :: instanciateYourself(ConverterDataReader *dr, char nodeFileName[], ch
      for ( i = 1; i <= nfibre; i++ ) {
          
          // 0) collect info about fibre which will be added to elements
-         fibre_diameter=fibreList->at(i)->giveDiameter();
-         dir_vector=fibreList->at(i)->giveDirVector();
+       fibre_diameter=giveFibre(i)->giveDiameter();
+       dir_vector=giveFibre(i)->giveDirVector();
          
          // 1) discretization and creation of reinforcement nodes
 	 /**TODO: This has been written for the lattice generation.
@@ -1125,30 +1445,30 @@ int Grid :: instanciateYourself(ConverterDataReader *dr, char nodeFileName[], ch
 	 the Voronoi cell. For meshtype=1 where tetras are used it would be better to place 
 	 the node at the intersection with Delaunay tetrahedra of the segment crossing the delaunay tetra. 
 	 **/
-         fibreList->at(i)->discretizeYouself();
+       giveFibre(i)->discretizeYouself();
 
          // 2) creation of link and beam elements associated to the fibre
 	 
-	 numberOfReinforcementNodes = fibreList->at(i)->NbOfReinfNodes();
-         numberOfBeams=(fibreList->at(i)->NbOfReinfNodes())-1;
-	 numberOfLinks=(fibreList->at(i)->NbOfReinfNodes());
+       numberOfReinforcementNodes = giveFibre(i)->NbOfReinfNodes();
+       numberOfBeams=(giveFibre(i)->NbOfReinfNodes())-1;
+	 numberOfLinks=(giveFibre(i)->NbOfReinfNodes());
          
-         indexOfLinkElements=latticeLinkList->giveSize();
-         indexOfBeamElements=latticeBeamList->giveSize();
-         indexOfReinforcementNodes=reinforcementNodeList->giveSize();
+         indexOfLinkElements=converter::size1(latticeLinkList);
+         indexOfBeamElements=converter::size1(latticeBeamList);
+         indexOfReinforcementNodes=converter::size1(reinforcementNodeList);
          
-         latticeLinkList->growTo(indexOfLinkElements+numberOfLinks);
-         latticeBeamList->growTo(indexOfBeamElements+numberOfBeams);
+         latticeLinkList.resize(indexOfLinkElements+numberOfLinks,nullptr);
+         latticeBeamList.resize(indexOfBeamElements+numberOfBeams,nullptr);
          
          
          for (int j = 1; j <= numberOfBeams; j++ )
          {   beamElementCounter++;
              
              beamLine = ( Line * ) ( Line(beamElementCounter + 1, this).ofType() );
-             setlatticeBeam(beamElementCounter,beamLine);
+             setLatticeBeam(beamElementCounter,beamLine);
              
-             beamNodes.at(1)=fibreList->at(i)->giveNumberReinforcementNode(j);
-             beamNodes.at(2)=fibreList->at(i)->giveNumberReinforcementNode(j+1);
+             beamNodes.at(1)=giveFibre(i)->giveNumberReinforcementNode(j);
+             beamNodes.at(2)=giveFibre(i)->giveNumberReinforcementNode(j+1);
              
              beamLine->setVertices(beamNodes);
              this->giveReinforcementNode( beamNodes.at(1) )->setLocalLine(beamElementCounter);
@@ -1163,16 +1483,16 @@ int Grid :: instanciateYourself(ConverterDataReader *dr, char nodeFileName[], ch
 
 	     linkElementCounter++;  
 	     linkLine = ( Line * ) ( Line(linkElementCounter + 1, this).ofType() );
-	     setlatticeLink(linkElementCounter,linkLine);
+	     setLatticeLink(linkElementCounter,linkLine);
 	     
-	     linkNodes.at(1)=fibreList->at(i)->giveNumberReinforcementNode(j);
-	     linkNodes.at(2)=fibreList->at(i)->giveNumberDelaunayNode(j);
+	     linkNodes.at(1)=giveFibre(i)->giveNumberReinforcementNode(j);
+	     linkNodes.at(2)=giveFibre(i)->giveNumberDelaunayNode(j);
 	     
              linkLine->setVertices(linkNodes);
              
              //set of the length of fibre associated to the link
-             this->giveInterNode(fibreList->at(i)->giveNumberIntersectionPoint(j))->giveCoordinates(coordP1);
-             this->giveInterNode(fibreList->at(i)->giveNumberIntersectionPoint(j+1))->giveCoordinates(coordP2);
+             this->giveInterNode(giveFibre(i)->giveNumberIntersectionPoint(j))->giveCoordinates(coordP1);
+             this->giveInterNode(giveFibre(i)->giveNumberIntersectionPoint(j+1))->giveCoordinates(coordP2);
              portionOfFibre=Fibre::computedistance(coordP1, coordP2);
              linkLine->setAssociatedLength(portionOfFibre);
              
@@ -1182,7 +1502,7 @@ int Grid :: instanciateYourself(ConverterDataReader *dr, char nodeFileName[], ch
              linkLine->setDiameter(fibre_diameter);
              linkLine->setDirVector(dir_vector);
              
-             linkLine->setL_end(fibreList->at(i)->giveL_end(j));
+             linkLine->setL_end(giveFibre(i)->giveL_end(j));
          }
      }
      
@@ -1197,12 +1517,12 @@ Vertex *Grid::createReinfNode(oofem::FloatArray coordR)
 // function to create reinforcement nodes, directly with global index in the grid (not only for the fibre...)
 {
     int index(this->giveNumberOfReinforcementNode()+1);
-    reinforcementNodeList->growTo(index);
+    reinforcementNodeList.resize(index,nullptr);
     
     Vertex *reinforcementNode;
     reinforcementNode = ( Vertex * ) ( Vertex(index, this).ofType() );
     reinforcementNode->setCoordinates(coordR);
-    setreinforcementNode(index,reinforcementNode);
+    setReinforcementNode(index,reinforcementNode);
     
     return reinforcementNode;
 };
@@ -1211,237 +1531,388 @@ Vertex *Grid::createInterNode(oofem::FloatArray coordS)
 // function to create reinforcement nodes, directly with global index in the grid (not only for the fibre...)
 {
     int index(this->giveNumberOfInterNodes()+1);
-    interNodeList->growTo(index);
+    interNodeList.resize(index,nullptr);
     
     Vertex *interNode;
     interNode = ( Vertex * ) ( Vertex(index, this).ofType() );
     interNode->setCoordinates(coordS);
-    setinterNode(index,interNode);
+    setInterNode(index,interNode);
     return interNode;
 };
 
 
-Vertex *Grid :: giveVertex(int n)
-// Returns the n-th vertex. Generates converter::error if it is not defined yet.
-{
-    if ( vertexList->includes(n) ) {
-        return vertexList->at(n);
-    } else {
-        printf("giveVertex: undefined vertex (%d)\n", n);
-        exit(1);
-    }
 
-    return NULL;
+Vertex* Grid::giveVertex(int n) {
+  return converter::require_at1(vertexList, n, "giveVertex");
+}
+ 
+
+/* Vertex *Grid :: giveVertex(int n) */
+/* // Returns the n-th vertex. Generates converter::error if it is not defined yet. */
+/* { */
+/*     if ( vertexList->includes(n) ) { */
+/*         return vertexList.at1(n); */
+/*     } else { */
+/*         printf("giveVertex: undefined vertex (%d)\n", n); */
+/*         exit(1); */
+/*     } */
+
+/*     return NULL; */
+/* } */
+
+Curve* Grid::giveCurve(int n) {
+  return converter::require_at1(curveList, n, "giveCurve");
 }
 
 
-Curve *Grid :: giveCurve(int n)
-// Returns the n-th line. Generates error if it is not defined yet.
-{
-    if ( curveList->includes(n) ) {
-        return curveList->at(n);
-    } else {
-        printf("giveCurve: undefined curve (%d)\n", n);
-        exit(1);
-    }
+/* Curve *Grid :: giveCurve(int n) */
+/* // Returns the n-th line. Generates error if it is not defined yet. */
+/* { */
+/*     if ( curveList->includes(n) ) { */
+/*         return curveList.at1(n); */
+/*     } else { */
+/*         printf("giveCurve: undefined curve (%d)\n", n); */
+/*         exit(1); */
+/*     } */
 
-    return NULL;
+/*     return NULL; */
+/* } */
+
+
+Surface* Grid::giveSurface(int n) {
+  return converter::require_at1(surfaceList, n, "giveSurface");
+}
+
+ 
+/* Surface *Grid :: giveSurface(int n) */
+/* // Returns the n-th line. Generates error if it is not defined yet. */
+/* { */
+/*     if ( surfaceList->includes(n) ) { */
+/*         return surfaceList.at1(n); */
+/*     } else { */
+/*         printf("giveSurface: undefined surface (%d)\n", n); */
+/*         exit(1); */
+/*     } */
+
+/*     return NULL; */
+/* } */
+
+
+Region* Grid::giveRegion(int n) {
+  return converter::require_at1(regionList, n, "giveRegion");
+}
+
+ 
+/* Region *Grid :: giveRegion(int n) */
+/* // Returns the n-th line. Generates error if it is not defined yet. */
+/* { */
+/*     if ( regionList->includes(n) ) { */
+/*         return regionList.at1(n); */
+/*     } else { */
+/*         printf("giveRegion: undefined region (%d)\n", n); */
+/*         exit(1); */
+/*     } */
+
+/*     return NULL; */
+/* } */
+
+Inclusion* Grid::giveInclusion(int n) {
+  return converter::require_at1(inclusionList, n, "giveInclusion");
 }
 
 
-Surface *Grid :: giveSurface(int n)
-// Returns the n-th line. Generates error if it is not defined yet.
-{
-    if ( surfaceList->includes(n) ) {
-        return surfaceList->at(n);
-    } else {
-        printf("giveSurface: undefined surface (%d)\n", n);
-        exit(1);
-    }
+/* Inclusion *Grid :: giveInclusion(int n) */
+/* // Returns the n-th line. Generates error if it is not defined yet. */
+/* { */
+/*     if ( inclusionList->includes(n) ) { */
+/*         return inclusionList.at1(n); */
+/*     } else { */
+/*         printf("giveInclusion: undefined inclusion (%d)\n", n); */
+/*         exit(1); */
+/*     } */
 
-    return NULL;
+/*     return NULL; */
+/* } */
+
+Fibre* Grid::giveFibre(int n) {
+  return converter::require_at1(fibreList, n, "giveFibre");
 }
 
-
-Region *Grid :: giveRegion(int n)
-// Returns the n-th line. Generates error if it is not defined yet.
-{
-    if ( regionList->includes(n) ) {
-        return regionList->at(n);
-    } else {
-        printf("giveRegion: undefined region (%d)\n", n);
-        exit(1);
-    }
-
-    return NULL;
-}
-
-
-
-Inclusion *Grid :: giveInclusion(int n)
-// Returns the n-th line. Generates error if it is not defined yet.
-{
-    if ( inclusionList->includes(n) ) {
-        return inclusionList->at(n);
-    } else {
-        printf("giveInclusion: undefined inclusion (%d)\n", n);
-        exit(1);
-    }
-
-    return NULL;
-}
-
-Fibre *Grid :: giveFibre(int n)
-// Returns the n-th line. Generates error if it is not defined yet.
-{
-    if ( fibreList->includes(n) ) {
-        return fibreList->at(n);
-    } else {
-        printf("giveFibre: undefined fibre (%d)\n", n);
-        exit(1);
-    }
+ 
+/* Fibre *Grid :: giveFibre(int n) */
+/* // Returns the n-th line. Generates error if it is not defined yet. */
+/* { */
+/*     if ( fibreList->includes(n) ) { */
+/*         return fibreList.at1(n); */
+/*     } else { */
+/*         printf("giveFibre: undefined fibre (%d)\n", n); */
+/*         exit(1); */
+/*     } */
     
-    return NULL;
+/*     return NULL; */
+/* } */
+
+Line* Grid::giveDelaunayLine(int n) {
+  return converter::require_at1(delaunayLineList, n, "giveDelaunayLine");
 }
 
-Line *Grid :: giveDelaunayLine(int n)
-// Returns the n-th line. Generates error if it is not defined yet.
-{
-    if ( delaunayLineList->includes(n) ) {
-        return delaunayLineList->at(n);
-    } else {
-        printf("giveDelaunayLine: undefined line (%d)\n", n);
-        exit(1);
-    }
+ 
+/* Line *Grid :: giveDelaunayLine(int n) */
+/* // Returns the n-th line. Generates error if it is not defined yet. */
+/* { */
+/*     if ( delaunayLineList->includes(n) ) { */
+/*         return delaunayLineList.at1(n); */
+/*     } else { */
+/*         printf("giveDelaunayLine: undefined line (%d)\n", n); */
+/*         exit(1); */
+/*     } */
 
-    return NULL;
-}
+/*     return NULL; */
+/* } */
 
 
-
-Tetra *Grid :: giveDelaunayTetra(int n)
-// Returns the n-th tetra. Generates error if it is not defined yet.
-{
-    if ( delaunayLineList->includes(n) ) {
-        return delaunayTetraList->at(n);
-    } else {
-        printf("giveDelaunayTetra: undefined line (%d)\n", n);
-        exit(1);
-    }
-
-    return NULL;
+Tetra* Grid::giveDelaunayTetra(int n) {
+  return converter::require_at1(delaunayTetraList, n, "giveDelaunayTetra");
 }
 
 
+/* Tetra *Grid :: giveDelaunayTetra(int n) */
+/* // Returns the n-th tetra. Generates error if it is not defined yet. */
+/* { */
+/*     if ( delaunayTetraList->includes(n) ) { */
+/*         return delaunayTetraList.at1(n); */
+/*     } else { */
+/*         printf("giveDelaunayTetra: undefined line (%d)\n", n); */
+/*         exit(1); */
+/*     } */
 
-Line *Grid :: giveVoronoiLine(int n)
-// Returns the n-th line. Generates error if it is not defined yet.
-{
-    if ( voronoiLineList->includes(n) ) {
-        return voronoiLineList->at(n);
-    } else {
-        converter::errorf("giveVoronoiLine: undefined line (%d)\n", n);
-    }
+/*     return NULL; */
+/* } */
 
-    return NULL;
-}
-
-Vertex *Grid :: giveDelaunayVertex(int n)
-// Returns the n-th line. Generates error if it is not defined yet.
-{
-    if ( delaunayVertexList->includes(n) ) {
-        return delaunayVertexList->at(n);
-    } else {
-        printf("giveDelaunayVertex: undefined vertex (%d)\n", n);
-        exit(1);
-    }
-    return NULL;
+Line* Grid::giveVoronoiLine(int n) {
+  return converter::require_at1(voronoiLineList, n, "giveVoronoiLine");
 }
 
 
-Vertex *Grid :: giveVoronoiVertex(int n)
-// Returns the n-th line. Generates error if it is not defined yet.
-{
-    if ( voronoiVertexList->includes(n) ) {
-        return voronoiVertexList->at(n);
-    } else {
-        printf("giveVoronoiVertex: undefined vertex (%d)\n", n);
-        exit(1);
-    }
-    return NULL;
+/* Line *Grid :: giveVoronoiLine(int n) */
+/* // Returns the n-th line. Generates error if it is not defined yet. */
+/* { */
+/*     if ( voronoiLineList->includes(n) ) { */
+/*         return voronoiLineList.at1(n); */
+/*     } else { */
+/*         converter::errorf("giveVoronoiLine: undefined line (%d)\n", n); */
+/*     } */
+
+/*     return NULL; */
+/* } */
+
+Vertex* Grid::giveDelaunayVertex(int n) {
+  return converter::require_at1(delaunayVertexList, n, "giveDelaunayVertex");
 }
 
-Vertex *Grid :: giveReinforcementNode(int n)
-// Returns the n-th line. Generates error if it is not defined yet.
-{
-    if ( reinforcementNodeList->includes(n) ) {
-        return reinforcementNodeList->at(n);
-    } else {
-        printf("giveReinforcementNode : undefined vertex (%d)\n", n);
-        exit(1);
-    }
-    return NULL;
+ 
+/* Vertex *Grid :: giveDelaunayVertex(int n) */
+/* // Returns the n-th line. Generates error if it is not defined yet. */
+/* { */
+/*     if ( delaunayVertexList->includes(n) ) { */
+/*         return delaunayVertexList.at1(n); */
+/*     } else { */
+/*         printf("giveDelaunayVertex: undefined vertex (%d)\n", n); */
+/*         exit(1); */
+/*     } */
+/*     return NULL; */
+/* } */
+
+
+Vertex* Grid::giveVoronoiVertex(int n) {
+  return converter::require_at1(voronoiVertexList, n, "giveVoronoiVertex");
+}
+ 
+/* Vertex *Grid :: giveVoronoiVertex(int n) */
+/* // Returns the n-th line. Generates error if it is not defined yet. */
+/* { */
+/*     if ( voronoiVertexList->includes(n) ) { */
+/*         return voronoiVertexList.at1(n); */
+/*     } else { */
+/*         printf("giveVoronoiVertex: undefined vertex (%d)\n", n); */
+/*         exit(1); */
+/*     } */
+/*     return NULL; */
+/* } */
+
+Vertex* Grid::giveReinforcementNode(int n) {
+  return converter::require_at1(reinforcementNodeList, n, "giveReinforcementNode");
 }
 
-Line *Grid :: givelatticeBeam(int n)
-// Returns the n-th line. Generates error if it is not defined yet.
-{
-    if ( latticeBeamList->includes(n) ) {
-        return latticeBeamList->at(n);
-    } else {
-        converter::errorf("givelatticeBeam: undefined line (%d)\n", n);
-    }
+ 
+/* Vertex *Grid :: giveReinforcementNode(int n) */
+/* // Returns the n-th line. Generates error if it is not defined yet. */
+/* { */
+/*     if ( reinforcementNodeList->includes(n) ) { */
+/*         return reinforcementNodeList.at1(n); */
+/*     } else { */
+/*         printf("giveReinforcementNode : undefined vertex (%d)\n", n); */
+/*         exit(1); */
+/*     } */
+/*     return NULL; */
+/* } */
+
+Line* Grid::giveLatticeBeam(int n) {
+  return converter::require_at1(latticeBeamList, n, "giveLatticeBeam");
+}
+
+ 
+/* Line *Grid :: givelatticeBeam(int n) */
+/* // Returns the n-th line. Generates error if it is not defined yet. */
+/* { */
+/*     if ( latticeBeamList->includes(n) ) { */
+/*         return latticeBeamList.at1(n); */
+/*     } else { */
+/*         converter::errorf("givelatticeBeam: undefined line (%d)\n", n); */
+/*     } */
     
-    return NULL;
+/*     return NULL; */
+/* } */
+
+Line* Grid::giveLatticeLink(int n) {
+  return converter::require_at1(latticeLinkList, n, "giveLatticeLink");
 }
 
-Line *Grid :: givelatticeLink(int n)
-// Returns the n-th line. Generates error if it is not defined yet.
-{
-    if (latticeLinkList->includes(n) ) {
-        return latticeLinkList->at(n);
-    } else {
-        converter::errorf("givelatticeLink: undefined line (%d)\n", n);
-    }
+ 
+/* Line *Grid :: giveLatticeLink(int n) */
+/* // Returns the n-th line. Generates error if it is not defined yet. */
+/* { */
+/*     if (latticeLinkList->includes1(n) ) { */
+/*         return latticeLinkList.at1(n); */
+/*     } else { */
+/*         converter::errorf("giveLatticeLink: undefined line (%d)\n", n); */
+/*     } */
     
-    return NULL;
+/*     return NULL; */
+/* } */
+
+Vertex* Grid::giveInterNode(int n) {
+  return converter::require_at1(interNodeList, n, "giveInterNode");
 }
 
-Vertex *Grid :: giveInterNode(int n)
-// Returns the n-th line. Generates error if it is not defined yet.
-{
-    if (interNodeList->includes(n) ) {
-        return interNodeList->at(n);
-    } else {
-        converter::errorf("giveInterNode: undefined reinforcement (%d)\n", n);
-    }
+ 
+/* Vertex *Grid :: giveInterNode(int n) */
+/* // Returns the n-th line. Generates error if it is not defined yet. */
+/* { */
+/*     if (interNodeList->includes(n) ) { */
+/*         return interNodeList.at1(n); */
+/*     } else { */
+/*         converter::errorf("giveInterNode: undefined reinforcement (%d)\n", n); */
+/*     } */
     
-    return NULL;
+/*     return NULL; */
+/* } */
+
+/* void Grid :: resizeDelaunayLines(int _newSize) { delaunayLineList->growTo(_newSize); } */
+/* void Grid :: resizeVoronoiLines(int _newSize) { voronoiLineList->growTo(_newSize); } */
+/* void Grid :: resizeDelaunayVertices(int _newSize) { delaunayVertexList->growTo(_newSize); } */
+/* void Grid :: resizeVoronoiVertices(int _newSize) { voronoiVertexList->growTo(_newSize); } */
+
+/* void Grid :: setDelaunayVertex(int i, Vertex *obj) { delaunayVertexList->put(i, obj); } */
+/* void Grid :: setVoronoiVertex(int i, Vertex *obj) { voronoiVertexList->put(i, obj); } */
+/* void Grid :: setVoronoiLine(int i, Line *obj) { voronoiLineList->put(i, obj); } */
+/* void Grid :: setDelaunayLine(int i, Line *obj) { delaunayLineList->put(i, obj); } */
+/* void Grid :: setDelaunayTetra(int i, Tetra *obj) { delaunayTetraList->put(i, obj); } */
+
+
+// --- Resize helpers ---
+void Grid::resizeDelaunayLines(int newSize) {
+    converter::ensure_size1(delaunayLineList, newSize);
 }
 
-void Grid :: resizeDelaunayLines(int _newSize) { delaunayLineList->growTo(_newSize); }
-void Grid :: resizeVoronoiLines(int _newSize) { voronoiLineList->growTo(_newSize); }
-void Grid :: resizeDelaunayVertices(int _newSize) { delaunayVertexList->growTo(_newSize); }
-void Grid :: resizeVoronoiVertices(int _newSize) { voronoiVertexList->growTo(_newSize); }
+void Grid::resizeVoronoiLines(int newSize) {
+    converter::ensure_size1(voronoiLineList, newSize);
+}
 
-void Grid :: setDelaunayVertex(int i, Vertex *obj) { delaunayVertexList->put(i, obj); }
-void Grid :: setVoronoiVertex(int i, Vertex *obj) { voronoiVertexList->put(i, obj); }
-void Grid :: setVoronoiLine(int i, Line *obj) { voronoiLineList->put(i, obj); }
-void Grid :: setDelaunayLine(int i, Line *obj) { delaunayLineList->put(i, obj); }
-void Grid :: setDelaunayTetra(int i, Tetra *obj) { delaunayTetraList->put(i, obj); }
+void Grid::resizeDelaunayVertices(int newSize) {
+    converter::ensure_size1(delaunayVertexList, newSize);
+}
+
+void Grid::resizeVoronoiVertices(int newSize) {
+    converter::ensure_size1(voronoiVertexList, newSize);
+}
+
+// --- Set helpers ---
+void Grid::setDelaunayVertex(int i, Vertex* obj) {
+    converter::put1(delaunayVertexList, i, obj);
+}
+
+void Grid::setVoronoiVertex(int i, Vertex* obj) {
+    converter::put1(voronoiVertexList, i, obj);
+}
+
+void Grid::setVoronoiLine(int i, Line* obj) {
+    converter::put1(voronoiLineList, i, obj);
+}
+
+void Grid::setDelaunayLine(int i, Line* obj) {
+    converter::put1(delaunayLineList, i, obj);
+}
+
+void Grid::setDelaunayTetra(int i, Tetra* obj) {
+    converter::put1(delaunayTetraList, i, obj);
+}
 
 
-void Grid :: setVertex(int i, Vertex *obj) { vertexList->put(i, obj); }
-void Grid :: setCurve(int i, Curve *obj) { curveList->put(i, obj); }
-void Grid :: setSurface(int i, Surface *obj) { surfaceList->put(i, obj); }
-void Grid :: setRegion(int i, Region *obj) { regionList->put(i, obj); }
-void Grid :: setInclusion(int i, Inclusion *obj) { inclusionList->put(i, obj); }
-void Grid :: setFibre(int i,Fibre *obj) { fibreList->put(i, obj); }
-void Grid :: setreinforcementNode(int i,Vertex *obj) { reinforcementNodeList->put(i, obj); }
-void Grid :: setlatticeBeam(int i,Line *obj) { latticeBeamList->put(i, obj); }
-void Grid :: setlatticeLink(int i,Line *obj) { latticeLinkList->put(i, obj); }
-void Grid :: setinterNode(int i,Vertex *obj){ interNodeList->put(i, obj); }
+ 
 
+/* void Grid :: setVertex(int i, Vertex *obj) { vertexList->put(i, obj); } */
+/* void Grid :: setCurve(int i, Curve *obj) { curveList->put(i, obj); } */
+/* void Grid :: setSurface(int i, Surface *obj) { surfaceList->put(i, obj); } */
+/* void Grid :: setRegion(int i, Region *obj) { regionList->put(i, obj); } */
+/* void Grid :: setInclusion(int i, Inclusion *obj) { inclusionList->put(i, obj); } */
+/* void Grid :: setFibre(int i,Fibre *obj) { fibreList->put(i, obj); } */
+/* void Grid :: setreinforcementNode(int i,Vertex *obj) { reinforcementNodeList->put(i, obj); } */
+/* void Grid :: setlatticeBeam(int i,Line *obj) { latticeBeamList->put(i, obj); } */
+/* void Grid :: setlatticeLink(int i,Line *obj) { latticeLinkList->put(i, obj); } */
+/* void Grid :: setinterNode(int i,Vertex *obj){ interNodeList->put(i, obj); } */
+
+
+void Grid::setVertex(int i, Vertex* obj) {
+    converter::put1(vertexList, i, obj);
+}
+
+void Grid::setCurve(int i, Curve* obj) {
+    converter::put1(curveList, i, obj);
+}
+
+void Grid::setSurface(int i, Surface* obj) {
+    converter::put1(surfaceList, i, obj);
+}
+
+void Grid::setRegion(int i, Region* obj) {
+    converter::put1(regionList, i, obj);
+}
+
+void Grid::setInclusion(int i, Inclusion* obj) {
+    converter::put1(inclusionList, i, obj);
+}
+
+void Grid::setFibre(int i, Fibre* obj) {
+    converter::put1(fibreList, i, obj);
+}
+
+void Grid::setReinforcementNode(int i, Vertex* obj) {
+    converter::put1(reinforcementNodeList, i, obj);
+}
+
+void Grid::setLatticeBeam(int i, Line* obj) {
+    converter::put1(latticeBeamList, i, obj);
+}
+
+void Grid::setLatticeLink(int i, Line* obj) {
+    converter::put1(latticeLinkList, i, obj);
+}
+
+void Grid::setInterNode(int i, Vertex* obj) {
+    converter::put1(interNodeList, i, obj);
+}
+ 
 
 int Grid :: generateOutput()
 {
@@ -1458,7 +1929,7 @@ void
 Grid :: orderDelaunayCrossSectionVertices(int elementNumber)
 {
     oofem::FloatArray coordsA(3), coordsB(3);
-    IntArray vertices, crossSectionVertices;
+    oofem::IntArray vertices, crossSectionVertices;
     this->giveVoronoiLine(elementNumber)->giveLocalVertices(vertices);
     this->giveVoronoiLine(elementNumber)->giveCrossSectionVertices(crossSectionVertices);
     int size = crossSectionVertices.giveSize();
@@ -1519,7 +1990,7 @@ Grid :: orderDelaunayCrossSectionVertices(int elementNumber)
     t.normalize();
 
     //Set up rotation matrix
-    FloatMatrix lcs(3, 3);
+    oofem::FloatMatrix lcs(3, 3);
 
     for ( int i = 1; i <= 3; i++ ) {
         lcs.at(1, i) = n.at(i);
@@ -1580,7 +2051,7 @@ Grid :: orderDelaunayCrossSectionVertices(int elementNumber)
 
 
 
-void Grid :: giveOutput(char *fileName)
+void Grid :: giveOutput(const std::string& fileName)
 {
     printf("\n starting giving ouputs \n");
     giveOofemOutput(fileName);
@@ -1594,7 +2065,7 @@ void Grid :: giveOutput(char *fileName)
     }
 }
 
-void Grid :: giveOofemOutput(char *fileName)
+void Grid :: giveOofemOutput(const std::string& fileName)
 {
     //Start with oofem output
     printf("starting giving Oofem output... \n");
@@ -1665,74 +2136,45 @@ void Grid :: giveOofemOutput(char *fileName)
     return;
 };
 
-void Grid :: giveVtkOutput(char *fileName)
+void Grid :: giveVtkOutput(const std::string& fileName)
 {
-    FILE *outputStream;
-
-    if ( this->periodicityFlag.at(1) != 1  && this->periodicityFlag.at(2) != 1 && this->periodicityFlag.at(3) != 1) {
-        char fileName1 [ MAX_FILENAME_LENGTH + 10 ];
-        strcpy(fileName1, fileName);
-        strcat(fileName1, ".voronoicell.vtu");
-        if ( ( outputStream = fopen(fileName1, "w") ) == NULL ) {
-            converter::errorf("Can't open output file %s", fileName1);
-        }
-        giveVoronoiCellVTKOutput(outputStream);
+    // Write Voronoi *cell* VTU only if not periodic in any dir
+    if (periodicityFlag.at(1) != 1 &&
+        periodicityFlag.at(2) != 1 &&
+        periodicityFlag.at(3) != 1)
+    {
+      const std::string filename1 = fileName + ".voronoicell.vtu";
+      FILE* f1 = converter::fopen_or_die(filename1, "w");
+      giveVoronoiCellVTKOutput(f1);
+      std::fclose(f1);     
     }
 
-    char fileName2 [ MAX_FILENAME_LENGTH + 10 ];
-    strcpy(fileName2, fileName);
-    strcat(fileName2, ".delaunayelement.vtu");
-    if ( ( outputStream = fopen(fileName2, "w") ) == NULL ) {
-        printf("Can't open output file %s", fileName2);
-        exit(1);
-    }
-    giveDelaunayElementVTKOutput(outputStream);
+    // Delaunay elements
+    const std::string filename2 = fileName + ".delaunayelement.vtu";
+    FILE* f2 = converter::fopen_or_die(filename2, "w");
+    giveDelaunayElementVTKOutput(f2);
+    std::fclose(f2);
 
-    // char fileName3 [ MAX_FILENAME_LENGTH + 10 ];
-    // strcpy(fileName3,fileName);
-    // strcat(fileName3, ".voronoicrosssection.vtu");
-    // if ( ( outputStream = fopen(fileName3, "w") ) == NULL ) {
-    //   printf("Can't open output file %s", fileName3);
-    //   exit(1);
-    // }
-    // giveVoronoiCrossSectionVTKOutput(outputStream);
-
-    char fileName4 [ MAX_FILENAME_LENGTH + 10 ];
-    strcpy(fileName4, fileName);
-    strcat(fileName4, ".voronoielement.vtu");
-    if ( ( outputStream = fopen(fileName4, "w") ) == NULL ) {
-        printf("Can't open output file %s", fileName4);
-        exit(1);
-    }
-    giveVoronoiElementVTKOutput(outputStream);
-
-    // char fileName5 [ MAX_FILENAME_LENGTH + 10 ];
-    // strcpy(fileName5,fileName);
-    // strcat(fileName5, ".delaunaycrosssection.vtu");
-    // if ( ( outputStream = fopen(fileName5, "w") ) == NULL ) {
-    //   printf("Can't open output file %s", fileName5);
-    //   exit(1);
-    // }
-    // giveDelaunayCrossSectionVTKOutput(outputStream);
-
-    return;
+    // Voronoi elements
+    const std::string filename3 = fileName + ".voronoielement.vtu";
+    FILE* f3 = converter::fopen_or_die(filename3, "w");
+    giveVoronoiElementVTKOutput(f3);
+    std::fclose(f3);
+   
 }
 
 void
-Grid :: give3DSMOutput(char *fileName)
+Grid :: give3DSMOutput(const std::string& fileName)
 {
     //Template for irregular nonperiodic mechanical models. Do not change for applications
 
-    FILE *outputStream;
-    if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        converter::errorf("Can't open output file %s", fileName);
-    }
-
+    FILE* outputStream = converter::fopen_or_die(fileName, "w");
+  
     int numberOfNodes, numberOfLines;
     oofem::FloatArray coords;
     int materialType = 1;
-    IntArray nodes;
-    IntArray crossSectionNodes;
+    oofem::IntArray nodes;
+    oofem::IntArray crossSectionNodes;
 
     //Determine the number of Delaunay nodes in the domain
     numberOfNodes = 0;
@@ -1797,19 +2239,22 @@ Grid :: give3DSMOutput(char *fileName)
 
 
 void
-Grid :: give3DTMOutput(char *fileName)
+Grid :: give3DTMOutput(const std::string& fileName)
 {
     //Template for irregular nonperiodic transport models. Do not change for applications
 
-    FILE *outputStream;
-    if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        converter::errorf("Cannot open output file %s", fileName);
-    }
+
+    FILE* outputStream = converter::fopen_or_die(fileName, "w");
+
+  /* FILE *outputStream; */
+  /*   if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
+  /*       converter::errorf("Cannot open output file %s", fileName); */
+  /*   } */
 
     int numberOfNodes, numberOfLines;
     oofem::FloatArray coords;
-    IntArray nodes;
-    IntArray crossSectionNodes;
+    oofem::IntArray nodes;
+    oofem::IntArray crossSectionNodes;
     Vertex *delaunayVertex;
     Line *voronoiLine;
     Vertex *voronoiVertex;
@@ -1880,30 +2325,41 @@ Grid :: give3DTMOutput(char *fileName)
 
 
 void
-Grid :: give3DSMTMOutput(char *fileName)
+Grid :: give3DSMTMOutput(const std::string& fileName)
 {
     //Template for irregular nonperiodic coupled mechanical transport models. Do not change for applications
 
-    FILE *outputStream;
-    if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        converter::errorf("Cannot open output file %s", fileName);
-    }
+    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
 
-    FILE *outputStreamSM;
-    char fileName1 [ MAX_FILENAME_LENGTH + 10 ];
-    strcpy(fileName1, fileName);
-    strcat(fileName1, ".sm");
-    if ( ( outputStreamSM = fopen(fileName1, "w") ) == NULL ) {
-        converter::errorf("Cannot open output file %s", fileName1);
-    }
+    const std::string fileName1 = fileName + ".sm";
+    FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w");
+    
+    const std::string fileName2 = fileName + ".tm";
+    FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w");
 
-    FILE *outputStreamTM;
-    char fileName2 [ MAX_FILENAME_LENGTH + 10 ];
-    strcpy(fileName2, fileName);
-    strcat(fileName2, ".tm");
-    if ( ( outputStreamTM = fopen(fileName2, "w") ) == NULL ) {
-        converter::errorf("Cannot open output file %s", fileName2);
-    }
+
+
+    
+    /* FILE *outputStream; */
+    /* if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
+    /*     converter::errorf("Cannot open output file %s", fileName); */
+    /* } */
+    
+    /* 	char fileName1 [ MAX_FILENAME_LENGTH + 10 ]; */
+    /* strcpy(fileName1, fileName); */
+    /* strcat(fileName1, ".sm"); */
+    /* if ( ( outputStreamSM = fopen(fileName1, "w") ) == NULL ) { */
+    /*     converter::errorf("Cannot open output file %s", fileName1); */
+    /* } */
+
+    
+    /* FILE *outputStreamTM; */
+    /* char fileName2 [ MAX_FILENAME_LENGTH + 10 ]; */
+    /* strcpy(fileName2, fileName); */
+    /* strcat(fileName2, ".tm"); */
+    /* if ( ( outputStreamTM = fopen(fileName2, "w") ) == NULL ) { */
+    /*     converter::errorf("Cannot open output file %s", fileName2); */
+    /* } */
 
     int numberOfNodes, numberOfLines;
     oofem::FloatArray coords;
@@ -2049,30 +2505,43 @@ Grid :: give3DSMTMOutput(char *fileName)
 
 
 void
-Grid :: give3DPeriodicSMTMOutput(char *fileName)
+Grid :: give3DPeriodicSMTMOutput(const std::string& fileName)
 {
     //Template for irregular nonperiodic coupled mechanical transport models. Do not change for applications
 
-    FILE *outputStream;
-    if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        converter::errorf("Cannot open output file %s", fileName);
-    }
 
-    FILE *outputStreamSM;
-    char fileName1 [ MAX_FILENAME_LENGTH + 10 ];
-    strcpy(fileName1, fileName);
-    strcat(fileName1, ".sm");
-    if ( ( outputStreamSM = fopen(fileName1, "w") ) == NULL ) {
-        converter::errorf("Cannot open output file %s", fileName1);
-    }
+    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
 
-    FILE *outputStreamTM;
-    char fileName2 [ MAX_FILENAME_LENGTH + 10 ];
-    strcpy(fileName2, fileName);
-    strcat(fileName2, ".tm");
-    if ( ( outputStreamTM = fopen(fileName2, "w") ) == NULL ) {
-        converter::errorf("Cannot open output file %s", fileName2);
-    }
+    const std::string fileName1 = fileName + ".sm";
+    FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w");
+    
+    const std::string fileName2 = fileName + ".tm";
+    FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w");
+
+  
+    /* FILE *outputStream; */
+
+
+    
+    /* if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
+    /*     converter::errorf("Cannot open output file %s", fileName); */
+    /* } */
+
+    /* FILE *outputStreamSM; */
+    /* char fileName1 [ MAX_FILENAME_LENGTH + 10 ]; */
+    /* strcpy(fileName1, fileName); */
+    /* strcat(fileName1, ".sm"); */
+    /* if ( ( outputStreamSM = fopen(fileName1, "w") ) == NULL ) { */
+    /*     converter::errorf("Cannot open output file %s", fileName1); */
+    /* } */
+
+    /* FILE *outputStreamTM; */
+    /* char fileName2 [ MAX_FILENAME_LENGTH + 10 ]; */
+    /* strcpy(fileName2, fileName); */
+    /* strcat(fileName2, ".tm"); */
+    /* if ( ( outputStreamTM = fopen(fileName2, "w") ) == NULL ) { */
+    /*     converter::errorf("Cannot open output file %s", fileName2); */
+    /* } */
 
 
     oofem::FloatArray boundaries(3);
@@ -2323,14 +2792,23 @@ Grid :: give3DPeriodicSMTMOutput(char *fileName)
 }
 
 void
-Grid :: give3DPeriodicSMOutput(char *fileName)
+Grid :: give3DPeriodicSMOutput(const std::string& fileName)
 {
     //Template for irregular periodic mechanical models. Do not change for applications
 
-    FILE *outputStream;
-    if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        converter::errorf("Cannot open output file %s", fileName);
-    }
+    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
+
+    /* const std::string fileName1 = fileName + ".sm"; */
+    /* FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w"); */
+    
+    /* const std::string fileName2 = fileName + ".tm"; */
+    /* FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
+
+  
+    /* FILE *outputStream; */
+    /* if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
+    /*     converter::errorf("Cannot open output file %s", fileName); */
+    /* } */
 
     oofem::FloatArray boundaries(3);
     this->giveRegion(1)->defineBoundaries(boundaries);
@@ -2446,13 +2924,23 @@ Grid :: give3DPeriodicSMOutput(char *fileName)
 
 
 void
-Grid :: give3DPeriodicTMOutput(char *fileName)
+Grid :: give3DPeriodicTMOutput(const std::string& fileName)
 {
 
-    FILE *outputStream;
-    if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        converter::errorf("Cannot open output file %s", fileName);
-    }
+    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
+
+  /*   const std::string fileName1 = fileName + ".sm"; */
+  /*   FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w"); */
+    
+  /*   const std::string fileName2 = fileName + ".tm"; */
+  /*   FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
+
+
+
+  /* FILE *outputStream; */
+  /*   if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
+  /*       converter::errorf("Cannot open output file %s", fileName); */
+  /*   } */
 
     oofem::FloatArray boundaries(3);
     this->giveRegion(1)->defineBoundaries(boundaries);
@@ -2560,30 +3048,44 @@ Grid :: give3DPeriodicTMOutput(char *fileName)
 
 
 void
-Grid :: give3DPeriodicPoreSMTMOutput(char *fileName)
+Grid :: give3DPeriodicPoreSMTMOutput(const std::string& fileName)
 {
     //Template for irregular nonperiodic coupled mechanical transport models. Do not change for applications
 
-    FILE *outputStream;
-    if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        converter::errorf("Cannot open output file %s", fileName);
-    }
+    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
 
-    FILE *outputStreamSM;
-    char fileName1 [ MAX_FILENAME_LENGTH + 10 ];
-    strcpy(fileName1, fileName);
-    strcat(fileName1, ".sm");
-    if ( ( outputStreamSM = fopen(fileName1, "w") ) == NULL ) {
-        converter::errorf("Cannot open output file %s", fileName1);
-    }
+    const std::string fileName1 = fileName + ".sm";
+    FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w");
+    
+    const std::string fileName2 = fileName + ".tm";
+    FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w");
 
-    FILE *outputStreamTM;
-    char fileName2 [ MAX_FILENAME_LENGTH + 10 ];
-    strcpy(fileName2, fileName);
-    strcat(fileName2, ".tm");
-    if ( ( outputStreamTM = fopen(fileName2, "w") ) == NULL ) {
-        converter::errorf("Cannot open output file %s", fileName2);
-    }
+
+
+
+
+
+
+  /* FILE *outputStream; */
+  /*   if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
+  /*       converter::errorf("Cannot open output file %s", fileName); */
+  /*   } */
+
+  /*   FILE *outputStreamSM; */
+  /*   char fileName1 [ MAX_FILENAME_LENGTH + 10 ]; */
+  /*   strcpy(fileName1, fileName); */
+  /*   strcat(fileName1, ".sm"); */
+  /*   if ( ( outputStreamSM = fopen(fileName1, "w") ) == NULL ) { */
+  /*       converter::errorf("Cannot open output file %s", fileName1); */
+  /*   } */
+
+  /*   FILE *outputStreamTM; */
+  /*   char fileName2 [ MAX_FILENAME_LENGTH + 10 ]; */
+  /*   strcpy(fileName2, fileName); */
+  /*   strcat(fileName2, ".tm"); */
+  /*   if ( ( outputStreamTM = fopen(fileName2, "w") ) == NULL ) { */
+  /*       converter::errorf("Cannot open output file %s", fileName2); */
+  /*   } */
 
 
     oofem::FloatArray boundaries(3);
@@ -3093,30 +3595,44 @@ Grid :: give3DPeriodicPoreSMTMOutput(char *fileName)
 
 
 void
-Grid :: give3DBentoniteCoupledOutput(char *fileName)
+Grid :: give3DBentoniteCoupledOutput(const std::string& fileName)
 {
     //Template for irregular nonperiodic coupled mechanical transport models. Do not change for applications
 
-    FILE *outputStream;
-    if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        converter::errorf("Cannot open output file %s", fileName);
-    }
 
-    FILE *outputStreamSM;
-    char fileName1 [ MAX_FILENAME_LENGTH + 10 ];
-    strcpy(fileName1, fileName);
-    strcat(fileName1, ".sm");
-    if ( ( outputStreamSM = fopen(fileName1, "w") ) == NULL ) {
-        converter::errorf("Cannot open output file %s", fileName1);
-    }
+    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
 
-    FILE *outputStreamTM;
-    char fileName2 [ MAX_FILENAME_LENGTH + 10 ];
-    strcpy(fileName2, fileName);
-    strcat(fileName2, ".tm");
-    if ( ( outputStreamTM = fopen(fileName2, "w") ) == NULL ) {
-        converter::errorf("Cannot open output file %s", fileName2);
-    }
+    const std::string fileName1 = fileName + ".sm";
+    FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w");
+    
+    const std::string fileName2 = fileName + ".tm";
+    FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w");
+
+
+
+
+
+  
+    /* FILE *outputStream; */
+    /* if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
+    /*     converter::errorf("Cannot open output file %s", fileName); */
+    /* } */
+
+    /* FILE *outputStreamSM; */
+    /* char fileName1 [ MAX_FILENAME_LENGTH + 10 ]; */
+    /* strcpy(fileName1, fileName); */
+    /* strcat(fileName1, ".sm"); */
+    /* if ( ( outputStreamSM = fopen(fileName1, "w") ) == NULL ) { */
+    /*     converter::errorf("Cannot open output file %s", fileName1); */
+    /* } */
+
+    /* FILE *outputStreamTM; */
+    /* char fileName2 [ MAX_FILENAME_LENGTH + 10 ]; */
+    /* strcpy(fileName2, fileName); */
+    /* strcat(fileName2, ".tm"); */
+    /* if ( ( outputStreamTM = fopen(fileName2, "w") ) == NULL ) { */
+    /*     converter::errorf("Cannot open output file %s", fileName2); */
+    /* } */
 
 
     oofem::FloatArray boundaries(3);
@@ -3665,12 +4181,22 @@ Grid :: give3DBentoniteCoupledOutput(char *fileName)
 
 
 void
-Grid :: give3DPeriodicPoreSMOutput(char *fileName)
+Grid :: give3DPeriodicPoreSMOutput(const std::string& fileName)
 {
-    FILE *outputStream;
-    if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        converter::errorf("Cannot open output file %s", fileName);
-    }
+
+    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
+
+    /* const std::string fileName1 = fileName + ".sm"; */
+    /* FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w"); */
+    
+    /* const std::string fileName2 = fileName + ".tm"; */
+    /* FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
+
+
+  /* FILE *outputStream; */
+  /*   if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
+  /*       converter::errorf("Cannot open output file %s", fileName); */
+  /*   } */
 
     oofem::FloatArray boundaries(3);
     this->giveRegion(1)->defineBoundaries(boundaries);
@@ -3871,14 +4397,24 @@ Grid :: give3DPeriodicPoreSMOutput(char *fileName)
 
 
 void
-Grid :: give3DBentoniteSMOutput(char *fileName)
+Grid :: give3DBentoniteSMOutput(const std::string& fileName)
 {
     //Output for 3D Bentonite modelling
 
-    FILE *outputStream;
-    if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        converter::errorf("Cannot open output file %s", fileName);
-    }
+    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
+
+    /* const std::string fileName1 = fileName + ".sm"; */
+    /* FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w"); */
+    
+    /* const std::string fileName2 = fileName + ".tm"; */
+    /* FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
+
+
+  
+    /* FILE *outputStream; */
+    /* if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
+    /*     converter::errorf("Cannot open output file %s", fileName); */
+    /* } */
 
     oofem::FloatArray boundaries(3);
     this->giveRegion(1)->defineBoundaries(boundaries);
@@ -3991,22 +4527,36 @@ Grid :: give3DBentoniteSMOutput(char *fileName)
 
 
 void
-Grid :: give3DBentoniteTMOutput(char *fileName)
+Grid :: give3DBentoniteTMOutput(const std::string& fileName)
 {
     //Template for irregular periodic mechanical models. Do not change for applications
 
-    FILE *outputStream;
-    if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        converter::errorf("Cannot open output file %s", fileName);
-    }
+    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
 
-    FILE *outputStreamLengths;
-    char fileName1 [ MAX_FILENAME_LENGTH + 10 ];
-    strcpy(fileName1, fileName);
-    strcat(fileName1, "_Lengths.dat");
-    if ( ( outputStreamLengths = fopen(fileName1, "w") ) == NULL ) {
-        converter::errorf("Cannot open output file %s", fileName1);
-    }
+    /* const std::string fileName1 = fileName + ".sm"; */
+    /* FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w"); */
+    
+    /* const std::string fileName2 = fileName + ".tm"; */
+    /* FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
+
+
+  
+    /* FILE *outputStream; */
+    /* if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
+    /*     converter::errorf("Cannot open output file %s", fileName); */
+    /* } */
+
+    const std::string fileName1 = fileName + "_Lengths.dat";
+    FILE *outputStreamLengths = converter::fopen_or_die(fileName1, "w");
+    
+    
+    /* FILE *outputStreamLengths; */
+    /* char fileName1 [ MAX_FILENAME_LENGTH + 10 ]; */
+    /* strcpy(fileName1, fileName); */
+    /* strcat(fileName1, "_Lengths.dat"); */
+    /* if ( ( outputStreamLengths = fopen(fileName1, "w") ) == NULL ) { */
+    /*     converter::errorf("Cannot open output file %s", fileName1); */
+    /* } */
 
     oofem::FloatArray boundaries(3);
     this->giveRegion(1)->defineBoundaries(boundaries);
@@ -4313,12 +4863,23 @@ Grid :: give3DBentoniteTMOutput(char *fileName)
 
 
 void
-Grid :: give3DCantileverTMOutput(char *fileName)
+Grid :: give3DCantileverTMOutput(const std::string& fileName)
 {
-    FILE *outputStream;
-    if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        converter::errorf("Cannot open output file %s", fileName);
-    }
+
+    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
+
+  /*   const std::string fileName1 = fileName + ".sm"; */
+  /*   FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w"); */
+    
+  /*   const std::string fileName2 = fileName + ".tm"; */
+  /*   FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
+
+
+
+  /* FILE *outputStream; */
+  /*   if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
+  /*       converter::errorf("Cannot open output file %s", fileName); */
+  /*   } */
 
     oofem::FloatArray boundaries(3);
     this->giveRegion(1)->defineBoundaries(boundaries);
@@ -4434,12 +4995,23 @@ Grid :: give3DCantileverTMOutput(char *fileName)
 
 
 void
-Grid :: give3DCantileverTMExtraOutput(char *fileName)
+Grid :: give3DCantileverTMExtraOutput(const std::string& fileName)
 {
-    FILE *outputStream;
-    if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        converter::errorf("Cannot open output file %s", fileName);
-    }
+
+    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
+
+  /*   const std::string fileName1 = fileName + ".sm"; */
+  /*   FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w"); */
+    
+  /*   const std::string fileName2 = fileName + ".tm"; */
+  /*   FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
+
+
+
+  /* FILE *outputStream; */
+  /*   if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
+  /*       converter::errorf("Cannot open output file %s", fileName); */
+  /*   } */
 
 
     oofem::FloatArray boundaries(3);
@@ -4561,14 +5133,24 @@ Grid :: give3DCantileverTMExtraOutput(char *fileName)
 }
 
 void
-Grid :: give3DCantileverSMOutput(char *fileName)
+Grid :: give3DCantileverSMOutput(const std::string& fileName)
 {
     //Output for 3D cantilver benchmark for fracture
 
-    FILE *outputStream;
-    if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        converter::errorf("Cannot open output file %s", fileName);
-    }
+    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
+
+  /*   const std::string fileName1 = fileName + ".sm"; */
+  /*   FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w"); */
+    
+  /*   const std::string fileName2 = fileName + ".tm"; */
+  /*   FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
+
+
+
+  /* FILE *outputStream; */
+  /*   if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
+  /*       converter::errorf("Cannot open output file %s", fileName); */
+  /*   } */
 
     oofem::FloatArray boundaries(3);
     this->giveRegion(1)->defineBoundaries(boundaries);
@@ -4718,31 +5300,41 @@ Grid :: give3DCantileverSMOutput(char *fileName)
 
 
 void
-Grid :: give3DCantileverSMTMOutput(char *fileName)
+Grid :: give3DCantileverSMTMOutput(const std::string& fileName)
 {
     //Output for 3D cantilver benchmark for fracture
 
-    FILE *outputStream;
-    if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        converter::errorf("Cannot open output file %s", fileName);
-    }
+    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
+
+    const std::string fileName1 = fileName + ".sm";
+    FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w");
+    
+    const std::string fileName2 = fileName + ".tm";
+    FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w");
 
 
-    FILE *outputStreamSM;
-    char fileName1 [ MAX_FILENAME_LENGTH + 10 ];
-    strcpy(fileName1, fileName);
-    strcat(fileName1, ".sm");
-    if ( ( outputStreamSM = fopen(fileName1, "w") ) == NULL ) {
-        converter::errorf("Cannot open output file %s", fileName1);
-    }
 
-    FILE *outputStreamTM;
-    char fileName2 [ MAX_FILENAME_LENGTH + 10 ];
-    strcpy(fileName2, fileName);
-    strcat(fileName2, ".tm");
-    if ( ( outputStreamTM = fopen(fileName2, "w") ) == NULL ) {
-        converter::errorf("Cannot open output file %s", fileName2);
-    }
+  /* FILE *outputStream; */
+  /*   if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
+  /*       converter::errorf("Cannot open output file %s", fileName); */
+  /*   } */
+
+
+  /*   FILE *outputStreamSM; */
+  /*   char fileName1 [ MAX_FILENAME_LENGTH + 10 ]; */
+  /*   strcpy(fileName1, fileName); */
+  /*   strcat(fileName1, ".sm"); */
+  /*   if ( ( outputStreamSM = fopen(fileName1, "w") ) == NULL ) { */
+  /*       converter::errorf("Cannot open output file %s", fileName1); */
+  /*   } */
+
+  /*   FILE *outputStreamTM; */
+  /*   char fileName2 [ MAX_FILENAME_LENGTH + 10 ]; */
+  /*   strcpy(fileName2, fileName); */
+  /*   strcat(fileName2, ".tm"); */
+  /*   if ( ( outputStreamTM = fopen(fileName2, "w") ) == NULL ) { */
+  /*       converter::errorf("Cannot open output file %s", fileName2); */
+  /*   } */
 
     oofem::FloatArray boundaries(3);
     this->giveRegion(1)->defineBoundaries(boundaries);
@@ -5020,14 +5612,23 @@ Grid :: give3DCantileverSMTMOutput(char *fileName)
 
 
 void
-Grid :: give3DFPZOutput(char *fileName)
+Grid :: give3DFPZOutput(const std::string& fileName)
 {
     //Output for 3D fracture process zone modelling
 
-    FILE *outputStream;
-    if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        converter::errorf("Cannot open output file %s", fileName);
-    }
+    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
+
+    /* const std::string fileName1 = fileName + ".sm"; */
+    /* FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w"); */
+    
+    /* const std::string fileName2 = fileName + ".tm"; */
+    /* FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
+
+  
+    /* FILE *outputStream; */
+    /* if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
+    /*     converter::errorf("Cannot open output file %s", fileName); */
+    /* } */
 
     oofem::FloatArray boundaries(3);
     this->giveRegion(1)->defineBoundaries(boundaries);
@@ -5138,14 +5739,25 @@ Grid :: give3DFPZOutput(char *fileName)
 
 
 void
-Grid :: give3DFPZFibreOutput(char *fileName)
+Grid :: give3DFPZFibreOutput(const std::string& fileName)
 {
     //Output for 3D fracture process zone modelling
 
-    FILE *outputStream;
-    if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        converter::errorf("Cannot open output file %s", fileName);
-    }
+    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
+
+    /* const std::string fileName1 = fileName + ".sm"; */
+    /* FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w"); */
+    
+    /* const std::string fileName2 = fileName + ".tm"; */
+    /* FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
+
+
+
+  
+    /* FILE *outputStream; */
+    /* if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
+    /*     converter::errorf("Cannot open output file %s", fileName); */
+    /* } */
     
     printf("Starting writing data in output file \n");
     
@@ -5191,12 +5803,12 @@ Grid :: give3DFPZFibreOutput(char *fileName)
         }
     }
     for ( int i = 0; i < this->giveNumberOfLatticeBeams(); i++ ) {
-        if ( this->givelatticeBeam(i + 1)->giveOutsideFlag() == 0 || this->givelatticeBeam(i + 1)->giveOutsideFlag() == 2 ) {
+        if ( this->giveLatticeBeam(i + 1)->giveOutsideFlag() == 0 || this->giveLatticeBeam(i + 1)->giveOutsideFlag() == 2 ) {
             numberOfLines++;
         }
     }
     for ( int i = 0; i < this->giveNumberOfLatticeLinks(); i++ ) {
-        if ( this->givelatticeLink(i + 1)->giveOutsideFlag() == 0 || this->givelatticeLink(i + 1)->giveOutsideFlag() == 2 ) {
+        if ( this->giveLatticeLink(i + 1)->giveOutsideFlag() == 0 || this->giveLatticeLink(i + 1)->giveOutsideFlag() == 2 ) {
             numberOfLines++;
         }
     }
@@ -5372,18 +5984,18 @@ Grid :: give3DFPZFibreOutput(char *fileName)
         
         
             
-        if ( this->givelatticeBeam(i + 1)->giveOutsideFlag() == 0 ) { //Elements are inside
-            this->givelatticeBeam(i + 1)->giveLocalVertices(nodes);
+        if ( this->giveLatticeBeam(i + 1)->giveOutsideFlag() == 0 ) { //Elements are inside
+            this->giveLatticeBeam(i + 1)->giveLocalVertices(nodes);
             global_index++;
             fprintf( outputStream, "latticeBeam3D %d nodes 2 %d %d crossSect 1 mat 4 diameter %e", global_index,
                     nodes.at(1)+this->giveNumberOfDelaunayVertices(),
                     nodes.at(2)+this->giveNumberOfDelaunayVertices(),
-                    this->givelatticeBeam(i + 1)->giveDiameter());
+                    this->giveLatticeBeam(i + 1)->giveDiameter());
             fprintf(outputStream, "\n");
             
-        } else if ( this->givelatticeBeam(i + 1)->giveOutsideFlag() == 2 ) {      //Element crosses the boundary
+        } else if ( this->giveLatticeBeam(i + 1)->giveOutsideFlag() == 2 ) {      //Element crosses the boundary
             location.zero();
-            this->givelatticeBeam(i + 1)->giveLocalVertices(nodes);
+            this->giveLatticeBeam(i + 1)->giveLocalVertices(nodes);
             //Go through nodes and replace the ones outside with periodic nodes
             for ( int m = 0; m < 2; m++ ) {
                 if ( this->giveReinforcementNode( nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
@@ -5397,7 +6009,7 @@ Grid :: give3DFPZFibreOutput(char *fileName)
                     nodes.at(1)+this->giveNumberOfDelaunayVertices(),
                     nodes.at(2)+this->giveNumberOfDelaunayVertices(),
                     this->giveNumberOfDelaunayVertices() +this->giveNumberOfReinforcementNode()+ 1,
-                    this->givelatticeBeam(i + 1)->giveDiameter());
+                    this->giveLatticeBeam(i + 1)->giveDiameter());
             fprintf( outputStream, " location 2 %d %d", location.at(1), location.at(2) );
             fprintf(outputStream, "\n");
             
@@ -5410,24 +6022,24 @@ Grid :: give3DFPZFibreOutput(char *fileName)
         
     for ( int i = 0; i < this->giveNumberOfLatticeLinks(); i++ ) {
             
-        if ( this->givelatticeLink(i + 1)->giveOutsideFlag() == 0 ) { //Elements are inside
-            this->givelatticeLink(i + 1)->giveLocalVertices(nodes);
+        if ( this->giveLatticeLink(i + 1)->giveOutsideFlag() == 0 ) { //Elements are inside
+            this->giveLatticeLink(i + 1)->giveLocalVertices(nodes);
             global_index++;
                 fprintf( outputStream, "latticeLink3D %d nodes 2 %d %d crossSect 1 mat 5 length %e diameter %e dirvector 3 %e %e %e L_end %e ",
                         global_index,
                     nodes.at(1)+this->giveNumberOfDelaunayVertices(),
                     nodes.at(2),
-                    this->givelatticeLink(i + 1)->giveAssociatedLength(),
-                    this->givelatticeLink(i + 1)->giveDiameter(),
-                    (this->givelatticeLink(i + 1)->giveDirectionVector()).at(1),
-                    (this->givelatticeLink(i + 1)->giveDirectionVector()).at(2),
-                        (this->givelatticeLink(i + 1)->giveDirectionVector()).at(3),
-                        this->givelatticeLink(i + 1)->giveL_end());
+                    this->giveLatticeLink(i + 1)->giveAssociatedLength(),
+                    this->giveLatticeLink(i + 1)->giveDiameter(),
+                    (this->giveLatticeLink(i + 1)->giveDirectionVector()).at(1),
+                    (this->giveLatticeLink(i + 1)->giveDirectionVector()).at(2),
+                        (this->giveLatticeLink(i + 1)->giveDirectionVector()).at(3),
+                        this->giveLatticeLink(i + 1)->giveL_end());
             fprintf(outputStream, "\n");
             
-        } else if ( this->givelatticeLink(i + 1)->giveOutsideFlag() == 2 ) {      //Element crosses the boundary
+        } else if ( this->giveLatticeLink(i + 1)->giveOutsideFlag() == 2 ) {      //Element crosses the boundary
             location.zero();
-            this->givelatticeLink(i + 1)->giveLocalVertices(nodes);
+            this->giveLatticeLink(i + 1)->giveLocalVertices(nodes);
             //Go through nodes and replace the ones outside with periodic nodes
             
             if ( this->giveReinforcementNode( nodes.at(1) )->giveOutsideFlag() == 1 ) {
@@ -5445,12 +6057,12 @@ Grid :: give3DFPZFibreOutput(char *fileName)
                     nodes.at(1)+this->giveNumberOfDelaunayVertices(),
                     nodes.at(2),
                     this->giveNumberOfDelaunayVertices() +this->giveNumberOfReinforcementNode()+ 1,
-                    this->givelatticeLink(i + 1)->giveAssociatedLength(),
-                    this->givelatticeLink(i + 1)->giveDiameter(),
-                    this->givelatticeLink(i + 1)->giveDirectionVector().at(1),
-                    this->givelatticeLink(i + 1)->giveDirectionVector().at(2),
-                    this->givelatticeLink(i + 1)->giveDirectionVector().at(3),
-                    this->givelatticeLink(i + 1)->giveL_end());
+                    this->giveLatticeLink(i + 1)->giveAssociatedLength(),
+                    this->giveLatticeLink(i + 1)->giveDiameter(),
+                    this->giveLatticeLink(i + 1)->giveDirectionVector().at(1),
+                    this->giveLatticeLink(i + 1)->giveDirectionVector().at(2),
+                    this->giveLatticeLink(i + 1)->giveDirectionVector().at(3),
+                    this->giveLatticeLink(i + 1)->giveL_end());
             
             fprintf( outputStream, " location 2 %d %d", location.at(1), location.at(2) );
             fprintf(outputStream, "\n");
@@ -5481,14 +6093,24 @@ Grid :: give3DFPZFibreOutput(char *fileName)
 
 
 void
-Grid :: give3DFibreBenchmarkOutput(char *fileName)
+Grid :: give3DFibreBenchmarkOutput(const std::string& fileName)
 {
     //Output for 3D fracture process zone modelling
 
-    FILE *outputStream;
-    if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        converter::errorf("Cannot open output file %s", fileName);
-    }
+    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
+
+  /*   const std::string fileName1 = fileName + ".sm"; */
+  /*   FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w"); */
+    
+  /*   const std::string fileName2 = fileName + ".tm"; */
+  /*   FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
+
+
+
+  /* FILE *outputStream; */
+  /*   if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
+  /*       converter::errorf("Cannot open output file %s", fileName); */
+  /*   } */
     
     printf("Starting writing data in output file \n");
     
@@ -5532,12 +6154,12 @@ Grid :: give3DFibreBenchmarkOutput(char *fileName)
         }
     }
     for ( int i = 0; i < this->giveNumberOfLatticeBeams(); i++ ) {
-        if ( this->givelatticeBeam(i + 1)->giveOutsideFlag() == 0 || this->givelatticeBeam(i + 1)->giveOutsideFlag() == 2 ) {
+        if ( this->giveLatticeBeam(i + 1)->giveOutsideFlag() == 0 || this->giveLatticeBeam(i + 1)->giveOutsideFlag() == 2 ) {
             numberOfLines++;
         }
     }
     for ( int i = 0; i < this->giveNumberOfLatticeLinks(); i++ ) {
-        if ( this->givelatticeLink(i + 1)->giveOutsideFlag() == 0 || this->givelatticeLink(i + 1)->giveOutsideFlag() == 2 ) {
+        if ( this->giveLatticeLink(i + 1)->giveOutsideFlag() == 0 || this->giveLatticeLink(i + 1)->giveOutsideFlag() == 2 ) {
             numberOfLines++;
         }
     }
@@ -5655,18 +6277,18 @@ Grid :: give3DFibreBenchmarkOutput(char *fileName)
     double myPi = 3.14159265;
     for ( int i = 0; i < this->giveNumberOfLatticeBeams(); i++ ) {
                 
-        if ( this->givelatticeBeam(i + 1)->giveOutsideFlag() == 0 ) { //Elements are inside
-            this->givelatticeBeam(i + 1)->giveLocalVertices(nodes);
+        if ( this->giveLatticeBeam(i + 1)->giveOutsideFlag() == 0 ) { //Elements are inside
+            this->giveLatticeBeam(i + 1)->giveLocalVertices(nodes);
             global_index++;
             fprintf( outputStream, "latticeBeam3D %d nodes 2 %d %d crossSect 1 mat 3 diameter %e", global_index,
 		     nodes.at(1)+this->giveNumberOfDelaunayVertices(),
 		     nodes.at(2)+this->giveNumberOfDelaunayVertices(),
-		     this->givelatticeBeam(i + 1)->giveDiameter());
+		     this->giveLatticeBeam(i + 1)->giveDiameter());
             fprintf(outputStream, "\n");
             
-        } else if ( this->givelatticeBeam(i + 1)->giveOutsideFlag() == 2 ) {      //Element crosses the boundary
+        } else if ( this->giveLatticeBeam(i + 1)->giveOutsideFlag() == 2 ) {      //Element crosses the boundary
             location.zero();
-            this->givelatticeBeam(i + 1)->giveLocalVertices(nodes);
+            this->giveLatticeBeam(i + 1)->giveLocalVertices(nodes);
             //Go through nodes and replace the ones outside with periodic nodes
             for ( int m = 0; m < 2; m++ ) {
                 if ( this->giveReinforcementNode( nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
@@ -5680,7 +6302,7 @@ Grid :: give3DFibreBenchmarkOutput(char *fileName)
                     nodes.at(1)+this->giveNumberOfDelaunayVertices(),
                     nodes.at(2)+this->giveNumberOfDelaunayVertices(),
                     this->giveNumberOfDelaunayVertices() +this->giveNumberOfReinforcementNode()+ 1,
-                     this->givelatticeBeam(i + 1)->giveDiameter());
+                     this->giveLatticeBeam(i + 1)->giveDiameter());
             fprintf( outputStream, " location 2 %d %d", location.at(1), location.at(2) );
             fprintf(outputStream, "\n");
             
@@ -5693,24 +6315,24 @@ Grid :: give3DFibreBenchmarkOutput(char *fileName)
         
     for ( int i = 0; i < this->giveNumberOfLatticeLinks(); i++ ) {
             
-        if ( this->givelatticeLink(i + 1)->giveOutsideFlag() == 0 ) { //Elements are inside
-            this->givelatticeLink(i + 1)->giveLocalVertices(nodes);
+        if ( this->giveLatticeLink(i + 1)->giveOutsideFlag() == 0 ) { //Elements are inside
+            this->giveLatticeLink(i + 1)->giveLocalVertices(nodes);
             global_index++;
                 fprintf( outputStream, "latticeLink3D %d nodes 2 %d %d crossSect 1 mat 4 length %e diameter %e dirvector 3 %e %e %e L_end %e ",
                         global_index,
                     nodes.at(1)+this->giveNumberOfDelaunayVertices(),
                     nodes.at(2),
-                    this->givelatticeLink(i + 1)->giveAssociatedLength(),
-                    this->givelatticeLink(i + 1)->giveDiameter(),
-                    (this->givelatticeLink(i + 1)->giveDirectionVector()).at(1),
-                    (this->givelatticeLink(i + 1)->giveDirectionVector()).at(2),
-                        (this->givelatticeLink(i + 1)->giveDirectionVector()).at(3),
-                        this->givelatticeLink(i + 1)->giveL_end());
+                    this->giveLatticeLink(i + 1)->giveAssociatedLength(),
+                    this->giveLatticeLink(i + 1)->giveDiameter(),
+                    (this->giveLatticeLink(i + 1)->giveDirectionVector()).at(1),
+                    (this->giveLatticeLink(i + 1)->giveDirectionVector()).at(2),
+                        (this->giveLatticeLink(i + 1)->giveDirectionVector()).at(3),
+                        this->giveLatticeLink(i + 1)->giveL_end());
             fprintf(outputStream, "\n");
             
-        } else if ( this->givelatticeLink(i + 1)->giveOutsideFlag() == 2 ) {      //Element crosses the boundary
+        } else if ( this->giveLatticeLink(i + 1)->giveOutsideFlag() == 2 ) {      //Element crosses the boundary
             location.zero();
-            this->givelatticeLink(i + 1)->giveLocalVertices(nodes);
+            this->giveLatticeLink(i + 1)->giveLocalVertices(nodes);
             //Go through nodes and replace the ones outside with periodic nodes
             
             if ( this->giveReinforcementNode( nodes.at(1) )->giveOutsideFlag() == 1 ) {
@@ -5728,12 +6350,12 @@ Grid :: give3DFibreBenchmarkOutput(char *fileName)
                     nodes.at(1)+this->giveNumberOfDelaunayVertices(),
                     nodes.at(2),
                     this->giveNumberOfDelaunayVertices() +this->giveNumberOfReinforcementNode()+ 1,
-                    this->givelatticeLink(i + 1)->giveAssociatedLength(),
-                    this->givelatticeLink(i + 1)->giveDiameter(),
-                    this->givelatticeLink(i + 1)->giveDirectionVector().at(1),
-                    this->givelatticeLink(i + 1)->giveDirectionVector().at(2),
-                    this->givelatticeLink(i + 1)->giveDirectionVector().at(3),
-                    this->givelatticeLink(i + 1)->giveL_end());
+                    this->giveLatticeLink(i + 1)->giveAssociatedLength(),
+                    this->giveLatticeLink(i + 1)->giveDiameter(),
+                    this->giveLatticeLink(i + 1)->giveDirectionVector().at(1),
+                    this->giveLatticeLink(i + 1)->giveDirectionVector().at(2),
+                    this->giveLatticeLink(i + 1)->giveDirectionVector().at(3),
+                    this->giveLatticeLink(i + 1)->giveL_end());
             
             fprintf( outputStream, " location 2 %d %d", location.at(1), location.at(2) );
             fprintf(outputStream, "\n");
@@ -5763,30 +6385,40 @@ Grid :: give3DFibreBenchmarkOutput(char *fileName)
 
 
 void
-Grid :: give3DWongOutput(char *fileName)
+Grid :: give3DWongOutput(const std::string& fileName)
 {
     //Template for irregular nonperiodic coupled mechanical transport models. Do not change for applications
 
-    FILE *outputStream;
-    if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        converter::errorf("Cannot open output file %s", fileName);
-    }
+    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
 
-    FILE *outputStreamSM;
-    char fileName1 [ MAX_FILENAME_LENGTH + 10 ];
-    strcpy(fileName1, fileName);
-    strcat(fileName1, ".sm");
-    if ( ( outputStreamSM = fopen(fileName1, "w") ) == NULL ) {
-        converter::errorf("Cannot open output file %s", fileName1);
-    }
+    const std::string fileName1 = fileName + ".sm";
+    FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w");
+    
+    const std::string fileName2 = fileName + ".tm";
+    FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w");
 
-    FILE *outputStreamTM;
-    char fileName2 [ MAX_FILENAME_LENGTH + 10 ];
-    strcpy(fileName2, fileName);
-    strcat(fileName2, ".tm");
-    if ( ( outputStreamTM = fopen(fileName2, "w") ) == NULL ) {
-        converter::errorf("Cannot open output file %s", fileName2);
-    }
+
+  
+    /* FILE *outputStream; */
+    /* if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
+    /*     converter::errorf("Cannot open output file %s", fileName); */
+    /* } */
+
+    /* FILE *outputStreamSM; */
+    /* char fileName1 [ MAX_FILENAME_LENGTH + 10 ]; */
+    /* strcpy(fileName1, fileName); */
+    /* strcat(fileName1, ".sm"); */
+    /* if ( ( outputStreamSM = fopen(fileName1, "w") ) == NULL ) { */
+    /*     converter::errorf("Cannot open output file %s", fileName1); */
+    /* } */
+
+    /* FILE *outputStreamTM; */
+    /* char fileName2 [ MAX_FILENAME_LENGTH + 10 ]; */
+    /* strcpy(fileName2, fileName); */
+    /* strcat(fileName2, ".tm"); */
+    /* if ( ( outputStreamTM = fopen(fileName2, "w") ) == NULL ) { */
+    /*     converter::errorf("Cannot open output file %s", fileName2); */
+    /* } */
 
     oofem::FloatArray boundaries(3);
     this->giveRegion(1)->defineBoundaries(boundaries);
@@ -6114,22 +6746,32 @@ Grid :: give3DWongOutput(char *fileName)
 
 
 void
-Grid :: give3DPeriodicPoreTMOutput(char *fileName)
+Grid :: give3DPeriodicPoreTMOutput(const std::string& fileName)
 {
     //Template for irregular periodic mechanical models. Do not change for applications
 
-    FILE *outputStream;
-    if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        converter::errorf("Cannot open output file %s", fileName);
-    }
+    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
 
-    FILE *outputStreamLengths;
-    char fileName1 [ MAX_FILENAME_LENGTH + 10 ];
-    strcpy(fileName1, fileName);
-    strcat(fileName1, "_Lengths.dat");
-    if ( ( outputStreamLengths = fopen(fileName1, "w") ) == NULL ) {
-        converter::errorf("Cannot open output file %s", fileName1);
-    }
+    const std::string fileName1 = fileName + "_lengths.dat";
+    FILE *outputStreamLengths = converter::fopen_or_die(fileName1, "w");
+    
+    /* const std::string fileName2 = fileName + ".tm"; */
+    /* FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
+
+
+  
+    /* FILE *outputStream; */
+    /* if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
+    /*     converter::errorf("Cannot open output file %s", fileName); */
+    /* } */
+
+    /* FILE *outputStreamLengths; */
+    /* char fileName1 [ MAX_FILENAME_LENGTH + 10 ]; */
+    /* strcpy(fileName1, fileName); */
+    /* strcat(fileName1, "_Lengths.dat"); */
+    /* if ( ( outputStreamLengths = fopen(fileName1, "w") ) == NULL ) { */
+    /*     converter::errorf("Cannot open output file %s", fileName1); */
+    /* } */
 
     oofem::FloatArray boundaries(3);
     this->giveRegion(1)->defineBoundaries(boundaries);
@@ -6433,15 +7075,24 @@ Grid :: give3DPeriodicPoreTMOutput(char *fileName)
 
 
 void
-Grid :: give3DSphereOutput(char *fileName)
+Grid :: give3DSphereOutput(const std::string& fileName)
 {
   //Output for hydraulic fracture of sphere.
   //Start with mechanical model
 
-    FILE *outputStream;
-    if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        converter::errorf("Cannot open output file %s", fileName);
-    }
+    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
+
+    /* const std::string fileName1 = fileName + ".sm"; */
+    /* FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w"); */
+    
+    /* const std::string fileName2 = fileName + ".tm"; */
+    /* FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
+
+  
+    /* FILE *outputStream; */
+    /* if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
+    /*     converter::errorf("Cannot open output file %s", fileName); */
+    /* } */
 
     int numberOfNodes, numberOfLines;
     oofem::FloatArray coords(3);
@@ -6586,15 +7237,24 @@ Grid :: give3DSphereOutput(char *fileName)
 
 
 void
-Grid :: give3DCylinderOutput(char *fileName)
+Grid :: give3DCylinderOutput(const std::string& fileName)
 {
   //Output for hydraulic fracture of cylinder.
   //Start with mechanical model
 
-    FILE *outputStream;
-    if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        converter::errorf("Cannot open output file %s", fileName);
-    }
+    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
+
+  /*   const std::string fileName1 = fileName + ".sm"; */
+  /*   FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w"); */
+    
+  /*   const std::string fileName2 = fileName + ".tm"; */
+  /*   FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
+
+
+  /* FILE *outputStream; */
+  /*   if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
+  /*       converter::errorf("Cannot open output file %s", fileName); */
+  /*   } */
 
     int numberOfNodes, numberOfLines;
     oofem::FloatArray coords(3);
@@ -6806,15 +7466,24 @@ Grid :: give3DCylinderOutput(char *fileName)
 
 
 void
-Grid :: give3DTensionOutput(char *fileName)
+Grid :: give3DTensionOutput(const std::string& fileName)
 {
   //Output for direct tension.
   //Start with mechanical model
 
-    FILE *outputStream;
-    if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        converter::errorf("Cannot open output file %s", fileName);
-    }
+    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
+
+    /* const std::string fileName1 = fileName + ".sm"; */
+    /* FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w"); */
+    
+    /* const std::string fileName2 = fileName + ".tm"; */
+    /* FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
+
+  
+    /* FILE *outputStream; */
+    /* if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
+    /*     converter::errorf("Cannot open output file %s", fileName); */
+    /* } */
 
     int numberOfNodes, numberOfLines;
     oofem::FloatArray coords(3);
@@ -7039,12 +7708,22 @@ Grid :: give3DTensionOutput(char *fileName)
 }
 
 void
-Grid :: give3DPeriodicTetraSMOutput(char *fileName)
+Grid :: give3DPeriodicTetraSMOutput(const std::string& fileName)
 {
-    FILE *outputStream;
-    if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        converter::errorf("Cannot open output file %s", fileName);
-    }
+
+    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
+
+  /*   const std::string fileName1 = fileName + ".sm"; */
+  /*   FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w"); */
+    
+  /*   const std::string fileName2 = fileName + ".tm"; */
+  /*   FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
+
+
+  /* FILE *outputStream; */
+  /*   if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
+  /*       converter::errorf("Cannot open output file %s", fileName); */
+  /*   } */
 
     oofem::IntArray periodicFlag(3);
     this->givePeriodicityFlag(periodicFlag);
@@ -7318,14 +7997,24 @@ Grid :: give3DPeriodicTetraSMOutput(char *fileName)
 
 
 void
-Grid :: give3DTetraSMOutput(char *fileName)
+Grid :: give3DTetraSMOutput(const std::string& fileName)
 {
     //Output for 3D fracture process zone modelling
 
-    FILE *outputStream;
-    if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        converter::errorf("Cannot open output file %s", fileName);
-    }
+    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
+
+    /* const std::string fileName1 = fileName + ".sm"; */
+    /* FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w"); */
+    
+    /* const std::string fileName2 = fileName + ".tm"; */
+    /* FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
+
+
+  
+    /* FILE *outputStream; */
+    /* if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
+    /*     converter::errorf("Cannot open output file %s", fileName); */
+    /* } */
 
     oofem::FloatArray boundaries(3);
     this->giveRegion(1)->defineBoundaries(boundaries);
@@ -7401,7 +8090,7 @@ Grid :: give3DTetraSMOutput(char *fileName)
 }
 
 void
-Grid :: give3DRCSMOutput(char *fileName)
+Grid :: give3DRCSMOutput(const std::string& fileName)
 /**
  * Output for random mesh of a 3D reinforced concrete RVE.  Concrete is modelled with tetrahedras (LTRSpace),
  * reinforcement is modelled with beam elements (LIBeam3d), and the interface is modelled with pointwise
@@ -7410,10 +8099,22 @@ Grid :: give3DRCSMOutput(char *fileName)
  * @author: Adam Sciegaj
  */
 {
-    FILE *outputStream;
-    if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        converter::errorf("Cannot open output file %s", fileName);
-    }
+
+    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
+
+  /*   const std::string fileName1 = fileName + ".sm"; */
+  /*   FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w"); */
+    
+  /*   const std::string fileName2 = fileName + ".tm"; */
+  /*   FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
+
+
+  /* FILE *outputStream; */
+  /*   if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
+  /*       converter::errorf("Cannot open output file %s", fileName); */
+  /*   } */
+
+
     printf("Processing nodes\n");
 
     oofem::FloatArray boundaries(6);
@@ -7438,7 +8139,7 @@ Grid :: give3DRCSMOutput(char *fileName)
     }
 
     //add reference nodes (1 per fibre)
-    numberOfNodes +=  fibreList->giveSize();
+    numberOfNodes +=  converter::size1(fibreList);
 
     //Determine the number of Delaunay tetrahedra in the domain
     numberOfTetras = 0;
@@ -7450,14 +8151,14 @@ Grid :: give3DRCSMOutput(char *fileName)
 
     numberOfBeams = 0;
     for ( int i = 0; i < this->giveNumberOfLatticeBeams(); i++ ) {
-        if ( this->givelatticeBeam(i+1)->giveOutsideFlag() == 0 || this->givelatticeBeam(i+1)->giveOutsideFlag() == 2 ) {
+        if ( this->giveLatticeBeam(i+1)->giveOutsideFlag() == 0 || this->giveLatticeBeam(i+1)->giveOutsideFlag() == 2 ) {
             numberOfBeams++;
         }
     }
 
     numberOfLinks = 0;
     for ( int i = 0; i < this->giveNumberOfLatticeLinks(); i++ ) {
-        if ( this->givelatticeLink(i+1)->giveOutsideFlag() == 0 || this->givelatticeLink(i+1)->giveOutsideFlag() == 3 ){
+        if ( this->giveLatticeLink(i+1)->giveOutsideFlag() == 0 || this->giveLatticeLink(i+1)->giveOutsideFlag() == 3 ){
             numberOfLinks++;
         }
     }
@@ -7476,7 +8177,7 @@ Grid :: give3DRCSMOutput(char *fileName)
     fprintf(outputStream, "domain 3d\n");
     fprintf(outputStream, "OutputManager tstep_all dofman_all element_all\n");
     fprintf(outputStream, "ndofman %d nelem %d ncrosssect %d nmat %d nbc 2 nic 0 nltf 1 nset %d\n", numberOfNodes, numberOfElem,
-            2*fibreList->giveSize()+1,  2*fibreList->giveSize()+1, 3 + 2*fibreList->giveSize() + 1 );
+            2*converter::size1(fibreList)+1,  2*converter::size1(fibreList)+1, 3 + 2*converter::size1(fibreList)+1);
 
     int firstFlag = 0;
 
@@ -7508,10 +8209,10 @@ Grid :: give3DRCSMOutput(char *fileName)
     }
 
     //reference nodes for 3d beams. Assuming only horizontal reinforcement
-    FloatMatrix R(3,3);
+    oofem::FloatMatrix R(3,3);
     R.zero(); R.at(1,2)=-1; R.at(2,1)=1; R.at(3,3)=1;
     oofem::IntArray refNodeNumbers(this->giveNumberOfFibres());
-    FloatMatrix referenceNodes;
+    oofem::FloatMatrix referenceNodes;
     referenceNodes.resize(this->giveNumberOfFibres(), 3);
     for ( int i = 0; i < this->giveNumberOfFibres(); i++) {
         oofem::FloatArray dirVec = this->giveFibre(i+1)->giveDirVector();
@@ -7549,12 +8250,12 @@ Grid :: give3DRCSMOutput(char *fileName)
     beamElL2Gmap.zero();
     for ( int i = 0; i < this->giveNumberOfLatticeBeams(); i++ ) {
       //First plot all of them
-      if ( this->givelatticeBeam(i + 1)->giveOutsideFlag() == 0 || this->givelatticeBeam(i + 1)->giveOutsideFlag() == 2 ) { //Elements are inside
-        this->givelatticeBeam(i + 1)->giveLocalVertices(nodes);
+      if ( this->giveLatticeBeam(i + 1)->giveOutsideFlag() == 0 || this->giveLatticeBeam(i + 1)->giveOutsideFlag() == 2 ) { //Elements are inside
+        this->giveLatticeBeam(i + 1)->giveLocalVertices(nodes);
 
         //find the reference node
         int refNode = 0;
-        oofem::FloatArray dirVec = this->givelatticeBeam(i+1)->giveDirectionVector();
+        oofem::FloatArray dirVec = this->giveLatticeBeam(i+1)->giveDirectionVector();
         for ( int j = 0; j < this->giveNumberOfFibres(); j++ ) {
             oofem::FloatArray perpVec(3), firstNodeCoords(3);
             int numReinfNode = this->giveFibre(j+1)->giveNumberReinforcementNode(1);
@@ -7562,7 +8263,7 @@ Grid :: give3DRCSMOutput(char *fileName)
             perpVec.at(1) = referenceNodes.at(j+1,1) - firstNodeCoords.at(1);
             perpVec.at(2) = referenceNodes.at(j+1,2) - firstNodeCoords.at(2);
             perpVec.at(3) = referenceNodes.at(j+1,3) - firstNodeCoords.at(3);
-            double sp = dotProduct(dirVec, perpVec, 3);
+            double sp = dirVec.dotProduct(perpVec, 3);
 
             if ( fabs(sp) < this->giveTol() ) {
                 refNode = refNodeNumbers.at(j+1);
@@ -7583,24 +8284,24 @@ Grid :: give3DRCSMOutput(char *fileName)
     intElL2Gmap.resize(this->giveNumberOfLatticeLinks());
     intElL2Gmap.zero();
     for ( int i = 0; i < this->giveNumberOfLatticeLinks(); i++ ) {
-        int linkVer1 = this->givelatticeLink(i+1)->giveLocalVertex(1);
-        int linkVer2 = this->givelatticeLink(i+1)->giveLocalVertex(2);
+        int linkVer1 = this->giveLatticeLink(i+1)->giveLocalVertex(1);
+        int linkVer2 = this->giveLatticeLink(i+1)->giveLocalVertex(2);
         //recalculate normal vector
         oofem::FloatArray normalVec(3);
         oofem::FloatArray beamNode = *this->giveReinforcementNode(linkVer1)->giveCoordinates();
         oofem::FloatArray tetraNode = *this->giveDelaunayVertex(linkVer2)->giveCoordinates();
-        normalVec.add(beamNode); normalVec.substract(tetraNode); normalVec.normalize();
+        normalVec.add(beamNode); normalVec.subtract(tetraNode); normalVec.normalize();
         double segmentLength(1);
-        if ( this->givelatticeLink(i+1)->giveOutsideFlag() == 0 || this->givelatticeLink(i+1)->giveOutsideFlag()==3 ) {
-            if ( this->givelatticeLink(i+1)->giveOutsideFlag() == 3 ) {
+        if ( this->giveLatticeLink(i+1)->giveOutsideFlag() == 0 || this->giveLatticeLink(i+1)->giveOutsideFlag()==3 ) {
+            if ( this->giveLatticeLink(i+1)->giveOutsideFlag() == 3 ) {
                 //shorten the associated length of the boundary links
-                segmentLength = this->givelatticeLink(i+1)->giveAssociatedLength() / 2;
+                segmentLength = this->giveLatticeLink(i+1)->giveAssociatedLength() / 2;
             } else {
-                segmentLength = this->givelatticeLink(i+1)->giveAssociatedLength();
+                segmentLength = this->giveLatticeLink(i+1)->giveAssociatedLength();
             }
 
 //             fprintf( outputStream, "intelpoint %d nodes 2 %d %d normal 3 %e %e %e length %e\n", this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + i + 1, linkVer2, L2Gmap.at(linkVer1), normalVec.at(1), normalVec.at(2), normalVec.at(3), segmentLength );
-            fprintf( outputStream, "intelpoint %d nodes 2 %d %d normal 3 0 0 1 length %e\n", this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + i + 1, linkVer2, L2Gmap.at(linkVer1), this->givelatticeLink(i+1)->giveAssociatedLength() );
+            fprintf( outputStream, "intelpoint %d nodes 2 %d %d normal 3 0 0 1 length %e\n", this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + i + 1, linkVer2, L2Gmap.at(linkVer1), this->giveLatticeLink(i+1)->giveAssociatedLength() );
             set3.followedBy(this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + i + 1);
             intElL2Gmap.at(i+1) = this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + i + 1;
         }
@@ -7621,24 +8322,24 @@ Grid :: give3DRCSMOutput(char *fileName)
         }
         //first split reinforcement
         for ( int j = 0; j < this->giveFibre(i+1)->NbOfReinfNodes() - 1; j++ ) {
-            if ( this->givelatticeBeam(beamNo+j+1)->giveOutsideFlag() == 0 || this->givelatticeBeam(beamNo+j+1)->giveOutsideFlag() == 2 ) {
+            if ( this->giveLatticeBeam(beamNo+j+1)->giveOutsideFlag() == 0 || this->giveLatticeBeam(beamNo+j+1)->giveOutsideFlag() == 2 ) {
                 (beamSets[i]).push_back(beamNo+j+1);
                 oofem::IntArray beamNodes;
-                this->givelatticeBeam(beamNo+j+1)->giveLocalVertices(beamNodes);
+                this->giveLatticeBeam(beamNo+j+1)->giveLocalVertices(beamNodes);
                 //for the beam elements, get the corresponding link elements
                 for ( int k = 0; k < this->giveNumberOfLatticeLinks(); k++ ) {
                     oofem::IntArray linkNodes;
-                    this->givelatticeLink(k+1)->giveLocalVertices(linkNodes);
+                    this->giveLatticeLink(k+1)->giveLocalVertices(linkNodes);
                     if ( beamNodes.at(1) == linkNodes.at(1)  ) {
                         (interfaceSets[i]).push_back(k+1);
-                    } else if ( this->givelatticeLink(k+1)->giveOutsideFlag() == 3 && beamNodes.at(2) == linkNodes.at(1) ) {
+                    } else if ( this->giveLatticeLink(k+1)->giveOutsideFlag() == 3 && beamNodes.at(2) == linkNodes.at(1) ) {
                         //include the last boundary link
                         (interfaceSets[i]).push_back(k+1);
                     }
                 }
             }
         }
-        firstNodeinFibres.at(i+1) = L2Gmap.at(this->givelatticeLink(interfaceSets[i][0])->giveLocalVertex(1));
+        firstNodeinFibres.at(i+1) = L2Gmap.at(this->giveLatticeLink(interfaceSets[i][0])->giveLocalVertex(1));
     }
     printf("Finished splitting into sets\n");
 
@@ -7686,7 +8387,7 @@ Grid :: give3DRCSMOutput(char *fileName)
         }
         fprintf(outputStream, "\n");
     }
-    fprintf(outputStream, "set %d nodes %d ", 3 + 2*fibreList->giveSize() + 1, this->fibreList->giveSize());
+    fprintf(outputStream, "set %d nodes %d ", 3 + 2*converter::size1(fibreList) + 1, converter::size1(fibreList));
     for ( int i = 0; i < this->giveNumberOfFibres(); i++ ) {
         fprintf(outputStream, "%d ", firstNodeinFibres.at(i+1));
     }
@@ -7702,7 +8403,7 @@ Grid :: give3DRCSMOutput(char *fileName)
 
 
 void
-Grid :: give3DRCPeriodicSMOutput(char *fileName)
+Grid :: give3DRCPeriodicSMOutput(const std::string& fileName)
 /**
  * Output for periodic mesh of a 3D reinforced concrete RVE.  Concrete is modelled with tetrahedras (LTRSpace and LTRSpaceBoundary),
  * reinforcement is modelled with beam elements (LIBeam3d and LIBeam3dBoundary), and the interface is modelled with link elements (BondLink3d).
@@ -7710,10 +8411,21 @@ Grid :: give3DRCPeriodicSMOutput(char *fileName)
  * @authors: Adam Sciegaj, Peter Grassl
  */
 {
-    FILE *outputStream;
-    if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        converter::errorf("Cannot open output file %s", fileName);
-    }
+    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
+
+  /*   const std::string fileName1 = fileName + ".sm"; */
+  /*   FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w"); */
+    
+  /*   const std::string fileName2 = fileName + ".tm"; */
+  /*   FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
+
+
+  /* FILE *outputStream; */
+  /*   if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
+  /*       converter::errorf("Cannot open output file %s", fileName); */
+  /*   } */
+
+
     printf("Processing nodes\n");
 
     oofem::IntArray periodicFlag(3);
@@ -7920,7 +8632,7 @@ Grid :: give3DRCPeriodicSMOutput(char *fileName)
 
     //total number of nodes: number of master tetra nodes + number of master reinforcement nodes +
     // reference nodes (assuming straight reinforcement -- 1 per fibre) + control node
-    numberOfNodes = mirrorNodeList.giveSize() + reinfMirrorNodeList.giveSize() + fibreList->giveSize() + 1;
+    numberOfNodes = mirrorNodeList.giveSize() + reinfMirrorNodeList.giveSize() + converter::size1(fibreList) + 1;
 
     //Determine the number of Delaunay tetrahedra in the domain
     numberOfTetras = 0;
@@ -7932,15 +8644,15 @@ Grid :: give3DRCPeriodicSMOutput(char *fileName)
 
     numberOfBeams = 0;
     for ( int i = 0; i < this->giveNumberOfLatticeBeams(); i++ ) {
-        if ( this->givelatticeBeam(i+1)->giveOutsideFlag() == 0 || this->givelatticeBeam(i+1)->giveOutsideFlag() == 2 ) {
+        if ( this->giveLatticeBeam(i+1)->giveOutsideFlag() == 0 || this->giveLatticeBeam(i+1)->giveOutsideFlag() == 2 ) {
             numberOfBeams++;
         }
     }
 
     numberOfLinks = 0;
     for ( int i = 0; i < this->giveNumberOfLatticeLinks(); i++ ) {
-        int linkVer1 = this->givelatticeLink(i+1)->giveLocalVertex(1);
-        int linkVer2 = this->givelatticeLink(i+1)->giveLocalVertex(2);
+        int linkVer1 = this->giveLatticeLink(i+1)->giveLocalVertex(1);
+        int linkVer2 = this->giveLatticeLink(i+1)->giveLocalVertex(2);
         if ( reinfMirrorNodeList.contains(linkVer1) && mirrorNodeList.contains(linkVer2) ) {
             numberOfLinks++;
         }
@@ -7964,7 +8676,7 @@ fprintf(outputStream, "StaticStructural nsteps 200 nmodules 3 initialguess 1 lst
     fprintf(outputStream, "domain 3d\n");
     fprintf(outputStream, "OutputManager tstep_all dofman_output {%d}\n", controlNode);
     fprintf(outputStream, "ndofman %d nelem %d ncrosssect %d nmat %d nbc 4 nic 0 nltf 1 nset %d\n", numberOfNodes, numberOfElem,
-            2*fibreList->giveSize()+1,  2*fibreList->giveSize()+1, 7 + 2*fibreList->giveSize() );
+            2*converter::size1(fibreList)+1,  2*converter::size1(fibreList)+1, 7 + 2*converter::size1(fibreList) );
 
     int firstFlag = 0;
 
@@ -8013,10 +8725,10 @@ fprintf(outputStream, "StaticStructural nsteps 200 nmodules 3 initialguess 1 lst
     //reference nodes for 3d beams. Assuming only straight reinforcement bars.
     //Therefore, only one refnode per fibre. For curved reinforcement, each beam
     //element would require a seperate reference node.
-    FloatMatrix R(3,3);
+    oofem::FloatMatrix R(3,3);
     R.zero(); R.at(1,2)=-1; R.at(2,1)=1; R.at(3,3)=1;
     oofem::IntArray refNodeNumbers(this->giveNumberOfFibres());
-    FloatMatrix referenceNodes;
+    oofem::FloatMatrix referenceNodes;
     referenceNodes.resize(this->giveNumberOfFibres(), 3);
     for ( int i = 0; i < this->giveNumberOfFibres(); i++) {
         oofem::FloatArray dirVec = this->giveFibre(i+1)->giveDirVector();
@@ -8145,10 +8857,10 @@ fprintf(outputStream, "StaticStructural nsteps 200 nmodules 3 initialguess 1 lst
     beamElL2Gmap.zero();
     for ( int i = 0; i < this->giveNumberOfLatticeBeams(); i++ ) {
       //First plot all of them
-      if ( this->givelatticeBeam(i + 1)->giveOutsideFlag() == 0 || this->givelatticeBeam(i + 1)->giveOutsideFlag() == 2 ) { //Elements are inside
+      if ( this->giveLatticeBeam(i + 1)->giveOutsideFlag() == 0 || this->giveLatticeBeam(i + 1)->giveOutsideFlag() == 2 ) { //Elements are inside
         locationBeam.zero();
         boundaryFlag = 0;
-        this->givelatticeBeam(i + 1)->giveLocalVertices(nodes);
+        this->giveLatticeBeam(i + 1)->giveLocalVertices(nodes);
         newNodes = nodes;
 
         //Go through nodes and replace the ones outside with periodic nodes
@@ -8213,7 +8925,7 @@ fprintf(outputStream, "StaticStructural nsteps 200 nmodules 3 initialguess 1 lst
 
         //find the reference node
         int refNode = 0;
-        oofem::FloatArray dirVec = this->givelatticeBeam(i+1)->giveDirectionVector();
+        oofem::FloatArray dirVec = this->giveLatticeBeam(i+1)->giveDirectionVector();
         for ( int j = 0; j < this->giveNumberOfFibres(); j++ ) {
             oofem::FloatArray perpVec(3), firstNodeCoords(3);
             int numReinfNode = this->giveFibre(j+1)->giveNumberReinforcementNode(1);
@@ -8221,7 +8933,7 @@ fprintf(outputStream, "StaticStructural nsteps 200 nmodules 3 initialguess 1 lst
             perpVec.at(1) = referenceNodes.at(j+1,1) - firstNodeCoords.at(1);
             perpVec.at(2) = referenceNodes.at(j+1,2) - firstNodeCoords.at(2);
             perpVec.at(3) = referenceNodes.at(j+1,3) - firstNodeCoords.at(3);
-            double sp = dotProduct(dirVec, perpVec, 3);
+            double sp = dirVec.dotProduct(perpVec, 3);
 
             if ( fabs(sp) < this->giveTol() ) {
                 refNode = refNodeNumbers.at(j+1);
@@ -8251,18 +8963,18 @@ fprintf(outputStream, "StaticStructural nsteps 200 nmodules 3 initialguess 1 lst
     intElL2Gmap.zero();
     oofem::FloatArray direction(3);
     for ( int i = 0; i < this->giveNumberOfLatticeLinks(); i++ ) {
-        int linkVer1 = this->givelatticeLink(i+1)->giveLocalVertex(1);
-        int linkVer2 = this->givelatticeLink(i+1)->giveLocalVertex(2);
+        int linkVer1 = this->giveLatticeLink(i+1)->giveLocalVertex(1);
+        int linkVer2 = this->giveLatticeLink(i+1)->giveLocalVertex(2);
         //recalculate normal vector
-	direction = this->givelatticeLink(i+1)->giveDirectionVector();
+	direction = this->giveLatticeLink(i+1)->giveDirectionVector();
         oofem::FloatArray normalVec(3);
         oofem::FloatArray beamNode = *this->giveReinforcementNode(linkVer1)->giveCoordinates();
         oofem::FloatArray tetraNode = *this->giveDelaunayVertex(linkVer2)->giveCoordinates();
-        normalVec.add(beamNode); normalVec.substract(tetraNode); normalVec.normalize();
+        normalVec.add(beamNode); normalVec.subtract(tetraNode); normalVec.normalize();
         if ( reinfMirrorNodeList.contains(linkVer1) && mirrorNodeList.contains(linkVer2) ) { //to make sure that the link on master surface is not omitted
-//             fprintf( outputStream, "intelpoint %d nodes 2 %d %d normal 3 %e %e %e length %e\n", this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + i + 1, linkVer2, L2Gmap.at(linkVer1), normalVec.at(1), normalVec.at(2), normalVec.at(3), this->givelatticeLink(i+1)->giveAssociatedLength() );
+//             fprintf( outputStream, "intelpoint %d nodes 2 %d %d normal 3 %e %e %e length %e\n", this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + i + 1, linkVer2, L2Gmap.at(linkVer1), normalVec.at(1), normalVec.at(2), normalVec.at(3), this->giveLatticeLink(i+1)->giveAssociatedLength() );
 	  
-	  fprintf( outputStream, "bondlink3d %d nodes 2 %d %d dirvector 3 %e %e %e length %e length_end %e diameter %e\n", this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + i + 1, L2Gmap.at(linkVer1), linkVer2, direction.at(1), direction.at(2), direction.at(3), this->givelatticeLink(i+1)->giveAssociatedLength(), this->givelatticeLink(i+1)->giveL_end(), this->givelatticeLink(i+1)->giveDiameter());
+	  fprintf( outputStream, "bondlink3d %d nodes 2 %d %d dirvector 3 %e %e %e length %e length_end %e diameter %e\n", this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + i + 1, L2Gmap.at(linkVer1), linkVer2, direction.at(1), direction.at(2), direction.at(3), this->giveLatticeLink(i+1)->giveAssociatedLength(), this->giveLatticeLink(i+1)->giveL_end(), this->giveLatticeLink(i+1)->giveDiameter());
             set3.followedBy(this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + i + 1);
             intElL2Gmap.at(i+1) = this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + i + 1;
         }
@@ -8283,21 +8995,21 @@ fprintf(outputStream, "StaticStructural nsteps 200 nmodules 3 initialguess 1 lst
         }
         //first split reinforcement
         for ( int j = 0; j < this->giveFibre(i+1)->NbOfReinfNodes() - 1; j++ ) {
-            if ( this->givelatticeBeam(beamNo+j+1)->giveOutsideFlag() == 0 || this->givelatticeBeam(beamNo+j+1)->giveOutsideFlag() == 2 ) {
+            if ( this->giveLatticeBeam(beamNo+j+1)->giveOutsideFlag() == 0 || this->giveLatticeBeam(beamNo+j+1)->giveOutsideFlag() == 2 ) {
                 (beamSets[i]).push_back(beamNo+j+1);
                 oofem::IntArray beamNodes;
-                this->givelatticeBeam(beamNo+j+1)->giveLocalVertices(beamNodes);
+                this->giveLatticeBeam(beamNo+j+1)->giveLocalVertices(beamNodes);
                 //for the beam elements, get the corresponding link elements
                 for ( int k = 0; k < this->giveNumberOfLatticeLinks(); k++ ) {
                     oofem::IntArray linkNodes;
-                    this->givelatticeLink(k+1)->giveLocalVertices(linkNodes);
+                    this->giveLatticeLink(k+1)->giveLocalVertices(linkNodes);
                     if ( beamNodes.at(1) == linkNodes.at(1)  ) {
                         (interfaceSets[i]).push_back(k+1);
                     }
                 }
             }
         }
-        firstNodeinFibres.at(i+1) = L2Gmap.at(this->givelatticeLink(interfaceSets[i][0])->giveLocalVertex(1));
+        firstNodeinFibres.at(i+1) = L2Gmap.at(this->giveLatticeLink(interfaceSets[i][0])->giveLocalVertex(1));
     }
     printf("Finished splitting into sets\n");
 
@@ -8323,33 +9035,33 @@ fprintf(outputStream, "StaticStructural nsteps 200 nmodules 3 initialguess 1 lst
     }
 
     if (this->macroType == _Beam) {
-    //     fprintf(outputStream, "BoundaryCondition 3 loadTimeFunction 1 dofs 3 1 7 10 values 3 0 0 0 set %d\n", 3 + 2*fibreList->giveSize()+1);
-      fprintf(outputStream, "BoundaryCondition 1 loadTimeFunction 1 dofs 3 1 7 10 values 3 2.6e-3 0 0 set %d\n", 3 + 2*fibreList->giveSize()+1);
+    //     fprintf(outputStream, "BoundaryCondition 3 loadTimeFunction 1 dofs 3 1 7 10 values 3 0 0 0 set %d\n", 3 + 2*fibreList.size1()+1);
+      fprintf(outputStream, "BoundaryCondition 1 loadTimeFunction 1 dofs 3 1 7 10 values 3 2.6e-3 0 0 set %d\n", 3 + 2*converter::size1(fibreList)+1);
     }
     else if (this->macroType == _Plate) {
-          fprintf(outputStream, "BoundaryCondition 1 loadTimeFunction 1 dofs 7 1 7 8 10 11 12 13 values 7 2.e-3 0 0 0 0 0 0 set %d\n", 3 + 2*fibreList->giveSize()+1);
+      fprintf(outputStream, "BoundaryCondition 1 loadTimeFunction 1 dofs 7 1 7 8 10 11 12 13 values 7 2.e-3 0 0 0 0 0 0 set %d\n", 3 + 2*converter::size1(fibreList)+1);
     }
     else {
       printf("output for this macrotype %s not yet implemented in grid.C\n",this-macroType);
     }
     
     
-    fprintf(outputStream, "BoundaryCondition 2 loadTimeFunction 1 dofs 3 1 2 3 values 3 0 0 0 set %d\n", 3+ 2*fibreList->giveSize()+2);
-    fprintf(outputStream, "BoundaryCondition 3 loadTimeFunction 1 dofs 2 2 3 values 2 0 0 set %d\n", 3+ 2*fibreList->giveSize()+3);
-    fprintf(outputStream, "BoundaryCondition 4 loadTimeFunction 1 dofs 1 3 values 1 0 set %d\n", 3+ 2*fibreList->giveSize()+4);
-    //    fprintf(outputStream, "NodalLoad 6 loadTimeFunction 1 dofs 1 1 components 1 1 set %d reference\n", 3+ 2*fibreList->giveSize()+1);
+    fprintf(outputStream, "BoundaryCondition 2 loadTimeFunction 1 dofs 3 1 2 3 values 3 0 0 0 set %d\n", 3+ 2*converter::size1(fibreList)+2);
+    fprintf(outputStream, "BoundaryCondition 3 loadTimeFunction 1 dofs 2 2 3 values 2 0 0 set %d\n", 3+ 2*converter::size1(fibreList)+3);
+    fprintf(outputStream, "BoundaryCondition 4 loadTimeFunction 1 dofs 1 3 values 1 0 set %d\n", 3+ 2*converter::size1(fibreList)+4);
+    //    fprintf(outputStream, "NodalLoad 6 loadTimeFunction 1 dofs 1 1 components 1 1 set %d reference\n", 3+ 2*fibreList.size1()+1);
     // if (this->macroType == _Truss) {
-    //     fprintf(outputStream, "BoundaryCondition 3 loadTimeFunction 1 dofs 1 1 values 1 0 set %d\n", 3 + 2*fibreList->giveSize()+1);
+    //     fprintf(outputStream, "BoundaryCondition 3 loadTimeFunction 1 dofs 1 1 values 1 0 set %d\n", 3 + 2*fibreList.size1()+1);
     // } else if (this->macroType == _Membrane) {
-    //     fprintf(outputStream, "BoundaryCondition 3 loadTimeFunction 1 dofs 4 1 2 4 5  values 4 0 0 0 0 set %d\n", 3 + 2*fibreList->giveSize()+1);
+    //     fprintf(outputStream, "BoundaryCondition 3 loadTimeFunction 1 dofs 4 1 2 4 5  values 4 0 0 0 0 set %d\n", 3 + 2*fibreList.size1()+1);
     // } else if (this->macroType == _Beam) {
-    //     fprintf(outputStream, "BoundaryCondition 3 loadTimeFunction 1 dofs 3 1 7 10 values 3 0 0 0 set %d\n", 3 + 2*fibreList->giveSize()+1);
+    //     fprintf(outputStream, "BoundaryCondition 3 loadTimeFunction 1 dofs 3 1 7 10 values 3 0 0 0 set %d\n", 3 + 2*fibreList.size1()+1);
     // } else if (this->macroType == _Plate) {
-    //     fprintf(outputStream, "BoundaryCondition 3 loadTimeFunction 1 dofs 10 1 2 4 5 7 8 10 11 12 13 values 10 0 0 0 0 0 0 0 0 0 0 set %d\n", 3 + 2*fibreList->giveSize()+1);
+    //     fprintf(outputStream, "BoundaryCondition 3 loadTimeFunction 1 dofs 10 1 2 4 5 7 8 10 11 12 13 values 10 0 0 0 0 0 0 0 0 0 0 set %d\n", 3 + 2*fibreList.size1()+1);
     // } else if (this->macroType == _3dVoigt) {
-    //     fprintf(outputStream, "BoundaryCondition 3 loadTimeFunction 1 dofs 6 1 2 3 4 5 6 values 6 0 0 0 0 0 0 set %d\n", 3 + 2*fibreList->giveSize()+1);
+    //     fprintf(outputStream, "BoundaryCondition 3 loadTimeFunction 1 dofs 6 1 2 3 4 5 6 values 6 0 0 0 0 0 0 set %d\n", 3 + 2*fibreList.size1()+1);
     // } else if (this->macroType == _3d) {
-    //     fprintf(outputStream, "BoundaryCondition 3 loadTimeFunction 1 dofs 9 1 2 3 4 5 6 7 8 9 values 9 0 0 0 0 0 0 0 0 0 set %d\n", 3 + 2*fibreList->giveSize()+1);
+    //     fprintf(outputStream, "BoundaryCondition 3 loadTimeFunction 1 dofs 9 1 2 3 4 5 6 7 8 9 values 9 0 0 0 0 0 0 0 0 0 set %d\n", 3 + 2*fibreList.size1()+1);
     // }
     //    fprintf(outputStream, "ConstantFunction 1 f(t) 1.\n");
     fprintf(outputStream, "PiecewiseLinFunction 1 nPoints 2 t 2 0. 200. f(t) 2 0. 1.\n");
@@ -8380,10 +9092,10 @@ fprintf(outputStream, "StaticStructural nsteps 200 nmodules 3 initialguess 1 lst
         }
         fprintf(outputStream, "\n");
     }
-    fprintf(outputStream, "set %d nodes 1 %d \n", 3 + 2*fibreList->giveSize()+1, controlNode);
-    fprintf(outputStream, "set %d nodes 1 %d \n", 3 + 2*fibreList->giveSize()+2, firstNode);
-    fprintf(outputStream, "set %d nodes 1 %d \n", 3 + 2*fibreList->giveSize()+3, secondNode);
-    fprintf(outputStream, "set %d nodes 1 %d \n", 3 + 2*fibreList->giveSize()+4, thirdNode);
+    fprintf(outputStream, "set %d nodes 1 %d \n", 3 + 2*converter::size1(fibreList)+1, controlNode);
+    fprintf(outputStream, "set %d nodes 1 %d \n", 3 + 2*converter::size1(fibreList)+2, firstNode);
+    fprintf(outputStream, "set %d nodes 1 %d \n", 3 + 2*converter::size1(fibreList)+3, secondNode);
+    fprintf(outputStream, "set %d nodes 1 %d \n", 3 + 2*converter::size1(fibreList)+4, thirdNode);
 
     fprintf(outputStream, "#%%BEGIN_CHECK%%\n");
     fprintf(outputStream, "#REACTION number %d dof 1\n",controlNode);
@@ -8392,7 +9104,7 @@ fprintf(outputStream, "StaticStructural nsteps 200 nmodules 3 initialguess 1 lst
     fprintf(outputStream, "#%%END_CHECK%%\n");
 
     
-    // fprintf(outputStream, "set %d nodes %d ", 3 + 2*fibreList->giveSize() + 2, this->fibreList->giveSize());
+    // fprintf(outputStream, "set %d nodes %d ", 3 + 2*fibreList.size1() + 2, this->fibreList.size1());
     // for ( int i = 0; i < this->giveNumberOfFibres(); i++ ) {
     //     fprintf(outputStream, "%d ", firstNodeinFibres.at(i+1));
     // }
@@ -8401,7 +9113,7 @@ fprintf(outputStream, "StaticStructural nsteps 200 nmodules 3 initialguess 1 lst
 }
 
 void
-Grid :: give3DRCPeriodicSMOutput2(char *fileName)
+Grid :: give3DRCPeriodicSMOutput2(const std::string& fileName)
 /**
  * Alternative (2) output for periodic mesh of a 3D reinforced concrete RVE.  Concrete is modelled with tetrahedras (LTRSpace and LTRSpaceBoundary),
  * reinforcement is modelled with beam elements (LIBeam3d and LIBeam3dBoundary), and the interface is modelled with link elements (BondLink3d). Four link elements are used to anchor the rebar node in the tetrahedron.
@@ -8409,10 +9121,21 @@ Grid :: give3DRCPeriodicSMOutput2(char *fileName)
  * @authors: Adam Sciegaj, Peter Grassl
  */
 {
-    FILE *outputStream;
-    if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        converter::errorf("Cannot open output file %s", fileName);
-    }
+
+    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
+
+  /*   const std::string fileName1 = fileName + ".sm"; */
+  /*   FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w"); */
+    
+  /*   const std::string fileName2 = fileName + ".tm"; */
+  /*   FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
+
+
+  /* FILE *outputStream; */
+  /*   if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
+  /*       converter::errorf("Cannot open output file %s", fileName); */
+  /*   } */
+
     printf("Processing nodes\n");
 
     oofem::IntArray periodicFlag(3);
@@ -8619,7 +9342,7 @@ Grid :: give3DRCPeriodicSMOutput2(char *fileName)
 
     //total number of nodes: number of master tetra nodes + number of master reinforcement nodes +
     // reference nodes (assuming straight reinforcement -- 1 per fibre) + control node
-    numberOfNodes = mirrorNodeList.giveSize() + reinfMirrorNodeList.giveSize() + fibreList->giveSize() + 1;
+    numberOfNodes = mirrorNodeList.giveSize() + reinfMirrorNodeList.giveSize() + converter::size1(fibreList) + 1;
 
     //Determine the number of Delaunay tetrahedra in the domain
     numberOfTetras = 0;
@@ -8631,15 +9354,15 @@ Grid :: give3DRCPeriodicSMOutput2(char *fileName)
 
     numberOfBeams = 0;
     for ( int i = 0; i < this->giveNumberOfLatticeBeams(); i++ ) {
-        if ( this->givelatticeBeam(i+1)->giveOutsideFlag() == 0 || this->givelatticeBeam(i+1)->giveOutsideFlag() == 2 ) {
+        if ( this->giveLatticeBeam(i+1)->giveOutsideFlag() == 0 || this->giveLatticeBeam(i+1)->giveOutsideFlag() == 2 ) {
             numberOfBeams++;
         }
     }
 
     numberOfLinks = 0;
     for ( int i = 0; i < this->giveNumberOfLatticeLinks(); i++ ) {
-        int linkVer1 = this->givelatticeLink(i+1)->giveLocalVertex(1);
-        int linkVer2 = this->givelatticeLink(i+1)->giveLocalVertex(2);
+        int linkVer1 = this->giveLatticeLink(i+1)->giveLocalVertex(1);
+        int linkVer2 = this->giveLatticeLink(i+1)->giveLocalVertex(2);
         if ( reinfMirrorNodeList.contains(linkVer1) && mirrorNodeList.contains(linkVer2) ) {
             numberOfLinks++;
         }
@@ -8664,7 +9387,7 @@ fprintf(outputStream, "StaticStructural nsteps 200 nmodules 3 initialguess 1 lst
     fprintf(outputStream, "domain 3d\n");
     fprintf(outputStream, "OutputManager tstep_all dofman_output {%d}\n", controlNode);
     fprintf(outputStream, "ndofman %d nelem %d ncrosssect %d nmat %d nbc 4 nic 0 nltf 1 nset %d\n", numberOfNodes, numberOfElem,
-            2*fibreList->giveSize()+1,  2*fibreList->giveSize()+1, 7 + 2*fibreList->giveSize() );
+            2*converter::size1(fibreList)+1,  2*converter::size1(fibreList)+1, 7 + 2*converter::size1(fibreList) );
 
     int firstFlag = 0;
 
@@ -8713,10 +9436,10 @@ fprintf(outputStream, "StaticStructural nsteps 200 nmodules 3 initialguess 1 lst
     //reference nodes for 3d beams. Assuming only straight reinforcement bars.
     //Therefore, only one refnode per fibre. For curved reinforcement, each beam
     //element would require a seperate reference node.
-    FloatMatrix R(3,3);
+    oofem::FloatMatrix R(3,3);
     R.zero(); R.at(1,2)=-1; R.at(2,1)=1; R.at(3,3)=1;
     oofem::IntArray refNodeNumbers(this->giveNumberOfFibres());
-    FloatMatrix referenceNodes;
+    oofem::FloatMatrix referenceNodes;
     referenceNodes.resize(this->giveNumberOfFibres(), 3);
     for ( int i = 0; i < this->giveNumberOfFibres(); i++) {
         oofem::FloatArray dirVec = this->giveFibre(i+1)->giveDirVector();
@@ -8831,10 +9554,10 @@ fprintf(outputStream, "StaticStructural nsteps 200 nmodules 3 initialguess 1 lst
     beamElL2Gmap.zero();
     for ( int i = 0; i < this->giveNumberOfLatticeBeams(); i++ ) {
       //First plot all of them
-      if ( this->givelatticeBeam(i + 1)->giveOutsideFlag() == 0 || this->givelatticeBeam(i + 1)->giveOutsideFlag() == 2 ) { //Elements are inside
+      if ( this->giveLatticeBeam(i + 1)->giveOutsideFlag() == 0 || this->giveLatticeBeam(i + 1)->giveOutsideFlag() == 2 ) { //Elements are inside
         locationBeam.zero();
         boundaryFlag = 0;
-        this->givelatticeBeam(i + 1)->giveLocalVertices(nodes);
+        this->giveLatticeBeam(i + 1)->giveLocalVertices(nodes);
         newNodes = nodes;
 
         //Go through nodes and replace the ones outside with periodic nodes
@@ -8899,7 +9622,7 @@ fprintf(outputStream, "StaticStructural nsteps 200 nmodules 3 initialguess 1 lst
 
         //find the reference node
         int refNode = 0;
-        oofem::FloatArray dirVec = this->givelatticeBeam(i+1)->giveDirectionVector();
+        oofem::FloatArray dirVec = this->giveLatticeBeam(i+1)->giveDirectionVector();
         for ( int j = 0; j < this->giveNumberOfFibres(); j++ ) {
             oofem::FloatArray perpVec(3), firstNodeCoords(3);
             int numReinfNode = this->giveFibre(j+1)->giveNumberReinforcementNode(1);
@@ -8907,7 +9630,7 @@ fprintf(outputStream, "StaticStructural nsteps 200 nmodules 3 initialguess 1 lst
             perpVec.at(1) = referenceNodes.at(j+1,1) - firstNodeCoords.at(1);
             perpVec.at(2) = referenceNodes.at(j+1,2) - firstNodeCoords.at(2);
             perpVec.at(3) = referenceNodes.at(j+1,3) - firstNodeCoords.at(3);
-            double sp = dotProduct(dirVec, perpVec, 3);
+            double sp = dirVec.dotProduct(perpVec, 3);
 
             if ( fabs(sp) < this->giveTol() ) {
                 refNode = refNodeNumbers.at(j+1);
@@ -8937,14 +9660,14 @@ fprintf(outputStream, "StaticStructural nsteps 200 nmodules 3 initialguess 1 lst
     intElL2Gmap.zero();
     oofem::FloatArray direction(3);
     for ( int i = 0; i < this->giveNumberOfLatticeLinks(); i++ ) {
-        int linkVer1 = this->givelatticeLink(i+1)->giveLocalVertex(1);
-        int linkVer2 = this->givelatticeLink(i+1)->giveLocalVertex(2);
+        int linkVer1 = this->giveLatticeLink(i+1)->giveLocalVertex(1);
+        int linkVer2 = this->giveLatticeLink(i+1)->giveLocalVertex(2);
         //recalculate normal vector
-	direction = this->givelatticeLink(i+1)->giveDirectionVector();
+	direction = this->giveLatticeLink(i+1)->giveDirectionVector();
         oofem::FloatArray normalVec(3);
         oofem::FloatArray beamNodeCoords = *this->giveReinforcementNode(linkVer1)->giveCoordinates();
 	//        oofem::FloatArray tetraNodeCoords = *this->giveDelaunayVertex(linkVer2)->giveCoordinates();
-	//        normalVec.add(beamNodeCoords); normalVec.substract(tetraNodeCoords); normalVec.normalize();
+	//        normalVec.add(beamNodeCoords); normalVec.subtract(tetraNodeCoords); normalVec.normalize();
 
 	//Find tetra in which rebar node is and create for links to nodes on vertices
 	//Get the tetras connected to the tetra node.
@@ -8970,7 +9693,7 @@ fprintf(outputStream, "StaticStructural nsteps 200 nmodules 3 initialguess 1 lst
 
 	  for(int k = 1;k <= 4;k++){
 	    
-	    fprintf( outputStream, "bondlink3d %d nodes 2 %d %d dirvector 3 %e %e %e length %e length_end %e diameter %e\n", this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + 4*i + k, L2Gmap.at(linkVer1), targetTetraNodes.at(k), direction.at(1), direction.at(2), direction.at(3), this->givelatticeLink(i+1)->giveAssociatedLength(), this->givelatticeLink(i+1)->giveL_end(), this->givelatticeLink(i+1)->giveDiameter());
+	    fprintf( outputStream, "bondlink3d %d nodes 2 %d %d dirvector 3 %e %e %e length %e length_end %e diameter %e\n", this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + 4*i + k, L2Gmap.at(linkVer1), targetTetraNodes.at(k), direction.at(1), direction.at(2), direction.at(3), this->giveLatticeLink(i+1)->giveAssociatedLength(), this->giveLatticeLink(i+1)->giveL_end(), this->giveLatticeLink(i+1)->giveDiameter());
             set3.followedBy(this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + i + 1);
             intElL2Gmap.at(i+1) = this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + i + 1;
 	  }
@@ -8992,21 +9715,21 @@ fprintf(outputStream, "StaticStructural nsteps 200 nmodules 3 initialguess 1 lst
         }
         //first split reinforcement
         for ( int j = 0; j < this->giveFibre(i+1)->NbOfReinfNodes() - 1; j++ ) {
-            if ( this->givelatticeBeam(beamNo+j+1)->giveOutsideFlag() == 0 || this->givelatticeBeam(beamNo+j+1)->giveOutsideFlag() == 2 ) {
+            if ( this->giveLatticeBeam(beamNo+j+1)->giveOutsideFlag() == 0 || this->giveLatticeBeam(beamNo+j+1)->giveOutsideFlag() == 2 ) {
                 (beamSets[i]).push_back(beamNo+j+1);
                 oofem::IntArray beamNodes;
-                this->givelatticeBeam(beamNo+j+1)->giveLocalVertices(beamNodes);
+                this->giveLatticeBeam(beamNo+j+1)->giveLocalVertices(beamNodes);
                 //for the beam elements, get the corresponding link elements
                 for ( int k = 0; k < this->giveNumberOfLatticeLinks(); k++ ) {
                     oofem::IntArray linkNodes;
-                    this->givelatticeLink(k+1)->giveLocalVertices(linkNodes);
+                    this->giveLatticeLink(k+1)->giveLocalVertices(linkNodes);
                     if ( beamNodes.at(1) == linkNodes.at(1)  ) {
                         (interfaceSets[i]).push_back(k+1);
                     }
                 }
             }
         }
-        firstNodeinFibres.at(i+1) = L2Gmap.at(this->givelatticeLink(interfaceSets[i][0])->giveLocalVertex(1));
+        firstNodeinFibres.at(i+1) = L2Gmap.at(this->giveLatticeLink(interfaceSets[i][0])->giveLocalVertex(1));
     }
     printf("Finished splitting into sets\n");
 
@@ -9032,18 +9755,18 @@ fprintf(outputStream, "StaticStructural nsteps 200 nmodules 3 initialguess 1 lst
     }
 
     if (this->macroType == _Beam) {
-      fprintf(outputStream, "BoundaryCondition 1 loadTimeFunction 1 dofs 3 1 7 10 values 3 2.6e-3 0 0 set %d\n", 3 + 2*fibreList->giveSize()+1);
+      fprintf(outputStream, "BoundaryCondition 1 loadTimeFunction 1 dofs 3 1 7 10 values 3 2.6e-3 0 0 set %d\n", 3 + 2*converter::size1(fibreList)+1);
     }
     else if (this->macroType == _Plate) {
-      fprintf(outputStream, "BoundaryCondition 1 loadTimeFunction 1 dofs 7 1 7 8 10 11 12 13 values 7 2.e-3 0 0 0 0 0 0 set %d\n", 3 + 2*fibreList->giveSize()+1);
+      fprintf(outputStream, "BoundaryCondition 1 loadTimeFunction 1 dofs 7 1 7 8 10 11 12 13 values 7 2.e-3 0 0 0 0 0 0 set %d\n", 3 + 2*converter::size1(fibreList)+1);
     }
     else {
       printf("output for this macrotype %s not yet implemented in grid.C\n",this-macroType);
     }
     
-    fprintf(outputStream, "BoundaryCondition 2 loadTimeFunction 1 dofs 3 1 2 3 values 3 0 0 0 set %d\n", 3+ 2*fibreList->giveSize()+2);
-    fprintf(outputStream, "BoundaryCondition 3 loadTimeFunction 1 dofs 2 2 3 values 2 0 0 set %d\n", 3+ 2*fibreList->giveSize()+3);
-    fprintf(outputStream, "BoundaryCondition 4 loadTimeFunction 1 dofs 1 3 values 1 0 set %d\n", 3+ 2*fibreList->giveSize()+4);
+    fprintf(outputStream, "BoundaryCondition 2 loadTimeFunction 1 dofs 3 1 2 3 values 3 0 0 0 set %d\n", 3+ 2*converter::size1(fibreList)+2);
+    fprintf(outputStream, "BoundaryCondition 3 loadTimeFunction 1 dofs 2 2 3 values 2 0 0 set %d\n", 3+ 2*converter::size1(fibreList)+3);
+    fprintf(outputStream, "BoundaryCondition 4 loadTimeFunction 1 dofs 1 3 values 1 0 set %d\n", 3+ 2*converter::size1(fibreList)+4);
 
     fprintf(outputStream, "PiecewiseLinFunction 1 nPoints 2 t 2 0. 200. f(t) 2 0. 1.\n");
     fprintf(outputStream, "set 1 elements %d ", set1.giveSize());
@@ -9073,10 +9796,10 @@ fprintf(outputStream, "StaticStructural nsteps 200 nmodules 3 initialguess 1 lst
         }
         fprintf(outputStream, "\n");
     }
-    fprintf(outputStream, "set %d nodes 1 %d \n", 3 + 2*fibreList->giveSize()+1, controlNode);
-    fprintf(outputStream, "set %d nodes 1 %d \n", 3 + 2*fibreList->giveSize()+2, firstNode);
-    fprintf(outputStream, "set %d nodes 1 %d \n", 3 + 2*fibreList->giveSize()+3, secondNode);
-    fprintf(outputStream, "set %d nodes 1 %d \n", 3 + 2*fibreList->giveSize()+4, thirdNode);
+    fprintf(outputStream, "set %d nodes 1 %d \n", 3 + 2*converter::size1(fibreList)+1, controlNode);
+    fprintf(outputStream, "set %d nodes 1 %d \n", 3 + 2*converter::size1(fibreList)+2, firstNode);
+    fprintf(outputStream, "set %d nodes 1 %d \n", 3 + 2*converter::size1(fibreList)+3, secondNode);
+    fprintf(outputStream, "set %d nodes 1 %d \n", 3 + 2*converter::size1(fibreList)+4, thirdNode);
 
     fprintf(outputStream, "#%%BEGIN_CHECK%%\n");
     fprintf(outputStream, "#REACTION number %d dof 1\n",controlNode);
@@ -9091,15 +9814,26 @@ fprintf(outputStream, "StaticStructural nsteps 200 nmodules 3 initialguess 1 lst
 
 
 void
-Grid :: give3DGopShaOutput(char *fileName)
+Grid :: give3DGopShaOutput(const std::string& fileName)
 {
   //Output for GopSha experiment (Direct tension with two small notches.
   //Only mechanical model
 
-    FILE *outputStream;
-    if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        converter::errorf("Cannot open output file %s", fileName);
-    }
+
+    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
+
+  /*   const std::string fileName1 = fileName + ".sm"; */
+  /*   FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w"); */
+    
+  /*   const std::string fileName2 = fileName + ".tm"; */
+  /*   FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
+
+
+
+  /* FILE *outputStream; */
+  /*   if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
+  /*       converter::errorf("Cannot open output file %s", fileName); */
+  /*   } */
 
     int numberOfNodes, numberOfLines;
     oofem::FloatArray coords(3);
@@ -9378,16 +10112,25 @@ Grid :: give3DGopShaOutput(char *fileName)
 }
 
 void
-Grid :: give3DKupferOutput(char *fileName)
+Grid :: give3DKupferOutput(const std::string& fileName)
 {
 
   //Output for Kupfer experiment (Biaxial compression with stress ratios.
   //Only mechanical model
 
-    FILE *outputStream;
-    if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        converter::errorf("Cannot open output file %s", fileName);
-    }
+    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
+
+  /*   const std::string fileName1 = fileName + ".sm"; */
+  /*   FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w"); */
+    
+  /*   const std::string fileName2 = fileName + ".tm"; */
+  /*   FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
+
+
+  /* FILE *outputStream; */
+  /*   if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
+  /*       converter::errorf("Cannot open output file %s", fileName); */
+  /*   } */
 
     int numberOfNodes, numberOfLines;
     oofem::FloatArray coords(3);
@@ -9551,14 +10294,14 @@ wf 20.e-6 ahard 1.e-3 angle1 0.5 flow 0.25 randvars 2 806 807 randgen 2 3 3\n");
     }
 
 void
-Grid :: give3DImranOutput(char *fileName)
+Grid :: give3DImranOutput(const std::string& fileName)
 {
   return;
 }
 
 
 void
-Grid :: give3DNotchOutput(char *fileName)
+Grid :: give3DNotchOutput(const std::string& fileName)
 {
   return;
 }
@@ -9566,9 +10309,9 @@ Grid :: give3DNotchOutput(char *fileName)
 
 
 void
-Grid :: givePOVOutput(char *fileName)
+Grid :: givePOVOutput(const std::string& fileName)
 {
-    char fileName1 [ MAX_FILENAME_LENGTH + 10 ];
+  //    char fileName1 [ MAX_FILENAME_LENGTH + 10 ];
 
     this->giveVoronoiPOVOutput(fileName);
 
@@ -9577,23 +10320,33 @@ Grid :: givePOVOutput(char *fileName)
 
 
 void
-Grid :: giveVoronoiPOVOutput(char *fileName)
+Grid :: giveVoronoiPOVOutput(const std::string& fileName)
 {
-    char fileName1 [ MAX_FILENAME_LENGTH + 10 ];
-    strcpy(fileName1, fileName);
-    strcat(fileName1, ".vor.line.pov");
-    FILE *outputStream1;
-    if ( ( outputStream1 = fopen(fileName1, "w") ) == NULL ) {
-        converter::errorf("Can't open output file %s", fileName1);
-    }
 
-    char fileName2 [ MAX_FILENAME_LENGTH + 10 ];
-    strcpy(fileName2, fileName);
-    strcat(fileName2, ".vor.cross.pov");
-    FILE *outputStream2;
-    if ( ( outputStream2 = fopen(fileName2, "w") ) == NULL ) {
-        converter::errorf("Can't open output file %s", fileName2);
-    }
+  //    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
+
+    const std::string fileName1 = fileName + ".vor.line.pov";
+    FILE *outputStream1 = converter::fopen_or_die(fileName1, "w");
+    
+    const std::string fileName2 = fileName + ".vor.cross.pov";
+    FILE *outputStream2 = converter::fopen_or_die(fileName2, "w");
+
+
+  /* char fileName1 [ MAX_FILENAME_LENGTH + 10 ]; */
+  /*   strcpy(fileName1, fileName); */
+  /*   strcat(fileName1, ".vor.line.pov"); */
+  /*   FILE *outputStream1; */
+  /*   if ( ( outputStream1 = fopen(fileName1, "w") ) == NULL ) { */
+  /*       converter::errorf("Can't open output file %s", fileName1); */
+  /*   } */
+
+  /*   char fileName2 [ MAX_FILENAME_LENGTH + 10 ]; */
+  /*   strcpy(fileName2, fileName); */
+  /*   strcat(fileName2, ".vor.cross.pov"); */
+  /*   FILE *outputStream2; */
+  /*   if ( ( outputStream2 = fopen(fileName2, "w") ) == NULL ) { */
+  /*       converter::errorf("Can't open output file %s", fileName2); */
+  /*   } */
 
 
     oofem::FloatArray coord1, coord2;
@@ -9617,31 +10370,44 @@ Grid :: giveVoronoiPOVOutput(char *fileName)
 
 
 void
-Grid :: giveDelaunayPOVOutput(char *fileName)
+Grid :: giveDelaunayPOVOutput(const std::string& fileName)
 {
-    char fileName1 [ MAX_FILENAME_LENGTH + 10 ];
-    strcpy(fileName1, fileName);
-    strcat(fileName1, ".del.line.pov");
-    FILE *outputStream1;
-    if ( ( outputStream1 = fopen(fileName1, "w") ) == NULL ) {
-        converter::errorf("Can't open output file %s", fileName1);
-    }
 
-    char fileName2 [ MAX_FILENAME_LENGTH + 10 ];
-    strcpy(fileName2, fileName);
-    strcat(fileName2, ".del.cross.pov");
-    FILE *outputStream2;
-    if ( ( outputStream2 = fopen(fileName2, "w") ) == NULL ) {
-        converter::errorf("Can't open output file %s", fileName2);
-    }
+  //    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
 
-    char fileName3 [ MAX_FILENAME_LENGTH + 10 ];
-    strcpy(fileName3, fileName);
-    strcat(fileName3, ".crack.pov");
-    FILE *outputStream3;
-    if ( ( outputStream3 = fopen(fileName3, "w") ) == NULL ) {
-        converter::errorf("Can't open output file %s", fileName3);
-    }
+    const std::string fileName1 = fileName + ".del.line.pov";
+    FILE *outputStream1 = converter::fopen_or_die(fileName1, "w");
+    
+    const std::string fileName2 = fileName + ".del.cross.pov";
+    FILE *outputStream2 = converter::fopen_or_die(fileName2, "w");
+
+    const std::string fileName3 = fileName + ".del.crack.pov";
+    FILE *outputStream3 = converter::fopen_or_die(fileName2, "w");
+
+
+  /* char fileName1 [ MAX_FILENAME_LENGTH + 10 ]; */
+  /*   strcpy(fileName1, fileName); */
+  /*   strcat(fileName1, ".del.line.pov"); */
+  /*   FILE *outputStream1; */
+  /*   if ( ( outputStream1 = fopen(fileName1, "w") ) == NULL ) { */
+  /*       converter::errorf("Can't open output file %s", fileName1); */
+  /*   } */
+
+  /*   char fileName2 [ MAX_FILENAME_LENGTH + 10 ]; */
+  /*   strcpy(fileName2, fileName); */
+  /*   strcat(fileName2, ".del.cross.pov"); */
+  /*   FILE *outputStream2; */
+  /*   if ( ( outputStream2 = fopen(fileName2, "w") ) == NULL ) { */
+  /*       converter::errorf("Can't open output file %s", fileName2); */
+  /*   } */
+
+  /*   char fileName3 [ MAX_FILENAME_LENGTH + 10 ]; */
+  /*   strcpy(fileName3, fileName); */
+  /*   strcat(fileName3, ".crack.pov"); */
+  /*   FILE *outputStream3; */
+  /*   if ( ( outputStream3 = fopen(fileName3, "w") ) == NULL ) { */
+  /*       converter::errorf("Can't open output file %s", fileName3); */
+  /*   } */
 
 
     oofem::FloatArray coord1, coord2;
@@ -10587,64 +11353,109 @@ void Grid :: free_ivector(int *v, int nl, int nh)
 
 
 
-void Grid :: giveVtkOutput2(char *fileName, int nb_of_mt )
+void Grid :: giveVtkOutput2(const std::string& fileName, int nb_of_mt )
 {
     FILE *outputStream;
     
-    if ( (this->periodicityFlag.at(1) != 1)  && (this->periodicityFlag.at(2) != 1) && (this->periodicityFlag.at(3) != 1)) {
-        char fileName1 [ MAX_FILENAME_LENGTH + 10 ];
-        strcpy(fileName1, fileName);
-        strcat(fileName1, ".voronoicell.vtu");
-        if ( ( outputStream = fopen(fileName1, "w") ) == NULL ) {
-            converter::errorf("Can't open output file %s", fileName1);
-        }
-        giveVoronoiCellVTKOutput(outputStream);
-    }
-    
-    // one file for each kind of delaunayLine
-    for ( int imat = 1; imat <=nb_of_mt ; imat++ ) {
-        char fileName2 [ MAX_FILENAME_LENGTH + 10 ];
-        strcpy(fileName2, fileName);
-        char chaine[100];
-        sprintf(chaine,".delaunayelement.mat%d.vtu",imat);
-        strcat(fileName2, chaine);
-        if ( ( outputStream = fopen(fileName2, "w") ) == NULL ) {
-            printf("Can't open output file %s", fileName2);
-            exit(1);
-        }
-        giveDelaunayElementVTKOutput2(outputStream,imat);
-    }
-    
-    char fileName2 [ MAX_FILENAME_LENGTH + 10 ];
-    strcpy(fileName2, fileName);
-    char chaine[100];
-    sprintf(chaine,".fibre.beamElement.vtu");
-    strcat(fileName2, chaine);
-    if ( ( outputStream = fopen(fileName2, "w") ) == NULL ) {
-        printf("Can't open output file %s", fileName2);
-        exit(1);
-    }
-    giveBeamElementVTKOutput(outputStream);
-    
-    char fileName3 [ MAX_FILENAME_LENGTH + 10 ];
-    strcpy(fileName3, fileName);
-    char chaine2[100];
-    sprintf(chaine2,".fibre.linkElement.vtu");
-    strcat(fileName3, chaine2);
-    if ( ( outputStream = fopen(fileName3, "w") ) == NULL ) {
-        printf("Can't open output file %s", fileName3);
-        exit(1);
-    }
-    giveLinkElementVTKOutput(outputStream);
+    /* if ( (this->periodicityFlag.at(1) != 1)  && (this->periodicityFlag.at(2) != 1) && (this->periodicityFlag.at(3) != 1)) { */
+    /*     char fileName1 [ MAX_FILENAME_LENGTH + 10 ]; */
+    /*     strcpy(fileName1, fileName); */
+    /*     strcat(fileName1, ".voronoicell.vtu"); */
+    /*     if ( ( outputStream = fopen(fileName1, "w") ) == NULL ) { */
+    /*         converter::errorf("Can't open output file %s", fileName1); */
+    /*     } */
+    /*     giveVoronoiCellVTKOutput(outputStream); */
+    /* } */
 
-    char fileName4 [ MAX_FILENAME_LENGTH + 10 ];
-    strcpy(fileName4, fileName);
-    strcat(fileName4, ".voronoielement.vtu");
-    if ( ( outputStream = fopen(fileName4, "w") ) == NULL ) {
-        printf("Can't open output file %s", fileName4);
-        exit(1);
+    if (periodicityFlag.at(1) != 1 &&
+	periodicityFlag.at(2) != 1 &&
+	periodicityFlag.at(3) != 1)
+      {
+	const std::string fname = fileName + ".voronoicell.vtu";
+	if (FILE* f = converter::fopen_or_die(fname, "w")) {
+	  giveVoronoiCellVTKOutput(f);
+	  std::fclose(f);
+	}
+      }
+    
+
+    for (int imat = 1; imat <= nb_of_mt; ++imat) {
+      const std::string fname =
+        fileName + ".delaunayelement.mat" + std::to_string(imat) + ".vtu";
+      
+      if (FILE* f = converter::fopen_or_die(fname, "w")) {
+        giveDelaunayElementVTKOutput2(f, imat);
+        std::fclose(f);
+      }
     }
-    giveVoronoiElementVTKOutput(outputStream);
+    
+    /* // one file for each kind of delaunayLine */
+    /* for ( int imat = 1; imat <=nb_of_mt ; imat++ ) { */
+    /*     char fileName2 [ MAX_FILENAME_LENGTH + 10 ]; */
+    /*     strcpy(fileName2, fileName); */
+    /*     char chaine[100]; */
+    /*     sprintf(chaine,".delaunayelement.mat%d.vtu",imat); */
+    /*     strcat(fileName2, chaine); */
+    /*     if ( ( outputStream = fopen(fileName2, "w") ) == NULL ) { */
+    /*         printf("Can't open output file %s", fileName2); */
+    /*         exit(1); */
+    /*     } */
+    /*     giveDelaunayElementVTKOutput2(outputStream,imat); */
+    /* } */
+
+
+    // Fibre beam elements
+    const std::string fname2 = fileName + ".fibre.beamElement.vtu";
+    if (FILE* f = converter::fopen_or_die(fname2, "w")) {
+        giveBeamElementVTKOutput(f);
+        std::fclose(f);
+    }
+
+    // Fibre link elements
+    const std::string fname3 = fileName + ".fibre.linkElement.vtu";
+    if (FILE* f = converter::fopen_or_die(fname3, "w")) {
+        giveLinkElementVTKOutput(f);
+        std::fclose(f);
+    }
+
+    // Voronoi elements
+    const std::string fname4 = fileName + ".voronoielement.vtu";
+    if (FILE* f = converter::fopen_or_die(fname4, "w")) {
+        giveVoronoiElementVTKOutput(f);
+        std::fclose(f);
+    }
+    
+
+ /* char fileName2 [ MAX_FILENAME_LENGTH + 10 ]; */
+ /*    strcpy(fileName2, fileName); */
+ /*    char chaine[100]; */
+ /*    sprintf(chaine,".fibre.beamElement.vtu"); */
+ /*    strcat(fileName2, chaine); */
+ /*    if ( ( outputStream = fopen(fileName2, "w") ) == NULL ) { */
+ /*        printf("Can't open output file %s", fileName2); */
+ /*        exit(1); */
+ /*    } */
+ /*    giveBeamElementVTKOutput(outputStream); */
+    
+ /*    char fileName3 [ MAX_FILENAME_LENGTH + 10 ]; */
+ /*    strcpy(fileName3, fileName); */
+ /*    char chaine2[100]; */
+ /*    sprintf(chaine2,".fibre.linkElement.vtu"); */
+ /*    strcat(fileName3, chaine2); */
+ /*    if ( ( outputStream = fopen(fileName3, "w") ) == NULL ) { */
+ /*        printf("Can't open output file %s", fileName3); */
+ /*        exit(1); */
+ /*    } */
+ /*    giveLinkElementVTKOutput(outputStream); */
+
+ /*    char fileName4 [ MAX_FILENAME_LENGTH + 10 ]; */
+ /*    strcpy(fileName4, fileName); */
+ /*    strcat(fileName4, ".voronoielement.vtu"); */
+ /*    if ( ( outputStream = fopen(fileName4, "w") ) == NULL ) { */
+ /*        printf("Can't open output file %s", fileName4); */
+ /*        exit(1); */
+ /*    } */
+ /*    giveVoronoiElementVTKOutput(outputStream); */
     
     
     return;
@@ -10652,17 +11463,23 @@ void Grid :: giveVtkOutput2(char *fileName, int nb_of_mt )
 
 
 
-void Grid :: giveVtkOutputTetra(char *fileName, int nb_of_mt )
+void Grid :: giveVtkOutputTetra(const std::string& fileName, int nb_of_mt )
 {
-    FILE *outputStream;
-    
-    strcpy(fileName, fileName);
-    strcat(fileName, ".tetraElement.vtu");
-    if ( ( outputStream = fopen(fileName, "w") ) == NULL ) {
-        printf("Can't open output file %s", fileName);
-        exit(1);
+  //    FILE *outputStream;
+
+    const std::string fname = fileName + ".tetraElement.vtu";
+    if (FILE* f = converter::fopen_or_die(fname, "w")) {
+        giveTetraElementVTKOutput(f);
+        std::fclose(f);
     }
-    giveTetraElementVTKOutput(outputStream);
+    
+    /* strcpy(fileName, fileName); */
+    /* strcat(fileName, ".tetraElement.vtu"); */
+    /* if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
+    /*     printf("Can't open output file %s", fileName); */
+    /*     exit(1); */
+    /* } */
+    /* giveTetraElementVTKOutput(outputStream); */
     
     return;
 }
@@ -10798,7 +11615,7 @@ Grid :: giveBeamElementVTKOutput(FILE *outputStream)
 
     numberOfLines = 0;
     for ( int iline = 0; iline < this->giveNumberOfLatticeBeams(); iline++ ) {
-        if ( this->givelatticeBeam(iline + 1)->giveOutsideFlag() != 1 ) {
+        if ( this->giveLatticeBeam(iline + 1)->giveOutsideFlag() != 1 ) {
 
                 numberOfLines++;
             
@@ -10834,8 +11651,8 @@ Grid :: giveBeamElementVTKOutput(FILE *outputStream)
     printf("\n nb of lattice beam= %d \n",this->giveNumberOfLatticeBeams());////
     
     for ( int i = 0; i <  this->giveNumberOfLatticeBeams(); i++ ) {
-                if ( this->givelatticeBeam(i + 1)->giveOutsideFlag() != 1) {
-                            delaunayLine = this->givelatticeBeam(i + 1);
+                if ( this->giveLatticeBeam(i + 1)->giveOutsideFlag() != 1) {
+                            delaunayLine = this->giveLatticeBeam(i + 1);
                 delaunayLine->giveLocalVertices(nodes);
                                fprintf(outputStream, "%d %d ",
                                        +  nodes.at(1) -1 ,
@@ -10887,7 +11704,7 @@ Grid :: giveLinkElementVTKOutput(FILE *outputStream)
     
     numberOfLines = 0;
     for ( int iline = 0; iline < this->giveNumberOfLatticeLinks(); iline++ ) {
-        if ( this->givelatticeLink(iline + 1)->giveOutsideFlag() != 1 ) {
+        if ( this->giveLatticeLink(iline + 1)->giveOutsideFlag() != 1 ) {
             
             numberOfLines++;
             
@@ -10935,8 +11752,8 @@ Grid :: giveLinkElementVTKOutput(FILE *outputStream)
     printf("\n nb of lattice links = %d \n",this->giveNumberOfLatticeLinks());////
     
     for ( int i = 0; i <  this->giveNumberOfLatticeLinks(); i++ ) {
-        if ( this->givelatticeLink(i + 1)->giveOutsideFlag() != 1) {
-            delaunayLine = this->givelatticeLink(i + 1);
+        if ( this->giveLatticeLink(i + 1)->giveOutsideFlag() != 1) {
+            delaunayLine = this->giveLatticeLink(i + 1);
             delaunayLine->giveLocalVertices(nodes);
             fprintf(outputStream, "%d %d ",
                     this->giveNumberOfDelaunayVertices()+  nodes.at(1) -1 ,

@@ -61,7 +61,7 @@ public:
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "InterfaceCylinder"; }
 
-    void initializeFrom(ConverterInputRecord &ir);
+    void initializeFrom(ConverterInputRecord &ir) override;
     //virtual oofem::IntArray* ResolveDofIDArray (char* initString);
     /// prints receiver state on stdout. Usefull for debuging.
     void         printYourself();
