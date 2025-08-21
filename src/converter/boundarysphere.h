@@ -41,7 +41,7 @@ public:
      */
     BoundarySphere(int n, Grid* aGrid);                      // constructor
     /// Destructor.
-    ~BoundarySphere();                                           // destructor
+    ~BoundarySphere() override = default;                                           // destructor
 
 
     double giveRadius(){return this->radius;}

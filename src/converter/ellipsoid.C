@@ -17,11 +17,6 @@ Ellipsoid :: Ellipsoid(int n,Grid* aGrid) : Inclusion(n,aGrid) //, coordinates()
   this->number = n;
 }
 
-Ellipsoid :: ~Ellipsoid()
-// Destructor.
-{
-}
-
 
 void
 Ellipsoid :: initializeFrom(ConverterInputRecord &ir)

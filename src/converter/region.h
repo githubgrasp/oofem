@@ -33,7 +33,7 @@ public:
      */
     Region(int n, Grid *aGrid);                      // constructor
     /// Destructor.
-    ~Region();                                           // destructor
+    virtual ~Region() = default;                                           // destructor
 
     virtual void initializeFrom(ConverterInputRecord &ir) = 0;
 

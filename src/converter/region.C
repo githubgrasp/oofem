@@ -14,8 +14,8 @@ Region :: Region(int n, Grid *aGrid) : GridComponent(n, aGrid) //, coordinates()
 }
 
 
-
-Region :: ~Region()
-// Destructor.
-{}
+//
+//Region :: ~Region()
+//// Destructor.
+//{}
 

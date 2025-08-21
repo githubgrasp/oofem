@@ -19,10 +19,6 @@ Vertex :: Vertex(int n, Grid *aGrid) : GridComponent(n, aGrid)//, coordinates()
 }
 
 
-Vertex :: ~Vertex()
-// Destructor.
-{}
-
 double Vertex :: giveCoordinate(int i)
 // Returns the i-th coordinate of the receiver.
 {
@@ -60,7 +56,7 @@ Vertex *Vertex :: ofType()
 void Vertex :: setLocalLine(int elem)
 {
     int size = localLines.giveSize();
-    localLines.resize(size + 1);
+    localLines.resizeWithValues(size + 1);
     localLines.at(size + 1) = elem;
     return;
 }
@@ -68,7 +64,7 @@ void Vertex :: setLocalLine(int elem)
 void Vertex :: setLocalTetra(int elem)
 {
     int size = localTetras.giveSize();
-    localTetras.resize(size + 1);
+    localTetras.resizeWithValues(size + 1);
     localTetras.at(size + 1) = elem;
     return;
 }
@@ -78,7 +74,7 @@ void Vertex :: setLocalTetra(int elem)
 void Vertex :: setLocalLink(int elem)
 {
     int size = localLinks.giveSize();
-    localLinks.resize(size + 1);
+    localLinks.resizeWithValues(size + 1);
     localLinks.at(size + 1) = elem;
     return;
 }
@@ -101,7 +97,7 @@ Vertex :: updateCellVertices(oofem::IntArray &nodes)
         }
         if ( flag == 0 ) {
             size = cellVertices.giveSize();
-            cellVertices.resize(size + 1);
+            cellVertices.resizeWithValues(size + 1);
             cellVertices.at(size + 1) = nodes.at(m + 1);
         }
     }
@@ -127,7 +123,7 @@ Vertex :: updateCellElements(oofem::IntArray &elements)
         }	
         if ( flag == 0 ) {
             size = cellElements.giveSize();
-            cellElements.resize(size + 1);
+            cellElements.resizeWithValues(size + 1);
             cellElements.at(size + 1) = elements.at(m + 1);
         }
     }

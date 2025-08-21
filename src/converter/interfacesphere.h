@@ -46,7 +46,7 @@ public:
      */
     InterfaceSphere(int n, Grid* aGrid);                      // constructor
     /// Destructor.
-    ~InterfaceSphere();                                           // destructor
+    ~InterfaceSphere() override = default;                                           // destructor
 
 
     double giveRadius(){return this->radius;}

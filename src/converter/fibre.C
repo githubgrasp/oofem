@@ -20,13 +20,6 @@ Fibre :: Fibre(int n, Grid *aGrid) : GridComponent(n, aGrid)//, coordinates()
 
 };
 
-Fibre :: ~Fibre()
-// Destructor.
-{
-
-
-};
-
 void
 Fibre :: initializeFrom(ConverterInputRecord &ir)
 // Gets from the source Fibre from the data file all the data of the receiver.

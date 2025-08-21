@@ -39,7 +39,7 @@ public:
      */
  Curve(int n, Grid* aGrid);                      // constructor
     /// Destructor.
-    ~Curve();                                           // destructor
+    ~Curve() override = default;                                           // destructor
 
     /// Returns i-th vertex of curve.
     int      giveLocalVertex(int i);

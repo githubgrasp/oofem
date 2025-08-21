@@ -12,7 +12,7 @@ Inclusion :: Inclusion(int n,Grid* aGrid) : GridComponent(n,aGrid) //, coordinat
   this->number = n;  
 }
 
-Inclusion :: ~Inclusion()
-// Destructor.
-{
-}
+//Inclusion :: ~Inclusion()
+//// Destructor.
+//{
+//}

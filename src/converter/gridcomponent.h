@@ -34,7 +34,7 @@ public:
      */
     GridComponent(int n, Grid* aGrid);                      // constructor
     /// Destructor.
-    ~GridComponent();                                           // destructor
+    virtual ~GridComponent() = default;                                           // destructor
 
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "GridComponent"; }

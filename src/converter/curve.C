@@ -10,11 +10,6 @@ Curve :: Curve(int n,Grid* aGrid) : GridComponent(n,aGrid) //, coordinates()
   this->number =n;
 }
 
-Curve :: ~Curve()
-// Destructor.
-{
-}
-
 
 int 
 Curve :: giveLocalVertex(int i)

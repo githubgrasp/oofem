@@ -34,7 +34,7 @@ public:
      */
     Inclusion(int n, Grid* aGrid);                      // constructor
     /// Destructor.
-    ~Inclusion();                                           // destructor
+    ~Inclusion() override = default;                                           // destructor
 
     virtual const char *giveClassName() const = 0;
 

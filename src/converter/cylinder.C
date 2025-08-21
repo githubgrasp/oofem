@@ -13,10 +13,10 @@ Cylinder :: Cylinder(int n,Grid* aGrid) : Region(n,aGrid) //, coordinates()
   this->number = n;  
 }
 
-Cylinder :: ~Cylinder()
-// Destructor.
-{
-}
+//Cylinder :: ~Cylinder()
+//// Destructor.
+//{
+//}
 
 
 void

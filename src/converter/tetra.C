@@ -10,10 +10,6 @@ Tetra :: Tetra(int n, Grid *aGrid) : GridComponent(n, aGrid) {
     this->number = n;
 }
 
-Tetra :: ~Tetra()
-// Destructor.
-{}
-
 int
 Tetra :: giveLocalVertex(int i)
 // Returns the i-th coordinate of the receiver.

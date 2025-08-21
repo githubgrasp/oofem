@@ -86,7 +86,7 @@ public:
      */
     Line(int n, Grid *aGrid);                   // constructor
     /// Destructor.
-    ~Line();                                           // destructor
+    ~Line() override = default;                                           // destructor
 
     /// Returns i-th vertex of curve.
     int      giveLocalVertex(int i);
