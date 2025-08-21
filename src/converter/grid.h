@@ -16,7 +16,8 @@
 #include <map>
 #include <list>
 #endif
-
+#define _IFT_Grid_type "grid"
+#define _IFT_Grid_macrotype "macrotype"
 #define _IFT_Grid_diam "diam"
 #define _IFT_Grid_ranint "ranint"
 #define _IFT_Grid_regflag "regflag"

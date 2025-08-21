@@ -46,7 +46,7 @@ public:
      */
     InterfaceCylinder(int n, Grid* aGrid);                      // constructor
     /// Destructor.
-    ~InterfaceCylinder();                                           // destructor
+    ~InterfaceCylinder() override = default;                                           // destructor
 
 
     double giveRadius(){return this->radius;}

@@ -88,7 +88,7 @@ public:
  
     Fibre(int n, Grid *aGrid);                   // constructor
     /// Destructor.
-    ~Fibre();
+    ~Fibre() override = default;
     
     Fibre *ofType();
     

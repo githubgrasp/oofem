@@ -213,7 +213,6 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
-
     grid.giveOutput(outputStream);
 
     std::fclose(outputStream);

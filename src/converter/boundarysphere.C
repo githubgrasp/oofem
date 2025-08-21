@@ -13,11 +13,6 @@ BoundarySphere :: BoundarySphere(int n,Grid* aGrid) : Region(n,aGrid) //, coordi
   this->number = n;  
 }
 
-BoundarySphere :: ~BoundarySphere()
-// Destructor.
-{
-}
-
 
 void
 BoundarySphere :: initializeFrom(ConverterInputRecord &ir)

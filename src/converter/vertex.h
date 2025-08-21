@@ -63,7 +63,7 @@ public:
    // Vertex(Grid *aGrid);    // constructor, for temporary points, without numerotation
     
     /// Destructor.
-    ~Vertex();                                           // destructor
+    ~Vertex() override = default;                                           // destructor
 
     int giveNumber() { return number; }
     void updateNumber(int i) {this->number=i ;}

@@ -46,7 +46,7 @@ public:
      */
     Prism(int n, Grid *aGrid);                      // constructor
     /// Destructor.
-    ~Prism();                                           // destructor
+    ~Prism() override = default;                                           // destructor
 
     /// Returns i-th vertex of curve.
     int      giveLocalSurface(int i);

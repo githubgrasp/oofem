@@ -13,10 +13,6 @@ Line :: Line(int n, Grid *aGrid) : GridComponent(n, aGrid) //, coordinates()
     this->periodicElement = 0;
 }
 
-Line :: ~Line()
-// Destructor.
-{}
-
 
 int
 Line :: giveLocalVertex(int i)
@@ -46,7 +42,7 @@ Line :: updateCrossSectionVertices(oofem::IntArray &nodes)
         }
         if ( flag == 0 ) {
             size = crossSectionVertices.giveSize();
-            crossSectionVertices.resize(size + 1);
+            crossSectionVertices.resizeWithValues(size + 1);
             crossSectionVertices.at(size + 1) = nodes.at(m + 1);
         }
     }
@@ -72,7 +68,7 @@ Line :: updateCrossSectionElements(oofem::IntArray &elements)
         }
         if ( flag == 0 ) {
             size = crossSectionElements.giveSize();
-            crossSectionElements.resize(size + 1);
+            crossSectionElements.resizeWithValues(size + 1);
             crossSectionElements.at(size + 1) = elements.at(m + 1);
         }
     }
@@ -96,7 +92,7 @@ Line :: updateCrossSectionElement(int element)
     }
     if ( flag == 0 ) {
         size = crossSectionElements.giveSize();
-        crossSectionElements.resize(size + 1);
+        crossSectionElements.resizeWithValues(size + 1);
         crossSectionElements.at(size + 1) = element;
     }
     return;

@@ -49,7 +49,7 @@ public:
 
     Tetra(int n, Grid *aGrid);                   // constructor
     /// Destructor.
-    ~Tetra();                                           // destructor
+    ~Tetra() override = default;                                           // destructor
 
     /// Returns i-th vertex of curve.
     int      giveLocalVertex(int i);

@@ -51,7 +51,7 @@ public:
      */
     Ellipsoid(int n, Grid* aGrid);                      // constructor
     /// Destructor.
-    ~Ellipsoid();                                           // destructor
+    ~Ellipsoid() override = default;                                           // destructor
 
 
     oofem::FloatArray giveCenter(){return this->centre;}

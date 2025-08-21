@@ -40,7 +40,7 @@ public:
      */
     Cylinder(int n, Grid* aGrid);                      // constructor
     /// Destructor.
-    ~Cylinder();                                           // destructor
+    ~Cylinder() override = default;                                           // destructor
 
 
     double giveRadius(){return this->radius;}

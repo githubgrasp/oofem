@@ -13,11 +13,6 @@ InterfaceSphere :: InterfaceSphere(int n,Grid* aGrid) : Inclusion(n,aGrid) //, c
   this->number = n;  
 }
 
-InterfaceSphere :: ~InterfaceSphere()
-// Destructor.
-{
-}
-
 
 void
 InterfaceSphere :: initializeFrom(ConverterInputRecord &ir)

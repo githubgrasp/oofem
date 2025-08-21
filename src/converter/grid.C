@@ -181,17 +181,17 @@ Grid :: ~Grid()
 void Grid :: resolveGridType(const std::string& name)
 {
     //Find the right grid type
-    if ( !strncasecmp(name.c_str(), "3dSM", 4) ) {
+    if ( !strncasecmp(name.c_str(), "3dsm", 4) ) {
         gridType = _3dSM;
-    } else if ( !strncasecmp(name.c_str(), "3dTM", 4) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dtm", 4) ) {
         gridType = _3dTM;
-    } else if ( !strncasecmp(name.c_str(), "3dcoupledSMTM", 13) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dcoupledsmtm", 13) ) {
         gridType = _3dSMTM;
-    } else if ( !strncasecmp(name.c_str(), "3dperSM", 7) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dpersm", 7) ) {
         gridType = _3dPerSM;
-    } else if ( !strncasecmp(name.c_str(), "3dperTM", 7) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dpertm", 7) ) {
         gridType = _3dPerTM;
-    } else if ( !strncasecmp(name.c_str(), "3dpercoupledSMTM", 15) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dpercoupledsmtm", 15) ) {
         gridType = _3dPerSMTM;
     } else if ( !strncasecmp(name.c_str(), "3dfpz", 5) ) {
         gridType = _3dFPZ;
@@ -201,47 +201,47 @@ void Grid :: resolveGridType(const std::string& name)
         gridType = _3dFibreBenchmark;
     } else if ( !strncasecmp(name.c_str(), "3dwong", 6) ) {
       gridType = _3dWong;
-    } else if ( !strncasecmp(name.c_str(), "3dperporeTM", 11) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dperporetm", 11) ) {
         gridType = _3dPerPoreTM;
-    } else if ( !strncasecmp(name.c_str(), "3dperporeSMTM", 13) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dperporesmtm", 13) ) {
         gridType = _3dPerPoreSMTM;
-    } else if ( !strncasecmp(name.c_str(), "3dperporeSM", 11) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dperporesm", 11) ) {
         gridType = _3dPerPoreSM;
-    } else if ( !strncasecmp(name.c_str(), "3dbentoniteSM", 13) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dbentonitesm", 13) ) {
         gridType = _3dBentoniteSM;
-    } else if ( !strncasecmp(name.c_str(), "3dbentoniteTM", 13) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dbentonitetm", 13) ) {
         gridType = _3dBentoniteTM;
-    } else if ( !strncasecmp(name.c_str(), "3dbentoniteCoupled", 18) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dbentonitecoupled", 18) ) {
         gridType = _3dBentoniteSMTM;
-    } else if ( !strncasecmp(name.c_str(), "3dCantSM", 8) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dcantSM", 8) ) {
         gridType = _3dCantSM;
-    } else if ( !strncasecmp(name.c_str(), "3dCantTM", 8) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dcantTM", 8) ) {
         gridType = _3dCantTM;
-    } else if ( !strncasecmp(name.c_str(), "3dCantExtraTM", 13) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dcantextratM", 13) ) {
         gridType = _3dCantExtraTM;
-    } else if ( !strncasecmp(name.c_str(), "3dCantCoupledSMTM", 13) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dcantcoupledsmtm", 13) ) {
         gridType = _3dCantSMTM;
-    } else if ( !strncasecmp(name.c_str(), "3dSphere", 8) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dsphere", 8) ) {
         gridType = _3dSphere;
-    } else if ( !strncasecmp(name.c_str(), "3dCylinder", 10) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dcylinder", 10) ) {
         gridType = _3dCylinder;
-    } else if ( !strncasecmp(name.c_str(), "3dPerTetraSM", 12) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dpertetrasm", 12) ) {
         gridType = _3dPerTetraSM;
-    } else if ( !strncasecmp(name.c_str(), "3dTetraSM", 9) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dtetrasm", 9) ) {
         gridType = _3dTetraSM;
-    } else if ( !strncasecmp(name.c_str(), "3dRCPerSM", 9 ) ) {
+    } else if ( !strncasecmp(name.c_str(), "3drcpersm", 9 ) ) {
         gridType = _3dRCPerSM;
-    } else if ( !strncasecmp(name.c_str(), "3dRCPer2SM", 9 ) ) {
+    } else if ( !strncasecmp(name.c_str(), "3drcper2sm", 9 ) ) {
         gridType = _3dRCPer2SM;
-    } else if ( !strncasecmp(name.c_str(), "3dRCSM", 6 ) ) {
+    } else if ( !strncasecmp(name.c_str(), "3drcsm", 6 ) ) {
         gridType = _3dRCSM;
-    } else if ( !strncasecmp(name.c_str(), "3dTension", 9 ) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dtension", 9 ) ) {
         gridType = _3dTension;    
-    } else if ( !strncasecmp(name.c_str(), "3dGopSha", 8 ) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dgopsha", 8 ) ) {
       gridType = _3dGopSha;
-    } else if ( !strncasecmp(name.c_str(), "3dKupfer", 8 ) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dkupfer", 8 ) ) {
       gridType = _3dKupfer;
-    } else if ( !strncasecmp(name.c_str(), "3dImran", 8 ) ) {
+    } else if ( !strncasecmp(name.c_str(), "3dimran", 8 ) ) {
       gridType = _3dImran;
     // } else if ( !strncasecmp(name.c_str(), "3dNotch", 7 ) ) {
     //   gridType = _3dNotch;
@@ -317,38 +317,12 @@ int Grid :: instanciateYourself(ConverterDataReader *dr, const char nodeFileName
     
     auto &irDomainRec = dr->giveInputRecord(ConverterDataReader :: CIR_domainRec, 1);
 
-
-    std::string line;
-    irDomainRec.giveRawLine(line);
+    std::string gridTypeName;
+    irDomainRec.giveField(gridTypeName, _IFT_Grid_type);
     irDomainRec.finish();
 
-    std::istringstream is(line);
-    std::string kw, gridType;
-    if (!(is >> kw >> gridType) || strcasecmp(kw.c_str(), "grid") != 0) {
-        converter::errorf("Expected 'grid <type>' on record %d, got: [%s]",
-                          /* if you expose a line number, use it here */ 0, line.c_str());
-    }
-
-
-
-    /* std::string gridType; */
-    /* irDomainRec.giveField(gridType, _IFT_Grid_type); */
-    
-    /* if (gridType.empty()) { */
-    /*   converter::error("Missing required field 'grid' in domain record"); */
-    /* } */
-    
-    //    irDomainRec.finish();
-
-
-    /* __keyword = "grid"; */
-    /* result = irDomainRec->giveField(name, MAX_NAME_LENGTH, _IFT_Grid_type, "grid"); */
-    /* if ( result != IRRT_OK ) { */
-    /*     IR_IOERR(giveClassName(), __proc, _IFT_Grid_type, "grid", ir, result); */
-    /* } */
-    /* irDomainRec->finish(); */
-
-    resolveGridType(gridType);
+    for (char &c : gridTypeName) c = std::tolower(static_cast<unsigned char>(c));
+    resolveGridType(gridTypeName);
 
     // read control data
     auto &irControlRec = dr->giveInputRecord(ConverterDataReader :: CIR_controlRec, 1);
@@ -387,12 +361,32 @@ int Grid :: instanciateYourself(ConverterDataReader *dr, const char nodeFileName
     /* resolveMacroType(macroName); */
 
     std::string macroType;
+
     try {
-      irControlRec.giveField(macroType, _IFT_Grid_macrotype);
-      resolveMacroType(macroType);
-    } catch (const MissingKeywordInputException&) {
-      resolveMacroType("");                 // no macrotype provided → default
+        if (irControlRec.hasField(_IFT_Grid_macrotype)) {
+            irControlRec.giveField(macroType, _IFT_Grid_macrotype);
+            // normalize to lowercase for case-insensitive matching
+            for (char &c : macroType)
+                c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+            resolveMacroType(macroType);   // make sure this takes const std::string&
+        } else {
+            resolveMacroType("");          // default
+        }
     }
+    catch (const InputException &e) {      // catches MissingKeyword/BadFormat/Value…
+        // fall back to default; optionally log e.what()
+        resolveMacroType("");
+    }
+
+
+
+//    std::string macroType;
+//    try {
+//      irControlRec.giveField(macroType, _IFT_Grid_macrotype);
+//      resolveMacroType(macroType);
+//    } catch (const MissingKeywordInputException&) {
+//      resolveMacroType("");                 // no macrotype provided → default
+//    }
 
 
 
@@ -482,11 +476,11 @@ int Grid :: instanciateYourself(ConverterDataReader *dr, const char nodeFileName
         voronoiLocalizer = new OctreeGridLocalizer(1, this, 1);
     }
     
-  //  if ( reinforcementLocalizer == NULL ) {
-   //     reinforcementLocalizer = new OctreeGridLocalizer(1, this, 2);
- //   }
+    if ( reinforcementLocalizer == NULL ) {
+        reinforcementLocalizer = new OctreeGridLocalizer(1, this, 2);
+    }
     
-    //================
+    //================/**/
     // read nodes
     //===============
     /* vertexList->growTo(nvertex); */
@@ -528,9 +522,9 @@ int Grid :: instanciateYourself(ConverterDataReader *dr, const char nodeFileName
             std::exit(EXIT_FAILURE);
         }
 
-        Vertex *curve = new Vertex(num, this);
+        Vertex *vertex = new Vertex(num, this);
         vertex->initializeFrom(irVertexRec);
-        setVertex(num, curve);
+        setVertex(num, vertex);
         irVertexRec.finish();
     }
 
@@ -1328,7 +1322,7 @@ for (int i = 0; i < nDelaunayLines; ++i) {
 // If you want to compact the capacity to the actual count (purely cosmetic):
 // voronoiLineList.shrink_to_fit();
 
-std::printf("Finished Voronoi lines\n");
+std::printf("Finished Delaunay and Voronoi lines\n");
 
 
 

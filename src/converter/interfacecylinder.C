@@ -13,11 +13,6 @@ InterfaceCylinder :: InterfaceCylinder(int n,Grid* aGrid) : Inclusion(n,aGrid) /
   this->number = n;
 }
 
-InterfaceCylinder :: ~InterfaceCylinder()
-// Destructor.
-{
-}
-
 
 void
 InterfaceCylinder :: initializeFrom(ConverterInputRecord &ir)

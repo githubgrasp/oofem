@@ -19,10 +19,6 @@ Prism :: Prism(int n, Grid *aGrid) : Region(n, aGrid) //, coordinates()
     this->number = n;
 }
 
-Prism :: ~Prism()
-// Destructor.
-{}
-
 int
 Prism :: giveLocalSurface(int i)
 // Returns the i-th coordinate of the receiver.

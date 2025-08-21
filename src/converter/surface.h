@@ -40,7 +40,7 @@ public:
      */
     Surface(int n, Grid* aGrid);                      // constructor
     /// Destructor.
-    ~Surface();                                           // destructor
+    ~Surface() override = default;                                           // destructor
 
     /// Returns i-th vertex of curve.
     int      giveLocalCurve(int i);

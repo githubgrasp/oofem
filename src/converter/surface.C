@@ -12,13 +12,6 @@ Surface :: Surface(int n,Grid* aGrid) : GridComponent(n,aGrid) //, coordinates()
   this->number = n;  
 }
 
-
-Surface :: ~Surface()
-// Destructor.
-{
-}
-
-
 int 
 Surface :: giveLocalCurve(int i)
 // Returns the i-th coordinate of the receiver.
