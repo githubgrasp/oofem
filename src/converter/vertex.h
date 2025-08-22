@@ -129,7 +129,7 @@ public:
 
     Vertex *ofType();
 
-    const char *giveClassName() const { return "Vertex"; }
+    const char *giveClassName() const override { return "Vertex"; }
 
     void initializeFrom(ConverterInputRecord &ir);
 
