@@ -23,6 +23,7 @@ Surface :: giveLocalCurve(int i)
   return curves.at(i);
 }
 
+
 int Surface :: giveNumberOfLocalCurves()
 {
   int number = this->curves.giveSize(); 
