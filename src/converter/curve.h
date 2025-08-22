@@ -12,18 +12,15 @@
 #include "convertertxtinputrecord.h"
 
 #ifndef __MAKEDEPEND
-#include <stdio.h>
+ #include <stdio.h>
 #endif
 
 #define _IFT_Curve_vertices "vertices"
 #define _IFT_Curve_refine "refine"
 
-//class oofem::FloatArray;
-//class oofem::IntArray;
 
 class Curve : public GridComponent
 {
-
 protected:
     /// Array storing nodal coordinates.
     oofem::IntArray vertices;
@@ -37,7 +34,7 @@ public:
      * @param n node number in grid aGrid
      * @param aGrid grid to which node belongs
      */
- Curve(int n, Grid* aGrid);                      // constructor
+    Curve(int n, Grid *aGrid);                   // constructor
     /// Destructor.
     ~Curve() override = default;                                           // destructor
 
@@ -49,18 +46,11 @@ public:
     Curve *ofType();
 
     const char *giveClassName() const { return "Curve"; }
-    
-  void initializeFrom(ConverterInputRecord &ir);
+
+    void initializeFrom(ConverterInputRecord &ir);
 
     void         printYourself();
-
 };
 
 
-#endif // node_h
-
-
-
-
-
-
+#endif // curve_h

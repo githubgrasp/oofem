@@ -22,14 +22,14 @@
 class Vertex : public GridComponent
 {
 protected:
-  int printFlag;
-  
+    int printFlag;
+
     int outsideFlag;
 
     oofem::IntArray helpOutsideFlag;
 
     int boundaryFlag;
-    
+
     oofem::IntArray cellVertices;
 
     oofem::IntArray cellElements;
@@ -59,14 +59,12 @@ public:
      * @param aGrid grid to which node belongs
      */
     Vertex(int n, Grid *aGrid);                      // constructor
-    
-   // Vertex(Grid *aGrid);    // constructor, for temporary points, without numerotation
-    
+
     /// Destructor.
     ~Vertex() override = default;                                           // destructor
 
     int giveNumber() { return number; }
-    void updateNumber(int i) {this->number=i ;}
+    void updateNumber(int i) { this->number = i; }
 
     // coordinates
     bool        hasCoordinates() { return true; }
@@ -94,8 +92,8 @@ public:
     void giveLocalLines(oofem::IntArray &elem) { elem = this->localLines; }
 
     void giveLocalTetras(oofem::IntArray &elem) { elem = this->localTetras; }
-	
-     void giveLocalLinks(oofem::IntArray &elem) { elem = this->localLinks; }
+
+    void giveLocalLinks(oofem::IntArray &elem) { elem = this->localLinks; }
 
     void setLocalLine(int elem);
 
@@ -112,15 +110,15 @@ public:
     void giveHelpOutsideFlag(oofem::IntArray &_flags) { _flags = this->helpOutsideFlag; }
 
     void setBoundaryFlag(int flag) { this->boundaryFlag = flag; }
-    
+
     int giveBoundaryFlag() { return this->boundaryFlag; }
-    
+
     void setCoordinates(oofem::FloatArray &_coords) { this->coordinates = _coords; }
 
     void setPrintFlag(int flag) { this->printFlag = flag; }
 
     int givePrintFlag() { return this->printFlag; }
-    
+
     void updateCellVertices(oofem::IntArray &nodes);
 
     void giveCellVertices(oofem::IntArray &nodes) { nodes = this->cellVertices; }
@@ -128,7 +126,7 @@ public:
     void updateCellElements(oofem::IntArray &elements);
 
     void giveCellElements(oofem::IntArray &elements) { elements = this->cellElements; }
-    
+
     Vertex *ofType();
 
     const char *giveClassName() const { return "Vertex"; }

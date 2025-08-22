@@ -13,13 +13,12 @@
 #include "convertertxtinputrecord.h"
 
 #ifndef __MAKEDEPEND
-#include <stdio.h>
+ #include <stdio.h>
 #endif
 
 
 class Inclusion : public GridComponent
 {
-
 protected:
 
     int number;
@@ -32,20 +31,14 @@ public:
      * @param n node number in domain aDomain
      * @param aDomain domain to which node belongs
      */
-    Inclusion(int n, Grid* aGrid);                      // constructor
+    Inclusion(int n, Grid *aGrid);                      // constructor
     /// Destructor.
     ~Inclusion() override = default;                                           // destructor
 
-    virtual const char *giveClassName() const = 0;
+    virtual const char *giveClassName() const override = 0;
 
-  virtual void initializeFrom(ConverterInputRecord &ir)=0;
+    virtual void initializeFrom(ConverterInputRecord &ir) = 0;
 };
 
 
-#endif // node_h
-
-
-
-
-
-
+#endif // inclusion_h

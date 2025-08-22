@@ -8,7 +8,7 @@
 #include "inclusion.h"
 #include "refinement.h"
 #include "octreegridlocalizer.h"
-//#include "oofem_limits.h"
+
 #include "generatordatareader.h"
 #include "domain.h"
 #include "sphere.h"
@@ -52,19 +52,6 @@
 Grid::Grid(int i)
 // Constructor. Creates a new domain.
 {
-    //  maxIter = 0;
-
-    /* vertexList           = new AList< Vertex >(0); */
-    /* inputVertexList     = new AList< Vertex >(0); */
-    /* controlVertexList = new AList< Vertex >(0); */
-    /* curveList        = new AList< Curve >(0); */
-    /* surfaceList          = new AList< Surface >(0); */
-    /* regionList                = new AList< Region >(0); */
-    /* inclusionList                = new AList< Inclusion >(0); */
-    /* refinementList                = new AList< Refinement >(0); */
-
-
-
     gridLocalizer      = NULL;
 
     TOL = 0.;
@@ -104,9 +91,6 @@ Grid::~Grid()
 
 
 GridLocalizer *Grid::giveGridLocalizer()
-//
-// return connectivity Table - if no defined - creates new one
-//
 {
     if ( gridLocalizer == NULL ) {
         gridLocalizer = new OctreeGridLocalizer(1, this);
@@ -131,7 +115,6 @@ Vertex *Grid::giveVertex(int n)
 
 
 Vertex *Grid::giveInputVertex(int n)
-// Returns the n-th vertex. Creates this node if it does not exist yet.
 {
     if ( n >= 1 && n <= static_cast < int > ( generator::size1(inputVertexList) ) && inputVertexList [ n - 1 ] != nullptr ) {
         return inputVertexList [ n - 1 ];  // 1-based to 0-based
@@ -145,7 +128,6 @@ Vertex *Grid::giveInputVertex(int n)
 
 
 Vertex *Grid::giveControlVertex(int n)
-// Returns the n-th vertex. Creates this node if it does not exist yet.
 {
     if ( n >= 1 && n <= static_cast < int > ( generator::size1(controlVertexList) ) && controlVertexList [ n - 1 ] != nullptr ) {
         return controlVertexList [ n - 1 ];  // 1-based to 0-based
@@ -159,7 +141,6 @@ Vertex *Grid::giveControlVertex(int n)
 
 
 Curve *Grid::giveCurve(int n)
-// Returns the n-th element. Generates error if it is not defined yet.
 {
     if ( n >= 1 && n <= static_cast < int > ( generator::size1(curveList) ) && curveList [ n - 1 ] != nullptr ) {
         return curveList [ n - 1 ];  // 1-based to 0-based
@@ -171,7 +152,6 @@ Curve *Grid::giveCurve(int n)
 }
 
 Surface *Grid::giveSurface(int n)
-// Returns the n-th element. Generates error if it is not defined yet.
 {
     if ( n >= 1 && n <= static_cast < int > ( generator::size1(surfaceList) ) && surfaceList [ n - 1 ] != nullptr ) {
         return surfaceList [ n - 1 ];  // 1-based to 0-based

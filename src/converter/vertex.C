@@ -2,16 +2,16 @@
 #include "gridcomponent.h"
 
 #ifndef __MAKEDEPEND
-#include <math.h>
-#include <stdlib.h>
+ #include <math.h>
+ #include <stdlib.h>
 #endif
 
-Vertex :: Vertex(int n, Grid *aGrid) : GridComponent(n, aGrid)//, coordinates()
+Vertex::Vertex(int n, Grid *aGrid) : GridComponent(n, aGrid)
 {
-  this->printFlag = 0;
-  this->number = n;
+    this->printFlag = 0;
+    this->number = n;
     this->outsideFlag = 0;
-    this->helpOutsideFlag.zero();    
+    this->helpOutsideFlag.zero();
     this->location = 0;
     this->boundaryFlag = -1;
     this->cellVertices.zero();
@@ -19,7 +19,7 @@ Vertex :: Vertex(int n, Grid *aGrid) : GridComponent(n, aGrid)//, coordinates()
 }
 
 
-double Vertex :: giveCoordinate(int i)
+double Vertex::giveCoordinate(int i)
 // Returns the i-th coordinate of the receiver.
 {
     if ( i > coordinates.giveSize() ) {
@@ -30,7 +30,7 @@ double Vertex :: giveCoordinate(int i)
 }
 
 void
-Vertex :: initializeFrom(ConverterInputRecord &ir)
+Vertex::initializeFrom(ConverterInputRecord &ir)
 // Gets from the source line from the data file all the data of the receiver.
 {
     IR_GIVE_FIELD(ir, coordinates, _IFT_Vertex_coords); // Macro
@@ -42,7 +42,7 @@ Vertex :: initializeFrom(ConverterInputRecord &ir)
     return;
 }
 
-Vertex *Vertex :: ofType()
+Vertex *Vertex::ofType()
 // Returns a new DofManager, which has the same number than the receiver,
 // but belongs to aClass (Node, LineSide,..).
 {
@@ -53,7 +53,7 @@ Vertex *Vertex :: ofType()
     return vertex;
 }
 
-void Vertex :: setLocalLine(int elem)
+void Vertex::setLocalLine(int elem)
 {
     int size = localLines.giveSize();
     localLines.resizeWithValues(size + 1);
@@ -61,7 +61,7 @@ void Vertex :: setLocalLine(int elem)
     return;
 }
 
-void Vertex :: setLocalTetra(int elem)
+void Vertex::setLocalTetra(int elem)
 {
     int size = localTetras.giveSize();
     localTetras.resizeWithValues(size + 1);
@@ -71,7 +71,7 @@ void Vertex :: setLocalTetra(int elem)
 
 
 
-void Vertex :: setLocalLink(int elem)
+void Vertex::setLocalLink(int elem)
 {
     int size = localLinks.giveSize();
     localLinks.resizeWithValues(size + 1);
@@ -81,7 +81,7 @@ void Vertex :: setLocalLink(int elem)
 
 
 void
-Vertex :: updateCellVertices(oofem::IntArray &nodes)
+Vertex::updateCellVertices(oofem::IntArray &nodes)
 //Update cross-section vertices
 {
     int flag;
@@ -107,7 +107,7 @@ Vertex :: updateCellVertices(oofem::IntArray &nodes)
 
 
 void
-Vertex :: updateCellElements(oofem::IntArray &elements)
+Vertex::updateCellElements(oofem::IntArray &elements)
 //Update cross-section vertices
 {
     int flag;
@@ -120,7 +120,7 @@ Vertex :: updateCellElements(oofem::IntArray &elements)
                 flag = 1;
                 break;
             }
-        }	
+        }
         if ( flag == 0 ) {
             size = cellElements.giveSize();
             cellElements.resizeWithValues(size + 1);

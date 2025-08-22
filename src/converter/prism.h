@@ -20,23 +20,21 @@
 #define _IFT_Prism_box "box"
 #define _IFT_Prism_refine "refine"
 
-  
+
 class GridLocalizer;
 
-//class oofem::FloatArray;
-//class oofem::IntArray;
 
 class Prism : public Region
 {
 protected:
     /// Array storing nodal coordinates.
-  oofem::FloatArray box;
+    oofem::FloatArray box;
 
     int number;
     double refinement;
 
-    typedef std :: list< int > nodeContainerType;
-    
+    typedef std::list< int >nodeContainerType;
+
 public:
 
     /**
@@ -59,22 +57,22 @@ public:
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "Prism"; }
 
-    void initializeFrom(ConverterInputRecord &ir);
+    void initializeFrom(ConverterInputRecord &ir) override;
 
     /// prints receiver state on stdout. Usefull for debuging.
     void         printYourself();
 
-    virtual int giveSwitches(oofem::IntArray& switches, const oofem::FloatArray& coords);
-    virtual int giveCornerSwitches(oofem::IntArray &switches, const oofem::FloatArray &coords);
-    virtual int giveEdgeSwitches(oofem::IntArray &switches, const oofem::FloatArray &coords);
-    
+    int giveSwitches(oofem::IntArray &switches, oofem::FloatArray &coords) override;
+    int giveCornerSwitches(oofem::IntArray &switches, const oofem::FloatArray &coords);
+    int giveEdgeSwitches(oofem::IntArray &switches, const oofem::FloatArray &coords);
+
     /** This function deletes cross-section elements which lie outside the specimen and
      *  shifts not the boundary for elements which cross the boundary*/
-    virtual int modifyVoronoiCrossSection(int elementNumber);
-    
-    virtual void defineBoundaries(oofem::FloatArray &boundaries);
+    virtual int modifyVoronoiCrossSection(int elementNumber) override;
 
-    virtual void findOutsiders(oofem::FloatArray &boundaries);
+    virtual void defineBoundaries(oofem::FloatArray &boundaries) override;
+
+    virtual void findOutsiders(oofem::FloatArray &boundaries) override;
 };
 
 

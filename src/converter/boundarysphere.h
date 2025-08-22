@@ -15,7 +15,7 @@
 #include "convertertxtinputrecord.h"
 
 #ifndef __MAKEDEPEND
-#include <stdio.h>
+ #include <stdio.h>
 #endif
 
 #define _IFT_BoundarySphere_centre "centre"
@@ -23,14 +23,13 @@
 
 class BoundarySphere : public Region
 {
-
 protected:
     /// Array storing nodal coordinates.
-  oofem::FloatArray centre;
-  double radius;
-  int number;
-  double refinement;
-  double itzThickness;
+    oofem::FloatArray centre;
+    double radius;
+    int number;
+    double refinement;
+    double itzThickness;
 
 public:
 
@@ -39,16 +38,15 @@ public:
      * @param n node number in domain aDomain
      * @param aDomain domain to which node belongs
      */
-    BoundarySphere(int n, Grid* aGrid);                      // constructor
+    BoundarySphere(int n, Grid *aGrid);                      // constructor
     /// Destructor.
     ~BoundarySphere() override = default;                                           // destructor
 
 
-    double giveRadius(){return this->radius;}
-    double giveITZThickness(){return this->itzThickness;}
-    void giveCentre(oofem::FloatArray& cent){cent = centre;}
+    double giveRadius() { return this->radius; }
+    double giveITZThickness() { return this->itzThickness; }
+    void giveCentre(oofem::FloatArray &cent) { cent = centre; }
 
-    
 
     BoundarySphere *ofType();
 
@@ -57,24 +55,15 @@ public:
     const char *giveClassName() const { return "BoundarySphere"; }
 
     void initializeFrom(ConverterInputRecord &ir);
-    //virtual IntArray* ResolveDofIDArray (char* initString);
-    /// prints receiver state on stdout. Usefull for debuging.
-    void         printYourself();
-    
-    virtual void defineBoundaries(oofem::FloatArray &boundaries);
 
-    virtual void findOutsiders(oofem::FloatArray &boundaries);
+    void printYourself();
 
-    virtual int modifyVoronoiCrossSection(int elementNumber);
+    virtual void defineBoundaries(oofem::FloatArray &boundaries) override;
 
-    
+    virtual void findOutsiders(oofem::FloatArray &boundaries) override;
+
+    virtual int modifyVoronoiCrossSection(int elementNumber) override;
 };
 
 
-#endif // boundaryspeher_h
-
-
-
-
-
-
+#endif // boundarysphere_h

@@ -13,18 +13,14 @@
 #include "convertertxtinputrecord.h"
 
 #ifndef __MAKEDEPEND
-#include <stdio.h>
+ #include <stdio.h>
 #endif
 
 #define _IFT_Surface_curves "curves"
 #define _IFT_Surface_refine "refine"
 
-//class oofem::FloatArray;
-//class oofem::IntArray;
-
 class Surface : public GridComponent
 {
-
 protected:
     /// Array storing nodal coordinates.
     oofem::IntArray curves;
@@ -38,15 +34,17 @@ public:
      * @param n node number in grid aGrid
      * @param aGrid grid to which node belongs
      */
-    Surface(int n, Grid* aGrid);                      // constructor
+    Surface(int n, Grid *aGrid);
+
     /// Destructor.
-    ~Surface() override = default;                                           // destructor
+    ~Surface() override = default;
 
     /// Returns i-th vertex of curve.
     int      giveLocalCurve(int i);
+
     /// Returns pointer to curve vertex array.
     oofem::IntArray *giveLocalCurves() { return & curves; }
-    
+
     int giveNumberOfLocalCurves();
 
 
@@ -59,17 +57,10 @@ public:
     const char *giveClassName() const { return "Surface"; }
 
     void initializeFrom(ConverterInputRecord &ir);
-    //virtual oofem::IntArray* ResolveDofIDArray (char* initString);
+
     /// prints receiver state on stdout. Usefull for debuging.
     void         printYourself();
-
 };
 
 
-#endif // node_h
-
-
-
-
-
-
+#endif // surface_h
