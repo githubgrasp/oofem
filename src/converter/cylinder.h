@@ -14,7 +14,7 @@
 #include "convertertxtinputrecord.h"
 
 #ifndef __MAKEDEPEND
-#include <stdio.h>
+ #include <stdio.h>
 #endif
 
 #define _IFT_Cylinder_line "line"
@@ -23,13 +23,12 @@
 
 class Cylinder : public Region
 {
-
 protected:
     /// Array storing nodal coordinates.
-  oofem::FloatArray line;
-  double radius;
-  int number;
-  double refinement;
+    oofem::FloatArray line;
+    double radius;
+    int number;
+    double refinement;
 
 public:
 
@@ -38,41 +37,34 @@ public:
      * @param n node number in domain aDomain
      * @param aDomain domain to which node belongs
      */
-    Cylinder(int n, Grid* aGrid);                      // constructor
+    Cylinder(int n, Grid *aGrid);                      // constructor
     /// Destructor.
     ~Cylinder() override = default;                                           // destructor
 
 
-    double giveRadius(){return this->radius;}
-    void giveLine(oofem::FloatArray& lin){lin = line;}
-    
-    
+    double giveRadius() { return this->radius; }
+    void giveLine(oofem::FloatArray &lin) { lin = line; }
+
+
     Cylinder *ofType();
 
     // miscellaneous
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "Cylinder"; }
 
-    void initializeFrom(ConverterInputRecord &ir);
-    //virtual IntArray* ResolveDofIDArray (char* initString);
+    void initializeFrom(ConverterInputRecord &ir) override;
+
     /// prints receiver state on stdout. Usefull for debuging.
     void         printYourself();
 
-    virtual void defineBoundaries(oofem::FloatArray &boundaries);
+    void defineBoundaries(oofem::FloatArray &boundaries) override;
 
-    virtual void findOutsiders(oofem::FloatArray &boundaries);
+    void findOutsiders(oofem::FloatArray &boundaries) override;
 
-    virtual int modifyVoronoiCrossSection(int elementNumber);
-    
-    virtual int areaCheck(int elementNumber);
-    
+    int modifyVoronoiCrossSection(int elementNumber) override;
+
+     int areaCheck(int elementNumber) override;
 };
 
 
 #endif // cylinder_h
-
-
-
-
-
-

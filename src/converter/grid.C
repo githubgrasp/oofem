@@ -46,129 +46,73 @@
 #define RNMX ( 1.0 - EPS )
 
 
-Grid :: Grid(int i)
-// Constructor. Creates a new grid.
+Grid::Grid(int i)
 {
-    /* delaunayLineList          = new AList< Line >(0); */
-    /* voronoiLineList           = new AList< Line >(0); */
-    
-    /* // elements to model fibres */
-    /* latticeBeamList           = new AList< Line >(0); */
-    /* latticeLinkList           = new AList< Line >(0); // first element of the linkLine=reinforcement node ; 2nd = delaunayVertex */
-    
-    /* delaunayVertexList           = new AList< Vertex >(0); */
-    /* voronoiVertexList            = new AList< Vertex >(0); */
-    /* reinforcementNodeList            = new AList< Vertex >(0); */
-
-    /* vertexList                   = new AList< Vertex >(0); */
-    /* curveList                    = new AList< Curve >(0); */
-    /* surfaceList                  = new AList< Surface >(0); */
-    /* regionList                   = new AList< Region >(0); */
-    /* inclusionList                = new AList< Inclusion >(0); */
-    /* fibreList                    = new AList< Fibre >(0); */
-    /* interNodeList                = new AList< Vertex >(0); */
-    /* delaunayTetraList            = new AList< Tetra >(0); */
-
     delaunayLocalizer      = NULL;
     voronoiLocalizer       = NULL;
     reinforcementLocalizer = NULL;
 }
 
-Grid :: ~Grid()
+Grid::~Grid()
 {
+    for (auto v : delaunayLineList) {
+        delete v;
+    }
 
-  for (auto v : delaunayLineList) {
-    delete v;
-  }
+    for (auto v : voronoiLineList) {
+        delete v;
+    }
 
-  for (auto v : voronoiLineList) {
-    delete v;
-  }
-
-  for (auto v : latticeBeamList) {
-    delete v;
-  }
+    for (auto v : latticeBeamList) {
+        delete v;
+    }
 
     for (auto v : latticeLinkList) {
-    delete v;
-  }
+        delete v;
+    }
 
     for (auto v : delaunayVertexList) {
-      delete v;
+        delete v;
     }
-    
+
     for (auto v : voronoiVertexList) {
-      delete v;
-    }    
-
-    //    delete voronoiVertexList;
-
+        delete v;
+    }
 
     for (auto v : reinforcementNodeList) {
-      delete v;
+        delete v;
     }
 
-    //    delete reinforcementNodeList;
-
-
-    
     for (auto v : vertexList) {
-      delete v;
+        delete v;
     }
-    
-    //    delete vertexList;
 
     for (auto v : curveList) {
-      delete v;
+        delete v;
     }
 
-    //    delete curveList;
-
-
-    
     for (auto v : surfaceList) {
-      delete v;
+        delete v;
     }
-
-
-    //    delete surfaceList;
-
-
-
     for (auto v : regionList) {
-      delete v;
+        delete v;
     }
-
-
-    //    delete regionList;
-
 
     for (auto v : inclusionList) {
-      delete v;
+        delete v;
     }
-
-    //    delete inclusionList;
-
 
     for (auto v : fibreList) {
-      delete v;
+        delete v;
     }
-
-    //    delete fibreList;
-
 
     for (auto v : interNodeList) {
-      delete v;
+        delete v;
     }
-
-    //    delete interNodeList;
-
 
     for (auto v : delaunayTetraList) {
-      delete v;
+        delete v;
     }
-
-    //    delete delaunayTetraList;
 
     //Localizers
     delete delaunayLocalizer;
@@ -178,7 +122,7 @@ Grid :: ~Grid()
 
 
 
-void Grid :: resolveGridType(const std::string& name)
+void Grid::resolveGridType(const std::string &name)
 {
     //Find the right grid type
     if ( !strncasecmp(name.c_str(), "3dsm", 4) ) {
@@ -200,7 +144,7 @@ void Grid :: resolveGridType(const std::string& name)
     } else if ( !strncasecmp(name.c_str(), "3dfibrebenchmark", 10) ) {
         gridType = _3dFibreBenchmark;
     } else if ( !strncasecmp(name.c_str(), "3dwong", 6) ) {
-      gridType = _3dWong;
+        gridType = _3dWong;
     } else if ( !strncasecmp(name.c_str(), "3dperporetm", 11) ) {
         gridType = _3dPerPoreTM;
     } else if ( !strncasecmp(name.c_str(), "3dperporesmtm", 13) ) {
@@ -229,30 +173,27 @@ void Grid :: resolveGridType(const std::string& name)
         gridType = _3dPerTetraSM;
     } else if ( !strncasecmp(name.c_str(), "3dtetrasm", 9) ) {
         gridType = _3dTetraSM;
-    } else if ( !strncasecmp(name.c_str(), "3drcpersm", 9 ) ) {
+    } else if ( !strncasecmp(name.c_str(), "3drcpersm", 9) ) {
         gridType = _3dRCPerSM;
-    } else if ( !strncasecmp(name.c_str(), "3drcper2sm", 9 ) ) {
+    } else if ( !strncasecmp(name.c_str(), "3drcper2sm", 9) ) {
         gridType = _3dRCPer2SM;
-    } else if ( !strncasecmp(name.c_str(), "3drcsm", 6 ) ) {
+    } else if ( !strncasecmp(name.c_str(), "3drcsm", 6) ) {
         gridType = _3dRCSM;
-    } else if ( !strncasecmp(name.c_str(), "3dtension", 9 ) ) {
-        gridType = _3dTension;    
-    } else if ( !strncasecmp(name.c_str(), "3dgopsha", 8 ) ) {
-      gridType = _3dGopSha;
-    } else if ( !strncasecmp(name.c_str(), "3dkupfer", 8 ) ) {
-      gridType = _3dKupfer;
-    } else if ( !strncasecmp(name.c_str(), "3dimran", 8 ) ) {
-      gridType = _3dImran;
-    // } else if ( !strncasecmp(name.c_str(), "3dNotch", 7 ) ) {
-    //   gridType = _3dNotch;
-     }
-    else {
-      converter::errorf("Unknown grid type %s\n", name.c_str());
+    } else if ( !strncasecmp(name.c_str(), "3dtension", 9) ) {
+        gridType = _3dTension;
+    } else if ( !strncasecmp(name.c_str(), "3dgopsha", 8) ) {
+        gridType = _3dGopSha;
+    } else if ( !strncasecmp(name.c_str(), "3dkupfer", 8) ) {
+        gridType = _3dKupfer;
+    } else if ( !strncasecmp(name.c_str(), "3dimran", 8) ) {
+        gridType = _3dImran;
+    } else    {
+        converter::errorf("Unknown grid type %s\n", name.c_str() );
     }
     return;
 }
 
-void Grid :: resolveMacroType(const std::string& name)
+void Grid::resolveMacroType(const std::string &name)
 {
     //Find the right macro element type
     if ( !strncasecmp(name.c_str(), "truss", 5) ) {
@@ -287,9 +228,8 @@ void Grid :: resolveMacroType(const std::string& name)
     return;
 }
 
-int Grid :: instanciateYourself(ConverterDataReader *dr, const char nodeFileName[], const char delaunayFileName[], const char voronoiFileName[])
+int Grid::instanciateYourself(ConverterDataReader *dr, const char nodeFileName[], const char delaunayFileName[], const char voronoiFileName[])
 {
-
     int i, num;
 
     Vertex *vertex;
@@ -309,23 +249,25 @@ int Grid :: instanciateYourself(ConverterDataReader *dr, const char nodeFileName
 
     Line *delaunayLine;
     Line *voronoiLine;
-    
+
     Line *linkLine;
     Line *beamLine;
 
     Tetra *delaunayTetra;
-    
-    auto &irDomainRec = dr->giveInputRecord(ConverterDataReader :: CIR_domainRec, 1);
+
+    auto &irDomainRec = dr->giveInputRecord(ConverterDataReader::CIR_domainRec, 1);
 
     std::string gridTypeName;
     irDomainRec.giveField(gridTypeName, _IFT_Grid_type);
     irDomainRec.finish();
 
-    for (char &c : gridTypeName) c = std::tolower(static_cast<unsigned char>(c));
+    for (char &c : gridTypeName) {
+        c = std::tolower(static_cast < unsigned char > ( c ) );
+    }
     resolveGridType(gridTypeName);
 
     // read control data
-    auto &irControlRec = dr->giveInputRecord(ConverterDataReader :: CIR_controlRec, 1);
+    auto &irControlRec = dr->giveInputRecord(ConverterDataReader::CIR_controlRec, 1);
 
 
     IR_GIVE_FIELD(irControlRec, diameter, _IFT_Grid_diam); // Macro
@@ -348,47 +290,30 @@ int Grid :: instanciateYourself(ConverterDataReader *dr, const char nodeFileName
     }
 
     //when periodicityFlag=1 periodic cell generator is used.
-    //Periodicity can be enforced in certain directions only. 
+    //Periodicity can be enforced in certain directions only.
     periodicityFlag.zero();
     IR_GIVE_OPTIONAL_FIELD(irControlRec, periodicityFlag, _IFT_Grid_perflag); // Macro
-    if ( periodicityFlag.giveSize() != 3) {
+    if ( periodicityFlag.giveSize() != 3 ) {
         converter::error("Error: Unknown size of periodicity flag. It needs to be of size 3. If periodicity in all directions is desired then enter \"perflag 3 1 1 1\"\n");
     }
-
-    /* //Determine macro element type */
-    /* char macroName [ MAX_NAME_LENGTH ]; */
-    /* irControlRec->giveOptionalField(macroName, MAX_NAME_LENGTH, _IFT_Grid_macrotype); */
-    /* resolveMacroType(macroName); */
 
     std::string macroType;
 
     try {
-        if (irControlRec.hasField(_IFT_Grid_macrotype)) {
+        if ( irControlRec.hasField(_IFT_Grid_macrotype) ) {
             irControlRec.giveField(macroType, _IFT_Grid_macrotype);
             // normalize to lowercase for case-insensitive matching
-            for (char &c : macroType)
-                c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
-            resolveMacroType(macroType);   // make sure this takes const std::string&
+            for (char &c : macroType) {
+                c = static_cast < char > ( std::tolower(static_cast < unsigned char > ( c ) ) );
+            }
+            resolveMacroType(macroType);
         } else {
             resolveMacroType("");          // default
         }
     }
-    catch (const InputException &e) {      // catches MissingKeyword/BadFormat/Value…
-        // fall back to default; optionally log e.what()
+    catch(const InputException &e) {
         resolveMacroType("");
     }
-
-
-
-//    std::string macroType;
-//    try {
-//      irControlRec.giveField(macroType, _IFT_Grid_macrotype);
-//      resolveMacroType(macroType);
-//    } catch (const MissingKeywordInputException&) {
-//      resolveMacroType("");                 // no macrotype provided → default
-//    }
-
-
 
     //when couplingFlag=1 coupling is implemented
     couplingFlag = 0;
@@ -398,13 +323,13 @@ int Grid :: instanciateYourself(ConverterDataReader *dr, const char nodeFileName
     }
 
 
-     //meshType: 0 for lattice, 1 for continuum (tetrahedra)
+    //meshType: 0 for lattice, 1 for continuum (tetrahedra)
     meshType = 0;
     IR_GIVE_OPTIONAL_FIELD(irControlRec, meshType, _IFT_Grid_meshtype); // Macro
     if ( meshType < 0 || meshType > 1 ) {
         converter::error("Error: Unknown meshtype. Should be\n0 for lattice\n or\n 1 for tetra.\n");
     }
-    
+
     //Input for the pores
     IR_GIVE_OPTIONAL_FIELD(irControlRec, poreMean, _IFT_Grid_poremean); // Macro
     IR_GIVE_OPTIONAL_FIELD(irControlRec, poreCOV, _IFT_Grid_porecov); // Macro
@@ -453,8 +378,8 @@ int Grid :: instanciateYourself(ConverterDataReader *dr, const char nodeFileName
     irControlRec.finish();
 
     // read grid components
-    int nvertex, nelem, ncurve, nsurface, nregion, ninclusion,nfibre;
-    auto &irDomainCompRec = dr->giveInputRecord(ConverterDataReader :: CIR_domainCompRec, 1);
+    int nvertex, nelem, ncurve, nsurface, nregion, ninclusion, nfibre;
+    auto &irDomainCompRec = dr->giveInputRecord(ConverterDataReader::CIR_domainCompRec, 1);
     IR_GIVE_FIELD(irDomainCompRec, nvertex, _IFT_Grid_nvertex); // Macro
     IR_GIVE_FIELD(irDomainCompRec, ncurve, _IFT_Grid_ncurve); // Macro
     IR_GIVE_FIELD(irDomainCompRec, nsurface, _IFT_Grid_nsurface); // Macro
@@ -475,33 +400,10 @@ int Grid :: instanciateYourself(ConverterDataReader *dr, const char nodeFileName
     if ( voronoiLocalizer == NULL ) {
         voronoiLocalizer = new OctreeGridLocalizer(1, this, 1);
     }
-    
+
     if ( reinforcementLocalizer == NULL ) {
         reinforcementLocalizer = new OctreeGridLocalizer(1, this, 2);
     }
-    
-    //================/**/
-    // read nodes
-    //===============
-    /* vertexList->growTo(nvertex); */
-    /* for ( i = 0; i < nvertex; i++ ) { */
-    /*     auto &irVertexRec = dr->giveInputRecord(ConverterDataReader :: CIR_vertexRec, i + 1); */
-
-    /*     IR_GIVE_RECORD_KEYWORD_FIELD(irVertexRec, name, num, MAX_NAME_LENGTH); */
-
-    /*     ( vertex = ( Vertex * ) ( Vertex(num, this).ofType() ) )->initializeFrom(irVertexRec); */
-
-    /*     if ( ( num < 1 ) || ( num > nvertex ) ) { */
-    /*         converter::errorf("instanciateYourself: Invalid vertex number (num=%d)", num); */
-    /*     } */
-
-    /*     if ( !vertexList->includes(num) ) { */
-    /*         setVertex(num, vertex); */
-    /*     } else { */
-    /*         converter::errorf("instanciateYourself: Vertex entry already exist (num=%d)", num); */
-    /*     } */
-    /*     irVertexRec.finish(); */
-    /* } */
 
 
     vertexList.resize(nvertex, nullptr);
@@ -528,31 +430,7 @@ int Grid :: instanciateYourself(ConverterDataReader *dr, const char nodeFileName
         irVertexRec.finish();
     }
 
-    
 
-/* // Before the loop: make room for 1..nvertex (index 0 unused) */
-/* vertexList.assign(nvertex, nullptr); */
-
-/* for (int i = 0; i < nvertex; ++i) { */
-/*     auto &irVertexRec = dr->giveInputRecord(ConverterDataReader::CIR_vertexRec, i + 1); */
-/* ooo */
-/*     std::string kw; int num = 0; */
-/*     irVertexRec.giveRecordKeywordField(kw, num); // expects: "vertex <num>" */
-/*     // (If you still use the old macro: IR_GIVE_RECORD_KEYWORD_FIELD(irVertexRec, name, num, MAX_NAME_LENGTH);) */
-
-/*     if (num < 1 || num > nvertex) { */
-/*         converter::errorf("instanciateYourself: Invalid vertex number (num=%d)", num); */
-/*     } */
-/*     if (vertexList[num] != nullptr) { */
-/*         converter::errorf("instanciateYourself: Vertex entry already exists (num=%d)", num); */
-/*     } */
-
-/*     auto *v = new Vertex(num, this); */
-/*     v->initializeFrom(irVertexRec);   // reads coords etc. */
-/*     vertexList[num] = v;              // store it at its 1-based id */
-
-/*     irVertexRec.finish(); */
-/* } */
 
 
     curveList.resize(ncurve, nullptr);
@@ -579,34 +457,6 @@ int Grid :: instanciateYourself(ConverterDataReader *dr, const char nodeFileName
         irCurveRec.finish();
     }
 
-
-    
-    /* //=================== */
-    /* // read curves */
-    /* //================== */
-    /* curveList->growTo(ncurve); */
-    /* for ( i = 0; i < ncurve; i++ ) { */
-    /*     auto &irCurveRec = dr->giveInputRecord(ConverterDataReader :: CIR_curveRec, i + 1); */
-
-    /*     IR_GIVE_RECORD_KEYWORD_FIELD(irCurveRec, name, num, MAX_NAME_LENGTH); */
-
-
-    /*     ( curve = ( Curve * ) ( Curve(num, this).ofType() ) )->initializeFrom(irCurveRec); */
-
-    /*     if ( ( num < 1 ) || ( num > ncurve ) ) { */
-    /*         converter::errorf("instanciateYourself: Invalid curve number (num=%d)", num); */
-    /*     } */
-
-    /*     if ( !curveList->includes(num) ) { */
-    /*         setCurve(num, curve); */
-    /*     } else { */
-    /*         converter::errorf("instanciateYourself: Curve entry already exist (num=%d)", num); */
-    /*     } */
-    /*     irCurveRec.finish(); */
-    /* } */
-
-
-
     surfaceList.resize(nsurface, nullptr);
     for ( i = 0; i < nsurface; i++ ) {
         auto &irSurfaceRec = dr->giveInputRecord(ConverterDataReader::CIR_surfaceRec, i + 1);
@@ -631,31 +481,6 @@ int Grid :: instanciateYourself(ConverterDataReader *dr, const char nodeFileName
     }
 
 
-    /* //=========================== */
-    /* // read surfaces */
-    /* //============================= */
-    /* surfaceList->growTo(nsurface); */
-    /* for ( i = 0; i < nsurface; i++ ) { */
-    /*     auto &irSurfaceRec = dr->giveInputRecord(ConverterDataReader :: CIR_surfaceRec, i + 1); */
-
-    /*     IR_GIVE_RECORD_KEYWORD_FIELD(irSurfaceRec, name, num, MAX_NAME_LENGTH); */
-
-
-    /*     ( surface = ( Surface * ) ( Surface(num, this).ofType() ) )->initializeFrom(ir); */
-
-    /*     if ( ( num < 1 ) || ( num > nsurface ) ) { */
-    /*         converter::errorf("instanciateYourself: Invalid curve number (num=%d)", num); */
-    /*     } */
-
-    /*     if ( !surfaceList->includes(num) ) { */
-    /*         setSurface(num, surface); */
-    /*     } else { */
-    /*         converter::errorf("instanciateYourself: Surface entry already exist (num=%d)", num); */
-    /*     } */
-    /*     irSurfaceRec.finish(); */
-    /* } */
-
-
     regionList.resize(nregion, nullptr);
 
     for (int i = 0; i < nregion; ++i) {
@@ -675,7 +500,7 @@ int Grid :: instanciateYourself(ConverterDataReader *dr, const char nodeFileName
         }
 
         Region *r = nullptr;
-        if ( name == "prism" || name== "region" ) {
+        if ( name == "prism" || name == "region" ) {
             r = new Prism(num, this);
         } else if ( name == "cylinder" ) {
             r = new Cylinder(num, this);
@@ -685,65 +510,11 @@ int Grid :: instanciateYourself(ConverterDataReader *dr, const char nodeFileName
             std::cerr << "instanciateYourself: Unknown region type '" << name << "'\n";
             std::exit(EXIT_FAILURE);
         }
-	
+
         r->initializeFrom(irRegionRec);
         setRegion(num, r);
         irRegionRec.finish();
     }
-
-
-
-    /* //============================ */
-    /* // read regions */
-    /* //============================ */
-    /* regionList->growTo(nregion); */
-    /* for ( i = 0; i < nregion; i++ ) { */
-    /*     auto &irRegionRec = dr->giveInputRecord(ConverterDataReader :: CIR_regionRec, i + 1); */
-    /*     IR_GIVE_RECORD_KEYWORD_FIELD(irRegionRec, name, num, MAX_NAME_LENGTH); */
-
-    /* 	if ( !strcmp(name, "prism") || !strcmp(name, "region") ) {//Keep region for now so that old input files still work */
-    /* 	  ( prism = ( Prism * ) ( Prism(num, this).ofType() ) )->initializeFrom(irRegionRec); */
-
-    /* 	  if ( ( num < 1 ) || ( num > nregion ) ) { */
-    /*         converter::errorf("instanciateYourself: Invalid curve number (num=%d)", num); */
-    /* 	  } */
-	  
-    /* 	  if ( !regionList->includes(num) ) { */
-    /*         setRegion(num, prism); */
-    /* 	  } else { */
-    /*         converter::errorf("instanciateYourself: Region entry already exist (num=%d)", num); */
-    /* 	  } */
-    /* 	} */
-    /* 	else if( !strcmp(name, "bsphere") ){ */
-    /* 	  ( boundarysphere = ( BoundarySphere * ) ( BoundarySphere(num, this).ofType() ) )->initializeFrom(irRegionRec); */
-
-    /* 	  if ( ( num < 1 ) || ( num > nregion ) ) { */
-    /*         converter::errorf("instanciateYourself: Invalid curve number (num=%d)", num); */
-    /* 	  } */
-	  
-    /* 	  if ( !regionList->includes(num) ) { */
-    /*         setRegion(num, boundarysphere); */
-    /* 	  } */
-    /* 	} */
-    /* 	else if( !strcmp(name, "cylinder") ){ */
-    /* 	    ( cylinder = ( Cylinder * ) ( Cylinder(num, this).ofType() ) )->initializeFrom(irRegionRec); */
-
-    /* 	    if ( ( num < 1 ) || ( num > nregion ) ) { */
-    /* 	        converter::errorf("instanciateYourself: Invalid curve number (num=%d)", num); */
-    /* 	    } */
-	  
-    /* 	    if ( !regionList->includes(num) ) { */
-    /* 	        setRegion(num, cylinder); */
-    /* 	    } */
-
-    /* 	    else { */
-    /* 	        converter::errorf("instanciateYourself: Region entry already exist (num=%d)", num); */
-    /* 	    } */
-
-    /* 	} */
-    /*     irRegionRec.finish(); */
-    /* } */
-
 
     inclusionList.resize(ninclusion, nullptr);
 
@@ -786,67 +557,14 @@ int Grid :: instanciateYourself(ConverterDataReader *dr, const char nodeFileName
         irInclusionRec.finish();
     }
 
-
-
-    /* //================================== */
-    /* // read inclusions */
-    /* //================================= */
-    /* inclusionList->growTo(ninclusion); */
-    /* printf("\n number of inclusions detected : %d \n ",this->giveNumberOfInclusions()); */
-    /* for ( i = 0; i < ninclusion; i++ ) { */
-    /*     auto &irInclusionRec = dr->giveInputRecord(ConverterDataReader :: CIR_inclusionRec, i + 1); */
-    /*     IR_GIVE_RECORD_KEYWORD_FIELD(irInclusionRec, name, num, MAX_NAME_LENGTH); */
-
-    /*     if ( !strcmp(name, "sphere") ) { */
-    /*         ( interfacesphere = ( InterfaceSphere * ) ( InterfaceSphere(num, this).ofType() ) )->initializeFrom(irInclusionRec); */
-    /*         if ( ( num < 1 ) || ( num > ninclusion ) ) { */
-    /*             converter::errorf("instanciateYourself: Invalid inclusion number (num=%d)", num); */
-    /*         } */
-    /*         if ( !inclusionList->includes(num) ) { */
-    /*             setInclusion(num, interfacesphere); */
-    /*         } else { */
-    /*             printf("instanciateYourself: Inclusion entry already exist (num=%d)", num); */
-    /*             exit(0); */
-    /*         } */
-    /*     } else if ( !strcmp(name, "interfacecylinder") ) { */
-    /*         ( interfacecylinder = ( InterfaceCylinder * ) ( InterfaceCylinder(num, this).ofType() ) )->initializeFrom(irInclusionRec); */
-    /*         if ( ( num < 1 ) || ( num > ninclusion ) ) { */
-    /*             printf("instanciateYourself: Invalid inclusion number (num=%d)", num); */
-    /*             exit(0); */
-    /*         } */
-    /*         if ( !inclusionList->includes(num) ) { */
-    /*             setInclusion(num, interfacecylinder); */
-    /*         } else { */
-    /*             printf("instanciateYourself: Inclusion entry already exist (num=%d)", num); */
-    /*             exit(0); */
-    /*         } */
-    /*     } else if ( !strcmp(name, "ellipsoid") ) { */
-            
-    /*         ( ellipsoid = ( Ellipsoid * ) ( Ellipsoid(num, this).ofType() ) )->initializeFrom(irInclusionRec); */
-            
-    /*         if ( ( num < 1 ) || ( num > ninclusion ) ) { */
-    /*             converter::errorf("instanciateYourself: Invalid inclusion number (num=%d)", num); */
-    /*         } */
-    /*         if ( !inclusionList->includes(num) ) { */
-    /*             setInclusion(num, ellipsoid); */
-    /*         } else { */
-    /*             printf("instanciateYourself: Inclusion entry already exist (num=%d)", num); */
-    /*             exit(0); */
-    /*         } */
-    /*     } */
-
-    /*     irInclusionRec.finish(); */
-    /* } */
-
-    
     //====================================
     // read delaunayVertices
     //====================================
-    std :: ifstream vertexField(nodeFileName);
+    std::ifstream vertexField(nodeFileName);
 
     if ( !vertexField.is_open() ) {
-        std :: cout << "In grid.C: Unable to open file " << nodeFileName << "\n";
-        std :: exit(1);
+        std::cout << "In grid.C: Unable to open file " << nodeFileName << "\n";
+        std::exit(1);
     }
 
 
@@ -855,70 +573,37 @@ int Grid :: instanciateYourself(ConverterDataReader *dr, const char nodeFileName
     oofem::FloatArray coords(3);
     oofem::FloatArray coordsOne(3), coordsTwo(3);
 
-    
+
     vertexField.precision(16);
 
     vertexField >> junk;
     vertexField >> nDelaunayVertices;
 
 
-delaunayVertexList.resize(nDelaunayVertices, nullptr);
-for (int i = 0; i < nDelaunayVertices; ++i) {
-    // read 3 coords
-    double x, y, z;
-    if (!(vertexField >> x >> y >> z)) {
-        std::cerr << "instanciateYourself: failed to read coordinates for Delaunay vertex "
-                  << (i + 1) << "\n";
-        std::exit(EXIT_FAILURE);
+    delaunayVertexList.resize(nDelaunayVertices, nullptr);
+    for (int i = 0; i < nDelaunayVertices; ++i) {
+        double x, y, z;
+        if ( !( vertexField >> x >> y >> z ) ) {
+            std::cerr << "instanciateYourself: failed to read coordinates for Delaunay vertex "
+                      << ( i + 1 ) << "\n";
+            std::exit(EXIT_FAILURE);
+        }
+
+        if ( converter::includes1(delaunayVertexList, i + 1) ) {
+            std::cerr << "instanciateYourself: DelaunayVertex entry already exists (num="
+                      << ( i + 1 ) << ")\n";
+            std::exit(EXIT_FAILURE);
+        }
+
+        // create and store vertex
+        auto *v = new Vertex(i + 1, this);
+        oofem::FloatArray coords(3);
+        coords.at(1) = x;
+        coords.at(2) = y;
+        coords.at(3) = z;
+        v->setCoordinates(coords);
+        setDelaunayVertex(i + 1, v);
     }
-
-    if (converter::includes1(delaunayVertexList, i + 1)) {
-        std::cerr << "instanciateYourself: DelaunayVertex entry already exists (num="
-                  << (i + 1) << ")\n";
-        std::exit(EXIT_FAILURE);
-    }
-
-    // create and store vertex
-    auto *v = new Vertex(i + 1, this);
-    oofem::FloatArray coords(3);  // or reuse an existing FloatArray 'coords'
-    coords.at(1) = x; coords.at(2) = y; coords.at(3) = z;
-    v->setCoordinates(coords);
-    setDelaunayVertex(i + 1, v);  // internally uses converter::put1 / put1_replace
-}
-    
-
-    /* delaunayVertexList.resize(nDelaunayVertices, nullptr); */
-    /* for ( i = 0; i < nvertex; i++ ) { */
-    /*     vertexField >> coords.at(1) >> coords.at(2) >> coords.at(3); */
-
-    /*     if ( i+1 < 1 || i+1 > nvertex ) { */
-    /*         std::cerr << "instanciateYourself: Invalid vertex number (num=" << i+1 << ")\n"; */
-    /*         std::exit(EXIT_FAILURE); */
-    /*     } */
-
-    /*     if ( converter::includes1(delaunayVertexList, i+1) ) { */
-    /*         std::cerr << "instanciateYourself: Curve entry already exists (num=" << i+1 << ")\n"; */
-    /*         std::exit(EXIT_FAILURE); */
-    /*     } */
-
-    /*     Vertex *curve = new Vertex(i+1, this); */
-    /*     vertex->initializeFrom(irVertexRec); */
-    /*     setDelaunayVertex(i+1, vertex); */
-    /* } */
-
-    
-    /* delaunayVertexList->growTo(nDelaunayVertices); */
-    /* for ( int i = 0; i < nDelaunayVertices; i++ ) { */
-    /*     vertexField >> coords.at(1) >> coords.at(2) >> coords.at(3); */
-    /*     if ( !delaunayVertexList->includes(i + 1) ) { */
-    /*         delaunayVertex = ( Vertex * ) ( Vertex(i + 1, this).ofType() ); */
-    /*         delaunayVertex->setCoordinates(coords); */
-    /*         setDelaunayVertex(i + 1, delaunayVertex); */
-    /*     } else { */
-    /*         printf("instanciateYourself: DelaunayVertex entry already exist (num=%d)", i + 1); */
-    /*         exit(0); */
-    /*     } */
-    /* } */
 
     delaunayLocalizer->init(true);
 
@@ -931,163 +616,103 @@ for (int i = 0; i < nDelaunayVertices; ++i) {
     // This part is needed for tetrahedral models but not for lattice meshes
 
     printf("meshType = %d\n", meshType);
-    
-    if(meshType == 1){      
-      
-      std :: ifstream delaunayField(delaunayFileName);
-      if ( !delaunayField.is_open() ) {
-	std :: cout << "In grid.C: Unable to open file " << delaunayFileName << "\n";   
-	std :: exit(1);
 
-      }
+    if ( meshType == 1 ) {
+        std::ifstream delaunayField(delaunayFileName);
+        if ( !delaunayField.is_open() ) {
+            std::cout << "In grid.C: Unable to open file " << delaunayFileName << "\n";
+            std::exit(1);
+        }
 
 
-// First value in delaunay.dat is the number of tets
-int nDelaunayTetras = 0;
-if (!(delaunayField >> nDelaunayTetras)) {
-    std::cerr << "Failed to read number of Delaunay tetrahedra.\n";
-    std::exit(EXIT_FAILURE);
-}
-
-// 1‑based storage with nullptr padding
-delaunayTetraList.resize(nDelaunayTetras, nullptr);
-
-oofem::IntArray delaunayVertices(4); // 1..4
-for (int i = 0; i < nDelaunayTetras; ++i) {
-    int a, b, c, d;
-    if (!(delaunayField >> a >> b >> c >> d)) {
-        std::cerr << "Failed to read vertex indices for Delaunay tetra " << (i + 1) << ".\n";
-        std::exit(EXIT_FAILURE);
-    }
-
-    // input is 0‑based; convert to 1‑based for internal use
-    delaunayVertices.at(1) = a + 1;
-    delaunayVertices.at(2) = b + 1;
-    delaunayVertices.at(3) = c + 1;
-    delaunayVertices.at(4) = d + 1;
-
-    // create and store the tetra
-    auto *t = new Tetra(i + 1, this);
-    t->setLocalVertices(delaunayVertices);
-    setDelaunayTetra(i + 1, t);  // should use converter::put1_replace internally
-
-    // register connectivity on each referenced vertex
-    for (int k = 1; k <= 4; ++k) {
-        const int vid = delaunayVertices.at(k);
-        auto *v = giveDelaunayVertex(vid);
-        if (!v) {
-            std::cerr << "Delaunay tetra " << (i + 1)
-                      << " references missing Delaunay vertex " << vid << ".\n";
+        // First value in delaunay.dat is the number of tets
+        int nDelaunayTetras = 0;
+        if ( !( delaunayField >> nDelaunayTetras ) ) {
+            std::cerr << "Failed to read number of Delaunay tetrahedra.\n";
             std::exit(EXIT_FAILURE);
         }
-        v->setLocalTetra(i + 1);
+
+        // 1‑based storage with nullptr padding
+        delaunayTetraList.resize(nDelaunayTetras, nullptr);
+
+        oofem::IntArray delaunayVertices(4);
+        for (int i = 0; i < nDelaunayTetras; ++i) {
+            int a, b, c, d;
+            if ( !( delaunayField >> a >> b >> c >> d ) ) {
+                std::cerr << "Failed to read vertex indices for Delaunay tetra " << ( i + 1 ) << ".\n";
+                std::exit(EXIT_FAILURE);
+            }
+
+            // input is 0‑based; convert to 1‑based for internal use
+            delaunayVertices.at(1) = a + 1;
+            delaunayVertices.at(2) = b + 1;
+            delaunayVertices.at(3) = c + 1;
+            delaunayVertices.at(4) = d + 1;
+
+            // create and store the tetra
+            auto *t = new Tetra(i + 1, this);
+            t->setLocalVertices(delaunayVertices);
+            setDelaunayTetra(i + 1, t);
+
+            // register connectivity on each referenced vertex
+            for (int k = 1; k <= 4; ++k) {
+                const int vid = delaunayVertices.at(k);
+                auto *v = giveDelaunayVertex(vid);
+                if ( !v ) {
+                    std::cerr << "Delaunay tetra " << ( i + 1 )
+                              << " references missing Delaunay vertex " << vid << ".\n";
+                    std::exit(EXIT_FAILURE);
+                }
+                v->setLocalTetra(i + 1);
+            }
+        }
     }
- }
+
+    // =========================================
+    // read Voronoi vertices
+    // =========================================
+
+    std::ifstream voronoiField(voronoiFileName);
+    if ( !voronoiField.is_open() ) {
+        converter::errorf("In grid.C: Unable to open file %s", voronoiFileName);
     }
-
-      
-    /*   IntArray delaunayVertices(4); */
-    /*   delaunayField >> nDelaunayTetras; //1st Line of delaunay.dat */
-    /*   delaunayTetraList->growTo(nDelaunayTetras); */
-    /*   for ( int i = 0; i < nDelaunayTetras; i++ ) { */
-    /* 	delaunayField >> delaunayVertices.at(1) >> delaunayVertices.at(2) >> delaunayVertices.at(3) >> delaunayVertices.at(4); */
-    /* 	for (int k = 0; k<4;k++){ */
-    /* 	  delaunayVertices.at(k+1)++; */
-    /* 	} */
-    /* 	delaunayTetra = ( Tetra * ) ( Tetra(i + 1, this).ofType() ); */
-    /* 	delaunayTetra->setLocalVertices(delaunayVertices); */
-    /* 	this->setDelaunayTetra(i + 1, delaunayTetra); */
-
-    /* 	for (int k = 0; k<4;k++){ */
-    /* 	  this->giveDelaunayVertex( delaunayVertices.at(k+1) )->setLocalTetra(i + 1); */
-    /* 	} */
-      
-    /*   } */
-    /* }//end of Delaunay tetrahedra input reading */
-
-
-// =========================================
-// read Voronoi vertices
-// =========================================
-
- std::ifstream voronoiField(voronoiFileName);
- if (!voronoiField.is_open()) {
-   converter::errorf("In grid.C: Unable to open file %s", voronoiFileName);
- }
     voronoiField.precision(16);
 
     junk = 0;
     int nVoronoiVertices = 0;
 
     // First two header lines in voronoi.dat
-    if (!(voronoiField >> junk)) {
+    if ( !( voronoiField >> junk ) ) {
         converter::error("Voronoi file: failed to read header line 1");
     }
-    if (!(voronoiField >> nVoronoiVertices) || nVoronoiVertices < 0) {
+    if ( !( voronoiField >> nVoronoiVertices ) || nVoronoiVertices < 0 ) {
         converter::error("Voronoi file: invalid vertex count on header line 2");
     }
 
-    // Allocate 1-based slots [1..n]
     voronoiVertexList.resize(nVoronoiVertices, nullptr);
 
-    //    oofem::FloatArray coords(3);
     for (int i = 0; i < nVoronoiVertices; ++i) {
-        if (!(voronoiField >> coords.at(1) >> coords.at(2) >> coords.at(3))) {
+        if ( !( voronoiField >> coords.at(1) >> coords.at(2) >> coords.at(3) ) ) {
             converter::errorf("Voronoi file: unexpected EOF reading vertex %d/%d",
                               i + 1, nVoronoiVertices);
         }
 
         const int id = i + 1; // 1-based id
 
-        if (converter::includes1(voronoiVertexList, id)) {
+        if ( converter::includes1(voronoiVertexList, id) ) {
             converter::errorf("Voronoi vertex %d duplicated", id);
         }
 
-        auto* v = new Vertex(id, this);
+        auto * v = new Vertex(id, this);
         v->setCoordinates(coords);
         setVoronoiVertex(id, v);
     }
 
-    if (voronoiLocalizer) {
+    if ( voronoiLocalizer ) {
         voronoiLocalizer->init(true);
     }
 
     std::printf("Finished Voronoi vertices (%d)\n", nVoronoiVertices);
-
-
-
- 
-    /* //========================================= */
-    /* // read Voronoi vertices */
-    /* //====================================== */
-    
-    /* std :: ifstream voronoiField(voronoiFileName); */
-    /* if ( !voronoiField.is_open() ) { */
-    /*     std :: cout << "In grid.C: Unable to open file " << voronoiFileName << "\n"; */
-    /*     std :: exit(1); */
-    /* } */
-
-    /* voronoiField.precision(16); */
-
-    /* int nVoronoiVertices; */
-    /* int nDelaunayLines; */
-    /* IntArray voronoiNodes; */
-    /* voronoiField >> junk; //1st line of voronoi.dat */
-    /* voronoiField >> nVoronoiVertices; //2nd Line of Voronoi.dat */
-
-    /* voronoiVertexList->growTo(nVoronoiVertices); */
-    /* for ( int i = 0; i < nVoronoiVertices; i++ ) { */
-    /*     voronoiField >> coords.at(1) >> coords.at(2) >> coords.at(3); */
-    /*     voronoiVertex = ( Vertex * ) ( Vertex(i + 1, this).ofType() ); //here the coordinates are put in the list Vertex */
-    /*     voronoiVertex->setCoordinates(coords); */
-    /*     setVoronoiVertex(i + 1, voronoiVertex); */
-    /* } */
-
-    /* voronoiLocalizer->init(true); */
-
-    /* printf("Finished Voronoi vertices\n"); */
-
-
 
     //==========================
     //Read Delaunay lines
@@ -1106,223 +731,115 @@ for (int i = 0; i < nDelaunayTetras; ++i) {
     int edgeFlagCounter = 0;
     double area = 0;
 
-    /* oofem::IntArray edgeFlag( curveList.size1() ); */
-    /* delaunayLineList->growTo(nDelaunayLines); */
-    /* voronoiLineList->growTo(100 * nDelaunayLines); */
-    /* int voronoiLineCounter = 0; */
-    /* for ( int i = 0; i < nDelaunayLines; i++ ) { */
-    /*     voronoiField >> size; // its the first number in each series after nDelaunayLines */
-    /*     voronoiField >> delaunayNodes.at(1) >> delaunayNodes.at(2); //2nd and 3rd in that line (delaunay nodes) */
 
-    /*     //Numbering: Qhull delaunay nodes start at zero. Voronoi nodes start at 1. */
-    /*     //Modify Delaunay numbering so that it starts at 1 as well. */
-    /*     for ( int m = 0; m < 2; m++ ) { */
-    /*         delaunayNodes.at(m + 1) = delaunayNodes.at(m + 1) + 1; */
-    /*     } */
-    /*     delaunayLine = ( Line * ) ( Line(i + 1, this).ofType() ); */
-    /*     delaunayLine->setVertices(delaunayNodes); */
+    delaunayLineList.resize(nDelaunayLines, nullptr);
 
-    /*     this->giveDelaunayVertex( delaunayNodes.at(1) )->setLocalLine(i + 1); */
-    /*     this->giveDelaunayVertex( delaunayNodes.at(2) )->setLocalLine(i + 1); */
+    voronoiLineList.reserve(100 * nDelaunayLines);
 
-    /*     //==================== */
-    /*     //Read Voronoi nodes */
-    /*     //==================== */
-    /*     int deleteDelaunayFlag = 0; */
-    /*     voronoiNodes.resize(size - 2); */
-    /*     for ( int k = 0; k < size - 2; k++ ) { */
-    /*         voronoiField >> voronoiNodes.at(k + 1); */
-    /*     } */
+    int voronoiLineCounter = 0;
 
-    /*     delaunayLine->updateCrossSectionVertices(voronoiNodes); */
+    for (int i = 0; i < nDelaunayLines; ++i) {
+        int size = 0;
+        voronoiField >> size;
 
-    /*     //========================= */
-    /*     //Create the Voronoi lines */
-    /*     //========================= */
-    /*     oofem::IntArray nodesA(2); */
-    /*     oofem::IntArray crossSectionElements( voronoiNodes.giveSize() ); */
-    /*     for ( int m = 0; m < voronoiNodes.giveSize(); m++ ) { */
-    /*         if ( m < voronoiNodes.giveSize() - 1 ) { */
-    /*             nodesA.at(1) = voronoiNodes.at(m + 1); */
-    /*             nodesA.at(2) = voronoiNodes.at(m + 2); */
-    /*         } else if ( m == voronoiNodes.giveSize() - 1 ) { */
-    /*             nodesA.at(1) = voronoiNodes.at(m + 1); */
-    /*             nodesA.at(2) = voronoiNodes.at(1); */
-    /*         } */
+        oofem::IntArray delaunayNodes(2);
+        voronoiField >> delaunayNodes.at(1) >> delaunayNodes.at(2);
 
-    /*         //It should be enough to do it for one node */
-    /*         oofem::IntArray localVoronoiLines; */
-    /*         oofem::IntArray localVertices; */
-    /*         int flag = 0; */
-    /*         if ( nodesA.at(1) != 0 ) { */
-    /*             this->giveVoronoiVertex( nodesA.at(1) )->giveLocalLines(localVoronoiLines); */
-    /*         } else if ( nodesA.at(2) != 0 ) { */
-    /*             this->giveVoronoiVertex( nodesA.at(2) )->giveLocalLines(localVoronoiLines); */
-    /*         } else { */
-    /*             printf("error: cannot have two zero nodes\n"); */
-    /*             exit(1); */
-    /*         } */
-
-    /*         //Check if the line already exists. */
-    /*         for ( int k = 0; k < localVoronoiLines.giveSize(); k++ ) { */
-    /*             this->giveVoronoiLine( localVoronoiLines.at(k + 1) )->giveLocalVertices(localVertices); */
-    /*             if ( ( localVertices.at(1) == nodesA.at(1) ) && ( localVertices.at(2) == nodesA.at(2) ) || */
-    /*                  ( localVertices.at(1) == nodesA.at(2) ) && ( localVertices.at(2) == nodesA.at(1) ) ) { */
-    /*                 flag = 1; */
-    /*                 this->giveVoronoiLine( localVoronoiLines.at(k + 1) )->updateCrossSectionVertices(delaunayNodes); */
-    /*                 this->giveVoronoiLine( localVoronoiLines.at(k + 1) )->updateCrossSectionElement(i + 1); */
-    /*                 delaunayLine->updateCrossSectionElement( localVoronoiLines.at(k + 1) ); */
-    /*             } */
-    /*         } */
-
-    /*         //Generate the Voronoi line */
-    /*         if ( flag == 0 ) { */
-    /*             voronoiLine = ( Line * ) ( Line(voronoiLineCounter + 1, this).ofType() ); */
-    /*             voronoiLine->setVertices(nodesA); */
-
-    /*             //New function */
-    /*             voronoiLine->updateCrossSectionVertices(delaunayNodes); */
-    /*             voronoiLine->updateCrossSectionElement(i + 1); */
-    /*             this->setVoronoiLine(voronoiLineCounter + 1, voronoiLine); */
-    /*             voronoiLineCounter++; */
-    /*             delaunayLine->updateCrossSectionElement(voronoiLineCounter); */
+        delaunayNodes.at(1) += 1;
+        delaunayNodes.at(2) += 1;
 
 
-    /*             //Set the Voronoi line in both Voronoi nodes. This is needed for check if line already exist. */
-    /*             //Both nodes are required since it is not determined in which order they might appear. */
-    /*             if ( nodesA.at(1) != 0 ) { */
-    /*                 this->giveVoronoiVertex( nodesA.at(1) )->setLocalLine(voronoiLineCounter); */
-    /*             } */
-    /*             if ( nodesA.at(2) != 0 ) { */
-    /*                 this->giveVoronoiVertex( nodesA.at(2) )->setLocalLine(voronoiLineCounter); */
-    /*             } */
-    /*         } */
-    /*     } */
+        auto * delaunayLine = new Line(i + 1, this);
+        delaunayLine->setVertices(delaunayNodes);
 
-    /*     this->setDelaunayLine(i + 1, delaunayLine); */
-    /* } */
-    /* voronoiLineList->growTo(voronoiLineCounter); */
-    /* printf("Finished Voronoi lines\n"); */
+        // Register this line at both Delaunay vertices
+        this->giveDelaunayVertex(delaunayNodes.at(1) )->setLocalLine(i + 1);
+        this->giveDelaunayVertex(delaunayNodes.at(2) )->setLocalLine(i + 1);
 
+        // ------------------------
+        // Read Voronoi nodes list
+        // ------------------------
+        // 'size' counts: 2 (delaunay nodes) + NvoronoiNodes
+        const int nVorNodes = size - 2;
+        oofem::IntArray voronoiNodes(nVorNodes);
+        for (int k = 0; k < nVorNodes; ++k) {
+            voronoiField >> voronoiNodes.at(k + 1);
+            // Note: Voronoi node indices are already 1-based in Qhull, 0 means at infinity.
+        }
 
-    // Optional: if you still need a per-curve flag array, keep it as a vector.
-// std::vector<int> edgeFlag(curveList.size() + 1, 0); // 1-based, ignore index 0
+        // Stash polygon on the Delaunay line for cross-section
+        delaunayLine->updateCrossSectionVertices(voronoiNodes);
 
-// Delaunay lines are known up-front -> resize to exact size (1-based with nullptrs)
-delaunayLineList.resize(nDelaunayLines, nullptr);
+        // --------------------------------
+        // Build Voronoi edges around face
+        // --------------------------------
+        oofem::IntArray nodesA(2);
+        for (int m = 0; m < nVorNodes; ++m) {
+            // consecutive pair, wrapping at the end
+            nodesA.at(1) = voronoiNodes.at(m + 1);
+            nodesA.at(2) = ( m < nVorNodes - 1 ) ? voronoiNodes.at(m + 2) : voronoiNodes.at(1);
 
-// Voronoi lines are discovered as we go -> reserve capacity only (no size change)
-voronoiLineList.reserve(100 * nDelaunayLines);
+            // Collect candidate Voronoi lines touching one of the endpoints (prefer a non-zero node)
+            oofem::IntArray localVoronoiLines;
+            if ( nodesA.at(1) != 0 ) {
+                this->giveVoronoiVertex(nodesA.at(1) )->giveLocalLines(localVoronoiLines);
+            } else if ( nodesA.at(2) != 0 ) {
+                this->giveVoronoiVertex(nodesA.at(2) )->giveLocalLines(localVoronoiLines);
+            } else {
+                std::fprintf(stderr, "error: cannot have two zero Voronoi nodes\n");
+                std::exit(1);
+            }
 
-int voronoiLineCounter = 0;
+            // See if this Voronoi edge already exists (order-insensitive match)
+            bool exists = false;
+            for (int k = 0; k < localVoronoiLines.giveSize(); ++k) {
+                const int lid = localVoronoiLines.at(k + 1);
+                oofem::IntArray localVertices;
+                this->giveVoronoiLine(lid)->giveLocalVertices(localVertices);
 
-for (int i = 0; i < nDelaunayLines; ++i) {
-    int size = 0;
-    voronoiField >> size;  // first number of the series after nDelaunayLines
+                const bool same =
+                    ( localVertices.at(1) == nodesA.at(1) && localVertices.at(2) == nodesA.at(2) ) ||
+                    ( localVertices.at(1) == nodesA.at(2) && localVertices.at(2) == nodesA.at(1) );
 
-    // Delaunay endpoints for this edge (Qhull gives 0-based indices)
-    oofem::IntArray delaunayNodes(2);
-    voronoiField >> delaunayNodes.at(1) >> delaunayNodes.at(2);
-    // Convert to 1-based
-    delaunayNodes.at(1) += 1;
-    delaunayNodes.at(2) += 1;
+                if ( same ) {
+                    exists = true;
+                    // Update cross-section coupling both ways
+                    this->giveVoronoiLine(lid)->updateCrossSectionVertices(delaunayNodes);
+                    this->giveVoronoiLine(lid)->updateCrossSectionElement(i + 1);
+                    delaunayLine->updateCrossSectionElement(lid);
+                    break;
+                }
+            }
 
-    // Create and store the Delaunay line (id = i+1)
-    auto* delaunayLine = new Line(i + 1, this);
-    delaunayLine->setVertices(delaunayNodes);
+            // Create new Voronoi line if it doesn't exist
+            if ( !exists ) {
+                const int newId = ++voronoiLineCounter;
+                auto * vorLine = new Line(newId, this);
+                vorLine->setVertices(nodesA);
 
-    // Register this line at both Delaunay vertices
-    this->giveDelaunayVertex(delaunayNodes.at(1))->setLocalLine(i + 1);
-    this->giveDelaunayVertex(delaunayNodes.at(2))->setLocalLine(i + 1);
+                // Couple to the Delaunay line (cross-section)
+                vorLine->updateCrossSectionVertices(delaunayNodes);
+                vorLine->updateCrossSectionElement(i + 1);
+                delaunayLine->updateCrossSectionElement(newId);
 
-    // ------------------------
-    // Read Voronoi nodes list
-    // ------------------------
-    // 'size' counts: 2 (delaunay nodes) + NvoronoiNodes
-    const int nVorNodes = size - 2;
-    oofem::IntArray voronoiNodes(nVorNodes);
-    for (int k = 0; k < nVorNodes; ++k) {
-        voronoiField >> voronoiNodes.at(k + 1);
-        // Note: Voronoi node indices are already 1-based in your format, 0 means at infinity.
+                converter::put1_replace(voronoiLineList, newId, vorLine);
+
+                // Register this Voronoi line at its endpoints (if finite)
+                if ( nodesA.at(1) != 0 ) {
+                    this->giveVoronoiVertex(nodesA.at(1) )->setLocalLine(newId);
+                }
+                if ( nodesA.at(2) != 0 ) {
+                    this->giveVoronoiVertex(nodesA.at(2) )->setLocalLine(newId);
+                }
+            }
+        }
+
+        // Finally store the Delaunay line (1-based)
+        converter::put1_replace(delaunayLineList, i + 1, delaunayLine);
     }
 
-    // Stash polygon on the Delaunay line for cross-section
-    delaunayLine->updateCrossSectionVertices(voronoiNodes);
 
-    // --------------------------------
-    // Build Voronoi edges around face
-    // --------------------------------
-    oofem::IntArray nodesA(2);
-    for (int m = 0; m < nVorNodes; ++m) {
-        // consecutive pair, wrapping at the end
-        nodesA.at(1) = voronoiNodes.at(m + 1);
-        nodesA.at(2) = (m < nVorNodes - 1) ? voronoiNodes.at(m + 2) : voronoiNodes.at(1);
-
-        // Collect candidate Voronoi lines touching one of the endpoints (prefer a non-zero node)
-        oofem::IntArray localVoronoiLines;
-        if (nodesA.at(1) != 0) {
-            this->giveVoronoiVertex(nodesA.at(1))->giveLocalLines(localVoronoiLines);
-        } else if (nodesA.at(2) != 0) {
-            this->giveVoronoiVertex(nodesA.at(2))->giveLocalLines(localVoronoiLines);
-        } else {
-            std::fprintf(stderr, "error: cannot have two zero Voronoi nodes\n");
-            std::exit(1);
-        }
-
-        // See if this Voronoi edge already exists (order-insensitive match)
-        bool exists = false;
-        for (int k = 0; k < localVoronoiLines.giveSize(); ++k) {
-            const int lid = localVoronoiLines.at(k + 1);
-            oofem::IntArray localVertices;
-            this->giveVoronoiLine(lid)->giveLocalVertices(localVertices);
-
-            const bool same =
-                (localVertices.at(1) == nodesA.at(1) && localVertices.at(2) == nodesA.at(2)) ||
-                (localVertices.at(1) == nodesA.at(2) && localVertices.at(2) == nodesA.at(1));
-
-            if (same) {
-                exists = true;
-                // Update cross-section coupling both ways
-                this->giveVoronoiLine(lid)->updateCrossSectionVertices(delaunayNodes);
-                this->giveVoronoiLine(lid)->updateCrossSectionElement(i + 1);
-                delaunayLine->updateCrossSectionElement(lid);
-                break;
-            }
-        }
-
-        // Create new Voronoi line if it doesn't exist
-        if (!exists) {
-            const int newId = ++voronoiLineCounter;
-            auto* vorLine = new Line(newId, this);
-            vorLine->setVertices(nodesA);
-
-            // Couple to the Delaunay line (cross-section)
-            vorLine->updateCrossSectionVertices(delaunayNodes);
-            vorLine->updateCrossSectionElement(i + 1);
-            delaunayLine->updateCrossSectionElement(newId);
-
-            // Store (1-based vector with helpers)
-            converter::put1_replace(voronoiLineList, newId, vorLine);
-
-            // Register this Voronoi line at its endpoints (if finite)
-            if (nodesA.at(1) != 0) {
-                this->giveVoronoiVertex(nodesA.at(1))->setLocalLine(newId);
-            }
-            if (nodesA.at(2) != 0) {
-                this->giveVoronoiVertex(nodesA.at(2))->setLocalLine(newId);
-            }
-        }
-    }
-
-    // Finally store the Delaunay line (1-based)
-    converter::put1_replace(delaunayLineList, i + 1, delaunayLine);
-}
-
-// No need to "growTo" the voronoi list—it's already sized by put1_replace.
-// If you want to compact the capacity to the actual count (purely cosmetic):
-// voronoiLineList.shrink_to_fit();
-
-std::printf("Finished Delaunay and Voronoi lines\n");
+    std::printf("Finished Delaunay and Voronoi lines\n");
 
 
 
@@ -1336,7 +853,7 @@ std::printf("Finished Delaunay and Voronoi lines\n");
     for ( int i = 0; i < nDelaunayVertices; i++ ) {
         this->giveDelaunayVertex(i + 1)->giveLocalLines(localLines);
         for ( int m = 0; m < localLines.giveSize(); m++ ) {
-            this->giveDelaunayLine( localLines.at(m + 1) )->giveCrossSectionVertices(crossSectionNodes);
+            this->giveDelaunayLine(localLines.at(m + 1) )->giveCrossSectionVertices(crossSectionNodes);
             this->giveDelaunayVertex(i + 1)->updateCellVertices(crossSectionNodes);
         }
     }
@@ -1349,470 +866,227 @@ std::printf("Finished Delaunay and Voronoi lines\n");
     for ( int i = 0; i < nVoronoiVertices; i++ ) {
         this->giveVoronoiVertex(i + 1)->giveLocalLines(localLines);
         for ( int m = 0; m < localLines.giveSize(); m++ ) {
-            this->giveVoronoiLine( localLines.at(m + 1) )->giveCrossSectionElements(crossSectionElements);
+            this->giveVoronoiLine(localLines.at(m + 1) )->giveCrossSectionElements(crossSectionElements);
             this->giveVoronoiVertex(i + 1)->updateCellElements(crossSectionElements);
         }
     }
 
 
+    fibreList.resize(nfibre, nullptr);
 
+    std::printf("\n number of fibres detected : %d \n", ( int ) fibreList.size() );
 
-// If you know nfibre up front, pre-size with nullptrs (1‑based storage via helpers still works fine):
-fibreList.resize(nfibre, nullptr);
+    for (int i = 0; i < nfibre; ++i) {
+        auto &irFibreRec = dr->giveInputRecord(ConverterDataReader::CIR_fibreRec, i + 1);
 
-std::printf("\n number of fibres detected : %d \n", (int)fibreList.size());
+        std::string kw;
+        int num = 0;
+        irFibreRec.giveRecordKeywordField(kw, num);
 
-for (int i = 0; i < nfibre; ++i) {
-    // Read: "fibre <num>  ..." record i+1
-    auto &irFibreRec = dr->giveInputRecord(ConverterDataReader::CIR_fibreRec, i + 1);
+        if ( num < 1 || num > nfibre ) {
+            converter::errorf("instanciateYourself: Invalid fibre number (num=%d)", num);
+        }
+        if ( converter::includes1(fibreList, num) ) {
+            converter::errorf("instanciateYourself: Fibre entry already exists (num=%d)", num);
+        }
 
-    std::string kw;
-    int num = 0;
-    irFibreRec.giveRecordKeywordField(kw, num);   // expects keyword + id (e.g., "fibre 7")
+        auto *fibre = new Fibre(num, this);
+        fibre->initializeFrom(irFibreRec);
 
-    if (num < 1 || num > nfibre) {
-        converter::errorf("instanciateYourself: Invalid fibre number (num=%d)", num);
+        converter::put1_replace(fibreList, num, fibre);
     }
-    if (converter::includes1(fibreList, num)) {
-        converter::errorf("instanciateYourself: Fibre entry already exists (num=%d)", num);
-    }
 
-    auto *fibre = new Fibre(num, this);
-    fibre->initializeFrom(irFibreRec);
-
-    // Store safely (resizes as needed and deletes any previous ptr in slot)
-    converter::put1_replace(fibreList, num, fibre);
-
- }     
-    
-    /* //================================== */
-    /* // read fibres */
-    /* //================================= */
-    /* fibreList->growTo(nfibre); */
-    /* printf("\n number of fibres detected : %d \n ",this->giveNumberOfFibres()); */
-    
-    /* for ( i = 0; i < nfibre; i++ ) { */
-    /*   //          printf("\n initialization of fibre number   %d \n ",i+1); */
-    /*     irFibreREc = dr->giveInputRecord(ConverterDataReader :: CIR_fibreRec, i + 1); */
-    /*     IR_GIVE_RECORD_KEYWORD_FIELD(irFibreRec, name, num, MAX_NAME_LENGTH); */
-    /*     ( fibre = ( Fibre * ) ( Fibre(num, this).ofType() ) )->initializeFrom(irFibreRec); */
-    /*     if ( ( num < 1 ) || ( num > nfibre) ) { */
-    /*         converter::errorf("instanciateYourself: Invalid fibre number (num=%d)", num); */
-    /*     } */
-    /*     if ( !fibreList->includes(num) ) { */
-            
-    /*         setFibre(num,fibre);// add to the list of fibre */
-    /*     } else { */
-    /*         printf("instanciateYourself: Fibre entry already exist (num=%d)", num); */
-    /*         exit(0); */
-    /*     } */
-    
-    
-    /*     irFibreRec.finish(); */
-    /* } */
-    
     //==================================
     // generation of the Lines between Reinforcements nodes (beam elements) , and between Reinf and Del vertices (links)
     //=================================
-    
-    int numberOfBeams,numberOfLinks, numberOfReinforcementNodes;
-    int indexOfBeamElements,indexOfLinkElements,indexOfReinforcementNodes;
+
+    int numberOfBeams, numberOfLinks, numberOfReinforcementNodes;
+    int indexOfBeamElements, indexOfLinkElements, indexOfReinforcementNodes;
     int globalIndex = 0;
-    int beamElementCounter=0,linkElementCounter=0;
-    oofem::IntArray beamNodes(2),linkNodes(2);
+    int beamElementCounter = 0, linkElementCounter = 0;
+    oofem::IntArray beamNodes(2), linkNodes(2);
     double portionOfFibre;
-    oofem::FloatArray coordP1,coordP2;
+    oofem::FloatArray coordP1, coordP2;
     double fibre_diameter;
     oofem::FloatArray dir_vector;
-    
+
     printf("\n generation of beam elements for fibres and link elements in progress... \n ");
 
-     for ( i = 1; i <= nfibre; i++ ) {
-         
-         // 0) collect info about fibre which will be added to elements
-       fibre_diameter=giveFibre(i)->giveDiameter();
-       dir_vector=giveFibre(i)->giveDirVector();
-         
-         // 1) discretization and creation of reinforcement nodes
-	 /**TODO: This has been written for the lattice generation.
-         Therefore, the nodes of the rebars are placed in the centre of the section crossing 
-	 the Voronoi cell. For meshtype=1 where tetras are used it would be better to place 
-	 the node at the intersection with Delaunay tetrahedra of the segment crossing the delaunay tetra. 
-	 **/
-       giveFibre(i)->discretizeYouself();
+    for ( i = 1; i <= nfibre; i++ ) {
+        // 0) collect info about fibre which will be added to elements
+        fibre_diameter = giveFibre(i)->giveDiameter();
+        dir_vector = giveFibre(i)->giveDirVector();
 
-         // 2) creation of link and beam elements associated to the fibre
-	 
-       numberOfReinforcementNodes = giveFibre(i)->NbOfReinfNodes();
-       numberOfBeams=(giveFibre(i)->NbOfReinfNodes())-1;
-	 numberOfLinks=(giveFibre(i)->NbOfReinfNodes());
-         
-         indexOfLinkElements=converter::size1(latticeLinkList);
-         indexOfBeamElements=converter::size1(latticeBeamList);
-         indexOfReinforcementNodes=converter::size1(reinforcementNodeList);
-         
-         latticeLinkList.resize(indexOfLinkElements+numberOfLinks,nullptr);
-         latticeBeamList.resize(indexOfBeamElements+numberOfBeams,nullptr);
-         
-         
-         for (int j = 1; j <= numberOfBeams; j++ )
-         {   beamElementCounter++;
-             
-             beamLine = ( Line * ) ( Line(beamElementCounter + 1, this).ofType() );
-             setLatticeBeam(beamElementCounter,beamLine);
-             
-             beamNodes.at(1)=giveFibre(i)->giveNumberReinforcementNode(j);
-             beamNodes.at(2)=giveFibre(i)->giveNumberReinforcementNode(j+1);
-             
-             beamLine->setVertices(beamNodes);
-             this->giveReinforcementNode( beamNodes.at(1) )->setLocalLine(beamElementCounter);
-             this->giveReinforcementNode( beamNodes.at(2) )->setLocalLine(beamElementCounter);
-             
-             beamLine->setDiameter(fibre_diameter);
-             beamLine->setDirVector(dir_vector);
-             
-         }
-         
-         for (int j = 1; j <= numberOfReinforcementNodes; j++ ){
+        // 1) discretization and creation of reinforcement nodes
+        /**TODO: This has been written for the lattice generation.
+         * Therefore, the nodes of the rebars are placed in the centre of the section crossing
+         * the Voronoi cell. For meshtype=1 where tetras are used it would be better to place
+         * the node at the intersection with Delaunay tetrahedra of the segment crossing the delaunay tetra.
+         **/
+        giveFibre(i)->discretizeYouself();
 
-	     linkElementCounter++;  
-	     linkLine = ( Line * ) ( Line(linkElementCounter + 1, this).ofType() );
-	     setLatticeLink(linkElementCounter,linkLine);
-	     
-	     linkNodes.at(1)=giveFibre(i)->giveNumberReinforcementNode(j);
-	     linkNodes.at(2)=giveFibre(i)->giveNumberDelaunayNode(j);
-	     
-             linkLine->setVertices(linkNodes);
-             
-             //set of the length of fibre associated to the link
-             this->giveInterNode(giveFibre(i)->giveNumberIntersectionPoint(j))->giveCoordinates(coordP1);
-             this->giveInterNode(giveFibre(i)->giveNumberIntersectionPoint(j+1))->giveCoordinates(coordP2);
-             portionOfFibre=Fibre::computedistance(coordP1, coordP2);
-             linkLine->setAssociatedLength(portionOfFibre);
-             
-             this->giveReinforcementNode( linkNodes.at(1) )->setLocalLink(linkElementCounter);
-             this->giveDelaunayVertex( linkNodes.at(2) )->setLocalLink(linkElementCounter);
-             
-             linkLine->setDiameter(fibre_diameter);
-             linkLine->setDirVector(dir_vector);
-             
-             linkLine->setL_end(giveFibre(i)->giveL_end(j));
-         }
-     }
-     
-     // reinforcementLocalizer->init(true);
-     
-     printf("finished initializing\n");
-     
-     return 1;
+        // 2) creation of link and beam elements associated to the fibre
+
+        numberOfReinforcementNodes = giveFibre(i)->NbOfReinfNodes();
+        numberOfBeams = ( giveFibre(i)->NbOfReinfNodes() ) - 1;
+        numberOfLinks = ( giveFibre(i)->NbOfReinfNodes() );
+
+        indexOfLinkElements = converter::size1(latticeLinkList);
+        indexOfBeamElements = converter::size1(latticeBeamList);
+        indexOfReinforcementNodes = converter::size1(reinforcementNodeList);
+
+        latticeLinkList.resize(indexOfLinkElements + numberOfLinks, nullptr);
+        latticeBeamList.resize(indexOfBeamElements + numberOfBeams, nullptr);
+
+
+        for (int j = 1; j <= numberOfBeams; j++ ) {
+            beamElementCounter++;
+
+            beamLine = ( Line * ) ( Line(beamElementCounter + 1, this).ofType() );
+            setLatticeBeam(beamElementCounter, beamLine);
+
+            beamNodes.at(1) = giveFibre(i)->giveNumberReinforcementNode(j);
+            beamNodes.at(2) = giveFibre(i)->giveNumberReinforcementNode(j + 1);
+
+            beamLine->setVertices(beamNodes);
+            this->giveReinforcementNode(beamNodes.at(1) )->setLocalLine(beamElementCounter);
+            this->giveReinforcementNode(beamNodes.at(2) )->setLocalLine(beamElementCounter);
+
+            beamLine->setDiameter(fibre_diameter);
+            beamLine->setDirVector(dir_vector);
+        }
+
+        for (int j = 1; j <= numberOfReinforcementNodes; j++ ) {
+            linkElementCounter++;
+            linkLine = ( Line * ) ( Line(linkElementCounter + 1, this).ofType() );
+            setLatticeLink(linkElementCounter, linkLine);
+
+            linkNodes.at(1) = giveFibre(i)->giveNumberReinforcementNode(j);
+            linkNodes.at(2) = giveFibre(i)->giveNumberDelaunayNode(j);
+
+            linkLine->setVertices(linkNodes);
+
+            //set of the length of fibre associated to the link
+            this->giveInterNode(giveFibre(i)->giveNumberIntersectionPoint(j) )->giveCoordinates(coordP1);
+            this->giveInterNode(giveFibre(i)->giveNumberIntersectionPoint(j + 1) )->giveCoordinates(coordP2);
+            portionOfFibre = Fibre::computedistance(coordP1, coordP2);
+            linkLine->setAssociatedLength(portionOfFibre);
+
+            this->giveReinforcementNode(linkNodes.at(1) )->setLocalLink(linkElementCounter);
+            this->giveDelaunayVertex(linkNodes.at(2) )->setLocalLink(linkElementCounter);
+
+            linkLine->setDiameter(fibre_diameter);
+            linkLine->setDirVector(dir_vector);
+
+            linkLine->setL_end(giveFibre(i)->giveL_end(j) );
+        }
+    }
+
+    // reinforcementLocalizer->init(true);
+
+    printf("finished initializing\n");
+
+    return 1;
 }
 
 Vertex *Grid::createReinfNode(oofem::FloatArray coordR)
 // function to create reinforcement nodes, directly with global index in the grid (not only for the fibre...)
 {
-    int index(this->giveNumberOfReinforcementNode()+1);
-    reinforcementNodeList.resize(index,nullptr);
-    
+    int index(this->giveNumberOfReinforcementNode() + 1);
+    reinforcementNodeList.resize(index, nullptr);
+
     Vertex *reinforcementNode;
     reinforcementNode = ( Vertex * ) ( Vertex(index, this).ofType() );
     reinforcementNode->setCoordinates(coordR);
-    setReinforcementNode(index,reinforcementNode);
-    
+    setReinforcementNode(index, reinforcementNode);
+
     return reinforcementNode;
 };
 
 Vertex *Grid::createInterNode(oofem::FloatArray coordS)
 // function to create reinforcement nodes, directly with global index in the grid (not only for the fibre...)
 {
-    int index(this->giveNumberOfInterNodes()+1);
-    interNodeList.resize(index,nullptr);
-    
+    int index(this->giveNumberOfInterNodes() + 1);
+    interNodeList.resize(index, nullptr);
+
     Vertex *interNode;
     interNode = ( Vertex * ) ( Vertex(index, this).ofType() );
     interNode->setCoordinates(coordS);
-    setInterNode(index,interNode);
+    setInterNode(index, interNode);
     return interNode;
 };
 
 
 
-Vertex* Grid::giveVertex(int n) {
-  return converter::require_at1(vertexList, n, "giveVertex");
-}
- 
-
-/* Vertex *Grid :: giveVertex(int n) */
-/* // Returns the n-th vertex. Generates converter::error if it is not defined yet. */
-/* { */
-/*     if ( vertexList->includes(n) ) { */
-/*         return vertexList.at1(n); */
-/*     } else { */
-/*         printf("giveVertex: undefined vertex (%d)\n", n); */
-/*         exit(1); */
-/*     } */
-
-/*     return NULL; */
-/* } */
-
-Curve* Grid::giveCurve(int n) {
-  return converter::require_at1(curveList, n, "giveCurve");
+Vertex * Grid::giveVertex(int n) {
+    return converter::require_at1(vertexList, n, "giveVertex");
 }
 
 
-/* Curve *Grid :: giveCurve(int n) */
-/* // Returns the n-th line. Generates error if it is not defined yet. */
-/* { */
-/*     if ( curveList->includes(n) ) { */
-/*         return curveList.at1(n); */
-/*     } else { */
-/*         printf("giveCurve: undefined curve (%d)\n", n); */
-/*         exit(1); */
-/*     } */
-
-/*     return NULL; */
-/* } */
-
-
-Surface* Grid::giveSurface(int n) {
-  return converter::require_at1(surfaceList, n, "giveSurface");
-}
-
- 
-/* Surface *Grid :: giveSurface(int n) */
-/* // Returns the n-th line. Generates error if it is not defined yet. */
-/* { */
-/*     if ( surfaceList->includes(n) ) { */
-/*         return surfaceList.at1(n); */
-/*     } else { */
-/*         printf("giveSurface: undefined surface (%d)\n", n); */
-/*         exit(1); */
-/*     } */
-
-/*     return NULL; */
-/* } */
-
-
-Region* Grid::giveRegion(int n) {
-  return converter::require_at1(regionList, n, "giveRegion");
-}
-
- 
-/* Region *Grid :: giveRegion(int n) */
-/* // Returns the n-th line. Generates error if it is not defined yet. */
-/* { */
-/*     if ( regionList->includes(n) ) { */
-/*         return regionList.at1(n); */
-/*     } else { */
-/*         printf("giveRegion: undefined region (%d)\n", n); */
-/*         exit(1); */
-/*     } */
-
-/*     return NULL; */
-/* } */
-
-Inclusion* Grid::giveInclusion(int n) {
-  return converter::require_at1(inclusionList, n, "giveInclusion");
+Curve * Grid::giveCurve(int n) {
+    return converter::require_at1(curveList, n, "giveCurve");
 }
 
 
-/* Inclusion *Grid :: giveInclusion(int n) */
-/* // Returns the n-th line. Generates error if it is not defined yet. */
-/* { */
-/*     if ( inclusionList->includes(n) ) { */
-/*         return inclusionList.at1(n); */
-/*     } else { */
-/*         printf("giveInclusion: undefined inclusion (%d)\n", n); */
-/*         exit(1); */
-/*     } */
-
-/*     return NULL; */
-/* } */
-
-Fibre* Grid::giveFibre(int n) {
-  return converter::require_at1(fibreList, n, "giveFibre");
-}
-
- 
-/* Fibre *Grid :: giveFibre(int n) */
-/* // Returns the n-th line. Generates error if it is not defined yet. */
-/* { */
-/*     if ( fibreList->includes(n) ) { */
-/*         return fibreList.at1(n); */
-/*     } else { */
-/*         printf("giveFibre: undefined fibre (%d)\n", n); */
-/*         exit(1); */
-/*     } */
-    
-/*     return NULL; */
-/* } */
-
-Line* Grid::giveDelaunayLine(int n) {
-  return converter::require_at1(delaunayLineList, n, "giveDelaunayLine");
-}
-
- 
-/* Line *Grid :: giveDelaunayLine(int n) */
-/* // Returns the n-th line. Generates error if it is not defined yet. */
-/* { */
-/*     if ( delaunayLineList->includes(n) ) { */
-/*         return delaunayLineList.at1(n); */
-/*     } else { */
-/*         printf("giveDelaunayLine: undefined line (%d)\n", n); */
-/*         exit(1); */
-/*     } */
-
-/*     return NULL; */
-/* } */
-
-
-Tetra* Grid::giveDelaunayTetra(int n) {
-  return converter::require_at1(delaunayTetraList, n, "giveDelaunayTetra");
+Surface * Grid::giveSurface(int n) {
+    return converter::require_at1(surfaceList, n, "giveSurface");
 }
 
 
-/* Tetra *Grid :: giveDelaunayTetra(int n) */
-/* // Returns the n-th tetra. Generates error if it is not defined yet. */
-/* { */
-/*     if ( delaunayTetraList->includes(n) ) { */
-/*         return delaunayTetraList.at1(n); */
-/*     } else { */
-/*         printf("giveDelaunayTetra: undefined line (%d)\n", n); */
-/*         exit(1); */
-/*     } */
-
-/*     return NULL; */
-/* } */
-
-Line* Grid::giveVoronoiLine(int n) {
-  return converter::require_at1(voronoiLineList, n, "giveVoronoiLine");
+Region * Grid::giveRegion(int n) {
+    return converter::require_at1(regionList, n, "giveRegion");
 }
 
 
-/* Line *Grid :: giveVoronoiLine(int n) */
-/* // Returns the n-th line. Generates error if it is not defined yet. */
-/* { */
-/*     if ( voronoiLineList->includes(n) ) { */
-/*         return voronoiLineList.at1(n); */
-/*     } else { */
-/*         converter::errorf("giveVoronoiLine: undefined line (%d)\n", n); */
-/*     } */
-
-/*     return NULL; */
-/* } */
-
-Vertex* Grid::giveDelaunayVertex(int n) {
-  return converter::require_at1(delaunayVertexList, n, "giveDelaunayVertex");
+Inclusion * Grid::giveInclusion(int n) {
+    return converter::require_at1(inclusionList, n, "giveInclusion");
 }
 
- 
-/* Vertex *Grid :: giveDelaunayVertex(int n) */
-/* // Returns the n-th line. Generates error if it is not defined yet. */
-/* { */
-/*     if ( delaunayVertexList->includes(n) ) { */
-/*         return delaunayVertexList.at1(n); */
-/*     } else { */
-/*         printf("giveDelaunayVertex: undefined vertex (%d)\n", n); */
-/*         exit(1); */
-/*     } */
-/*     return NULL; */
-/* } */
 
-
-Vertex* Grid::giveVoronoiVertex(int n) {
-  return converter::require_at1(voronoiVertexList, n, "giveVoronoiVertex");
-}
- 
-/* Vertex *Grid :: giveVoronoiVertex(int n) */
-/* // Returns the n-th line. Generates error if it is not defined yet. */
-/* { */
-/*     if ( voronoiVertexList->includes(n) ) { */
-/*         return voronoiVertexList.at1(n); */
-/*     } else { */
-/*         printf("giveVoronoiVertex: undefined vertex (%d)\n", n); */
-/*         exit(1); */
-/*     } */
-/*     return NULL; */
-/* } */
-
-Vertex* Grid::giveReinforcementNode(int n) {
-  return converter::require_at1(reinforcementNodeList, n, "giveReinforcementNode");
+Fibre * Grid::giveFibre(int n) {
+    return converter::require_at1(fibreList, n, "giveFibre");
 }
 
- 
-/* Vertex *Grid :: giveReinforcementNode(int n) */
-/* // Returns the n-th line. Generates error if it is not defined yet. */
-/* { */
-/*     if ( reinforcementNodeList->includes(n) ) { */
-/*         return reinforcementNodeList.at1(n); */
-/*     } else { */
-/*         printf("giveReinforcementNode : undefined vertex (%d)\n", n); */
-/*         exit(1); */
-/*     } */
-/*     return NULL; */
-/* } */
 
-Line* Grid::giveLatticeBeam(int n) {
-  return converter::require_at1(latticeBeamList, n, "giveLatticeBeam");
+Line * Grid::giveDelaunayLine(int n) {
+    return converter::require_at1(delaunayLineList, n, "giveDelaunayLine");
 }
 
- 
-/* Line *Grid :: givelatticeBeam(int n) */
-/* // Returns the n-th line. Generates error if it is not defined yet. */
-/* { */
-/*     if ( latticeBeamList->includes(n) ) { */
-/*         return latticeBeamList.at1(n); */
-/*     } else { */
-/*         converter::errorf("givelatticeBeam: undefined line (%d)\n", n); */
-/*     } */
-    
-/*     return NULL; */
-/* } */
 
-Line* Grid::giveLatticeLink(int n) {
-  return converter::require_at1(latticeLinkList, n, "giveLatticeLink");
+Tetra * Grid::giveDelaunayTetra(int n) {
+    return converter::require_at1(delaunayTetraList, n, "giveDelaunayTetra");
 }
 
- 
-/* Line *Grid :: giveLatticeLink(int n) */
-/* // Returns the n-th line. Generates error if it is not defined yet. */
-/* { */
-/*     if (latticeLinkList->includes1(n) ) { */
-/*         return latticeLinkList.at1(n); */
-/*     } else { */
-/*         converter::errorf("giveLatticeLink: undefined line (%d)\n", n); */
-/*     } */
-    
-/*     return NULL; */
-/* } */
 
-Vertex* Grid::giveInterNode(int n) {
-  return converter::require_at1(interNodeList, n, "giveInterNode");
+Line * Grid::giveVoronoiLine(int n) {
+    return converter::require_at1(voronoiLineList, n, "giveVoronoiLine");
 }
 
- 
-/* Vertex *Grid :: giveInterNode(int n) */
-/* // Returns the n-th line. Generates error if it is not defined yet. */
-/* { */
-/*     if (interNodeList->includes(n) ) { */
-/*         return interNodeList.at1(n); */
-/*     } else { */
-/*         converter::errorf("giveInterNode: undefined reinforcement (%d)\n", n); */
-/*     } */
-    
-/*     return NULL; */
-/* } */
 
-/* void Grid :: resizeDelaunayLines(int _newSize) { delaunayLineList->growTo(_newSize); } */
-/* void Grid :: resizeVoronoiLines(int _newSize) { voronoiLineList->growTo(_newSize); } */
-/* void Grid :: resizeDelaunayVertices(int _newSize) { delaunayVertexList->growTo(_newSize); } */
-/* void Grid :: resizeVoronoiVertices(int _newSize) { voronoiVertexList->growTo(_newSize); } */
+Vertex * Grid::giveDelaunayVertex(int n) {
+    return converter::require_at1(delaunayVertexList, n, "giveDelaunayVertex");
+}
 
-/* void Grid :: setDelaunayVertex(int i, Vertex *obj) { delaunayVertexList->put(i, obj); } */
-/* void Grid :: setVoronoiVertex(int i, Vertex *obj) { voronoiVertexList->put(i, obj); } */
-/* void Grid :: setVoronoiLine(int i, Line *obj) { voronoiLineList->put(i, obj); } */
-/* void Grid :: setDelaunayLine(int i, Line *obj) { delaunayLineList->put(i, obj); } */
-/* void Grid :: setDelaunayTetra(int i, Tetra *obj) { delaunayTetraList->put(i, obj); } */
 
+Vertex * Grid::giveVoronoiVertex(int n) {
+    return converter::require_at1(voronoiVertexList, n, "giveVoronoiVertex");
+}
+
+Vertex * Grid::giveReinforcementNode(int n) {
+    return converter::require_at1(reinforcementNodeList, n, "giveReinforcementNode");
+}
+
+Line * Grid::giveLatticeBeam(int n) {
+    return converter::require_at1(latticeBeamList, n, "giveLatticeBeam");
+}
+
+Line * Grid::giveLatticeLink(int n) {
+    return converter::require_at1(latticeLinkList, n, "giveLatticeLink");
+}
+
+Vertex * Grid::giveInterNode(int n) {
+    return converter::require_at1(interNodeList, n, "giveInterNode");
+}
 
 // --- Resize helpers ---
 void Grid::resizeDelaunayLines(int newSize) {
@@ -1832,83 +1106,69 @@ void Grid::resizeVoronoiVertices(int newSize) {
 }
 
 // --- Set helpers ---
-void Grid::setDelaunayVertex(int i, Vertex* obj) {
+void Grid::setDelaunayVertex(int i, Vertex *obj) {
     converter::put1(delaunayVertexList, i, obj);
 }
 
-void Grid::setVoronoiVertex(int i, Vertex* obj) {
+void Grid::setVoronoiVertex(int i, Vertex *obj) {
     converter::put1(voronoiVertexList, i, obj);
 }
 
-void Grid::setVoronoiLine(int i, Line* obj) {
+void Grid::setVoronoiLine(int i, Line *obj) {
     converter::put1(voronoiLineList, i, obj);
 }
 
-void Grid::setDelaunayLine(int i, Line* obj) {
+void Grid::setDelaunayLine(int i, Line *obj) {
     converter::put1(delaunayLineList, i, obj);
 }
 
-void Grid::setDelaunayTetra(int i, Tetra* obj) {
+void Grid::setDelaunayTetra(int i, Tetra *obj) {
     converter::put1(delaunayTetraList, i, obj);
 }
 
 
- 
-
-/* void Grid :: setVertex(int i, Vertex *obj) { vertexList->put(i, obj); } */
-/* void Grid :: setCurve(int i, Curve *obj) { curveList->put(i, obj); } */
-/* void Grid :: setSurface(int i, Surface *obj) { surfaceList->put(i, obj); } */
-/* void Grid :: setRegion(int i, Region *obj) { regionList->put(i, obj); } */
-/* void Grid :: setInclusion(int i, Inclusion *obj) { inclusionList->put(i, obj); } */
-/* void Grid :: setFibre(int i,Fibre *obj) { fibreList->put(i, obj); } */
-/* void Grid :: setreinforcementNode(int i,Vertex *obj) { reinforcementNodeList->put(i, obj); } */
-/* void Grid :: setlatticeBeam(int i,Line *obj) { latticeBeamList->put(i, obj); } */
-/* void Grid :: setlatticeLink(int i,Line *obj) { latticeLinkList->put(i, obj); } */
-/* void Grid :: setinterNode(int i,Vertex *obj){ interNodeList->put(i, obj); } */
-
-
-void Grid::setVertex(int i, Vertex* obj) {
+void Grid::setVertex(int i, Vertex *obj) {
     converter::put1(vertexList, i, obj);
 }
 
-void Grid::setCurve(int i, Curve* obj) {
+void Grid::setCurve(int i, Curve *obj) {
     converter::put1(curveList, i, obj);
 }
 
-void Grid::setSurface(int i, Surface* obj) {
+void Grid::setSurface(int i, Surface *obj) {
     converter::put1(surfaceList, i, obj);
 }
 
-void Grid::setRegion(int i, Region* obj) {
+void Grid::setRegion(int i, Region *obj) {
     converter::put1(regionList, i, obj);
 }
 
-void Grid::setInclusion(int i, Inclusion* obj) {
+void Grid::setInclusion(int i, Inclusion *obj) {
     converter::put1(inclusionList, i, obj);
 }
 
-void Grid::setFibre(int i, Fibre* obj) {
+void Grid::setFibre(int i, Fibre *obj) {
     converter::put1(fibreList, i, obj);
 }
 
-void Grid::setReinforcementNode(int i, Vertex* obj) {
+void Grid::setReinforcementNode(int i, Vertex *obj) {
     converter::put1(reinforcementNodeList, i, obj);
 }
 
-void Grid::setLatticeBeam(int i, Line* obj) {
+void Grid::setLatticeBeam(int i, Line *obj) {
     converter::put1(latticeBeamList, i, obj);
 }
 
-void Grid::setLatticeLink(int i, Line* obj) {
+void Grid::setLatticeLink(int i, Line *obj) {
     converter::put1(latticeLinkList, i, obj);
 }
 
-void Grid::setInterNode(int i, Vertex* obj) {
+void Grid::setInterNode(int i, Vertex *obj) {
     converter::put1(interNodeList, i, obj);
 }
- 
 
-int Grid :: generateOutput()
+
+int Grid::generateOutput()
 {
     oofem::FloatArray boundaries;
     //Could be extended to multiple boundaries later
@@ -1920,7 +1180,7 @@ int Grid :: generateOutput()
 
 
 void
-Grid :: orderDelaunayCrossSectionVertices(int elementNumber)
+Grid::orderDelaunayCrossSectionVertices(int elementNumber)
 {
     oofem::FloatArray coordsA(3), coordsB(3);
     oofem::IntArray vertices, crossSectionVertices;
@@ -1935,8 +1195,8 @@ Grid :: orderDelaunayCrossSectionVertices(int elementNumber)
     //Generate local coordinate system. Normal is given by axis of element.
 
     for ( int i = 0; i < 3; i++ ) {
-        coordsA.at(i + 1) =  this->giveVoronoiVertex( vertices.at(1) )->giveCoordinate(i + 1);
-        coordsB.at(i + 1) =  this->giveVoronoiVertex( vertices.at(2) )->giveCoordinate(i + 1);
+        coordsA.at(i + 1) =  this->giveVoronoiVertex(vertices.at(1) )->giveCoordinate(i + 1);
+        coordsB.at(i + 1) =  this->giveVoronoiVertex(vertices.at(2) )->giveCoordinate(i + 1);
     }
 
     //Construct an initial temporary local coordinate system
@@ -1952,7 +1212,7 @@ Grid :: orderDelaunayCrossSectionVertices(int elementNumber)
         midPoint.at(i + 1) = 0.5 * ( coordsB.at(i + 1) + coordsA.at(i + 1) );
     }
 
-    double length  = sqrt( pow(n.at(1), 2.) + pow(n.at(2), 2.) + pow(n.at(3), 2.) );
+    double length  = sqrt(pow(n.at(1), 2.) + pow(n.at(2), 2.) + pow(n.at(3), 2.) );
 
     if ( length < 1.e-20 ) {
         printf("too small length. Cannot fix orientation\n");
@@ -1994,10 +1254,10 @@ Grid :: orderDelaunayCrossSectionVertices(int elementNumber)
 
     //Calculate the local coordinates of the polygon vertices
     oofem::FloatArray help(3), test(3);
-    oofem::FloatArray lpc(3 * size);
+    oofem::FloatArray lpc(3 *size);
     for ( int k = 0; k < size; k++ ) {
         for ( int n = 0; n < 3; n++ ) {
-            help(n) = this->giveDelaunayVertex( crossSectionVertices.at(k + 1) )->giveCoordinate(n + 1);
+            help(n) = this->giveDelaunayVertex(crossSectionVertices.at(k + 1) )->giveCoordinate(n + 1);
         }
 
         test.beProductOf(lcs, help);
@@ -2020,9 +1280,9 @@ Grid :: orderDelaunayCrossSectionVertices(int elementNumber)
         z -= ( lpc.at(3 * j + 3) - lpc.at(3 * i + 3) ) * ( lpc.at(3 * k + 2) - lpc.at(3 * j + 2) );
         if ( z < 0 && count <= 0 ) {//clockwise
             count--;
-        } else if ( z > 0  && count >= 0 )     {//counter clockwise
+        } else if ( z > 0  && count >= 0 ) {    //counter clockwise
             count++;
-        } else if ( z < 0 && count > 0 || z > 0 && count < 0 )          {//detected problem
+        } else if ( (z < 0 && count > 0) || (z > 0 && count < 0) ) {         //detected problem
             //swap data points j and k and start over
             for ( int n = 0; n < 3; n++ ) {
                 tempCoords.at(n + 1) = lpc.at(3 * j + n + 1);
@@ -2045,21 +1305,20 @@ Grid :: orderDelaunayCrossSectionVertices(int elementNumber)
 
 
 
-void Grid :: giveOutput(const std::string& fileName)
+void Grid::giveOutput(const std::string &fileName)
 {
     printf("\n starting giving ouputs \n");
     giveOofemOutput(fileName);
 
     if ( gridType == _3dPerTetraSM || gridType == _3dTetraSM || gridType == _3dRCPerSM || gridType == _3dRCPer2SM || gridType == _3dRCSM ) {
-      giveVtkOutputTetra(fileName,3);
-    }
-    else{
-      givePOVOutput(fileName);
-      giveVtkOutput2(fileName,3);
+        giveVtkOutputTetra(fileName, 3);
+    } else   {
+        givePOVOutput(fileName);
+        giveVtkOutput2(fileName, 3);
     }
 }
 
-void Grid :: giveOofemOutput(const std::string& fileName)
+void Grid::giveOofemOutput(const std::string &fileName)
 {
     //Start with oofem output
     printf("starting giving Oofem output... \n");
@@ -2077,7 +1336,7 @@ void Grid :: giveOofemOutput(const std::string& fileName)
         give3DFPZFibreOutput(fileName);
     } else if ( gridType == _3dFibreBenchmark ) {
         give3DFibreBenchmarkOutput(fileName);
-    }else if ( gridType == _3dWong ) { //Implementation for microcracking paper
+    } else if ( gridType == _3dWong )  { //Implementation for microcracking paper
         give3DWongOutput(fileName);
     } else if ( gridType == _3dPerPoreTM ) {  //Implementation for pore scale analysis
         give3DPeriodicPoreTMOutput(fileName);
@@ -2112,14 +1371,13 @@ void Grid :: giveOofemOutput(const std::string& fileName)
     } else if ( gridType == _3dRCPerSM ) { //Implementation for reinforced concrete, periodic (Adam)
         give3DRCPeriodicSMOutput(fileName);
     } else if ( gridType == _3dRCPer2SM ) { //Alternative implementation for reinforced concrete, periodic (Adam)
-      give3DRCPeriodicSMOutput2(fileName);
+        give3DRCPeriodicSMOutput2(fileName);
     } else if ( gridType == _3dTension ) {  //Implementation for 3D prism subjected to tension for calibration of corrosion study (Milan and Petr)
-      give3DTensionOutput(fileName);
+        give3DTensionOutput(fileName);
     } else if ( gridType == _3dGopSha ) {  //Implementation of Gop Sha experiment (Ismail)
-      give3DGopShaOutput(fileName);
-    }
-    else if ( gridType == _3dKupfer ) {  //Implementation of Kupfer experiment (Ismail)
-      give3DKupferOutput(fileName);
+        give3DGopShaOutput(fileName);
+    } else if ( gridType == _3dKupfer )   { //Implementation of Kupfer experiment (Ismail)
+        give3DKupferOutput(fileName);
     }
     /* else if ( gridType == _3dNotch ) {  //Implementation of FPZ subjected to multi-axial stress states (Notch conference) */
     /*   give3DNotchOutput(fileName); */
@@ -2130,40 +1388,38 @@ void Grid :: giveOofemOutput(const std::string& fileName)
     return;
 };
 
-void Grid :: giveVtkOutput(const std::string& fileName)
+void Grid::giveVtkOutput(const std::string &fileName)
 {
     // Write Voronoi *cell* VTU only if not periodic in any dir
-    if (periodicityFlag.at(1) != 1 &&
-        periodicityFlag.at(2) != 1 &&
-        periodicityFlag.at(3) != 1)
-    {
-      const std::string filename1 = fileName + ".voronoicell.vtu";
-      FILE* f1 = converter::fopen_or_die(filename1, "w");
-      giveVoronoiCellVTKOutput(f1);
-      std::fclose(f1);     
+    if ( periodicityFlag.at(1) != 1 &&
+         periodicityFlag.at(2) != 1 &&
+         periodicityFlag.at(3) != 1 ) {
+        const std::string filename1 = fileName + ".voronoicell.vtu";
+        FILE *f1 = converter::fopen_or_die(filename1, "w");
+        giveVoronoiCellVTKOutput(f1);
+        std::fclose(f1);
     }
 
     // Delaunay elements
     const std::string filename2 = fileName + ".delaunayelement.vtu";
-    FILE* f2 = converter::fopen_or_die(filename2, "w");
+    FILE *f2 = converter::fopen_or_die(filename2, "w");
     giveDelaunayElementVTKOutput(f2);
     std::fclose(f2);
 
     // Voronoi elements
     const std::string filename3 = fileName + ".voronoielement.vtu";
-    FILE* f3 = converter::fopen_or_die(filename3, "w");
+    FILE *f3 = converter::fopen_or_die(filename3, "w");
     giveVoronoiElementVTKOutput(f3);
     std::fclose(f3);
-   
 }
 
 void
-Grid :: give3DSMOutput(const std::string& fileName)
+Grid::give3DSMOutput(const std::string &fileName)
 {
     //Template for irregular nonperiodic mechanical models. Do not change for applications
 
-    FILE* outputStream = converter::fopen_or_die(fileName, "w");
-  
+    FILE *outputStream = converter::fopen_or_die(fileName, "w");
+
     int numberOfNodes, numberOfLines;
     oofem::FloatArray coords;
     int materialType = 1;
@@ -2197,7 +1453,7 @@ Grid :: give3DSMOutput(const std::string& fileName)
     for ( int i = 0; i < this->giveNumberOfDelaunayVertices(); i++ ) {
         if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0 ) {
             this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
-            fprintf( outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+            fprintf(outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
         }
     }
 
@@ -2207,11 +1463,11 @@ Grid :: give3DSMOutput(const std::string& fileName)
             materialType = 1;
             this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
-            fprintf( outputStream, "lattice3D %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
+            fprintf(outputStream, "lattice3D %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
 
             for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                this->giveVoronoiVertex( crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-                fprintf( outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
+                this->giveVoronoiVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
+                fprintf(outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
             }
             fprintf(outputStream, "\n");
         }
@@ -2222,7 +1478,7 @@ Grid :: give3DSMOutput(const std::string& fileName)
     fprintf(outputStream, "BoundaryCondition 1 loadTimeFunction 1 prescribedvalue 0.0\n");
     fprintf(outputStream, "NodalLoad 2 loadTimeFunction 1 Components 6 0. 0. 0. 0. 0. 0.\n");
     fprintf(outputStream, "ConstantFunction 1 f(t) 1.\n");
-    //    fprintf(outputStream, "PiecewiseLinFunction 2 nPoints 2 t 2 0. 1. f(t) 2 1. 1.\n");
+
     fprintf(outputStream, "#%%BEGIN_CHECK%%\n");
     fprintf(outputStream, "#NODE number 3 dof 1 unknown d\n");
     fprintf(outputStream, "#LOADLEVEL\n");
@@ -2233,17 +1489,13 @@ Grid :: give3DSMOutput(const std::string& fileName)
 
 
 void
-Grid :: give3DTMOutput(const std::string& fileName)
+Grid::give3DTMOutput(const std::string &fileName)
 {
     //Template for irregular nonperiodic transport models. Do not change for applications
 
 
-    FILE* outputStream = converter::fopen_or_die(fileName, "w");
+    FILE *outputStream = converter::fopen_or_die(fileName, "w");
 
-  /* FILE *outputStream; */
-  /*   if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
-  /*       converter::errorf("Cannot open output file %s", fileName); */
-  /*   } */
 
     int numberOfNodes, numberOfLines;
     oofem::FloatArray coords;
@@ -2283,7 +1535,7 @@ Grid :: give3DTMOutput(const std::string& fileName)
     for ( int i = 0; i < this->giveNumberOfVoronoiVertices(); i++ ) {
         if ( this->giveVoronoiVertex(i + 1)->giveOutsideFlag() == 0 ) {
             this->giveVoronoiVertex(i + 1)->giveCoordinates(coords);
-            fprintf( outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+            fprintf(outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
         }
     }
 
@@ -2292,11 +1544,11 @@ Grid :: give3DTMOutput(const std::string& fileName)
             this->giveVoronoiLine(i + 1)->giveLocalVertices(nodes);
             this->giveVoronoiLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
-            fprintf( outputStream, "latticemt3D %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
+            fprintf(outputStream, "latticemt3D %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
 
             for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                this->giveDelaunayVertex( crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-                fprintf( outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
+                this->giveDelaunayVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
+                fprintf(outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
             }
             fprintf(outputStream, "\n");
         }
@@ -2319,41 +1571,17 @@ Grid :: give3DTMOutput(const std::string& fileName)
 
 
 void
-Grid :: give3DSMTMOutput(const std::string& fileName)
+Grid::give3DSMTMOutput(const std::string &fileName)
 {
     //Template for irregular nonperiodic coupled mechanical transport models. Do not change for applications
 
-    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
+    FILE *outputStream = converter::fopen_or_die(fileName, "w");
 
     const std::string fileName1 = fileName + ".sm";
     FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w");
-    
+
     const std::string fileName2 = fileName + ".tm";
     FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w");
-
-
-
-    
-    /* FILE *outputStream; */
-    /* if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
-    /*     converter::errorf("Cannot open output file %s", fileName); */
-    /* } */
-    
-    /* 	char fileName1 [ MAX_FILENAME_LENGTH + 10 ]; */
-    /* strcpy(fileName1, fileName); */
-    /* strcat(fileName1, ".sm"); */
-    /* if ( ( outputStreamSM = fopen(fileName1, "w") ) == NULL ) { */
-    /*     converter::errorf("Cannot open output file %s", fileName1); */
-    /* } */
-
-    
-    /* FILE *outputStreamTM; */
-    /* char fileName2 [ MAX_FILENAME_LENGTH + 10 ]; */
-    /* strcpy(fileName2, fileName); */
-    /* strcat(fileName2, ".tm"); */
-    /* if ( ( outputStreamTM = fopen(fileName2, "w") ) == NULL ) { */
-    /*     converter::errorf("Cannot open output file %s", fileName2); */
-    /* } */
 
     int numberOfNodes, numberOfLines;
     oofem::FloatArray coords;
@@ -2400,7 +1628,7 @@ Grid :: give3DSMTMOutput(const std::string& fileName)
     for ( int i = 0; i < this->giveNumberOfDelaunayVertices(); i++ ) {
         if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0 ) {
             this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
-            fprintf( outputStreamSM, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+            fprintf(outputStreamSM, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
         }
     }
 
@@ -2410,19 +1638,19 @@ Grid :: give3DSMTMOutput(const std::string& fileName)
             materialType = 1;
             this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
-            fprintf( outputStreamSM, "lattice3D %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
+            fprintf(outputStreamSM, "lattice3D %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
 
             for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                this->giveVoronoiVertex( crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-                fprintf( outputStreamSM, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
+                this->giveVoronoiVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
+                fprintf(outputStreamSM, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
             }
             this->giveDelaunayLine(i + 1)->giveCrossSectionElements(crossSectionElements);
             //I will need here to check if element exist in dual network. Not clear how this should be done with the output.
             //Should I return as many elements as vertices and set the nonexistant elements to zero? I think that this is needed, as otherwise the geometry is not defined correctly. Anyway, it is not clear that crosssection nodes are set correctly for the transport elements.
-            fprintf( outputStreamSM, " couplingflag 1 couplingelements %d ", crossSectionElements.giveSize() );
+            fprintf(outputStreamSM, " couplingflag 1 couplingelements %d ", crossSectionElements.giveSize() );
             for ( int m = 0; m < crossSectionElements.giveSize(); m++ ) {
-                if ( this->giveVoronoiLine( crossSectionElements.at(m + 1) )->giveOutsideFlag() == 0 ) {
-                    fprintf( outputStreamSM, "%d ", crossSectionElements.at(m + 1) );
+                if ( this->giveVoronoiLine(crossSectionElements.at(m + 1) )->giveOutsideFlag() == 0 ) {
+                    fprintf(outputStreamSM, "%d ", crossSectionElements.at(m + 1) );
                 } else {
                     fprintf(outputStreamSM, "0 ");
                 }
@@ -2453,7 +1681,7 @@ Grid :: give3DSMTMOutput(const std::string& fileName)
     for ( int i = 0; i < this->giveNumberOfVoronoiVertices(); i++ ) {
         if ( this->giveVoronoiVertex(i + 1)->giveOutsideFlag() == 0 ) {
             this->giveVoronoiVertex(i + 1)->giveCoordinates(coords);
-            fprintf( outputStreamTM, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+            fprintf(outputStreamTM, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
         }
     }
 
@@ -2462,17 +1690,17 @@ Grid :: give3DSMTMOutput(const std::string& fileName)
             this->giveVoronoiLine(i + 1)->giveLocalVertices(nodes);
             this->giveVoronoiLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
-            fprintf( outputStreamTM, "latticemt3D %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
+            fprintf(outputStreamTM, "latticemt3D %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
 
             for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                this->giveVoronoiVertex( crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-                fprintf( outputStreamTM, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
+                this->giveVoronoiVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
+                fprintf(outputStreamTM, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
             }
             this->giveVoronoiLine(i + 1)->giveCrossSectionElements(crossSectionElements);
-            fprintf( outputStreamTM, " couplingflag 1 couplingelements %d ", crossSectionElements.giveSize() );
+            fprintf(outputStreamTM, " couplingflag 1 couplingelements %d ", crossSectionElements.giveSize() );
             for ( int m = 0; m < crossSectionElements.giveSize(); m++ ) {
-                if ( this->giveDelaunayLine( crossSectionElements.at(m + 1) )->giveOutsideFlag() == 0 ) {
-                    fprintf( outputStreamTM, "%d ", crossSectionElements.at(m + 1) );
+                if ( this->giveDelaunayLine(crossSectionElements.at(m + 1) )->giveOutsideFlag() == 0 ) {
+                    fprintf(outputStreamTM, "%d ", crossSectionElements.at(m + 1) );
                 } else {
                     fprintf(outputStreamTM, "0 ");
                 }
@@ -2499,44 +1727,15 @@ Grid :: give3DSMTMOutput(const std::string& fileName)
 
 
 void
-Grid :: give3DPeriodicSMTMOutput(const std::string& fileName)
+Grid::give3DPeriodicSMTMOutput(const std::string &fileName)
 {
-    //Template for irregular nonperiodic coupled mechanical transport models. Do not change for applications
-
-
-    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
+    FILE *outputStream = converter::fopen_or_die(fileName, "w");
 
     const std::string fileName1 = fileName + ".sm";
     FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w");
-    
+
     const std::string fileName2 = fileName + ".tm";
     FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w");
-
-  
-    /* FILE *outputStream; */
-
-
-    
-    /* if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
-    /*     converter::errorf("Cannot open output file %s", fileName); */
-    /* } */
-
-    /* FILE *outputStreamSM; */
-    /* char fileName1 [ MAX_FILENAME_LENGTH + 10 ]; */
-    /* strcpy(fileName1, fileName); */
-    /* strcat(fileName1, ".sm"); */
-    /* if ( ( outputStreamSM = fopen(fileName1, "w") ) == NULL ) { */
-    /*     converter::errorf("Cannot open output file %s", fileName1); */
-    /* } */
-
-    /* FILE *outputStreamTM; */
-    /* char fileName2 [ MAX_FILENAME_LENGTH + 10 ]; */
-    /* strcpy(fileName2, fileName); */
-    /* strcat(fileName2, ".tm"); */
-    /* if ( ( outputStreamTM = fopen(fileName2, "w") ) == NULL ) { */
-    /*     converter::errorf("Cannot open output file %s", fileName2); */
-    /* } */
-
 
     oofem::FloatArray boundaries(3);
     this->giveRegion(1)->defineBoundaries(boundaries);
@@ -2593,15 +1792,15 @@ Grid :: give3DPeriodicSMTMOutput(const std::string& fileName)
             this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
             if ( firstFlag == 0 ) {
                 firstFlag = 1;
-                fprintf( outputStreamSM, "node %d coords 3 %e %e %e bc 6 1 1 1 1 1 1\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+                fprintf(outputStreamSM, "node %d coords 3 %e %e %e bc 6 1 1 1 1 1 1\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
             } else {
-                fprintf( outputStreamSM, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+                fprintf(outputStreamSM, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
             }
         }
     }
 
     //Periodic control node
-    fprintf( outputStreamSM, "node %d coords 3 %e %e %e load 1 2\n", this->giveNumberOfDelaunayVertices() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
+    fprintf(outputStreamSM, "node %d coords 3 %e %e %e load 1 2\n", this->giveNumberOfDelaunayVertices() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
 
 
     for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
@@ -2610,19 +1809,19 @@ Grid :: give3DPeriodicSMTMOutput(const std::string& fileName)
             materialType = 1;
             this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
-            fprintf( outputStreamSM, "lattice3D %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
+            fprintf(outputStreamSM, "lattice3D %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
 
             for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                this->giveVoronoiVertex( crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-                fprintf( outputStreamSM, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
+                this->giveVoronoiVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
+                fprintf(outputStreamSM, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
             }
             this->giveDelaunayLine(i + 1)->giveCrossSectionElements(crossSectionElements);
-            fprintf( outputStreamSM, " couplingflag 1 couplingelements %d ", crossSectionElements.giveSize() );
+            fprintf(outputStreamSM, " couplingflag 1 couplingelements %d ", crossSectionElements.giveSize() );
             for ( int m = 0; m < crossSectionElements.giveSize(); m++ ) {
-                if ( this->giveVoronoiLine( crossSectionElements.at(m + 1) )->giveOutsideFlag() == 0 ||  this->giveVoronoiLine( crossSectionElements.at(m + 1) )->giveOutsideFlag() == 2 ) {
-                    fprintf( outputStreamSM, "%d ", crossSectionElements.at(m + 1) );
+                if ( this->giveVoronoiLine(crossSectionElements.at(m + 1) )->giveOutsideFlag() == 0 ||  this->giveVoronoiLine(crossSectionElements.at(m + 1) )->giveOutsideFlag() == 2 ) {
+                    fprintf(outputStreamSM, "%d ", crossSectionElements.at(m + 1) );
                 } else {
-                    fprintf( outputStreamSM, "%d ", this->giveVoronoiLine( crossSectionElements.at(m + 1) )->givePeriodicElement() );
+                    fprintf(outputStreamSM, "%d ", this->giveVoronoiLine(crossSectionElements.at(m + 1) )->givePeriodicElement() );
                 }
             }
             fprintf(outputStreamSM, "\n");
@@ -2631,31 +1830,31 @@ Grid :: give3DPeriodicSMTMOutput(const std::string& fileName)
             this->giveDelaunayLine(i + 1)->giveLocalVertices(nodes);
             //Go through nodes and replace the ones outside with periodic nodes
             for ( int m = 0; m < 2; m++ ) {
-                if ( this->giveDelaunayVertex( nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
-                    location.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->giveLocation();
-                    nodes.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->givePeriodicNode();
+                if ( this->giveDelaunayVertex(nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
+                    location.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->giveLocation();
+                    nodes.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->givePeriodicNode();
                 }
             }
             materialType = 1;
             this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
-            fprintf( outputStreamSM, "lattice3Dboundary %d nodes 3 %d %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), this->giveNumberOfDelaunayVertices() + 1, materialType, 3 * crossSectionNodes.giveSize() );
+            fprintf(outputStreamSM, "lattice3Dboundary %d nodes 3 %d %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), this->giveNumberOfDelaunayVertices() + 1, materialType, 3 * crossSectionNodes.giveSize() );
 
             for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                this->giveVoronoiVertex( crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-                fprintf( outputStreamSM, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
+                this->giveVoronoiVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
+                fprintf(outputStreamSM, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
             }
 
             this->giveDelaunayLine(i + 1)->giveCrossSectionElements(crossSectionElements);
-            fprintf( outputStreamSM, " couplingflag 1 couplingelements %d ", crossSectionElements.giveSize() );
+            fprintf(outputStreamSM, " couplingflag 1 couplingelements %d ", crossSectionElements.giveSize() );
             for ( int m = 0; m < crossSectionElements.giveSize(); m++ ) {
-                if ( this->giveVoronoiLine( crossSectionElements.at(m + 1) )->giveOutsideFlag() == 0 ||  this->giveVoronoiLine( crossSectionElements.at(m + 1) )->giveOutsideFlag() == 2 ) {
-                    fprintf( outputStreamSM, "%d ", crossSectionElements.at(m + 1) );
+                if ( this->giveVoronoiLine(crossSectionElements.at(m + 1) )->giveOutsideFlag() == 0 ||  this->giveVoronoiLine(crossSectionElements.at(m + 1) )->giveOutsideFlag() == 2 ) {
+                    fprintf(outputStreamSM, "%d ", crossSectionElements.at(m + 1) );
                 } else {
-                    fprintf( outputStreamSM, "%d ", this->giveVoronoiLine( crossSectionElements.at(m + 1) )->givePeriodicElement() );
+                    fprintf(outputStreamSM, "%d ", this->giveVoronoiLine(crossSectionElements.at(m + 1) )->givePeriodicElement() );
                 }
             }
-            fprintf( outputStreamSM, " location 2 %d %d", location.at(1), location.at(2) );
+            fprintf(outputStreamSM, " location 2 %d %d", location.at(1), location.at(2) );
 
             fprintf(outputStreamSM, "\n");
         }
@@ -2703,15 +1902,15 @@ Grid :: give3DPeriodicSMTMOutput(const std::string& fileName)
             this->giveVoronoiVertex(i + 1)->giveCoordinates(coords);
             if ( firstFlag == 0 ) {
                 firstFlag = 1;
-                fprintf( outputStreamTM, "node %d coords 3 %e %e %e bc 1 1\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+                fprintf(outputStreamTM, "node %d coords 3 %e %e %e bc 1 1\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
             } else {
-                fprintf( outputStreamTM, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+                fprintf(outputStreamTM, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
             }
         }
     }
 
     //Periodic control node
-    fprintf( outputStreamTM, "node %d coords 3 %e %e %e ndofs 3 dofIDmask 3 1 2 3 bc 3 2 1 1\n", this->giveNumberOfVoronoiVertices() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
+    fprintf(outputStreamTM, "node %d coords 3 %e %e %e ndofs 3 dofIDmask 3 1 2 3 bc 3 2 1 1\n", this->giveNumberOfVoronoiVertices() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
 
 
     for ( int i = 0; i < this->giveNumberOfVoronoiLines(); i++ ) {
@@ -2720,19 +1919,19 @@ Grid :: give3DPeriodicSMTMOutput(const std::string& fileName)
             materialType = 1;
             this->giveVoronoiLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
-            fprintf( outputStreamTM, "latticemt3D_Discrete %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
+            fprintf(outputStreamTM, "latticemt3D_Discrete %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
 
             for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                this->giveDelaunayVertex( crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-                fprintf( outputStreamTM, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
+                this->giveDelaunayVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
+                fprintf(outputStreamTM, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
             }
             this->giveVoronoiLine(i + 1)->giveCrossSectionElements(crossSectionElements);
-            fprintf( outputStreamTM, " couplingflag 1 couplingelements %d ", crossSectionElements.giveSize() );
+            fprintf(outputStreamTM, " couplingflag 1 couplingelements %d ", crossSectionElements.giveSize() );
             for ( int m = 0; m < crossSectionElements.giveSize(); m++ ) {
-                if ( this->giveDelaunayLine( crossSectionElements.at(m + 1) )->giveOutsideFlag() == 0 || this->giveDelaunayLine( crossSectionElements.at(m + 1) )->giveOutsideFlag() == 2 ) {
-                    fprintf( outputStreamTM, "%d ", crossSectionElements.at(m + 1) );
+                if ( this->giveDelaunayLine(crossSectionElements.at(m + 1) )->giveOutsideFlag() == 0 || this->giveDelaunayLine(crossSectionElements.at(m + 1) )->giveOutsideFlag() == 2 ) {
+                    fprintf(outputStreamTM, "%d ", crossSectionElements.at(m + 1) );
                 } else {
-                    fprintf( outputStreamTM, "%d ", this->giveDelaunayLine( crossSectionElements.at(m + 1) )->givePeriodicElement() );
+                    fprintf(outputStreamTM, "%d ", this->giveDelaunayLine(crossSectionElements.at(m + 1) )->givePeriodicElement() );
                 }
             }
             fprintf(outputStreamTM, "\n");
@@ -2741,31 +1940,31 @@ Grid :: give3DPeriodicSMTMOutput(const std::string& fileName)
             this->giveVoronoiLine(i + 1)->giveLocalVertices(nodes);
             //Go through nodes and replace the ones outside with periodic nodes
             for ( int m = 0; m < 2; m++ ) {
-                if ( this->giveVoronoiVertex( nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
-                    location.at(m + 1) = this->giveVoronoiVertex( nodes.at(m + 1) )->giveLocation();
-                    nodes.at(m + 1) = this->giveVoronoiVertex( nodes.at(m + 1) )->givePeriodicNode();
+                if ( this->giveVoronoiVertex(nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
+                    location.at(m + 1) = this->giveVoronoiVertex(nodes.at(m + 1) )->giveLocation();
+                    nodes.at(m + 1) = this->giveVoronoiVertex(nodes.at(m + 1) )->givePeriodicNode();
                 }
             }
             materialType = 1;
             this->giveVoronoiLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
-            fprintf( outputStreamTM, "latticemt3Dboundary_Discrete %d nodes 3 %d %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), this->giveNumberOfVoronoiVertices() + 1, materialType, 3 * crossSectionNodes.giveSize() );
+            fprintf(outputStreamTM, "latticemt3Dboundary_Discrete %d nodes 3 %d %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), this->giveNumberOfVoronoiVertices() + 1, materialType, 3 * crossSectionNodes.giveSize() );
 
             for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                this->giveDelaunayVertex( crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-                fprintf( outputStreamTM, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
+                this->giveDelaunayVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
+                fprintf(outputStreamTM, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
             }
 
             this->giveVoronoiLine(i + 1)->giveCrossSectionElements(crossSectionElements);
-            fprintf( outputStreamTM, " couplingflag 1 couplingelements %d ", crossSectionElements.giveSize() );
+            fprintf(outputStreamTM, " couplingflag 1 couplingelements %d ", crossSectionElements.giveSize() );
             for ( int m = 0; m < crossSectionElements.giveSize(); m++ ) {
-                if ( this->giveDelaunayLine( crossSectionElements.at(m + 1) )->giveOutsideFlag() == 0 || this->giveDelaunayLine( crossSectionElements.at(m + 1) )->giveOutsideFlag() == 2 ) {
-                    fprintf( outputStreamTM, "%d ", crossSectionElements.at(m + 1) );
+                if ( this->giveDelaunayLine(crossSectionElements.at(m + 1) )->giveOutsideFlag() == 0 || this->giveDelaunayLine(crossSectionElements.at(m + 1) )->giveOutsideFlag() == 2 ) {
+                    fprintf(outputStreamTM, "%d ", crossSectionElements.at(m + 1) );
                 } else {
-                    fprintf( outputStreamTM, "%d ", this->giveDelaunayLine( crossSectionElements.at(m + 1) )->givePeriodicElement() );
+                    fprintf(outputStreamTM, "%d ", this->giveDelaunayLine(crossSectionElements.at(m + 1) )->givePeriodicElement() );
                 }
             }
-            fprintf( outputStreamTM, " location 2 %d %d", location.at(1), location.at(2) );
+            fprintf(outputStreamTM, " location 2 %d %d", location.at(1), location.at(2) );
 
             fprintf(outputStreamTM, "\n");
         }
@@ -2786,19 +1985,19 @@ Grid :: give3DPeriodicSMTMOutput(const std::string& fileName)
 }
 
 void
-Grid :: give3DPeriodicSMOutput(const std::string& fileName)
+Grid::give3DPeriodicSMOutput(const std::string &fileName)
 {
     //Template for irregular periodic mechanical models. Do not change for applications
 
-    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
+    FILE *outputStream = converter::fopen_or_die(fileName, "w");
 
     /* const std::string fileName1 = fileName + ".sm"; */
     /* FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w"); */
-    
+
     /* const std::string fileName2 = fileName + ".tm"; */
     /* FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
 
-  
+
     /* FILE *outputStream; */
     /* if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
     /*     converter::errorf("Cannot open output file %s", fileName); */
@@ -2849,15 +2048,15 @@ Grid :: give3DPeriodicSMOutput(const std::string& fileName)
             this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
             if ( firstFlag == 0 ) {
                 firstFlag = 1;
-                fprintf( outputStream, "node %d coords 3 %e %e %e bc 6 1 1 1 1 1 1\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+                fprintf(outputStream, "node %d coords 3 %e %e %e bc 6 1 1 1 1 1 1\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
             } else {
-                fprintf( outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+                fprintf(outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
             }
         }
     }
 
     //Periodic control node
-    fprintf( outputStream, "node %d coords 3 %e %e %e load 1 2\n", this->giveNumberOfDelaunayVertices() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
+    fprintf(outputStream, "node %d coords 3 %e %e %e load 1 2\n", this->giveNumberOfDelaunayVertices() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
 
 
     for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
@@ -2866,11 +2065,11 @@ Grid :: give3DPeriodicSMOutput(const std::string& fileName)
             materialType = 1;
             this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
-            fprintf( outputStream, "lattice3D %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
+            fprintf(outputStream, "lattice3D %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
 
             for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                this->giveVoronoiVertex( crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-                fprintf( outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
+                this->giveVoronoiVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
+                fprintf(outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
             }
             fprintf(outputStream, "\n");
         } else if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 2 ) {      //Element crosses the boundary
@@ -2878,21 +2077,21 @@ Grid :: give3DPeriodicSMOutput(const std::string& fileName)
             this->giveDelaunayLine(i + 1)->giveLocalVertices(nodes);
             //Go through nodes and replace the ones outside with periodic nodes
             for ( int m = 0; m < 2; m++ ) {
-                if ( this->giveDelaunayVertex( nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
-                    location.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->giveLocation();
-                    nodes.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->givePeriodicNode();
+                if ( this->giveDelaunayVertex(nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
+                    location.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->giveLocation();
+                    nodes.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->givePeriodicNode();
                 }
             }
             materialType = 1;
             this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
-            fprintf( outputStream, "lattice3Dboundary %d nodes 3 %d %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), this->giveNumberOfDelaunayVertices() + 1, materialType, 3 * crossSectionNodes.giveSize() );
+            fprintf(outputStream, "lattice3Dboundary %d nodes 3 %d %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), this->giveNumberOfDelaunayVertices() + 1, materialType, 3 * crossSectionNodes.giveSize() );
 
             for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                this->giveVoronoiVertex( crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-                fprintf( outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
+                this->giveVoronoiVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
+                fprintf(outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
             }
-            fprintf( outputStream, " location 2 %d %d", location.at(1), location.at(2) );
+            fprintf(outputStream, " location 2 %d %d", location.at(1), location.at(2) );
 
             fprintf(outputStream, "\n");
         }
@@ -2918,23 +2117,9 @@ Grid :: give3DPeriodicSMOutput(const std::string& fileName)
 
 
 void
-Grid :: give3DPeriodicTMOutput(const std::string& fileName)
+Grid::give3DPeriodicTMOutput(const std::string &fileName)
 {
-
-    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
-
-  /*   const std::string fileName1 = fileName + ".sm"; */
-  /*   FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w"); */
-    
-  /*   const std::string fileName2 = fileName + ".tm"; */
-  /*   FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
-
-
-
-  /* FILE *outputStream; */
-  /*   if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
-  /*       converter::errorf("Cannot open output file %s", fileName); */
-  /*   } */
+    FILE *outputStream = converter::fopen_or_die(fileName, "w");
 
     oofem::FloatArray boundaries(3);
     this->giveRegion(1)->defineBoundaries(boundaries);
@@ -2978,15 +2163,15 @@ Grid :: give3DPeriodicTMOutput(const std::string& fileName)
             this->giveVoronoiVertex(i + 1)->giveCoordinates(coords);
             if ( firstFlag == 0 ) {
                 firstFlag = 1;
-                fprintf( outputStream, "node %d coords 3 %e %e %e bc 1 1\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+                fprintf(outputStream, "node %d coords 3 %e %e %e bc 1 1\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
             } else {
-                fprintf( outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+                fprintf(outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
             }
         }
     }
 
     //Periodic control node
-    fprintf( outputStream, "node %d coords 3 %e %e %e ndofs 3 dofIDmask 3 1 2 3 bc 3 2 1 1\n", this->giveNumberOfVoronoiVertices() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
+    fprintf(outputStream, "node %d coords 3 %e %e %e ndofs 3 dofIDmask 3 1 2 3 bc 3 2 1 1\n", this->giveNumberOfVoronoiVertices() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
 
 
     for ( int i = 0; i < this->giveNumberOfVoronoiLines(); i++ ) {
@@ -2995,11 +2180,11 @@ Grid :: give3DPeriodicTMOutput(const std::string& fileName)
             materialType = 1;
             this->giveVoronoiLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
-            fprintf( outputStream, "latticemt3D_Discrete %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
+            fprintf(outputStream, "latticemt3D_Discrete %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
 
             for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                this->giveDelaunayVertex( crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-                fprintf( outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
+                this->giveDelaunayVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
+                fprintf(outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
             }
             fprintf(outputStream, "\n");
         } else if ( this->giveVoronoiLine(i + 1)->giveOutsideFlag() == 2 ) {      //Element crosses the boundary
@@ -3007,21 +2192,21 @@ Grid :: give3DPeriodicTMOutput(const std::string& fileName)
             this->giveVoronoiLine(i + 1)->giveLocalVertices(nodes);
             //Go through nodes and replace the ones outside with periodic nodes
             for ( int m = 0; m < 2; m++ ) {
-                if ( this->giveVoronoiVertex( nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
-                    location.at(m + 1) = this->giveVoronoiVertex( nodes.at(m + 1) )->giveLocation();
-                    nodes.at(m + 1) = this->giveVoronoiVertex( nodes.at(m + 1) )->givePeriodicNode();
+                if ( this->giveVoronoiVertex(nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
+                    location.at(m + 1) = this->giveVoronoiVertex(nodes.at(m + 1) )->giveLocation();
+                    nodes.at(m + 1) = this->giveVoronoiVertex(nodes.at(m + 1) )->givePeriodicNode();
                 }
             }
             materialType = 1;
             this->giveVoronoiLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
-            fprintf( outputStream, "latticemt3Dboundary_Discrete %d nodes 3 %d %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), this->giveNumberOfVoronoiVertices() + 1, materialType, 3 * crossSectionNodes.giveSize() );
+            fprintf(outputStream, "latticemt3Dboundary_Discrete %d nodes 3 %d %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), this->giveNumberOfVoronoiVertices() + 1, materialType, 3 * crossSectionNodes.giveSize() );
 
             for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                this->giveDelaunayVertex( crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-                fprintf( outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
+                this->giveDelaunayVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
+                fprintf(outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
             }
-            fprintf( outputStream, " location 2 %d %d", location.at(1), location.at(2) );
+            fprintf(outputStream, " location 2 %d %d", location.at(1), location.at(2) );
 
             fprintf(outputStream, "\n");
         }
@@ -3042,44 +2227,17 @@ Grid :: give3DPeriodicTMOutput(const std::string& fileName)
 
 
 void
-Grid :: give3DPeriodicPoreSMTMOutput(const std::string& fileName)
+Grid::give3DPeriodicPoreSMTMOutput(const std::string &fileName)
 {
     //Template for irregular nonperiodic coupled mechanical transport models. Do not change for applications
 
-    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
+    FILE *outputStream = converter::fopen_or_die(fileName, "w");
 
     const std::string fileName1 = fileName + ".sm";
     FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w");
-    
+
     const std::string fileName2 = fileName + ".tm";
     FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w");
-
-
-
-
-
-
-
-  /* FILE *outputStream; */
-  /*   if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
-  /*       converter::errorf("Cannot open output file %s", fileName); */
-  /*   } */
-
-  /*   FILE *outputStreamSM; */
-  /*   char fileName1 [ MAX_FILENAME_LENGTH + 10 ]; */
-  /*   strcpy(fileName1, fileName); */
-  /*   strcat(fileName1, ".sm"); */
-  /*   if ( ( outputStreamSM = fopen(fileName1, "w") ) == NULL ) { */
-  /*       converter::errorf("Cannot open output file %s", fileName1); */
-  /*   } */
-
-  /*   FILE *outputStreamTM; */
-  /*   char fileName2 [ MAX_FILENAME_LENGTH + 10 ]; */
-  /*   strcpy(fileName2, fileName); */
-  /*   strcat(fileName2, ".tm"); */
-  /*   if ( ( outputStreamTM = fopen(fileName2, "w") ) == NULL ) { */
-  /*       converter::errorf("Cannot open output file %s", fileName2); */
-  /*   } */
 
 
     oofem::FloatArray boundaries(3);
@@ -3152,8 +2310,8 @@ Grid :: give3DPeriodicPoreSMTMOutput(const std::string& fileName)
 
     double gaussianMechMean, gaussianMechSTD, gaussianMechCOV;
 
-    gaussianMechMean = log( this->mechMean / sqrt( 1 + pow(this->mechCOV, 2) ) );
-    gaussianMechSTD = sqrt( log( 1 + pow(this->mechCOV, 2) ) );
+    gaussianMechMean = log(this->mechMean / sqrt(1 + pow(this->mechCOV, 2) ) );
+    gaussianMechSTD = sqrt(log(1 + pow(this->mechCOV, 2) ) );
     gaussianMechCOV = gaussianMechSTD / gaussianMechMean;
 
     if ( gaussianMechMean < 0. ) {
@@ -3192,10 +2350,10 @@ Grid :: give3DPeriodicPoreSMTMOutput(const std::string& fileName)
                 helpRadius = delaunayLineRadius.at(counter);
                 this->giveDelaunayLine(i + 1)->setRadius(helpRadius);
                 //Assign an equal diameter value to the periodic friend.
-                this->giveDelaunayLine( this->giveDelaunayLine(i + 1)->givePeriodicElement() )->setRadius(helpRadius);
-            } else if ( this->giveDelaunayLine(i + 1)->givePeriodicElement() < i + 1 && this->giveDelaunayLine( this->giveDelaunayLine(i + 1)->givePeriodicElement() )->givePeriodicElement() !=  i + 1 ) {
-                double help = this->giveDelaunayLine( this->giveDelaunayLine(i + 1)->givePeriodicElement() )->giveRadius();
-		//                printf("Help is %e %d\n", help, i + 1);
+                this->giveDelaunayLine(this->giveDelaunayLine(i + 1)->givePeriodicElement() )->setRadius(helpRadius);
+            } else if ( this->giveDelaunayLine(i + 1)->givePeriodicElement() < i + 1 && this->giveDelaunayLine(this->giveDelaunayLine(i + 1)->givePeriodicElement() )->givePeriodicElement() !=  i + 1 ) {
+                double help = this->giveDelaunayLine(this->giveDelaunayLine(i + 1)->givePeriodicElement() )->giveRadius();
+                //                printf("Help is %e %d\n", help, i + 1);
                 this->giveDelaunayLine(i + 1)->setRadius(help);
             }
         }
@@ -3217,15 +2375,15 @@ Grid :: give3DPeriodicPoreSMTMOutput(const std::string& fileName)
             this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
             if ( firstFlag == 0 ) {
                 firstFlag = 1;
-                fprintf( outputStreamSM, "node %d coords 3 %e %e %e bc 6 1 1 1 1 1 1\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+                fprintf(outputStreamSM, "node %d coords 3 %e %e %e bc 6 1 1 1 1 1 1\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
             } else {
-                fprintf( outputStreamSM, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+                fprintf(outputStreamSM, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
             }
         }
     }
 
     //Periodic control node
-    fprintf( outputStreamSM, "node %d coords 3 %e %e %e bc 6 0 0 0 0 0 0\n", this->giveNumberOfDelaunayVertices() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
+    fprintf(outputStreamSM, "node %d coords 3 %e %e %e bc 6 0 0 0 0 0 0\n", this->giveNumberOfDelaunayVertices() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
 
 
     for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
@@ -3234,16 +2392,16 @@ Grid :: give3DPeriodicPoreSMTMOutput(const std::string& fileName)
             materialType = 1;
             this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
-            fprintf( outputStreamSM, "lattice3DDiscrete %d nodes 2 %d %d crossSect 1 mat %d rad %.16e ", i + 1, nodes.at(1), nodes.at(2), materialType, this->giveDelaunayLine(i + 1)->giveRadius() );
+            fprintf(outputStreamSM, "lattice3DDiscrete %d nodes 2 %d %d crossSect 1 mat %d rad %.16e ", i + 1, nodes.at(1), nodes.at(2), materialType, this->giveDelaunayLine(i + 1)->giveRadius() );
 
 
             this->giveDelaunayLine(i + 1)->giveCrossSectionElements(crossSectionElements);
-            fprintf( outputStreamSM, " couplingflag 1 couplingnumber %d ", crossSectionElements.giveSize() );
+            fprintf(outputStreamSM, " couplingflag 1 couplingnumber %d ", crossSectionElements.giveSize() );
             for ( int m = 0; m < crossSectionElements.giveSize(); m++ ) {
-                if ( this->giveVoronoiLine( crossSectionElements.at(m + 1) )->giveOutsideFlag() == 0 ||  this->giveVoronoiLine( crossSectionElements.at(m + 1) )->giveOutsideFlag() == 2 ) {
-                    fprintf( outputStreamSM, "%d ", crossSectionElements.at(m + 1) );
+                if ( this->giveVoronoiLine(crossSectionElements.at(m + 1) )->giveOutsideFlag() == 0 ||  this->giveVoronoiLine(crossSectionElements.at(m + 1) )->giveOutsideFlag() == 2 ) {
+                    fprintf(outputStreamSM, "%d ", crossSectionElements.at(m + 1) );
                 } else {
-                    fprintf( outputStreamSM, "%d ", this->giveVoronoiLine( crossSectionElements.at(m + 1) )->givePeriodicElement() );
+                    fprintf(outputStreamSM, "%d ", this->giveVoronoiLine(crossSectionElements.at(m + 1) )->givePeriodicElement() );
                 }
             }
 
@@ -3253,27 +2411,27 @@ Grid :: give3DPeriodicPoreSMTMOutput(const std::string& fileName)
             this->giveDelaunayLine(i + 1)->giveLocalVertices(nodes);
             //Go through nodes and replace the ones outside with periodic nodes
             for ( int m = 0; m < 2; m++ ) {
-                if ( this->giveDelaunayVertex( nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
-                    location.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->giveLocation();
-                    nodes.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->givePeriodicNode();
+                if ( this->giveDelaunayVertex(nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
+                    location.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->giveLocation();
+                    nodes.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->givePeriodicNode();
                 }
             }
             materialType = 1;
             this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
-            fprintf( outputStreamSM, "lattice3Dboundarydiscrete %d nodes 3 %d %d %d crossSect 1 mat %d rad %.16e ", i + 1, nodes.at(1), nodes.at(2), this->giveNumberOfDelaunayVertices() + 1, materialType, this->giveDelaunayLine(i + 1)->giveRadius() );
+            fprintf(outputStreamSM, "lattice3Dboundarydiscrete %d nodes 3 %d %d %d crossSect 1 mat %d rad %.16e ", i + 1, nodes.at(1), nodes.at(2), this->giveNumberOfDelaunayVertices() + 1, materialType, this->giveDelaunayLine(i + 1)->giveRadius() );
 
 
             this->giveDelaunayLine(i + 1)->giveCrossSectionElements(crossSectionElements);
-            fprintf( outputStreamSM, " couplingflag 1 couplingnumber %d ", crossSectionElements.giveSize() );
+            fprintf(outputStreamSM, " couplingflag 1 couplingnumber %d ", crossSectionElements.giveSize() );
             for ( int m = 0; m < crossSectionElements.giveSize(); m++ ) {
-                if ( this->giveVoronoiLine( crossSectionElements.at(m + 1) )->giveOutsideFlag() == 0 ||  this->giveVoronoiLine( crossSectionElements.at(m + 1) )->giveOutsideFlag() == 2 ) {
-                    fprintf( outputStreamSM, "%d ", crossSectionElements.at(m + 1) );
+                if ( this->giveVoronoiLine(crossSectionElements.at(m + 1) )->giveOutsideFlag() == 0 ||  this->giveVoronoiLine(crossSectionElements.at(m + 1) )->giveOutsideFlag() == 2 ) {
+                    fprintf(outputStreamSM, "%d ", crossSectionElements.at(m + 1) );
                 } else {
-                    fprintf( outputStreamSM, "%d ", this->giveVoronoiLine( crossSectionElements.at(m + 1) )->givePeriodicElement() );
+                    fprintf(outputStreamSM, "%d ", this->giveVoronoiLine(crossSectionElements.at(m + 1) )->givePeriodicElement() );
                 }
             }
-            fprintf( outputStreamSM, " location 2 %d %d bodyloads 1 3", location.at(1), location.at(2) );
+            fprintf(outputStreamSM, " location 2 %d %d bodyloads 1 3", location.at(1), location.at(2) );
 
             fprintf(outputStreamSM, "\n");
         }
@@ -3290,8 +2448,6 @@ Grid :: give3DPeriodicPoreSMTMOutput(const std::string& fileName)
     fprintf(outputStreamSM, "#LOADLEVEL\n");
     fprintf(outputStreamSM, "##TIME\n");
     fprintf(outputStreamSM, "#%%END_CHECK%%\n");
-
-
 
 
     //Determine the number of Voronoi nodes in the domain
@@ -3336,8 +2492,8 @@ Grid :: give3DPeriodicPoreSMTMOutput(const std::string& fileName)
 
     double gaussianPoreMean, gaussianPoreSTD, gaussianPoreCOV;
 
-    gaussianPoreMean = log( this->poreMean / sqrt( 1 + pow(this->poreCOV, 2) ) );
-    gaussianPoreSTD = sqrt( log( 1 + pow(this->poreCOV, 2) ) );
+    gaussianPoreMean = log(this->poreMean / sqrt(1 + pow(this->poreCOV, 2) ) );
+    gaussianPoreSTD = sqrt(log(1 + pow(this->poreCOV, 2) ) );
     gaussianPoreCOV = gaussianPoreSTD / gaussianPoreMean;
 
 
@@ -3366,8 +2522,8 @@ Grid :: give3DPeriodicPoreSMTMOutput(const std::string& fileName)
 
     double gaussianThroatMean, gaussianThroatSTD, gaussianThroatCOV;
 
-    gaussianThroatMean = log( this->throatMean / sqrt( 1 + pow(this->throatCOV, 2) ) );
-    gaussianThroatSTD = sqrt( log( 1 + pow(this->throatCOV, 2) ) );
+    gaussianThroatMean = log(this->throatMean / sqrt(1 + pow(this->throatCOV, 2) ) );
+    gaussianThroatSTD = sqrt(log(1 + pow(this->throatCOV, 2) ) );
     gaussianThroatCOV = gaussianThroatSTD / gaussianThroatMean;
 
 
@@ -3376,8 +2532,6 @@ Grid :: give3DPeriodicPoreSMTMOutput(const std::string& fileName)
     }
 
     //Create random numbers for lines
-    //oofem::FloatArray voronoiLineRadius(numberOfPipeDiameters);
-    //long randomIntegerTwo = this->randomInteger - 1;
     for ( int i = 0; i < numberOfPipeDiameters; i++ ) {
         randomRadius =  normalCdfInverse(ran1(& randomIntegerTwo),  gaussianThroatMean, gaussianThroatSTD);
         //Apply cut-offs if necessary
@@ -3414,7 +2568,7 @@ Grid :: give3DPeriodicPoreSMTMOutput(const std::string& fileName)
     for ( int i = 0; i < this->giveNumberOfVoronoiVertices(); i++ ) {
         if ( this->giveVoronoiVertex(i + 1)->giveOutsideFlag() == 0 ) {
             counter++;
-            this->giveVoronoiVertex(i + 1)->setRadius( voronoiVertexRadius.at(counter) );
+            this->giveVoronoiVertex(i + 1)->setRadius(voronoiVertexRadius.at(counter) );
         }
     }
 
@@ -3429,7 +2583,7 @@ Grid :: give3DPeriodicPoreSMTMOutput(const std::string& fileName)
             minRadius.at(counter) = 1000000.;
             this->giveVoronoiLine(i + 1)->giveLocalVertices(nodes);
             for ( int m = 0; m < 2; m++ ) {
-                radius = this->giveVoronoiVertex( nodes.at(m + 1) )->giveRadius();
+                radius = this->giveVoronoiVertex(nodes.at(m + 1) )->giveRadius();
                 if ( radius < minRadius.at(counter) ) {
                     minRadius.at(counter) = radius;
                 }
@@ -3445,11 +2599,11 @@ Grid :: give3DPeriodicPoreSMTMOutput(const std::string& fileName)
                 this->giveVoronoiLine(i + 1)->giveLocalVertices(nodes);
                 //Go through nodes and replace the ones outside with periodic nodes
                 for ( int m = 0; m < 2; m++ ) {
-                    if ( this->giveVoronoiVertex( nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
-                        location.at(m + 1) = this->giveVoronoiVertex( nodes.at(m + 1) )->giveLocation();
-                        nodes.at(m + 1) = this->giveVoronoiVertex( nodes.at(m + 1) )->givePeriodicNode();
+                    if ( this->giveVoronoiVertex(nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
+                        location.at(m + 1) = this->giveVoronoiVertex(nodes.at(m + 1) )->giveLocation();
+                        nodes.at(m + 1) = this->giveVoronoiVertex(nodes.at(m + 1) )->givePeriodicNode();
                     }
-                    radius = this->giveVoronoiVertex( nodes.at(m + 1) )->giveRadius();
+                    radius = this->giveVoronoiVertex(nodes.at(m + 1) )->giveRadius();
                     if ( radius < minRadius.at(counter) ) {
                         minRadius.at(counter) = radius;
                     }
@@ -3472,24 +2626,19 @@ Grid :: give3DPeriodicPoreSMTMOutput(const std::string& fileName)
     for ( int i = 0; i < this->giveNumberOfVoronoiLines(); i++ ) {
         if ( this->giveVoronoiLine(i + 1)->giveOutsideFlag() == 0 ) {
             counter++;
-            helpRadius = sortedVoronoiLineRadius.at( rankVector.at(counter) );
+            helpRadius = sortedVoronoiLineRadius.at(rankVector.at(counter) );
             this->giveVoronoiLine(i + 1)->setRadius(helpRadius);
         } else if ( this->giveVoronoiLine(i + 1)->giveOutsideFlag() == 2 ) {
             //Here only the periodic lines that have been used for generating the rank vector are allowed to pass.
             if ( this->giveVoronoiLine(i + 1)->givePeriodicElement() > i + 1 ) {
                 counter++;
-                helpRadius = sortedVoronoiLineRadius.at( rankVector.at(counter) );
+                helpRadius = sortedVoronoiLineRadius.at(rankVector.at(counter) );
                 this->giveVoronoiLine(i + 1)->setRadius(helpRadius);
                 //Assign an equal diameter value to the periodic friend.
-                this->giveVoronoiLine( this->giveVoronoiLine(i + 1)->givePeriodicElement() )->setRadius(helpRadius);
+                this->giveVoronoiLine(this->giveVoronoiLine(i + 1)->givePeriodicElement() )->setRadius(helpRadius);
             }
         }
     }
-    //printf("The numbers of elements that have a larger radius than the adjacent pores are: %d\n", inconsistencyCounter);
-
-
-
-
 
     //Write the transport input file
     fprintf(outputStreamTM, "oofem.out.tm\n");
@@ -3507,16 +2656,16 @@ Grid :: give3DPeriodicPoreSMTMOutput(const std::string& fileName)
             if ( firstFlag == 0 ) {
                 firstFlag = 1;
                 counter++;
-                fprintf( outputStreamTM, "pore %d coords 3 %e %e %e bc 1 1 rad %.16e\n", i + 1, coords.at(1), coords.at(2), coords.at(3), voronoiVertexRadius.at(counter) );
+                fprintf(outputStreamTM, "pore %d coords 3 %e %e %e bc 1 1 rad %.16e\n", i + 1, coords.at(1), coords.at(2), coords.at(3), voronoiVertexRadius.at(counter) );
             } else {
                 counter++;
-                fprintf( outputStreamTM, "pore %d coords 3 %e %e %e rad %.16e\n", i + 1, coords.at(1), coords.at(2), coords.at(3), voronoiVertexRadius.at(counter) );
+                fprintf(outputStreamTM, "pore %d coords 3 %e %e %e rad %.16e\n", i + 1, coords.at(1), coords.at(2), coords.at(3), voronoiVertexRadius.at(counter) );
             }
         }
     }
 
     //Periodic control node
-    fprintf( outputStreamTM, "node %d coords 3 %e %e %e ndofs 3 dofIDmask 3 1 2 3 bc 3 2 1 1\n", this->giveNumberOfVoronoiVertices() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
+    fprintf(outputStreamTM, "node %d coords 3 %e %e %e ndofs 3 dofIDmask 3 1 2 3 bc 3 2 1 1\n", this->giveNumberOfVoronoiVertices() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
 
 
     for ( int i = 0; i < this->giveNumberOfVoronoiLines(); i++ ) {
@@ -3525,17 +2674,17 @@ Grid :: give3DPeriodicPoreSMTMOutput(const std::string& fileName)
             materialType = 1;
             this->giveVoronoiLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
-            fprintf( outputStreamTM, "latticemt3D_Discrete %d nodes 2 %d %d crossSect 1 mat %d rad %.16e", i + 1, nodes.at(1), nodes.at(2), materialType, this->giveVoronoiLine(i + 1)->giveRadius() );
+            fprintf(outputStreamTM, "latticemt3D_Discrete %d nodes 2 %d %d crossSect 1 mat %d rad %.16e", i + 1, nodes.at(1), nodes.at(2), materialType, this->giveVoronoiLine(i + 1)->giveRadius() );
             this->giveVoronoiLine(i + 1)->giveCrossSectionElements(crossSectionElements);
-            fprintf( outputStreamTM, " couplingflag 1 couplingnumber %d ", crossSectionElements.giveSize() );
+            fprintf(outputStreamTM, " couplingflag 1 couplingnumber %d ", crossSectionElements.giveSize() );
             for ( int m = 0; m < crossSectionElements.giveSize(); m++ ) {
-                if ( this->giveDelaunayLine( crossSectionElements.at(m + 1) )->giveOutsideFlag() == 0 || this->giveDelaunayLine( crossSectionElements.at(m + 1) )->giveOutsideFlag() == 2 ) {
-                    fprintf( outputStreamTM, "%d ", crossSectionElements.at(m + 1) );
+                if ( this->giveDelaunayLine(crossSectionElements.at(m + 1) )->giveOutsideFlag() == 0 || this->giveDelaunayLine(crossSectionElements.at(m + 1) )->giveOutsideFlag() == 2 ) {
+                    fprintf(outputStreamTM, "%d ", crossSectionElements.at(m + 1) );
                 } else {
-                    if ( this->giveDelaunayLine( crossSectionElements.at(m + 1) )->givePeriodicElement() == 0 ) {
+                    if ( this->giveDelaunayLine(crossSectionElements.at(m + 1) )->givePeriodicElement() == 0 ) {
                         converter::errorf("Clang the element is an outsider one %d", i + 1);
                     }
-                    fprintf( outputStreamTM, "%d ", this->giveDelaunayLine( crossSectionElements.at(m + 1) )->givePeriodicElement() );
+                    fprintf(outputStreamTM, "%d ", this->giveDelaunayLine(crossSectionElements.at(m + 1) )->givePeriodicElement() );
                 }
             }
             fprintf(outputStreamTM, "\n");
@@ -3544,29 +2693,29 @@ Grid :: give3DPeriodicPoreSMTMOutput(const std::string& fileName)
             this->giveVoronoiLine(i + 1)->giveLocalVertices(nodes);
             //Go through nodes and replace the ones outside with periodic nodes
             for ( int m = 0; m < 2; m++ ) {
-                if ( this->giveVoronoiVertex( nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
-                    location.at(m + 1) = this->giveVoronoiVertex( nodes.at(m + 1) )->giveLocation();
-                    nodes.at(m + 1) = this->giveVoronoiVertex( nodes.at(m + 1) )->givePeriodicNode();
+                if ( this->giveVoronoiVertex(nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
+                    location.at(m + 1) = this->giveVoronoiVertex(nodes.at(m + 1) )->giveLocation();
+                    nodes.at(m + 1) = this->giveVoronoiVertex(nodes.at(m + 1) )->givePeriodicNode();
                 }
             }
             materialType = 1;
             this->giveVoronoiLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
-            fprintf( outputStreamTM, "latticemt3Dboundary_Discrete %d nodes 3 %d %d %d crossSect 1 mat %d rad %.16e", i + 1, nodes.at(1), nodes.at(2), this->giveNumberOfVoronoiVertices() + 1, materialType, this->giveVoronoiLine(i + 1)->giveRadius() );
+            fprintf(outputStreamTM, "latticemt3Dboundary_Discrete %d nodes 3 %d %d %d crossSect 1 mat %d rad %.16e", i + 1, nodes.at(1), nodes.at(2), this->giveNumberOfVoronoiVertices() + 1, materialType, this->giveVoronoiLine(i + 1)->giveRadius() );
 
             this->giveVoronoiLine(i + 1)->giveCrossSectionElements(crossSectionElements);
-            fprintf( outputStreamTM, " couplingflag 1 couplingnumber %d ", crossSectionElements.giveSize() );
+            fprintf(outputStreamTM, " couplingflag 1 couplingnumber %d ", crossSectionElements.giveSize() );
             for ( int m = 0; m < crossSectionElements.giveSize(); m++ ) {
-                if ( this->giveDelaunayLine( crossSectionElements.at(m + 1) )->giveOutsideFlag() == 0 || this->giveDelaunayLine( crossSectionElements.at(m + 1) )->giveOutsideFlag() == 2 ) {
-                    fprintf( outputStreamTM, "%d ", crossSectionElements.at(m + 1) );
+                if ( this->giveDelaunayLine(crossSectionElements.at(m + 1) )->giveOutsideFlag() == 0 || this->giveDelaunayLine(crossSectionElements.at(m + 1) )->giveOutsideFlag() == 2 ) {
+                    fprintf(outputStreamTM, "%d ", crossSectionElements.at(m + 1) );
                 } else {
-                    if ( this->giveDelaunayLine( crossSectionElements.at(m + 1) )->givePeriodicElement() == 0 ) {
+                    if ( this->giveDelaunayLine(crossSectionElements.at(m + 1) )->givePeriodicElement() == 0 ) {
                         converter::errorf("Clang the element is an outsider one %d", i + 1);
                     }
-                    fprintf( outputStreamTM, "%d ", this->giveDelaunayLine( crossSectionElements.at(m + 1) )->givePeriodicElement() );
+                    fprintf(outputStreamTM, "%d ", this->giveDelaunayLine(crossSectionElements.at(m + 1) )->givePeriodicElement() );
                 }
             }
-            fprintf( outputStreamTM, " location 2 %d %d", location.at(1), location.at(2) );
+            fprintf(outputStreamTM, " location 2 %d %d", location.at(1), location.at(2) );
 
             fprintf(outputStreamTM, "\n");
         }
@@ -3589,45 +2738,18 @@ Grid :: give3DPeriodicPoreSMTMOutput(const std::string& fileName)
 
 
 void
-Grid :: give3DBentoniteCoupledOutput(const std::string& fileName)
+Grid::give3DBentoniteCoupledOutput(const std::string &fileName)
 {
     //Template for irregular nonperiodic coupled mechanical transport models. Do not change for applications
 
 
-    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
+    FILE *outputStream = converter::fopen_or_die(fileName, "w");
 
     const std::string fileName1 = fileName + ".sm";
     FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w");
-    
+
     const std::string fileName2 = fileName + ".tm";
     FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w");
-
-
-
-
-
-  
-    /* FILE *outputStream; */
-    /* if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
-    /*     converter::errorf("Cannot open output file %s", fileName); */
-    /* } */
-
-    /* FILE *outputStreamSM; */
-    /* char fileName1 [ MAX_FILENAME_LENGTH + 10 ]; */
-    /* strcpy(fileName1, fileName); */
-    /* strcat(fileName1, ".sm"); */
-    /* if ( ( outputStreamSM = fopen(fileName1, "w") ) == NULL ) { */
-    /*     converter::errorf("Cannot open output file %s", fileName1); */
-    /* } */
-
-    /* FILE *outputStreamTM; */
-    /* char fileName2 [ MAX_FILENAME_LENGTH + 10 ]; */
-    /* strcpy(fileName2, fileName); */
-    /* strcat(fileName2, ".tm"); */
-    /* if ( ( outputStreamTM = fopen(fileName2, "w") ) == NULL ) { */
-    /*     converter::errorf("Cannot open output file %s", fileName2); */
-    /* } */
-
 
     oofem::FloatArray boundaries(3);
     this->giveRegion(1)->defineBoundaries(boundaries);
@@ -3648,7 +2770,7 @@ Grid :: give3DBentoniteCoupledOutput(const std::string& fileName)
     int lastNode;
 
     int numberOfPipeDiameters;
-    int numberOfPeriodicLines =0;
+    int numberOfPeriodicLines = 0;
 
     //Write the control file
     fprintf(outputStream, "oofem.out\n");
@@ -3701,8 +2823,8 @@ Grid :: give3DBentoniteCoupledOutput(const std::string& fileName)
 
     double gaussianMechMean, gaussianMechSTD, gaussianMechCOV;
 
-    gaussianMechMean = log( this->mechMean / sqrt( 1 + pow(this->mechCOV, 2) ) );
-    gaussianMechSTD = sqrt( log( 1 + pow(this->mechCOV, 2) ) );
+    gaussianMechMean = log(this->mechMean / sqrt(1 + pow(this->mechCOV, 2) ) );
+    gaussianMechSTD = sqrt(log(1 + pow(this->mechCOV, 2) ) );
     gaussianMechCOV = gaussianMechSTD / gaussianMechMean;
 
     if ( gaussianMechMean < 0. ) {
@@ -3722,8 +2844,6 @@ Grid :: give3DBentoniteCoupledOutput(const std::string& fileName)
         delaunayLineRadius.at(i + 1) = randomRadius;
     }
 
-
-
     //Apply sorted line radii to the elements
 
     double helpRadius = 0;
@@ -3741,9 +2861,9 @@ Grid :: give3DBentoniteCoupledOutput(const std::string& fileName)
                 helpRadius = delaunayLineRadius.at(counter);
                 this->giveDelaunayLine(i + 1)->setRadius(helpRadius);
                 //Assign an equal diameter value to the periodic friend.
-                this->giveDelaunayLine( this->giveDelaunayLine(i + 1)->givePeriodicElement() )->setRadius(helpRadius);
-            } else if ( this->giveDelaunayLine(i + 1)->givePeriodicElement() < i + 1 && this->giveDelaunayLine( this->giveDelaunayLine(i + 1)->givePeriodicElement() )->givePeriodicElement() !=  i + 1 ) {
-                double help = this->giveDelaunayLine( this->giveDelaunayLine(i + 1)->givePeriodicElement() )->giveRadius();
+                this->giveDelaunayLine(this->giveDelaunayLine(i + 1)->givePeriodicElement() )->setRadius(helpRadius);
+            } else if ( this->giveDelaunayLine(i + 1)->givePeriodicElement() < i + 1 && this->giveDelaunayLine(this->giveDelaunayLine(i + 1)->givePeriodicElement() )->givePeriodicElement() !=  i + 1 ) {
+                double help = this->giveDelaunayLine(this->giveDelaunayLine(i + 1)->givePeriodicElement() )->giveRadius();
                 printf("Help is %e %d\n", help, i + 1);
                 this->giveDelaunayLine(i + 1)->setRadius(help);
             }
@@ -3771,17 +2891,16 @@ Grid :: give3DBentoniteCoupledOutput(const std::string& fileName)
             this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
 
             if ( firstFlag == 0 ) {
-	      firstFlag = 1;
-	      fprintf( outputStreamSM, "rigidbody %d coords 3 %e %e %e bc 6 1 1 1 1 1 1\n", i + 1, coords.at(1), coords.at(2), coords.at(3));
+                firstFlag = 1;
+                fprintf(outputStreamSM, "rigidbody %d coords 3 %e %e %e bc 6 1 1 1 1 1 1\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
             } else {
-	      fprintf( outputStreamSM, "rigidbody %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+                fprintf(outputStreamSM, "rigidbody %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
             }
-
-	}
+        }
     }
 
     //Periodic control node
-    fprintf( outputStreamSM, "rigidbody %d coords 3 %e %e %e bc 6 2 2 2 0 0 0\n", this->giveNumberOfDelaunayVertices() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
+    fprintf(outputStreamSM, "rigidbody %d coords 3 %e %e %e bc 6 2 2 2 0 0 0\n", this->giveNumberOfDelaunayVertices() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
 
 
     for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
@@ -3790,20 +2909,20 @@ Grid :: give3DBentoniteCoupledOutput(const std::string& fileName)
             materialType = 1;
             this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
-            fprintf( outputStreamSM, "lattice3D %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
+            fprintf(outputStreamSM, "lattice3D %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
 
             for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                this->giveVoronoiVertex( crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-                fprintf( outputStreamSM, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
+                this->giveVoronoiVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
+                fprintf(outputStreamSM, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
             }
 
             this->giveDelaunayLine(i + 1)->giveCrossSectionElements(crossSectionElements);
-            fprintf( outputStreamSM, " couplingflag 1 couplingnumber %d ", crossSectionElements.giveSize() );
+            fprintf(outputStreamSM, " couplingflag 1 couplingnumber %d ", crossSectionElements.giveSize() );
             for ( int m = 0; m < crossSectionElements.giveSize(); m++ ) {
-                if ( this->giveVoronoiLine( crossSectionElements.at(m + 1) )->giveOutsideFlag() == 0 ||  this->giveVoronoiLine( crossSectionElements.at(m + 1) )->giveOutsideFlag() == 2 ) {
-                    fprintf( outputStreamSM, "%d ", crossSectionElements.at(m + 1) );
+                if ( this->giveVoronoiLine(crossSectionElements.at(m + 1) )->giveOutsideFlag() == 0 ||  this->giveVoronoiLine(crossSectionElements.at(m + 1) )->giveOutsideFlag() == 2 ) {
+                    fprintf(outputStreamSM, "%d ", crossSectionElements.at(m + 1) );
                 } else {
-                    fprintf( outputStreamSM, "%d ", this->giveVoronoiLine( crossSectionElements.at(m + 1) )->givePeriodicElement() );
+                    fprintf(outputStreamSM, "%d ", this->giveVoronoiLine(crossSectionElements.at(m + 1) )->givePeriodicElement() );
                 }
             }
 
@@ -3813,31 +2932,31 @@ Grid :: give3DBentoniteCoupledOutput(const std::string& fileName)
             this->giveDelaunayLine(i + 1)->giveLocalVertices(nodes);
             //Go through nodes and replace the ones outside with periodic nodes
             for ( int m = 0; m < 2; m++ ) {
-                if ( this->giveDelaunayVertex( nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
-                    location.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->giveLocation();
-                    nodes.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->givePeriodicNode();
+                if ( this->giveDelaunayVertex(nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
+                    location.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->giveLocation();
+                    nodes.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->givePeriodicNode();
                 }
             }
             materialType = 1;
             this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
-            fprintf( outputStreamSM, "lattice3Dboundary %d nodes 3 %d %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), this->giveNumberOfDelaunayVertices() + 1, materialType, 3 * crossSectionNodes.giveSize() );
+            fprintf(outputStreamSM, "lattice3Dboundary %d nodes 3 %d %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), this->giveNumberOfDelaunayVertices() + 1, materialType, 3 * crossSectionNodes.giveSize() );
 
             for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                this->giveVoronoiVertex( crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-                fprintf( outputStreamSM, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
+                this->giveVoronoiVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
+                fprintf(outputStreamSM, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
             }
 
-	    this->giveDelaunayLine(i + 1)->giveCrossSectionElements(crossSectionElements);
-            fprintf( outputStreamSM, " couplingflag 1 couplingnumber %d ", crossSectionElements.giveSize() );
+            this->giveDelaunayLine(i + 1)->giveCrossSectionElements(crossSectionElements);
+            fprintf(outputStreamSM, " couplingflag 1 couplingnumber %d ", crossSectionElements.giveSize() );
             for ( int m = 0; m < crossSectionElements.giveSize(); m++ ) {
-                if ( this->giveVoronoiLine( crossSectionElements.at(m + 1) )->giveOutsideFlag() == 0 ||  this->giveVoronoiLine( crossSectionElements.at(m + 1) )->giveOutsideFlag() == 2 ) {
-                    fprintf( outputStreamSM, "%d ", crossSectionElements.at(m + 1) );
+                if ( this->giveVoronoiLine(crossSectionElements.at(m + 1) )->giveOutsideFlag() == 0 ||  this->giveVoronoiLine(crossSectionElements.at(m + 1) )->giveOutsideFlag() == 2 ) {
+                    fprintf(outputStreamSM, "%d ", crossSectionElements.at(m + 1) );
                 } else {
-                    fprintf( outputStreamSM, "%d ", this->giveVoronoiLine( crossSectionElements.at(m + 1) )->givePeriodicElement() );
+                    fprintf(outputStreamSM, "%d ", this->giveVoronoiLine(crossSectionElements.at(m + 1) )->givePeriodicElement() );
                 }
             }
-            fprintf( outputStreamSM, " location 2 %d %d", location.at(1), location.at(2) );
+            fprintf(outputStreamSM, " location 2 %d %d", location.at(1), location.at(2) );
 
             fprintf(outputStreamSM, "\n");
         }
@@ -3900,8 +3019,8 @@ Grid :: give3DBentoniteCoupledOutput(const std::string& fileName)
 
     double gaussianPoreMean, gaussianPoreSTD, gaussianPoreCOV;
 
-    gaussianPoreMean = log( this->poreMean / sqrt( 1 + pow(this->poreCOV, 2) ) );
-    gaussianPoreSTD = sqrt( log( 1 + pow(this->poreCOV, 2) ) );
+    gaussianPoreMean = log(this->poreMean / sqrt(1 + pow(this->poreCOV, 2) ) );
+    gaussianPoreSTD = sqrt(log(1 + pow(this->poreCOV, 2) ) );
     gaussianPoreCOV = gaussianPoreSTD / gaussianPoreMean;
 
 
@@ -3930,8 +3049,8 @@ Grid :: give3DBentoniteCoupledOutput(const std::string& fileName)
 
     double gaussianThroatMean, gaussianThroatSTD, gaussianThroatCOV;
 
-    gaussianThroatMean = log( this->throatMean / sqrt( 1 + pow(this->throatCOV, 2) ) );
-    gaussianThroatSTD = sqrt( log( 1 + pow(this->throatCOV, 2) ) );
+    gaussianThroatMean = log(this->throatMean / sqrt(1 + pow(this->throatCOV, 2) ) );
+    gaussianThroatSTD = sqrt(log(1 + pow(this->throatCOV, 2) ) );
     gaussianThroatCOV = gaussianThroatSTD / gaussianThroatMean;
 
 
@@ -3978,7 +3097,7 @@ Grid :: give3DBentoniteCoupledOutput(const std::string& fileName)
     for ( int i = 0; i < this->giveNumberOfVoronoiVertices(); i++ ) {
         if ( this->giveVoronoiVertex(i + 1)->giveOutsideFlag() == 0 ) {
             counter++;
-            this->giveVoronoiVertex(i + 1)->setRadius( voronoiVertexRadius.at(counter) );
+            this->giveVoronoiVertex(i + 1)->setRadius(voronoiVertexRadius.at(counter) );
         }
     }
 
@@ -3993,7 +3112,7 @@ Grid :: give3DBentoniteCoupledOutput(const std::string& fileName)
             minRadius.at(counter) = 1000000.;
             this->giveVoronoiLine(i + 1)->giveLocalVertices(nodes);
             for ( int m = 0; m < 2; m++ ) {
-                radius = this->giveVoronoiVertex( nodes.at(m + 1) )->giveRadius();
+                radius = this->giveVoronoiVertex(nodes.at(m + 1) )->giveRadius();
                 if ( radius < minRadius.at(counter) ) {
                     minRadius.at(counter) = radius;
                 }
@@ -4009,11 +3128,11 @@ Grid :: give3DBentoniteCoupledOutput(const std::string& fileName)
                 this->giveVoronoiLine(i + 1)->giveLocalVertices(nodes);
                 //Go through nodes and replace the ones outside with periodic nodes
                 for ( int m = 0; m < 2; m++ ) {
-                    if ( this->giveVoronoiVertex( nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
-                        location.at(m + 1) = this->giveVoronoiVertex( nodes.at(m + 1) )->giveLocation();
-                        nodes.at(m + 1) = this->giveVoronoiVertex( nodes.at(m + 1) )->givePeriodicNode();
+                    if ( this->giveVoronoiVertex(nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
+                        location.at(m + 1) = this->giveVoronoiVertex(nodes.at(m + 1) )->giveLocation();
+                        nodes.at(m + 1) = this->giveVoronoiVertex(nodes.at(m + 1) )->givePeriodicNode();
                     }
-                    radius = this->giveVoronoiVertex( nodes.at(m + 1) )->giveRadius();
+                    radius = this->giveVoronoiVertex(nodes.at(m + 1) )->giveRadius();
                     if ( radius < minRadius.at(counter) ) {
                         minRadius.at(counter) = radius;
                     }
@@ -4036,16 +3155,16 @@ Grid :: give3DBentoniteCoupledOutput(const std::string& fileName)
     for ( int i = 0; i < this->giveNumberOfVoronoiLines(); i++ ) {
         if ( this->giveVoronoiLine(i + 1)->giveOutsideFlag() == 0 ) {
             counter++;
-            helpRadius = sortedVoronoiLineRadius.at( rankVector.at(counter) );
+            helpRadius = sortedVoronoiLineRadius.at(rankVector.at(counter) );
             this->giveVoronoiLine(i + 1)->setRadius(helpRadius);
         } else if ( this->giveVoronoiLine(i + 1)->giveOutsideFlag() == 2 ) {
             //Here only the periodic lines that have been used for generating the rank vector are allowed to pass.
             if ( this->giveVoronoiLine(i + 1)->givePeriodicElement() > i + 1 ) {
                 counter++;
-                helpRadius = sortedVoronoiLineRadius.at( rankVector.at(counter) );
+                helpRadius = sortedVoronoiLineRadius.at(rankVector.at(counter) );
                 this->giveVoronoiLine(i + 1)->setRadius(helpRadius);
                 //Assign an equal diameter value to the periodic friend.
-                this->giveVoronoiLine( this->giveVoronoiLine(i + 1)->givePeriodicElement() )->setRadius(helpRadius);
+                this->giveVoronoiLine(this->giveVoronoiLine(i + 1)->givePeriodicElement() )->setRadius(helpRadius);
             }
         }
     }
@@ -4066,41 +3185,41 @@ Grid :: give3DBentoniteCoupledOutput(const std::string& fileName)
     for ( int i = 0; i < this->giveNumberOfVoronoiVertices(); i++ ) {
         if ( this->giveVoronoiVertex(i + 1)->giveOutsideFlag() == 0 ) {
             this->giveVoronoiVertex(i + 1)->giveCoordinates(coords);
-	    this->giveVoronoiVertex(i + 1)->giveCellElements(cellElements);
+            this->giveVoronoiVertex(i + 1)->giveCellElements(cellElements);
             if ( firstFlag == 0 ) {
                 firstFlag = 1;
                 counter++;
-                fprintf( outputStreamTM, "pore %d coords 3 %e %e %e bc 1 1 rad %.16e couplingflag 1 couplingnumber %d ", i + 1, coords.at(1), coords.at(2), coords.at(3), voronoiVertexRadius.at(counter), cellElements.giveSize());
-		for(int m=0;m<cellElements.giveSize();m++){
-		  if ( this->giveDelaunayLine( cellElements.at(m + 1) )->giveOutsideFlag() == 0 || this->giveDelaunayLine( cellElements.at(m + 1) )->giveOutsideFlag() == 2 ) {
-                    fprintf( outputStreamTM, "%d ", cellElements.at(m + 1) );
-		  } else {
-                    if ( this->giveDelaunayLine( cellElements.at(m + 1) )->givePeriodicElement() == 0 ) {
-		      converter::errorf("Error: the element %d is outside", i + 1);
+                fprintf(outputStreamTM, "pore %d coords 3 %e %e %e bc 1 1 rad %.16e couplingflag 1 couplingnumber %d ", i + 1, coords.at(1), coords.at(2), coords.at(3), voronoiVertexRadius.at(counter), cellElements.giveSize() );
+                for (int m = 0; m < cellElements.giveSize(); m++) {
+                    if ( this->giveDelaunayLine(cellElements.at(m + 1) )->giveOutsideFlag() == 0 || this->giveDelaunayLine(cellElements.at(m + 1) )->giveOutsideFlag() == 2 ) {
+                        fprintf(outputStreamTM, "%d ", cellElements.at(m + 1) );
+                    } else {
+                        if ( this->giveDelaunayLine(cellElements.at(m + 1) )->givePeriodicElement() == 0 ) {
+                            converter::errorf("Error: the element %d is outside", i + 1);
+                        }
+                        fprintf(outputStreamTM, "%d ", this->giveDelaunayLine(cellElements.at(m + 1) )->givePeriodicElement() );
                     }
-                    fprintf( outputStreamTM, "%d ", this->giveDelaunayLine( cellElements.at(m + 1) )->givePeriodicElement() );
-		  }
-		}
-		fprintf( outputStreamTM, "\n");
+                }
+                fprintf(outputStreamTM, "\n");
             } else {
                 counter++;
-                fprintf( outputStreamTM, "pore %d coords 3 %e %e %e rad %.16e couplingflag 1 couplingnumber %d ", i + 1, coords.at(1), coords.at(2), coords.at(3), voronoiVertexRadius.at(counter), cellElements.giveSize() );
-		for(int m=0;m<cellElements.giveSize();m++){
-		  if ( this->giveDelaunayLine( cellElements.at(m + 1) )->giveOutsideFlag() == 0 || this->giveDelaunayLine( cellElements.at(m + 1) )->giveOutsideFlag() == 2 ) {
-                    fprintf( outputStreamTM, "%d ", cellElements.at(m + 1) );
-		  } else {
-                    if ( this->giveDelaunayLine( cellElements.at(m + 1) )->givePeriodicElement() == 0 ) {
-		      converter::errorf("Error: the element %d is outside", i + 1);
+                fprintf(outputStreamTM, "pore %d coords 3 %e %e %e rad %.16e couplingflag 1 couplingnumber %d ", i + 1, coords.at(1), coords.at(2), coords.at(3), voronoiVertexRadius.at(counter), cellElements.giveSize() );
+                for (int m = 0; m < cellElements.giveSize(); m++) {
+                    if ( this->giveDelaunayLine(cellElements.at(m + 1) )->giveOutsideFlag() == 0 || this->giveDelaunayLine(cellElements.at(m + 1) )->giveOutsideFlag() == 2 ) {
+                        fprintf(outputStreamTM, "%d ", cellElements.at(m + 1) );
+                    } else {
+                        if ( this->giveDelaunayLine(cellElements.at(m + 1) )->givePeriodicElement() == 0 ) {
+                            converter::errorf("Error: the element %d is outside", i + 1);
+                        }
+                        fprintf(outputStreamTM, "%d ", this->giveDelaunayLine(cellElements.at(m + 1) )->givePeriodicElement() );
                     }
-                    fprintf( outputStreamTM, "%d ", this->giveDelaunayLine( cellElements.at(m + 1) )->givePeriodicElement() );
-		  }
-		}
-		fprintf( outputStreamTM, "\n");
-	    }
-	}
+                }
+                fprintf(outputStreamTM, "\n");
+            }
+        }
     }
     //Periodic control node
-    fprintf( outputStreamTM, "node %d coords 3 %e %e %e ndofs 3 dofIDmask 3 1 2 3 bc 3 2 2 2\n", this->giveNumberOfVoronoiVertices() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
+    fprintf(outputStreamTM, "node %d coords 3 %e %e %e ndofs 3 dofIDmask 3 1 2 3 bc 3 2 2 2\n", this->giveNumberOfVoronoiVertices() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
 
 
     for ( int i = 0; i < this->giveNumberOfVoronoiLines(); i++ ) {
@@ -4109,17 +3228,17 @@ Grid :: give3DBentoniteCoupledOutput(const std::string& fileName)
             materialType = 1;
             this->giveVoronoiLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
-            fprintf( outputStreamTM, "latticemt3D_Discrete %d nodes 2 %d %d crossSect 1 mat %d rad %.16e", i + 1, nodes.at(1), nodes.at(2), materialType, this->giveVoronoiLine(i + 1)->giveRadius() );
+            fprintf(outputStreamTM, "latticemt3D_Discrete %d nodes 2 %d %d crossSect 1 mat %d rad %.16e", i + 1, nodes.at(1), nodes.at(2), materialType, this->giveVoronoiLine(i + 1)->giveRadius() );
             this->giveVoronoiLine(i + 1)->giveCrossSectionElements(crossSectionElements);
-            fprintf( outputStreamTM, " couplingflag 1 couplingnumber %d ", crossSectionElements.giveSize() );
+            fprintf(outputStreamTM, " couplingflag 1 couplingnumber %d ", crossSectionElements.giveSize() );
             for ( int m = 0; m < crossSectionElements.giveSize(); m++ ) {
-                if ( this->giveDelaunayLine( crossSectionElements.at(m + 1) )->giveOutsideFlag() == 0 || this->giveDelaunayLine( crossSectionElements.at(m + 1) )->giveOutsideFlag() == 2 ) {
-                    fprintf( outputStreamTM, "%d ", crossSectionElements.at(m + 1) );
+                if ( this->giveDelaunayLine(crossSectionElements.at(m + 1) )->giveOutsideFlag() == 0 || this->giveDelaunayLine(crossSectionElements.at(m + 1) )->giveOutsideFlag() == 2 ) {
+                    fprintf(outputStreamTM, "%d ", crossSectionElements.at(m + 1) );
                 } else {
-                    if ( this->giveDelaunayLine( crossSectionElements.at(m + 1) )->givePeriodicElement() == 0 ) {
+                    if ( this->giveDelaunayLine(crossSectionElements.at(m + 1) )->givePeriodicElement() == 0 ) {
                         converter::errorf("Error: the element %d is outside", i + 1);
                     }
-                    fprintf( outputStreamTM, "%d ", this->giveDelaunayLine( crossSectionElements.at(m + 1) )->givePeriodicElement() );
+                    fprintf(outputStreamTM, "%d ", this->giveDelaunayLine(crossSectionElements.at(m + 1) )->givePeriodicElement() );
                 }
             }
             fprintf(outputStreamTM, "\n");
@@ -4128,29 +3247,29 @@ Grid :: give3DBentoniteCoupledOutput(const std::string& fileName)
             this->giveVoronoiLine(i + 1)->giveLocalVertices(nodes);
             //Go through nodes and replace the ones outside with periodic nodes
             for ( int m = 0; m < 2; m++ ) {
-                if ( this->giveVoronoiVertex( nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
-                    location.at(m + 1) = this->giveVoronoiVertex( nodes.at(m + 1) )->giveLocation();
-                    nodes.at(m + 1) = this->giveVoronoiVertex( nodes.at(m + 1) )->givePeriodicNode();
+                if ( this->giveVoronoiVertex(nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
+                    location.at(m + 1) = this->giveVoronoiVertex(nodes.at(m + 1) )->giveLocation();
+                    nodes.at(m + 1) = this->giveVoronoiVertex(nodes.at(m + 1) )->givePeriodicNode();
                 }
             }
             materialType = 1;
             this->giveVoronoiLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
-            fprintf( outputStreamTM, "latticemt3Dboundary_Discrete %d nodes 3 %d %d %d crossSect 1 mat %d rad %.16e", i + 1, nodes.at(1), nodes.at(2), this->giveNumberOfVoronoiVertices() + 1, materialType, this->giveVoronoiLine(i + 1)->giveRadius() );
+            fprintf(outputStreamTM, "latticemt3Dboundary_Discrete %d nodes 3 %d %d %d crossSect 1 mat %d rad %.16e", i + 1, nodes.at(1), nodes.at(2), this->giveNumberOfVoronoiVertices() + 1, materialType, this->giveVoronoiLine(i + 1)->giveRadius() );
 
             this->giveVoronoiLine(i + 1)->giveCrossSectionElements(crossSectionElements);
-            fprintf( outputStreamTM, " couplingflag 1 couplingnumber %d ", crossSectionElements.giveSize() );
+            fprintf(outputStreamTM, " couplingflag 1 couplingnumber %d ", crossSectionElements.giveSize() );
             for ( int m = 0; m < crossSectionElements.giveSize(); m++ ) {
-                if ( this->giveDelaunayLine( crossSectionElements.at(m + 1) )->giveOutsideFlag() == 0 || this->giveDelaunayLine( crossSectionElements.at(m + 1) )->giveOutsideFlag() == 2 ) {
-                    fprintf( outputStreamTM, "%d ", crossSectionElements.at(m + 1) );
+                if ( this->giveDelaunayLine(crossSectionElements.at(m + 1) )->giveOutsideFlag() == 0 || this->giveDelaunayLine(crossSectionElements.at(m + 1) )->giveOutsideFlag() == 2 ) {
+                    fprintf(outputStreamTM, "%d ", crossSectionElements.at(m + 1) );
                 } else {
-                    if ( this->giveDelaunayLine( crossSectionElements.at(m + 1) )->givePeriodicElement() == 0 ) {
+                    if ( this->giveDelaunayLine(crossSectionElements.at(m + 1) )->givePeriodicElement() == 0 ) {
                         converter::errorf("Error: the element is outside %d", i + 1);
                     }
-                    fprintf( outputStreamTM, "%d ", this->giveDelaunayLine( crossSectionElements.at(m + 1) )->givePeriodicElement() );
+                    fprintf(outputStreamTM, "%d ", this->giveDelaunayLine(crossSectionElements.at(m + 1) )->givePeriodicElement() );
                 }
             }
-            fprintf( outputStreamTM, " location 2 %d %d", location.at(1), location.at(2) );
+            fprintf(outputStreamTM, " location 2 %d %d", location.at(1), location.at(2) );
 
             fprintf(outputStreamTM, "\n");
         }
@@ -4159,9 +3278,9 @@ Grid :: give3DBentoniteCoupledOutput(const std::string& fileName)
     fprintf(outputStreamTM, "simplecs 1\n");
     fprintf(outputStreamTM, "latticelammat 1 d 1000. vis 0.001002 pipemean 1.e-6 pipemin 1.e-9 poremean 1.e-4 poremin 1.e-8\n");
     fprintf(outputStreamTM, "BoundaryCondition 1 loadTimeFunction 2 prescribedvalue 1.\n");
-    fprintf(outputStreamTM, "BoundaryCondition 2 loadTimeFunction 1 prescribedvalue %e\n",specimenDimension.at(1));
-    fprintf(outputStreamTM, "BoundaryCondition 3 loadTimeFunction 1 prescribedvalue %e\n",specimenDimension.at(2));
-    fprintf(outputStreamTM, "BoundaryCondition 4 loadTimeFunction 1 prescribedvalue %e\n",specimenDimension.at(3));
+    fprintf(outputStreamTM, "BoundaryCondition 2 loadTimeFunction 1 prescribedvalue %e\n", specimenDimension.at(1) );
+    fprintf(outputStreamTM, "BoundaryCondition 3 loadTimeFunction 1 prescribedvalue %e\n", specimenDimension.at(2) );
+    fprintf(outputStreamTM, "BoundaryCondition 4 loadTimeFunction 1 prescribedvalue %e\n", specimenDimension.at(3) );
     fprintf(outputStreamTM, "ConstantFunction 1 f(t) 1.\n");
     fprintf(outputStreamTM, "PiecewiseLinFunction 2 datafile \"time.in\"\n");
     fprintf(outputStreamTM, "#%%BEGIN_CHECK%%\n");
@@ -4175,22 +3294,10 @@ Grid :: give3DBentoniteCoupledOutput(const std::string& fileName)
 
 
 void
-Grid :: give3DPeriodicPoreSMOutput(const std::string& fileName)
+Grid::give3DPeriodicPoreSMOutput(const std::string &fileName)
 {
+    FILE *outputStream = converter::fopen_or_die(fileName, "w");
 
-    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
-
-    /* const std::string fileName1 = fileName + ".sm"; */
-    /* FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w"); */
-    
-    /* const std::string fileName2 = fileName + ".tm"; */
-    /* FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
-
-
-  /* FILE *outputStream; */
-  /*   if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
-  /*       converter::errorf("Cannot open output file %s", fileName); */
-  /*   } */
 
     oofem::FloatArray boundaries(3);
     this->giveRegion(1)->defineBoundaries(boundaries);
@@ -4249,8 +3356,8 @@ Grid :: give3DPeriodicPoreSMOutput(const std::string& fileName)
 
     double gaussianMechMean, gaussianMechSTD, gaussianMechCOV;
 
-    gaussianMechMean = log( this->mechMean / sqrt( 1 + pow(this->mechCOV, 2) ) );
-    gaussianMechSTD = sqrt( log( 1 + pow(this->mechCOV, 2) ) );
+    gaussianMechMean = log(this->mechMean / sqrt(1 + pow(this->mechCOV, 2) ) );
+    gaussianMechSTD = sqrt(log(1 + pow(this->mechCOV, 2) ) );
     gaussianMechCOV = gaussianMechSTD / gaussianMechMean;
     printf("mechmean %e mechcov %e mechmin %e asd asd mechmax %e\n", this->mechMean, this->mechCOV, mechMax, mechMin);
 
@@ -4288,10 +3395,10 @@ Grid :: give3DPeriodicPoreSMOutput(const std::string& fileName)
                 helpRadius = delaunayLineRadius.at(counter);
                 this->giveDelaunayLine(i + 1)->setRadius(helpRadius);
                 //Assign an equal diameter value to the periodic friend.
-                this->giveDelaunayLine( this->giveDelaunayLine(i + 1)->givePeriodicElement() )->setRadius(helpRadius);
-            } else if ( this->giveDelaunayLine(i + 1)->givePeriodicElement() < i + 1 && this->giveDelaunayLine( this->giveDelaunayLine(i + 1)->givePeriodicElement() )->givePeriodicElement() !=  i + 1 ) {
-                double help = this->giveDelaunayLine( this->giveDelaunayLine(i + 1)->givePeriodicElement() )->giveRadius();
-		//                printf("Help is %e %d\n", help, i + 1);
+                this->giveDelaunayLine(this->giveDelaunayLine(i + 1)->givePeriodicElement() )->setRadius(helpRadius);
+            } else if ( this->giveDelaunayLine(i + 1)->givePeriodicElement() < i + 1 && this->giveDelaunayLine(this->giveDelaunayLine(i + 1)->givePeriodicElement() )->givePeriodicElement() !=  i + 1 ) {
+                double help = this->giveDelaunayLine(this->giveDelaunayLine(i + 1)->givePeriodicElement() )->giveRadius();
+                //                printf("Help is %e %d\n", help, i + 1);
                 this->giveDelaunayLine(i + 1)->setRadius(help);
             }
         }
@@ -4316,10 +3423,10 @@ Grid :: give3DPeriodicPoreSMOutput(const std::string& fileName)
             if ( firstFlag == 0 ) {
                 firstFlag = 1;
                 counter++;
-                fprintf( outputStream, "node %d coords 3 %e %e %e bc 6 1 1 1 1 1 1\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+                fprintf(outputStream, "node %d coords 3 %e %e %e bc 6 1 1 1 1 1 1\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
             } else {
                 counter++;
-                fprintf( outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+                fprintf(outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
             }
         }
     }
@@ -4328,7 +3435,7 @@ Grid :: give3DPeriodicPoreSMOutput(const std::string& fileName)
 
     counter = 0;
     //Periodic control node
-    fprintf( outputStream, "node %d coords 3 %e %e %e load 3 2 3 4\n", this->giveNumberOfDelaunayVertices() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
+    fprintf(outputStream, "node %d coords 3 %e %e %e load 3 2 3 4\n", this->giveNumberOfDelaunayVertices() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
 
 
     for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
@@ -4336,7 +3443,7 @@ Grid :: give3DPeriodicPoreSMOutput(const std::string& fileName)
             this->giveDelaunayLine(i + 1)->giveLocalVertices(nodes);
             materialType = 1;
             this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
-            fprintf( outputStream, "lattice3DDiscrete %d nodes 2 %d %d crossSect 1 mat %d rad %.16e ", i + 1, nodes.at(1), nodes.at(2), materialType, this->giveDelaunayLine(i + 1)->giveRadius() );
+            fprintf(outputStream, "lattice3DDiscrete %d nodes 2 %d %d crossSect 1 mat %d rad %.16e ", i + 1, nodes.at(1), nodes.at(2), materialType, this->giveDelaunayLine(i + 1)->giveRadius() );
             fprintf(outputStream, "\n");
 
 
@@ -4350,17 +3457,17 @@ Grid :: give3DPeriodicPoreSMOutput(const std::string& fileName)
 
             //Go through nodes and replace the ones outside with periodic nodes
             for ( int m = 0; m < 2; m++ ) {
-                if ( this->giveDelaunayVertex( nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
-                    location.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->giveLocation();
-                    nodes.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->givePeriodicNode();
+                if ( this->giveDelaunayVertex(nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
+                    location.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->giveLocation();
+                    nodes.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->givePeriodicNode();
                 }
             }
             materialType = 1;
 
             this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
-            fprintf( outputStream, "lattice3DBoundaryDiscrete %d nodes 3 %d %d %d crossSect 1 mat %d rad %.16e ", i + 1, nodes.at(1), nodes.at(2), this->giveNumberOfDelaunayVertices() + 1, materialType, this->giveDelaunayLine(i + 1)->giveRadius() );
-            fprintf( outputStream, " location 2 %d %d", location.at(1), location.at(2) );
+            fprintf(outputStream, "lattice3DBoundaryDiscrete %d nodes 3 %d %d %d crossSect 1 mat %d rad %.16e ", i + 1, nodes.at(1), nodes.at(2), this->giveNumberOfDelaunayVertices() + 1, materialType, this->giveDelaunayLine(i + 1)->giveRadius() );
+            fprintf(outputStream, " location 2 %d %d", location.at(1), location.at(2) );
             fprintf(outputStream, "\n");
         }
     }
@@ -4369,9 +3476,9 @@ Grid :: give3DPeriodicPoreSMOutput(const std::string& fileName)
 
     fprintf(outputStream, "latticeplastic 1 talpha 0. d 0. e %e a1 %e a2 %e beta %e phi %e \n", youngModulus, gammaOne, gammaTwo, this->tanBeta, this->tanPhi);
     fprintf(outputStream, "BoundaryCondition 1 loadTimeFunction 1 prescribedvalue 0.\n");
-    fprintf( outputStream, "NodalLoad 2 loadTimeFunction 2 Components 6 %e 0. 0. 0. 0. 0.\n", this->confinement * specimenDimension.at(3) * specimenDimension.at(2) );
-    fprintf( outputStream, "NodalLoad 3 loadTimeFunction 2 Components 6 0. %e 0. 0. 0. 0.\n", this->confinement * specimenDimension.at(1) * specimenDimension.at(3) );
-    fprintf( outputStream, "NodalLoad 4 loadTimeFunction 2 Components 6 0. 0. %e 0. 0. 0.\n", this->confinement * specimenDimension.at(1) * specimenDimension.at(2) );
+    fprintf(outputStream, "NodalLoad 2 loadTimeFunction 2 Components 6 %e 0. 0. 0. 0. 0.\n", this->confinement * specimenDimension.at(3) * specimenDimension.at(2) );
+    fprintf(outputStream, "NodalLoad 3 loadTimeFunction 2 Components 6 0. %e 0. 0. 0. 0.\n", this->confinement * specimenDimension.at(1) * specimenDimension.at(3) );
+    fprintf(outputStream, "NodalLoad 4 loadTimeFunction 2 Components 6 0. 0. %e 0. 0. 0.\n", this->confinement * specimenDimension.at(1) * specimenDimension.at(2) );
 
     fprintf(outputStream, "ConstantFunction 1 f(t) 1.\n");
     fprintf(outputStream, "PiecewiseLinFunction 2 nPoints 4 t 4  -1. 0.1 0.2 200. f(t) 4 1. 1. 0. 0.\n");
@@ -4391,24 +3498,12 @@ Grid :: give3DPeriodicPoreSMOutput(const std::string& fileName)
 
 
 void
-Grid :: give3DBentoniteSMOutput(const std::string& fileName)
+Grid::give3DBentoniteSMOutput(const std::string &fileName)
 {
     //Output for 3D Bentonite modelling
 
-    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
+    FILE *outputStream = converter::fopen_or_die(fileName, "w");
 
-    /* const std::string fileName1 = fileName + ".sm"; */
-    /* FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w"); */
-    
-    /* const std::string fileName2 = fileName + ".tm"; */
-    /* FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
-
-
-  
-    /* FILE *outputStream; */
-    /* if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
-    /*     converter::errorf("Cannot open output file %s", fileName); */
-    /* } */
 
     oofem::FloatArray boundaries(3);
     this->giveRegion(1)->defineBoundaries(boundaries);
@@ -4442,7 +3537,7 @@ Grid :: give3DBentoniteSMOutput(const std::string& fileName)
     fprintf(outputStream, "oofem.out\n");
     fprintf(outputStream, "Mechanical part of 3D bentonite model subjected to confinement\n");
     fprintf(outputStream, "NonLinearStatic nmsteps 1 nsteps 1 contextOutputStep 1000 nmodules 2 profileopt 1 lstype 3 smtype 7\n");
-    fprintf(outputStream, "nsteps 200 rtolv 1.e-3 reqIterations 100 stiffMode 2 manrmsteps 10 maxiter 200 controllmode 0 stepLength 5.e-8 minsteplength 5.e-8 maxrestarts 0 hpcmode 2 hpc 2 %d 2 hpcw 1 -1. lstype 3 smtype 7\n", this->giveNumberOfDelaunayVertices()+1);
+    fprintf(outputStream, "nsteps 200 rtolv 1.e-3 reqIterations 100 stiffMode 2 manrmsteps 10 maxiter 200 controllmode 0 stepLength 5.e-8 minsteplength 5.e-8 maxrestarts 0 hpcmode 2 hpc 2 %d 2 hpcw 1 -1. lstype 3 smtype 7\n", this->giveNumberOfDelaunayVertices() + 1);
     fprintf(outputStream, "vtkxml primvars 1 1 tstep_all domain_all\n");
     fprintf(outputStream, "gpexportmodule vars 1 27 tstep_all domain_all\n");
     fprintf(outputStream, "domain 3dLattice\n");
@@ -4455,15 +3550,15 @@ Grid :: give3DBentoniteSMOutput(const std::string& fileName)
             this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
             if ( firstFlag == 0 ) {
                 firstFlag = 1;
-                fprintf( outputStream, "node %d coords 3 %e %e %e bc 6 1 1 1 1 1 1\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+                fprintf(outputStream, "node %d coords 3 %e %e %e bc 6 1 1 1 1 1 1\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
             } else {
-                fprintf( outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+                fprintf(outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
             }
         }
     }
 
     //Periodic control node
-    fprintf( outputStream, "node %d coords 3 %e %e %e load 1 2 bc 6 1 0 1 0 0 0\n", this->giveNumberOfDelaunayVertices() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
+    fprintf(outputStream, "node %d coords 3 %e %e %e load 1 2 bc 6 1 0 1 0 0 0\n", this->giveNumberOfDelaunayVertices() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
 
     for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
         if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 0 ) { //Elements are inside
@@ -4471,35 +3566,34 @@ Grid :: give3DBentoniteSMOutput(const std::string& fileName)
             materialType = 1;
             this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
-            fprintf( outputStream, "lattice3D %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
+            fprintf(outputStream, "lattice3D %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
 
             for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                this->giveVoronoiVertex( crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-                fprintf( outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
+                this->giveVoronoiVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
+                fprintf(outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
             }
 
-           fprintf(outputStream, "\n");
-
+            fprintf(outputStream, "\n");
         } else if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 2 ) {      //Element crosses the boundary
             location.zero();
             this->giveDelaunayLine(i + 1)->giveLocalVertices(nodes);
             //Go through nodes and replace the ones outside with periodic nodes
             for ( int m = 0; m < 2; m++ ) {
-                if ( this->giveDelaunayVertex( nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
-                    location.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->giveLocation();
-                    nodes.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->givePeriodicNode();
+                if ( this->giveDelaunayVertex(nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
+                    location.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->giveLocation();
+                    nodes.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->givePeriodicNode();
                 }
             }
             materialType = 1;
             this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
-            fprintf( outputStream, "lattice3Dboundary %d nodes 3 %d %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), this->giveNumberOfDelaunayVertices() + 1, materialType, 3 * crossSectionNodes.giveSize() );
+            fprintf(outputStream, "lattice3Dboundary %d nodes 3 %d %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), this->giveNumberOfDelaunayVertices() + 1, materialType, 3 * crossSectionNodes.giveSize() );
 
             for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                this->giveVoronoiVertex( crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-                fprintf( outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
+                this->giveVoronoiVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
+                fprintf(outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
             }
-            fprintf( outputStream, " location 2 %d %d", location.at(1), location.at(2) );
+            fprintf(outputStream, " location 2 %d %d", location.at(1), location.at(2) );
 
             fprintf(outputStream, "\n");
         }
@@ -4521,36 +3615,14 @@ Grid :: give3DBentoniteSMOutput(const std::string& fileName)
 
 
 void
-Grid :: give3DBentoniteTMOutput(const std::string& fileName)
+Grid::give3DBentoniteTMOutput(const std::string &fileName)
 {
     //Template for irregular periodic mechanical models. Do not change for applications
 
-    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
-
-    /* const std::string fileName1 = fileName + ".sm"; */
-    /* FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w"); */
-    
-    /* const std::string fileName2 = fileName + ".tm"; */
-    /* FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
-
-
-  
-    /* FILE *outputStream; */
-    /* if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
-    /*     converter::errorf("Cannot open output file %s", fileName); */
-    /* } */
+    FILE *outputStream = converter::fopen_or_die(fileName, "w");
 
     const std::string fileName1 = fileName + "_Lengths.dat";
     FILE *outputStreamLengths = converter::fopen_or_die(fileName1, "w");
-    
-    
-    /* FILE *outputStreamLengths; */
-    /* char fileName1 [ MAX_FILENAME_LENGTH + 10 ]; */
-    /* strcpy(fileName1, fileName); */
-    /* strcat(fileName1, "_Lengths.dat"); */
-    /* if ( ( outputStreamLengths = fopen(fileName1, "w") ) == NULL ) { */
-    /*     converter::errorf("Cannot open output file %s", fileName1); */
-    /* } */
 
     oofem::FloatArray boundaries(3);
     this->giveRegion(1)->defineBoundaries(boundaries);
@@ -4585,7 +3657,7 @@ Grid :: give3DBentoniteTMOutput(const std::string& fileName)
         if ( this->giveVoronoiLine(i + 1)->giveOutsideFlag() == 3 ) {
             this->giveVoronoiLine(i + 1)->giveLocalVertices(helpNodes);
             for ( int m = 0; m < 2; m++ ) {
-                giveVoronoiVertex( helpNodes.at(m + 1) )->giveCoordinates(helpCoords);
+                giveVoronoiVertex(helpNodes.at(m + 1) )->giveCoordinates(helpCoords);
                 locationArray.at(m + 1) = this->giveRegion(1)->giveSwitches(switches, helpCoords);
             }
         }
@@ -4616,8 +3688,8 @@ Grid :: give3DBentoniteTMOutput(const std::string& fileName)
 
     double gaussianPoreMean, gaussianPoreSTD, gaussianPoreCOV;
 
-    gaussianPoreMean = log( this->poreMean / sqrt( 1 + pow(this->poreCOV, 2) ) );
-    gaussianPoreSTD = sqrt( log( 1 + pow(this->poreCOV, 2) ) );
+    gaussianPoreMean = log(this->poreMean / sqrt(1 + pow(this->poreCOV, 2) ) );
+    gaussianPoreSTD = sqrt(log(1 + pow(this->poreCOV, 2) ) );
     gaussianPoreCOV = gaussianPoreSTD / gaussianPoreMean;
 
 
@@ -4645,8 +3717,8 @@ Grid :: give3DBentoniteTMOutput(const std::string& fileName)
 
     double gaussianThroatMean, gaussianThroatSTD, gaussianThroatCOV;
 
-    gaussianThroatMean = log( this->throatMean / sqrt( 1 + pow(this->throatCOV, 2) ) );
-    gaussianThroatSTD = sqrt( log( 1 + pow(this->throatCOV, 2) ) );
+    gaussianThroatMean = log(this->throatMean / sqrt(1 + pow(this->throatCOV, 2) ) );
+    gaussianThroatSTD = sqrt(log(1 + pow(this->throatCOV, 2) ) );
     gaussianThroatCOV = gaussianThroatSTD / gaussianThroatMean;
 
 
@@ -4694,7 +3766,7 @@ Grid :: give3DBentoniteTMOutput(const std::string& fileName)
     for ( int i = 0; i < this->giveNumberOfVoronoiVertices(); i++ ) {
         if ( this->giveVoronoiVertex(i + 1)->giveOutsideFlag() == 0 ) {
             counter++;
-            this->giveVoronoiVertex(i + 1)->setRadius( voronoiVertexRadius.at(counter) );
+            this->giveVoronoiVertex(i + 1)->setRadius(voronoiVertexRadius.at(counter) );
         }
     }
 
@@ -4710,7 +3782,7 @@ Grid :: give3DBentoniteTMOutput(const std::string& fileName)
         if ( this->giveVoronoiLine(i + 1)->giveOutsideFlag() == 3 ) {
             this->giveVoronoiLine(i + 1)->giveLocalVertices(helpNodes);
             for ( int m = 0; m < 2; m++ ) {
-                giveVoronoiVertex( helpNodes.at(m + 1) )->giveCoordinates(helpCoords);
+                giveVoronoiVertex(helpNodes.at(m + 1) )->giveCoordinates(helpCoords);
                 locationArray.at(m + 1) = this->giveRegion(1)->giveSwitches(switches, helpCoords);
             }
         }
@@ -4721,10 +3793,10 @@ Grid :: give3DBentoniteTMOutput(const std::string& fileName)
             this->giveVoronoiLine(i + 1)->giveLocalVertices(nodes);
             for ( int m = 0; m < 2; m++ ) {
                 //new
-                if ( this->giveVoronoiVertex( nodes.at(m + 1) )->giveOutsideFlag() == 2 ) {
-                    nodes.at(m + 1) = this->giveVoronoiVertex( nodes.at(m + 1) )->givePeriodicNode();
+                if ( this->giveVoronoiVertex(nodes.at(m + 1) )->giveOutsideFlag() == 2 ) {
+                    nodes.at(m + 1) = this->giveVoronoiVertex(nodes.at(m + 1) )->givePeriodicNode();
                 }
-                radius = this->giveVoronoiVertex( nodes.at(m + 1) )->giveRadius();
+                radius = this->giveVoronoiVertex(nodes.at(m + 1) )->giveRadius();
                 if ( radius < minRadius.at(counter) ) {
                     minRadius.at(counter) = radius;
                 }
@@ -4740,11 +3812,11 @@ Grid :: give3DBentoniteTMOutput(const std::string& fileName)
                 this->giveVoronoiLine(i + 1)->giveLocalVertices(nodes);
                 //Go through nodes and replace the ones outside with periodic nodes
                 for ( int m = 0; m < 2; m++ ) {
-                    if ( this->giveVoronoiVertex( nodes.at(m + 1) )->giveOutsideFlag() == 1 || this->giveVoronoiVertex( nodes.at(m + 1) )->giveOutsideFlag() == 2 ) {
-                        location.at(m + 1) = this->giveVoronoiVertex( nodes.at(m + 1) )->giveLocation();
-                        nodes.at(m + 1) = this->giveVoronoiVertex( nodes.at(m + 1) )->givePeriodicNode();
+                    if ( this->giveVoronoiVertex(nodes.at(m + 1) )->giveOutsideFlag() == 1 || this->giveVoronoiVertex(nodes.at(m + 1) )->giveOutsideFlag() == 2 ) {
+                        location.at(m + 1) = this->giveVoronoiVertex(nodes.at(m + 1) )->giveLocation();
+                        nodes.at(m + 1) = this->giveVoronoiVertex(nodes.at(m + 1) )->givePeriodicNode();
                     }
-                    radius = this->giveVoronoiVertex( nodes.at(m + 1) )->giveRadius();
+                    radius = this->giveVoronoiVertex(nodes.at(m + 1) )->giveRadius();
                     if ( radius < minRadius.at(counter) ) {
                         minRadius.at(counter) = radius;
                     }
@@ -4768,16 +3840,16 @@ Grid :: give3DBentoniteTMOutput(const std::string& fileName)
     for ( int i = 0; i < this->giveNumberOfVoronoiLines(); i++ ) {
         if ( this->giveVoronoiLine(i + 1)->giveOutsideFlag() == 0 ) {
             counter++;
-            helpRadius = sortedVoronoiLineRadius.at( rankVector.at(counter) );
+            helpRadius = sortedVoronoiLineRadius.at(rankVector.at(counter) );
             this->giveVoronoiLine(i + 1)->setRadius(helpRadius);
         } else if ( this->giveVoronoiLine(i + 1)->giveOutsideFlag() == 2 || this->giveVoronoiLine(i + 1)->giveOutsideFlag() == 3 ) {
             //Here only the periodic lines that have been used for generating the rank vector are allowed to pass.
             if ( this->giveVoronoiLine(i + 1)->givePeriodicElement() > i + 1 ) {
                 counter++;
-                helpRadius = sortedVoronoiLineRadius.at( rankVector.at(counter) );
+                helpRadius = sortedVoronoiLineRadius.at(rankVector.at(counter) );
                 this->giveVoronoiLine(i + 1)->setRadius(helpRadius);
                 //Assign an equal diameter value to the periodic friend.
-                this->giveVoronoiLine( this->giveVoronoiLine(i + 1)->givePeriodicElement() )->setRadius(helpRadius);
+                this->giveVoronoiLine(this->giveVoronoiLine(i + 1)->givePeriodicElement() )->setRadius(helpRadius);
             }
         }
     }
@@ -4797,16 +3869,16 @@ Grid :: give3DBentoniteTMOutput(const std::string& fileName)
             if ( firstFlag == 0 ) {
                 firstFlag = 1;
                 counter++;
-                fprintf( outputStream, "pore %d coords 3 %e %e %e bc 1 1 rad %.16e\n", i + 1, coords.at(1), coords.at(2), coords.at(3), voronoiVertexRadius.at(counter) );
+                fprintf(outputStream, "pore %d coords 3 %e %e %e bc 1 1 rad %.16e\n", i + 1, coords.at(1), coords.at(2), coords.at(3), voronoiVertexRadius.at(counter) );
             } else {
                 counter++;
-                fprintf( outputStream, "pore %d coords 3 %e %e %e rad %.16e\n", i + 1, coords.at(1), coords.at(2), coords.at(3), voronoiVertexRadius.at(counter) );
+                fprintf(outputStream, "pore %d coords 3 %e %e %e rad %.16e\n", i + 1, coords.at(1), coords.at(2), coords.at(3), voronoiVertexRadius.at(counter) );
             }
         }
     }
 
     //Periodic control node
-    fprintf( outputStream, "node %d coords 3 %e %e %e ndofs 3 dofIDmask 3 1 2 3 bc 3 2 3 4\n", this->giveNumberOfVoronoiVertices() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
+    fprintf(outputStream, "node %d coords 3 %e %e %e ndofs 3 dofIDmask 3 1 2 3 bc 3 2 3 4\n", this->giveNumberOfVoronoiVertices() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
 
 
     for ( int i = 0; i < this->giveNumberOfVoronoiLines(); i++ ) {
@@ -4814,23 +3886,23 @@ Grid :: give3DBentoniteTMOutput(const std::string& fileName)
             this->giveVoronoiLine(i + 1)->giveLocalVertices(nodes);
             materialType = 1;
             this->giveVoronoiLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
-            fprintf( outputStream, "latticemt3D_Discrete %d nodes 2 %d %d crossSect 1 mat %d rad %.16e ", i + 1, nodes.at(1), nodes.at(2), materialType, this->giveVoronoiLine(i + 1)->giveRadius() );
+            fprintf(outputStream, "latticemt3D_Discrete %d nodes 2 %d %d crossSect 1 mat %d rad %.16e ", i + 1, nodes.at(1), nodes.at(2), materialType, this->giveVoronoiLine(i + 1)->giveRadius() );
             fprintf(outputStream, "\n");
         } else if ( this->giveVoronoiLine(i + 1)->giveOutsideFlag() == 2 ) {      //Element crosses the boundary
             location.zero();
             this->giveVoronoiLine(i + 1)->giveLocalVertices(nodes);
             //Go through nodes and replace the ones outside with periodic nodes
             for ( int m = 0; m < 2; m++ ) {
-                if ( this->giveVoronoiVertex( nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
-                    location.at(m + 1) = this->giveVoronoiVertex( nodes.at(m + 1) )->giveLocation();
-                    nodes.at(m + 1) = this->giveVoronoiVertex( nodes.at(m + 1) )->givePeriodicNode();
+                if ( this->giveVoronoiVertex(nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
+                    location.at(m + 1) = this->giveVoronoiVertex(nodes.at(m + 1) )->giveLocation();
+                    nodes.at(m + 1) = this->giveVoronoiVertex(nodes.at(m + 1) )->givePeriodicNode();
                 }
             }
             materialType = 1;
             this->giveVoronoiLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
-            fprintf( outputStream, "latticemt3Dboundary_Discrete %d nodes 3 %d %d %d crossSect 1 mat %d rad %.16e ", i + 1, nodes.at(1), nodes.at(2), this->giveNumberOfVoronoiVertices() + 1, materialType, this->giveVoronoiLine(i + 1)->giveRadius() );
-            fprintf( outputStream, " location 2 %d %d", location.at(1), location.at(2) );
+            fprintf(outputStream, "latticemt3Dboundary_Discrete %d nodes 3 %d %d %d crossSect 1 mat %d rad %.16e ", i + 1, nodes.at(1), nodes.at(2), this->giveNumberOfVoronoiVertices() + 1, materialType, this->giveVoronoiLine(i + 1)->giveRadius() );
+            fprintf(outputStream, " location 2 %d %d", location.at(1), location.at(2) );
             fprintf(outputStream, "\n");
         }
     }
@@ -4841,9 +3913,9 @@ Grid :: give3DBentoniteTMOutput(const std::string& fileName)
     fprintf(outputStream, "simplecs 1\n");
     fprintf(outputStream, "latticelammat 1 d 1000. vis 0.001002 rate %e poremean %e pipemin 0.01e-9 poremin 0.1e-9\n", this->deltarad, this->poreMean);
     fprintf(outputStream, "BoundaryCondition 1 loadTimeFunction 2 prescribedvalue 1.\n");
-    fprintf(outputStream, "BoundaryCondition 2 loadTimeFunction 1 prescribedvalue %e\n",specimenDimension.at(1));
-    fprintf(outputStream, "BoundaryCondition 3 loadTimeFunction 1 prescribedvalue %e\n",specimenDimension.at(2));
-    fprintf(outputStream, "BoundaryCondition 4 loadTimeFunction 1 prescribedvalue %e\n",specimenDimension.at(3));
+    fprintf(outputStream, "BoundaryCondition 2 loadTimeFunction 1 prescribedvalue %e\n", specimenDimension.at(1) );
+    fprintf(outputStream, "BoundaryCondition 3 loadTimeFunction 1 prescribedvalue %e\n", specimenDimension.at(2) );
+    fprintf(outputStream, "BoundaryCondition 4 loadTimeFunction 1 prescribedvalue %e\n", specimenDimension.at(3) );
     fprintf(outputStream, "ConstantFunction 1 f(t) 1.\n");
     fprintf(outputStream, "PiecewiseLinFunction 2 datafile \"time.in\"\n");
     fprintf(outputStream, "#%%BEGIN_CHECK%%\n");
@@ -4857,23 +3929,9 @@ Grid :: give3DBentoniteTMOutput(const std::string& fileName)
 
 
 void
-Grid :: give3DCantileverTMOutput(const std::string& fileName)
+Grid::give3DCantileverTMOutput(const std::string &fileName)
 {
-
-    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
-
-  /*   const std::string fileName1 = fileName + ".sm"; */
-  /*   FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w"); */
-    
-  /*   const std::string fileName2 = fileName + ".tm"; */
-  /*   FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
-
-
-
-  /* FILE *outputStream; */
-  /*   if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
-  /*       converter::errorf("Cannot open output file %s", fileName); */
-  /*   } */
+    FILE *outputStream = converter::fopen_or_die(fileName, "w");
 
     oofem::FloatArray boundaries(3);
     this->giveRegion(1)->defineBoundaries(boundaries);
@@ -4895,7 +3953,7 @@ Grid :: give3DCantileverTMOutput(const std::string& fileName)
     numberOfLines = 0;
     for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
         if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 3 ) {
-	  this->giveRegion(1)->modifyVoronoiCrossSection(i + 1);
+            this->giveRegion(1)->modifyVoronoiCrossSection(i + 1);
         }
     }
 
@@ -4907,7 +3965,7 @@ Grid :: give3DCantileverTMOutput(const std::string& fileName)
     for ( int i = 0; i < this->giveNumberOfVoronoiLines(); i++ ) {
         if ( this->giveVoronoiLine(i + 1)->giveOutsideFlag() == 0 ) {
             for ( int n = 0; n < 2; n++ ) {
-                this->giveVoronoiVertex( this->giveVoronoiLine(i + 1)->giveLocalVertex(n + 1) )->setPrintFlag(1);
+                this->giveVoronoiVertex(this->giveVoronoiLine(i + 1)->giveLocalVertex(n + 1) )->setPrintFlag(1);
             }
             numberOfLines++;
             orderDelaunayCrossSectionVertices(i + 1);
@@ -4935,9 +3993,9 @@ Grid :: give3DCantileverTMOutput(const std::string& fileName)
         if ( this->giveVoronoiVertex(i + 1)->givePrintFlag() == 1 ) {
             this->giveVoronoiVertex(i + 1)->giveCoordinates(coords);
             nodeCounter++;
-            if ( fabs( coords.at(3) - boundaries.at(5) ) < TOL || fabs( coords.at(3) - boundaries.at(6) ) < TOL ) {
+            if ( fabs(coords.at(3) - boundaries.at(5) ) < TOL || fabs(coords.at(3) - boundaries.at(6) ) < TOL ) {
                 fprintf(outputStream, "node %d coords 3 %e %e %e ic 1 %d bc 1 1\n", i + 1, coords.at(1), coords.at(2), coords.at(3), nodeCounter);
-            } else   {
+            } else {
                 fprintf(outputStream, "node %d coords 3 %e %e %e ic 1 %d\n", i + 1, coords.at(1), coords.at(2), coords.at(3), nodeCounter);
             }
         }
@@ -4948,11 +4006,11 @@ Grid :: give3DCantileverTMOutput(const std::string& fileName)
             this->giveVoronoiLine(i + 1)->giveLocalVertices(nodes);
             this->giveVoronoiLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
-            fprintf( outputStream, "latticemt3D %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
+            fprintf(outputStream, "latticemt3D %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
 
             for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                this->giveDelaunayVertex( crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-                fprintf( outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
+                this->giveDelaunayVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
+                fprintf(outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
             }
             fprintf(outputStream, " mlength 1.e-8");
             fprintf(outputStream, "\n");
@@ -4970,7 +4028,7 @@ Grid :: give3DCantileverTMOutput(const std::string& fileName)
         if ( this->giveVoronoiVertex(i + 1)->givePrintFlag() == 1 ) {
             conditionCounter++;
             this->giveVoronoiVertex(i + 1)->giveCoordinates(coords);
-            initialValue = sin( pi * coords.at(3) / specimenDimension.at(3) );
+            initialValue = sin(pi * coords.at(3) / specimenDimension.at(3) );
             fprintf(outputStream, "InitialCondition %d conditions 1 u %e\n", conditionCounter, initialValue);
         }
     }
@@ -4989,24 +4047,9 @@ Grid :: give3DCantileverTMOutput(const std::string& fileName)
 
 
 void
-Grid :: give3DCantileverTMExtraOutput(const std::string& fileName)
+Grid::give3DCantileverTMExtraOutput(const std::string &fileName)
 {
-
-    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
-
-  /*   const std::string fileName1 = fileName + ".sm"; */
-  /*   FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w"); */
-    
-  /*   const std::string fileName2 = fileName + ".tm"; */
-  /*   FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
-
-
-
-  /* FILE *outputStream; */
-  /*   if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
-  /*       converter::errorf("Cannot open output file %s", fileName); */
-  /*   } */
-
+    FILE *outputStream = converter::fopen_or_die(fileName, "w");
 
     oofem::FloatArray boundaries(3);
     this->giveRegion(1)->defineBoundaries(boundaries);
@@ -5018,7 +4061,7 @@ Grid :: give3DCantileverTMExtraOutput(const std::string& fileName)
 
     for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
         if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 3 ) {
-	  this->giveRegion(1)->modifyVoronoiCrossSection(i + 1);
+            this->giveRegion(1)->modifyVoronoiCrossSection(i + 1);
         }
     }
 
@@ -5040,7 +4083,7 @@ Grid :: give3DCantileverTMExtraOutput(const std::string& fileName)
     for ( int i = 0; i < this->giveNumberOfVoronoiLines(); i++ ) {
         if ( this->giveVoronoiLine(i + 1)->giveOutsideFlag() == 0 ) {
             for ( int n = 0; n < 2; n++ ) {
-                this->giveVoronoiVertex( this->giveVoronoiLine(i + 1)->giveLocalVertex(n + 1) )->setPrintFlag(1);
+                this->giveVoronoiVertex(this->giveVoronoiLine(i + 1)->giveLocalVertex(n + 1) )->setPrintFlag(1);
             }
             numberOfLines++;
             orderDelaunayCrossSectionVertices(i + 1);
@@ -5071,12 +4114,12 @@ Grid :: give3DCantileverTMExtraOutput(const std::string& fileName)
             this->giveVoronoiVertex(i + 1)->giveCoordinates(coords);
             nodeCounter++;
 
-            if ( fabs( coords.at(3) - boundaries.at(5) ) < TOL ) {
-                fprintf( outputStream, "node %d coords 3 %e %e %e bc 1 1\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
-            } else if ( fabs( coords.at(3) - boundaries.at(6) ) < TOL )           {
-                fprintf( outputStream, "node %d coords 3 %e %e %e bc 1 2\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
-            } else   {
-                fprintf( outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+            if ( fabs(coords.at(3) - boundaries.at(5) ) < TOL ) {
+                fprintf(outputStream, "node %d coords 3 %e %e %e bc 1 1\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+            } else if ( fabs(coords.at(3) - boundaries.at(6) ) < TOL ) {
+                fprintf(outputStream, "node %d coords 3 %e %e %e bc 1 2\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+            } else {
+                fprintf(outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
             }
         }
     }
@@ -5087,14 +4130,11 @@ Grid :: give3DCantileverTMExtraOutput(const std::string& fileName)
             this->giveVoronoiLine(i + 1)->giveLocalVertices(nodes);
             this->giveVoronoiLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
-            // if(this->giveVoronoiLine(i + 1)->giveOutsideFlag() == 3){
-            //   fprintf( outputStream, "latticemt3D %d nodes 2 %d %d crossSect 1 mat %d area 1.e-10\n", i + 1, nodes.at(1), nodes.at(2), materialType );
-            // }else{
-            fprintf( outputStream, "latticemt3D %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
+            fprintf(outputStream, "latticemt3D %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
 
             for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                this->giveDelaunayVertex( crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-                fprintf( outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
+                this->giveDelaunayVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
+                fprintf(outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
             }
             fprintf(outputStream, "\n");
             //	}
@@ -5104,14 +4144,6 @@ Grid :: give3DCantileverTMExtraOutput(const std::string& fileName)
     fprintf(outputStream, "simplecs 1\n");
     fprintf(outputStream, "latticetransmat 1 d 1. k 1. vis 1. thetas 1. thetar 0. contype 0 c 0. \n");
 
-    // bcCounter = 0;
-    // for ( int i = 0; i < this->giveNumberOfVoronoiVertices(); i++ ) {
-    //     if (this->giveVoronoiVertex(i + 1)->giveOutsideFlag() == 2) {
-    //    bcCounter++;
-    //    this->giveVoronoiVertex(i + 1)->giveCoordinates(coords);
-    //    fprintf( outputStream, "BoundaryCondition %d  loadTimeFunction 1 prescribedvalue %e\n", bcCounter, coords.at(3) );
-    //     }
-    // }
 
     fprintf(outputStream, "BoundaryCondition 1  loadTimeFunction 1 prescribedvalue 0\n");
     fprintf(outputStream, "BoundaryCondition 2  loadTimeFunction 1 prescribedvalue 1\n");
@@ -5127,24 +4159,11 @@ Grid :: give3DCantileverTMExtraOutput(const std::string& fileName)
 }
 
 void
-Grid :: give3DCantileverSMOutput(const std::string& fileName)
+Grid::give3DCantileverSMOutput(const std::string &fileName)
 {
     //Output for 3D cantilver benchmark for fracture
 
-    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
-
-  /*   const std::string fileName1 = fileName + ".sm"; */
-  /*   FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w"); */
-    
-  /*   const std::string fileName2 = fileName + ".tm"; */
-  /*   FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
-
-
-
-  /* FILE *outputStream; */
-  /*   if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
-  /*       converter::errorf("Cannot open output file %s", fileName); */
-  /*   } */
+    FILE *outputStream = converter::fopen_or_die(fileName, "w");
 
     oofem::FloatArray boundaries(3);
     this->giveRegion(1)->defineBoundaries(boundaries);
@@ -5168,7 +4187,7 @@ Grid :: give3DCantileverSMOutput(const std::string& fileName)
     for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
         if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 3 ) {
             if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 3 ) {
-	      this->giveRegion(1)->modifyVoronoiCrossSection(i + 1);
+                this->giveRegion(1)->modifyVoronoiCrossSection(i + 1);
             }
             numberOfLines++;
         }
@@ -5194,12 +4213,12 @@ Grid :: give3DCantileverSMOutput(const std::string& fileName)
     for ( int i = 0; i < this->giveNumberOfDelaunayVertices(); i++ ) {
         if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 2 ) {
             this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
-            distance = sqrt( pow(supportCoords.at(1) - coords.at(1), 2.) + pow(supportCoords.at(2) - coords.at(2), 2.) + pow(supportCoords.at(3) - coords.at(3), 2.) );
+            distance = sqrt(pow(supportCoords.at(1) - coords.at(1), 2.) + pow(supportCoords.at(2) - coords.at(2), 2.) + pow(supportCoords.at(3) - coords.at(3), 2.) );
             if ( distance < distanceSupport ) {
                 distanceSupport = distance;
                 supportNode = this->giveDelaunayVertex(i + 1)->giveNumber();
             }
-            distance = sqrt( pow(loadCoords.at(1) - coords.at(1), 2.) + pow(loadCoords.at(2) - coords.at(2), 2.) + pow(loadCoords.at(3) - coords.at(3), 2.) );
+            distance = sqrt(pow(loadCoords.at(1) - coords.at(1), 2.) + pow(loadCoords.at(2) - coords.at(2), 2.) + pow(loadCoords.at(3) - coords.at(3), 2.) );
             if ( distance < distanceLoad ) {
                 distanceLoad = distance;
                 loadNode = this->giveDelaunayVertex(i + 1)->giveNumber();
@@ -5225,15 +4244,15 @@ Grid :: give3DCantileverSMOutput(const std::string& fileName)
         if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 2 ) {
             this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
             if ( this->giveDelaunayVertex(i + 1)->giveNumber() == supportNode ) {
-                fprintf( outputStream, "node %d coords 3 %e %e %e bc 6 1 1 1 0 0 0\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
-            } else if ( this->giveDelaunayVertex(i + 1)->giveNumber() == loadNode )      {
-                fprintf( outputStream, "node %d coords 3 %e %e %e load 1 2 bc 6 0 1 1 0 0 0\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
-            } else if ( fabs( coords.at(1) - boundaries.at(1) ) < TOL )           {
+                fprintf(outputStream, "node %d coords 3 %e %e %e bc 6 1 1 1 0 0 0\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+            } else if ( this->giveDelaunayVertex(i + 1)->giveNumber() == loadNode ) {
+                fprintf(outputStream, "node %d coords 3 %e %e %e load 1 2 bc 6 0 1 1 0 0 0\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+            } else if ( fabs(coords.at(1) - boundaries.at(1) ) < TOL ) {
                 fprintf(outputStream, "rigidarmnode %d coords 3 %e %e %e master %d mastermask 6 1 0 0 1 1 1 doftype 6 2 0 0 2 2 2\n", i + 1, coords.at(1), coords.at(2), coords.at(3), supportNode);
-            } else if ( fabs( coords.at(1) - boundaries.at(2) ) < TOL )           {
+            } else if ( fabs(coords.at(1) - boundaries.at(2) ) < TOL ) {
                 fprintf(outputStream, "rigidarmnode %d coords 3 %e %e %e master %d mastermask 6 1 0 0 1 1 1 doftype 6 2 0 0 2 2 2\n", i + 1, coords.at(1), coords.at(2), coords.at(3), loadNode);
-            } else   {
-                fprintf( outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+            } else {
+                fprintf(outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
             }
         }
     }
@@ -5248,8 +4267,8 @@ Grid :: give3DCantileverSMOutput(const std::string& fileName)
             materialType = 1;
 
             //Check  that notch is
-            this->giveDelaunayVertex( nodes.at(1) )->giveCoordinates(coordsOne);
-            this->giveDelaunayVertex( nodes.at(2) )->giveCoordinates(coordsTwo);
+            this->giveDelaunayVertex(nodes.at(1) )->giveCoordinates(coordsOne);
+            this->giveDelaunayVertex(nodes.at(2) )->giveCoordinates(coordsTwo);
 
             //Check if element is attached to support or load node. If yes, set it to be elastic.
             if ( nodes.at(1) == loadNode || nodes.at(2) == loadNode || nodes.at(1) == supportNode || nodes.at(2) == supportNode ) {
@@ -5265,11 +4284,11 @@ Grid :: give3DCantileverSMOutput(const std::string& fileName)
 
             this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
-            fprintf( outputStream, "lattice3D %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
+            fprintf(outputStream, "lattice3D %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
 
             for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                this->giveVoronoiVertex( crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-                fprintf( outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
+                this->giveVoronoiVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
+                fprintf(outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
             }
             fprintf(outputStream, "\n");
         }
@@ -5294,41 +4313,20 @@ Grid :: give3DCantileverSMOutput(const std::string& fileName)
 
 
 void
-Grid :: give3DCantileverSMTMOutput(const std::string& fileName)
+Grid::give3DCantileverSMTMOutput(const std::string &fileName)
 {
     //Output for 3D cantilver benchmark for fracture
 
-    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
+    FILE *outputStream = converter::fopen_or_die(fileName, "w");
 
     const std::string fileName1 = fileName + ".sm";
     FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w");
-    
+
     const std::string fileName2 = fileName + ".tm";
     FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w");
 
 
 
-  /* FILE *outputStream; */
-  /*   if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
-  /*       converter::errorf("Cannot open output file %s", fileName); */
-  /*   } */
-
-
-  /*   FILE *outputStreamSM; */
-  /*   char fileName1 [ MAX_FILENAME_LENGTH + 10 ]; */
-  /*   strcpy(fileName1, fileName); */
-  /*   strcat(fileName1, ".sm"); */
-  /*   if ( ( outputStreamSM = fopen(fileName1, "w") ) == NULL ) { */
-  /*       converter::errorf("Cannot open output file %s", fileName1); */
-  /*   } */
-
-  /*   FILE *outputStreamTM; */
-  /*   char fileName2 [ MAX_FILENAME_LENGTH + 10 ]; */
-  /*   strcpy(fileName2, fileName); */
-  /*   strcat(fileName2, ".tm"); */
-  /*   if ( ( outputStreamTM = fopen(fileName2, "w") ) == NULL ) { */
-  /*       converter::errorf("Cannot open output file %s", fileName2); */
-  /*   } */
 
     oofem::FloatArray boundaries(3);
     this->giveRegion(1)->defineBoundaries(boundaries);
@@ -5374,7 +4372,7 @@ Grid :: give3DCantileverSMTMOutput(const std::string& fileName)
     for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
         if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 3 ) {
             if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 3 ) {
-	      this->giveRegion(1)->modifyVoronoiCrossSection(i + 1);
+                this->giveRegion(1)->modifyVoronoiCrossSection(i + 1);
             }
             numberOfDelaunayLines++;
         }
@@ -5399,13 +4397,13 @@ Grid :: give3DCantileverSMTMOutput(const std::string& fileName)
     for ( int i = 0; i < this->giveNumberOfDelaunayVertices(); i++ ) {
         if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 2 ) {
             this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
-            distance = sqrt( pow(supportCoords.at(1) - coords.at(1), 2.) + pow(supportCoords.at(2) - coords.at(2), 2.) + pow(supportCoords.at(3) - coords.at(3), 2.) );
+            distance = sqrt(pow(supportCoords.at(1) - coords.at(1), 2.) + pow(supportCoords.at(2) - coords.at(2), 2.) + pow(supportCoords.at(3) - coords.at(3), 2.) );
             if ( distance < distanceSupport ) {
                 distanceSupport = distance;
                 supportNode = this->giveDelaunayVertex(i + 1)->giveNumber();
             }
 
-            distance = sqrt( pow(loadCoords.at(1) - coords.at(1), 2.) + pow(loadCoords.at(2) - coords.at(2), 2.) + pow(loadCoords.at(3) - coords.at(3), 2.) );
+            distance = sqrt(pow(loadCoords.at(1) - coords.at(1), 2.) + pow(loadCoords.at(2) - coords.at(2), 2.) + pow(loadCoords.at(3) - coords.at(3), 2.) );
             if ( distance < distanceLoad ) {
                 distanceLoad = distance;
                 loadNode = this->giveDelaunayVertex(i + 1)->giveNumber();
@@ -5433,15 +4431,15 @@ Grid :: give3DCantileverSMTMOutput(const std::string& fileName)
         if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 2 ) {
             this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
             if ( this->giveDelaunayVertex(i + 1)->giveNumber() == supportNode ) {
-                fprintf( outputStreamSM, "node %d coords 3 %e %e %e bc 6 1 1 1 0 0 0\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
-            } else if ( this->giveDelaunayVertex(i + 1)->giveNumber() == loadNode )      {
-                fprintf( outputStreamSM, "node %d coords 3 %e %e %e load 1 2 bc 6 0 1 1 0 0 0\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
-            } else if ( fabs( coords.at(1) - boundaries.at(1) ) < TOL )           {
+                fprintf(outputStreamSM, "node %d coords 3 %e %e %e bc 6 1 1 1 0 0 0\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+            } else if ( this->giveDelaunayVertex(i + 1)->giveNumber() == loadNode ) {
+                fprintf(outputStreamSM, "node %d coords 3 %e %e %e load 1 2 bc 6 0 1 1 0 0 0\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+            } else if ( fabs(coords.at(1) - boundaries.at(1) ) < TOL ) {
                 fprintf(outputStreamSM, "rigidarmnode %d coords 3 %e %e %e master %d mastermask 6 1 0 0 1 1 1 doftype 6 2 0 0 2 2 2\n", i + 1, coords.at(1), coords.at(2), coords.at(3), supportNode);
-            } else if ( fabs( coords.at(1) - boundaries.at(2) ) < TOL )           {
+            } else if ( fabs(coords.at(1) - boundaries.at(2) ) < TOL ) {
                 fprintf(outputStreamSM, "rigidarmnode %d coords 3 %e %e %e master %d mastermask 6 1 0 0 1 1 1 doftype 6 2 0 0 2 2 2\n", i + 1, coords.at(1), coords.at(2), coords.at(3), loadNode);
-            } else   {
-                fprintf( outputStreamSM, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+            } else {
+                fprintf(outputStreamSM, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
             }
         }
     }
@@ -5456,8 +4454,8 @@ Grid :: give3DCantileverSMTMOutput(const std::string& fileName)
             materialType = 1;
 
             //Check  that notch is
-            this->giveDelaunayVertex( nodes.at(1) )->giveCoordinates(coordsOne);
-            this->giveDelaunayVertex( nodes.at(2) )->giveCoordinates(coordsTwo);
+            this->giveDelaunayVertex(nodes.at(1) )->giveCoordinates(coordsOne);
+            this->giveDelaunayVertex(nodes.at(2) )->giveCoordinates(coordsTwo);
 
             //Check if element is attached to support or load node. If yes, set it to be elastic.
             if ( nodes.at(1) == loadNode || nodes.at(2) == loadNode || nodes.at(1) == supportNode || nodes.at(2) == supportNode ) {
@@ -5473,11 +4471,11 @@ Grid :: give3DCantileverSMTMOutput(const std::string& fileName)
 
             this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
-            fprintf( outputStreamSM, "lattice3D %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
+            fprintf(outputStreamSM, "lattice3D %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
 
             for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                this->giveVoronoiVertex( crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-                fprintf( outputStreamSM, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
+                this->giveVoronoiVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
+                fprintf(outputStreamSM, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
             }
             fprintf(outputStreamSM, "\n");
         }
@@ -5514,7 +4512,7 @@ Grid :: give3DCantileverSMTMOutput(const std::string& fileName)
     for ( int i = 0; i < this->giveNumberOfVoronoiLines(); i++ ) {
         if ( this->giveVoronoiLine(i + 1)->giveOutsideFlag() == 0  ) {
             for ( int n = 0; n < 2; n++ ) {
-                this->giveVoronoiVertex( this->giveVoronoiLine(i + 1)->giveLocalVertex(n + 1) )->setPrintFlag(1);
+                this->giveVoronoiVertex(this->giveVoronoiLine(i + 1)->giveLocalVertex(n + 1) )->setPrintFlag(1);
             }
             numberOfDelaunayLines++;
             orderDelaunayCrossSectionVertices(i + 1);
@@ -5541,7 +4539,7 @@ Grid :: give3DCantileverSMTMOutput(const std::string& fileName)
     for ( int i = 0; i < this->giveNumberOfVoronoiVertices(); i++ ) {
         if ( this->giveVoronoiVertex(i + 1)->givePrintFlag() == 1 ) {
             this->giveVoronoiVertex(i + 1)->giveCoordinates(coords);
-            if ( fabs( coords.at(3) - boundaries.at(5) ) < TOL ) {
+            if ( fabs(coords.at(3) - boundaries.at(5) ) < TOL ) {
                 fprintf(outputStreamTM, " %d", i + 1);
             }
         }
@@ -5553,10 +4551,10 @@ Grid :: give3DCantileverSMTMOutput(const std::string& fileName)
         if ( this->giveVoronoiVertex(i + 1)->givePrintFlag() == 1 ) {
             this->giveVoronoiVertex(i + 1)->giveCoordinates(coords);
             nodeCounter++;
-            if ( fabs( coords.at(3) - boundaries.at(5) ) < TOL ) {
-                fprintf( outputStreamTM, "node %d coords 3 %e %e %e ic 1 1 bc 1 1\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
-            } else   {
-                fprintf( outputStreamTM, "node %d coords 3 %e %e %e ic 1 1\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+            if ( fabs(coords.at(3) - boundaries.at(5) ) < TOL ) {
+                fprintf(outputStreamTM, "node %d coords 3 %e %e %e ic 1 1 bc 1 1\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+            } else {
+                fprintf(outputStreamTM, "node %d coords 3 %e %e %e ic 1 1\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
             }
         }
     }
@@ -5566,22 +4564,22 @@ Grid :: give3DCantileverSMTMOutput(const std::string& fileName)
             this->giveVoronoiLine(i + 1)->giveLocalVertices(nodes);
             this->giveVoronoiLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
-            fprintf( outputStreamTM, "latticemt3D %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
+            fprintf(outputStreamTM, "latticemt3D %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
 
             for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                this->giveDelaunayVertex( crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-                fprintf( outputStreamTM, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
+                this->giveDelaunayVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
+                fprintf(outputStreamTM, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
             }
 
             this->giveVoronoiLine(i + 1)->giveCrossSectionElements(crossSectionElements);
             //	    crossSectionElements.printYourself();
-            fprintf( outputStreamTM, " couplingflag 1 couplingnumber %d ", crossSectionElements.giveSize() );
+            fprintf(outputStreamTM, " couplingflag 1 couplingnumber %d ", crossSectionElements.giveSize() );
             for ( int m = 0; m < crossSectionElements.giveSize(); m++ ) {
-                if ( !( this->giveDelaunayLine( crossSectionElements.at(m + 1) )->giveOutsideFlag() == 0 || this->giveDelaunayLine( crossSectionElements.at(m + 1) )->giveOutsideFlag() == 3 ) ) {
+                if ( !( this->giveDelaunayLine(crossSectionElements.at(m + 1) )->giveOutsideFlag() == 0 || this->giveDelaunayLine(crossSectionElements.at(m + 1) )->giveOutsideFlag() == 3 ) ) {
                     fprintf(outputStreamTM, "-1 ");
                     printf("crosssection element not found\n");
                 } else {
-                    fprintf( outputStreamTM, "%d ", crossSectionElements.at(m + 1) );
+                    fprintf(outputStreamTM, "%d ", crossSectionElements.at(m + 1) );
                 }
             }
             fprintf(outputStreamTM, "mlength 1.e-8");
@@ -5606,23 +4604,11 @@ Grid :: give3DCantileverSMTMOutput(const std::string& fileName)
 
 
 void
-Grid :: give3DFPZOutput(const std::string& fileName)
+Grid::give3DFPZOutput(const std::string &fileName)
 {
     //Output for 3D fracture process zone modelling
 
-    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
-
-    /* const std::string fileName1 = fileName + ".sm"; */
-    /* FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w"); */
-    
-    /* const std::string fileName2 = fileName + ".tm"; */
-    /* FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
-
-  
-    /* FILE *outputStream; */
-    /* if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
-    /*     converter::errorf("Cannot open output file %s", fileName); */
-    /* } */
+    FILE *outputStream = converter::fopen_or_die(fileName, "w");
 
     oofem::FloatArray boundaries(3);
     this->giveRegion(1)->defineBoundaries(boundaries);
@@ -5648,7 +4634,7 @@ Grid :: give3DFPZOutput(const std::string& fileName)
     //Determine the number of Delaunay lines in the domain
     numberOfLines = 0;
     for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
-        if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 2 || this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 3) {
+        if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 2 || this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 3 ) {
             numberOfLines++;
         }
     }
@@ -5669,28 +4655,28 @@ Grid :: give3DFPZOutput(const std::string& fileName)
             this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
             if ( firstFlag == 0 ) {
                 firstFlag = 1;
-                fprintf( outputStream, "node %d coords 3 %e %e %e bc 6 1 1 1 1 1 1\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+                fprintf(outputStream, "node %d coords 3 %e %e %e bc 6 1 1 1 1 1 1\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
             } else {
-                fprintf( outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+                fprintf(outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
             }
         }
     }
 
     //Periodic control node
-    fprintf( outputStream, "node %d coords 3 %e %e %e load 1 2\n", this->giveNumberOfDelaunayVertices() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
+    fprintf(outputStream, "node %d coords 3 %e %e %e load 1 2\n", this->giveNumberOfDelaunayVertices() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
 
     for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
-        if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 0 ||  this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 3) { //Elements are inside
+        if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 0 ||  this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 3 ) { //Elements are inside
             this->giveDelaunayLine(i + 1)->giveLocalVertices(nodes);
             materialType = 1;
-	    this->giveDelaunayLine(i + 1)->updateMaterial(materialType);
+            this->giveDelaunayLine(i + 1)->updateMaterial(materialType);
             this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
-            fprintf( outputStream, "lattice3D %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
+            fprintf(outputStream, "lattice3D %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
 
             for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                this->giveVoronoiVertex( crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-                fprintf( outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
+                this->giveVoronoiVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
+                fprintf(outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
             }
             fprintf(outputStream, "\n");
         } else if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 2 ) {      //Element crosses the boundary
@@ -5698,22 +4684,22 @@ Grid :: give3DFPZOutput(const std::string& fileName)
             this->giveDelaunayLine(i + 1)->giveLocalVertices(nodes);
             //Go through nodes and replace the ones outside with periodic nodes
             for ( int m = 0; m < 2; m++ ) {
-                if ( this->giveDelaunayVertex( nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
-                    location.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->giveLocation();
-                    nodes.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->givePeriodicNode();
+                if ( this->giveDelaunayVertex(nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
+                    location.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->giveLocation();
+                    nodes.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->givePeriodicNode();
                 }
             }
             materialType = 1;
-	    this->giveDelaunayLine(i + 1)->updateMaterial(materialType);
+            this->giveDelaunayLine(i + 1)->updateMaterial(materialType);
             this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
-            fprintf( outputStream, "lattice3Dboundarytruss %d nodes 3 %d %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), this->giveNumberOfDelaunayVertices() + 1, materialType, 3 * crossSectionNodes.giveSize() );
+            fprintf(outputStream, "lattice3Dboundarytruss %d nodes 3 %d %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), this->giveNumberOfDelaunayVertices() + 1, materialType, 3 * crossSectionNodes.giveSize() );
 
             for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                this->giveVoronoiVertex( crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-                fprintf( outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
+                this->giveVoronoiVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
+                fprintf(outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
             }
-            fprintf( outputStream, " location 2 %d %d", location.at(1), location.at(2) );
+            fprintf(outputStream, " location 2 %d %d", location.at(1), location.at(2) );
 
             fprintf(outputStream, "\n");
         }
@@ -5733,29 +4719,13 @@ Grid :: give3DFPZOutput(const std::string& fileName)
 
 
 void
-Grid :: give3DFPZFibreOutput(const std::string& fileName)
+Grid::give3DFPZFibreOutput(const std::string &fileName)
 {
     //Output for 3D fracture process zone modelling
 
-    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
+    FILE *outputStream = converter::fopen_or_die(fileName, "w");
 
-    /* const std::string fileName1 = fileName + ".sm"; */
-    /* FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w"); */
-    
-    /* const std::string fileName2 = fileName + ".tm"; */
-    /* FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
-
-
-
-  
-    /* FILE *outputStream; */
-    /* if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
-    /*     converter::errorf("Cannot open output file %s", fileName); */
-    /* } */
-    
     printf("Starting writing data in output file \n");
-    
-
 
     oofem::FloatArray boundaries(3);
     this->giveRegion(1)->defineBoundaries(boundaries);
@@ -5771,8 +4741,8 @@ Grid :: give3DFPZFibreOutput(const std::string& fileName)
     oofem::IntArray crossSectionNodes;
     oofem::FloatArray coordsOne, coordsTwo, centre, radii;
     double radius, distanceOne, distanceTwo;
-    int isIn1,isIn2; // bool var to know whether endpoints of element qre inside or outide an inclusion
-    double coord_x1,coord_y1,coord_z1,coord_x2,coord_y2,coord_z2;
+    int isIn1, isIn2; // bool var to know whether endpoints of element qre inside or outide an inclusion
+    double coord_x1, coord_y1, coord_z1, coord_x2, coord_y2, coord_z2;
 
     //Determine the number of nodes in the domain
     numberOfNodes = 0;
@@ -5781,13 +4751,12 @@ Grid :: give3DFPZFibreOutput(const std::string& fileName)
             numberOfNodes++;
         }
     }
-    
+
     for ( int i = 0; i < this->giveNumberOfReinforcementNode(); i++ ) {
         if ( this->giveReinforcementNode(i + 1)->giveOutsideFlag() == 0 ) {
             numberOfNodes++;
         }
     }
-
 
     //Determine the number of lines in the domain
     numberOfLines = 0;
@@ -5811,12 +4780,12 @@ Grid :: give3DFPZFibreOutput(const std::string& fileName)
     fprintf(outputStream, "Mechanical 3D periodic cell for fracture\n");
     fprintf(outputStream, "StaticStructural nmsteps 2 nsteps 1 contextOutputStep 1000 nmodules 2 profileopt 1 lstype 4 smtype 8\n");
     fprintf(outputStream, "nsteps 1 rtolv 1.e-3 maxiter 200 stiffmode 1 lstype 4 smtype 8 initialguess 1\n");
-    fprintf(outputStream, "nsteps 200 rtolv 1.e-3 maxiter 200 ddm 2 %d 31 ddv 1 4.0e-4 ddltf 3 stiffmode 1 initialguess 1 lstype 4 smtype 8\n", this->giveNumberOfDelaunayVertices()+this->giveNumberOfReinforcementNode() + 1);
+    fprintf(outputStream, "nsteps 200 rtolv 1.e-3 maxiter 200 ddm 2 %d 31 ddv 1 4.0e-4 ddltf 3 stiffmode 1 initialguess 1 lstype 4 smtype 8\n", this->giveNumberOfDelaunayVertices() + this->giveNumberOfReinforcementNode() + 1);
     fprintf(outputStream, "vtkxmllattice primvars 1 1 cellvars 3 60 90 111 tstep_all domain_all cross 1\n");
     fprintf(outputStream, "gpexportmodule vars 5 59 90 84 85 78 tstep_all domain_all\n");
     fprintf(outputStream, "domain 3dLattice\n");
     fprintf(outputStream, "OutputManager tstep_all dofman_output {%d}\n", this->giveNumberOfDelaunayVertices()
-            +this->giveNumberOfReinforcementNode() + 1); // a verifier
+            + this->giveNumberOfReinforcementNode() + 1); // a verifier
     fprintf(outputStream, "ndofman %d nelem %d ncrosssect 1 nmat 1 nbc 2 nic 0 nltf 4\n", numberOfNodes + 1, numberOfLines);
 
     //Print nodes
@@ -5827,121 +4796,109 @@ Grid :: give3DFPZFibreOutput(const std::string& fileName)
             this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
             if ( firstFlag == 0 ) {
                 firstFlag = 1;
-                fprintf( outputStream, "node %d coords 3 %e %e %e bc 6 1 1 1 1 1 1\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+                fprintf(outputStream, "node %d coords 3 %e %e %e bc 6 1 1 1 1 1 1\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
             } else {
-                fprintf( outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+                fprintf(outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
             }
         }
     }
-    
+
     // Print reinforcement nodes
 
-    for ( int i = 0 ; i < this->giveNumberOfReinforcementNode(); i++ ) {
+    for ( int i = 0; i < this->giveNumberOfReinforcementNode(); i++ ) {
         if ( this->giveReinforcementNode(i + 1)->giveOutsideFlag() == 0 ) {
             this->giveReinforcementNode(i + 1)->giveCoordinates(coords);
-            
-                fprintf( outputStream, "node %d coords 3 %e %e %e\n", i + this->giveNumberOfDelaunayVertices()+ 1, coords.at(1), coords.at(2), coords.at(3) );
-            
+
+            fprintf(outputStream, "node %d coords 3 %e %e %e\n", i + this->giveNumberOfDelaunayVertices() + 1, coords.at(1), coords.at(2), coords.at(3) );
         }
     }
 
-
     //Periodic control node
-    fprintf( outputStream, "node %d coords 3 %e %e %e load 1 2\n", this->giveNumberOfDelaunayVertices() +this->giveNumberOfReinforcementNode()+ 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
-    
+    fprintf(outputStream, "node %d coords 3 %e %e %e load 1 2\n", this->giveNumberOfDelaunayVertices() + this->giveNumberOfReinforcementNode() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
+
     printf("Finished writing data for nodes \n");
 
     //Print Delaunay elements
-    
+
     int global_index(0);//usefull to have a global numerotation of elements
-    
+
     for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
-        
         // take into account of the mesostructure to choose the materials of the element
         if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 2 ) {
             this->giveDelaunayLine(i + 1)->giveLocalVertices(nodes);
-            
+
             //Deal with inclusions
             materialType = 1;
             this->giveDelaunayLine(i + 1)->updateMaterial(1);
-            this->giveDelaunayVertex( nodes.at(1) )->giveCoordinates(coordsOne);
-            this->giveDelaunayVertex( nodes.at(2) )->giveCoordinates(coordsTwo);
-            
+            this->giveDelaunayVertex(nodes.at(1) )->giveCoordinates(coordsOne);
+            this->giveDelaunayVertex(nodes.at(2) )->giveCoordinates(coordsTwo);
+
 
             for ( int m = 0; m < this->giveNumberOfInclusions(); m++ ) {
-                
                 //Distinguish between inclusions
                 if ( !strcmp(this->giveInclusion(m + 1)->giveClassName(), "InterfaceSphere") ) {
                     ( ( InterfaceSphere * ) this->giveInclusion(m + 1) )->giveCentre(centre);
                     radius = ( ( InterfaceSphere * ) this->giveInclusion(m + 1) )->giveRadius() + ( ( InterfaceSphere * ) this->giveInclusion(m + 1) )->giveITZThickness() / 2.;
-                    distanceOne = sqrt( pow(coordsOne.at(1) - centre.at(1), 2.) +
+                    distanceOne = sqrt(pow(coordsOne.at(1) - centre.at(1), 2.) +
                                        pow(coordsOne.at(2) - centre.at(2), 2.) +
                                        pow(coordsOne.at(3) - centre.at(3), 2.) );
-                    distanceTwo = sqrt( pow(coordsTwo.at(1) - centre.at(1), 2.) +
+                    distanceTwo = sqrt(pow(coordsTwo.at(1) - centre.at(1), 2.) +
                                        pow(coordsTwo.at(2) - centre.at(2), 2.) +
                                        pow(coordsTwo.at(3) - centre.at(3), 2.) );
-                    
+
                     if ( distanceOne > radius && distanceTwo > radius ) {
-                        
                         materialType = 1;
                         this->giveDelaunayLine(i + 1)->updateMaterial(1);
-                        
                     } else if ( ( distanceOne > radius && distanceTwo < radius ) || ( distanceOne < radius && distanceTwo > radius ) ) {
-                        
                         materialType = 3;
                         this->giveDelaunayLine(i + 1)->updateMaterial(3);
                         break;
                     } else {
-
                         materialType = 2;
                         this->giveDelaunayLine(i + 1)->updateMaterial(2);
                         break;
                     }
-                }
-                else if ( !strcmp(this->giveInclusion(m + 1)->giveClassName(), "Ellipsoid") )
-                {   ( ( Ellipsoid * ) this->giveInclusion(m + 1) )->giveCentre(centre);
+                } else if ( !strcmp(this->giveInclusion(m + 1)->giveClassName(), "Ellipsoid") )   {
+                    ( ( Ellipsoid * ) this->giveInclusion(m + 1) )->giveCentre(centre);
                     ( ( Ellipsoid * ) this->giveInclusion(m + 1) )->giveRadii(radii);
 
-                    coord_x1=coordsOne.at(1);
-                    coord_y1=coordsOne.at(2);
-                    coord_z1=coordsOne.at(3);
-                    coord_x2=coordsTwo.at(1);
-                    coord_y2=coordsTwo.at(2);
-                    coord_z2=coordsTwo.at(3);
-                    isIn1=(( Ellipsoid * )this->giveInclusion(m + 1))->isInside(coord_x1,coord_y1,coord_z1);
-                    isIn2=( (Ellipsoid * )this->giveInclusion(m + 1))->isInside(coord_x2,coord_y2,coord_z2);
-                    if ( isIn1==0 && isIn2==0) {
-                            
-                            materialType = 1; // matrix : we suppose elements to be small enough
-                            this->giveDelaunayLine(i + 1)->updateMaterial(1);
-                            
-                    } else if ( ( isIn1==0 && isIn2==1)|| ( isIn2==0 && isIn1==1) || (isIn1==2 || isIn2==2)) {
-                            materialType = 3; //ITZ
-                            this->giveDelaunayLine(i + 1)->updateMaterial(3);
-                            
-                            break;
+                    coord_x1 = coordsOne.at(1);
+                    coord_y1 = coordsOne.at(2);
+                    coord_z1 = coordsOne.at(3);
+                    coord_x2 = coordsTwo.at(1);
+                    coord_y2 = coordsTwo.at(2);
+                    coord_z2 = coordsTwo.at(3);
+                    isIn1 = ( ( Ellipsoid * ) this->giveInclusion(m + 1) )->isInside(coord_x1, coord_y1, coord_z1);
+                    isIn2 = ( ( Ellipsoid * ) this->giveInclusion(m + 1) )->isInside(coord_x2, coord_y2, coord_z2);
+                    if ( isIn1 == 0 && isIn2 == 0 ) {
+                        materialType = 1;     // matrix : we suppose elements to be small enough
+                        this->giveDelaunayLine(i + 1)->updateMaterial(1);
+                    } else if ( ( isIn1 == 0 && isIn2 == 1 ) || ( isIn2 == 0 && isIn1 == 1 ) || ( isIn1 == 2 || isIn2 == 2 ) ) {
+                        materialType = 3;     //ITZ
+                        this->giveDelaunayLine(i + 1)->updateMaterial(3);
+
+                        break;
                     } else {
-                            materialType = 2; //aggregate
-                            this->giveDelaunayLine(i + 1)->updateMaterial(2);
-                            break;
+                        materialType = 2;     //aggregate
+                        this->giveDelaunayLine(i + 1)->updateMaterial(2);
+                        break;
                     }
-                    
                 }
             }
         }
 
         if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 0 ) { //Elements are inside
             this->giveDelaunayLine(i + 1)->giveLocalVertices(nodes);
-        //    materialType = 1;
+            //    materialType = 1;
             this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
-            
+
             global_index++;
-            fprintf( outputStream, "lattice3D %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", global_index, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
-            
+            fprintf(outputStream, "lattice3D %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", global_index, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
+
 
             for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                this->giveVoronoiVertex( crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-                fprintf( outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
+                this->giveVoronoiVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
+                fprintf(outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
             }
             fprintf(outputStream, "\n");
         } else if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 2 ) {      //Element crosses the boundary
@@ -5949,124 +4906,116 @@ Grid :: give3DFPZFibreOutput(const std::string& fileName)
             this->giveDelaunayLine(i + 1)->giveLocalVertices(nodes);
             //Go through nodes and replace the ones outside with periodic nodes
             for ( int m = 0; m < 2; m++ ) {
-                if ( this->giveDelaunayVertex( nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
-                    location.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->giveLocation();
-                    nodes.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->givePeriodicNode();
+                if ( this->giveDelaunayVertex(nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
+                    location.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->giveLocation();
+                    nodes.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->givePeriodicNode();
                 }
             }
-          //  materialType = 1;
+            //  materialType = 1;
             this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
-             global_index++;
-            fprintf( outputStream, "lattice3Dboundary %d nodes 3 %d %d %d crossSect 1 mat %d polycoords %d", global_index, nodes.at(1), nodes.at(2), this->giveNumberOfDelaunayVertices() +this->giveNumberOfReinforcementNode()+ 1, materialType, 3 * crossSectionNodes.giveSize() );
-            
+            global_index++;
+            fprintf(outputStream, "lattice3Dboundary %d nodes 3 %d %d %d crossSect 1 mat %d polycoords %d", global_index, nodes.at(1), nodes.at(2), this->giveNumberOfDelaunayVertices() + this->giveNumberOfReinforcementNode() + 1, materialType, 3 * crossSectionNodes.giveSize() );
+
             for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                this->giveVoronoiVertex( crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-                fprintf( outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
+                this->giveVoronoiVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
+                fprintf(outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
             }
-            fprintf( outputStream, " location 2 %d %d", location.at(1), location.at(2) );
+            fprintf(outputStream, " location 2 %d %d", location.at(1), location.at(2) );
 
             fprintf(outputStream, "\n");
         }
     }
-    
-     printf("Finished writing data for delaunay elements \n");
- 
+
+    printf("Finished writing data for delaunay elements \n");
+
     // print latticebeams
-    
-    
+
+
     for ( int i = 0; i < this->giveNumberOfLatticeBeams(); i++ ) {
-        
-        
-            
         if ( this->giveLatticeBeam(i + 1)->giveOutsideFlag() == 0 ) { //Elements are inside
             this->giveLatticeBeam(i + 1)->giveLocalVertices(nodes);
             global_index++;
-            fprintf( outputStream, "latticeBeam3D %d nodes 2 %d %d crossSect 1 mat 4 diameter %e", global_index,
-                    nodes.at(1)+this->giveNumberOfDelaunayVertices(),
-                    nodes.at(2)+this->giveNumberOfDelaunayVertices(),
-                    this->giveLatticeBeam(i + 1)->giveDiameter());
+            fprintf(outputStream, "latticeBeam3D %d nodes 2 %d %d crossSect 1 mat 4 diameter %e", global_index,
+                    nodes.at(1) + this->giveNumberOfDelaunayVertices(),
+                    nodes.at(2) + this->giveNumberOfDelaunayVertices(),
+                    this->giveLatticeBeam(i + 1)->giveDiameter() );
             fprintf(outputStream, "\n");
-            
         } else if ( this->giveLatticeBeam(i + 1)->giveOutsideFlag() == 2 ) {      //Element crosses the boundary
             location.zero();
             this->giveLatticeBeam(i + 1)->giveLocalVertices(nodes);
             //Go through nodes and replace the ones outside with periodic nodes
             for ( int m = 0; m < 2; m++ ) {
-                if ( this->giveReinforcementNode( nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
-                    location.at(m + 1) = this->giveReinforcementNode( nodes.at(m + 1) )->giveLocation();
-                    nodes.at(m + 1) = this->giveReinforcementNode( nodes.at(m + 1) )->givePeriodicNode();
+                if ( this->giveReinforcementNode(nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
+                    location.at(m + 1) = this->giveReinforcementNode(nodes.at(m + 1) )->giveLocation();
+                    nodes.at(m + 1) = this->giveReinforcementNode(nodes.at(m + 1) )->givePeriodicNode();
                 }
             }
 
             global_index++;
-            fprintf( outputStream, "latticeBeam3Dboundary %d nodes 3 %d %d %d crossSect 1 mat 4 diameter %e ", global_index,
-                    nodes.at(1)+this->giveNumberOfDelaunayVertices(),
-                    nodes.at(2)+this->giveNumberOfDelaunayVertices(),
-                    this->giveNumberOfDelaunayVertices() +this->giveNumberOfReinforcementNode()+ 1,
-                    this->giveLatticeBeam(i + 1)->giveDiameter());
-            fprintf( outputStream, " location 2 %d %d", location.at(1), location.at(2) );
+            fprintf(outputStream, "latticeBeam3Dboundary %d nodes 3 %d %d %d crossSect 1 mat 4 diameter %e ", global_index,
+                    nodes.at(1) + this->giveNumberOfDelaunayVertices(),
+                    nodes.at(2) + this->giveNumberOfDelaunayVertices(),
+                    this->giveNumberOfDelaunayVertices() + this->giveNumberOfReinforcementNode() + 1,
+                    this->giveLatticeBeam(i + 1)->giveDiameter() );
+            fprintf(outputStream, " location 2 %d %d", location.at(1), location.at(2) );
             fprintf(outputStream, "\n");
-            
         }
     }
-    
+
     printf("Finished writing data for lattice truss (fibre) \n");
-   
+
     // print latticelinks
-        
+
     for ( int i = 0; i < this->giveNumberOfLatticeLinks(); i++ ) {
-            
         if ( this->giveLatticeLink(i + 1)->giveOutsideFlag() == 0 ) { //Elements are inside
             this->giveLatticeLink(i + 1)->giveLocalVertices(nodes);
             global_index++;
-                fprintf( outputStream, "latticeLink3D %d nodes 2 %d %d crossSect 1 mat 5 length %e diameter %e dirvector 3 %e %e %e L_end %e ",
-                        global_index,
-                    nodes.at(1)+this->giveNumberOfDelaunayVertices(),
+            fprintf(outputStream, "latticeLink3D %d nodes 2 %d %d crossSect 1 mat 5 length %e diameter %e dirvector 3 %e %e %e L_end %e ",
+                    global_index,
+                    nodes.at(1) + this->giveNumberOfDelaunayVertices(),
                     nodes.at(2),
                     this->giveLatticeLink(i + 1)->giveAssociatedLength(),
                     this->giveLatticeLink(i + 1)->giveDiameter(),
-                    (this->giveLatticeLink(i + 1)->giveDirectionVector()).at(1),
-                    (this->giveLatticeLink(i + 1)->giveDirectionVector()).at(2),
-                        (this->giveLatticeLink(i + 1)->giveDirectionVector()).at(3),
-                        this->giveLatticeLink(i + 1)->giveL_end());
+                    ( this->giveLatticeLink(i + 1)->giveDirectionVector() ).at(1),
+                    ( this->giveLatticeLink(i + 1)->giveDirectionVector() ).at(2),
+                    ( this->giveLatticeLink(i + 1)->giveDirectionVector() ).at(3),
+                    this->giveLatticeLink(i + 1)->giveL_end() );
             fprintf(outputStream, "\n");
-            
         } else if ( this->giveLatticeLink(i + 1)->giveOutsideFlag() == 2 ) {      //Element crosses the boundary
             location.zero();
             this->giveLatticeLink(i + 1)->giveLocalVertices(nodes);
             //Go through nodes and replace the ones outside with periodic nodes
-            
-            if ( this->giveReinforcementNode( nodes.at(1) )->giveOutsideFlag() == 1 ) {
-                    location.at(1) = this->giveReinforcementNode( nodes.at( 1) )->giveLocation();
-                    nodes.at( 1) = this->giveReinforcementNode( nodes.at( 1) )->givePeriodicNode();
-                }
-            if ( this->giveDelaunayVertex( nodes.at(2) )->giveOutsideFlag() == 1 ) {
-                location.at(2) = this->giveDelaunayVertex( nodes.at(2) )->giveLocation();
-                nodes.at(2) = this->giveDelaunayVertex( nodes.at(2) )->givePeriodicNode();
+
+            if ( this->giveReinforcementNode(nodes.at(1) )->giveOutsideFlag() == 1 ) {
+                location.at(1) = this->giveReinforcementNode(nodes.at(1) )->giveLocation();
+                nodes.at(1) = this->giveReinforcementNode(nodes.at(1) )->givePeriodicNode();
+            }
+            if ( this->giveDelaunayVertex(nodes.at(2) )->giveOutsideFlag() == 1 ) {
+                location.at(2) = this->giveDelaunayVertex(nodes.at(2) )->giveLocation();
+                nodes.at(2) = this->giveDelaunayVertex(nodes.at(2) )->givePeriodicNode();
             }
 
-            
+
             global_index++;
-            fprintf( outputStream, "latticeLink3Dboundary %d nodes 3 %d %d %d crossSect 1 mat 5 length %e  diameter %e dirvector 3 %e %e %e L_end %e", global_index,
-                    nodes.at(1)+this->giveNumberOfDelaunayVertices(),
+            fprintf(outputStream, "latticeLink3Dboundary %d nodes 3 %d %d %d crossSect 1 mat 5 length %e  diameter %e dirvector 3 %e %e %e L_end %e", global_index,
+                    nodes.at(1) + this->giveNumberOfDelaunayVertices(),
                     nodes.at(2),
-                    this->giveNumberOfDelaunayVertices() +this->giveNumberOfReinforcementNode()+ 1,
+                    this->giveNumberOfDelaunayVertices() + this->giveNumberOfReinforcementNode() + 1,
                     this->giveLatticeLink(i + 1)->giveAssociatedLength(),
                     this->giveLatticeLink(i + 1)->giveDiameter(),
                     this->giveLatticeLink(i + 1)->giveDirectionVector().at(1),
                     this->giveLatticeLink(i + 1)->giveDirectionVector().at(2),
                     this->giveLatticeLink(i + 1)->giveDirectionVector().at(3),
-                    this->giveLatticeLink(i + 1)->giveL_end());
-            
-            fprintf( outputStream, " location 2 %d %d", location.at(1), location.at(2) );
+                    this->giveLatticeLink(i + 1)->giveL_end() );
+
+            fprintf(outputStream, " location 2 %d %d", location.at(1), location.at(2) );
             fprintf(outputStream, "\n");
         }
-        
     }
 
     printf("Finished writing data for lattice links (fibre) \n");
 
-    
+
     fprintf(outputStream, "latticecs 1 material 1\n");
 
     fprintf(outputStream, "latticeplastdam 1 d 0 talpha 0. calpha 0. e 50.46e9 a1 0.215 ft 1.92e6 fc 30.e6 wf 25.e-6 ahard 1.e-3 angle1 0.5 flow 0.25 randvars 2 806 807 randgen 2 4 4\n");
@@ -6077,37 +5026,24 @@ Grid :: give3DFPZFibreOutput(const std::string& fileName)
     fprintf(outputStream, "PiecewiseLinFunction 3 nPoints 4 t 4  0. 1.1 1.2 201. f(t) 4 0. 0. 0. 1.\n");
     fprintf(outputStream, "InterpolatingFunction 4 name random.dat dim 3\n");
     fprintf(outputStream, "#%%BEGIN_CHECK%%\n");
-    fprintf(outputStream, "#NODE number %d dof 31 unknown d\n", this->giveNumberOfDelaunayVertices() + this->giveNumberOfReinforcementNode()+ 1); // a verifier
+    fprintf(outputStream, "#NODE number %d dof 31 unknown d\n", this->giveNumberOfDelaunayVertices() + this->giveNumberOfReinforcementNode() + 1); // a verifier
     fprintf(outputStream, "##TIME\n");
     fprintf(outputStream, "#%%END_CHECK%%\n");
     return;
-    
 }
 
 
 
 void
-Grid :: give3DFibreBenchmarkOutput(const std::string& fileName)
+Grid::give3DFibreBenchmarkOutput(const std::string &fileName)
 {
     //Output for 3D fracture process zone modelling
 
-    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
-
-  /*   const std::string fileName1 = fileName + ".sm"; */
-  /*   FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w"); */
-    
-  /*   const std::string fileName2 = fileName + ".tm"; */
-  /*   FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
+    FILE *outputStream = converter::fopen_or_die(fileName, "w");
 
 
-
-  /* FILE *outputStream; */
-  /*   if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
-  /*       converter::errorf("Cannot open output file %s", fileName); */
-  /*   } */
-    
     printf("Starting writing data in output file \n");
-    
+
     oofem::FloatArray boundaries(3);
     this->giveRegion(1)->defineBoundaries(boundaries);
     oofem::FloatArray specimenDimension(3);
@@ -6122,8 +5058,8 @@ Grid :: give3DFibreBenchmarkOutput(const std::string& fileName)
     oofem::IntArray crossSectionNodes;
     oofem::FloatArray coordsOne, coordsTwo, centre, radii;
     double radius, distanceOne, distanceTwo;
-    int isIn1,isIn2; // bool var to know whether endpoints of element qre inside or outide an inclusion
-    double coord_x1,coord_y1,coord_z1,coord_x2,coord_y2,coord_z2;
+    int isIn1, isIn2; // bool var to know whether endpoints of element qre inside or outide an inclusion
+    double coord_x1, coord_y1, coord_z1, coord_x2, coord_y2, coord_z2;
 
     //Determine the number of nodes in the domain
     numberOfNodes = 0;
@@ -6132,7 +5068,7 @@ Grid :: give3DFibreBenchmarkOutput(const std::string& fileName)
             numberOfNodes++;
         }
     }
-    
+
     for ( int i = 0; i < this->giveNumberOfReinforcementNode(); i++ ) {
         if ( this->giveReinforcementNode(i + 1)->giveOutsideFlag() == 0 ) {
             numberOfNodes++;
@@ -6161,13 +5097,13 @@ Grid :: give3DFibreBenchmarkOutput(const std::string& fileName)
     fprintf(outputStream, "oofem.out\n");
     fprintf(outputStream, "Mechanical 3D model for fibres and ellipsoide\n");
     fprintf(outputStream, "NonLinearStatic nmsteps 2 nsteps 1 contextOutputStep 1 nmodules 2 profileopt 1\n");
-    fprintf(outputStream, "nsteps 2 rtolv 1.e-3 reqIterations 100 stiffMode 1 manrmsteps 10 maxiter 200 controllmode 0 stepLength 1.e-6 minsteplength 1.e-6 maxrestarts 0 hpcmode 2 hpc 2 %d 2 hpcw 1 1. donotfixload\n", this->giveNumberOfDelaunayVertices()+this->giveNumberOfReinforcementNode() + 1); // a verifier
-        fprintf(outputStream, "nsteps 100 rtolv 1.e-3 reqIterations 100 stiffMode 1 manrmsteps 10 maxiter 200 controllmode 0 stepLength 1.e-6 minsteplength 1.e-6 maxrestarts 0 hpcmode 2 hpc 2 %d 2 hpcw 1 1. donotfixload\n", this->giveNumberOfDelaunayVertices()+this->giveNumberOfReinforcementNode() + 1); // a verifier
+    fprintf(outputStream, "nsteps 2 rtolv 1.e-3 reqIterations 100 stiffMode 1 manrmsteps 10 maxiter 200 controllmode 0 stepLength 1.e-6 minsteplength 1.e-6 maxrestarts 0 hpcmode 2 hpc 2 %d 2 hpcw 1 1. donotfixload\n", this->giveNumberOfDelaunayVertices() + this->giveNumberOfReinforcementNode() + 1); // a verifier
+    fprintf(outputStream, "nsteps 100 rtolv 1.e-3 reqIterations 100 stiffMode 1 manrmsteps 10 maxiter 200 controllmode 0 stepLength 1.e-6 minsteplength 1.e-6 maxrestarts 0 hpcmode 2 hpc 2 %d 2 hpcw 1 1. donotfixload\n", this->giveNumberOfDelaunayVertices() + this->giveNumberOfReinforcementNode() + 1);   // a verifier
     fprintf(outputStream, "vtkxmldiscrete tstep_all domain_all\n");
     fprintf(outputStream, "gpexportmodule vars 5 59 90 84 85 78 tstep_all domain_all\n");
     fprintf(outputStream, "domain 3dLattice\n");
     fprintf(outputStream, "OutputManager tstep_all dofman_output {%d}\n", this->giveNumberOfDelaunayVertices()
-            +this->giveNumberOfReinforcementNode() + 1); // a verifier
+            + this->giveNumberOfReinforcementNode() + 1); // a verifier
     fprintf(outputStream, "ndofman %d nelem %d ncrosssect 1 nmat 4 nbc 2 nic 0 nltf 1\n", numberOfNodes + 1, numberOfLines);
 
     //Print nodes
@@ -6178,66 +5114,64 @@ Grid :: give3DFibreBenchmarkOutput(const std::string& fileName)
             this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
             if ( firstFlag == 0 ) {
                 firstFlag = 1;
-                fprintf( outputStream, "node %d coords 3 %e %e %e bc 6 1 1 1 1 1 1\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+                fprintf(outputStream, "node %d coords 3 %e %e %e bc 6 1 1 1 1 1 1\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
             } else {
-                fprintf( outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+                fprintf(outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
             }
         }
     }
-    
+
     // Print reinforcement nodes
 
-    for ( int i = 0 ; i < this->giveNumberOfReinforcementNode(); i++ ) {
+    for ( int i = 0; i < this->giveNumberOfReinforcementNode(); i++ ) {
         if ( this->giveReinforcementNode(i + 1)->giveOutsideFlag() == 0 ) {
             this->giveReinforcementNode(i + 1)->giveCoordinates(coords);
-            
-                fprintf( outputStream, "node %d coords 3 %e %e %e\n", i + this->giveNumberOfDelaunayVertices()+ 1, coords.at(1), coords.at(2), coords.at(3) );
-            
+
+            fprintf(outputStream, "node %d coords 3 %e %e %e\n", i + this->giveNumberOfDelaunayVertices() + 1, coords.at(1), coords.at(2), coords.at(3) );
         }
     }
 
 
     //Periodic control node
-    fprintf( outputStream, "node %d coords 3 %e %e %e load 1 2\n", this->giveNumberOfDelaunayVertices() +this->giveNumberOfReinforcementNode()+ 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
-    
+    fprintf(outputStream, "node %d coords 3 %e %e %e load 1 2\n", this->giveNumberOfDelaunayVertices() + this->giveNumberOfReinforcementNode() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
+
     printf("Finished writing data for nodes \n");
 
     //Print Delaunay elements
-    
+
     int global_index(0);//usefull to have a global numerotation of elements
-    
+
     for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
-        
         // take into account weak midplane to choose the materials of the element
         if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 2 ) {
             this->giveDelaunayLine(i + 1)->giveLocalVertices(nodes);
-            
+
             //Deal with inclusions
             materialType = 1;
             this->giveDelaunayLine(i + 1)->updateMaterial(1);
-            this->giveDelaunayVertex( nodes.at(1) )->giveCoordinates(coordsOne);
-            this->giveDelaunayVertex( nodes.at(2) )->giveCoordinates(coordsTwo);
-            
-	    //For fibre benchmark elements with cross-sections crossing the midplane should be given special material property
-	    if((coordsOne.at(2) < 0.5*specimenDimension.at(2) && coordsTwo.at(2) > 0.5*specimenDimension.at(2)) || (coordsTwo.at(2) < 0.5*specimenDimension.at(2) && coordsOne.at(2) > 0.5*specimenDimension.at(2)) ){
-	      materialType = 2;//Weak interface
-	      this->giveDelaunayLine(i + 1)->updateMaterial(2);
-	    }
-	}
-	
-	
+            this->giveDelaunayVertex(nodes.at(1) )->giveCoordinates(coordsOne);
+            this->giveDelaunayVertex(nodes.at(2) )->giveCoordinates(coordsTwo);
 
-	if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 0 ) { //Elements are inside
+            //For fibre benchmark elements with cross-sections crossing the midplane should be given special material property
+            if ( ( coordsOne.at(2) < 0.5 * specimenDimension.at(2) && coordsTwo.at(2) > 0.5 * specimenDimension.at(2) ) || ( coordsTwo.at(2) < 0.5 * specimenDimension.at(2) && coordsOne.at(2) > 0.5 * specimenDimension.at(2) ) ) {
+                materialType = 2;//Weak interface
+                this->giveDelaunayLine(i + 1)->updateMaterial(2);
+            }
+        }
+
+
+
+        if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 0 ) { //Elements are inside
             this->giveDelaunayLine(i + 1)->giveLocalVertices(nodes);
             this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
-            
+
             global_index++;
-            fprintf( outputStream, "lattice3D %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", global_index, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
-            
+            fprintf(outputStream, "lattice3D %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", global_index, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
+
 
             for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                this->giveVoronoiVertex( crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-                fprintf( outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
+                this->giveVoronoiVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
+                fprintf(outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
             }
             fprintf(outputStream, "\n");
         } else if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 2 ) {      //Element crosses the boundary
@@ -6245,113 +5179,108 @@ Grid :: give3DFibreBenchmarkOutput(const std::string& fileName)
             this->giveDelaunayLine(i + 1)->giveLocalVertices(nodes);
             //Go through nodes and replace the ones outside with periodic nodes
             for ( int m = 0; m < 2; m++ ) {
-                if ( this->giveDelaunayVertex( nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
-                    location.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->giveLocation();
-                    nodes.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->givePeriodicNode();
+                if ( this->giveDelaunayVertex(nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
+                    location.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->giveLocation();
+                    nodes.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->givePeriodicNode();
                 }
             }
-          //  materialType = 1;
+            //  materialType = 1;
             this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
-             global_index++;
-            fprintf( outputStream, "lattice3Dboundary %d nodes 3 %d %d %d crossSect 1 mat %d polycoords %d", global_index, nodes.at(1), nodes.at(2), this->giveNumberOfDelaunayVertices() +this->giveNumberOfReinforcementNode()+ 1, materialType, 3 * crossSectionNodes.giveSize() );
-            
+            global_index++;
+            fprintf(outputStream, "lattice3Dboundary %d nodes 3 %d %d %d crossSect 1 mat %d polycoords %d", global_index, nodes.at(1), nodes.at(2), this->giveNumberOfDelaunayVertices() + this->giveNumberOfReinforcementNode() + 1, materialType, 3 * crossSectionNodes.giveSize() );
+
             for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                this->giveVoronoiVertex( crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-                fprintf( outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
+                this->giveVoronoiVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
+                fprintf(outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
             }
-            fprintf( outputStream, " location 2 %d %d", location.at(1), location.at(2) );
-	    
+            fprintf(outputStream, " location 2 %d %d", location.at(1), location.at(2) );
+
             fprintf(outputStream, "\n");
         }
     }
-    
+
     printf("Finished writing data for delaunay elements \n");
- 
+
     // print latticebeams
     double myPi = 3.14159265;
     for ( int i = 0; i < this->giveNumberOfLatticeBeams(); i++ ) {
-                
         if ( this->giveLatticeBeam(i + 1)->giveOutsideFlag() == 0 ) { //Elements are inside
             this->giveLatticeBeam(i + 1)->giveLocalVertices(nodes);
             global_index++;
-            fprintf( outputStream, "latticeBeam3D %d nodes 2 %d %d crossSect 1 mat 3 diameter %e", global_index,
-		     nodes.at(1)+this->giveNumberOfDelaunayVertices(),
-		     nodes.at(2)+this->giveNumberOfDelaunayVertices(),
-		     this->giveLatticeBeam(i + 1)->giveDiameter());
+            fprintf(outputStream, "latticeBeam3D %d nodes 2 %d %d crossSect 1 mat 3 diameter %e", global_index,
+                    nodes.at(1) + this->giveNumberOfDelaunayVertices(),
+                    nodes.at(2) + this->giveNumberOfDelaunayVertices(),
+                    this->giveLatticeBeam(i + 1)->giveDiameter() );
             fprintf(outputStream, "\n");
-            
         } else if ( this->giveLatticeBeam(i + 1)->giveOutsideFlag() == 2 ) {      //Element crosses the boundary
             location.zero();
             this->giveLatticeBeam(i + 1)->giveLocalVertices(nodes);
             //Go through nodes and replace the ones outside with periodic nodes
             for ( int m = 0; m < 2; m++ ) {
-                if ( this->giveReinforcementNode( nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
-                    location.at(m + 1) = this->giveReinforcementNode( nodes.at(m + 1) )->giveLocation();
-                    nodes.at(m + 1) = this->giveReinforcementNode( nodes.at(m + 1) )->givePeriodicNode();
+                if ( this->giveReinforcementNode(nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
+                    location.at(m + 1) = this->giveReinforcementNode(nodes.at(m + 1) )->giveLocation();
+                    nodes.at(m + 1) = this->giveReinforcementNode(nodes.at(m + 1) )->givePeriodicNode();
                 }
             }
 
             global_index++;
-            fprintf( outputStream, "latticeBeam3Dboundary %d nodes 3 %d %d %d crossSect 1 mat 3 diameter %e ", global_index,
-                    nodes.at(1)+this->giveNumberOfDelaunayVertices(),
-                    nodes.at(2)+this->giveNumberOfDelaunayVertices(),
-                    this->giveNumberOfDelaunayVertices() +this->giveNumberOfReinforcementNode()+ 1,
-                     this->giveLatticeBeam(i + 1)->giveDiameter());
-            fprintf( outputStream, " location 2 %d %d", location.at(1), location.at(2) );
+            fprintf(outputStream, "latticeBeam3Dboundary %d nodes 3 %d %d %d crossSect 1 mat 3 diameter %e ", global_index,
+                    nodes.at(1) + this->giveNumberOfDelaunayVertices(),
+                    nodes.at(2) + this->giveNumberOfDelaunayVertices(),
+                    this->giveNumberOfDelaunayVertices() + this->giveNumberOfReinforcementNode() + 1,
+                    this->giveLatticeBeam(i + 1)->giveDiameter() );
+            fprintf(outputStream, " location 2 %d %d", location.at(1), location.at(2) );
             fprintf(outputStream, "\n");
-            
         }
     }
-    
+
     printf("Finished writing data for lattice truss (fibre) \n");
-   
+
     // print latticelinks
-        
+
     for ( int i = 0; i < this->giveNumberOfLatticeLinks(); i++ ) {
-            
         if ( this->giveLatticeLink(i + 1)->giveOutsideFlag() == 0 ) { //Elements are inside
             this->giveLatticeLink(i + 1)->giveLocalVertices(nodes);
             global_index++;
-                fprintf( outputStream, "latticeLink3D %d nodes 2 %d %d crossSect 1 mat 4 length %e diameter %e dirvector 3 %e %e %e L_end %e ",
-                        global_index,
-                    nodes.at(1)+this->giveNumberOfDelaunayVertices(),
+            fprintf(outputStream, "latticeLink3D %d nodes 2 %d %d crossSect 1 mat 4 length %e diameter %e dirvector 3 %e %e %e L_end %e ",
+                    global_index,
+                    nodes.at(1) + this->giveNumberOfDelaunayVertices(),
                     nodes.at(2),
                     this->giveLatticeLink(i + 1)->giveAssociatedLength(),
                     this->giveLatticeLink(i + 1)->giveDiameter(),
-                    (this->giveLatticeLink(i + 1)->giveDirectionVector()).at(1),
-                    (this->giveLatticeLink(i + 1)->giveDirectionVector()).at(2),
-                        (this->giveLatticeLink(i + 1)->giveDirectionVector()).at(3),
-                        this->giveLatticeLink(i + 1)->giveL_end());
+                    ( this->giveLatticeLink(i + 1)->giveDirectionVector() ).at(1),
+                    ( this->giveLatticeLink(i + 1)->giveDirectionVector() ).at(2),
+                    ( this->giveLatticeLink(i + 1)->giveDirectionVector() ).at(3),
+                    this->giveLatticeLink(i + 1)->giveL_end() );
             fprintf(outputStream, "\n");
-            
         } else if ( this->giveLatticeLink(i + 1)->giveOutsideFlag() == 2 ) {      //Element crosses the boundary
             location.zero();
             this->giveLatticeLink(i + 1)->giveLocalVertices(nodes);
             //Go through nodes and replace the ones outside with periodic nodes
-            
-            if ( this->giveReinforcementNode( nodes.at(1) )->giveOutsideFlag() == 1 ) {
-                    location.at(1) = this->giveReinforcementNode( nodes.at( 1) )->giveLocation();
-                    nodes.at( 1) = this->giveReinforcementNode( nodes.at( 1) )->givePeriodicNode();
-                }
-            if ( this->giveDelaunayVertex( nodes.at(2) )->giveOutsideFlag() == 1 ) {
-                location.at(2) = this->giveDelaunayVertex( nodes.at(2) )->giveLocation();
-                nodes.at(2) = this->giveDelaunayVertex( nodes.at(2) )->givePeriodicNode();
+
+            if ( this->giveReinforcementNode(nodes.at(1) )->giveOutsideFlag() == 1 ) {
+                location.at(1) = this->giveReinforcementNode(nodes.at(1) )->giveLocation();
+                nodes.at(1) = this->giveReinforcementNode(nodes.at(1) )->givePeriodicNode();
+            }
+            if ( this->giveDelaunayVertex(nodes.at(2) )->giveOutsideFlag() == 1 ) {
+                location.at(2) = this->giveDelaunayVertex(nodes.at(2) )->giveLocation();
+                nodes.at(2) = this->giveDelaunayVertex(nodes.at(2) )->givePeriodicNode();
             }
 
-            
+
             global_index++;
-            fprintf( outputStream, "latticeLink3Dboundary %d nodes 3 %d %d %d crossSect 1 mat 4 length %e  diameter %e dirvector 3 %e %e %e L_end %e", global_index,
-                    nodes.at(1)+this->giveNumberOfDelaunayVertices(),
+            fprintf(outputStream, "latticeLink3Dboundary %d nodes 3 %d %d %d crossSect 1 mat 4 length %e  diameter %e dirvector 3 %e %e %e L_end %e", global_index,
+                    nodes.at(1) + this->giveNumberOfDelaunayVertices(),
                     nodes.at(2),
-                    this->giveNumberOfDelaunayVertices() +this->giveNumberOfReinforcementNode()+ 1,
+                    this->giveNumberOfDelaunayVertices() + this->giveNumberOfReinforcementNode() + 1,
                     this->giveLatticeLink(i + 1)->giveAssociatedLength(),
                     this->giveLatticeLink(i + 1)->giveDiameter(),
                     this->giveLatticeLink(i + 1)->giveDirectionVector().at(1),
                     this->giveLatticeLink(i + 1)->giveDirectionVector().at(2),
                     this->giveLatticeLink(i + 1)->giveDirectionVector().at(3),
-                    this->giveLatticeLink(i + 1)->giveL_end());
-            
-            fprintf( outputStream, " location 2 %d %d", location.at(1), location.at(2) );
+                    this->giveLatticeLink(i + 1)->giveL_end() );
+
+            fprintf(outputStream, " location 2 %d %d", location.at(1), location.at(2) );
             fprintf(outputStream, "\n");
         }
     }
@@ -6368,51 +5297,28 @@ Grid :: give3DFibreBenchmarkOutput(const std::string& fileName)
     fprintf(outputStream, "NodalLoad 2 loadTimeFunction 1 Components 6 0. 1. 0. 0. 0. 0.\n");
     fprintf(outputStream, "ConstantFunction 1 f(t) 1.\n");
     fprintf(outputStream, "#%%BEGIN_CHECK%%\n");
-    fprintf(outputStream, "#NODE number %d dof 2 unknown d\n", this->giveNumberOfDelaunayVertices() + this->giveNumberOfReinforcementNode()+ 1); // a verifier
+    fprintf(outputStream, "#NODE number %d dof 2 unknown d\n", this->giveNumberOfDelaunayVertices() + this->giveNumberOfReinforcementNode() + 1); // a verifier
     fprintf(outputStream, "#LOADLEVEL\n");
     fprintf(outputStream, "##TIME\n");
     fprintf(outputStream, "#%%END_CHECK%%\n");
     return;
-    
 }
 
 
 
 void
-Grid :: give3DWongOutput(const std::string& fileName)
+Grid::give3DWongOutput(const std::string &fileName)
 {
     //Template for irregular nonperiodic coupled mechanical transport models. Do not change for applications
 
-    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
+    FILE *outputStream = converter::fopen_or_die(fileName, "w");
 
     const std::string fileName1 = fileName + ".sm";
     FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w");
-    
+
     const std::string fileName2 = fileName + ".tm";
     FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w");
 
-
-  
-    /* FILE *outputStream; */
-    /* if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
-    /*     converter::errorf("Cannot open output file %s", fileName); */
-    /* } */
-
-    /* FILE *outputStreamSM; */
-    /* char fileName1 [ MAX_FILENAME_LENGTH + 10 ]; */
-    /* strcpy(fileName1, fileName); */
-    /* strcat(fileName1, ".sm"); */
-    /* if ( ( outputStreamSM = fopen(fileName1, "w") ) == NULL ) { */
-    /*     converter::errorf("Cannot open output file %s", fileName1); */
-    /* } */
-
-    /* FILE *outputStreamTM; */
-    /* char fileName2 [ MAX_FILENAME_LENGTH + 10 ]; */
-    /* strcpy(fileName2, fileName); */
-    /* strcat(fileName2, ".tm"); */
-    /* if ( ( outputStreamTM = fopen(fileName2, "w") ) == NULL ) { */
-    /*     converter::errorf("Cannot open output file %s", fileName2); */
-    /* } */
 
     oofem::FloatArray boundaries(3);
     this->giveRegion(1)->defineBoundaries(boundaries);
@@ -6420,8 +5326,6 @@ Grid :: give3DWongOutput(const std::string& fileName)
     specimenDimension.at(1) = boundaries.at(2) - boundaries.at(1);
     specimenDimension.at(2) = boundaries.at(4) - boundaries.at(3);
     specimenDimension.at(3) = boundaries.at(6) - boundaries.at(5);
-
-
 
     int numberOfDelaunayNodes, numberOfDelaunayLines;
     int numberOfVoronoiNodes, numberOfVoronoiLines;
@@ -6482,14 +5386,14 @@ Grid :: give3DWongOutput(const std::string& fileName)
             this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
             if ( firstFlag == 0 ) {
                 firstFlag = 1;
-                fprintf( outputStreamSM, "node %d coords 3 %e %e %e bc 6 1 1 1 1 1 1\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+                fprintf(outputStreamSM, "node %d coords 3 %e %e %e bc 6 1 1 1 1 1 1\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
             } else {
-                fprintf( outputStreamSM, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+                fprintf(outputStreamSM, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
             }
         }
     }
     //Periodic control node
-    fprintf( outputStreamSM, "node %d coords 3 %e %e %e\n", this->giveNumberOfDelaunayVertices() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
+    fprintf(outputStreamSM, "node %d coords 3 %e %e %e\n", this->giveNumberOfDelaunayVertices() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
 
     for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
         if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 2 ) {
@@ -6497,20 +5401,20 @@ Grid :: give3DWongOutput(const std::string& fileName)
 
             //Deal with inclusions
             materialType = 1;
-            this->giveDelaunayVertex( nodes.at(1) )->giveCoordinates(coordsOne);
-            this->giveDelaunayVertex( nodes.at(2) )->giveCoordinates(coordsTwo);
+            this->giveDelaunayVertex(nodes.at(1) )->giveCoordinates(coordsOne);
+            this->giveDelaunayVertex(nodes.at(2) )->giveCoordinates(coordsTwo);
 
             for ( int m = 0; m < this->giveNumberOfInclusions(); m++ ) {
                 //Distinguish between inclusions
                 if ( !strcmp(this->giveInclusion(m + 1)->giveClassName(), "Sphere") ) {
                     ( ( InterfaceSphere * ) this->giveInclusion(m + 1) )->giveCentre(centre);
                     radius = ( ( InterfaceSphere * ) this->giveInclusion(m + 1) )->giveRadius() + ( ( InterfaceSphere * ) this->giveInclusion(m + 1) )->giveITZThickness() / 2.;
-                    distanceOne = sqrt( pow(coordsOne.at(1) - centre.at(1), 2.) +
-                                        pow(coordsOne.at(2) - centre.at(2), 2.) +
-                                        pow(coordsOne.at(3) - centre.at(3), 2.) );
-                    distanceTwo = sqrt( pow(coordsTwo.at(1) - centre.at(1), 2.) +
-                                        pow(coordsTwo.at(2) - centre.at(2), 2.) +
-                                        pow(coordsTwo.at(3) - centre.at(3), 2.) );
+                    distanceOne = sqrt(pow(coordsOne.at(1) - centre.at(1), 2.) +
+                                       pow(coordsOne.at(2) - centre.at(2), 2.) +
+                                       pow(coordsOne.at(3) - centre.at(3), 2.) );
+                    distanceTwo = sqrt(pow(coordsTwo.at(1) - centre.at(1), 2.) +
+                                       pow(coordsTwo.at(2) - centre.at(2), 2.) +
+                                       pow(coordsTwo.at(3) - centre.at(3), 2.) );
 
                     if ( distanceOne > radius && distanceTwo > radius ) {
                         materialType = 1;
@@ -6528,19 +5432,19 @@ Grid :: give3DWongOutput(const std::string& fileName)
         if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 0 ) {
             this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
             //Need to introduce both normal and boundary element. See FPZ output file.
-            fprintf( outputStreamSM, "lattice3D %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
+            fprintf(outputStreamSM, "lattice3D %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
 
             for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                this->giveVoronoiVertex( crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-                fprintf( outputStreamSM, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
+                this->giveVoronoiVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
+                fprintf(outputStreamSM, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
             }
             this->giveDelaunayLine(i + 1)->giveCrossSectionElements(crossSectionElements);
-            fprintf( outputStreamSM, " couplingflag 1 couplingnumber %d ", crossSectionElements.giveSize() );
+            fprintf(outputStreamSM, " couplingflag 1 couplingnumber %d ", crossSectionElements.giveSize() );
             for ( int m = 0; m < crossSectionElements.giveSize(); m++ ) {
-                if ( giveVoronoiLine( crossSectionElements.at(m + 1) )->giveOutsideFlag() == 1 ) {
-                    fprintf( outputStreamSM, "%d ", giveVoronoiLine( crossSectionElements.at(m + 1) )->givePeriodicElement() );
+                if ( giveVoronoiLine(crossSectionElements.at(m + 1) )->giveOutsideFlag() == 1 ) {
+                    fprintf(outputStreamSM, "%d ", giveVoronoiLine(crossSectionElements.at(m + 1) )->givePeriodicElement() );
                 } else {
-                    fprintf( outputStreamSM, "%d ", crossSectionElements.at(m + 1) );
+                    fprintf(outputStreamSM, "%d ", crossSectionElements.at(m + 1) );
                 }
             }
             fprintf(outputStreamSM, "bodyloads 1 2\n");
@@ -6549,29 +5453,29 @@ Grid :: give3DWongOutput(const std::string& fileName)
             this->giveDelaunayLine(i + 1)->giveLocalVertices(nodes);
             //Go through nodes and replace the ones outside with periodic nodes
             for ( int m = 0; m < 2; m++ ) {
-                if ( this->giveDelaunayVertex( nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
-                    location.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->giveLocation();
-                    nodes.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->givePeriodicNode();
+                if ( this->giveDelaunayVertex(nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
+                    location.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->giveLocation();
+                    nodes.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->givePeriodicNode();
                 }
             }
             this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
-            fprintf( outputStreamSM, "lattice3Dboundary %d nodes 3 %d %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), this->giveNumberOfDelaunayVertices() + 1, materialType, 3 * crossSectionNodes.giveSize() );
+            fprintf(outputStreamSM, "lattice3Dboundary %d nodes 3 %d %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), this->giveNumberOfDelaunayVertices() + 1, materialType, 3 * crossSectionNodes.giveSize() );
 
             for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                this->giveVoronoiVertex( crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-                fprintf( outputStreamSM, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
+                this->giveVoronoiVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
+                fprintf(outputStreamSM, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
             }
             this->giveDelaunayLine(i + 1)->giveCrossSectionElements(crossSectionElements);
-            fprintf( outputStreamSM, " couplingflag 1 couplingnumber %d ", crossSectionElements.giveSize() );
+            fprintf(outputStreamSM, " couplingflag 1 couplingnumber %d ", crossSectionElements.giveSize() );
             for ( int m = 0; m < crossSectionElements.giveSize(); m++ ) {
-                if ( giveVoronoiLine( crossSectionElements.at(m + 1) )->giveOutsideFlag() == 1 ) {
-                    fprintf( outputStreamSM, "%d ", giveVoronoiLine( crossSectionElements.at(m + 1) )->givePeriodicElement() );
+                if ( giveVoronoiLine(crossSectionElements.at(m + 1) )->giveOutsideFlag() == 1 ) {
+                    fprintf(outputStreamSM, "%d ", giveVoronoiLine(crossSectionElements.at(m + 1) )->givePeriodicElement() );
                 } else {
-                    fprintf( outputStreamSM, "%d ", crossSectionElements.at(m + 1) );
+                    fprintf(outputStreamSM, "%d ", crossSectionElements.at(m + 1) );
                 }
             }
-            fprintf( outputStreamSM, " location 2 %d %d ", location.at(1), location.at(2) );
+            fprintf(outputStreamSM, " location 2 %d %d ", location.at(1), location.at(2) );
             fprintf(outputStreamSM, "bodyloads 1 2\n");
         }
     }
@@ -6621,15 +5525,15 @@ Grid :: give3DWongOutput(const std::string& fileName)
             this->giveVoronoiVertex(i + 1)->giveCoordinates(coords);
             if ( firstFlag == 0 ) {
                 firstFlag = 1;
-                fprintf( outputStreamTM, "node %d coords 3 %e %e %e bc 1 1\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+                fprintf(outputStreamTM, "node %d coords 3 %e %e %e bc 1 1\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
             } else {
-                fprintf( outputStreamTM, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+                fprintf(outputStreamTM, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
             }
         }
     }
 
     //Periodic control node
-    fprintf( outputStreamTM, "node %d coords 3 %e %e %e ndofs 3 dofIDmask 3 1 2 3 bc 3 1 1 2\n", this->giveNumberOfVoronoiVertices() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
+    fprintf(outputStreamTM, "node %d coords 3 %e %e %e ndofs 3 dofIDmask 3 1 2 3 bc 3 1 1 2\n", this->giveNumberOfVoronoiVertices() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
 
 
     for ( int i = 0; i < this->giveNumberOfVoronoiLines(); i++ ) {
@@ -6638,20 +5542,20 @@ Grid :: give3DWongOutput(const std::string& fileName)
 
             //Deal with inclusions
             materialType = 1;
-            this->giveVoronoiVertex( nodes.at(1) )->giveCoordinates(coordsOne);
-            this->giveVoronoiVertex( nodes.at(2) )->giveCoordinates(coordsTwo);
+            this->giveVoronoiVertex(nodes.at(1) )->giveCoordinates(coordsOne);
+            this->giveVoronoiVertex(nodes.at(2) )->giveCoordinates(coordsTwo);
 
             for ( int m = 0; m < this->giveNumberOfInclusions(); m++ ) {
                 //Distinguish between inclusions
                 if ( !strcmp(this->giveInclusion(m + 1)->giveClassName(), "Sphere") ) {
                     ( ( InterfaceSphere * ) this->giveInclusion(m + 1) )->giveCentre(centre);
                     radius = ( ( InterfaceSphere * ) this->giveInclusion(m + 1) )->giveRadius() + ( ( InterfaceSphere * ) this->giveInclusion(m + 1) )->giveITZThickness() / 2.;
-                    distanceOne = sqrt( pow(coordsOne.at(1) - centre.at(1), 2.) +
-                                        pow(coordsOne.at(2) - centre.at(2), 2.) +
-                                        pow(coordsOne.at(3) - centre.at(3), 2.) );
-                    distanceTwo = sqrt( pow(coordsTwo.at(1) - centre.at(1), 2.) +
-                                        pow(coordsTwo.at(2) - centre.at(2), 2.) +
-                                        pow(coordsTwo.at(3) - centre.at(3), 2.) );
+                    distanceOne = sqrt(pow(coordsOne.at(1) - centre.at(1), 2.) +
+                                       pow(coordsOne.at(2) - centre.at(2), 2.) +
+                                       pow(coordsOne.at(3) - centre.at(3), 2.) );
+                    distanceTwo = sqrt(pow(coordsTwo.at(1) - centre.at(1), 2.) +
+                                       pow(coordsTwo.at(2) - centre.at(2), 2.) +
+                                       pow(coordsTwo.at(3) - centre.at(3), 2.) );
 
                     if ( distanceOne > radius && distanceTwo > radius ) {
                         materialType = 1;
@@ -6669,20 +5573,20 @@ Grid :: give3DWongOutput(const std::string& fileName)
             if ( this->giveVoronoiLine(i + 1)->giveOutsideFlag() == 0 ) {
                 this->giveVoronoiLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
-                fprintf( outputStreamTM, "latticemt3D %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
+                fprintf(outputStreamTM, "latticemt3D %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
 
                 for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                    this->giveDelaunayVertex( crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-                    fprintf( outputStreamTM, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
+                    this->giveDelaunayVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
+                    fprintf(outputStreamTM, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
                 }
 
                 this->giveVoronoiLine(i + 1)->giveCrossSectionElements(crossSectionElements);
-                fprintf( outputStreamTM, " couplingflag 1 couplingnumber %d ", crossSectionElements.giveSize() );
+                fprintf(outputStreamTM, " couplingflag 1 couplingnumber %d ", crossSectionElements.giveSize() );
                 for ( int m = 0; m < crossSectionElements.giveSize(); m++ ) {
-                    if ( giveDelaunayLine( crossSectionElements.at(m + 1) )->giveOutsideFlag() == 1 ) {
-                        fprintf( outputStreamTM, "%d ", giveDelaunayLine( crossSectionElements.at(m + 1) )->givePeriodicElement() );
+                    if ( giveDelaunayLine(crossSectionElements.at(m + 1) )->giveOutsideFlag() == 1 ) {
+                        fprintf(outputStreamTM, "%d ", giveDelaunayLine(crossSectionElements.at(m + 1) )->givePeriodicElement() );
                     } else {
-                        fprintf( outputStreamTM, "%d ", crossSectionElements.at(m + 1) );
+                        fprintf(outputStreamTM, "%d ", crossSectionElements.at(m + 1) );
                     }
                 }
                 fprintf(outputStreamTM, "mlength 1.e-8");
@@ -6693,29 +5597,29 @@ Grid :: give3DWongOutput(const std::string& fileName)
                 this->giveVoronoiLine(i + 1)->giveLocalVertices(nodes);
                 //Go through nodes and replace the ones outside with periodic nodes
                 for ( int m = 0; m < 2; m++ ) {
-                    if ( this->giveVoronoiVertex( nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
-                        location.at(m + 1) = this->giveVoronoiVertex( nodes.at(m + 1) )->giveLocation();
-                        nodes.at(m + 1) = this->giveVoronoiVertex( nodes.at(m + 1) )->givePeriodicNode();
+                    if ( this->giveVoronoiVertex(nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
+                        location.at(m + 1) = this->giveVoronoiVertex(nodes.at(m + 1) )->giveLocation();
+                        nodes.at(m + 1) = this->giveVoronoiVertex(nodes.at(m + 1) )->givePeriodicNode();
                     }
                 }
                 this->giveVoronoiLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
-                fprintf( outputStreamTM, "latticemt3Dboundary %d nodes 3 %d %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), this->giveNumberOfVoronoiVertices() + 1, materialType, 3 * crossSectionNodes.giveSize() );
+                fprintf(outputStreamTM, "latticemt3Dboundary %d nodes 3 %d %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), this->giveNumberOfVoronoiVertices() + 1, materialType, 3 * crossSectionNodes.giveSize() );
 
                 for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                    this->giveDelaunayVertex( crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-                    fprintf( outputStreamTM, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
+                    this->giveDelaunayVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
+                    fprintf(outputStreamTM, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
                 }
                 this->giveVoronoiLine(i + 1)->giveCrossSectionElements(crossSectionElements);
-                fprintf( outputStreamTM, " couplingflag 1 couplingnumber %d ", crossSectionElements.giveSize() );
+                fprintf(outputStreamTM, " couplingflag 1 couplingnumber %d ", crossSectionElements.giveSize() );
                 for ( int m = 0; m < crossSectionElements.giveSize(); m++ ) {
-                    if ( giveDelaunayLine( crossSectionElements.at(m + 1) )->giveOutsideFlag() == 1 ) {
-                        fprintf( outputStreamTM, "%d ", giveDelaunayLine( crossSectionElements.at(m + 1) )->givePeriodicElement() );
+                    if ( giveDelaunayLine(crossSectionElements.at(m + 1) )->giveOutsideFlag() == 1 ) {
+                        fprintf(outputStreamTM, "%d ", giveDelaunayLine(crossSectionElements.at(m + 1) )->givePeriodicElement() );
                     } else {
-                        fprintf( outputStreamTM, "%d ", crossSectionElements.at(m + 1) );
+                        fprintf(outputStreamTM, "%d ", crossSectionElements.at(m + 1) );
                     }
                 }
-                fprintf( outputStreamTM, " location 2 %d %d ", location.at(1), location.at(2) );
+                fprintf(outputStreamTM, " location 2 %d %d ", location.at(1), location.at(2) );
                 fprintf(outputStreamTM, "mlength 1.e-8");
                 fprintf(outputStreamTM, "\n");
             }
@@ -6740,32 +5644,15 @@ Grid :: give3DWongOutput(const std::string& fileName)
 
 
 void
-Grid :: give3DPeriodicPoreTMOutput(const std::string& fileName)
+Grid::give3DPeriodicPoreTMOutput(const std::string &fileName)
 {
     //Template for irregular periodic mechanical models. Do not change for applications
 
-    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
+    FILE *outputStream = converter::fopen_or_die(fileName, "w");
 
     const std::string fileName1 = fileName + "_lengths.dat";
     FILE *outputStreamLengths = converter::fopen_or_die(fileName1, "w");
-    
-    /* const std::string fileName2 = fileName + ".tm"; */
-    /* FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
 
-
-  
-    /* FILE *outputStream; */
-    /* if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
-    /*     converter::errorf("Cannot open output file %s", fileName); */
-    /* } */
-
-    /* FILE *outputStreamLengths; */
-    /* char fileName1 [ MAX_FILENAME_LENGTH + 10 ]; */
-    /* strcpy(fileName1, fileName); */
-    /* strcat(fileName1, "_Lengths.dat"); */
-    /* if ( ( outputStreamLengths = fopen(fileName1, "w") ) == NULL ) { */
-    /*     converter::errorf("Cannot open output file %s", fileName1); */
-    /* } */
 
     oofem::FloatArray boundaries(3);
     this->giveRegion(1)->defineBoundaries(boundaries);
@@ -6800,7 +5687,7 @@ Grid :: give3DPeriodicPoreTMOutput(const std::string& fileName)
         if ( this->giveVoronoiLine(i + 1)->giveOutsideFlag() == 3 ) {
             this->giveVoronoiLine(i + 1)->giveLocalVertices(helpNodes);
             for ( int m = 0; m < 2; m++ ) {
-                giveVoronoiVertex( helpNodes.at(m + 1) )->giveCoordinates(helpCoords);
+                giveVoronoiVertex(helpNodes.at(m + 1) )->giveCoordinates(helpCoords);
                 locationArray.at(m + 1) = this->giveRegion(1)->giveSwitches(switches, helpCoords);
             }
         }
@@ -6831,8 +5718,8 @@ Grid :: give3DPeriodicPoreTMOutput(const std::string& fileName)
 
     double gaussianPoreMean, gaussianPoreSTD, gaussianPoreCOV;
 
-    gaussianPoreMean = log( this->poreMean / sqrt( 1 + pow(this->poreCOV, 2) ) );
-    gaussianPoreSTD = sqrt( log( 1 + pow(this->poreCOV, 2) ) );
+    gaussianPoreMean = log(this->poreMean / sqrt(1 + pow(this->poreCOV, 2) ) );
+    gaussianPoreSTD = sqrt(log(1 + pow(this->poreCOV, 2) ) );
     gaussianPoreCOV = gaussianPoreSTD / gaussianPoreMean;
 
 
@@ -6860,8 +5747,8 @@ Grid :: give3DPeriodicPoreTMOutput(const std::string& fileName)
 
     double gaussianThroatMean, gaussianThroatSTD, gaussianThroatCOV;
 
-    gaussianThroatMean = log( this->throatMean / sqrt( 1 + pow(this->throatCOV, 2) ) );
-    gaussianThroatSTD = sqrt( log( 1 + pow(this->throatCOV, 2) ) );
+    gaussianThroatMean = log(this->throatMean / sqrt(1 + pow(this->throatCOV, 2) ) );
+    gaussianThroatSTD = sqrt(log(1 + pow(this->throatCOV, 2) ) );
     gaussianThroatCOV = gaussianThroatSTD / gaussianThroatMean;
 
 
@@ -6909,7 +5796,7 @@ Grid :: give3DPeriodicPoreTMOutput(const std::string& fileName)
     for ( int i = 0; i < this->giveNumberOfVoronoiVertices(); i++ ) {
         if ( this->giveVoronoiVertex(i + 1)->giveOutsideFlag() == 0 ) {
             counter++;
-            this->giveVoronoiVertex(i + 1)->setRadius( voronoiVertexRadius.at(counter) );
+            this->giveVoronoiVertex(i + 1)->setRadius(voronoiVertexRadius.at(counter) );
         }
     }
 
@@ -6925,7 +5812,7 @@ Grid :: give3DPeriodicPoreTMOutput(const std::string& fileName)
         if ( this->giveVoronoiLine(i + 1)->giveOutsideFlag() == 3 ) {
             this->giveVoronoiLine(i + 1)->giveLocalVertices(helpNodes);
             for ( int m = 0; m < 2; m++ ) {
-                giveVoronoiVertex( helpNodes.at(m + 1) )->giveCoordinates(helpCoords);
+                giveVoronoiVertex(helpNodes.at(m + 1) )->giveCoordinates(helpCoords);
                 locationArray.at(m + 1) = this->giveRegion(1)->giveSwitches(switches, helpCoords);
             }
         }
@@ -6936,10 +5823,10 @@ Grid :: give3DPeriodicPoreTMOutput(const std::string& fileName)
             this->giveVoronoiLine(i + 1)->giveLocalVertices(nodes);
             for ( int m = 0; m < 2; m++ ) {
                 //new
-                if ( this->giveVoronoiVertex( nodes.at(m + 1) )->giveOutsideFlag() == 2 ) {
-                    nodes.at(m + 1) = this->giveVoronoiVertex( nodes.at(m + 1) )->givePeriodicNode();
+                if ( this->giveVoronoiVertex(nodes.at(m + 1) )->giveOutsideFlag() == 2 ) {
+                    nodes.at(m + 1) = this->giveVoronoiVertex(nodes.at(m + 1) )->givePeriodicNode();
                 }
-                radius = this->giveVoronoiVertex( nodes.at(m + 1) )->giveRadius();
+                radius = this->giveVoronoiVertex(nodes.at(m + 1) )->giveRadius();
                 if ( radius < minRadius.at(counter) ) {
                     minRadius.at(counter) = radius;
                 }
@@ -6955,11 +5842,11 @@ Grid :: give3DPeriodicPoreTMOutput(const std::string& fileName)
                 this->giveVoronoiLine(i + 1)->giveLocalVertices(nodes);
                 //Go through nodes and replace the ones outside with periodic nodes
                 for ( int m = 0; m < 2; m++ ) {
-                    if ( this->giveVoronoiVertex( nodes.at(m + 1) )->giveOutsideFlag() == 1 || this->giveVoronoiVertex( nodes.at(m + 1) )->giveOutsideFlag() == 2 ) {
-                        location.at(m + 1) = this->giveVoronoiVertex( nodes.at(m + 1) )->giveLocation();
-                        nodes.at(m + 1) = this->giveVoronoiVertex( nodes.at(m + 1) )->givePeriodicNode();
+                    if ( this->giveVoronoiVertex(nodes.at(m + 1) )->giveOutsideFlag() == 1 || this->giveVoronoiVertex(nodes.at(m + 1) )->giveOutsideFlag() == 2 ) {
+                        location.at(m + 1) = this->giveVoronoiVertex(nodes.at(m + 1) )->giveLocation();
+                        nodes.at(m + 1) = this->giveVoronoiVertex(nodes.at(m + 1) )->givePeriodicNode();
                     }
-                    radius = this->giveVoronoiVertex( nodes.at(m + 1) )->giveRadius();
+                    radius = this->giveVoronoiVertex(nodes.at(m + 1) )->giveRadius();
                     if ( radius < minRadius.at(counter) ) {
                         minRadius.at(counter) = radius;
                     }
@@ -6983,16 +5870,16 @@ Grid :: give3DPeriodicPoreTMOutput(const std::string& fileName)
     for ( int i = 0; i < this->giveNumberOfVoronoiLines(); i++ ) {
         if ( this->giveVoronoiLine(i + 1)->giveOutsideFlag() == 0 ) {
             counter++;
-            helpRadius = sortedVoronoiLineRadius.at( rankVector.at(counter) );
+            helpRadius = sortedVoronoiLineRadius.at(rankVector.at(counter) );
             this->giveVoronoiLine(i + 1)->setRadius(helpRadius);
         } else if ( this->giveVoronoiLine(i + 1)->giveOutsideFlag() == 2 || this->giveVoronoiLine(i + 1)->giveOutsideFlag() == 3 ) {
             //Here only the periodic lines that have been used for generating the rank vector are allowed to pass.
             if ( this->giveVoronoiLine(i + 1)->givePeriodicElement() > i + 1 ) {
                 counter++;
-                helpRadius = sortedVoronoiLineRadius.at( rankVector.at(counter) );
+                helpRadius = sortedVoronoiLineRadius.at(rankVector.at(counter) );
                 this->giveVoronoiLine(i + 1)->setRadius(helpRadius);
                 //Assign an equal diameter value to the periodic friend.
-                this->giveVoronoiLine( this->giveVoronoiLine(i + 1)->givePeriodicElement() )->setRadius(helpRadius);
+                this->giveVoronoiLine(this->giveVoronoiLine(i + 1)->givePeriodicElement() )->setRadius(helpRadius);
             }
         }
     }
@@ -7012,16 +5899,16 @@ Grid :: give3DPeriodicPoreTMOutput(const std::string& fileName)
             if ( firstFlag == 0 ) {
                 firstFlag = 1;
                 counter++;
-                fprintf( outputStream, "pore %d coords 3 %e %e %e bc 1 1 rad %.16e\n", i + 1, coords.at(1), coords.at(2), coords.at(3), voronoiVertexRadius.at(counter) );
+                fprintf(outputStream, "pore %d coords 3 %e %e %e bc 1 1 rad %.16e\n", i + 1, coords.at(1), coords.at(2), coords.at(3), voronoiVertexRadius.at(counter) );
             } else {
                 counter++;
-                fprintf( outputStream, "pore %d coords 3 %e %e %e rad %.16e\n", i + 1, coords.at(1), coords.at(2), coords.at(3), voronoiVertexRadius.at(counter) );
+                fprintf(outputStream, "pore %d coords 3 %e %e %e rad %.16e\n", i + 1, coords.at(1), coords.at(2), coords.at(3), voronoiVertexRadius.at(counter) );
             }
         }
     }
 
     //Periodic control node
-    fprintf( outputStream, "node %d coords 3 %e %e %e ndofs 3 dofIDmask 3 1 2 3 bc 3 2 1 1\n", this->giveNumberOfVoronoiVertices() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
+    fprintf(outputStream, "node %d coords 3 %e %e %e ndofs 3 dofIDmask 3 1 2 3 bc 3 2 1 1\n", this->giveNumberOfVoronoiVertices() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
 
 
     for ( int i = 0; i < this->giveNumberOfVoronoiLines(); i++ ) {
@@ -7029,23 +5916,23 @@ Grid :: give3DPeriodicPoreTMOutput(const std::string& fileName)
             this->giveVoronoiLine(i + 1)->giveLocalVertices(nodes);
             materialType = 1;
             this->giveVoronoiLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
-            fprintf( outputStream, "latticemt3D_Discrete %d nodes 2 %d %d crossSect 1 mat %d rad %.16e ", i + 1, nodes.at(1), nodes.at(2), materialType, this->giveVoronoiLine(i + 1)->giveRadius() );
+            fprintf(outputStream, "latticemt3D_Discrete %d nodes 2 %d %d crossSect 1 mat %d rad %.16e ", i + 1, nodes.at(1), nodes.at(2), materialType, this->giveVoronoiLine(i + 1)->giveRadius() );
             fprintf(outputStream, "\n");
         } else if ( this->giveVoronoiLine(i + 1)->giveOutsideFlag() == 2 ) {      //Element crosses the boundary
             location.zero();
             this->giveVoronoiLine(i + 1)->giveLocalVertices(nodes);
             //Go through nodes and replace the ones outside with periodic nodes
             for ( int m = 0; m < 2; m++ ) {
-                if ( this->giveVoronoiVertex( nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
-                    location.at(m + 1) = this->giveVoronoiVertex( nodes.at(m + 1) )->giveLocation();
-                    nodes.at(m + 1) = this->giveVoronoiVertex( nodes.at(m + 1) )->givePeriodicNode();
+                if ( this->giveVoronoiVertex(nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
+                    location.at(m + 1) = this->giveVoronoiVertex(nodes.at(m + 1) )->giveLocation();
+                    nodes.at(m + 1) = this->giveVoronoiVertex(nodes.at(m + 1) )->givePeriodicNode();
                 }
             }
             materialType = 1;
             this->giveVoronoiLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
-            fprintf( outputStream, "latticemt3Dboundary_Discrete %d nodes 3 %d %d %d crossSect 1 mat %d rad %.16e ", i + 1, nodes.at(1), nodes.at(2), this->giveNumberOfVoronoiVertices() + 1, materialType, this->giveVoronoiLine(i + 1)->giveRadius() );
-            fprintf( outputStream, " location 2 %d %d", location.at(1), location.at(2) );
+            fprintf(outputStream, "latticemt3Dboundary_Discrete %d nodes 3 %d %d %d crossSect 1 mat %d rad %.16e ", i + 1, nodes.at(1), nodes.at(2), this->giveNumberOfVoronoiVertices() + 1, materialType, this->giveVoronoiLine(i + 1)->giveRadius() );
+            fprintf(outputStream, " location 2 %d %d", location.at(1), location.at(2) );
             fprintf(outputStream, "\n");
         }
     }
@@ -7069,37 +5956,25 @@ Grid :: give3DPeriodicPoreTMOutput(const std::string& fileName)
 
 
 void
-Grid :: give3DSphereOutput(const std::string& fileName)
+Grid::give3DSphereOutput(const std::string &fileName)
 {
-  //Output for hydraulic fracture of sphere.
-  //Start with mechanical model
+    //Output for hydraulic fracture of sphere.
+    //Start with mechanical model
 
-    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
-
-    /* const std::string fileName1 = fileName + ".sm"; */
-    /* FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w"); */
-    
-    /* const std::string fileName2 = fileName + ".tm"; */
-    /* FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
-
-  
-    /* FILE *outputStream; */
-    /* if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
-    /*     converter::errorf("Cannot open output file %s", fileName); */
-    /* } */
+    FILE *outputStream = converter::fopen_or_die(fileName, "w");
 
     int numberOfNodes, numberOfLines;
     oofem::FloatArray coords(3);
-    oofem::FloatArray coordsOne,coordsTwo,centre;
+    oofem::FloatArray coordsOne, coordsTwo, centre;
     int materialType = 1;
     oofem::IntArray nodes, location(2);
     oofem::IntArray crossSectionNodes;
-    double radius,distanceOne,distanceTwo;
+    double radius, distanceOne, distanceTwo;
 
     //Determine the number of Delaunay nodes in the domain
     numberOfNodes = 0;
     for ( int i = 0; i < this->giveNumberOfDelaunayVertices(); i++ ) {
-        if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0 ||  this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 2) {
+        if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0 ||  this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 2 ) {
             numberOfNodes++;
         }
     }
@@ -7108,10 +5983,10 @@ Grid :: give3DSphereOutput(const std::string& fileName)
     numberOfLines = 0;
     for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
         if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 3 ) {
-	  if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 3 ) {
-	    this->giveRegion(1)->modifyVoronoiCrossSection(i + 1);
-	  }
-	  numberOfLines++;
+            if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 3 ) {
+                this->giveRegion(1)->modifyVoronoiCrossSection(i + 1);
+            }
+            numberOfLines++;
         }
     }
 
@@ -7126,89 +6001,83 @@ Grid :: give3DSphereOutput(const std::string& fileName)
     fprintf(outputStream, "ndofman %d nelem %d ncrosssect 3 nmat 3 nbc 2 nic 0 nltf 2\n", numberOfNodes, numberOfLines);
 
     printf("start nodes\n");
-    
+
     int firstFlag = 0;
     for ( int i = 0; i < this->giveNumberOfDelaunayVertices(); i++ ) {
-      if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayVertex(i+1)->giveOutsideFlag() == 2 ) {
+        if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 2 ) {
             this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
             if ( firstFlag == 0 ) {
                 firstFlag = 1;
-                fprintf( outputStream, "node %d coords 3 %e %e %e bc 6 1 1 1 1 1 1\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+                fprintf(outputStream, "node %d coords 3 %e %e %e bc 6 1 1 1 1 1 1\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
             } else {
-                fprintf( outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+                fprintf(outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
             }
         }
     }
 
     printf("finished nodes\n");
-    
+
     for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
         if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 3 ) { //Elements are inside
-	    this->giveDelaunayLine(i + 1)->giveLocalVertices(nodes);
-	  
-	  //=======================================================
-	  //Deal with inclusions
-	  materialType = 1;
-	  this->giveDelaunayLine(i + 1)->updateMaterial(1);
-	  this->giveDelaunayVertex( nodes.at(1) )->giveCoordinates(coordsOne);
-	  this->giveDelaunayVertex( nodes.at(2) )->giveCoordinates(coordsTwo);
-            
-	  
-	  for ( int m = 0; m < this->giveNumberOfInclusions(); m++ ) {
-	    
-	    //Distinguish between inclusions
-	    if ( !strcmp(this->giveInclusion(m + 1)->giveClassName(), "Sphere") ) {
-	      ( ( InterfaceSphere * ) this->giveInclusion(m + 1) )->giveCentre(centre);
-	      radius = ( ( InterfaceSphere * ) this->giveInclusion(m + 1) )->giveRadius() + ( ( InterfaceSphere * ) this->giveInclusion(m + 1) )->giveITZThickness() / 2.;
-	      distanceOne = sqrt( pow(coordsOne.at(1) - centre.at(1), 2.) +
-				  pow(coordsOne.at(2) - centre.at(2), 2.) +
-				  pow(coordsOne.at(3) - centre.at(3), 2.) );
-	      distanceTwo = sqrt( pow(coordsTwo.at(1) - centre.at(1), 2.) +
-				  pow(coordsTwo.at(2) - centre.at(2), 2.) +
-				  pow(coordsTwo.at(3) - centre.at(3), 2.) );
-	      
-	      if ( distanceOne > radius && distanceTwo > radius ) {
-                        
-		materialType = 1;
-		this->giveDelaunayLine(i + 1)->updateMaterial(1);
-                
-	      } else if ( ( distanceOne > radius && distanceTwo < radius ) || ( distanceOne < radius && distanceTwo > radius ) ) {
-		
-		materialType = 3;
-		this->giveDelaunayLine(i + 1)->updateMaterial(3);
-		break;
-	      } else {
-		
-		materialType = 2;
-		this->giveDelaunayLine(i + 1)->updateMaterial(2);
-		break;
-	      }
-	    }
-	  }
-	    //=================================================
+            this->giveDelaunayLine(i + 1)->giveLocalVertices(nodes);
+
+            //=======================================================
+            //Deal with inclusions
+            materialType = 1;
+            this->giveDelaunayLine(i + 1)->updateMaterial(1);
+            this->giveDelaunayVertex(nodes.at(1) )->giveCoordinates(coordsOne);
+            this->giveDelaunayVertex(nodes.at(2) )->giveCoordinates(coordsTwo);
+
+
+            for ( int m = 0; m < this->giveNumberOfInclusions(); m++ ) {
+                //Distinguish between inclusions
+                if ( !strcmp(this->giveInclusion(m + 1)->giveClassName(), "Sphere") ) {
+                    ( ( InterfaceSphere * ) this->giveInclusion(m + 1) )->giveCentre(centre);
+                    radius = ( ( InterfaceSphere * ) this->giveInclusion(m + 1) )->giveRadius() + ( ( InterfaceSphere * ) this->giveInclusion(m + 1) )->giveITZThickness() / 2.;
+                    distanceOne = sqrt(pow(coordsOne.at(1) - centre.at(1), 2.) +
+                                       pow(coordsOne.at(2) - centre.at(2), 2.) +
+                                       pow(coordsOne.at(3) - centre.at(3), 2.) );
+                    distanceTwo = sqrt(pow(coordsTwo.at(1) - centre.at(1), 2.) +
+                                       pow(coordsTwo.at(2) - centre.at(2), 2.) +
+                                       pow(coordsTwo.at(3) - centre.at(3), 2.) );
+
+                    if ( distanceOne > radius && distanceTwo > radius ) {
+                        materialType = 1;
+                        this->giveDelaunayLine(i + 1)->updateMaterial(1);
+                    } else if ( ( distanceOne > radius && distanceTwo < radius ) || ( distanceOne < radius && distanceTwo > radius ) ) {
+                        materialType = 3;
+                        this->giveDelaunayLine(i + 1)->updateMaterial(3);
+                        break;
+                    } else {
+                        materialType = 2;
+                        this->giveDelaunayLine(i + 1)->updateMaterial(2);
+                        break;
+                    }
+                }
+            }
+            //=================================================
 
 
             this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
-	    if(materialType == 3){
-	      fprintf( outputStream, "lattice3D %d nodes 2 %d %d crossSect %d mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, materialType, 3 * crossSectionNodes.giveSize() );
-	      
-	      for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                this->giveVoronoiVertex( crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-                fprintf( outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
-	      }
-	      fprintf(outputStream, " bodyloads 1 2\n");
-	    }
-	    else{
-	      fprintf( outputStream, "lattice3D %d nodes 2 %d %d crossSect %d mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, materialType, 3 * crossSectionNodes.giveSize() );
+            if ( materialType == 3 ) {
+                fprintf(outputStream, "lattice3D %d nodes 2 %d %d crossSect %d mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, materialType, 3 * crossSectionNodes.giveSize() );
 
-            for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                this->giveVoronoiVertex( crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-                fprintf( outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
+                for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
+                    this->giveVoronoiVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
+                    fprintf(outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
+                }
+                fprintf(outputStream, " bodyloads 1 2\n");
+            } else   {
+                fprintf(outputStream, "lattice3D %d nodes 2 %d %d crossSect %d mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, materialType, 3 * crossSectionNodes.giveSize() );
+
+                for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
+                    this->giveVoronoiVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
+                    fprintf(outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
+                }
+                fprintf(outputStream, "\n");
             }
-            fprintf(outputStream, "\n");
-	    }
-	} 
+        }
     }
     fprintf(outputStream, "simplecs 1\n");
     fprintf(outputStream, "simplecs 2\n");
@@ -7231,39 +6100,28 @@ Grid :: give3DSphereOutput(const std::string& fileName)
 
 
 void
-Grid :: give3DCylinderOutput(const std::string& fileName)
+Grid::give3DCylinderOutput(const std::string &fileName)
 {
-  //Output for hydraulic fracture of cylinder.
-  //Start with mechanical model
+    //Output for hydraulic fracture of cylinder.
+    //Start with mechanical model
 
-    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
+    FILE *outputStream = converter::fopen_or_die(fileName, "w");
 
-  /*   const std::string fileName1 = fileName + ".sm"; */
-  /*   FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w"); */
-    
-  /*   const std::string fileName2 = fileName + ".tm"; */
-  /*   FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
-
-
-  /* FILE *outputStream; */
-  /*   if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
-  /*       converter::errorf("Cannot open output file %s", fileName); */
-  /*   } */
 
     int numberOfNodes, numberOfLines;
     oofem::FloatArray coords(3);
-    oofem::FloatArray coordsOne,coordsTwo,line;
+    oofem::FloatArray coordsOne, coordsTwo, line;
     int materialType = 1;
     oofem::IntArray nodes, location(2);
     oofem::IntArray crossSectionNodes;
-    double radius,distanceOne,distanceTwo;
+    double radius, distanceOne, distanceTwo;
 
-    
-    
+
+
     //Determine the number of Delaunay nodes in the domain
     numberOfNodes = 0;
     for ( int i = 0; i < this->giveNumberOfDelaunayVertices(); i++ ) {
-        if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0 ||  this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 2) {
+        if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0 ||  this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 2 ) {
             numberOfNodes++;
         }
     }
@@ -7271,13 +6129,12 @@ Grid :: give3DCylinderOutput(const std::string& fileName)
     //Determine the number of Delaunay lines in the domain
     numberOfLines = 0;
     for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
-      if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 0 && (this->giveDelaunayLine(i+1))->delaunayAreaCheck() == 1) {
-	numberOfLines++;
-      }
-      else if(this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 3 && this->giveRegion(1)->modifyVoronoiCrossSection(i + 1) == 1){
-	numberOfLines++;
-      }
-    }       
+        if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 0 && ( this->giveDelaunayLine(i + 1) )->delaunayAreaCheck() == 1 ) {
+            numberOfLines++;
+        } else if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 3 && this->giveRegion(1)->modifyVoronoiCrossSection(i + 1) == 1 )      {
+            numberOfLines++;
+        }
+    }
 
     fprintf(outputStream, "oofem.out\n");
     fprintf(outputStream, "Mechanical 3D model of cylinder\n");
@@ -7292,23 +6149,23 @@ Grid :: give3DCylinderOutput(const std::string& fileName)
 
     int firstFlag = 0;
     for ( int i = 0; i < this->giveNumberOfDelaunayVertices(); i++ ) {
-      if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayVertex(i+1)->giveOutsideFlag() == 2 ) {
+        if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 2 ) {
             this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
             if ( firstFlag == 0 ) {
                 firstFlag = 1;
-                fprintf( outputStream, "node %d coords 3 %e %e %e bc 6 1 1 1 1 0 0\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
-		i++;
-		this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
-		fprintf( outputStream, "node %d coords 3 %e %e %e bc 6 0 1 1 1 0 0\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+                fprintf(outputStream, "node %d coords 3 %e %e %e bc 6 1 1 1 1 0 0\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+                i++;
+                this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
+                fprintf(outputStream, "node %d coords 3 %e %e %e bc 6 0 1 1 1 0 0\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
             } else {
-                fprintf( outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+                fprintf(outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
             }
         }
     }
 
     printf("finished nodes\n");
 
-    int set1Counter=0,set2Counter=0,set3Counter=0;
+    int set1Counter = 0, set2Counter = 0, set3Counter = 0;
     oofem::IntArray set1Temp(numberOfLines);
     set1Temp.zero();
 
@@ -7319,102 +6176,98 @@ Grid :: give3DCylinderOutput(const std::string& fileName)
     set3Temp.zero();
 
     for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
-      if ( (this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 3) && (this->giveDelaunayLine(i+1))->delaunayAreaCheck() == 1) { //Elements are inside
-	    this->giveDelaunayLine(i + 1)->giveLocalVertices(nodes);
-	  
-	  //=======================================================
-	  //Deal with inclusions
-	  materialType = 2;
-	  this->giveDelaunayLine(i + 1)->updateMaterial(2);
-	  this->giveDelaunayVertex( nodes.at(1) )->giveCoordinates(coordsOne);
-	  this->giveDelaunayVertex( nodes.at(2) )->giveCoordinates(coordsTwo);
-            
-	  
-	  for ( int m = 0; m < this->giveNumberOfInclusions(); m++ ) {
-	    
-	    //Distinguish between inclusions
-	    if ( !strcmp(this->giveInclusion(m + 1)->giveClassName(), "InterfaceCylinder") ) {
-	      ( ( InterfaceCylinder * ) this->giveInclusion(m + 1) )->giveLine(line);
-	      radius = ( ( InterfaceCylinder * ) this->giveInclusion(m + 1) )->giveRadius() + ( ( InterfaceCylinder * ) this->giveInclusion(m + 1) )->giveITZThickness() / 2.;
-	      
-	      //	      printf("itz thickness = %e\n", ( ( InterfaceCylinder * ) this->giveInclusion(m + 1) )->giveITZThickness() / 2.);
-	      
-	      distanceOne = sqrt( pow(coordsOne.at(2) - line.at(2), 2.) +
-				  pow(coordsOne.at(3) - line.at(3), 2.) );
-	      distanceTwo = sqrt( pow(coordsTwo.at(2) - line.at(2), 2.) +
-				  pow(coordsTwo.at(3) - line.at(3), 2.) );
-	      
-	      if ( distanceOne > radius && distanceTwo > radius ) {
-		set1Counter++;
-		set1Temp.at(set1Counter) = i+1;
-		materialType = 2;
-		this->giveDelaunayLine(i + 1)->updateMaterial(2);
-                
-	      } else if ( ( distanceOne > radius && distanceTwo < radius ) || ( distanceOne < radius && distanceTwo > radius ) ) {
-		set3Counter++;
-		set3Temp.at(set3Counter) = i+1;
-		materialType = 4;
-		this->giveDelaunayLine(i + 1)->updateMaterial(4);
-		break;
-	      } else {
-		set2Counter++;
-		set2Temp.at(set2Counter) = i+1;
-		materialType = 3;
-		this->giveDelaunayLine(i + 1)->updateMaterial(3);
-		break;
-	      }
-	    }
-	  }
-	    //=================================================
+        if ( ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 3 ) && ( this->giveDelaunayLine(i + 1) )->delaunayAreaCheck() == 1 ) { //Elements are inside
+            this->giveDelaunayLine(i + 1)->giveLocalVertices(nodes);
+
+            //=======================================================
+            //Deal with inclusions
+            materialType = 2;
+            this->giveDelaunayLine(i + 1)->updateMaterial(2);
+            this->giveDelaunayVertex(nodes.at(1) )->giveCoordinates(coordsOne);
+            this->giveDelaunayVertex(nodes.at(2) )->giveCoordinates(coordsTwo);
+
+
+            for ( int m = 0; m < this->giveNumberOfInclusions(); m++ ) {
+                //Distinguish between inclusions
+                if ( !strcmp(this->giveInclusion(m + 1)->giveClassName(), "InterfaceCylinder") ) {
+                    ( ( InterfaceCylinder * ) this->giveInclusion(m + 1) )->giveLine(line);
+                    radius = ( ( InterfaceCylinder * ) this->giveInclusion(m + 1) )->giveRadius() + ( ( InterfaceCylinder * ) this->giveInclusion(m + 1) )->giveITZThickness() / 2.;
+
+
+                    distanceOne = sqrt(pow(coordsOne.at(2) - line.at(2), 2.) +
+                                       pow(coordsOne.at(3) - line.at(3), 2.) );
+                    distanceTwo = sqrt(pow(coordsTwo.at(2) - line.at(2), 2.) +
+                                       pow(coordsTwo.at(3) - line.at(3), 2.) );
+
+                    if ( distanceOne > radius && distanceTwo > radius ) {
+                        set1Counter++;
+                        set1Temp.at(set1Counter) = i + 1;
+                        materialType = 2;
+                        this->giveDelaunayLine(i + 1)->updateMaterial(2);
+                    } else if ( ( distanceOne > radius && distanceTwo < radius ) || ( distanceOne < radius && distanceTwo > radius ) ) {
+                        set3Counter++;
+                        set3Temp.at(set3Counter) = i + 1;
+                        materialType = 4;
+                        this->giveDelaunayLine(i + 1)->updateMaterial(4);
+                        break;
+                    } else {
+                        set2Counter++;
+                        set2Temp.at(set2Counter) = i + 1;
+                        materialType = 3;
+                        this->giveDelaunayLine(i + 1)->updateMaterial(3);
+                        break;
+                    }
+                }
+            }
+            //=================================================
 
             this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
-	    if(materialType == 4){
-	      fprintf( outputStream, "lattice3D %d nodes 2 %d %d crossSect %d mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType-1, materialType, 3 * crossSectionNodes.giveSize() );
-	      
-	      for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                this->giveVoronoiVertex( crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-                fprintf( outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
-	      }
-	      fprintf(outputStream, " bodyloads 1 2\n");
-	    }
-	    else{
-	      fprintf( outputStream, "lattice3D %d nodes 2 %d %d crossSect %d mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType -1, materialType, 3 * crossSectionNodes.giveSize() );
+            if ( materialType == 4 ) {
+                fprintf(outputStream, "lattice3D %d nodes 2 %d %d crossSect %d mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType - 1, materialType, 3 * crossSectionNodes.giveSize() );
 
-            for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                this->giveVoronoiVertex( crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-                fprintf( outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
+                for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
+                    this->giveVoronoiVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
+                    fprintf(outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
+                }
+                fprintf(outputStream, " bodyloads 1 2\n");
+            } else   {
+                fprintf(outputStream, "lattice3D %d nodes 2 %d %d crossSect %d mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType - 1, materialType, 3 * crossSectionNodes.giveSize() );
+
+                for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
+                    this->giveVoronoiVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
+                    fprintf(outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
+                }
+                fprintf(outputStream, "\n");
             }
-            fprintf(outputStream, "\n");
-	    }
-	} 
+        }
     }
 
     oofem::IntArray set1(set1Counter);
     set1.zero();
-    
+
     oofem::IntArray set2(set2Counter);
     set2.zero();
-    
+
     oofem::IntArray set3(set3Counter);
     set3.zero();
-    
-    for(int i=0;i<set1Counter;i++){
-      set1.at(i+1) = set1Temp.at(i+1);
+
+    for (int i = 0; i < set1Counter; i++) {
+        set1.at(i + 1) = set1Temp.at(i + 1);
     }
 
-    for(int i=0;i<set2Counter;i++){
-      set2.at(i+1) = set2Temp.at(i+1);
+    for (int i = 0; i < set2Counter; i++) {
+        set2.at(i + 1) = set2Temp.at(i + 1);
     }
 
-    for(int i=0;i<set3Counter;i++){
-      set3.at(i+1) = set3Temp.at(i+1);
+    for (int i = 0; i < set3Counter; i++) {
+        set3.at(i + 1) = set3Temp.at(i + 1);
     }
-        
+
     fprintf(outputStream, "latticecs 1 material 2\n");
     fprintf(outputStream, "latticecs 2 material 3\n");
     fprintf(outputStream, "latticecs 3 material 4\n");
-                                                                                             
+
     fprintf(outputStream, "mps 1 d 0. lattice a1 0.297 a2 1.e-12 talpha 0. referencetemperature 296. mode 1 q1 1.26403980927102E-11 q2 8.99822274579516E-11 q3 1.63092787267537E-12 q4 3.51199279469883E-12  stiffnessfactor 1. timefactor 1. lambda0 1. begoftimeofinterest 1.e-8 endoftimeofinterest 100000. relMatAge 28. CoupledAnalysisType 0\n");
     fprintf(outputStream, "latticeplasticitydamageviscoelastic 2 d 0 talpha 0. viscomat 1 calpha 0. e 45.91e9 a1 0.297 a2 1.e-12 ft 2.35e6 fc 30.e6 wf 20.e-6 ahard 1.e-3 angle1 0.5 flow 0.25 timefactor 1. iter 100 tol 1.e-6 timedepfracturing fcm28 30 fib_s 0.25 stiffnessfactor 1. randvars 2 806 807 randgen 2 4 4\n");
     fprintf(outputStream, "latticelinearelastic 3 d 0 talpha 0. calpha 0. e 300e10\n");
@@ -7425,31 +6278,31 @@ Grid :: give3DCylinderOutput(const std::string& fileName)
     fprintf(outputStream, "ConstantFunction 1 f(t) 1.\n");
     fprintf(outputStream, "PiecewiseLinFunction 2 nPoints 2 t 2 0. 47600. f(t) 2 0. 1.\n");
     fprintf(outputStream, "PiecewiseLinFunction 3 nPoints 2 t 2 0. 1499. f(t) 2 31.75 31.75\n");
-    fprintf(outputStream, "InterpolatingFunction 4 name random.dat dim 3\n");     
+    fprintf(outputStream, "InterpolatingFunction 4 name random.dat dim 3\n");
 
     //Print set1
     fprintf(outputStream, "Set 1 elements %d", set1Counter);
-    for(int i=0;i<set1Counter;i++){
-      fprintf(outputStream, " %d", set1.at(i+1));
+    for (int i = 0; i < set1Counter; i++) {
+        fprintf(outputStream, " %d", set1.at(i + 1) );
     }
     fprintf(outputStream, "\n");
 
     //Print set2
     fprintf(outputStream, "Set 2 elements %d", set2Counter);
-    for(int i=0;i<set2Counter;i++){
-      fprintf(outputStream, " %d", set2.at(i+1));
+    for (int i = 0; i < set2Counter; i++) {
+        fprintf(outputStream, " %d", set2.at(i + 1) );
     }
     fprintf(outputStream, "\n");
 
     //Print set2
     fprintf(outputStream, "Set 3 elements %d", set3Counter);
-    for(int i=0;i<set3Counter;i++){
-      fprintf(outputStream, " %d", set3.at(i+1));
+    for (int i = 0; i < set3Counter; i++) {
+        fprintf(outputStream, " %d", set3.at(i + 1) );
     }
     fprintf(outputStream, "\n");
 
-    
-    
+
+
     fprintf(outputStream, "#%%BEGIN_CHECK%%\n");
     fprintf(outputStream, "#NODE number %d dof 2 unknown d\n", this->giveNumberOfDelaunayVertices() + 1);
     fprintf(outputStream, "#LOADLEVEL\n");
@@ -7460,38 +6313,26 @@ Grid :: give3DCylinderOutput(const std::string& fileName)
 
 
 void
-Grid :: give3DTensionOutput(const std::string& fileName)
+Grid::give3DTensionOutput(const std::string &fileName)
 {
-  //Output for direct tension.
-  //Start with mechanical model
+    //Output for direct tension.
+    //Start with mechanical model
 
-    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
-
-    /* const std::string fileName1 = fileName + ".sm"; */
-    /* FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w"); */
-    
-    /* const std::string fileName2 = fileName + ".tm"; */
-    /* FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
-
-  
-    /* FILE *outputStream; */
-    /* if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
-    /*     converter::errorf("Cannot open output file %s", fileName); */
-    /* } */
+    FILE *outputStream = converter::fopen_or_die(fileName, "w");
 
     int numberOfNodes, numberOfLines;
     oofem::FloatArray coords(3);
-    oofem::FloatArray coordsOne,coordsTwo,line;
+    oofem::FloatArray coordsOne, coordsTwo, line;
     int materialType = 1;
     oofem::IntArray nodes, location(2);
     oofem::IntArray crossSectionNodes;
-    double radius,distanceOne,distanceTwo;
+    double radius, distanceOne, distanceTwo;
 
-    
+
     //Determine the number of Delaunay nodes in the domain
     numberOfNodes = 0;
     for ( int i = 0; i < this->giveNumberOfDelaunayVertices(); i++ ) {
-        if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0 ||  this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 2) {
+        if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0 ||  this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 2 ) {
             numberOfNodes++;
         }
     }
@@ -7499,13 +6340,12 @@ Grid :: give3DTensionOutput(const std::string& fileName)
     //Determine the number of Delaunay lines in the domain
     numberOfLines = 0;
     for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
-      if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 0 && (this->giveDelaunayLine(i+1))->delaunayAreaCheck() == 1) {
-	numberOfLines++;
-      }
-      else if(this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 3 && this->giveRegion(1)->modifyVoronoiCrossSection(i + 1) == 1){
-	numberOfLines++;
-      }
-    }       
+        if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 0 && ( this->giveDelaunayLine(i + 1) )->delaunayAreaCheck() == 1 ) {
+            numberOfLines++;
+        } else if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 3 && this->giveRegion(1)->modifyVoronoiCrossSection(i + 1) == 1 )      {
+            numberOfLines++;
+        }
+    }
 
     fprintf(outputStream, "oofem.out\n");
     fprintf(outputStream, "Mechanical 3D model of cylinder\n");
@@ -7523,56 +6363,51 @@ Grid :: give3DTensionOutput(const std::string& fileName)
     int loadNode;
     int firstFlag = 0;
     int bottomSetCounter = 0;
-    oofem::IntArray bottomSetTemp(this->giveNumberOfDelaunayVertices());
+    oofem::IntArray bottomSetTemp(this->giveNumberOfDelaunayVertices() );
     int topSetCounter = 0;
-    oofem::IntArray topSetTemp(this->giveNumberOfDelaunayVertices());
-    
-    for ( int i = 0; i < this->giveNumberOfDelaunayVertices(); i++ ) {
-      if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayVertex(i+1)->giveOutsideFlag() == 2 ) {
-	
-	this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
+    oofem::IntArray topSetTemp(this->giveNumberOfDelaunayVertices() );
 
-	
-	//Create support and load nodes
-	if(fabs(coords.at(1)-0.025)<giveTol() && fabs(coords.at(2)-0.0)<giveTol() && fabs(coords.at(3)-0.005)<giveTol()){ 
-	  supportNode = i+1;
-	  fprintf( outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
-	}
-	else if(fabs(coords.at(1)-0.025)<giveTol() && fabs(coords.at(2)-0.075)<giveTol() && fabs(coords.at(3)-0.005)<giveTol()){
-	  loadNode = i+1;
-	  fprintf( outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
-	}
-	else if(fabs(coords.at(2)-0.0)<giveTol()){
-	  bottomSetCounter++;
-	  bottomSetTemp.at(bottomSetCounter) = i+1;
-	  fprintf( outputStream, "rigidarmnode %d coords 3 %e %e %e master %d mastermask 6 0 1 0 0 0 0 doftype 6 0 2 0 0 0 0\n", i + 1, coords.at(1), coords.at(2), coords.at(3), supportNode);
-	}
-	else if(fabs(coords.at(2)-0.075)<giveTol()){
-	  topSetCounter++;
-	  topSetTemp.at(topSetCounter) = i+1;
-	  fprintf( outputStream, "rigidarmnode %d coords 3 %e %e %e master %d mastermask 6 0 1 0 0 0 0 doftype 6 0 2 0 0 0 0\n", i + 1, coords.at(1), coords.at(2), coords.at(3), loadNode);
-	}
-	else{
-	  fprintf( outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
-	}
-      }
+    for ( int i = 0; i < this->giveNumberOfDelaunayVertices(); i++ ) {
+        if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 2 ) {
+            this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
+
+
+            //Create support and load nodes
+            if ( fabs(coords.at(1) - 0.025) < giveTol() && fabs(coords.at(2) - 0.0) < giveTol() && fabs(coords.at(3) - 0.005) < giveTol() ) {
+                supportNode = i + 1;
+                fprintf(outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+            } else if ( fabs(coords.at(1) - 0.025) < giveTol() && fabs(coords.at(2) - 0.075) < giveTol() && fabs(coords.at(3) - 0.005) < giveTol() )                  {
+                loadNode = i + 1;
+                fprintf(outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+            } else if ( fabs(coords.at(2) - 0.0) < giveTol() )          {
+                bottomSetCounter++;
+                bottomSetTemp.at(bottomSetCounter) = i + 1;
+                fprintf(outputStream, "rigidarmnode %d coords 3 %e %e %e master %d mastermask 6 0 1 0 0 0 0 doftype 6 0 2 0 0 0 0\n", i + 1, coords.at(1), coords.at(2), coords.at(3), supportNode);
+            } else if ( fabs(coords.at(2) - 0.075) < giveTol() )          {
+                topSetCounter++;
+                topSetTemp.at(topSetCounter) = i + 1;
+                fprintf(outputStream, "rigidarmnode %d coords 3 %e %e %e master %d mastermask 6 0 1 0 0 0 0 doftype 6 0 2 0 0 0 0\n", i + 1, coords.at(1), coords.at(2), coords.at(3), loadNode);
+            } else   {
+                fprintf(outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+            }
+        }
     }
-    
+
     oofem::IntArray bottomSet(bottomSetCounter);
     bottomSet.zero();
-    for(int i = 0;i<bottomSetCounter;i++){
-      bottomSet.at(i+1) = bottomSetTemp.at(i+1);
+    for (int i = 0; i < bottomSetCounter; i++) {
+        bottomSet.at(i + 1) = bottomSetTemp.at(i + 1);
     }
 
     oofem::IntArray topSet(topSetCounter);
     topSet.zero();
-    for(int i = 0;i<topSetCounter;i++){
-      topSet.at(i+1) = topSetTemp.at(i+1);
+    for (int i = 0; i < topSetCounter; i++) {
+        topSet.at(i + 1) = topSetTemp.at(i + 1);
     }
-    
+
     printf("finished nodes\n");
 
-    int set1Counter=0,set2Counter=0,set3Counter=0;
+    int set1Counter = 0, set2Counter = 0, set3Counter = 0;
     oofem::IntArray set1Temp(numberOfLines);
     set1Temp.zero();
 
@@ -7583,68 +6418,67 @@ Grid :: give3DTensionOutput(const std::string& fileName)
     set3Temp.zero();
 
     for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
-      if ( (this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 3) && (this->giveDelaunayLine(i+1))->delaunayAreaCheck() == 1) { //Elements are inside
-	this->giveDelaunayLine(i + 1)->giveLocalVertices(nodes);
-	
-	//=======================================================
-	//Deal with inclusions
-	materialType = 1;
-	//	this->giveDelaunayLine(i + 1)->updateMaterial(1);
-	this->giveDelaunayVertex( nodes.at(1) )->giveCoordinates(coordsOne);
-	this->giveDelaunayVertex( nodes.at(2) )->giveCoordinates(coordsTwo);
-	
-	
-	if ( coordsOne.at(2) < 0.0125 && coordsTwo.at(2) < 0.0125 ) {
-	  set2Counter++;
-	  set2Temp.at(set2Counter) = i+1;
-	  materialType = 2;
-	  this->giveDelaunayLine(i + 1)->updateMaterial(2);
-	}
-	else if ( coordsOne.at(2) >= 0.0125 && coordsOne.at(2) <= 0.0625 || coordsTwo.at(2) >= 0.0125 && coordsTwo.at(2) <= 0.0625) {
-	  set1Counter++;
-	  set1Temp.at(set1Counter) = i+1;
-	  materialType = 1;
-	  this->giveDelaunayLine(i + 1)->updateMaterial(1);
-	} else if ( coordsOne.at(2) > 0.0625 && coordsTwo.at(2) > 0.0625){
-	  set3Counter++;
-	  set3Temp.at(set3Counter) = i+1;
-	  materialType = 2;
-	  this->giveDelaunayLine(i + 1)->updateMaterial(2);
-	}
-	
-	this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
-	
-	fprintf( outputStream, "lattice3D %d nodes 2 %d %d crossSect %d mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, materialType, 3 * crossSectionNodes.giveSize() );
-	    
-	for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-	  this->giveVoronoiVertex( crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-	  fprintf( outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
-	}
-	fprintf(outputStream, "\n");
-      } 
+        if ( ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 3 ) && ( this->giveDelaunayLine(i + 1) )->delaunayAreaCheck() == 1 ) { //Elements are inside
+            this->giveDelaunayLine(i + 1)->giveLocalVertices(nodes);
+
+            //=======================================================
+            //Deal with inclusions
+            materialType = 1;
+            //	this->giveDelaunayLine(i + 1)->updateMaterial(1);
+            this->giveDelaunayVertex(nodes.at(1) )->giveCoordinates(coordsOne);
+            this->giveDelaunayVertex(nodes.at(2) )->giveCoordinates(coordsTwo);
+
+
+            if ( coordsOne.at(2) < 0.0125 && coordsTwo.at(2) < 0.0125 ) {
+                set2Counter++;
+                set2Temp.at(set2Counter) = i + 1;
+                materialType = 2;
+                this->giveDelaunayLine(i + 1)->updateMaterial(2);
+            } else if ( (coordsOne.at(2) >= 0.0125 && coordsOne.at(2) <= 0.0625) || (coordsTwo.at(2) >= 0.0125 && coordsTwo.at(2) <= 0.0625) )    {
+                set1Counter++;
+                set1Temp.at(set1Counter) = i + 1;
+                materialType = 1;
+                this->giveDelaunayLine(i + 1)->updateMaterial(1);
+            } else if ( coordsOne.at(2) > 0.0625 && coordsTwo.at(2) > 0.0625 ) {
+                set3Counter++;
+                set3Temp.at(set3Counter) = i + 1;
+                materialType = 2;
+                this->giveDelaunayLine(i + 1)->updateMaterial(2);
+            }
+
+            this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
+
+            fprintf(outputStream, "lattice3D %d nodes 2 %d %d crossSect %d mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, materialType, 3 * crossSectionNodes.giveSize() );
+
+            for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
+                this->giveVoronoiVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
+                fprintf(outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
+            }
+            fprintf(outputStream, "\n");
+        }
     }
-    
+
     oofem::IntArray set1(set1Counter);
     set1.zero();
-    
+
     oofem::IntArray set2(set2Counter);
     set2.zero();
-    
+
     oofem::IntArray set3(set3Counter);
     set3.zero();
-    
-    for(int i=0;i<set1Counter;i++){
-      set1.at(i+1) = set1Temp.at(i+1);
+
+    for (int i = 0; i < set1Counter; i++) {
+        set1.at(i + 1) = set1Temp.at(i + 1);
     }
 
-    for(int i=0;i<set2Counter;i++){
-      set2.at(i+1) = set2Temp.at(i+1);
+    for (int i = 0; i < set2Counter; i++) {
+        set2.at(i + 1) = set2Temp.at(i + 1);
     }
 
-    for(int i=0;i<set3Counter;i++){
-      set3.at(i+1) = set3Temp.at(i+1);
+    for (int i = 0; i < set3Counter; i++) {
+        set3.at(i + 1) = set3Temp.at(i + 1);
     }
-        
+
     fprintf(outputStream, "latticecs 1 material 1\n");
     fprintf(outputStream, "latticecs 2 material 2\n");
 
@@ -7654,70 +6488,45 @@ Grid :: give3DTensionOutput(const std::string& fileName)
     fprintf(outputStream, "BoundaryCondition 1 loadTimeFunction 1 dofs 6 1 2 3 4 5 6 values 6 0 0 0 0 0 0 set 4\n");
     fprintf(outputStream, "BoundaryCondition 2 loadTimeFunction 2 dofs 6 1 2 3 4 5 6 values 6 0 4.e-4 0 0 0 0 set 5\n");
     fprintf(outputStream, "ConstantFunction 1 f(t) 1.\n");
-    fprintf(outputStream, "PiecewiseLinFunction 2 nPoints 2 t 2 0. 199. f(t) 2 0. 1.\n");     
+    fprintf(outputStream, "PiecewiseLinFunction 2 nPoints 2 t 2 0. 199. f(t) 2 0. 1.\n");
 
     //Print set1
     fprintf(outputStream, "Set 1 elements %d", set1Counter);
-    for(int i=0;i<set1Counter;i++){
-      fprintf(outputStream, " %d", set1.at(i+1));
+    for (int i = 0; i < set1Counter; i++) {
+        fprintf(outputStream, " %d", set1.at(i + 1) );
     }
     fprintf(outputStream, "\n");
 
     //Print set2
     fprintf(outputStream, "Set 2 elements %d", set2Counter);
-    for(int i=0;i<set2Counter;i++){
-      fprintf(outputStream, " %d", set2.at(i+1));
+    for (int i = 0; i < set2Counter; i++) {
+        fprintf(outputStream, " %d", set2.at(i + 1) );
     }
     fprintf(outputStream, "\n");
 
     //Print set2
     fprintf(outputStream, "Set 3 elements %d", set3Counter);
-    for(int i=0;i<set3Counter;i++){
-      fprintf(outputStream, " %d", set3.at(i+1));
+    for (int i = 0; i < set3Counter; i++) {
+        fprintf(outputStream, " %d", set3.at(i + 1) );
     }
     fprintf(outputStream, "\n");
-    
+
     //Print set4
     fprintf(outputStream, "Set 4 nodes 1 %d\n", supportNode);
     fprintf(outputStream, "Set 5 nodes 1 %d\n", loadNode);
-    // fprintf(outputStream, "Set 6 nodes %d", bottomSetCounter);
-    // for(int i=0;i<bottomSetCounter;i++){
-    //   fprintf(outputStream, " %d", bottomSet.at(i+1));
-    // }
-    // fprintf(outputStream, "\n");
-
-    // fprintf(outputStream, "Set 7 nodes %d", topSetCounter);
-    // for(int i=0;i<topSetCounter;i++){
-    //   fprintf(outputStream, " %d", topSet.at(i+1));
-    // }
-    // fprintf(outputStream, "\n");
-
-	    fprintf(outputStream, "#%%BEGIN_CHECK%%\n");
-	    fprintf(outputStream, "#NODE number 4 dof 2 unknown d\n");
-	    fprintf(outputStream, "#REACTION number 3 dof 2 unknown d\n");
+    fprintf(outputStream, "#%%BEGIN_CHECK%%\n");
+    fprintf(outputStream, "#NODE number 4 dof 2 unknown d\n");
+    fprintf(outputStream, "#REACTION number 3 dof 2 unknown d\n");
     fprintf(outputStream, "#TIME\n");
     fprintf(outputStream, "#%%END_CHECK%%\n");
     return;
-
 }
 
 void
-Grid :: give3DPeriodicTetraSMOutput(const std::string& fileName)
+Grid::give3DPeriodicTetraSMOutput(const std::string &fileName)
 {
+    FILE *outputStream = converter::fopen_or_die(fileName, "w");
 
-    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
-
-  /*   const std::string fileName1 = fileName + ".sm"; */
-  /*   FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w"); */
-    
-  /*   const std::string fileName2 = fileName + ".tm"; */
-  /*   FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
-
-
-  /* FILE *outputStream; */
-  /*   if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
-  /*       converter::errorf("Cannot open output file %s", fileName); */
-  /*   } */
 
     oofem::IntArray periodicFlag(3);
     this->givePeriodicityFlag(periodicFlag);
@@ -7739,103 +6548,103 @@ Grid :: give3DPeriodicTetraSMOutput(const std::string& fileName)
     numberOfNodes = 0;
     for ( int i = 0; i < this->giveNumberOfDelaunayVertices(); i++ ) {
         //Determine which nodes are mirror images
-        if (this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 2 || this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0) {
+        if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 2 || this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0 ) {
             this->giveDelaunayVertex(i + 1)->giveCoordinates(coordTest);
 
             if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 0 ) {
                 //Periodicity in x
-                if ( fabs(coordTest.at(1) - boundaries.at(2)) < giveTol() ) {
-                    if (imageNodeList.contains(i+1) == 0) {
-                        imageNodeList.followedBy(i+1);
+                if ( fabs(coordTest.at(1) - boundaries.at(2) ) < giveTol() ) {
+                    if ( imageNodeList.contains(i + 1) == 0 ) {
+                        imageNodeList.followedBy(i + 1);
                     }
                 } else {
-                    if ( mirrorNodeList.contains(i+1) == 0 ) {
-                        mirrorNodeList.followedBy(i+1);
+                    if ( mirrorNodeList.contains(i + 1) == 0 ) {
+                        mirrorNodeList.followedBy(i + 1);
                     }
                 }
             } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 0 ) {
                 //Periodicity in y
-                if ( fabs(coordTest.at(2) - boundaries.at(4)) < giveTol() ) {
-                    if (imageNodeList.contains(i+1) == 0) {
-                        imageNodeList.followedBy(i+1);
+                if ( fabs(coordTest.at(2) - boundaries.at(4) ) < giveTol() ) {
+                    if ( imageNodeList.contains(i + 1) == 0 ) {
+                        imageNodeList.followedBy(i + 1);
                     }
                 } else {
-                    if ( mirrorNodeList.contains(i+1) == 0 ) {
-                        mirrorNodeList.followedBy(i+1);
+                    if ( mirrorNodeList.contains(i + 1) == 0 ) {
+                        mirrorNodeList.followedBy(i + 1);
                     }
                 }
             } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 1 ) {
                 //Periodicity in z
-                if ( fabs(coordTest.at(3) - boundaries.at(6)) < giveTol() ) {
-                    if (imageNodeList.contains(i+1) == 0) {
-                        imageNodeList.followedBy(i+1);
+                if ( fabs(coordTest.at(3) - boundaries.at(6) ) < giveTol() ) {
+                    if ( imageNodeList.contains(i + 1) == 0 ) {
+                        imageNodeList.followedBy(i + 1);
                     }
                 } else {
-                    if ( mirrorNodeList.contains(i+1) == 0 ) {
-                        mirrorNodeList.followedBy(i+1);
+                    if ( mirrorNodeList.contains(i + 1) == 0 ) {
+                        mirrorNodeList.followedBy(i + 1);
                     }
                 }
             } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 0 ) {
                 //Periodicity in x y
-                if ( fabs(coordTest.at(1) - boundaries.at(2)) < giveTol()  ||
-                     fabs(coordTest.at(2) - boundaries.at(4)) < giveTol() ) {
-                        if (imageNodeList.contains(i+1) == 0) {
-                            imageNodeList.followedBy(i+1);
-                        }
+                if ( fabs(coordTest.at(1) - boundaries.at(2) ) < giveTol()  ||
+                     fabs(coordTest.at(2) - boundaries.at(4) ) < giveTol() ) {
+                    if ( imageNodeList.contains(i + 1) == 0 ) {
+                        imageNodeList.followedBy(i + 1);
+                    }
                 } else {
-                    if ( mirrorNodeList.contains(i+1) == 0 ) {
-                        mirrorNodeList.followedBy(i+1);
+                    if ( mirrorNodeList.contains(i + 1) == 0 ) {
+                        mirrorNodeList.followedBy(i + 1);
                     }
                 }
             } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 1 ) {
                 //Periodicity in x z
-                if ( fabs(coordTest.at(1) - boundaries.at(2)) < giveTol()  ||
-                     fabs(coordTest.at(3) - boundaries.at(6)) < giveTol() ) {
-                        if (imageNodeList.contains(i+1) == 0) {
-                            imageNodeList.followedBy(i+1);
-                        }
+                if ( fabs(coordTest.at(1) - boundaries.at(2) ) < giveTol()  ||
+                     fabs(coordTest.at(3) - boundaries.at(6) ) < giveTol() ) {
+                    if ( imageNodeList.contains(i + 1) == 0 ) {
+                        imageNodeList.followedBy(i + 1);
+                    }
                 } else {
-                    if ( mirrorNodeList.contains(i+1) == 0 ) {
-                        mirrorNodeList.followedBy(i+1);
+                    if ( mirrorNodeList.contains(i + 1) == 0 ) {
+                        mirrorNodeList.followedBy(i + 1);
                     }
                 }
             } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 1 ) {
                 //Periodicity in y z
-                if ( fabs(coordTest.at(2) - boundaries.at(4)) < giveTol()  ||
-                     fabs(coordTest.at(3) - boundaries.at(6)) < giveTol() ) {
-                        if (imageNodeList.contains(i+1) == 0) {
-                            imageNodeList.followedBy(i+1);
-                        }
+                if ( fabs(coordTest.at(2) - boundaries.at(4) ) < giveTol()  ||
+                     fabs(coordTest.at(3) - boundaries.at(6) ) < giveTol() ) {
+                    if ( imageNodeList.contains(i + 1) == 0 ) {
+                        imageNodeList.followedBy(i + 1);
+                    }
                 } else {
-                    if ( mirrorNodeList.contains(i+1) == 0 ) {
-                        mirrorNodeList.followedBy(i+1);
+                    if ( mirrorNodeList.contains(i + 1) == 0 ) {
+                        mirrorNodeList.followedBy(i + 1);
                     }
                 }
             } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 1 ) {
                 //Periodicity in x y z
-                if ( fabs(coordTest.at(1) - boundaries.at(2)) < giveTol()  ||
-                     fabs(coordTest.at(2) - boundaries.at(4)) < giveTol()  ||
-                     fabs(coordTest.at(3) - boundaries.at(6)) < giveTol() ) {
-                    if (imageNodeList.contains(i+1) == 0) {
-                            imageNodeList.followedBy(i+1);
-                        }
+                if ( fabs(coordTest.at(1) - boundaries.at(2) ) < giveTol()  ||
+                     fabs(coordTest.at(2) - boundaries.at(4) ) < giveTol()  ||
+                     fabs(coordTest.at(3) - boundaries.at(6) ) < giveTol() ) {
+                    if ( imageNodeList.contains(i + 1) == 0 ) {
+                        imageNodeList.followedBy(i + 1);
+                    }
                 } else {
-                    if ( mirrorNodeList.contains(i+1) == 0 ) {
-                        mirrorNodeList.followedBy(i+1);
+                    if ( mirrorNodeList.contains(i + 1) == 0 ) {
+                        mirrorNodeList.followedBy(i + 1);
                     }
                 }
             }
         }
     }
 
-    numberOfNodes = mirrorNodeList.giveSize()+1; //add control node
+    numberOfNodes = mirrorNodeList.giveSize() + 1; //add control node
 
     //Determine the number of Delaunay tetrahedra in the domain
     numberOfTetras = 0;
     for ( int i = 0; i < this->giveNumberOfDelaunayTetras(); i++ ) {
-      if (  (this->giveDelaunayTetra(i+1))->giveOutsideFlag() == 0 ) {
-	numberOfTetras++;
-      }
+        if (  ( this->giveDelaunayTetra(i + 1) )->giveOutsideFlag() == 0 ) {
+            numberOfTetras++;
+        }
     }
 
     //OOFEM INPUT BEGINS
@@ -7854,16 +6663,16 @@ Grid :: give3DPeriodicTetraSMOutput(const std::string& fileName)
 
     //node output
     for ( int i = 0; i < this->giveNumberOfDelaunayVertices(); i++ ) {
-        if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 2) {
+        if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 2 ) {
             this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
 
             if ( mirrorNodeList.isEmpty() == 0 ) {
-                if (mirrorNodeList.contains(i+1)) {
-                    if ( firstFlag == 0) {
-                        firstFlag=1;
-                        fprintf( outputStream, "node %d coords 3 %e %e %e bc 3 1 1 1\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+                if ( mirrorNodeList.contains(i + 1) ) {
+                    if ( firstFlag == 0 ) {
+                        firstFlag = 1;
+                        fprintf(outputStream, "node %d coords 3 %e %e %e bc 3 1 1 1\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
                     } else {
-                        fprintf( outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+                        fprintf(outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
                     }
                 }
             }
@@ -7871,116 +6680,116 @@ Grid :: give3DPeriodicTetraSMOutput(const std::string& fileName)
     }
 
     //control node
-    if (this->macroType == _Truss) {
-        fprintf( outputStream, "node %d coords 3 %e %e %e dofidmask 1 1 bc 1 2\n", this->giveNumberOfDelaunayVertices() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
-    } else if (this->macroType == _Membrane ) {
-        fprintf( outputStream, "node %d coords 3 %e %e %e dofidmask 4 1 2 4 5 bc 4 2 2 2 2\n", this->giveNumberOfDelaunayVertices() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
-    } else if (this->macroType == _Beam) {
-        fprintf( outputStream, "node %d coords 3 %e %e %e dofidmask 3 1 7 10 bc 3 2 2 2\n", this->giveNumberOfDelaunayVertices() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
-    } else if (this->macroType == _Plate) {
-        fprintf( outputStream, "node %d coords 3 %e %e %e dofidmask 10 1 2 4 5 7 8 10 11 12 13 bc 10 2 2 2 2 2 2 2 2 2 2\n", this->giveNumberOfDelaunayVertices() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
-    } else if (this->macroType == _3dVoigt) {
-        fprintf( outputStream, "node %d coords 3 %e %e %e dofidmask 6 1 2 3 4 5 6 bc 6 2 2 2 2 2 2\n", this->giveNumberOfDelaunayVertices() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
-    } else if (this->macroType == _3d) {
-        fprintf( outputStream, "node %d coords 3 %e %e %e dofidmask 9 1 2 3 4 5 6 7 8 9 bc 9 2 2 2 2 2 2 2 2 2\n", this->giveNumberOfDelaunayVertices() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
+    if ( this->macroType == _Truss ) {
+        fprintf(outputStream, "node %d coords 3 %e %e %e dofidmask 1 1 bc 1 2\n", this->giveNumberOfDelaunayVertices() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
+    } else if ( this->macroType == _Membrane ) {
+        fprintf(outputStream, "node %d coords 3 %e %e %e dofidmask 4 1 2 4 5 bc 4 2 2 2 2\n", this->giveNumberOfDelaunayVertices() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
+    } else if ( this->macroType == _Beam ) {
+        fprintf(outputStream, "node %d coords 3 %e %e %e dofidmask 3 1 7 10 bc 3 2 2 2\n", this->giveNumberOfDelaunayVertices() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
+    } else if ( this->macroType == _Plate ) {
+        fprintf(outputStream, "node %d coords 3 %e %e %e dofidmask 10 1 2 4 5 7 8 10 11 12 13 bc 10 2 2 2 2 2 2 2 2 2 2\n", this->giveNumberOfDelaunayVertices() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
+    } else if ( this->macroType == _3dVoigt ) {
+        fprintf(outputStream, "node %d coords 3 %e %e %e dofidmask 6 1 2 3 4 5 6 bc 6 2 2 2 2 2 2\n", this->giveNumberOfDelaunayVertices() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
+    } else if ( this->macroType == _3d ) {
+        fprintf(outputStream, "node %d coords 3 %e %e %e dofidmask 9 1 2 3 4 5 6 7 8 9 bc 9 2 2 2 2 2 2 2 2 2\n", this->giveNumberOfDelaunayVertices() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
     }
 
     //element output
     int boundaryFlag = 0;
     for ( int i = 0; i < this->giveNumberOfDelaunayTetras(); i++ ) {
-      //First plot all of them
-      if ( this->giveDelaunayTetra(i + 1)->giveOutsideFlag() == 0) { //Elements are inside
-        location.zero();
-        boundaryFlag = 0;
-        materialType = 1;
-        this->giveDelaunayTetra(i + 1)->giveLocalVertices(nodes);
-        newNodes = nodes;
+        //First plot all of them
+        if ( this->giveDelaunayTetra(i + 1)->giveOutsideFlag() == 0 ) { //Elements are inside
+            location.zero();
+            boundaryFlag = 0;
+            materialType = 1;
+            this->giveDelaunayTetra(i + 1)->giveLocalVertices(nodes);
+            newNodes = nodes;
 
-        //Go through nodes and replace the ones outside with periodic nodes
-        for ( int m = 0; m < nodes.giveSize(); m++ ) {
-            giveDelaunayVertex(nodes.at(m+1))->giveCoordinates(coords);
-            if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 0 ) {
-                //Periodicity in x
-                if ( fabs(coords.at(1) - boundaries.at(2)) < giveTol() ) { //x=xmax
-                    boundaryFlag=1;
-                    location.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->giveLocation();
-                    newNodes.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->givePeriodicNode();
-                }
-            } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 0 ) {
-                //Periodicity in y
-                if ( fabs(coords.at(2) - boundaries.at(4)) < giveTol() ) { //y=ymax
-                    boundaryFlag=1;
-                    location.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->giveLocation();
-                    newNodes.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->givePeriodicNode();
-                }
-            } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 1 ) {
-                //Periodicity in z
-                if ( fabs(coords.at(3) - boundaries.at(6)) < giveTol() ) { //z=zmax
-                    boundaryFlag=1;
-                    location.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->giveLocation();
-                    newNodes.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->givePeriodicNode();
-                }
-            } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 0 ) {
-                //Periodicity in x y
-                if ( fabs(coords.at(1) - boundaries.at(2)) < giveTol()  ||
-                     fabs(coords.at(2) - boundaries.at(4)) < giveTol() ) { //x=xmax or y=ymax
-                    boundaryFlag=1;
-                    location.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->giveLocation();
-                    newNodes.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->givePeriodicNode();
-                }
-            } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 1 ) {
-                //Periodicity in x z
-                if ( fabs(coords.at(1) - boundaries.at(2)) < giveTol()  ||
-                     fabs(coords.at(3) - boundaries.at(6)) < giveTol() ) { //x=xmax or z=zmax
-                    boundaryFlag=1;
-                    location.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->giveLocation();
-                    newNodes.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->givePeriodicNode();
-                }
-            } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 1 ) {
-                //Periodicity in y z
-                if ( fabs(coords.at(2) - boundaries.at(4)) < giveTol()  ||
-                     fabs(coords.at(3) - boundaries.at(6)) < giveTol() ) { //y=ymax or z=zmax
-                    boundaryFlag=1;
-                    location.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->giveLocation();
-                    newNodes.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->givePeriodicNode();
-                }
-            } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 1 ) {
-                //Periodicity in x y z
-                if ( fabs(coords.at(1) - boundaries.at(2)) < giveTol()  ||
-                     fabs(coords.at(2) - boundaries.at(4)) < giveTol()  ||
-                     fabs(coords.at(3) - boundaries.at(6)) < giveTol() ) { //x=xmax or y=ymax or z=zmax
-                    boundaryFlag=1;
-                    location.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->giveLocation();
-                    newNodes.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->givePeriodicNode();
+            //Go through nodes and replace the ones outside with periodic nodes
+            for ( int m = 0; m < nodes.giveSize(); m++ ) {
+                giveDelaunayVertex(nodes.at(m + 1) )->giveCoordinates(coords);
+                if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 0 ) {
+                    //Periodicity in x
+                    if ( fabs(coords.at(1) - boundaries.at(2) ) < giveTol() ) { //x=xmax
+                        boundaryFlag = 1;
+                        location.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->giveLocation();
+                        newNodes.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->givePeriodicNode();
+                    }
+                } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 0 ) {
+                    //Periodicity in y
+                    if ( fabs(coords.at(2) - boundaries.at(4) ) < giveTol() ) { //y=ymax
+                        boundaryFlag = 1;
+                        location.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->giveLocation();
+                        newNodes.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->givePeriodicNode();
+                    }
+                } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 1 ) {
+                    //Periodicity in z
+                    if ( fabs(coords.at(3) - boundaries.at(6) ) < giveTol() ) { //z=zmax
+                        boundaryFlag = 1;
+                        location.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->giveLocation();
+                        newNodes.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->givePeriodicNode();
+                    }
+                } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 0 ) {
+                    //Periodicity in x y
+                    if ( fabs(coords.at(1) - boundaries.at(2) ) < giveTol()  ||
+                         fabs(coords.at(2) - boundaries.at(4) ) < giveTol() ) { //x=xmax or y=ymax
+                        boundaryFlag = 1;
+                        location.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->giveLocation();
+                        newNodes.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->givePeriodicNode();
+                    }
+                } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 1 ) {
+                    //Periodicity in x z
+                    if ( fabs(coords.at(1) - boundaries.at(2) ) < giveTol()  ||
+                         fabs(coords.at(3) - boundaries.at(6) ) < giveTol() ) { //x=xmax or z=zmax
+                        boundaryFlag = 1;
+                        location.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->giveLocation();
+                        newNodes.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->givePeriodicNode();
+                    }
+                } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 1 ) {
+                    //Periodicity in y z
+                    if ( fabs(coords.at(2) - boundaries.at(4) ) < giveTol()  ||
+                         fabs(coords.at(3) - boundaries.at(6) ) < giveTol() ) { //y=ymax or z=zmax
+                        boundaryFlag = 1;
+                        location.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->giveLocation();
+                        newNodes.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->givePeriodicNode();
+                    }
+                } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 1 ) {
+                    //Periodicity in x y z
+                    if ( fabs(coords.at(1) - boundaries.at(2) ) < giveTol()  ||
+                         fabs(coords.at(2) - boundaries.at(4) ) < giveTol()  ||
+                         fabs(coords.at(3) - boundaries.at(6) ) < giveTol() ) { //x=xmax or y=ymax or z=zmax
+                        boundaryFlag = 1;
+                        location.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->giveLocation();
+                        newNodes.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->givePeriodicNode();
+                    }
                 }
             }
-        }
 
-        if(boundaryFlag == 0){
-            fprintf( outputStream, "ltrspace %d nodes 4 %d %d %d %d crossSect 1 mat %d", i + 1, nodes.at(1), nodes.at(2), nodes.at(3), nodes.at(4), materialType);
-            fprintf(outputStream, "\n");
-        } else{
-            fprintf( outputStream, "%s %d nodes 5 %d %d %d %d %d crossSect 1 mat %d", boundElemName, i + 1, newNodes.at(1), newNodes.at(2), newNodes.at(3),newNodes.at(4), this->giveNumberOfDelaunayVertices() + 1, materialType);
-            fprintf( outputStream, " location 4 %d %d %d %d", location.at(1), location.at(2),location.at(3),location.at(4) );
-            fprintf(outputStream, "\n");
+            if ( boundaryFlag == 0 ) {
+                fprintf(outputStream, "ltrspace %d nodes 4 %d %d %d %d crossSect 1 mat %d", i + 1, nodes.at(1), nodes.at(2), nodes.at(3), nodes.at(4), materialType);
+                fprintf(outputStream, "\n");
+            } else {
+                fprintf(outputStream, "%s %d nodes 5 %d %d %d %d %d crossSect 1 mat %d", boundElemName, i + 1, newNodes.at(1), newNodes.at(2), newNodes.at(3), newNodes.at(4), this->giveNumberOfDelaunayVertices() + 1, materialType);
+                fprintf(outputStream, " location 4 %d %d %d %d", location.at(1), location.at(2), location.at(3), location.at(4) );
+                fprintf(outputStream, "\n");
+            }
         }
-      }
     }
 
     fprintf(outputStream, "simplecs 1\n");
     fprintf(outputStream, "isole 1 talpha 0. d 0. e 30.e9 n 0.\n");
     fprintf(outputStream, "BoundaryCondition 1 loadTimeFunction 1 prescribedvalue 0.0\n");
-    if (this->macroType == _Truss) {
+    if ( this->macroType == _Truss ) {
         fprintf(outputStream, "BoundaryCondition 2 loadTimeFunction 1 dofs 1 1 values 1 0 set 1\n");
-    } else if (this->macroType == _Membrane) {
+    } else if ( this->macroType == _Membrane ) {
         fprintf(outputStream, "BoundaryCondition 2 loadTimeFunction 1 dofs 4 1 2 4 5  values 4 0 0 0 0 set 1\n");
-    } else if (this->macroType == _Beam) {
+    } else if ( this->macroType == _Beam ) {
         fprintf(outputStream, "BoundaryCondition 2 loadTimeFunction 1 dofs 3 1 7 10 values 3 0 0 0 set 1\n");
-    } else if (this->macroType == _Plate) {
+    } else if ( this->macroType == _Plate ) {
         fprintf(outputStream, "BoundaryCondition 2 loadTimeFunction 1 dofs 10 1 2 4 5 7 8 10 11 12 13 values 10 0 0 0 0 0 0 0 0 0 0 set 1\n");
-    } else if (this->macroType == _3dVoigt) {
+    } else if ( this->macroType == _3dVoigt ) {
         fprintf(outputStream, "BoundaryCondition 2 loadTimeFunction 1 dofs 6 1 2 3 4 5 6 values 6 0 0 0 0 0 0 set 1\n");
-    } else if (this->macroType == _3d) {
+    } else if ( this->macroType == _3d ) {
         fprintf(outputStream, "BoundaryCondition 2 loadTimeFunction 1 dofs 9 1 2 3 4 5 6 7 8 9 values 9 0 0 0 0 0 0 0 0 0 set 1\n");
     }
     fprintf(outputStream, "ConstantFunction 1 f(t) 1.\n");
@@ -7991,24 +6800,11 @@ Grid :: give3DPeriodicTetraSMOutput(const std::string& fileName)
 
 
 void
-Grid :: give3DTetraSMOutput(const std::string& fileName)
+Grid::give3DTetraSMOutput(const std::string &fileName)
 {
     //Output for 3D fracture process zone modelling
 
-    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
-
-    /* const std::string fileName1 = fileName + ".sm"; */
-    /* FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w"); */
-    
-    /* const std::string fileName2 = fileName + ".tm"; */
-    /* FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
-
-
-  
-    /* FILE *outputStream; */
-    /* if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
-    /*     converter::errorf("Cannot open output file %s", fileName); */
-    /* } */
+    FILE *outputStream = converter::fopen_or_die(fileName, "w");
 
     oofem::FloatArray boundaries(3);
     this->giveRegion(1)->defineBoundaries(boundaries);
@@ -8025,7 +6821,7 @@ Grid :: give3DTetraSMOutput(const std::string& fileName)
     //Determine the number of Delaunay nodes in the domain
     numberOfNodes = 0;
     for ( int i = 0; i < this->giveNumberOfDelaunayVertices(); i++ ) {
-        if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0 ||  this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 2) {
+        if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0 ||  this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 2 ) {
             numberOfNodes++;
         }
     }
@@ -8033,9 +6829,9 @@ Grid :: give3DTetraSMOutput(const std::string& fileName)
     //Determine the number of Delaunay tetrahedra in the domain
     numberOfTetras = 0;
     for ( int i = 0; i < this->giveNumberOfDelaunayTetras(); i++ ) {
-            if (  (this->giveDelaunayTetra(i+1))->giveOutsideFlag() == 0 ) {
+        if (  ( this->giveDelaunayTetra(i + 1) )->giveOutsideFlag() == 0 ) {
             numberOfTetras++;
-	     }
+        }
     }
 
     fprintf(outputStream, "oofem.out\n");
@@ -8054,19 +6850,19 @@ Grid :: give3DTetraSMOutput(const std::string& fileName)
             this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
             if ( firstFlag == 0 ) {
                 firstFlag = 1;
-                fprintf( outputStream, "node %d coords 3 %e %e %e bc 3 1 1 1\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+                fprintf(outputStream, "node %d coords 3 %e %e %e bc 3 1 1 1\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
             } else {
-                fprintf( outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+                fprintf(outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
             }
         }
     }
 
     for ( int i = 0; i < this->giveNumberOfDelaunayTetras(); i++ ) {
-      //First plot all of them
-        if ( this->giveDelaunayTetra(i + 1)->giveOutsideFlag() == 0) { //Elements are inside
+        //First plot all of them
+        if ( this->giveDelaunayTetra(i + 1)->giveOutsideFlag() == 0 ) { //Elements are inside
             this->giveDelaunayTetra(i + 1)->giveLocalVertices(nodes);
             materialType = 1;
-            fprintf( outputStream, "ltrspace %d nodes 4 %d %d %d %d crossSect 1 mat %d", i + 1, nodes.at(1), nodes.at(2), nodes.at(3), nodes.at(4), materialType);
+            fprintf(outputStream, "ltrspace %d nodes 4 %d %d %d %d crossSect 1 mat %d", i + 1, nodes.at(1), nodes.at(2), nodes.at(3), nodes.at(4), materialType);
             fprintf(outputStream, "\n");
         }
     }
@@ -8084,7 +6880,7 @@ Grid :: give3DTetraSMOutput(const std::string& fileName)
 }
 
 void
-Grid :: give3DRCSMOutput(const std::string& fileName)
+Grid::give3DRCSMOutput(const std::string &fileName)
 /**
  * Output for random mesh of a 3D reinforced concrete RVE.  Concrete is modelled with tetrahedras (LTRSpace),
  * reinforcement is modelled with beam elements (LIBeam3d), and the interface is modelled with pointwise
@@ -8093,20 +6889,8 @@ Grid :: give3DRCSMOutput(const std::string& fileName)
  * @author: Adam Sciegaj
  */
 {
+    FILE *outputStream = converter::fopen_or_die(fileName, "w");
 
-    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
-
-  /*   const std::string fileName1 = fileName + ".sm"; */
-  /*   FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w"); */
-    
-  /*   const std::string fileName2 = fileName + ".tm"; */
-  /*   FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
-
-
-  /* FILE *outputStream; */
-  /*   if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
-  /*       converter::errorf("Cannot open output file %s", fileName); */
-  /*   } */
 
 
     printf("Processing nodes\n");
@@ -8121,7 +6905,7 @@ Grid :: give3DRCSMOutput(const std::string& fileName)
     //Determine the number of Delaunay nodes in the domain
     numberOfNodes = 0;
     for ( int i = 0; i < this->giveNumberOfDelaunayVertices(); i++ ) {
-        if (this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 2 || this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0) {
+        if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 2 || this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0 ) {
             numberOfNodes++;
         }
     }
@@ -8138,21 +6922,21 @@ Grid :: give3DRCSMOutput(const std::string& fileName)
     //Determine the number of Delaunay tetrahedra in the domain
     numberOfTetras = 0;
     for ( int i = 0; i < this->giveNumberOfDelaunayTetras(); i++ ) {
-        if (  this->giveDelaunayTetra(i+1)->giveOutsideFlag() == 0 ) {
+        if (  this->giveDelaunayTetra(i + 1)->giveOutsideFlag() == 0 ) {
             numberOfTetras++;
-	     }
+        }
     }
 
     numberOfBeams = 0;
     for ( int i = 0; i < this->giveNumberOfLatticeBeams(); i++ ) {
-        if ( this->giveLatticeBeam(i+1)->giveOutsideFlag() == 0 || this->giveLatticeBeam(i+1)->giveOutsideFlag() == 2 ) {
+        if ( this->giveLatticeBeam(i + 1)->giveOutsideFlag() == 0 || this->giveLatticeBeam(i + 1)->giveOutsideFlag() == 2 ) {
             numberOfBeams++;
         }
     }
 
     numberOfLinks = 0;
     for ( int i = 0; i < this->giveNumberOfLatticeLinks(); i++ ) {
-        if ( this->giveLatticeLink(i+1)->giveOutsideFlag() == 0 || this->giveLatticeLink(i+1)->giveOutsideFlag() == 3 ){
+        if ( this->giveLatticeLink(i + 1)->giveOutsideFlag() == 0 || this->giveLatticeLink(i + 1)->giveOutsideFlag() == 3 ) {
             numberOfLinks++;
         }
     }
@@ -8171,7 +6955,7 @@ Grid :: give3DRCSMOutput(const std::string& fileName)
     fprintf(outputStream, "domain 3d\n");
     fprintf(outputStream, "OutputManager tstep_all dofman_all element_all\n");
     fprintf(outputStream, "ndofman %d nelem %d ncrosssect %d nmat %d nbc 2 nic 0 nltf 1 nset %d\n", numberOfNodes, numberOfElem,
-            2*converter::size1(fibreList)+1,  2*converter::size1(fibreList)+1, 3 + 2*converter::size1(fibreList)+1);
+            2 * converter::size1(fibreList) + 1,  2 * converter::size1(fibreList) + 1, 3 + 2 * converter::size1(fibreList) + 1);
 
     int firstFlag = 0;
 
@@ -8180,46 +6964,49 @@ Grid :: give3DRCSMOutput(const std::string& fileName)
         if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 2 ) {
             this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
 
-            if ( firstFlag == 0) {
-                firstFlag=1;
-                fprintf( outputStream, "node %d coords 3 %e %e %e bc 3 1 1 1\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+            if ( firstFlag == 0 ) {
+                firstFlag = 1;
+                fprintf(outputStream, "node %d coords 3 %e %e %e bc 3 1 1 1\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
             } else {
-                fprintf( outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+                fprintf(outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
             }
         }
     }
 
     //node output - beams
     oofem::IntArray L2Gmap;
-    L2Gmap.resize(this->giveNumberOfReinforcementNode());
+    L2Gmap.resize(this->giveNumberOfReinforcementNode() );
     L2Gmap.zero();
     for ( int i = 0; i < this->giveNumberOfReinforcementNode(); i++ ) {
         if ( this->giveReinforcementNode(i + 1)->giveOutsideFlag() == 0 || this->giveReinforcementNode(i + 1)->giveOutsideFlag() == 2 ) {
             this->giveReinforcementNode(i + 1)->giveCoordinates(coords);
 
-            L2Gmap.at(i+1) = this->giveNumberOfDelaunayVertices() + i + 1;
-            fprintf( outputStream, "node %d coords 3 %e %e %e \n", L2Gmap.at(i+1), coords.at(1), coords.at(2), coords.at(3) );
+            L2Gmap.at(i + 1) = this->giveNumberOfDelaunayVertices() + i + 1;
+            fprintf(outputStream, "node %d coords 3 %e %e %e \n", L2Gmap.at(i + 1), coords.at(1), coords.at(2), coords.at(3) );
         }
     }
 
     //reference nodes for 3d beams. Assuming only horizontal reinforcement
-    oofem::FloatMatrix R(3,3);
-    R.zero(); R.at(1,2)=-1; R.at(2,1)=1; R.at(3,3)=1;
-    oofem::IntArray refNodeNumbers(this->giveNumberOfFibres());
+    oofem::FloatMatrix R(3, 3);
+    R.zero();
+    R.at(1, 2) = -1;
+    R.at(2, 1) = 1;
+    R.at(3, 3) = 1;
+    oofem::IntArray refNodeNumbers(this->giveNumberOfFibres() );
     oofem::FloatMatrix referenceNodes;
     referenceNodes.resize(this->giveNumberOfFibres(), 3);
     for ( int i = 0; i < this->giveNumberOfFibres(); i++) {
-        oofem::FloatArray dirVec = this->giveFibre(i+1)->giveDirVector();
+        oofem::FloatArray dirVec = this->giveFibre(i + 1)->giveDirVector();
         dirVec.rotatedWith(R, 'n');
-        int numReinfNode = this->giveFibre(i+1)->giveNumberReinforcementNode(1);
-        oofem::FloatArray refNodeCoords = *this->giveReinforcementNode(numReinfNode)->giveCoordinates();
+        int numReinfNode = this->giveFibre(i + 1)->giveNumberReinforcementNode(1);
+        oofem::FloatArray refNodeCoords = * this->giveReinforcementNode(numReinfNode)->giveCoordinates();
         refNodeCoords.add(dirVec);
-        refNodeNumbers.at(i+1) = i + 1 + this->giveNumberOfDelaunayVertices() + this->giveNumberOfReinforcementNode();
-        referenceNodes.at(i+1,1) = refNodeCoords.at(1);
-        referenceNodes.at(i+1,2) = refNodeCoords.at(2);
-        referenceNodes.at(i+1,3) = refNodeCoords.at(3);
+        refNodeNumbers.at(i + 1) = i + 1 + this->giveNumberOfDelaunayVertices() + this->giveNumberOfReinforcementNode();
+        referenceNodes.at(i + 1, 1) = refNodeCoords.at(1);
+        referenceNodes.at(i + 1, 2) = refNodeCoords.at(2);
+        referenceNodes.at(i + 1, 3) = refNodeCoords.at(3);
 
-        fprintf( outputStream, "node %d coords 3 %e %e %e \n", refNodeNumbers.at(i+1) , refNodeCoords.at(1), refNodeCoords.at(2), refNodeCoords.at(3) );
+        fprintf(outputStream, "node %d coords 3 %e %e %e \n", refNodeNumbers.at(i + 1), refNodeCoords.at(1), refNodeCoords.at(2), refNodeCoords.at(3) );
     }
 
     printf("Finished writing node data\n");
@@ -8227,163 +7014,165 @@ Grid :: give3DRCSMOutput(const std::string& fileName)
     //element output - tetrahedra
     oofem::IntArray set1;
     for ( int i = 0; i < this->giveNumberOfDelaunayTetras(); i++ ) {
-      //First plot all of them
-      if ( this->giveDelaunayTetra(i + 1)->giveOutsideFlag() == 0) { //Elements are inside
-        this->giveDelaunayTetra(i + 1)->giveLocalVertices(nodes);
+        //First plot all of them
+        if ( this->giveDelaunayTetra(i + 1)->giveOutsideFlag() == 0 ) { //Elements are inside
+            this->giveDelaunayTetra(i + 1)->giveLocalVertices(nodes);
 
-        fprintf( outputStream, "ltrspace %d nodes 4 %d %d %d %d ", i + 1, nodes.at(1), nodes.at(2), nodes.at(3), nodes.at(4));
-        fprintf( outputStream, "\n");
-        set1.followedBy(i+1);
-      }
+            fprintf(outputStream, "ltrspace %d nodes 4 %d %d %d %d ", i + 1, nodes.at(1), nodes.at(2), nodes.at(3), nodes.at(4) );
+            fprintf(outputStream, "\n");
+            set1.followedBy(i + 1);
+        }
     }
     printf("Finished writing Delaunay element (tetrahedra) data\n");
 
     //element output - beams
     oofem::IntArray set2, beamElL2Gmap;
-    beamElL2Gmap.resize(this->giveNumberOfLatticeBeams());
+    beamElL2Gmap.resize(this->giveNumberOfLatticeBeams() );
     beamElL2Gmap.zero();
     for ( int i = 0; i < this->giveNumberOfLatticeBeams(); i++ ) {
-      //First plot all of them
-      if ( this->giveLatticeBeam(i + 1)->giveOutsideFlag() == 0 || this->giveLatticeBeam(i + 1)->giveOutsideFlag() == 2 ) { //Elements are inside
-        this->giveLatticeBeam(i + 1)->giveLocalVertices(nodes);
+        //First plot all of them
+        if ( this->giveLatticeBeam(i + 1)->giveOutsideFlag() == 0 || this->giveLatticeBeam(i + 1)->giveOutsideFlag() == 2 ) { //Elements are inside
+            this->giveLatticeBeam(i + 1)->giveLocalVertices(nodes);
 
-        //find the reference node
-        int refNode = 0;
-        oofem::FloatArray dirVec = this->giveLatticeBeam(i+1)->giveDirectionVector();
-        for ( int j = 0; j < this->giveNumberOfFibres(); j++ ) {
-            oofem::FloatArray perpVec(3), firstNodeCoords(3);
-            int numReinfNode = this->giveFibre(j+1)->giveNumberReinforcementNode(1);
-            firstNodeCoords = *this->giveReinforcementNode(numReinfNode)->giveCoordinates();
-            perpVec.at(1) = referenceNodes.at(j+1,1) - firstNodeCoords.at(1);
-            perpVec.at(2) = referenceNodes.at(j+1,2) - firstNodeCoords.at(2);
-            perpVec.at(3) = referenceNodes.at(j+1,3) - firstNodeCoords.at(3);
-            double sp = dirVec.dotProduct(perpVec, 3);
+            //find the reference node
+            int refNode = 0;
+            oofem::FloatArray dirVec = this->giveLatticeBeam(i + 1)->giveDirectionVector();
+            for ( int j = 0; j < this->giveNumberOfFibres(); j++ ) {
+                oofem::FloatArray perpVec(3), firstNodeCoords(3);
+                int numReinfNode = this->giveFibre(j + 1)->giveNumberReinforcementNode(1);
+                firstNodeCoords = * this->giveReinforcementNode(numReinfNode)->giveCoordinates();
+                perpVec.at(1) = referenceNodes.at(j + 1, 1) - firstNodeCoords.at(1);
+                perpVec.at(2) = referenceNodes.at(j + 1, 2) - firstNodeCoords.at(2);
+                perpVec.at(3) = referenceNodes.at(j + 1, 3) - firstNodeCoords.at(3);
+                double sp = dirVec.dotProduct(perpVec, 3);
 
-            if ( fabs(sp) < this->giveTol() ) {
-                refNode = refNodeNumbers.at(j+1);
-                break;
+                if ( fabs(sp) < this->giveTol() ) {
+                    refNode = refNodeNumbers.at(j + 1);
+                    break;
+                }
             }
-        }
 
-        fprintf( outputStream, "libeam3d %d nodes 2 %d %d refnode %d", this->giveNumberOfDelaunayTetras() + i + 1, L2Gmap.at(nodes.at(1)), L2Gmap.at(nodes.at(2)), refNode);
-        fprintf( outputStream, "\n");
-        set2.followedBy(this->giveNumberOfDelaunayTetras() + i + 1);
-        beamElL2Gmap.at(i+1) = this->giveNumberOfDelaunayTetras() + i + 1;
-      }
+            fprintf(outputStream, "libeam3d %d nodes 2 %d %d refnode %d", this->giveNumberOfDelaunayTetras() + i + 1, L2Gmap.at(nodes.at(1) ), L2Gmap.at(nodes.at(2) ), refNode);
+            fprintf(outputStream, "\n");
+            set2.followedBy(this->giveNumberOfDelaunayTetras() + i + 1);
+            beamElL2Gmap.at(i + 1) = this->giveNumberOfDelaunayTetras() + i + 1;
+        }
     }
     printf("Finished writing reinforcement data\n");
 
     //element output - interface
     oofem::IntArray set3, intElL2Gmap;
-    intElL2Gmap.resize(this->giveNumberOfLatticeLinks());
+    intElL2Gmap.resize(this->giveNumberOfLatticeLinks() );
     intElL2Gmap.zero();
     for ( int i = 0; i < this->giveNumberOfLatticeLinks(); i++ ) {
-        int linkVer1 = this->giveLatticeLink(i+1)->giveLocalVertex(1);
-        int linkVer2 = this->giveLatticeLink(i+1)->giveLocalVertex(2);
+        int linkVer1 = this->giveLatticeLink(i + 1)->giveLocalVertex(1);
+        int linkVer2 = this->giveLatticeLink(i + 1)->giveLocalVertex(2);
         //recalculate normal vector
         oofem::FloatArray normalVec(3);
-        oofem::FloatArray beamNode = *this->giveReinforcementNode(linkVer1)->giveCoordinates();
-        oofem::FloatArray tetraNode = *this->giveDelaunayVertex(linkVer2)->giveCoordinates();
-        normalVec.add(beamNode); normalVec.subtract(tetraNode); normalVec.normalize();
+        oofem::FloatArray beamNode = * this->giveReinforcementNode(linkVer1)->giveCoordinates();
+        oofem::FloatArray tetraNode = * this->giveDelaunayVertex(linkVer2)->giveCoordinates();
+        normalVec.add(beamNode);
+        normalVec.subtract(tetraNode);
+        normalVec.normalize();
         double segmentLength(1);
-        if ( this->giveLatticeLink(i+1)->giveOutsideFlag() == 0 || this->giveLatticeLink(i+1)->giveOutsideFlag()==3 ) {
-            if ( this->giveLatticeLink(i+1)->giveOutsideFlag() == 3 ) {
+        if ( this->giveLatticeLink(i + 1)->giveOutsideFlag() == 0 || this->giveLatticeLink(i + 1)->giveOutsideFlag() == 3 ) {
+            if ( this->giveLatticeLink(i + 1)->giveOutsideFlag() == 3 ) {
                 //shorten the associated length of the boundary links
-                segmentLength = this->giveLatticeLink(i+1)->giveAssociatedLength() / 2;
+                segmentLength = this->giveLatticeLink(i + 1)->giveAssociatedLength() / 2;
             } else {
-                segmentLength = this->giveLatticeLink(i+1)->giveAssociatedLength();
+                segmentLength = this->giveLatticeLink(i + 1)->giveAssociatedLength();
             }
 
-//             fprintf( outputStream, "intelpoint %d nodes 2 %d %d normal 3 %e %e %e length %e\n", this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + i + 1, linkVer2, L2Gmap.at(linkVer1), normalVec.at(1), normalVec.at(2), normalVec.at(3), segmentLength );
-            fprintf( outputStream, "intelpoint %d nodes 2 %d %d normal 3 0 0 1 length %e\n", this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + i + 1, linkVer2, L2Gmap.at(linkVer1), this->giveLatticeLink(i+1)->giveAssociatedLength() );
+            //             fprintf( outputStream, "intelpoint %d nodes 2 %d %d normal 3 %e %e %e length %e\n", this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + i + 1, linkVer2, L2Gmap.at(linkVer1), normalVec.at(1), normalVec.at(2), normalVec.at(3), segmentLength );
+            fprintf(outputStream, "intelpoint %d nodes 2 %d %d normal 3 0 0 1 length %e\n", this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + i + 1, linkVer2, L2Gmap.at(linkVer1), this->giveLatticeLink(i + 1)->giveAssociatedLength() );
             set3.followedBy(this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + i + 1);
-            intElL2Gmap.at(i+1) = this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + i + 1;
+            intElL2Gmap.at(i + 1) = this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + i + 1;
         }
     }
     printf("Finished writing interface data\n");
 
     //split into sets (along fibres)
-    std::vector< std::vector<int> > beamSets(this->giveNumberOfFibres());
-    std::vector< std::vector<int> > interfaceSets(this->giveNumberOfFibres());
-    oofem::IntArray beamsPerFibre(this->giveNumberOfFibres()), firstNodeinFibres(this->giveNumberOfFibres());
+    std::vector < std::vector < int >> beamSets(this->giveNumberOfFibres() );
+    std::vector < std::vector < int >> interfaceSets(this->giveNumberOfFibres() );
+    oofem::IntArray beamsPerFibre(this->giveNumberOfFibres() ), firstNodeinFibres(this->giveNumberOfFibres() );
     for ( int i = 0; i < this->giveNumberOfFibres(); i++ ) {
-        beamsPerFibre.at(i+1) = this->giveFibre(i+1)->NbOfReinfNodes() - 1;
+        beamsPerFibre.at(i + 1) = this->giveFibre(i + 1)->NbOfReinfNodes() - 1;
         int beamNo(0);
         if ( i != 0 ) {
-            for ( int r = 1 ; r <= i; r++ ) {
+            for ( int r = 1; r <= i; r++ ) {
                 beamNo += beamsPerFibre.at(r);
             }
         }
         //first split reinforcement
-        for ( int j = 0; j < this->giveFibre(i+1)->NbOfReinfNodes() - 1; j++ ) {
-            if ( this->giveLatticeBeam(beamNo+j+1)->giveOutsideFlag() == 0 || this->giveLatticeBeam(beamNo+j+1)->giveOutsideFlag() == 2 ) {
-                (beamSets[i]).push_back(beamNo+j+1);
+        for ( int j = 0; j < this->giveFibre(i + 1)->NbOfReinfNodes() - 1; j++ ) {
+            if ( this->giveLatticeBeam(beamNo + j + 1)->giveOutsideFlag() == 0 || this->giveLatticeBeam(beamNo + j + 1)->giveOutsideFlag() == 2 ) {
+                ( beamSets [ i ] ).push_back(beamNo + j + 1);
                 oofem::IntArray beamNodes;
-                this->giveLatticeBeam(beamNo+j+1)->giveLocalVertices(beamNodes);
+                this->giveLatticeBeam(beamNo + j + 1)->giveLocalVertices(beamNodes);
                 //for the beam elements, get the corresponding link elements
                 for ( int k = 0; k < this->giveNumberOfLatticeLinks(); k++ ) {
                     oofem::IntArray linkNodes;
-                    this->giveLatticeLink(k+1)->giveLocalVertices(linkNodes);
+                    this->giveLatticeLink(k + 1)->giveLocalVertices(linkNodes);
                     if ( beamNodes.at(1) == linkNodes.at(1)  ) {
-                        (interfaceSets[i]).push_back(k+1);
-                    } else if ( this->giveLatticeLink(k+1)->giveOutsideFlag() == 3 && beamNodes.at(2) == linkNodes.at(1) ) {
+                        ( interfaceSets [ i ] ).push_back(k + 1);
+                    } else if ( this->giveLatticeLink(k + 1)->giveOutsideFlag() == 3 && beamNodes.at(2) == linkNodes.at(1) ) {
                         //include the last boundary link
-                        (interfaceSets[i]).push_back(k+1);
+                        ( interfaceSets [ i ] ).push_back(k + 1);
                     }
                 }
             }
         }
-        firstNodeinFibres.at(i+1) = L2Gmap.at(this->giveLatticeLink(interfaceSets[i][0])->giveLocalVertex(1));
+        firstNodeinFibres.at(i + 1) = L2Gmap.at(this->giveLatticeLink(interfaceSets [ i ] [ 0 ])->giveLocalVertex(1) );
     }
     printf("Finished splitting into sets\n");
 
     fprintf(outputStream, "SimpleCS 1 material 1 set 1\n");
     for ( int j = 0; j < this->giveNumberOfFibres(); j++ ) {
-        double diam = this->giveFibre(j+1)->giveDiameter();
-        double sideLength = sqrt( M_PI * diam * diam * 0.25);
+        double diam = this->giveFibre(j + 1)->giveDiameter();
+        double sideLength = sqrt(M_PI * diam * diam * 0.25);
 
-        fprintf(outputStream, "FiberedCS %d fibermaterials 1 %d thicks 1 %e widths 1 %e thick %e width %e fiberycentrecoords 1 %e fiberzcentrecoords 1 %e set %d\n", 2*(j+1), 2*(j+1), sideLength, sideLength, sideLength, sideLength, sideLength/2, sideLength/2, 2*(j+2));
-        fprintf(outputStream, "InterfaceCS %d thickness %e material %d set %d\n", 2*(j+1)+1, M_PI*diam, 2*(j+1)+1, 2*(j+2)+1 );
+        fprintf(outputStream, "FiberedCS %d fibermaterials 1 %d thicks 1 %e widths 1 %e thick %e width %e fiberycentrecoords 1 %e fiberzcentrecoords 1 %e set %d\n", 2 * ( j + 1 ), 2 * ( j + 1 ), sideLength, sideLength, sideLength, sideLength, sideLength / 2, sideLength / 2, 2 * ( j + 2 ) );
+        fprintf(outputStream, "InterfaceCS %d thickness %e material %d set %d\n", 2 * ( j + 1 ) + 1, M_PI * diam, 2 * ( j + 1 ) + 1, 2 * ( j + 2 ) + 1);
     }
     fprintf(outputStream, "IsoLE 1 talpha 0 d 1.0 e 30.e9 n 0.2\n");
     for ( int j = 0; j < this->giveNumberOfFibres(); j++ ) {
-        double s3 = 5./24 * this->giveFibre(j+1)->giveDiameter() + 7./3000; //approximate interpolation
-        fprintf(outputStream, "MisesMat %d d 1.0 E 2e11 n 0.3 sig0 500e6 H 8.456659619e8 omega_crit 0 a 0 tAlpha 1.0\n", 2*(j+1));
-        fprintf(outputStream, "BondCEB %d kn 6e12 ks 6.135e10 s1 0.001 s2 0.002 s3 %e taumax 1.541e7 tauf 6.164e6\n", 2*(j+1)+1, s3 );
+        double s3 = 5. / 24 * this->giveFibre(j + 1)->giveDiameter() + 7. / 3000; //approximate interpolation
+        fprintf(outputStream, "MisesMat %d d 1.0 E 2e11 n 0.3 sig0 500e6 H 8.456659619e8 omega_crit 0 a 0 tAlpha 1.0\n", 2 * ( j + 1 ) );
+        fprintf(outputStream, "BondCEB %d kn 6e12 ks 6.135e10 s1 0.001 s2 0.002 s3 %e taumax 1.541e7 tauf 6.164e6\n", 2 * ( j + 1 ) + 1, s3);
     }
     fprintf(outputStream, "BoundaryCondition 1 loadTimeFunction 1 dofs 3 1 2 3 values 3 0 0 0\n");
     fprintf(outputStream, "BoundaryCondition 2 loadTimeFunction 1 dofs 3 4 5 6 values 2 0 0 set 2\n");
     fprintf(outputStream, "ConstantFunction 1 f(t) 1.\n");
-    fprintf(outputStream, "set 1 elements %d ", set1.giveSize());
+    fprintf(outputStream, "set 1 elements %d ", set1.giveSize() );
     for ( int i = 0; i < set1.giveSize(); i++ ) {
-        fprintf(outputStream, "%d ", set1.at(i+1));
+        fprintf(outputStream, "%d ", set1.at(i + 1) );
     }
     fprintf(outputStream, "\n");
-    fprintf(outputStream, "set 2 elements %d ", set2.giveSize());
+    fprintf(outputStream, "set 2 elements %d ", set2.giveSize() );
     for ( int i = 0; i < set2.giveSize(); i++ ) {
-        fprintf(outputStream, "%d ", set2.at(i+1));
+        fprintf(outputStream, "%d ", set2.at(i + 1) );
     }
     fprintf(outputStream, "\n");
-    fprintf(outputStream, "set 3 elements %d ", set3.giveSize());
+    fprintf(outputStream, "set 3 elements %d ", set3.giveSize() );
     for ( int i = 0; i < set3.giveSize(); i++ ) {
-        fprintf(outputStream, "%d ", set3.at(i+1));
+        fprintf(outputStream, "%d ", set3.at(i + 1) );
     }
     fprintf(outputStream, "\n");
     for ( int i = 0; i < this->giveNumberOfFibres(); i++ ) {
-        fprintf(outputStream, "set %d elements %d ", 3 + 2*(i+1)-1, beamSets[i].size() );
-        for ( int j = 0; j < beamSets[i].size(); j++ ) {
-            fprintf(outputStream, "%d ", beamElL2Gmap.at(beamSets[i][j]));
+        fprintf(outputStream, "set %d elements %zu ", 3 + 2 * ( i + 1 ) - 1, beamSets [ i ].size() );
+        for ( int j = 0; j < beamSets [ i ].size(); j++ ) {
+            fprintf(outputStream, "%d ", beamElL2Gmap.at(beamSets [ i ] [ j ]) );
         }
         fprintf(outputStream, "\n");
-        fprintf(outputStream, "set %d elements %d ", 3 + 2*(i+1), interfaceSets[i].size() );
-        for ( int j = 0; j < interfaceSets[i].size(); j++ ) {
-            fprintf(outputStream, "%d ", intElL2Gmap.at(interfaceSets[i][j]));
+        fprintf(outputStream, "set %d elements %zu ", 3 + 2 * ( i + 1 ), interfaceSets [ i ].size() );
+        for ( int j = 0; j < interfaceSets [ i ].size(); j++ ) {
+            fprintf(outputStream, "%d ", intElL2Gmap.at(interfaceSets [ i ] [ j ]) );
         }
         fprintf(outputStream, "\n");
     }
-    fprintf(outputStream, "set %d nodes %d ", 3 + 2*converter::size1(fibreList) + 1, converter::size1(fibreList));
+    fprintf(outputStream, "set %d nodes %d ", 3 + 2 * converter::size1(fibreList) + 1, converter::size1(fibreList) );
     for ( int i = 0; i < this->giveNumberOfFibres(); i++ ) {
-        fprintf(outputStream, "%d ", firstNodeinFibres.at(i+1));
+        fprintf(outputStream, "%d ", firstNodeinFibres.at(i + 1) );
     }
     fprintf(outputStream, "\n");
 
@@ -8397,7 +7186,7 @@ Grid :: give3DRCSMOutput(const std::string& fileName)
 
 
 void
-Grid :: give3DRCPeriodicSMOutput(const std::string& fileName)
+Grid::give3DRCPeriodicSMOutput(const std::string &fileName)
 /**
  * Output for periodic mesh of a 3D reinforced concrete RVE.  Concrete is modelled with tetrahedras (LTRSpace and LTRSpaceBoundary),
  * reinforcement is modelled with beam elements (LIBeam3d and LIBeam3dBoundary), and the interface is modelled with link elements (BondLink3d).
@@ -8405,19 +7194,8 @@ Grid :: give3DRCPeriodicSMOutput(const std::string& fileName)
  * @authors: Adam Sciegaj, Peter Grassl
  */
 {
-    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
+    FILE *outputStream = converter::fopen_or_die(fileName, "w");
 
-  /*   const std::string fileName1 = fileName + ".sm"; */
-  /*   FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w"); */
-    
-  /*   const std::string fileName2 = fileName + ".tm"; */
-  /*   FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
-
-
-  /* FILE *outputStream; */
-  /*   if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
-  /*       converter::errorf("Cannot open output file %s", fileName); */
-  /*   } */
 
 
     printf("Processing nodes\n");
@@ -8443,89 +7221,89 @@ Grid :: give3DRCPeriodicSMOutput(const std::string& fileName)
     numberOfNodes = 0;
     for ( int i = 0; i < this->giveNumberOfDelaunayVertices(); i++ ) {
         //Determine which nodes are on mirror/image boundary
-        if (this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 2 || this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0) {
+        if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 2 || this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0 ) {
             this->giveDelaunayVertex(i + 1)->giveCoordinates(coordTest);
 
             if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 0 ) {
                 //Periodicity in x
-                if ( fabs(coordTest.at(1) - boundaries.at(2)) < giveTol() ) {
-                    if (imageNodeList.contains(i+1) == 0) {
-                        imageNodeList.followedBy(i+1);
+                if ( fabs(coordTest.at(1) - boundaries.at(2) ) < giveTol() ) {
+                    if ( imageNodeList.contains(i + 1) == 0 ) {
+                        imageNodeList.followedBy(i + 1);
                     }
                 } else {
-                    if ( mirrorNodeList.contains(i+1) == 0 ) {
-                        mirrorNodeList.followedBy(i+1);
+                    if ( mirrorNodeList.contains(i + 1) == 0 ) {
+                        mirrorNodeList.followedBy(i + 1);
                     }
                 }
             } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 0 ) {
                 //Periodicity in y
-                if ( fabs(coordTest.at(2) - boundaries.at(4)) < giveTol() ) {
-                    if (imageNodeList.contains(i+1) == 0) {
-                        imageNodeList.followedBy(i+1);
+                if ( fabs(coordTest.at(2) - boundaries.at(4) ) < giveTol() ) {
+                    if ( imageNodeList.contains(i + 1) == 0 ) {
+                        imageNodeList.followedBy(i + 1);
                     }
                 } else {
-                    if ( mirrorNodeList.contains(i+1) == 0 ) {
-                        mirrorNodeList.followedBy(i+1);
+                    if ( mirrorNodeList.contains(i + 1) == 0 ) {
+                        mirrorNodeList.followedBy(i + 1);
                     }
                 }
             } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 1 ) {
                 //Periodicity in z
-                if ( fabs(coordTest.at(3) - boundaries.at(6)) < giveTol() ) {
-                    if (imageNodeList.contains(i+1) == 0) {
-                        imageNodeList.followedBy(i+1);
+                if ( fabs(coordTest.at(3) - boundaries.at(6) ) < giveTol() ) {
+                    if ( imageNodeList.contains(i + 1) == 0 ) {
+                        imageNodeList.followedBy(i + 1);
                     }
                 } else {
-                    if ( mirrorNodeList.contains(i+1) == 0 ) {
-                        mirrorNodeList.followedBy(i+1);
+                    if ( mirrorNodeList.contains(i + 1) == 0 ) {
+                        mirrorNodeList.followedBy(i + 1);
                     }
                 }
             } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 0 ) {
                 //Periodicity in x y
-                if ( fabs(coordTest.at(1) - boundaries.at(2)) < giveTol()  ||
-                     fabs(coordTest.at(2) - boundaries.at(4)) < giveTol() ) {
-                        if (imageNodeList.contains(i+1) == 0) {
-                            imageNodeList.followedBy(i+1);
-                        }
+                if ( fabs(coordTest.at(1) - boundaries.at(2) ) < giveTol()  ||
+                     fabs(coordTest.at(2) - boundaries.at(4) ) < giveTol() ) {
+                    if ( imageNodeList.contains(i + 1) == 0 ) {
+                        imageNodeList.followedBy(i + 1);
+                    }
                 } else {
-                    if ( mirrorNodeList.contains(i+1) == 0 ) {
-                        mirrorNodeList.followedBy(i+1);
+                    if ( mirrorNodeList.contains(i + 1) == 0 ) {
+                        mirrorNodeList.followedBy(i + 1);
                     }
                 }
             } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 1 ) {
                 //Periodicity in x z
-                if ( fabs(coordTest.at(1) - boundaries.at(2)) < giveTol()  ||
-                     fabs(coordTest.at(3) - boundaries.at(6)) < giveTol() ) {
-                        if (imageNodeList.contains(i+1) == 0) {
-                            imageNodeList.followedBy(i+1);
-                        }
+                if ( fabs(coordTest.at(1) - boundaries.at(2) ) < giveTol()  ||
+                     fabs(coordTest.at(3) - boundaries.at(6) ) < giveTol() ) {
+                    if ( imageNodeList.contains(i + 1) == 0 ) {
+                        imageNodeList.followedBy(i + 1);
+                    }
                 } else {
-                    if ( mirrorNodeList.contains(i+1) == 0 ) {
-                        mirrorNodeList.followedBy(i+1);
+                    if ( mirrorNodeList.contains(i + 1) == 0 ) {
+                        mirrorNodeList.followedBy(i + 1);
                     }
                 }
             } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 1 ) {
                 //Periodicity in y z
-                if ( fabs(coordTest.at(2) - boundaries.at(4)) < giveTol()  ||
-                     fabs(coordTest.at(3) - boundaries.at(6)) < giveTol() ) {
-                        if (imageNodeList.contains(i+1) == 0) {
-                            imageNodeList.followedBy(i+1);
-                        }
+                if ( fabs(coordTest.at(2) - boundaries.at(4) ) < giveTol()  ||
+                     fabs(coordTest.at(3) - boundaries.at(6) ) < giveTol() ) {
+                    if ( imageNodeList.contains(i + 1) == 0 ) {
+                        imageNodeList.followedBy(i + 1);
+                    }
                 } else {
-                    if ( mirrorNodeList.contains(i+1) == 0 ) {
-                        mirrorNodeList.followedBy(i+1);
+                    if ( mirrorNodeList.contains(i + 1) == 0 ) {
+                        mirrorNodeList.followedBy(i + 1);
                     }
                 }
             } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 1 ) {
                 //Periodicity in x y z
-                if ( fabs(coordTest.at(1) - boundaries.at(2)) < giveTol()  ||
-                     fabs(coordTest.at(2) - boundaries.at(4)) < giveTol()  ||
-                     fabs(coordTest.at(3) - boundaries.at(6)) < giveTol() ) {
-                    if (imageNodeList.contains(i+1) == 0) {
-                            imageNodeList.followedBy(i+1);
-                        }
+                if ( fabs(coordTest.at(1) - boundaries.at(2) ) < giveTol()  ||
+                     fabs(coordTest.at(2) - boundaries.at(4) ) < giveTol()  ||
+                     fabs(coordTest.at(3) - boundaries.at(6) ) < giveTol() ) {
+                    if ( imageNodeList.contains(i + 1) == 0 ) {
+                        imageNodeList.followedBy(i + 1);
+                    }
                 } else {
-                    if ( mirrorNodeList.contains(i+1) == 0 ) {
-                        mirrorNodeList.followedBy(i+1);
+                    if ( mirrorNodeList.contains(i + 1) == 0 ) {
+                        mirrorNodeList.followedBy(i + 1);
                     }
                 }
             }
@@ -8540,84 +7318,84 @@ Grid :: give3DRCPeriodicSMOutput(const std::string& fileName)
 
             if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 0 ) {
                 //Periodicity in x
-                if ( fabs(coordTest.at(1) - boundaries.at(2)) < giveTol() ) {
-                    if (reinfImageNodeList.contains(i+1) == 0) {
-                        reinfImageNodeList.followedBy(i+1);
+                if ( fabs(coordTest.at(1) - boundaries.at(2) ) < giveTol() ) {
+                    if ( reinfImageNodeList.contains(i + 1) == 0 ) {
+                        reinfImageNodeList.followedBy(i + 1);
                     }
                 } else {
-                    if ( reinfMirrorNodeList.contains(i+1) == 0 ) {
-                        reinfMirrorNodeList.followedBy(i+1);
+                    if ( reinfMirrorNodeList.contains(i + 1) == 0 ) {
+                        reinfMirrorNodeList.followedBy(i + 1);
                     }
                 }
             } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 0 ) {
                 //Periodicity in y
-                if ( fabs(coordTest.at(2) - boundaries.at(4)) < giveTol() ) {
-                    if (reinfImageNodeList.contains(i+1) == 0) {
-                        reinfImageNodeList.followedBy(i+1);
+                if ( fabs(coordTest.at(2) - boundaries.at(4) ) < giveTol() ) {
+                    if ( reinfImageNodeList.contains(i + 1) == 0 ) {
+                        reinfImageNodeList.followedBy(i + 1);
                     }
                 } else {
-                    if ( reinfMirrorNodeList.contains(i+1) == 0 ) {
-                        reinfMirrorNodeList.followedBy(i+1);
+                    if ( reinfMirrorNodeList.contains(i + 1) == 0 ) {
+                        reinfMirrorNodeList.followedBy(i + 1);
                     }
                 }
             } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 1 ) {
                 //Periodicity in z
-                if ( fabs(coordTest.at(3) - boundaries.at(6)) < giveTol() ) {
-                    if (reinfImageNodeList.contains(i+1) == 0) {
-                        reinfImageNodeList.followedBy(i+1);
+                if ( fabs(coordTest.at(3) - boundaries.at(6) ) < giveTol() ) {
+                    if ( reinfImageNodeList.contains(i + 1) == 0 ) {
+                        reinfImageNodeList.followedBy(i + 1);
                     }
                 } else {
-                    if ( reinfMirrorNodeList.contains(i+1) == 0 ) {
-                        reinfMirrorNodeList.followedBy(i+1);
+                    if ( reinfMirrorNodeList.contains(i + 1) == 0 ) {
+                        reinfMirrorNodeList.followedBy(i + 1);
                     }
                 }
             } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 0 ) {
                 //Periodicity in x y
-                if ( fabs(coordTest.at(1) - boundaries.at(2)) < giveTol()  ||
-                     fabs(coordTest.at(2) - boundaries.at(4)) < giveTol() ) {
-                        if (reinfImageNodeList.contains(i+1) == 0) {
-                            reinfImageNodeList.followedBy(i+1);
-                        }
+                if ( fabs(coordTest.at(1) - boundaries.at(2) ) < giveTol()  ||
+                     fabs(coordTest.at(2) - boundaries.at(4) ) < giveTol() ) {
+                    if ( reinfImageNodeList.contains(i + 1) == 0 ) {
+                        reinfImageNodeList.followedBy(i + 1);
+                    }
                 } else {
-                    if ( reinfMirrorNodeList.contains(i+1) == 0 ) {
-                        reinfMirrorNodeList.followedBy(i+1);
+                    if ( reinfMirrorNodeList.contains(i + 1) == 0 ) {
+                        reinfMirrorNodeList.followedBy(i + 1);
                     }
                 }
             } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 1 ) {
                 //Periodicity in x z
-                if ( fabs(coordTest.at(1) - boundaries.at(2)) < giveTol()  ||
-                     fabs(coordTest.at(3) - boundaries.at(6)) < giveTol() ) {
-                        if (reinfImageNodeList.contains(i+1) == 0) {
-                            reinfImageNodeList.followedBy(i+1);
-                        }
+                if ( fabs(coordTest.at(1) - boundaries.at(2) ) < giveTol()  ||
+                     fabs(coordTest.at(3) - boundaries.at(6) ) < giveTol() ) {
+                    if ( reinfImageNodeList.contains(i + 1) == 0 ) {
+                        reinfImageNodeList.followedBy(i + 1);
+                    }
                 } else {
-                    if ( reinfMirrorNodeList.contains(i+1) == 0 ) {
-                        reinfMirrorNodeList.followedBy(i+1);
+                    if ( reinfMirrorNodeList.contains(i + 1) == 0 ) {
+                        reinfMirrorNodeList.followedBy(i + 1);
                     }
                 }
             } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 1 ) {
                 //Periodicity in y z
-                if ( fabs(coordTest.at(2) - boundaries.at(4)) < giveTol()  ||
-                     fabs(coordTest.at(3) - boundaries.at(6)) < giveTol() ) {
-                        if (reinfImageNodeList.contains(i+1) == 0) {
-                            reinfImageNodeList.followedBy(i+1);
-                        }
+                if ( fabs(coordTest.at(2) - boundaries.at(4) ) < giveTol()  ||
+                     fabs(coordTest.at(3) - boundaries.at(6) ) < giveTol() ) {
+                    if ( reinfImageNodeList.contains(i + 1) == 0 ) {
+                        reinfImageNodeList.followedBy(i + 1);
+                    }
                 } else {
-                    if ( reinfMirrorNodeList.contains(i+1) == 0 ) {
-                        reinfMirrorNodeList.followedBy(i+1);
+                    if ( reinfMirrorNodeList.contains(i + 1) == 0 ) {
+                        reinfMirrorNodeList.followedBy(i + 1);
                     }
                 }
             } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 1 ) {
                 //Periodicity in x y z
-                if ( fabs(coordTest.at(1) - boundaries.at(2)) < giveTol()  ||
-                     fabs(coordTest.at(2) - boundaries.at(4)) < giveTol()  ||
-                     fabs(coordTest.at(3) - boundaries.at(6)) < giveTol() ) {
-                    if (reinfImageNodeList.contains(i+1) == 0) {
-                            reinfImageNodeList.followedBy(i+1);
-                        }
+                if ( fabs(coordTest.at(1) - boundaries.at(2) ) < giveTol()  ||
+                     fabs(coordTest.at(2) - boundaries.at(4) ) < giveTol()  ||
+                     fabs(coordTest.at(3) - boundaries.at(6) ) < giveTol() ) {
+                    if ( reinfImageNodeList.contains(i + 1) == 0 ) {
+                        reinfImageNodeList.followedBy(i + 1);
+                    }
                 } else {
-                    if ( reinfMirrorNodeList.contains(i+1) == 0 ) {
-                        reinfMirrorNodeList.followedBy(i+1);
+                    if ( reinfMirrorNodeList.contains(i + 1) == 0 ) {
+                        reinfMirrorNodeList.followedBy(i + 1);
                     }
                 }
             }
@@ -8631,22 +7409,22 @@ Grid :: give3DRCPeriodicSMOutput(const std::string& fileName)
     //Determine the number of Delaunay tetrahedra in the domain
     numberOfTetras = 0;
     for ( int i = 0; i < this->giveNumberOfDelaunayTetras(); i++ ) {
-        if (  this->giveDelaunayTetra(i+1)->giveOutsideFlag() == 0 ) {
+        if (  this->giveDelaunayTetra(i + 1)->giveOutsideFlag() == 0 ) {
             numberOfTetras++;
-	     }
+        }
     }
 
     numberOfBeams = 0;
     for ( int i = 0; i < this->giveNumberOfLatticeBeams(); i++ ) {
-        if ( this->giveLatticeBeam(i+1)->giveOutsideFlag() == 0 || this->giveLatticeBeam(i+1)->giveOutsideFlag() == 2 ) {
+        if ( this->giveLatticeBeam(i + 1)->giveOutsideFlag() == 0 || this->giveLatticeBeam(i + 1)->giveOutsideFlag() == 2 ) {
             numberOfBeams++;
         }
     }
 
     numberOfLinks = 0;
     for ( int i = 0; i < this->giveNumberOfLatticeLinks(); i++ ) {
-        int linkVer1 = this->giveLatticeLink(i+1)->giveLocalVertex(1);
-        int linkVer2 = this->giveLatticeLink(i+1)->giveLocalVertex(2);
+        int linkVer1 = this->giveLatticeLink(i + 1)->giveLocalVertex(1);
+        int linkVer2 = this->giveLatticeLink(i + 1)->giveLocalVertex(2);
         if ( reinfMirrorNodeList.contains(linkVer1) && mirrorNodeList.contains(linkVer2) ) {
             numberOfLinks++;
         }
@@ -8655,12 +7433,12 @@ Grid :: give3DRCPeriodicSMOutput(const std::string& fileName)
     int numberOfElem = numberOfTetras + numberOfBeams + numberOfLinks;
 
     int controlNode = this->giveNumberOfFibres() + this->giveNumberOfDelaunayVertices() + this->giveNumberOfReinforcementNode() + 1;
-    
+
     //OOFEM INPUT BEGINS
     //potentially different cross section, material and bond properties for each fiber
     fprintf(outputStream, "rve.out\n");
     fprintf(outputStream, "Periodic reinforced concrete RVE in 3D\n");
-fprintf(outputStream, "StaticStructural nsteps 200 nmodules 3 initialguess 1 lstype 3 smtype 7 stiffmode 2 rtolv 1.e-3 maxiter 10000\n");
+    fprintf(outputStream, "StaticStructural nsteps 200 nmodules 3 initialguess 1 lstype 3 smtype 7 stiffmode 2 rtolv 1.e-3 maxiter 10000\n");
     //fprintf(outputStream, "NonLinearStatic nmsteps 1 nsteps 1 contextOutputStep 1000 nmodules 3 profileopt 1 lstype 3 smtype 7\nnsteps 200 rtolv 1.e-3 reqIterations 100 stiffMode 1 manrmsteps 10 maxiter 200 controllmode 0 stepLength 1.e-6 minsteplength 1.e-6 maxrestarts 0 hpcmode 2 hpc 2 %d 1 hpcw 1 1. lstype 3 smtype 7\n", controlNode);
     //fprintf(outputStream, "StaticStructural nsteps 10 solverType \"calm\" stepLength 5.e-4 Psi 0 hpcmode 2 hpc 2 %d 1 hpcw 1 1 nmodules 3 initialguess 1 lstype 0 smtype 1 stiffmode 2\n", controlNode);
     fprintf(outputStream, "vtkxmlperiodic tstep_all primvars 1 1 vars 2 4 1 stype 0 regionsets 1 1\n");
@@ -8670,24 +7448,23 @@ fprintf(outputStream, "StaticStructural nsteps 200 nmodules 3 initialguess 1 lst
     fprintf(outputStream, "domain 3d\n");
     fprintf(outputStream, "OutputManager tstep_all dofman_output {%d}\n", controlNode);
     fprintf(outputStream, "ndofman %d nelem %d ncrosssect %d nmat %d nbc 4 nic 0 nltf 1 nset %d\n", numberOfNodes, numberOfElem,
-            2*converter::size1(fibreList)+1,  2*converter::size1(fibreList)+1, 7 + 2*converter::size1(fibreList) );
+            2 * converter::size1(fibreList) + 1,  2 * converter::size1(fibreList) + 1, 7 + 2 * converter::size1(fibreList) );
 
     int firstFlag = 0;
 
     //Find three nodes which can be used for constraining the specimen.
     //Translations can be fixed by setting DOFs of first node to zero.
-    int firstNode=0, secondNode=0, thirdNode=0;    
+    int firstNode = 0, secondNode = 0, thirdNode = 0;
     oofem::FloatArray firstNodeCoords(3);
-    
+
     //node output - tetrahedra
     for ( int i = 0; i < this->giveNumberOfDelaunayVertices(); i++ ) {
         if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 2 ) {
             this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
 
             if ( mirrorNodeList.isEmpty() == 0 ) {
-                if (mirrorNodeList.contains(i+1)) {		  	       		  
-		  fprintf( outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
-                  
+                if ( mirrorNodeList.contains(i + 1) ) {
+                    fprintf(outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
                 }
             }
         }
@@ -8698,19 +7475,19 @@ fprintf(outputStream, "StaticStructural nsteps 200 nmodules 3 initialguess 1 lst
     firstNode = 9;
     secondNode = 10;
     thirdNode = 11;
-    
+
     //node output - beams
     oofem::IntArray L2Gmap;
-    L2Gmap.resize(this->giveNumberOfReinforcementNode());
+    L2Gmap.resize(this->giveNumberOfReinforcementNode() );
     L2Gmap.zero();
     for ( int i = 0; i < this->giveNumberOfReinforcementNode(); i++ ) {
         if ( this->giveReinforcementNode(i + 1)->giveOutsideFlag() == 0 || this->giveReinforcementNode(i + 1)->giveOutsideFlag() == 2 ) {
             this->giveReinforcementNode(i + 1)->giveCoordinates(coords);
 
             if ( reinfMirrorNodeList.isEmpty() == 0 ) {
-                if ( reinfMirrorNodeList.contains(i+1) ) {
-                    L2Gmap.at(i+1) = this->giveNumberOfDelaunayVertices() + i + 1;
-                    fprintf( outputStream, "node %d coords 3 %e %e %e\n", L2Gmap.at(i+1), coords.at(1), coords.at(2), coords.at(3) );
+                if ( reinfMirrorNodeList.contains(i + 1) ) {
+                    L2Gmap.at(i + 1) = this->giveNumberOfDelaunayVertices() + i + 1;
+                    fprintf(outputStream, "node %d coords 3 %e %e %e\n", L2Gmap.at(i + 1), coords.at(1), coords.at(2), coords.at(3) );
                 }
             }
         }
@@ -8719,28 +7496,31 @@ fprintf(outputStream, "StaticStructural nsteps 200 nmodules 3 initialguess 1 lst
     //reference nodes for 3d beams. Assuming only straight reinforcement bars.
     //Therefore, only one refnode per fibre. For curved reinforcement, each beam
     //element would require a seperate reference node.
-    oofem::FloatMatrix R(3,3);
-    R.zero(); R.at(1,2)=-1; R.at(2,1)=1; R.at(3,3)=1;
-    oofem::IntArray refNodeNumbers(this->giveNumberOfFibres());
+    oofem::FloatMatrix R(3, 3);
+    R.zero();
+    R.at(1, 2) = -1;
+    R.at(2, 1) = 1;
+    R.at(3, 3) = 1;
+    oofem::IntArray refNodeNumbers(this->giveNumberOfFibres() );
     oofem::FloatMatrix referenceNodes;
     referenceNodes.resize(this->giveNumberOfFibres(), 3);
     for ( int i = 0; i < this->giveNumberOfFibres(); i++) {
-        oofem::FloatArray dirVec = this->giveFibre(i+1)->giveDirVector();
+        oofem::FloatArray dirVec = this->giveFibre(i + 1)->giveDirVector();
         dirVec.rotatedWith(R, 'n');
-        int numReinfNode = this->giveFibre(i+1)->giveNumberReinforcementNode(1);
-        oofem::FloatArray refNodeCoords = *this->giveReinforcementNode(numReinfNode)->giveCoordinates();
+        int numReinfNode = this->giveFibre(i + 1)->giveNumberReinforcementNode(1);
+        oofem::FloatArray refNodeCoords = * this->giveReinforcementNode(numReinfNode)->giveCoordinates();
         refNodeCoords.add(dirVec);
-        refNodeNumbers.at(i+1) = i + 1 + this->giveNumberOfDelaunayVertices() + this->giveNumberOfReinforcementNode();
-        referenceNodes.at(i+1,1) = refNodeCoords.at(1);
-        referenceNodes.at(i+1,2) = refNodeCoords.at(2);
-        referenceNodes.at(i+1,3) = refNodeCoords.at(3);
+        refNodeNumbers.at(i + 1) = i + 1 + this->giveNumberOfDelaunayVertices() + this->giveNumberOfReinforcementNode();
+        referenceNodes.at(i + 1, 1) = refNodeCoords.at(1);
+        referenceNodes.at(i + 1, 2) = refNodeCoords.at(2);
+        referenceNodes.at(i + 1, 3) = refNodeCoords.at(3);
 
-        fprintf( outputStream, "node %d coords 3 %e %e %e \n", refNodeNumbers.at(i+1) , refNodeCoords.at(1), refNodeCoords.at(2), refNodeCoords.at(3) );
+        fprintf(outputStream, "node %d coords 3 %e %e %e \n", refNodeNumbers.at(i + 1), refNodeCoords.at(1), refNodeCoords.at(2), refNodeCoords.at(3) );
     }
 
 
     //control node
-    fprintf( outputStream, "node %d coords 3 %e %e %e\n", controlNode, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
+    fprintf(outputStream, "node %d coords 3 %e %e %e\n", controlNode, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
 
     // if (this->macroType == _Truss) {
     //     fprintf( outputStream, "node %d coords 3 %e %e %e dofidmask 1 1 \n", refNodeNumbers.at(this->giveNumberOfFibres()) + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
@@ -8762,352 +7542,331 @@ fprintf(outputStream, "StaticStructural nsteps 200 nmodules 3 initialguess 1 lst
     int boundaryFlag = 0;
     oofem::IntArray set1;
     for ( int i = 0; i < this->giveNumberOfDelaunayTetras(); i++ ) {
-      //First plot all of them
-      if ( this->giveDelaunayTetra(i + 1)->giveOutsideFlag() == 0) { //Elements are inside
-        location.zero();
-        boundaryFlag = 0;
-        materialType = 1;
-        this->giveDelaunayTetra(i + 1)->giveLocalVertices(nodes);
-        newNodes = nodes;
+        //First plot all of them
+        if ( this->giveDelaunayTetra(i + 1)->giveOutsideFlag() == 0 ) { //Elements are inside
+            location.zero();
+            boundaryFlag = 0;
+            materialType = 1;
+            this->giveDelaunayTetra(i + 1)->giveLocalVertices(nodes);
+            newNodes = nodes;
 
-        //Go through nodes and replace the ones outside with periodic nodes
-        for ( int m = 0; m < nodes.giveSize(); m++ ) {
-            giveDelaunayVertex(nodes.at(m+1))->giveCoordinates(coords);
-            if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 0 ) {
-                //Periodicity in x
-                if ( fabs(coords.at(1) - boundaries.at(2)) < giveTol() ) { //x=xmax
-                    boundaryFlag=1;
-                    location.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->giveLocation();
-                    newNodes.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->givePeriodicNode();
-                }
-            } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 0 ) {
-                //Periodicity in y
-                if ( fabs(coords.at(2) - boundaries.at(4)) < giveTol() ) { //y=ymax
-                    boundaryFlag=1;
-                    location.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->giveLocation();
-                    newNodes.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->givePeriodicNode();
-                }
-            } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 1 ) {
-                //Periodicity in z
-                if ( fabs(coords.at(3) - boundaries.at(6)) < giveTol() ) { //z=zmax
-                    boundaryFlag=1;
-                    location.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->giveLocation();
-                    newNodes.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->givePeriodicNode();
-                }
-            } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 0 ) {
-                //Periodicity in x y
-                if ( fabs(coords.at(1) - boundaries.at(2)) < giveTol()  ||
-                     fabs(coords.at(2) - boundaries.at(4)) < giveTol() ) { //x=xmax or y=ymax
-                    boundaryFlag=1;
-                    location.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->giveLocation();
-                    newNodes.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->givePeriodicNode();
-                }
-            } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 1 ) {
-                //Periodicity in x z
-                if ( fabs(coords.at(1) - boundaries.at(2)) < giveTol()  ||
-                     fabs(coords.at(3) - boundaries.at(6)) < giveTol() ) { //x=xmax or z=zmax
-                    boundaryFlag=1;
-                    location.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->giveLocation();
-                    newNodes.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->givePeriodicNode();
-                }
-            } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 1 ) {
-                //Periodicity in y z
-                if ( fabs(coords.at(2) - boundaries.at(4)) < giveTol()  ||
-                     fabs(coords.at(3) - boundaries.at(6)) < giveTol() ) { //y=ymax or z=zmax
-                    boundaryFlag=1;
-                    location.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->giveLocation();
-                    newNodes.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->givePeriodicNode();
-                }
-            } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 1 ) {
-                //Periodicity in x y z
-                if ( fabs(coords.at(1) - boundaries.at(2)) < giveTol()  ||
-                     fabs(coords.at(2) - boundaries.at(4)) < giveTol()  ||
-                     fabs(coords.at(3) - boundaries.at(6)) < giveTol() ) { //x=xmax or y=ymax or z=zmax
-                    boundaryFlag=1;
-                    location.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->giveLocation();
-                    newNodes.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->givePeriodicNode();
+            //Go through nodes and replace the ones outside with periodic nodes
+            for ( int m = 0; m < nodes.giveSize(); m++ ) {
+                giveDelaunayVertex(nodes.at(m + 1) )->giveCoordinates(coords);
+                if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 0 ) {
+                    //Periodicity in x
+                    if ( fabs(coords.at(1) - boundaries.at(2) ) < giveTol() ) { //x=xmax
+                        boundaryFlag = 1;
+                        location.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->giveLocation();
+                        newNodes.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->givePeriodicNode();
+                    }
+                } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 0 ) {
+                    //Periodicity in y
+                    if ( fabs(coords.at(2) - boundaries.at(4) ) < giveTol() ) { //y=ymax
+                        boundaryFlag = 1;
+                        location.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->giveLocation();
+                        newNodes.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->givePeriodicNode();
+                    }
+                } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 1 ) {
+                    //Periodicity in z
+                    if ( fabs(coords.at(3) - boundaries.at(6) ) < giveTol() ) { //z=zmax
+                        boundaryFlag = 1;
+                        location.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->giveLocation();
+                        newNodes.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->givePeriodicNode();
+                    }
+                } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 0 ) {
+                    //Periodicity in x y
+                    if ( fabs(coords.at(1) - boundaries.at(2) ) < giveTol()  ||
+                         fabs(coords.at(2) - boundaries.at(4) ) < giveTol() ) { //x=xmax or y=ymax
+                        boundaryFlag = 1;
+                        location.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->giveLocation();
+                        newNodes.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->givePeriodicNode();
+                    }
+                } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 1 ) {
+                    //Periodicity in x z
+                    if ( fabs(coords.at(1) - boundaries.at(2) ) < giveTol()  ||
+                         fabs(coords.at(3) - boundaries.at(6) ) < giveTol() ) { //x=xmax or z=zmax
+                        boundaryFlag = 1;
+                        location.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->giveLocation();
+                        newNodes.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->givePeriodicNode();
+                    }
+                } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 1 ) {
+                    //Periodicity in y z
+                    if ( fabs(coords.at(2) - boundaries.at(4) ) < giveTol()  ||
+                         fabs(coords.at(3) - boundaries.at(6) ) < giveTol() ) { //y=ymax or z=zmax
+                        boundaryFlag = 1;
+                        location.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->giveLocation();
+                        newNodes.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->givePeriodicNode();
+                    }
+                } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 1 ) {
+                    //Periodicity in x y z
+                    if ( fabs(coords.at(1) - boundaries.at(2) ) < giveTol()  ||
+                         fabs(coords.at(2) - boundaries.at(4) ) < giveTol()  ||
+                         fabs(coords.at(3) - boundaries.at(6) ) < giveTol() ) { //x=xmax or y=ymax or z=zmax
+                        boundaryFlag = 1;
+                        location.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->giveLocation();
+                        newNodes.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->givePeriodicNode();
+                    }
                 }
             }
-        }
 
-        if(boundaryFlag == 0){
-            fprintf( outputStream, "ltrspace %d nodes 4 %d %d %d %d ", i + 1, nodes.at(1), nodes.at(2), nodes.at(3), nodes.at(4));
-            fprintf( outputStream, "\n");
-            set1.followedBy(i+1);
-        } else{
-            fprintf( outputStream, "%s %d nodes 5 %d %d %d %d %d ", boundElemName, i + 1, newNodes.at(1), newNodes.at(2), newNodes.at(3),newNodes.at(4), controlNode);
-            fprintf( outputStream, " location 4 %d %d %d %d", location.at(1), location.at(2),location.at(3),location.at(4) );
-            fprintf( outputStream, "\n");
-            set1.followedBy(i+1);
+            if ( boundaryFlag == 0 ) {
+                fprintf(outputStream, "ltrspace %d nodes 4 %d %d %d %d ", i + 1, nodes.at(1), nodes.at(2), nodes.at(3), nodes.at(4) );
+                fprintf(outputStream, "\n");
+                set1.followedBy(i + 1);
+            } else {
+                fprintf(outputStream, "%s %d nodes 5 %d %d %d %d %d ", boundElemName, i + 1, newNodes.at(1), newNodes.at(2), newNodes.at(3), newNodes.at(4), controlNode);
+                fprintf(outputStream, " location 4 %d %d %d %d", location.at(1), location.at(2), location.at(3), location.at(4) );
+                fprintf(outputStream, "\n");
+                set1.followedBy(i + 1);
+            }
         }
-      }
     }
     printf("Finished writing Delaunay element (tetrahedra) data\n");
 
     //element output - beams
     boundaryFlag = 0;
     oofem::IntArray locationBeam(2), set2, beamElL2Gmap;
-    beamElL2Gmap.resize(this->giveNumberOfLatticeBeams());
+    beamElL2Gmap.resize(this->giveNumberOfLatticeBeams() );
     beamElL2Gmap.zero();
     for ( int i = 0; i < this->giveNumberOfLatticeBeams(); i++ ) {
-      //First plot all of them
-      if ( this->giveLatticeBeam(i + 1)->giveOutsideFlag() == 0 || this->giveLatticeBeam(i + 1)->giveOutsideFlag() == 2 ) { //Elements are inside
-        locationBeam.zero();
-        boundaryFlag = 0;
-        this->giveLatticeBeam(i + 1)->giveLocalVertices(nodes);
-        newNodes = nodes;
+        //First plot all of them
+        if ( this->giveLatticeBeam(i + 1)->giveOutsideFlag() == 0 || this->giveLatticeBeam(i + 1)->giveOutsideFlag() == 2 ) { //Elements are inside
+            locationBeam.zero();
+            boundaryFlag = 0;
+            this->giveLatticeBeam(i + 1)->giveLocalVertices(nodes);
+            newNodes = nodes;
 
-        //Go through nodes and replace the ones outside with periodic nodes
-        for ( int m = 0; m < nodes.giveSize(); m++ ) {
-            giveReinforcementNode(nodes.at(m+1))->giveCoordinates(coords);
-            if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 0 ) {
-                //Periodicity in x
-                if ( fabs(coords.at(1) - boundaries.at(2)) < giveTol() ) { //x=xmax
-                    boundaryFlag=1;
-                    locationBeam.at(m + 1) = this->giveReinforcementNode( nodes.at(m + 1) )->giveLocation();
-                    newNodes.at(m + 1) = this->giveReinforcementNode( nodes.at(m + 1) )->givePeriodicNode();
-                }
-            } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 0 ) {
-                //Periodicity in y
-                if ( fabs(coords.at(2) - boundaries.at(4)) < giveTol() ) { //y=ymax
-                    boundaryFlag=1;
-                    locationBeam.at(m + 1) = this->giveReinforcementNode( nodes.at(m + 1) )->giveLocation();
-                    newNodes.at(m + 1) = this->giveReinforcementNode( nodes.at(m + 1) )->givePeriodicNode();
-                }
-            } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 1 ) {
-                //Periodicity in z
-                if ( fabs(coords.at(3) - boundaries.at(6)) < giveTol() ) { //z=zmax
-                    boundaryFlag=1;
-                    locationBeam.at(m + 1) = this->giveReinforcementNode( nodes.at(m + 1) )->giveLocation();
-                    newNodes.at(m + 1) = this->giveReinforcementNode( nodes.at(m + 1) )->givePeriodicNode();
-                }
-            } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 0 ) {
-                //Periodicity in x y
-                if ( fabs(coords.at(1) - boundaries.at(2)) < giveTol()  ||
-                     fabs(coords.at(2) - boundaries.at(4)) < giveTol() ) { //x=xmax or y=ymax
-                    boundaryFlag=1;
-                    locationBeam.at(m + 1) = this->giveReinforcementNode( nodes.at(m + 1) )->giveLocation();
-                    newNodes.at(m + 1) = this->giveReinforcementNode( nodes.at(m + 1) )->givePeriodicNode();
-                }
-            } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 1 ) {
-                //Periodicity in x z
-                if ( fabs(coords.at(1) - boundaries.at(2)) < giveTol()  ||
-                     fabs(coords.at(3) - boundaries.at(6)) < giveTol() ) { //x=xmax or z=zmax
-                    boundaryFlag=1;
-                    locationBeam.at(m + 1) = this->giveReinforcementNode( nodes.at(m + 1) )->giveLocation();
-                    newNodes.at(m + 1) = this->giveReinforcementNode( nodes.at(m + 1) )->givePeriodicNode();
-                }
-            } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 1 ) {
-                //Periodicity in y z
-                if ( fabs(coords.at(2) - boundaries.at(4)) < giveTol()  ||
-                     fabs(coords.at(3) - boundaries.at(6)) < giveTol() ) { //y=ymax or z=zmax
-                    boundaryFlag=1;
-                    locationBeam.at(m + 1) = this->giveReinforcementNode( nodes.at(m + 1) )->giveLocation();
-                    newNodes.at(m + 1) = this->giveReinforcementNode( nodes.at(m + 1) )->givePeriodicNode();
-                }
-            } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 1 ) {
-                //Periodicity in x y z
-                if ( fabs(coords.at(1) - boundaries.at(2)) < giveTol()  ||
-                     fabs(coords.at(2) - boundaries.at(4)) < giveTol()  ||
-                     fabs(coords.at(3) - boundaries.at(6)) < giveTol() ) { //x=xmax or y=ymax or z=zmax
-                    boundaryFlag=1;
-                    locationBeam.at(m + 1) = this->giveReinforcementNode( nodes.at(m + 1) )->giveLocation();
-                    newNodes.at(m + 1) = this->giveReinforcementNode( nodes.at(m + 1) )->givePeriodicNode();
+            //Go through nodes and replace the ones outside with periodic nodes
+            for ( int m = 0; m < nodes.giveSize(); m++ ) {
+                giveReinforcementNode(nodes.at(m + 1) )->giveCoordinates(coords);
+                if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 0 ) {
+                    //Periodicity in x
+                    if ( fabs(coords.at(1) - boundaries.at(2) ) < giveTol() ) { //x=xmax
+                        boundaryFlag = 1;
+                        locationBeam.at(m + 1) = this->giveReinforcementNode(nodes.at(m + 1) )->giveLocation();
+                        newNodes.at(m + 1) = this->giveReinforcementNode(nodes.at(m + 1) )->givePeriodicNode();
+                    }
+                } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 0 ) {
+                    //Periodicity in y
+                    if ( fabs(coords.at(2) - boundaries.at(4) ) < giveTol() ) { //y=ymax
+                        boundaryFlag = 1;
+                        locationBeam.at(m + 1) = this->giveReinforcementNode(nodes.at(m + 1) )->giveLocation();
+                        newNodes.at(m + 1) = this->giveReinforcementNode(nodes.at(m + 1) )->givePeriodicNode();
+                    }
+                } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 1 ) {
+                    //Periodicity in z
+                    if ( fabs(coords.at(3) - boundaries.at(6) ) < giveTol() ) { //z=zmax
+                        boundaryFlag = 1;
+                        locationBeam.at(m + 1) = this->giveReinforcementNode(nodes.at(m + 1) )->giveLocation();
+                        newNodes.at(m + 1) = this->giveReinforcementNode(nodes.at(m + 1) )->givePeriodicNode();
+                    }
+                } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 0 ) {
+                    //Periodicity in x y
+                    if ( fabs(coords.at(1) - boundaries.at(2) ) < giveTol()  ||
+                         fabs(coords.at(2) - boundaries.at(4) ) < giveTol() ) { //x=xmax or y=ymax
+                        boundaryFlag = 1;
+                        locationBeam.at(m + 1) = this->giveReinforcementNode(nodes.at(m + 1) )->giveLocation();
+                        newNodes.at(m + 1) = this->giveReinforcementNode(nodes.at(m + 1) )->givePeriodicNode();
+                    }
+                } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 1 ) {
+                    //Periodicity in x z
+                    if ( fabs(coords.at(1) - boundaries.at(2) ) < giveTol()  ||
+                         fabs(coords.at(3) - boundaries.at(6) ) < giveTol() ) { //x=xmax or z=zmax
+                        boundaryFlag = 1;
+                        locationBeam.at(m + 1) = this->giveReinforcementNode(nodes.at(m + 1) )->giveLocation();
+                        newNodes.at(m + 1) = this->giveReinforcementNode(nodes.at(m + 1) )->givePeriodicNode();
+                    }
+                } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 1 ) {
+                    //Periodicity in y z
+                    if ( fabs(coords.at(2) - boundaries.at(4) ) < giveTol()  ||
+                         fabs(coords.at(3) - boundaries.at(6) ) < giveTol() ) { //y=ymax or z=zmax
+                        boundaryFlag = 1;
+                        locationBeam.at(m + 1) = this->giveReinforcementNode(nodes.at(m + 1) )->giveLocation();
+                        newNodes.at(m + 1) = this->giveReinforcementNode(nodes.at(m + 1) )->givePeriodicNode();
+                    }
+                } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 1 ) {
+                    //Periodicity in x y z
+                    if ( fabs(coords.at(1) - boundaries.at(2) ) < giveTol()  ||
+                         fabs(coords.at(2) - boundaries.at(4) ) < giveTol()  ||
+                         fabs(coords.at(3) - boundaries.at(6) ) < giveTol() ) { //x=xmax or y=ymax or z=zmax
+                        boundaryFlag = 1;
+                        locationBeam.at(m + 1) = this->giveReinforcementNode(nodes.at(m + 1) )->giveLocation();
+                        newNodes.at(m + 1) = this->giveReinforcementNode(nodes.at(m + 1) )->givePeriodicNode();
+                    }
                 }
             }
-        }
 
-        //find the reference node
-        int refNode = 0;
-        oofem::FloatArray dirVec = this->giveLatticeBeam(i+1)->giveDirectionVector();
-        for ( int j = 0; j < this->giveNumberOfFibres(); j++ ) {
-            oofem::FloatArray perpVec(3), firstNodeCoords(3);
-            int numReinfNode = this->giveFibre(j+1)->giveNumberReinforcementNode(1);
-            firstNodeCoords = *this->giveReinforcementNode(numReinfNode)->giveCoordinates();
-            perpVec.at(1) = referenceNodes.at(j+1,1) - firstNodeCoords.at(1);
-            perpVec.at(2) = referenceNodes.at(j+1,2) - firstNodeCoords.at(2);
-            perpVec.at(3) = referenceNodes.at(j+1,3) - firstNodeCoords.at(3);
-            double sp = dirVec.dotProduct(perpVec, 3);
+            //find the reference node
+            int refNode = 0;
+            oofem::FloatArray dirVec = this->giveLatticeBeam(i + 1)->giveDirectionVector();
+            for ( int j = 0; j < this->giveNumberOfFibres(); j++ ) {
+                oofem::FloatArray perpVec(3), firstNodeCoords(3);
+                int numReinfNode = this->giveFibre(j + 1)->giveNumberReinforcementNode(1);
+                firstNodeCoords = * this->giveReinforcementNode(numReinfNode)->giveCoordinates();
+                perpVec.at(1) = referenceNodes.at(j + 1, 1) - firstNodeCoords.at(1);
+                perpVec.at(2) = referenceNodes.at(j + 1, 2) - firstNodeCoords.at(2);
+                perpVec.at(3) = referenceNodes.at(j + 1, 3) - firstNodeCoords.at(3);
+                double sp = dirVec.dotProduct(perpVec, 3);
 
-            if ( fabs(sp) < this->giveTol() ) {
-                refNode = refNodeNumbers.at(j+1);
-                break;
+                if ( fabs(sp) < this->giveTol() ) {
+                    refNode = refNodeNumbers.at(j + 1);
+                    break;
+                }
+            }
+
+            if ( boundaryFlag == 0 ) {
+                fprintf(outputStream, "libeam3d %d nodes 2 %d %d refnode %d", this->giveNumberOfDelaunayTetras() + i + 1, L2Gmap.at(nodes.at(1) ), L2Gmap.at(nodes.at(2) ), refNode);
+                fprintf(outputStream, "\n");
+                set2.followedBy(this->giveNumberOfDelaunayTetras() + i + 1);
+                beamElL2Gmap.at(i + 1) = this->giveNumberOfDelaunayTetras() + i + 1;
+            } else {
+                fprintf(outputStream, "%s %d nodes 3 %d %d %d refnode %d", boundBeamElemName, this->giveNumberOfDelaunayTetras() + i + 1, L2Gmap.at(newNodes.at(1) ), L2Gmap.at(newNodes.at(2) ), controlNode, refNode);
+                fprintf(outputStream, " location 2 %d %d", locationBeam.at(1), locationBeam.at(2) );
+                fprintf(outputStream, "\n");
+                set2.followedBy(this->giveNumberOfDelaunayTetras() + i + 1);
+                beamElL2Gmap.at(i + 1) = this->giveNumberOfDelaunayTetras() + i + 1;
             }
         }
-
-        if (boundaryFlag == 0) {
-            fprintf( outputStream, "libeam3d %d nodes 2 %d %d refnode %d", this->giveNumberOfDelaunayTetras() + i + 1, L2Gmap.at(nodes.at(1)), L2Gmap.at(nodes.at(2)), refNode);
-            fprintf( outputStream, "\n");
-            set2.followedBy(this->giveNumberOfDelaunayTetras() + i + 1);
-            beamElL2Gmap.at(i+1) = this->giveNumberOfDelaunayTetras() + i + 1;
-        } else {
-            fprintf( outputStream, "%s %d nodes 3 %d %d %d refnode %d", boundBeamElemName, this->giveNumberOfDelaunayTetras() + i + 1, L2Gmap.at(newNodes.at(1)), L2Gmap.at(newNodes.at(2)), controlNode, refNode);
-            fprintf( outputStream, " location 2 %d %d", locationBeam.at(1), locationBeam.at(2) );
-            fprintf( outputStream, "\n");
-            set2.followedBy(this->giveNumberOfDelaunayTetras() + i + 1);
-            beamElL2Gmap.at(i+1) = this->giveNumberOfDelaunayTetras() + i + 1;
-        }
-      }
     }
     printf("Finished writing reinforcement data\n");
 
     //element output - interface
     oofem::IntArray set3, intElL2Gmap;
-    intElL2Gmap.resize(this->giveNumberOfLatticeLinks());
+    intElL2Gmap.resize(this->giveNumberOfLatticeLinks() );
     intElL2Gmap.zero();
     oofem::FloatArray direction(3);
     for ( int i = 0; i < this->giveNumberOfLatticeLinks(); i++ ) {
-        int linkVer1 = this->giveLatticeLink(i+1)->giveLocalVertex(1);
-        int linkVer2 = this->giveLatticeLink(i+1)->giveLocalVertex(2);
+        int linkVer1 = this->giveLatticeLink(i + 1)->giveLocalVertex(1);
+        int linkVer2 = this->giveLatticeLink(i + 1)->giveLocalVertex(2);
         //recalculate normal vector
-	direction = this->giveLatticeLink(i+1)->giveDirectionVector();
+        direction = this->giveLatticeLink(i + 1)->giveDirectionVector();
         oofem::FloatArray normalVec(3);
-        oofem::FloatArray beamNode = *this->giveReinforcementNode(linkVer1)->giveCoordinates();
-        oofem::FloatArray tetraNode = *this->giveDelaunayVertex(linkVer2)->giveCoordinates();
-        normalVec.add(beamNode); normalVec.subtract(tetraNode); normalVec.normalize();
+        oofem::FloatArray beamNode = * this->giveReinforcementNode(linkVer1)->giveCoordinates();
+        oofem::FloatArray tetraNode = * this->giveDelaunayVertex(linkVer2)->giveCoordinates();
+        normalVec.add(beamNode);
+        normalVec.subtract(tetraNode);
+        normalVec.normalize();
         if ( reinfMirrorNodeList.contains(linkVer1) && mirrorNodeList.contains(linkVer2) ) { //to make sure that the link on master surface is not omitted
-//             fprintf( outputStream, "intelpoint %d nodes 2 %d %d normal 3 %e %e %e length %e\n", this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + i + 1, linkVer2, L2Gmap.at(linkVer1), normalVec.at(1), normalVec.at(2), normalVec.at(3), this->giveLatticeLink(i+1)->giveAssociatedLength() );
-	  
-	  fprintf( outputStream, "bondlink3d %d nodes 2 %d %d dirvector 3 %e %e %e length %e length_end %e diameter %e\n", this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + i + 1, L2Gmap.at(linkVer1), linkVer2, direction.at(1), direction.at(2), direction.at(3), this->giveLatticeLink(i+1)->giveAssociatedLength(), this->giveLatticeLink(i+1)->giveL_end(), this->giveLatticeLink(i+1)->giveDiameter());
+            //             fprintf( outputStream, "intelpoint %d nodes 2 %d %d normal 3 %e %e %e length %e\n", this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + i + 1, linkVer2, L2Gmap.at(linkVer1), normalVec.at(1), normalVec.at(2), normalVec.at(3), this->giveLatticeLink(i+1)->giveAssociatedLength() );
+
+            fprintf(outputStream, "bondlink3d %d nodes 2 %d %d dirvector 3 %e %e %e length %e length_end %e diameter %e\n", this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + i + 1, L2Gmap.at(linkVer1), linkVer2, direction.at(1), direction.at(2), direction.at(3), this->giveLatticeLink(i + 1)->giveAssociatedLength(), this->giveLatticeLink(i + 1)->giveL_end(), this->giveLatticeLink(i + 1)->giveDiameter() );
             set3.followedBy(this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + i + 1);
-            intElL2Gmap.at(i+1) = this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + i + 1;
+            intElL2Gmap.at(i + 1) = this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + i + 1;
         }
     }
     printf("Finished writing interface data\n");
 
     //split into sets (along fibres)
-    std::vector< std::vector<int> > beamSets(this->giveNumberOfFibres());
-    std::vector< std::vector<int> > interfaceSets(this->giveNumberOfFibres());
-    oofem::IntArray beamsPerFibre(this->giveNumberOfFibres()), firstNodeinFibres(this->giveNumberOfFibres());
+    std::vector < std::vector < int >> beamSets(this->giveNumberOfFibres() );
+    std::vector < std::vector < int >> interfaceSets(this->giveNumberOfFibres() );
+    oofem::IntArray beamsPerFibre(this->giveNumberOfFibres() ), firstNodeinFibres(this->giveNumberOfFibres() );
     for ( int i = 0; i < this->giveNumberOfFibres(); i++ ) {
-        beamsPerFibre.at(i+1) = this->giveFibre(i+1)->NbOfReinfNodes() - 1;
+        beamsPerFibre.at(i + 1) = this->giveFibre(i + 1)->NbOfReinfNodes() - 1;
         int beamNo(0);
         if ( i != 0 ) {
-            for ( int r = 1 ; r <= i; r++ ) {
+            for ( int r = 1; r <= i; r++ ) {
                 beamNo += beamsPerFibre.at(r);
             }
         }
         //first split reinforcement
-        for ( int j = 0; j < this->giveFibre(i+1)->NbOfReinfNodes() - 1; j++ ) {
-            if ( this->giveLatticeBeam(beamNo+j+1)->giveOutsideFlag() == 0 || this->giveLatticeBeam(beamNo+j+1)->giveOutsideFlag() == 2 ) {
-                (beamSets[i]).push_back(beamNo+j+1);
+        for ( int j = 0; j < this->giveFibre(i + 1)->NbOfReinfNodes() - 1; j++ ) {
+            if ( this->giveLatticeBeam(beamNo + j + 1)->giveOutsideFlag() == 0 || this->giveLatticeBeam(beamNo + j + 1)->giveOutsideFlag() == 2 ) {
+                ( beamSets [ i ] ).push_back(beamNo + j + 1);
                 oofem::IntArray beamNodes;
-                this->giveLatticeBeam(beamNo+j+1)->giveLocalVertices(beamNodes);
+                this->giveLatticeBeam(beamNo + j + 1)->giveLocalVertices(beamNodes);
                 //for the beam elements, get the corresponding link elements
                 for ( int k = 0; k < this->giveNumberOfLatticeLinks(); k++ ) {
                     oofem::IntArray linkNodes;
-                    this->giveLatticeLink(k+1)->giveLocalVertices(linkNodes);
+                    this->giveLatticeLink(k + 1)->giveLocalVertices(linkNodes);
                     if ( beamNodes.at(1) == linkNodes.at(1)  ) {
-                        (interfaceSets[i]).push_back(k+1);
+                        ( interfaceSets [ i ] ).push_back(k + 1);
                     }
                 }
             }
         }
-        firstNodeinFibres.at(i+1) = L2Gmap.at(this->giveLatticeLink(interfaceSets[i][0])->giveLocalVertex(1));
+        firstNodeinFibres.at(i + 1) = L2Gmap.at(this->giveLatticeLink(interfaceSets [ i ] [ 0 ])->giveLocalVertex(1) );
     }
     printf("Finished splitting into sets\n");
 
     fprintf(outputStream, "SimpleCS 1 material 1 set 1\n");
     for ( int j = 0; j < this->giveNumberOfFibres(); j++ ) {
-        double diam = this->giveFibre(j+1)->giveDiameter();
+        double diam = this->giveFibre(j + 1)->giveDiameter();
 
-        fprintf(outputStream, "FiberedCS %d ", 2*(j+1));
-	fprintf(outputStream, "fibermaterials 16 %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d ", 2*(j+1), 2*(j+1), 2*(j+1), 2*(j+1), 2*(j+1), 2*(j+1), 2*(j+1), 2*(j+1), 2*(j+1), 2*(j+1), 2*(j+1), 2*(j+1), 2*(j+1), 2*(j+1), 2*(j+1), 2*(j+1));
-	fprintf(outputStream, "thicks 16 %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e ", 0.25*diam, 0.25*diam, 0.25*diam, 0.25*diam, 0.125*diam, 0.25*diam, 0.25*diam, 0.125*diam, 0.25*diam, 0.25*diam, 0.25*diam, 0.25*diam, 0.125*diam, 0.25*diam, 0.25*diam, 0.125*diam);
-	fprintf(outputStream, "widths 16 %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e ", 0.25*diam, 0.25*diam, 0.25*diam, 0.25*diam, 0.125*diam, 0.25*diam, 0.25*diam, 0.125*diam, 0.25*diam, 0.25*diam, 0.25*diam, 0.25*diam, 0.125*diam, 0.25*diam, 0.25*diam, 0.125*diam);
-	fprintf(outputStream, "thick %e width %e ", diam, diam);
-	fprintf(outputStream, "fiberycentrecoords 16 %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e ", 0.375*diam, 0.125*diam, -0.125*diam, -0.375*diam, 0.3125*diam, 0.125*diam, -0.125*diam, -0.3125*diam, 0.375*diam, 0.125*diam, -0.125*diam, -0.375*diam, 0.3125*diam, 0.125*diam, -0.125*diam, -0.3125*diam);
-	fprintf(outputStream, "fiberzcentrecoords 16 %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e ", -0.125*diam, -0.125*diam, -0.125*diam, -0.125*diam, -0.3125*diam, -0.375*diam, -0.375*diam, -0.3125*diam, 0.125*diam, 0.125*diam, 0.125*diam, 0.125*diam, 0.3125*diam, 0.375*diam, 0.375*diam, 0.3125*diam);
-	fprintf(outputStream, "set %d\n", 2*(j+2));
-        fprintf(outputStream, "SimpleCS %d material %d set %d\n", 2*(j+1)+1, 2*(j+1)+1, 2*(j+2)+1 );
+        fprintf(outputStream, "FiberedCS %d ", 2 * ( j + 1 ) );
+        fprintf(outputStream, "fibermaterials 16 %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d ", 2 * ( j + 1 ), 2 * ( j + 1 ), 2 * ( j + 1 ), 2 * ( j + 1 ), 2 * ( j + 1 ), 2 * ( j + 1 ), 2 * ( j + 1 ), 2 * ( j + 1 ), 2 * ( j + 1 ), 2 * ( j + 1 ), 2 * ( j + 1 ), 2 * ( j + 1 ), 2 * ( j + 1 ), 2 * ( j + 1 ), 2 * ( j + 1 ), 2 * ( j + 1 ) );
+        fprintf(outputStream, "thicks 16 %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e ", 0.25 * diam, 0.25 * diam, 0.25 * diam, 0.25 * diam, 0.125 * diam, 0.25 * diam, 0.25 * diam, 0.125 * diam, 0.25 * diam, 0.25 * diam, 0.25 * diam, 0.25 * diam, 0.125 * diam, 0.25 * diam, 0.25 * diam, 0.125 * diam);
+        fprintf(outputStream, "widths 16 %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e ", 0.25 * diam, 0.25 * diam, 0.25 * diam, 0.25 * diam, 0.125 * diam, 0.25 * diam, 0.25 * diam, 0.125 * diam, 0.25 * diam, 0.25 * diam, 0.25 * diam, 0.25 * diam, 0.125 * diam, 0.25 * diam, 0.25 * diam, 0.125 * diam);
+        fprintf(outputStream, "thick %e width %e ", diam, diam);
+        fprintf(outputStream, "fiberycentrecoords 16 %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e ", 0.375 * diam, 0.125 * diam, -0.125 * diam, -0.375 * diam, 0.3125 * diam, 0.125 * diam, -0.125 * diam, -0.3125 * diam, 0.375 * diam, 0.125 * diam, -0.125 * diam, -0.375 * diam, 0.3125 * diam, 0.125 * diam, -0.125 * diam, -0.3125 * diam);
+        fprintf(outputStream, "fiberzcentrecoords 16 %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e ", -0.125 * diam, -0.125 * diam, -0.125 * diam, -0.125 * diam, -0.3125 * diam, -0.375 * diam, -0.375 * diam, -0.3125 * diam, 0.125 * diam, 0.125 * diam, 0.125 * diam, 0.125 * diam, 0.3125 * diam, 0.375 * diam, 0.375 * diam, 0.3125 * diam);
+        fprintf(outputStream, "set %d\n", 2 * ( j + 2 ) );
+        fprintf(outputStream, "SimpleCS %d material %d set %d\n", 2 * ( j + 1 ) + 1, 2 * ( j + 1 ) + 1, 2 * ( j + 2 ) + 1);
     }
     fprintf(outputStream, "idm1 1 talpha 0 d 0.0 e 30.e9 e0 100.e-6 wf 33.e-6 n 0.2 equivstraintype 1\n");
     for ( int j = 0; j < this->giveNumberOfFibres(); j++ ) {
-        double s3 = 5./24 * this->giveFibre(j+1)->giveDiameter() + 7./3000; //approximate interpolation
-        fprintf(outputStream, "MisesMat %d d 0.0 E 2.e11 n 0.3 sig0 500e6 H 0. omega_crit 0 a 0 tAlpha 0.0 yieldtol 1.e-10\n", 2*(j+1));
-        fprintf(outputStream, "linkslip %d talpha 0. d 0. kn 1.e12 a1 1000 t0 13.7e6 type 1 s1 1.e-3 alpha 0.4\n", 2*(j+1)+1);
+        double s3 = 5. / 24 * this->giveFibre(j + 1)->giveDiameter() + 7. / 3000; //approximate interpolation
+        fprintf(outputStream, "MisesMat %d d 0.0 E 2.e11 n 0.3 sig0 500e6 H 0. omega_crit 0 a 0 tAlpha 0.0 yieldtol 1.e-10\n", 2 * ( j + 1 ) );
+        fprintf(outputStream, "linkslip %d talpha 0. d 0. kn 1.e12 a1 1000 t0 13.7e6 type 1 s1 1.e-3 alpha 0.4\n", 2 * ( j + 1 ) + 1);
     }
 
-    if (this->macroType == _Beam) {
-    //     fprintf(outputStream, "BoundaryCondition 3 loadTimeFunction 1 dofs 3 1 7 10 values 3 0 0 0 set %d\n", 3 + 2*fibreList.size1()+1);
-      fprintf(outputStream, "BoundaryCondition 1 loadTimeFunction 1 dofs 3 1 7 10 values 3 2.6e-3 0 0 set %d\n", 3 + 2*converter::size1(fibreList)+1);
+    if ( this->macroType == _Beam ) {
+        //     fprintf(outputStream, "BoundaryCondition 3 loadTimeFunction 1 dofs 3 1 7 10 values 3 0 0 0 set %d\n", 3 + 2*fibreList.size1()+1);
+        fprintf(outputStream, "BoundaryCondition 1 loadTimeFunction 1 dofs 3 1 7 10 values 3 2.6e-3 0 0 set %d\n", 3 + 2 * converter::size1(fibreList) + 1);
+    } else if ( this->macroType == _Plate )     {
+        fprintf(outputStream, "BoundaryCondition 1 loadTimeFunction 1 dofs 7 1 7 8 10 11 12 13 values 7 2.e-3 0 0 0 0 0 0 set %d\n", 3 + 2 * converter::size1(fibreList) + 1);
+    } else   {
+        printf("output for this macrotype not yet implemented in grid.C\n");
     }
-    else if (this->macroType == _Plate) {
-      fprintf(outputStream, "BoundaryCondition 1 loadTimeFunction 1 dofs 7 1 7 8 10 11 12 13 values 7 2.e-3 0 0 0 0 0 0 set %d\n", 3 + 2*converter::size1(fibreList)+1);
-    }
-    else {
-      printf("output for this macrotype %s not yet implemented in grid.C\n",this-macroType);
-    }
-    
-    
-    fprintf(outputStream, "BoundaryCondition 2 loadTimeFunction 1 dofs 3 1 2 3 values 3 0 0 0 set %d\n", 3+ 2*converter::size1(fibreList)+2);
-    fprintf(outputStream, "BoundaryCondition 3 loadTimeFunction 1 dofs 2 2 3 values 2 0 0 set %d\n", 3+ 2*converter::size1(fibreList)+3);
-    fprintf(outputStream, "BoundaryCondition 4 loadTimeFunction 1 dofs 1 3 values 1 0 set %d\n", 3+ 2*converter::size1(fibreList)+4);
-    //    fprintf(outputStream, "NodalLoad 6 loadTimeFunction 1 dofs 1 1 components 1 1 set %d reference\n", 3+ 2*fibreList.size1()+1);
-    // if (this->macroType == _Truss) {
-    //     fprintf(outputStream, "BoundaryCondition 3 loadTimeFunction 1 dofs 1 1 values 1 0 set %d\n", 3 + 2*fibreList.size1()+1);
-    // } else if (this->macroType == _Membrane) {
-    //     fprintf(outputStream, "BoundaryCondition 3 loadTimeFunction 1 dofs 4 1 2 4 5  values 4 0 0 0 0 set %d\n", 3 + 2*fibreList.size1()+1);
-    // } else if (this->macroType == _Beam) {
-    //     fprintf(outputStream, "BoundaryCondition 3 loadTimeFunction 1 dofs 3 1 7 10 values 3 0 0 0 set %d\n", 3 + 2*fibreList.size1()+1);
-    // } else if (this->macroType == _Plate) {
-    //     fprintf(outputStream, "BoundaryCondition 3 loadTimeFunction 1 dofs 10 1 2 4 5 7 8 10 11 12 13 values 10 0 0 0 0 0 0 0 0 0 0 set %d\n", 3 + 2*fibreList.size1()+1);
-    // } else if (this->macroType == _3dVoigt) {
-    //     fprintf(outputStream, "BoundaryCondition 3 loadTimeFunction 1 dofs 6 1 2 3 4 5 6 values 6 0 0 0 0 0 0 set %d\n", 3 + 2*fibreList.size1()+1);
-    // } else if (this->macroType == _3d) {
-    //     fprintf(outputStream, "BoundaryCondition 3 loadTimeFunction 1 dofs 9 1 2 3 4 5 6 7 8 9 values 9 0 0 0 0 0 0 0 0 0 set %d\n", 3 + 2*fibreList.size1()+1);
-    // }
-    //    fprintf(outputStream, "ConstantFunction 1 f(t) 1.\n");
+
+
+    fprintf(outputStream, "BoundaryCondition 2 loadTimeFunction 1 dofs 3 1 2 3 values 3 0 0 0 set %d\n", 3 + 2 * converter::size1(fibreList) + 2);
+    fprintf(outputStream, "BoundaryCondition 3 loadTimeFunction 1 dofs 2 2 3 values 2 0 0 set %d\n", 3 + 2 * converter::size1(fibreList) + 3);
+    fprintf(outputStream, "BoundaryCondition 4 loadTimeFunction 1 dofs 1 3 values 1 0 set %d\n", 3 + 2 * converter::size1(fibreList) + 4);
     fprintf(outputStream, "PiecewiseLinFunction 1 nPoints 2 t 2 0. 200. f(t) 2 0. 1.\n");
-    fprintf(outputStream, "set 1 elements %d ", set1.giveSize());
+    fprintf(outputStream, "set 1 elements %d ", set1.giveSize() );
     for ( int i = 0; i < set1.giveSize(); i++ ) {
-        fprintf(outputStream, "%d ", set1.at(i+1));
+        fprintf(outputStream, "%d ", set1.at(i + 1) );
     }
     fprintf(outputStream, "\n");
-     fprintf(outputStream, "set 2 elements %d ", set2.giveSize());
+    fprintf(outputStream, "set 2 elements %d ", set2.giveSize() );
     for ( int i = 0; i < set2.giveSize(); i++ ) {
-        fprintf(outputStream, "%d ", set2.at(i+1));
+        fprintf(outputStream, "%d ", set2.at(i + 1) );
     }
     fprintf(outputStream, "\n");
-    fprintf(outputStream, "set 3 elements %d ", set3.giveSize());
+    fprintf(outputStream, "set 3 elements %d ", set3.giveSize() );
     for ( int i = 0; i < set3.giveSize(); i++ ) {
-        fprintf(outputStream, "%d ", set3.at(i+1));
+        fprintf(outputStream, "%d ", set3.at(i + 1) );
     }
     fprintf(outputStream, "\n");
     for ( int i = 0; i < this->giveNumberOfFibres(); i++ ) {
-        fprintf(outputStream, "set %d elements %d ", 3 + 2*(i+1)-1, beamSets[i].size() );
-        for ( int j = 0; j < beamSets[i].size(); j++ ) {
-            fprintf(outputStream, "%d ", beamElL2Gmap.at(beamSets[i][j]));
+        fprintf(outputStream, "set %d elements %d ", 3 + 2 * ( i + 1 ) - 1, beamSets [ i ].size() );
+        for ( int j = 0; j < beamSets [ i ].size(); j++ ) {
+            fprintf(outputStream, "%d ", beamElL2Gmap.at(beamSets [ i ] [ j ]) );
         }
         fprintf(outputStream, "\n");
-        fprintf(outputStream, "set %d elements %d ", 3 + 2*(i+1), interfaceSets[i].size() );
-        for ( int j = 0; j < interfaceSets[i].size(); j++ ) {
-            fprintf(outputStream, "%d ", intElL2Gmap.at(interfaceSets[i][j]));
+        fprintf(outputStream, "set %d elements %d ", 3 + 2 * ( i + 1 ), interfaceSets [ i ].size() );
+        for ( int j = 0; j < interfaceSets [ i ].size(); j++ ) {
+            fprintf(outputStream, "%d ", intElL2Gmap.at(interfaceSets [ i ] [ j ]) );
         }
         fprintf(outputStream, "\n");
     }
-    fprintf(outputStream, "set %d nodes 1 %d \n", 3 + 2*converter::size1(fibreList)+1, controlNode);
-    fprintf(outputStream, "set %d nodes 1 %d \n", 3 + 2*converter::size1(fibreList)+2, firstNode);
-    fprintf(outputStream, "set %d nodes 1 %d \n", 3 + 2*converter::size1(fibreList)+3, secondNode);
-    fprintf(outputStream, "set %d nodes 1 %d \n", 3 + 2*converter::size1(fibreList)+4, thirdNode);
+    fprintf(outputStream, "set %d nodes 1 %d \n", 3 + 2 * converter::size1(fibreList) + 1, controlNode);
+    fprintf(outputStream, "set %d nodes 1 %d \n", 3 + 2 * converter::size1(fibreList) + 2, firstNode);
+    fprintf(outputStream, "set %d nodes 1 %d \n", 3 + 2 * converter::size1(fibreList) + 3, secondNode);
+    fprintf(outputStream, "set %d nodes 1 %d \n", 3 + 2 * converter::size1(fibreList) + 4, thirdNode);
 
     fprintf(outputStream, "#%%BEGIN_CHECK%%\n");
-    fprintf(outputStream, "#REACTION number %d dof 1\n",controlNode);
+    fprintf(outputStream, "#REACTION number %d dof 1\n", controlNode);
     fprintf(outputStream, "#NODE number %d dof 1 unknown d\n", controlNode);
     fprintf(outputStream, "#TIME\n");
     fprintf(outputStream, "#%%END_CHECK%%\n");
 
-    
-    // fprintf(outputStream, "set %d nodes %d ", 3 + 2*fibreList.size1() + 2, this->fibreList.size1());
-    // for ( int i = 0; i < this->giveNumberOfFibres(); i++ ) {
-    //     fprintf(outputStream, "%d ", firstNodeinFibres.at(i+1));
-    // }
-    // fprintf(outputStream, "\n");
     return;
 }
 
 void
-Grid :: give3DRCPeriodicSMOutput2(const std::string& fileName)
+Grid::give3DRCPeriodicSMOutput2(const std::string &fileName)
 /**
  * Alternative (2) output for periodic mesh of a 3D reinforced concrete RVE.  Concrete is modelled with tetrahedras (LTRSpace and LTRSpaceBoundary),
  * reinforcement is modelled with beam elements (LIBeam3d and LIBeam3dBoundary), and the interface is modelled with link elements (BondLink3d). Four link elements are used to anchor the rebar node in the tetrahedron.
@@ -9115,20 +7874,8 @@ Grid :: give3DRCPeriodicSMOutput2(const std::string& fileName)
  * @authors: Adam Sciegaj, Peter Grassl
  */
 {
+    FILE *outputStream = converter::fopen_or_die(fileName, "w");
 
-    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
-
-  /*   const std::string fileName1 = fileName + ".sm"; */
-  /*   FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w"); */
-    
-  /*   const std::string fileName2 = fileName + ".tm"; */
-  /*   FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
-
-
-  /* FILE *outputStream; */
-  /*   if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
-  /*       converter::errorf("Cannot open output file %s", fileName); */
-  /*   } */
 
     printf("Processing nodes\n");
 
@@ -9153,89 +7900,89 @@ Grid :: give3DRCPeriodicSMOutput2(const std::string& fileName)
     numberOfNodes = 0;
     for ( int i = 0; i < this->giveNumberOfDelaunayVertices(); i++ ) {
         //Determine which nodes are on mirror/image boundary
-        if (this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 2 || this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0) {
+        if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 2 || this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0 ) {
             this->giveDelaunayVertex(i + 1)->giveCoordinates(coordTest);
 
             if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 0 ) {
                 //Periodicity in x
-                if ( fabs(coordTest.at(1) - boundaries.at(2)) < giveTol() ) {
-                    if (imageNodeList.contains(i+1) == 0) {
-                        imageNodeList.followedBy(i+1);
+                if ( fabs(coordTest.at(1) - boundaries.at(2) ) < giveTol() ) {
+                    if ( imageNodeList.contains(i + 1) == 0 ) {
+                        imageNodeList.followedBy(i + 1);
                     }
                 } else {
-                    if ( mirrorNodeList.contains(i+1) == 0 ) {
-                        mirrorNodeList.followedBy(i+1);
+                    if ( mirrorNodeList.contains(i + 1) == 0 ) {
+                        mirrorNodeList.followedBy(i + 1);
                     }
                 }
             } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 0 ) {
                 //Periodicity in y
-                if ( fabs(coordTest.at(2) - boundaries.at(4)) < giveTol() ) {
-                    if (imageNodeList.contains(i+1) == 0) {
-                        imageNodeList.followedBy(i+1);
+                if ( fabs(coordTest.at(2) - boundaries.at(4) ) < giveTol() ) {
+                    if ( imageNodeList.contains(i + 1) == 0 ) {
+                        imageNodeList.followedBy(i + 1);
                     }
                 } else {
-                    if ( mirrorNodeList.contains(i+1) == 0 ) {
-                        mirrorNodeList.followedBy(i+1);
+                    if ( mirrorNodeList.contains(i + 1) == 0 ) {
+                        mirrorNodeList.followedBy(i + 1);
                     }
                 }
             } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 1 ) {
                 //Periodicity in z
-                if ( fabs(coordTest.at(3) - boundaries.at(6)) < giveTol() ) {
-                    if (imageNodeList.contains(i+1) == 0) {
-                        imageNodeList.followedBy(i+1);
+                if ( fabs(coordTest.at(3) - boundaries.at(6) ) < giveTol() ) {
+                    if ( imageNodeList.contains(i + 1) == 0 ) {
+                        imageNodeList.followedBy(i + 1);
                     }
                 } else {
-                    if ( mirrorNodeList.contains(i+1) == 0 ) {
-                        mirrorNodeList.followedBy(i+1);
+                    if ( mirrorNodeList.contains(i + 1) == 0 ) {
+                        mirrorNodeList.followedBy(i + 1);
                     }
                 }
             } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 0 ) {
                 //Periodicity in x y
-                if ( fabs(coordTest.at(1) - boundaries.at(2)) < giveTol()  ||
-                     fabs(coordTest.at(2) - boundaries.at(4)) < giveTol() ) {
-                        if (imageNodeList.contains(i+1) == 0) {
-                            imageNodeList.followedBy(i+1);
-                        }
+                if ( fabs(coordTest.at(1) - boundaries.at(2) ) < giveTol()  ||
+                     fabs(coordTest.at(2) - boundaries.at(4) ) < giveTol() ) {
+                    if ( imageNodeList.contains(i + 1) == 0 ) {
+                        imageNodeList.followedBy(i + 1);
+                    }
                 } else {
-                    if ( mirrorNodeList.contains(i+1) == 0 ) {
-                        mirrorNodeList.followedBy(i+1);
+                    if ( mirrorNodeList.contains(i + 1) == 0 ) {
+                        mirrorNodeList.followedBy(i + 1);
                     }
                 }
             } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 1 ) {
                 //Periodicity in x z
-                if ( fabs(coordTest.at(1) - boundaries.at(2)) < giveTol()  ||
-                     fabs(coordTest.at(3) - boundaries.at(6)) < giveTol() ) {
-                        if (imageNodeList.contains(i+1) == 0) {
-                            imageNodeList.followedBy(i+1);
-                        }
+                if ( fabs(coordTest.at(1) - boundaries.at(2) ) < giveTol()  ||
+                     fabs(coordTest.at(3) - boundaries.at(6) ) < giveTol() ) {
+                    if ( imageNodeList.contains(i + 1) == 0 ) {
+                        imageNodeList.followedBy(i + 1);
+                    }
                 } else {
-                    if ( mirrorNodeList.contains(i+1) == 0 ) {
-                        mirrorNodeList.followedBy(i+1);
+                    if ( mirrorNodeList.contains(i + 1) == 0 ) {
+                        mirrorNodeList.followedBy(i + 1);
                     }
                 }
             } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 1 ) {
                 //Periodicity in y z
-                if ( fabs(coordTest.at(2) - boundaries.at(4)) < giveTol()  ||
-                     fabs(coordTest.at(3) - boundaries.at(6)) < giveTol() ) {
-                        if (imageNodeList.contains(i+1) == 0) {
-                            imageNodeList.followedBy(i+1);
-                        }
+                if ( fabs(coordTest.at(2) - boundaries.at(4) ) < giveTol()  ||
+                     fabs(coordTest.at(3) - boundaries.at(6) ) < giveTol() ) {
+                    if ( imageNodeList.contains(i + 1) == 0 ) {
+                        imageNodeList.followedBy(i + 1);
+                    }
                 } else {
-                    if ( mirrorNodeList.contains(i+1) == 0 ) {
-                        mirrorNodeList.followedBy(i+1);
+                    if ( mirrorNodeList.contains(i + 1) == 0 ) {
+                        mirrorNodeList.followedBy(i + 1);
                     }
                 }
             } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 1 ) {
                 //Periodicity in x y z
-                if ( fabs(coordTest.at(1) - boundaries.at(2)) < giveTol()  ||
-                     fabs(coordTest.at(2) - boundaries.at(4)) < giveTol()  ||
-                     fabs(coordTest.at(3) - boundaries.at(6)) < giveTol() ) {
-                    if (imageNodeList.contains(i+1) == 0) {
-                            imageNodeList.followedBy(i+1);
-                        }
+                if ( fabs(coordTest.at(1) - boundaries.at(2) ) < giveTol()  ||
+                     fabs(coordTest.at(2) - boundaries.at(4) ) < giveTol()  ||
+                     fabs(coordTest.at(3) - boundaries.at(6) ) < giveTol() ) {
+                    if ( imageNodeList.contains(i + 1) == 0 ) {
+                        imageNodeList.followedBy(i + 1);
+                    }
                 } else {
-                    if ( mirrorNodeList.contains(i+1) == 0 ) {
-                        mirrorNodeList.followedBy(i+1);
+                    if ( mirrorNodeList.contains(i + 1) == 0 ) {
+                        mirrorNodeList.followedBy(i + 1);
                     }
                 }
             }
@@ -9250,84 +7997,84 @@ Grid :: give3DRCPeriodicSMOutput2(const std::string& fileName)
 
             if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 0 ) {
                 //Periodicity in x
-                if ( fabs(coordTest.at(1) - boundaries.at(2)) < giveTol() ) {
-                    if (reinfImageNodeList.contains(i+1) == 0) {
-                        reinfImageNodeList.followedBy(i+1);
+                if ( fabs(coordTest.at(1) - boundaries.at(2) ) < giveTol() ) {
+                    if ( reinfImageNodeList.contains(i + 1) == 0 ) {
+                        reinfImageNodeList.followedBy(i + 1);
                     }
                 } else {
-                    if ( reinfMirrorNodeList.contains(i+1) == 0 ) {
-                        reinfMirrorNodeList.followedBy(i+1);
+                    if ( reinfMirrorNodeList.contains(i + 1) == 0 ) {
+                        reinfMirrorNodeList.followedBy(i + 1);
                     }
                 }
             } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 0 ) {
                 //Periodicity in y
-                if ( fabs(coordTest.at(2) - boundaries.at(4)) < giveTol() ) {
-                    if (reinfImageNodeList.contains(i+1) == 0) {
-                        reinfImageNodeList.followedBy(i+1);
+                if ( fabs(coordTest.at(2) - boundaries.at(4) ) < giveTol() ) {
+                    if ( reinfImageNodeList.contains(i + 1) == 0 ) {
+                        reinfImageNodeList.followedBy(i + 1);
                     }
                 } else {
-                    if ( reinfMirrorNodeList.contains(i+1) == 0 ) {
-                        reinfMirrorNodeList.followedBy(i+1);
+                    if ( reinfMirrorNodeList.contains(i + 1) == 0 ) {
+                        reinfMirrorNodeList.followedBy(i + 1);
                     }
                 }
             } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 1 ) {
                 //Periodicity in z
-                if ( fabs(coordTest.at(3) - boundaries.at(6)) < giveTol() ) {
-                    if (reinfImageNodeList.contains(i+1) == 0) {
-                        reinfImageNodeList.followedBy(i+1);
+                if ( fabs(coordTest.at(3) - boundaries.at(6) ) < giveTol() ) {
+                    if ( reinfImageNodeList.contains(i + 1) == 0 ) {
+                        reinfImageNodeList.followedBy(i + 1);
                     }
                 } else {
-                    if ( reinfMirrorNodeList.contains(i+1) == 0 ) {
-                        reinfMirrorNodeList.followedBy(i+1);
+                    if ( reinfMirrorNodeList.contains(i + 1) == 0 ) {
+                        reinfMirrorNodeList.followedBy(i + 1);
                     }
                 }
             } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 0 ) {
                 //Periodicity in x y
-                if ( fabs(coordTest.at(1) - boundaries.at(2)) < giveTol()  ||
-                     fabs(coordTest.at(2) - boundaries.at(4)) < giveTol() ) {
-                        if (reinfImageNodeList.contains(i+1) == 0) {
-                            reinfImageNodeList.followedBy(i+1);
-                        }
+                if ( fabs(coordTest.at(1) - boundaries.at(2) ) < giveTol()  ||
+                     fabs(coordTest.at(2) - boundaries.at(4) ) < giveTol() ) {
+                    if ( reinfImageNodeList.contains(i + 1) == 0 ) {
+                        reinfImageNodeList.followedBy(i + 1);
+                    }
                 } else {
-                    if ( reinfMirrorNodeList.contains(i+1) == 0 ) {
-                        reinfMirrorNodeList.followedBy(i+1);
+                    if ( reinfMirrorNodeList.contains(i + 1) == 0 ) {
+                        reinfMirrorNodeList.followedBy(i + 1);
                     }
                 }
             } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 1 ) {
                 //Periodicity in x z
-                if ( fabs(coordTest.at(1) - boundaries.at(2)) < giveTol()  ||
-                     fabs(coordTest.at(3) - boundaries.at(6)) < giveTol() ) {
-                        if (reinfImageNodeList.contains(i+1) == 0) {
-                            reinfImageNodeList.followedBy(i+1);
-                        }
+                if ( fabs(coordTest.at(1) - boundaries.at(2) ) < giveTol()  ||
+                     fabs(coordTest.at(3) - boundaries.at(6) ) < giveTol() ) {
+                    if ( reinfImageNodeList.contains(i + 1) == 0 ) {
+                        reinfImageNodeList.followedBy(i + 1);
+                    }
                 } else {
-                    if ( reinfMirrorNodeList.contains(i+1) == 0 ) {
-                        reinfMirrorNodeList.followedBy(i+1);
+                    if ( reinfMirrorNodeList.contains(i + 1) == 0 ) {
+                        reinfMirrorNodeList.followedBy(i + 1);
                     }
                 }
             } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 1 ) {
                 //Periodicity in y z
-                if ( fabs(coordTest.at(2) - boundaries.at(4)) < giveTol()  ||
-                     fabs(coordTest.at(3) - boundaries.at(6)) < giveTol() ) {
-                        if (reinfImageNodeList.contains(i+1) == 0) {
-                            reinfImageNodeList.followedBy(i+1);
-                        }
+                if ( fabs(coordTest.at(2) - boundaries.at(4) ) < giveTol()  ||
+                     fabs(coordTest.at(3) - boundaries.at(6) ) < giveTol() ) {
+                    if ( reinfImageNodeList.contains(i + 1) == 0 ) {
+                        reinfImageNodeList.followedBy(i + 1);
+                    }
                 } else {
-                    if ( reinfMirrorNodeList.contains(i+1) == 0 ) {
-                        reinfMirrorNodeList.followedBy(i+1);
+                    if ( reinfMirrorNodeList.contains(i + 1) == 0 ) {
+                        reinfMirrorNodeList.followedBy(i + 1);
                     }
                 }
             } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 1 ) {
                 //Periodicity in x y z
-                if ( fabs(coordTest.at(1) - boundaries.at(2)) < giveTol()  ||
-                     fabs(coordTest.at(2) - boundaries.at(4)) < giveTol()  ||
-                     fabs(coordTest.at(3) - boundaries.at(6)) < giveTol() ) {
-                    if (reinfImageNodeList.contains(i+1) == 0) {
-                            reinfImageNodeList.followedBy(i+1);
-                        }
+                if ( fabs(coordTest.at(1) - boundaries.at(2) ) < giveTol()  ||
+                     fabs(coordTest.at(2) - boundaries.at(4) ) < giveTol()  ||
+                     fabs(coordTest.at(3) - boundaries.at(6) ) < giveTol() ) {
+                    if ( reinfImageNodeList.contains(i + 1) == 0 ) {
+                        reinfImageNodeList.followedBy(i + 1);
+                    }
                 } else {
-                    if ( reinfMirrorNodeList.contains(i+1) == 0 ) {
-                        reinfMirrorNodeList.followedBy(i+1);
+                    if ( reinfMirrorNodeList.contains(i + 1) == 0 ) {
+                        reinfMirrorNodeList.followedBy(i + 1);
                     }
                 }
             }
@@ -9341,64 +8088,61 @@ Grid :: give3DRCPeriodicSMOutput2(const std::string& fileName)
     //Determine the number of Delaunay tetrahedra in the domain
     numberOfTetras = 0;
     for ( int i = 0; i < this->giveNumberOfDelaunayTetras(); i++ ) {
-        if (  this->giveDelaunayTetra(i+1)->giveOutsideFlag() == 0 ) {
+        if (  this->giveDelaunayTetra(i + 1)->giveOutsideFlag() == 0 ) {
             numberOfTetras++;
-	     }
+        }
     }
 
     numberOfBeams = 0;
     for ( int i = 0; i < this->giveNumberOfLatticeBeams(); i++ ) {
-        if ( this->giveLatticeBeam(i+1)->giveOutsideFlag() == 0 || this->giveLatticeBeam(i+1)->giveOutsideFlag() == 2 ) {
+        if ( this->giveLatticeBeam(i + 1)->giveOutsideFlag() == 0 || this->giveLatticeBeam(i + 1)->giveOutsideFlag() == 2 ) {
             numberOfBeams++;
         }
     }
 
     numberOfLinks = 0;
     for ( int i = 0; i < this->giveNumberOfLatticeLinks(); i++ ) {
-        int linkVer1 = this->giveLatticeLink(i+1)->giveLocalVertex(1);
-        int linkVer2 = this->giveLatticeLink(i+1)->giveLocalVertex(2);
+        int linkVer1 = this->giveLatticeLink(i + 1)->giveLocalVertex(1);
+        int linkVer2 = this->giveLatticeLink(i + 1)->giveLocalVertex(2);
         if ( reinfMirrorNodeList.contains(linkVer1) && mirrorNodeList.contains(linkVer2) ) {
             numberOfLinks++;
         }
     }
 
     //Sum up all elements. Here take each lattice link times 4
-    int numberOfElem = numberOfTetras + numberOfBeams + 4.*numberOfLinks;
+    int numberOfElem = numberOfTetras + numberOfBeams + 4. * numberOfLinks;
 
     int controlNode = this->giveNumberOfFibres() + this->giveNumberOfDelaunayVertices() + this->giveNumberOfReinforcementNode() + 1;
-    
+
     //OOFEM INPUT BEGINS
     //potentially different cross section, material and bond properties for each fiber
     fprintf(outputStream, "rve.out\n");
     fprintf(outputStream, "Periodic reinforced concrete RVE in 3D\n");
-fprintf(outputStream, "StaticStructural nsteps 200 nmodules 3 initialguess 1 lstype 3 smtype 7 stiffmode 2 rtolv 1.e-3 maxiter 10000\n");
-    //fprintf(outputStream, "NonLinearStatic nmsteps 1 nsteps 1 contextOutputStep 1000 nmodules 3 profileopt 1 lstype 3 smtype 7\nnsteps 200 rtolv 1.e-3 reqIterations 100 stiffMode 1 manrmsteps 10 maxiter 200 controllmode 0 stepLength 1.e-6 minsteplength 1.e-6 maxrestarts 0 hpcmode 2 hpc 2 %d 1 hpcw 1 1. lstype 3 smtype 7\n", controlNode);
-    //fprintf(outputStream, "StaticStructural nsteps 10 solverType \"calm\" stepLength 5.e-4 Psi 0 hpcmode 2 hpc 2 %d 1 hpcw 1 1 nmodules 3 initialguess 1 lstype 0 smtype 1 stiffmode 2\n", controlNode);
-    fprintf(outputStream, "vtkxmlperiodic tstep_all primvars 1 1 vars 2 4 1 stype 0 regionsets 1 1\n");
+    fprintf(outputStream, "StaticStructural nsteps 200 nmodules 3 initialguess 1 lstype 3 smtype 7 stiffmode 2 rtolv 1.e-3 maxiter 10000\n");
+   fprintf(outputStream, "vtkxmlperiodic tstep_all primvars 1 1 vars 2 4 1 stype 0 regionsets 1 1\n");
     fprintf(outputStream, "vtkxmlperiodic tstep_all primvars 1 1 vars 2 7 8 stype 0 regionsets 1 2\n");
     fprintf(outputStream, "vtkxmlperiodic tstep_all primvars 1 1 ipvars 2 98 99 regionsets 1 3\n");
     //    fprintf(outputStream, "matlab tstep_all mesh data reactionforces integrationpoints internalvars 7 4 1 12 7 8 98 99\n");
     fprintf(outputStream, "domain 3d\n");
     fprintf(outputStream, "OutputManager tstep_all dofman_output {%d}\n", controlNode);
     fprintf(outputStream, "ndofman %d nelem %d ncrosssect %d nmat %d nbc 4 nic 0 nltf 1 nset %d\n", numberOfNodes, numberOfElem,
-            2*converter::size1(fibreList)+1,  2*converter::size1(fibreList)+1, 7 + 2*converter::size1(fibreList) );
+            2 * converter::size1(fibreList) + 1,  2 * converter::size1(fibreList) + 1, 7 + 2 * converter::size1(fibreList) );
 
     int firstFlag = 0;
 
     //Find three nodes which can be used for constraining the specimen.
     //Translations can be fixed by setting DOFs of first node to zero.
-    int firstNode=0, secondNode=0, thirdNode=0;    
+    int firstNode = 0, secondNode = 0, thirdNode = 0;
     oofem::FloatArray firstNodeCoords(3);
-    
+
     //node output - tetrahedra
     for ( int i = 0; i < this->giveNumberOfDelaunayVertices(); i++ ) {
         if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 2 ) {
             this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
 
             if ( mirrorNodeList.isEmpty() == 0 ) {
-                if (mirrorNodeList.contains(i+1)) {		  	       		  
-		  fprintf( outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
-                  
+                if ( mirrorNodeList.contains(i + 1) ) {
+                    fprintf(outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
                 }
             }
         }
@@ -9409,19 +8153,19 @@ fprintf(outputStream, "StaticStructural nsteps 200 nmodules 3 initialguess 1 lst
     firstNode = 9;
     secondNode = 10;
     thirdNode = 11;
-    
+
     //node output - beams
     oofem::IntArray L2Gmap;
-    L2Gmap.resize(this->giveNumberOfReinforcementNode());
+    L2Gmap.resize(this->giveNumberOfReinforcementNode() );
     L2Gmap.zero();
     for ( int i = 0; i < this->giveNumberOfReinforcementNode(); i++ ) {
         if ( this->giveReinforcementNode(i + 1)->giveOutsideFlag() == 0 || this->giveReinforcementNode(i + 1)->giveOutsideFlag() == 2 ) {
             this->giveReinforcementNode(i + 1)->giveCoordinates(coords);
 
             if ( reinfMirrorNodeList.isEmpty() == 0 ) {
-                if ( reinfMirrorNodeList.contains(i+1) ) {
-                    L2Gmap.at(i+1) = this->giveNumberOfDelaunayVertices() + i + 1;
-                    fprintf( outputStream, "node %d coords 3 %e %e %e\n", L2Gmap.at(i+1), coords.at(1), coords.at(2), coords.at(3) );
+                if ( reinfMirrorNodeList.contains(i + 1) ) {
+                    L2Gmap.at(i + 1) = this->giveNumberOfDelaunayVertices() + i + 1;
+                    fprintf(outputStream, "node %d coords 3 %e %e %e\n", L2Gmap.at(i + 1), coords.at(1), coords.at(2), coords.at(3) );
                 }
             }
         }
@@ -9430,28 +8174,31 @@ fprintf(outputStream, "StaticStructural nsteps 200 nmodules 3 initialguess 1 lst
     //reference nodes for 3d beams. Assuming only straight reinforcement bars.
     //Therefore, only one refnode per fibre. For curved reinforcement, each beam
     //element would require a seperate reference node.
-    oofem::FloatMatrix R(3,3);
-    R.zero(); R.at(1,2)=-1; R.at(2,1)=1; R.at(3,3)=1;
-    oofem::IntArray refNodeNumbers(this->giveNumberOfFibres());
+    oofem::FloatMatrix R(3, 3);
+    R.zero();
+    R.at(1, 2) = -1;
+    R.at(2, 1) = 1;
+    R.at(3, 3) = 1;
+    oofem::IntArray refNodeNumbers(this->giveNumberOfFibres() );
     oofem::FloatMatrix referenceNodes;
     referenceNodes.resize(this->giveNumberOfFibres(), 3);
     for ( int i = 0; i < this->giveNumberOfFibres(); i++) {
-        oofem::FloatArray dirVec = this->giveFibre(i+1)->giveDirVector();
+        oofem::FloatArray dirVec = this->giveFibre(i + 1)->giveDirVector();
         dirVec.rotatedWith(R, 'n');
-        int numReinfNode = this->giveFibre(i+1)->giveNumberReinforcementNode(1);
-        oofem::FloatArray refNodeCoords = *this->giveReinforcementNode(numReinfNode)->giveCoordinates();
+        int numReinfNode = this->giveFibre(i + 1)->giveNumberReinforcementNode(1);
+        oofem::FloatArray refNodeCoords = * this->giveReinforcementNode(numReinfNode)->giveCoordinates();
         refNodeCoords.add(dirVec);
-        refNodeNumbers.at(i+1) = i + 1 + this->giveNumberOfDelaunayVertices() + this->giveNumberOfReinforcementNode();
-        referenceNodes.at(i+1,1) = refNodeCoords.at(1);
-        referenceNodes.at(i+1,2) = refNodeCoords.at(2);
-        referenceNodes.at(i+1,3) = refNodeCoords.at(3);
+        refNodeNumbers.at(i + 1) = i + 1 + this->giveNumberOfDelaunayVertices() + this->giveNumberOfReinforcementNode();
+        referenceNodes.at(i + 1, 1) = refNodeCoords.at(1);
+        referenceNodes.at(i + 1, 2) = refNodeCoords.at(2);
+        referenceNodes.at(i + 1, 3) = refNodeCoords.at(3);
 
-        fprintf( outputStream, "node %d coords 3 %e %e %e \n", refNodeNumbers.at(i+1) , refNodeCoords.at(1), refNodeCoords.at(2), refNodeCoords.at(3) );
+        fprintf(outputStream, "node %d coords 3 %e %e %e \n", refNodeNumbers.at(i + 1), refNodeCoords.at(1), refNodeCoords.at(2), refNodeCoords.at(3) );
     }
 
 
     //control node
-    fprintf( outputStream, "node %d coords 3 %e %e %e\n", controlNode, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
+    fprintf(outputStream, "node %d coords 3 %e %e %e\n", controlNode, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
 
     printf("Finished writing node data\n");
 
@@ -9459,383 +8206,366 @@ fprintf(outputStream, "StaticStructural nsteps 200 nmodules 3 initialguess 1 lst
     int boundaryFlag = 0;
     oofem::IntArray set1;
     for ( int i = 0; i < this->giveNumberOfDelaunayTetras(); i++ ) {
-      //First plot all of them
-      if ( this->giveDelaunayTetra(i + 1)->giveOutsideFlag() == 0) { //Elements are inside
-        location.zero();
-        boundaryFlag = 0;
-        materialType = 1;
-        this->giveDelaunayTetra(i + 1)->giveLocalVertices(nodes);
-        newNodes = nodes;
+        //First plot all of them
+        if ( this->giveDelaunayTetra(i + 1)->giveOutsideFlag() == 0 ) { //Elements are inside
+            location.zero();
+            boundaryFlag = 0;
+            materialType = 1;
+            this->giveDelaunayTetra(i + 1)->giveLocalVertices(nodes);
+            newNodes = nodes;
 
-        //Go through nodes and replace the ones outside with periodic nodes
-        for ( int m = 0; m < nodes.giveSize(); m++ ) {
-            giveDelaunayVertex(nodes.at(m+1))->giveCoordinates(coords);
-            if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 0 ) {
-                //Periodicity in x
-                if ( fabs(coords.at(1) - boundaries.at(2)) < giveTol() ) { //x=xmax
-                    boundaryFlag=1;
-                    location.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->giveLocation();
-                    newNodes.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->givePeriodicNode();
-                }
-            } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 0 ) {
-                //Periodicity in y
-                if ( fabs(coords.at(2) - boundaries.at(4)) < giveTol() ) { //y=ymax
-                    boundaryFlag=1;
-                    location.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->giveLocation();
-                    newNodes.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->givePeriodicNode();
-                }
-            } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 1 ) {
-                //Periodicity in z
-                if ( fabs(coords.at(3) - boundaries.at(6)) < giveTol() ) { //z=zmax
-                    boundaryFlag=1;
-                    location.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->giveLocation();
-                    newNodes.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->givePeriodicNode();
-                }
-            } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 0 ) {
-                //Periodicity in x y
-                if ( fabs(coords.at(1) - boundaries.at(2)) < giveTol()  ||
-                     fabs(coords.at(2) - boundaries.at(4)) < giveTol() ) { //x=xmax or y=ymax
-                    boundaryFlag=1;
-                    location.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->giveLocation();
-                    newNodes.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->givePeriodicNode();
-                }
-            } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 1 ) {
-                //Periodicity in x z
-                if ( fabs(coords.at(1) - boundaries.at(2)) < giveTol()  ||
-                     fabs(coords.at(3) - boundaries.at(6)) < giveTol() ) { //x=xmax or z=zmax
-                    boundaryFlag=1;
-                    location.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->giveLocation();
-                    newNodes.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->givePeriodicNode();
-                }
-            } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 1 ) {
-                //Periodicity in y z
-                if ( fabs(coords.at(2) - boundaries.at(4)) < giveTol()  ||
-                     fabs(coords.at(3) - boundaries.at(6)) < giveTol() ) { //y=ymax or z=zmax
-                    boundaryFlag=1;
-                    location.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->giveLocation();
-                    newNodes.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->givePeriodicNode();
-                }
-            } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 1 ) {
-                //Periodicity in x y z
-                if ( fabs(coords.at(1) - boundaries.at(2)) < giveTol()  ||
-                     fabs(coords.at(2) - boundaries.at(4)) < giveTol()  ||
-                     fabs(coords.at(3) - boundaries.at(6)) < giveTol() ) { //x=xmax or y=ymax or z=zmax
-                    boundaryFlag=1;
-                    location.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->giveLocation();
-                    newNodes.at(m + 1) = this->giveDelaunayVertex( nodes.at(m + 1) )->givePeriodicNode();
+            //Go through nodes and replace the ones outside with periodic nodes
+            for ( int m = 0; m < nodes.giveSize(); m++ ) {
+                giveDelaunayVertex(nodes.at(m + 1) )->giveCoordinates(coords);
+                if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 0 ) {
+                    //Periodicity in x
+                    if ( fabs(coords.at(1) - boundaries.at(2) ) < giveTol() ) { //x=xmax
+                        boundaryFlag = 1;
+                        location.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->giveLocation();
+                        newNodes.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->givePeriodicNode();
+                    }
+                } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 0 ) {
+                    //Periodicity in y
+                    if ( fabs(coords.at(2) - boundaries.at(4) ) < giveTol() ) { //y=ymax
+                        boundaryFlag = 1;
+                        location.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->giveLocation();
+                        newNodes.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->givePeriodicNode();
+                    }
+                } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 1 ) {
+                    //Periodicity in z
+                    if ( fabs(coords.at(3) - boundaries.at(6) ) < giveTol() ) { //z=zmax
+                        boundaryFlag = 1;
+                        location.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->giveLocation();
+                        newNodes.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->givePeriodicNode();
+                    }
+                } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 0 ) {
+                    //Periodicity in x y
+                    if ( fabs(coords.at(1) - boundaries.at(2) ) < giveTol()  ||
+                         fabs(coords.at(2) - boundaries.at(4) ) < giveTol() ) { //x=xmax or y=ymax
+                        boundaryFlag = 1;
+                        location.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->giveLocation();
+                        newNodes.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->givePeriodicNode();
+                    }
+                } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 1 ) {
+                    //Periodicity in x z
+                    if ( fabs(coords.at(1) - boundaries.at(2) ) < giveTol()  ||
+                         fabs(coords.at(3) - boundaries.at(6) ) < giveTol() ) { //x=xmax or z=zmax
+                        boundaryFlag = 1;
+                        location.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->giveLocation();
+                        newNodes.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->givePeriodicNode();
+                    }
+                } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 1 ) {
+                    //Periodicity in y z
+                    if ( fabs(coords.at(2) - boundaries.at(4) ) < giveTol()  ||
+                         fabs(coords.at(3) - boundaries.at(6) ) < giveTol() ) { //y=ymax or z=zmax
+                        boundaryFlag = 1;
+                        location.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->giveLocation();
+                        newNodes.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->givePeriodicNode();
+                    }
+                } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 1 ) {
+                    //Periodicity in x y z
+                    if ( fabs(coords.at(1) - boundaries.at(2) ) < giveTol()  ||
+                         fabs(coords.at(2) - boundaries.at(4) ) < giveTol()  ||
+                         fabs(coords.at(3) - boundaries.at(6) ) < giveTol() ) { //x=xmax or y=ymax or z=zmax
+                        boundaryFlag = 1;
+                        location.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->giveLocation();
+                        newNodes.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->givePeriodicNode();
+                    }
                 }
             }
-        }
 
-        if(boundaryFlag == 0){
-            fprintf( outputStream, "ltrspace %d nodes 4 %d %d %d %d ", i + 1, nodes.at(1), nodes.at(2), nodes.at(3), nodes.at(4));
-            fprintf( outputStream, "\n");
-            set1.followedBy(i+1);
-        } else{
-            fprintf( outputStream, "%s %d nodes 5 %d %d %d %d %d ", boundElemName, i + 1, newNodes.at(1), newNodes.at(2), newNodes.at(3),newNodes.at(4), controlNode);
-            fprintf( outputStream, " location 4 %d %d %d %d", location.at(1), location.at(2),location.at(3),location.at(4) );
-            fprintf( outputStream, "\n");
-            set1.followedBy(i+1);
+            if ( boundaryFlag == 0 ) {
+                fprintf(outputStream, "ltrspace %d nodes 4 %d %d %d %d ", i + 1, nodes.at(1), nodes.at(2), nodes.at(3), nodes.at(4) );
+                fprintf(outputStream, "\n");
+                set1.followedBy(i + 1);
+            } else {
+                fprintf(outputStream, "%s %d nodes 5 %d %d %d %d %d ", boundElemName, i + 1, newNodes.at(1), newNodes.at(2), newNodes.at(3), newNodes.at(4), controlNode);
+                fprintf(outputStream, " location 4 %d %d %d %d", location.at(1), location.at(2), location.at(3), location.at(4) );
+                fprintf(outputStream, "\n");
+                set1.followedBy(i + 1);
+            }
         }
-      }
     }
     printf("Finished writing Delaunay element (tetrahedra) data\n");
 
     //element output - beams
     boundaryFlag = 0;
     oofem::IntArray locationBeam(2), set2, beamElL2Gmap;
-    beamElL2Gmap.resize(this->giveNumberOfLatticeBeams());
+    beamElL2Gmap.resize(this->giveNumberOfLatticeBeams() );
     beamElL2Gmap.zero();
     for ( int i = 0; i < this->giveNumberOfLatticeBeams(); i++ ) {
-      //First plot all of them
-      if ( this->giveLatticeBeam(i + 1)->giveOutsideFlag() == 0 || this->giveLatticeBeam(i + 1)->giveOutsideFlag() == 2 ) { //Elements are inside
-        locationBeam.zero();
-        boundaryFlag = 0;
-        this->giveLatticeBeam(i + 1)->giveLocalVertices(nodes);
-        newNodes = nodes;
+        //First plot all of them
+        if ( this->giveLatticeBeam(i + 1)->giveOutsideFlag() == 0 || this->giveLatticeBeam(i + 1)->giveOutsideFlag() == 2 ) { //Elements are inside
+            locationBeam.zero();
+            boundaryFlag = 0;
+            this->giveLatticeBeam(i + 1)->giveLocalVertices(nodes);
+            newNodes = nodes;
 
-        //Go through nodes and replace the ones outside with periodic nodes
-        for ( int m = 0; m < nodes.giveSize(); m++ ) {
-            giveReinforcementNode(nodes.at(m+1))->giveCoordinates(coords);
-            if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 0 ) {
-                //Periodicity in x
-                if ( fabs(coords.at(1) - boundaries.at(2)) < giveTol() ) { //x=xmax
-                    boundaryFlag=1;
-                    locationBeam.at(m + 1) = this->giveReinforcementNode( nodes.at(m + 1) )->giveLocation();
-                    newNodes.at(m + 1) = this->giveReinforcementNode( nodes.at(m + 1) )->givePeriodicNode();
-                }
-            } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 0 ) {
-                //Periodicity in y
-                if ( fabs(coords.at(2) - boundaries.at(4)) < giveTol() ) { //y=ymax
-                    boundaryFlag=1;
-                    locationBeam.at(m + 1) = this->giveReinforcementNode( nodes.at(m + 1) )->giveLocation();
-                    newNodes.at(m + 1) = this->giveReinforcementNode( nodes.at(m + 1) )->givePeriodicNode();
-                }
-            } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 1 ) {
-                //Periodicity in z
-                if ( fabs(coords.at(3) - boundaries.at(6)) < giveTol() ) { //z=zmax
-                    boundaryFlag=1;
-                    locationBeam.at(m + 1) = this->giveReinforcementNode( nodes.at(m + 1) )->giveLocation();
-                    newNodes.at(m + 1) = this->giveReinforcementNode( nodes.at(m + 1) )->givePeriodicNode();
-                }
-            } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 0 ) {
-                //Periodicity in x y
-                if ( fabs(coords.at(1) - boundaries.at(2)) < giveTol()  ||
-                     fabs(coords.at(2) - boundaries.at(4)) < giveTol() ) { //x=xmax or y=ymax
-                    boundaryFlag=1;
-                    locationBeam.at(m + 1) = this->giveReinforcementNode( nodes.at(m + 1) )->giveLocation();
-                    newNodes.at(m + 1) = this->giveReinforcementNode( nodes.at(m + 1) )->givePeriodicNode();
-                }
-            } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 1 ) {
-                //Periodicity in x z
-                if ( fabs(coords.at(1) - boundaries.at(2)) < giveTol()  ||
-                     fabs(coords.at(3) - boundaries.at(6)) < giveTol() ) { //x=xmax or z=zmax
-                    boundaryFlag=1;
-                    locationBeam.at(m + 1) = this->giveReinforcementNode( nodes.at(m + 1) )->giveLocation();
-                    newNodes.at(m + 1) = this->giveReinforcementNode( nodes.at(m + 1) )->givePeriodicNode();
-                }
-            } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 1 ) {
-                //Periodicity in y z
-                if ( fabs(coords.at(2) - boundaries.at(4)) < giveTol()  ||
-                     fabs(coords.at(3) - boundaries.at(6)) < giveTol() ) { //y=ymax or z=zmax
-                    boundaryFlag=1;
-                    locationBeam.at(m + 1) = this->giveReinforcementNode( nodes.at(m + 1) )->giveLocation();
-                    newNodes.at(m + 1) = this->giveReinforcementNode( nodes.at(m + 1) )->givePeriodicNode();
-                }
-            } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 1 ) {
-                //Periodicity in x y z
-                if ( fabs(coords.at(1) - boundaries.at(2)) < giveTol()  ||
-                     fabs(coords.at(2) - boundaries.at(4)) < giveTol()  ||
-                     fabs(coords.at(3) - boundaries.at(6)) < giveTol() ) { //x=xmax or y=ymax or z=zmax
-                    boundaryFlag=1;
-                    locationBeam.at(m + 1) = this->giveReinforcementNode( nodes.at(m + 1) )->giveLocation();
-                    newNodes.at(m + 1) = this->giveReinforcementNode( nodes.at(m + 1) )->givePeriodicNode();
+            //Go through nodes and replace the ones outside with periodic nodes
+            for ( int m = 0; m < nodes.giveSize(); m++ ) {
+                giveReinforcementNode(nodes.at(m + 1) )->giveCoordinates(coords);
+                if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 0 ) {
+                    //Periodicity in x
+                    if ( fabs(coords.at(1) - boundaries.at(2) ) < giveTol() ) { //x=xmax
+                        boundaryFlag = 1;
+                        locationBeam.at(m + 1) = this->giveReinforcementNode(nodes.at(m + 1) )->giveLocation();
+                        newNodes.at(m + 1) = this->giveReinforcementNode(nodes.at(m + 1) )->givePeriodicNode();
+                    }
+                } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 0 ) {
+                    //Periodicity in y
+                    if ( fabs(coords.at(2) - boundaries.at(4) ) < giveTol() ) { //y=ymax
+                        boundaryFlag = 1;
+                        locationBeam.at(m + 1) = this->giveReinforcementNode(nodes.at(m + 1) )->giveLocation();
+                        newNodes.at(m + 1) = this->giveReinforcementNode(nodes.at(m + 1) )->givePeriodicNode();
+                    }
+                } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 1 ) {
+                    //Periodicity in z
+                    if ( fabs(coords.at(3) - boundaries.at(6) ) < giveTol() ) { //z=zmax
+                        boundaryFlag = 1;
+                        locationBeam.at(m + 1) = this->giveReinforcementNode(nodes.at(m + 1) )->giveLocation();
+                        newNodes.at(m + 1) = this->giveReinforcementNode(nodes.at(m + 1) )->givePeriodicNode();
+                    }
+                } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 0 ) {
+                    //Periodicity in x y
+                    if ( fabs(coords.at(1) - boundaries.at(2) ) < giveTol()  ||
+                         fabs(coords.at(2) - boundaries.at(4) ) < giveTol() ) { //x=xmax or y=ymax
+                        boundaryFlag = 1;
+                        locationBeam.at(m + 1) = this->giveReinforcementNode(nodes.at(m + 1) )->giveLocation();
+                        newNodes.at(m + 1) = this->giveReinforcementNode(nodes.at(m + 1) )->givePeriodicNode();
+                    }
+                } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 1 ) {
+                    //Periodicity in x z
+                    if ( fabs(coords.at(1) - boundaries.at(2) ) < giveTol()  ||
+                         fabs(coords.at(3) - boundaries.at(6) ) < giveTol() ) { //x=xmax or z=zmax
+                        boundaryFlag = 1;
+                        locationBeam.at(m + 1) = this->giveReinforcementNode(nodes.at(m + 1) )->giveLocation();
+                        newNodes.at(m + 1) = this->giveReinforcementNode(nodes.at(m + 1) )->givePeriodicNode();
+                    }
+                } else if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 1 ) {
+                    //Periodicity in y z
+                    if ( fabs(coords.at(2) - boundaries.at(4) ) < giveTol()  ||
+                         fabs(coords.at(3) - boundaries.at(6) ) < giveTol() ) { //y=ymax or z=zmax
+                        boundaryFlag = 1;
+                        locationBeam.at(m + 1) = this->giveReinforcementNode(nodes.at(m + 1) )->giveLocation();
+                        newNodes.at(m + 1) = this->giveReinforcementNode(nodes.at(m + 1) )->givePeriodicNode();
+                    }
+                } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 1 ) {
+                    //Periodicity in x y z
+                    if ( fabs(coords.at(1) - boundaries.at(2) ) < giveTol()  ||
+                         fabs(coords.at(2) - boundaries.at(4) ) < giveTol()  ||
+                         fabs(coords.at(3) - boundaries.at(6) ) < giveTol() ) { //x=xmax or y=ymax or z=zmax
+                        boundaryFlag = 1;
+                        locationBeam.at(m + 1) = this->giveReinforcementNode(nodes.at(m + 1) )->giveLocation();
+                        newNodes.at(m + 1) = this->giveReinforcementNode(nodes.at(m + 1) )->givePeriodicNode();
+                    }
                 }
             }
-        }
 
-        //find the reference node
-        int refNode = 0;
-        oofem::FloatArray dirVec = this->giveLatticeBeam(i+1)->giveDirectionVector();
-        for ( int j = 0; j < this->giveNumberOfFibres(); j++ ) {
-            oofem::FloatArray perpVec(3), firstNodeCoords(3);
-            int numReinfNode = this->giveFibre(j+1)->giveNumberReinforcementNode(1);
-            firstNodeCoords = *this->giveReinforcementNode(numReinfNode)->giveCoordinates();
-            perpVec.at(1) = referenceNodes.at(j+1,1) - firstNodeCoords.at(1);
-            perpVec.at(2) = referenceNodes.at(j+1,2) - firstNodeCoords.at(2);
-            perpVec.at(3) = referenceNodes.at(j+1,3) - firstNodeCoords.at(3);
-            double sp = dirVec.dotProduct(perpVec, 3);
+            //find the reference node
+            int refNode = 0;
+            oofem::FloatArray dirVec = this->giveLatticeBeam(i + 1)->giveDirectionVector();
+            for ( int j = 0; j < this->giveNumberOfFibres(); j++ ) {
+                oofem::FloatArray perpVec(3), firstNodeCoords(3);
+                int numReinfNode = this->giveFibre(j + 1)->giveNumberReinforcementNode(1);
+                firstNodeCoords = * this->giveReinforcementNode(numReinfNode)->giveCoordinates();
+                perpVec.at(1) = referenceNodes.at(j + 1, 1) - firstNodeCoords.at(1);
+                perpVec.at(2) = referenceNodes.at(j + 1, 2) - firstNodeCoords.at(2);
+                perpVec.at(3) = referenceNodes.at(j + 1, 3) - firstNodeCoords.at(3);
+                double sp = dirVec.dotProduct(perpVec, 3);
 
-            if ( fabs(sp) < this->giveTol() ) {
-                refNode = refNodeNumbers.at(j+1);
-                break;
+                if ( fabs(sp) < this->giveTol() ) {
+                    refNode = refNodeNumbers.at(j + 1);
+                    break;
+                }
+            }
+
+            if ( boundaryFlag == 0 ) {
+                fprintf(outputStream, "libeam3d %d nodes 2 %d %d refnode %d", this->giveNumberOfDelaunayTetras() + i + 1, L2Gmap.at(nodes.at(1) ), L2Gmap.at(nodes.at(2) ), refNode);
+                fprintf(outputStream, "\n");
+                set2.followedBy(this->giveNumberOfDelaunayTetras() + i + 1);
+                beamElL2Gmap.at(i + 1) = this->giveNumberOfDelaunayTetras() + i + 1;
+            } else {
+                fprintf(outputStream, "%s %d nodes 3 %d %d %d refnode %d", boundBeamElemName, this->giveNumberOfDelaunayTetras() + i + 1, L2Gmap.at(newNodes.at(1) ), L2Gmap.at(newNodes.at(2) ), controlNode, refNode);
+                fprintf(outputStream, " location 2 %d %d", locationBeam.at(1), locationBeam.at(2) );
+                fprintf(outputStream, "\n");
+                set2.followedBy(this->giveNumberOfDelaunayTetras() + i + 1);
+                beamElL2Gmap.at(i + 1) = this->giveNumberOfDelaunayTetras() + i + 1;
             }
         }
-
-        if (boundaryFlag == 0) {
-            fprintf( outputStream, "libeam3d %d nodes 2 %d %d refnode %d", this->giveNumberOfDelaunayTetras() + i + 1, L2Gmap.at(nodes.at(1)), L2Gmap.at(nodes.at(2)), refNode);
-            fprintf( outputStream, "\n");
-            set2.followedBy(this->giveNumberOfDelaunayTetras() + i + 1);
-            beamElL2Gmap.at(i+1) = this->giveNumberOfDelaunayTetras() + i + 1;
-        } else {
-            fprintf( outputStream, "%s %d nodes 3 %d %d %d refnode %d", boundBeamElemName, this->giveNumberOfDelaunayTetras() + i + 1, L2Gmap.at(newNodes.at(1)), L2Gmap.at(newNodes.at(2)), controlNode, refNode);
-            fprintf( outputStream, " location 2 %d %d", locationBeam.at(1), locationBeam.at(2) );
-            fprintf( outputStream, "\n");
-            set2.followedBy(this->giveNumberOfDelaunayTetras() + i + 1);
-            beamElL2Gmap.at(i+1) = this->giveNumberOfDelaunayTetras() + i + 1;
-        }
-      }
     }
     printf("Finished writing reinforcement data\n");
 
     //element output - interface
     oofem::IntArray set3, intElL2Gmap;
-    intElL2Gmap.resize(this->giveNumberOfLatticeLinks());
+    intElL2Gmap.resize(this->giveNumberOfLatticeLinks() );
     intElL2Gmap.zero();
     oofem::FloatArray direction(3);
     for ( int i = 0; i < this->giveNumberOfLatticeLinks(); i++ ) {
-        int linkVer1 = this->giveLatticeLink(i+1)->giveLocalVertex(1);
-        int linkVer2 = this->giveLatticeLink(i+1)->giveLocalVertex(2);
+        int linkVer1 = this->giveLatticeLink(i + 1)->giveLocalVertex(1);
+        int linkVer2 = this->giveLatticeLink(i + 1)->giveLocalVertex(2);
         //recalculate normal vector
-	direction = this->giveLatticeLink(i+1)->giveDirectionVector();
+        direction = this->giveLatticeLink(i + 1)->giveDirectionVector();
         oofem::FloatArray normalVec(3);
-        oofem::FloatArray beamNodeCoords = *this->giveReinforcementNode(linkVer1)->giveCoordinates();
-	//        oofem::FloatArray tetraNodeCoords = *this->giveDelaunayVertex(linkVer2)->giveCoordinates();
-	//        normalVec.add(beamNodeCoords); normalVec.subtract(tetraNodeCoords); normalVec.normalize();
+        oofem::FloatArray beamNodeCoords = * this->giveReinforcementNode(linkVer1)->giveCoordinates();
+        //        oofem::FloatArray tetraNodeCoords = *this->giveDelaunayVertex(linkVer2)->giveCoordinates();
+        //        normalVec.add(beamNodeCoords); normalVec.subtract(tetraNodeCoords); normalVec.normalize();
 
-	//Find tetra in which rebar node is and create for links to nodes on vertices
-	//Get the tetras connected to the tetra node.
-	//Then check for each tetra if rebar node is inside.
+        //Find tetra in which rebar node is and create for links to nodes on vertices
+        //Get the tetras connected to the tetra node.
+        //Then check for each tetra if rebar node is inside.
 
-	oofem::FloatArray tetraCoords(12);
-	oofem::FloatArray barycentres(3);
-	oofem::IntArray localTetras;
-	int targetTetra;
-	this->giveDelaunayVertex(linkVer2)->giveLocalTetras(localTetras);
-	for(int k = 1;k<=localTetras.giveSize();k++){
-	  this->giveDelaunayTetra(localTetras.at(k))->giveCoordinates(tetraCoords);
-	  giveTetrahedronBarycentres(barycentres,tetraCoords,beamNodeCoords);
-	  if(barycentres.at(1) > 0 && barycentres.at(2) > 0 & barycentres.at(3) >0){
-	    targetTetra = localTetras.at(k);
-	    break;//There can only be one target tetra
-	  }
-	}
-	oofem::IntArray targetTetraNodes(4);
-	this->giveDelaunayTetra(targetTetra)->giveLocalVertices(targetTetraNodes);
-	
+        oofem::FloatArray tetraCoords(12);
+        oofem::FloatArray barycentres(3);
+        oofem::IntArray localTetras;
+        int targetTetra;
+        this->giveDelaunayVertex(linkVer2)->giveLocalTetras(localTetras);
+        for (int k = 1; k <= localTetras.giveSize(); k++) {
+            this->giveDelaunayTetra(localTetras.at(k) )->giveCoordinates(tetraCoords);
+            giveTetrahedronBarycentres(barycentres, tetraCoords, beamNodeCoords);
+            if ( barycentres.at(1) > 0 && barycentres.at(2) > 0 & barycentres.at(3) > 0 ) {
+                targetTetra = localTetras.at(k);
+                break;//There can only be one target tetra
+            }
+        }
+        oofem::IntArray targetTetraNodes(4);
+        this->giveDelaunayTetra(targetTetra)->giveLocalVertices(targetTetraNodes);
+
         if ( reinfMirrorNodeList.contains(linkVer1) && mirrorNodeList.contains(linkVer2) ) { //to make sure that the link on master surface is not omitted
-
-	  for(int k = 1;k <= 4;k++){
-	    
-	    fprintf( outputStream, "bondlink3d %d nodes 2 %d %d dirvector 3 %e %e %e length %e length_end %e diameter %e\n", this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + 4*i + k, L2Gmap.at(linkVer1), targetTetraNodes.at(k), direction.at(1), direction.at(2), direction.at(3), this->giveLatticeLink(i+1)->giveAssociatedLength(), this->giveLatticeLink(i+1)->giveL_end(), this->giveLatticeLink(i+1)->giveDiameter());
-            set3.followedBy(this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + i + 1);
-            intElL2Gmap.at(i+1) = this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + i + 1;
-	  }
+            for (int k = 1; k <= 4; k++) {
+                fprintf(outputStream, "bondlink3d %d nodes 2 %d %d dirvector 3 %e %e %e length %e length_end %e diameter %e\n", this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + 4 * i + k, L2Gmap.at(linkVer1), targetTetraNodes.at(k), direction.at(1), direction.at(2), direction.at(3), this->giveLatticeLink(i + 1)->giveAssociatedLength(), this->giveLatticeLink(i + 1)->giveL_end(), this->giveLatticeLink(i + 1)->giveDiameter() );
+                set3.followedBy(this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + i + 1);
+                intElL2Gmap.at(i + 1) = this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + i + 1;
+            }
         }
     }
     printf("Finished writing interface data\n");
 
     //split into sets (along fibres)
-    std::vector< std::vector<int> > beamSets(this->giveNumberOfFibres());
-    std::vector< std::vector<int> > interfaceSets(this->giveNumberOfFibres());
-    oofem::IntArray beamsPerFibre(this->giveNumberOfFibres()), firstNodeinFibres(this->giveNumberOfFibres());
+    std::vector < std::vector < int >> beamSets(this->giveNumberOfFibres() );
+    std::vector < std::vector < int >> interfaceSets(this->giveNumberOfFibres() );
+    oofem::IntArray beamsPerFibre(this->giveNumberOfFibres() ), firstNodeinFibres(this->giveNumberOfFibres() );
     for ( int i = 0; i < this->giveNumberOfFibres(); i++ ) {
-        beamsPerFibre.at(i+1) = this->giveFibre(i+1)->NbOfReinfNodes() - 1;
+        beamsPerFibre.at(i + 1) = this->giveFibre(i + 1)->NbOfReinfNodes() - 1;
         int beamNo(0);
         if ( i != 0 ) {
-            for ( int r = 1 ; r <= i; r++ ) {
+            for ( int r = 1; r <= i; r++ ) {
                 beamNo += beamsPerFibre.at(r);
             }
         }
         //first split reinforcement
-        for ( int j = 0; j < this->giveFibre(i+1)->NbOfReinfNodes() - 1; j++ ) {
-            if ( this->giveLatticeBeam(beamNo+j+1)->giveOutsideFlag() == 0 || this->giveLatticeBeam(beamNo+j+1)->giveOutsideFlag() == 2 ) {
-                (beamSets[i]).push_back(beamNo+j+1);
+        for ( int j = 0; j < this->giveFibre(i + 1)->NbOfReinfNodes() - 1; j++ ) {
+            if ( this->giveLatticeBeam(beamNo + j + 1)->giveOutsideFlag() == 0 || this->giveLatticeBeam(beamNo + j + 1)->giveOutsideFlag() == 2 ) {
+                ( beamSets [ i ] ).push_back(beamNo + j + 1);
                 oofem::IntArray beamNodes;
-                this->giveLatticeBeam(beamNo+j+1)->giveLocalVertices(beamNodes);
+                this->giveLatticeBeam(beamNo + j + 1)->giveLocalVertices(beamNodes);
                 //for the beam elements, get the corresponding link elements
                 for ( int k = 0; k < this->giveNumberOfLatticeLinks(); k++ ) {
                     oofem::IntArray linkNodes;
-                    this->giveLatticeLink(k+1)->giveLocalVertices(linkNodes);
+                    this->giveLatticeLink(k + 1)->giveLocalVertices(linkNodes);
                     if ( beamNodes.at(1) == linkNodes.at(1)  ) {
-                        (interfaceSets[i]).push_back(k+1);
+                        ( interfaceSets [ i ] ).push_back(k + 1);
                     }
                 }
             }
         }
-        firstNodeinFibres.at(i+1) = L2Gmap.at(this->giveLatticeLink(interfaceSets[i][0])->giveLocalVertex(1));
+        firstNodeinFibres.at(i + 1) = L2Gmap.at(this->giveLatticeLink(interfaceSets [ i ] [ 0 ])->giveLocalVertex(1) );
     }
     printf("Finished splitting into sets\n");
 
     fprintf(outputStream, "SimpleCS 1 material 1 set 1\n");
     for ( int j = 0; j < this->giveNumberOfFibres(); j++ ) {
-        double diam = this->giveFibre(j+1)->giveDiameter();
+        double diam = this->giveFibre(j + 1)->giveDiameter();
 
-        fprintf(outputStream, "FiberedCS %d ", 2*(j+1));
-	fprintf(outputStream, "fibermaterials 16 %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d ", 2*(j+1), 2*(j+1), 2*(j+1), 2*(j+1), 2*(j+1), 2*(j+1), 2*(j+1), 2*(j+1), 2*(j+1), 2*(j+1), 2*(j+1), 2*(j+1), 2*(j+1), 2*(j+1), 2*(j+1), 2*(j+1));
-	fprintf(outputStream, "thicks 16 %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e ", 0.25*diam, 0.25*diam, 0.25*diam, 0.25*diam, 0.125*diam, 0.25*diam, 0.25*diam, 0.125*diam, 0.25*diam, 0.25*diam, 0.25*diam, 0.25*diam, 0.125*diam, 0.25*diam, 0.25*diam, 0.125*diam);
-	fprintf(outputStream, "widths 16 %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e ", 0.25*diam, 0.25*diam, 0.25*diam, 0.25*diam, 0.125*diam, 0.25*diam, 0.25*diam, 0.125*diam, 0.25*diam, 0.25*diam, 0.25*diam, 0.25*diam, 0.125*diam, 0.25*diam, 0.25*diam, 0.125*diam);
-	fprintf(outputStream, "thick %e width %e ", diam, diam);
-	fprintf(outputStream, "fiberycentrecoords 16 %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e ", 0.375*diam, 0.125*diam, -0.125*diam, -0.375*diam, 0.3125*diam, 0.125*diam, -0.125*diam, -0.3125*diam, 0.375*diam, 0.125*diam, -0.125*diam, -0.375*diam, 0.3125*diam, 0.125*diam, -0.125*diam, -0.3125*diam);
-	fprintf(outputStream, "fiberzcentrecoords 16 %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e ", -0.125*diam, -0.125*diam, -0.125*diam, -0.125*diam, -0.3125*diam, -0.375*diam, -0.375*diam, -0.3125*diam, 0.125*diam, 0.125*diam, 0.125*diam, 0.125*diam, 0.3125*diam, 0.375*diam, 0.375*diam, 0.3125*diam);
-	fprintf(outputStream, "set %d\n", 2*(j+2));
-        fprintf(outputStream, "SimpleCS %d material %d set %d\n", 2*(j+1)+1, 2*(j+1)+1, 2*(j+2)+1 );
+        fprintf(outputStream, "FiberedCS %d ", 2 * ( j + 1 ) );
+        fprintf(outputStream, "fibermaterials 16 %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d ", 2 * ( j + 1 ), 2 * ( j + 1 ), 2 * ( j + 1 ), 2 * ( j + 1 ), 2 * ( j + 1 ), 2 * ( j + 1 ), 2 * ( j + 1 ), 2 * ( j + 1 ), 2 * ( j + 1 ), 2 * ( j + 1 ), 2 * ( j + 1 ), 2 * ( j + 1 ), 2 * ( j + 1 ), 2 * ( j + 1 ), 2 * ( j + 1 ), 2 * ( j + 1 ) );
+        fprintf(outputStream, "thicks 16 %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e ", 0.25 * diam, 0.25 * diam, 0.25 * diam, 0.25 * diam, 0.125 * diam, 0.25 * diam, 0.25 * diam, 0.125 * diam, 0.25 * diam, 0.25 * diam, 0.25 * diam, 0.25 * diam, 0.125 * diam, 0.25 * diam, 0.25 * diam, 0.125 * diam);
+        fprintf(outputStream, "widths 16 %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e ", 0.25 * diam, 0.25 * diam, 0.25 * diam, 0.25 * diam, 0.125 * diam, 0.25 * diam, 0.25 * diam, 0.125 * diam, 0.25 * diam, 0.25 * diam, 0.25 * diam, 0.25 * diam, 0.125 * diam, 0.25 * diam, 0.25 * diam, 0.125 * diam);
+        fprintf(outputStream, "thick %e width %e ", diam, diam);
+        fprintf(outputStream, "fiberycentrecoords 16 %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e ", 0.375 * diam, 0.125 * diam, -0.125 * diam, -0.375 * diam, 0.3125 * diam, 0.125 * diam, -0.125 * diam, -0.3125 * diam, 0.375 * diam, 0.125 * diam, -0.125 * diam, -0.375 * diam, 0.3125 * diam, 0.125 * diam, -0.125 * diam, -0.3125 * diam);
+        fprintf(outputStream, "fiberzcentrecoords 16 %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e %e ", -0.125 * diam, -0.125 * diam, -0.125 * diam, -0.125 * diam, -0.3125 * diam, -0.375 * diam, -0.375 * diam, -0.3125 * diam, 0.125 * diam, 0.125 * diam, 0.125 * diam, 0.125 * diam, 0.3125 * diam, 0.375 * diam, 0.375 * diam, 0.3125 * diam);
+        fprintf(outputStream, "set %d\n", 2 * ( j + 2 ) );
+        fprintf(outputStream, "SimpleCS %d material %d set %d\n", 2 * ( j + 1 ) + 1, 2 * ( j + 1 ) + 1, 2 * ( j + 2 ) + 1);
     }
     fprintf(outputStream, "idm1 1 talpha 0 d 0.0 e 30.e9 e0 100.e-6 wf 33.e-6 n 0.2 equivstraintype 1\n");
     for ( int j = 0; j < this->giveNumberOfFibres(); j++ ) {
-        double s3 = 5./24 * this->giveFibre(j+1)->giveDiameter() + 7./3000; //approximate interpolation
-        fprintf(outputStream, "MisesMat %d d 0.0 E 2.e11 n 0.3 sig0 500e6 H 0. omega_crit 0 a 0 tAlpha 0.0 yieldtol 1.e-10\n", 2*(j+1));
-        fprintf(outputStream, "linkslip %d talpha 0. d 0. kn 1.e12 a1 1000 t0 13.7e6 type 1 s1 1.e-3 alpha 0.4\n", 2*(j+1)+1);
+        double s3 = 5. / 24 * this->giveFibre(j + 1)->giveDiameter() + 7. / 3000; //approximate interpolation
+        fprintf(outputStream, "MisesMat %d d 0.0 E 2.e11 n 0.3 sig0 500e6 H 0. omega_crit 0 a 0 tAlpha 0.0 yieldtol 1.e-10\n", 2 * ( j + 1 ) );
+        fprintf(outputStream, "linkslip %d talpha 0. d 0. kn 1.e12 a1 1000 t0 13.7e6 type 1 s1 1.e-3 alpha 0.4\n", 2 * ( j + 1 ) + 1);
     }
 
-    if (this->macroType == _Beam) {
-      fprintf(outputStream, "BoundaryCondition 1 loadTimeFunction 1 dofs 3 1 7 10 values 3 2.6e-3 0 0 set %d\n", 3 + 2*converter::size1(fibreList)+1);
+    if ( this->macroType == _Beam ) {
+        fprintf(outputStream, "BoundaryCondition 1 loadTimeFunction 1 dofs 3 1 7 10 values 3 2.6e-3 0 0 set %d\n", 3 + 2 * converter::size1(fibreList) + 1);
+    } else if ( this->macroType == _Plate )     {
+        fprintf(outputStream, "BoundaryCondition 1 loadTimeFunction 1 dofs 7 1 7 8 10 11 12 13 values 7 2.e-3 0 0 0 0 0 0 set %d\n", 3 + 2 * converter::size1(fibreList) + 1);
+    } else   {
+        printf("output for this macrotype %s not yet implemented in grid.C\n", this - macroType);
     }
-    else if (this->macroType == _Plate) {
-      fprintf(outputStream, "BoundaryCondition 1 loadTimeFunction 1 dofs 7 1 7 8 10 11 12 13 values 7 2.e-3 0 0 0 0 0 0 set %d\n", 3 + 2*converter::size1(fibreList)+1);
-    }
-    else {
-      printf("output for this macrotype %s not yet implemented in grid.C\n",this-macroType);
-    }
-    
-    fprintf(outputStream, "BoundaryCondition 2 loadTimeFunction 1 dofs 3 1 2 3 values 3 0 0 0 set %d\n", 3+ 2*converter::size1(fibreList)+2);
-    fprintf(outputStream, "BoundaryCondition 3 loadTimeFunction 1 dofs 2 2 3 values 2 0 0 set %d\n", 3+ 2*converter::size1(fibreList)+3);
-    fprintf(outputStream, "BoundaryCondition 4 loadTimeFunction 1 dofs 1 3 values 1 0 set %d\n", 3+ 2*converter::size1(fibreList)+4);
+
+    fprintf(outputStream, "BoundaryCondition 2 loadTimeFunction 1 dofs 3 1 2 3 values 3 0 0 0 set %d\n", 3 + 2 * converter::size1(fibreList) + 2);
+    fprintf(outputStream, "BoundaryCondition 3 loadTimeFunction 1 dofs 2 2 3 values 2 0 0 set %d\n", 3 + 2 * converter::size1(fibreList) + 3);
+    fprintf(outputStream, "BoundaryCondition 4 loadTimeFunction 1 dofs 1 3 values 1 0 set %d\n", 3 + 2 * converter::size1(fibreList) + 4);
 
     fprintf(outputStream, "PiecewiseLinFunction 1 nPoints 2 t 2 0. 200. f(t) 2 0. 1.\n");
-    fprintf(outputStream, "set 1 elements %d ", set1.giveSize());
+    fprintf(outputStream, "set 1 elements %d ", set1.giveSize() );
     for ( int i = 0; i < set1.giveSize(); i++ ) {
-        fprintf(outputStream, "%d ", set1.at(i+1));
+        fprintf(outputStream, "%d ", set1.at(i + 1) );
     }
     fprintf(outputStream, "\n");
-     fprintf(outputStream, "set 2 elements %d ", set2.giveSize());
+    fprintf(outputStream, "set 2 elements %d ", set2.giveSize() );
     for ( int i = 0; i < set2.giveSize(); i++ ) {
-        fprintf(outputStream, "%d ", set2.at(i+1));
+        fprintf(outputStream, "%d ", set2.at(i + 1) );
     }
     fprintf(outputStream, "\n");
-    fprintf(outputStream, "set 3 elements %d ", set3.giveSize());
+    fprintf(outputStream, "set 3 elements %d ", set3.giveSize() );
     for ( int i = 0; i < set3.giveSize(); i++ ) {
-        fprintf(outputStream, "%d ", set3.at(i+1));
+        fprintf(outputStream, "%d ", set3.at(i + 1) );
     }
     fprintf(outputStream, "\n");
     for ( int i = 0; i < this->giveNumberOfFibres(); i++ ) {
-        fprintf(outputStream, "set %d elements %d ", 3 + 2*(i+1)-1, beamSets[i].size() );
-        for ( int j = 0; j < beamSets[i].size(); j++ ) {
-            fprintf(outputStream, "%d ", beamElL2Gmap.at(beamSets[i][j]));
+        fprintf(outputStream, "set %d elements %d ", 3 + 2 * ( i + 1 ) - 1, beamSets [ i ].size() );
+        for ( int j = 0; j < beamSets [ i ].size(); j++ ) {
+            fprintf(outputStream, "%d ", beamElL2Gmap.at(beamSets [ i ] [ j ]) );
         }
         fprintf(outputStream, "\n");
-        fprintf(outputStream, "set %d elements %d ", 3 + 2*(i+1), interfaceSets[i].size() );
-        for ( int j = 0; j < interfaceSets[i].size(); j++ ) {
-            fprintf(outputStream, "%d ", intElL2Gmap.at(interfaceSets[i][j]));
+        fprintf(outputStream, "set %d elements %d ", 3 + 2 * ( i + 1 ), interfaceSets [ i ].size() );
+        for ( int j = 0; j < interfaceSets [ i ].size(); j++ ) {
+            fprintf(outputStream, "%d ", intElL2Gmap.at(interfaceSets [ i ] [ j ]) );
         }
         fprintf(outputStream, "\n");
     }
-    fprintf(outputStream, "set %d nodes 1 %d \n", 3 + 2*converter::size1(fibreList)+1, controlNode);
-    fprintf(outputStream, "set %d nodes 1 %d \n", 3 + 2*converter::size1(fibreList)+2, firstNode);
-    fprintf(outputStream, "set %d nodes 1 %d \n", 3 + 2*converter::size1(fibreList)+3, secondNode);
-    fprintf(outputStream, "set %d nodes 1 %d \n", 3 + 2*converter::size1(fibreList)+4, thirdNode);
+    fprintf(outputStream, "set %d nodes 1 %d \n", 3 + 2 * converter::size1(fibreList) + 1, controlNode);
+    fprintf(outputStream, "set %d nodes 1 %d \n", 3 + 2 * converter::size1(fibreList) + 2, firstNode);
+    fprintf(outputStream, "set %d nodes 1 %d \n", 3 + 2 * converter::size1(fibreList) + 3, secondNode);
+    fprintf(outputStream, "set %d nodes 1 %d \n", 3 + 2 * converter::size1(fibreList) + 4, thirdNode);
 
     fprintf(outputStream, "#%%BEGIN_CHECK%%\n");
-    fprintf(outputStream, "#REACTION number %d dof 1\n",controlNode);
+    fprintf(outputStream, "#REACTION number %d dof 1\n", controlNode);
     fprintf(outputStream, "#NODE number %d dof 1 unknown d\n", controlNode);
     fprintf(outputStream, "#TIME\n");
     fprintf(outputStream, "#%%END_CHECK%%\n");
 
     printf("Finished the output\n");
-    
+
     return;
 }
 
 
 void
-Grid :: give3DGopShaOutput(const std::string& fileName)
+Grid::give3DGopShaOutput(const std::string &fileName)
 {
-  //Output for GopSha experiment (Direct tension with two small notches.
-  //Only mechanical model
+    //Output for GopSha experiment (Direct tension with two small notches.
+    //Only mechanical model
 
 
-    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
-
-  /*   const std::string fileName1 = fileName + ".sm"; */
-  /*   FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w"); */
-    
-  /*   const std::string fileName2 = fileName + ".tm"; */
-  /*   FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
-
-
-
-  /* FILE *outputStream; */
-  /*   if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
-  /*       converter::errorf("Cannot open output file %s", fileName); */
-  /*   } */
+    FILE *outputStream = converter::fopen_or_die(fileName, "w");
 
     int numberOfNodes, numberOfLines;
     oofem::FloatArray coords(3);
-    oofem::FloatArray coordsOne,coordsTwo,line;
+    oofem::FloatArray coordsOne, coordsTwo, line;
     int materialType = 1;
     oofem::IntArray nodes, location(2);
     oofem::IntArray crossSectionNodes;
-    double radius,distanceOne,distanceTwo;
+    double radius, distanceOne, distanceTwo;
 
     int supportNode = -1;
     int loadNode = -1;
@@ -9845,60 +8575,50 @@ Grid :: give3DGopShaOutput(const std::string& fileName)
     int notchTwoTopNode = -1;
     int controlMidBottomNode = -1;
     int controlMidTopNode = -1;
-    
+
     //Determine the number of Delaunay nodes in the domain
     numberOfNodes = 0;
     for ( int i = 0; i < this->giveNumberOfDelaunayVertices(); i++ ) {
-        if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0 ||  this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 2) {
+        if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0 ||  this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 2 ) {
             numberOfNodes++;
 
-	this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
-	
-	//Create support and load nodes
-	if(fabs(coords.at(1)-0.038)<TOL && fabs(coords.at(2)-0.0)<TOL && fabs(coords.at(3)-0.019)<TOL ){ 
-	  supportNode = i+1;
-	}
-	else if(fabs(coords.at(1)-0.038)<TOL && fabs(coords.at(2)-0.305)<TOL && fabs(coords.at(3)-0.019)<TOL){
-	  loadNode = i+1;
-	}
-	else if(fabs(coords.at(1)-0.0)<TOL && fabs(coords.at(2)-0.146)<TOL && fabs(coords.at(3)-0.019)<TOL){
-	  notchOneBottomNode = i+1;
-	}
-	else if(fabs(coords.at(1)-0.0)<TOL && fabs(coords.at(2)-0.159)<TOL && fabs(coords.at(3)-0.019)<TOL){
-	  notchOneTopNode = i+1;
-	}
-	else if(fabs(coords.at(1)-0.076)<TOL && fabs(coords.at(2)-0.146)<TOL && fabs(coords.at(3)-0.019)<TOL){
-	  notchTwoBottomNode = i+1;
-	}
-	else if(fabs(coords.at(1)-0.076)<TOL && fabs(coords.at(2)-0.159)<TOL && fabs(coords.at(3)-0.019)<TOL){
-	  notchTwoTopNode = i+1;
-	}
-	else if(fabs(coords.at(1)-0.038)<TOL && fabs(coords.at(2)-0.111)<TOL && fabs(coords.at(3)-0.019)<TOL){
-	  controlMidBottomNode = i+1;
-	}
-	else if(fabs(coords.at(1)-0.038)<TOL && fabs(coords.at(2)-0.194)<TOL && fabs(coords.at(3)-0.019)<TOL){
-	  controlMidTopNode = i+1;
-	}
-	    
+            this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
+
+            //Create support and load nodes
+            if ( fabs(coords.at(1) - 0.038) < TOL && fabs(coords.at(2) - 0.0) < TOL && fabs(coords.at(3) - 0.019) < TOL ) {
+                supportNode = i + 1;
+            } else if ( fabs(coords.at(1) - 0.038) < TOL && fabs(coords.at(2) - 0.305) < TOL && fabs(coords.at(3) - 0.019) < TOL )                  {
+                loadNode = i + 1;
+            } else if ( fabs(coords.at(1) - 0.0) < TOL && fabs(coords.at(2) - 0.146) < TOL && fabs(coords.at(3) - 0.019) < TOL )                  {
+                notchOneBottomNode = i + 1;
+            } else if ( fabs(coords.at(1) - 0.0) < TOL && fabs(coords.at(2) - 0.159) < TOL && fabs(coords.at(3) - 0.019) < TOL )                  {
+                notchOneTopNode = i + 1;
+            } else if ( fabs(coords.at(1) - 0.076) < TOL && fabs(coords.at(2) - 0.146) < TOL && fabs(coords.at(3) - 0.019) < TOL )                  {
+                notchTwoBottomNode = i + 1;
+            } else if ( fabs(coords.at(1) - 0.076) < TOL && fabs(coords.at(2) - 0.159) < TOL && fabs(coords.at(3) - 0.019) < TOL )                  {
+                notchTwoTopNode = i + 1;
+            } else if ( fabs(coords.at(1) - 0.038) < TOL && fabs(coords.at(2) - 0.111) < TOL && fabs(coords.at(3) - 0.019) < TOL )                  {
+                controlMidBottomNode = i + 1;
+            } else if ( fabs(coords.at(1) - 0.038) < TOL && fabs(coords.at(2) - 0.194) < TOL && fabs(coords.at(3) - 0.019) < TOL )                  {
+                controlMidTopNode = i + 1;
+            }
         }
     }
 
     //Determine the number of Delaunay lines in the domain
     numberOfLines = 0;
     for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
+        this->giveDelaunayLine(i + 1)->giveLocalVertices(nodes);
+        this->giveDelaunayVertex(nodes.at(1) )->giveCoordinates(coordsOne);
+        this->giveDelaunayVertex(nodes.at(2) )->giveCoordinates(coordsTwo);
 
-	this->giveDelaunayLine(i + 1)->giveLocalVertices(nodes);
-	this->giveDelaunayVertex( nodes.at(1) )->giveCoordinates(coordsOne);
-	this->giveDelaunayVertex( nodes.at(2) )->giveCoordinates(coordsTwo);
-      
-       	if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 0 && (this->giveDelaunayLine(i+1))->delaunayAreaCheck() == 1) {
-	    numberOfLines++;
-	  }
-	  else if(this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 3 && this->giveRegion(1)->modifyVoronoiCrossSection(i + 1) == 1){
-	    numberOfLines++;
-	  }
-    }       
-    
+        if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 0 && ( this->giveDelaunayLine(i + 1) )->delaunayAreaCheck() == 1 ) {
+            numberOfLines++;
+        } else if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 3 && this->giveRegion(1)->modifyVoronoiCrossSection(i + 1) == 1 )      {
+            numberOfLines++;
+        }
+    }
+
     fprintf(outputStream, "oofem.out\n");
     fprintf(outputStream, "Mechanical 3D model of GopSha experiment\n");
     fprintf(outputStream, "Nonlinearstatic nmsteps 3 nsteps 1 contextOutputStep 2000 nmodules 2 lstype 3 smtype 7\n");
@@ -9915,46 +8635,43 @@ Grid :: give3DGopShaOutput(const std::string& fileName)
 
     int firstFlag = 0;
     int bottomSetCounter = 0;
-    oofem::IntArray bottomSetTemp(this->giveNumberOfDelaunayVertices());
+    oofem::IntArray bottomSetTemp(this->giveNumberOfDelaunayVertices() );
     int topSetCounter = 0;
-    oofem::IntArray topSetTemp(this->giveNumberOfDelaunayVertices());
-    
+    oofem::IntArray topSetTemp(this->giveNumberOfDelaunayVertices() );
+
     for ( int i = 0; i < this->giveNumberOfDelaunayVertices(); i++ ) {
-      if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayVertex(i+1)->giveOutsideFlag() == 2 ) {	
+        if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 2 ) {
+            this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
 
-	this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
-
-	if(fabs(coords.at(2)-0.0)<giveTol() && i+1 != supportNode){
-	  bottomSetCounter++;
-	  bottomSetTemp.at(bottomSetCounter) = i+1;
-	  fprintf( outputStream, "rigidarmnode %d coords 3 %e %e %e master %d mastermask 6 0 1 0 0 0 1 doftype 6 0 2 0 0 0 2\n", i + 1, coords.at(1), coords.at(2), coords.at(3), supportNode);
-	}
-	else if(fabs(coords.at(2)-0.305)<giveTol() && i+1 != loadNode){
-	  topSetCounter++;
-	  topSetTemp.at(topSetCounter) = i+1;
-	  fprintf( outputStream, "rigidarmnode %d coords 3 %e %e %e master %d mastermask 6 0 1 0 0 0 1 doftype 6 0 2 0 0 0 2\n", i + 1, coords.at(1), coords.at(2), coords.at(3), loadNode);
-	}
-	else{
-	  fprintf( outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
-	}
-      }
+            if ( fabs(coords.at(2) - 0.0) < giveTol() && i + 1 != supportNode ) {
+                bottomSetCounter++;
+                bottomSetTemp.at(bottomSetCounter) = i + 1;
+                fprintf(outputStream, "rigidarmnode %d coords 3 %e %e %e master %d mastermask 6 0 1 0 0 0 1 doftype 6 0 2 0 0 0 2\n", i + 1, coords.at(1), coords.at(2), coords.at(3), supportNode);
+            } else if ( fabs(coords.at(2) - 0.305) < giveTol() && i + 1 != loadNode )            {
+                topSetCounter++;
+                topSetTemp.at(topSetCounter) = i + 1;
+                fprintf(outputStream, "rigidarmnode %d coords 3 %e %e %e master %d mastermask 6 0 1 0 0 0 1 doftype 6 0 2 0 0 0 2\n", i + 1, coords.at(1), coords.at(2), coords.at(3), loadNode);
+            } else   {
+                fprintf(outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+            }
+        }
     }
-    
+
     oofem::IntArray bottomSet(bottomSetCounter);
     bottomSet.zero();
-    for(int i = 0;i<bottomSetCounter;i++){
-      bottomSet.at(i+1) = bottomSetTemp.at(i+1);
+    for (int i = 0; i < bottomSetCounter; i++) {
+        bottomSet.at(i + 1) = bottomSetTemp.at(i + 1);
     }
 
     oofem::IntArray topSet(topSetCounter);
     topSet.zero();
-    for(int i = 0;i<topSetCounter;i++){
-      topSet.at(i+1) = topSetTemp.at(i+1);
+    for (int i = 0; i < topSetCounter; i++) {
+        topSet.at(i + 1) = topSetTemp.at(i + 1);
     }
-    
+
     printf("finished nodes\n");
 
-    int set1Counter=0,set2Counter=0,set3Counter=0;
+    int set1Counter = 0, set2Counter = 0, set3Counter = 0;
     oofem::IntArray set1Temp(numberOfLines);
     set1Temp.zero();
 
@@ -9965,82 +8682,79 @@ Grid :: give3DGopShaOutput(const std::string& fileName)
     set3Temp.zero();
 
     for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
+        //Check if element might be in the notch area. For this, nodes 1 or nodes 2 must be in the 13 mm notch length.
+        //and cross the middle
 
-      //Check if element might be in the notch area. For this, nodes 1 or nodes 2 must be in the 13 mm notch length.
-      //and cross the middle      
+        if ( ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 3 ) && ( this->giveDelaunayLine(i + 1) )->delaunayAreaCheck() == 1 ) { //Elements are inside
+            this->giveDelaunayLine(i + 1)->giveLocalVertices(nodes);
 
-      if ( (this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 3) && (this->giveDelaunayLine(i+1))->delaunayAreaCheck() == 1) { //Elements are inside
+            //=======================================================
+            //Deal with different materials (elastic, concrete, notch)
+            materialType = 1;
+            //	this->giveDelaunayLine(i + 1)->updateMaterial(1);
+            this->giveDelaunayVertex(nodes.at(1) )->giveCoordinates(coordsOne);
+            this->giveDelaunayVertex(nodes.at(2) )->giveCoordinates(coordsTwo);
 
-	this->giveDelaunayLine(i + 1)->giveLocalVertices(nodes);
-	
-	//=======================================================
-	//Deal with different materials (elastic, concrete, notch)
-	materialType = 1;
-	//	this->giveDelaunayLine(i + 1)->updateMaterial(1);
-	this->giveDelaunayVertex( nodes.at(1) )->giveCoordinates(coordsOne);
-	this->giveDelaunayVertex( nodes.at(2) )->giveCoordinates(coordsTwo);
-	
-	
-	if ( coordsOne.at(2) < 0.1025 && coordsTwo.at(2) < 0.1025 ) {
-	  set2Counter++;
-	  set2Temp.at(set2Counter) = i+1;
-	  materialType = 2;
-	  this->giveDelaunayLine(i + 1)->updateMaterial(2);
-	}
-	else if ( coordsOne.at(2) >= 0.1025 && coordsOne.at(2) <= 0.2025 || coordsTwo.at(2) >= 0.1025 && coordsTwo.at(2) <= 0.2025) {
-	  //Notch
-	  if(((coordsOne.at(2) > 0.1525-0.003/2. && coordsTwo.at(2) < 0.1525+0.003/2.) || (coordsOne.at(2) < 0.1525+0.003/2. && coordsTwo.at(2) > 0.1525-0.003/2.))
-	     && ((coordsOne.at(1) < 0.013 && coordsTwo.at(1) < 0.013) || (coordsOne.at(1) > 0.063 && coordsTwo.at(1) > 0.063))){
-	    set3Counter++;
-	    set3Temp.at(set3Counter) = i+1;
-	    materialType = 3;
-	    this->giveDelaunayLine(i + 1)->updateMaterial(3);	 
-	  } else{
-	    set1Counter++;
-	    set1Temp.at(set1Counter) = i+1;
-	    materialType = 1;
-	    this->giveDelaunayLine(i + 1)->updateMaterial(1);
-	  }
-	} else if ( coordsOne.at(2) > 0.2025 && coordsTwo.at(2) > 0.2025){
-	  set2Counter++;
-	  set2Temp.at(set2Counter) = i+1;
-	  materialType = 2;
-	  this->giveDelaunayLine(i + 1)->updateMaterial(2);
-	}
-	
-	this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
-	
-	fprintf( outputStream, "lattice3D %d nodes 2 %d %d crossSect %d mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, materialType, 3 * crossSectionNodes.giveSize() );
-	    
-	for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-	  this->giveVoronoiVertex( crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-	  fprintf( outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
-	}
-	fprintf(outputStream, "\n");
-      } 
-      }
+
+            if ( coordsOne.at(2) < 0.1025 && coordsTwo.at(2) < 0.1025 ) {
+                set2Counter++;
+                set2Temp.at(set2Counter) = i + 1;
+                materialType = 2;
+                this->giveDelaunayLine(i + 1)->updateMaterial(2);
+            } else if ( coordsOne.at(2) >= 0.1025 && coordsOne.at(2) <= 0.2025 || coordsTwo.at(2) >= 0.1025 && coordsTwo.at(2) <= 0.2025 )    {
+                //Notch
+                if ( ( ( coordsOne.at(2) > 0.1525 - 0.003 / 2. && coordsTwo.at(2) < 0.1525 + 0.003 / 2. ) || ( coordsOne.at(2) < 0.1525 + 0.003 / 2. && coordsTwo.at(2) > 0.1525 - 0.003 / 2. ) ) &&
+                     ( ( coordsOne.at(1) < 0.013 && coordsTwo.at(1) < 0.013 ) || ( coordsOne.at(1) > 0.063 && coordsTwo.at(1) > 0.063 ) ) ) {
+                    set3Counter++;
+                    set3Temp.at(set3Counter) = i + 1;
+                    materialType = 3;
+                    this->giveDelaunayLine(i + 1)->updateMaterial(3);
+                } else {
+                    set1Counter++;
+                    set1Temp.at(set1Counter) = i + 1;
+                    materialType = 1;
+                    this->giveDelaunayLine(i + 1)->updateMaterial(1);
+                }
+            } else if ( coordsOne.at(2) > 0.2025 && coordsTwo.at(2) > 0.2025 ) {
+                set2Counter++;
+                set2Temp.at(set2Counter) = i + 1;
+                materialType = 2;
+                this->giveDelaunayLine(i + 1)->updateMaterial(2);
+            }
+
+            this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
+
+            fprintf(outputStream, "lattice3D %d nodes 2 %d %d crossSect %d mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, materialType, 3 * crossSectionNodes.giveSize() );
+
+            for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
+                this->giveVoronoiVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
+                fprintf(outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
+            }
+            fprintf(outputStream, "\n");
+        }
+    }
 
     oofem::IntArray set1(set1Counter);
     set1.zero();
-    
+
     oofem::IntArray set2(set2Counter);
     set2.zero();
-    
+
     oofem::IntArray set3(set3Counter);
     set3.zero();
-    
-    for(int i=0;i<set1Counter;i++){
-      set1.at(i+1) = set1Temp.at(i+1);
+
+    for (int i = 0; i < set1Counter; i++) {
+        set1.at(i + 1) = set1Temp.at(i + 1);
     }
 
-    for(int i=0;i<set2Counter;i++){
-      set2.at(i+1) = set2Temp.at(i+1);
+    for (int i = 0; i < set2Counter; i++) {
+        set2.at(i + 1) = set2Temp.at(i + 1);
     }
 
-    for(int i=0;i<set3Counter;i++){
-      set3.at(i+1) = set3Temp.at(i+1);
+    for (int i = 0; i < set3Counter; i++) {
+        set3.at(i + 1) = set3Temp.at(i + 1);
     }
-        
+
     fprintf(outputStream, "latticecs 1 material 1\n");
     fprintf(outputStream, "latticecs 2 material 2\n");
     fprintf(outputStream, "latticecs 3 material 3\n");
@@ -10056,39 +8770,28 @@ Grid :: give3DGopShaOutput(const std::string& fileName)
 
     //Print set1
     fprintf(outputStream, "Set 1 elements %d", set1Counter);
-    for(int i=0;i<set1Counter;i++){
-      fprintf(outputStream, " %d", set1.at(i+1));
+    for (int i = 0; i < set1Counter; i++) {
+        fprintf(outputStream, " %d", set1.at(i + 1) );
     }
     fprintf(outputStream, "\n");
 
     //Print set2
     fprintf(outputStream, "Set 2 elements %d", set2Counter);
-    for(int i=0;i<set2Counter;i++){
-      fprintf(outputStream, " %d", set2.at(i+1));
+    for (int i = 0; i < set2Counter; i++) {
+        fprintf(outputStream, " %d", set2.at(i + 1) );
     }
     fprintf(outputStream, "\n");
 
     //Print set2
     fprintf(outputStream, "Set 3 elements %d", set3Counter);
-    for(int i=0;i<set3Counter;i++){
-      fprintf(outputStream, " %d", set3.at(i+1));
+    for (int i = 0; i < set3Counter; i++) {
+        fprintf(outputStream, " %d", set3.at(i + 1) );
     }
     fprintf(outputStream, "\n");
-    
+
     //Print set4
     fprintf(outputStream, "Set 4 nodes 1 %d\n", supportNode);
     fprintf(outputStream, "Set 5 nodes 1 %d\n", loadNode);
-    // fprintf(outputStream, "Set 6 nodes %d", bottomSetCounter);
-    // for(int i=0;i<bottomSetCounter;i++){
-    //   fprintf(outputStream, " %d", bottomSet.at(i+1));
-    // }
-    // fprintf(outputStream, "\n");
-
-    // fprintf(outputStream, "Set 7 nodes %d", topSetCounter);
-    // for(int i=0;i<topSetCounter;i++){
-    //   fprintf(outputStream, " %d", topSet.at(i+1));
-    // }
-    // fprintf(outputStream, "\n");
 
     fprintf(outputStream, "#%%BEGIN_CHECK%%\n");
     fprintf(outputStream, "#NODE number %d dof 2 unknown d\n", loadNode);
@@ -10102,37 +8805,23 @@ Grid :: give3DGopShaOutput(const std::string& fileName)
     fprintf(outputStream, "#TIME\n");
     fprintf(outputStream, "#%%END_CHECK%%\n");
     return;
-
 }
 
 void
-Grid :: give3DKupferOutput(const std::string& fileName)
+Grid::give3DKupferOutput(const std::string &fileName)
 {
+    //Output for Kupfer experiment (Biaxial compression with stress ratios.
+    //Only mechanical model
 
-  //Output for Kupfer experiment (Biaxial compression with stress ratios.
-  //Only mechanical model
-
-    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
-
-  /*   const std::string fileName1 = fileName + ".sm"; */
-  /*   FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w"); */
-    
-  /*   const std::string fileName2 = fileName + ".tm"; */
-  /*   FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w"); */
-
-
-  /* FILE *outputStream; */
-  /*   if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
-  /*       converter::errorf("Cannot open output file %s", fileName); */
-  /*   } */
+    FILE *outputStream = converter::fopen_or_die(fileName, "w");
 
     int numberOfNodes, numberOfLines;
     oofem::FloatArray coords(3);
-    oofem::FloatArray coordsOne,coordsTwo,line;
+    oofem::FloatArray coordsOne, coordsTwo, line;
     int materialType = 1;
     oofem::IntArray nodes, location(2);
     oofem::IntArray crossSectionNodes;
-    double radius,distanceOne,distanceTwo;
+    double radius, distanceOne, distanceTwo;
 
     int supportNodeOne = -1;
     int loadNodeOne = -1;
@@ -10140,50 +8829,45 @@ Grid :: give3DKupferOutput(const std::string& fileName)
     int supportNodeTwo = -1;
     int loadNodeTwo = -1;
 
-    
+
     //Determine the number of Delaunay nodes in the domain
     numberOfNodes = 0;
     for ( int i = 0; i < this->giveNumberOfDelaunayVertices(); i++ ) {
-      if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0 ||  this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 2) {
-	numberOfNodes++;
-	
-	this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
-	
-	//Create support and load nodes
-	if(fabs(coords.at(1)-0.05)<TOL && fabs(coords.at(2)-0.0)<TOL && fabs(coords.at(3)-0.005)<TOL ){ 
-	  supportNodeOne = i+1;
-	}
-	else if(fabs(coords.at(1)-0.05)<TOL && fabs(coords.at(2)-0.1)<TOL && fabs(coords.at(3)-0.005)<TOL){
-	  loadNodeOne = i+1;
-	}
-	else if(fabs(coords.at(1)-0.0)<TOL && fabs(coords.at(2)-0.05)<TOL && fabs(coords.at(3)-0.005)<TOL){
-	  supportNodeTwo = i+1;
+        if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0 ||  this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 2 ) {
+            numberOfNodes++;
+
+            this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
+
+            //Create support and load nodes
+            if ( fabs(coords.at(1) - 0.05) < TOL && fabs(coords.at(2) - 0.0) < TOL && fabs(coords.at(3) - 0.005) < TOL ) {
+                supportNodeOne = i + 1;
+            } else if ( fabs(coords.at(1) - 0.05) < TOL && fabs(coords.at(2) - 0.1) < TOL && fabs(coords.at(3) - 0.005) < TOL )                  {
+                loadNodeOne = i + 1;
+            } else if ( fabs(coords.at(1) - 0.0) < TOL && fabs(coords.at(2) - 0.05) < TOL && fabs(coords.at(3) - 0.005) < TOL )                  {
+                supportNodeTwo = i + 1;
+            } else if ( fabs(coords.at(1) - 0.1) < TOL && fabs(coords.at(2) - 0.05) < TOL && fabs(coords.at(3) - 0.005) < TOL )                  {
+                loadNodeTwo = i + 1;
+            }
         }
-	else if(fabs(coords.at(1)-0.1)<TOL && fabs(coords.at(2)-0.05)<TOL && fabs(coords.at(3)-0.005)<TOL){
-	  loadNodeTwo = i+1;
-	}       
-      }
     }
     //Determine the number of Delaunay lines in the domain
     numberOfLines = 0;
     for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
+        this->giveDelaunayLine(i + 1)->giveLocalVertices(nodes);
+        this->giveDelaunayVertex(nodes.at(1) )->giveCoordinates(coordsOne);
+        this->giveDelaunayVertex(nodes.at(2) )->giveCoordinates(coordsTwo);
 
-	this->giveDelaunayLine(i + 1)->giveLocalVertices(nodes);
-	this->giveDelaunayVertex( nodes.at(1) )->giveCoordinates(coordsOne);
-	this->giveDelaunayVertex( nodes.at(2) )->giveCoordinates(coordsTwo);
-      
-       	if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 0 && (this->giveDelaunayLine(i+1))->delaunayAreaCheck() == 1) {
-	    numberOfLines++;
-	  }
-	else if(this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 3 && this->giveRegion(1)->modifyVoronoiCrossSection(i + 1) == 1){
-	  numberOfLines++;
-	}
-    }       
+        if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 0 && ( this->giveDelaunayLine(i + 1) )->delaunayAreaCheck() == 1 ) {
+            numberOfLines++;
+        } else if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 3 && this->giveRegion(1)->modifyVoronoiCrossSection(i + 1) == 1 )        {
+            numberOfLines++;
+        }
+    }
     fprintf(outputStream, "oofem.out\n");
     fprintf(outputStream, "Mechanical 3D model of Kupfer experiment\n");
     fprintf(outputStream, "NlDEIDynamic nsteps 1 dumpcoef 0. deltat 0.1 reduct 0.5 nmodules 2\n");
     fprintf(outputStream, "#Nonlinearstatic nmsteps 1 nsteps 1 contextOutputStep 2000 nmodules 2 lstype 4 smtype 8\n");
-    fprintf(outputStream, "#nsteps 100 rtolv 1.e-3 stiffMode 2 maxiter 400 controllmode 0 steplength 1.e-5 minsteplength 1.e-5 hpcmode 2 hpc 2 %d 2 hpcw 1 -1 donotfixload lstype 4 smtype 8\n",loadNodeOne);
+    fprintf(outputStream, "#nsteps 100 rtolv 1.e-3 stiffMode 2 maxiter 400 controllmode 0 steplength 1.e-5 minsteplength 1.e-5 hpcmode 2 hpc 2 %d 2 hpcw 1 -1 donotfixload lstype 4 smtype 8\n", loadNodeOne);
     fprintf(outputStream, "vtkxmllattice primvars 1 1 tstep_step 1000 domain_all cross 1 cellvars 4 46 60 90 111 cross 1\n");
     fprintf(outputStream, "gpexportmodule vars 2 46 139 tstep_step 1000\n");
     fprintf(outputStream, "domain 3dLattice\n");
@@ -10192,76 +8876,65 @@ Grid :: give3DKupferOutput(const std::string& fileName)
 
     printf("start nodes\n");
 
-    int firstFlag = 0; 
-    
-    for ( int i = 0; i < this->giveNumberOfDelaunayVertices(); i++ ) {
-      if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayVertex(i+1)->giveOutsideFlag() == 2 ) {	
+    int firstFlag = 0;
 
-	this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
-	//First corners then facets
-	if(fabs(coords.at(1)-0.0)<giveTol() && fabs(coords.at(2)-0.0)<giveTol()){
-	  fprintf( outputStream, "node %d coords 3 %e %e %e dofidmask 6 1 2 3 4 5 6 mastermask 6 %d %d 0 0 0 0 doftype 6 1 1 0 0 0 0\n", i + 1, coords.at(1), coords.at(2), coords.at(3), supportNodeTwo, supportNodeOne);
-	}
-	else if(fabs(coords.at(1)-0.0)<giveTol() && fabs(coords.at(2)-0.1)<giveTol()){
-	  fprintf( outputStream, "node %d coords 3 %e %e %e dofidmask 6 1 2 3 4 5 6 mastermask 6 %d %d 0 0 0 0 doftype 6 1 1 0 0 0 0\n", i + 1, coords.at(1), coords.at(2), coords.at(3), supportNodeTwo, loadNodeOne);
-	}
-	else if(fabs(coords.at(1)-0.1)<giveTol() && fabs(coords.at(2)-0.1)<giveTol()){
-	  fprintf( outputStream, "node %d coords 3 %e %e %e dofidmask 6 1 2 3 4 5 6 mastermask 6 %d %d 0 0 0 0 doftype 6 1 1 0 0 0 0\n", i + 1, coords.at(1), coords.at(2), coords.at(3), loadNodeTwo, loadNodeOne);
-	}
-	else if(fabs(coords.at(1)-0.1)<giveTol() && fabs(coords.at(2)-0.0)<giveTol()){
-	  fprintf( outputStream, "node %d coords 3 %e %e %e dofidmask 6 1 2 3 4 5 6 mastermask 6 %d %d 0 0 0 0 doftype 6 1 1 0 0 0 0\n", i + 1, coords.at(1), coords.at(2), coords.at(3), loadNodeTwo, supportNodeOne);
-	}	
-	else if(fabs(coords.at(2)-0.0)<giveTol() && i+1 != supportNodeOne ){
-	  fprintf( outputStream, "node %d coords 3 %e %e %e dofidmask 6 1 2 3 4 5 6 mastermask 6 0 %d 0 0 0 0 doftype 6 0 1 0 0 0 0\n", i + 1, coords.at(1), coords.at(2), coords.at(3), supportNodeOne);
-	}
-	else if(fabs(coords.at(2)-0.1)<giveTol() && i+1 != loadNodeOne){
-	  fprintf( outputStream, "node %d coords 3 %e %e %e dofidmask 6 1 2 3 4 5 6  mastermask 6 0 %d 0 0 0 0 doftype 6 0 1 0 0 0 0\n", i + 1, coords.at(1), coords.at(2), coords.at(3), loadNodeOne);
-	}
-	else if(fabs(coords.at(1)-0.0)<giveTol() && i+1 != supportNodeTwo){
-	  fprintf( outputStream, "node %d coords 3 %e %e %e dofidmask 6 1 2 3 4 5 6  mastermask 6 %d 0 0 0 0 0 doftype 6 1 0 0 0 0 0\n", i + 1, coords.at(1), coords.at(2), coords.at(3), supportNodeTwo);
-	}
-	else if(fabs(coords.at(1)-0.1)<giveTol() && i+1 != loadNodeTwo){
-	  fprintf( outputStream, "node %d coords 3 %e %e %e dofidmask 6 1 2 3 4 5 6  mastermask 6 %d 0 0 0 0 0 doftype 6 1 0 0 0 0 0\n", i + 1, coords.at(1), coords.at(2), coords.at(3), loadNodeTwo);
-	}
-	else{
-	  fprintf( outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
-	}
-      }
+    for ( int i = 0; i < this->giveNumberOfDelaunayVertices(); i++ ) {
+        if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 2 ) {
+            this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
+            //First corners then facets
+            if ( fabs(coords.at(1) - 0.0) < giveTol() && fabs(coords.at(2) - 0.0) < giveTol() ) {
+                fprintf(outputStream, "node %d coords 3 %e %e %e dofidmask 6 1 2 3 4 5 6 mastermask 6 %d %d 0 0 0 0 doftype 6 1 1 0 0 0 0\n", i + 1, coords.at(1), coords.at(2), coords.at(3), supportNodeTwo, supportNodeOne);
+            } else if ( fabs(coords.at(1) - 0.0) < giveTol() && fabs(coords.at(2) - 0.1) < giveTol() )              {
+                fprintf(outputStream, "node %d coords 3 %e %e %e dofidmask 6 1 2 3 4 5 6 mastermask 6 %d %d 0 0 0 0 doftype 6 1 1 0 0 0 0\n", i + 1, coords.at(1), coords.at(2), coords.at(3), supportNodeTwo, loadNodeOne);
+            } else if ( fabs(coords.at(1) - 0.1) < giveTol() && fabs(coords.at(2) - 0.1) < giveTol() )              {
+                fprintf(outputStream, "node %d coords 3 %e %e %e dofidmask 6 1 2 3 4 5 6 mastermask 6 %d %d 0 0 0 0 doftype 6 1 1 0 0 0 0\n", i + 1, coords.at(1), coords.at(2), coords.at(3), loadNodeTwo, loadNodeOne);
+            } else if ( fabs(coords.at(1) - 0.1) < giveTol() && fabs(coords.at(2) - 0.0) < giveTol() )              {
+                fprintf(outputStream, "node %d coords 3 %e %e %e dofidmask 6 1 2 3 4 5 6 mastermask 6 %d %d 0 0 0 0 doftype 6 1 1 0 0 0 0\n", i + 1, coords.at(1), coords.at(2), coords.at(3), loadNodeTwo, supportNodeOne);
+            } else if ( fabs(coords.at(2) - 0.0) < giveTol() && i + 1 != supportNodeOne )           {
+                fprintf(outputStream, "node %d coords 3 %e %e %e dofidmask 6 1 2 3 4 5 6 mastermask 6 0 %d 0 0 0 0 doftype 6 0 1 0 0 0 0\n", i + 1, coords.at(1), coords.at(2), coords.at(3), supportNodeOne);
+            } else if ( fabs(coords.at(2) - 0.1) < giveTol() && i + 1 != loadNodeOne )            {
+                fprintf(outputStream, "node %d coords 3 %e %e %e dofidmask 6 1 2 3 4 5 6  mastermask 6 0 %d 0 0 0 0 doftype 6 0 1 0 0 0 0\n", i + 1, coords.at(1), coords.at(2), coords.at(3), loadNodeOne);
+            } else if ( fabs(coords.at(1) - 0.0) < giveTol() && i + 1 != supportNodeTwo )            {
+                fprintf(outputStream, "node %d coords 3 %e %e %e dofidmask 6 1 2 3 4 5 6  mastermask 6 %d 0 0 0 0 0 doftype 6 1 0 0 0 0 0\n", i + 1, coords.at(1), coords.at(2), coords.at(3), supportNodeTwo);
+            } else if ( fabs(coords.at(1) - 0.1) < giveTol() && i + 1 != loadNodeTwo )            {
+                fprintf(outputStream, "node %d coords 3 %e %e %e dofidmask 6 1 2 3 4 5 6  mastermask 6 %d 0 0 0 0 0 doftype 6 1 0 0 0 0 0\n", i + 1, coords.at(1), coords.at(2), coords.at(3), loadNodeTwo);
+            } else   {
+                fprintf(outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
+            }
+        }
     }
 
-        
+
     printf("finished nodes\n");
 
     for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
+        //and cross the middle
 
-      //and cross the middle      
+        if ( ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 3 ) && ( this->giveDelaunayLine(i + 1) )->delaunayAreaCheck() == 1 ) { //Elements are inside
+            this->giveDelaunayLine(i + 1)->giveLocalVertices(nodes);
 
-      if ( (this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 3) && (this->giveDelaunayLine(i+1))->delaunayAreaCheck() == 1) { //Elements are inside
+            //Only one material at the moment
+            materialType = 1;
+            this->giveDelaunayLine(i + 1)->updateMaterial(1);
+            this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
-	this->giveDelaunayLine(i + 1)->giveLocalVertices(nodes);
+            fprintf(outputStream, "lattice3D %d nodes 2 %d %d crossSect %d mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, materialType, 3 * crossSectionNodes.giveSize() );
 
-	//Only one material at the moment
-	materialType = 1;
-	this->giveDelaunayLine(i + 1)->updateMaterial(1);
-	this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
-	
-	fprintf( outputStream, "lattice3D %d nodes 2 %d %d crossSect %d mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, materialType, 3 * crossSectionNodes.giveSize() );
-	    
-	for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-	  this->giveVoronoiVertex( crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-	  fprintf( outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
-	}
-	fprintf(outputStream, "\n");
-      } 
+            for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
+                this->giveVoronoiVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
+                fprintf(outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
+            }
+            fprintf(outputStream, "\n");
+        }
     }
-        
+
     fprintf(outputStream, "latticecs 1 material 1\n");
     fprintf(outputStream, "latticeplastdam 1 d 2500 talpha 0. calpha 0. e 45.91e9 a1 0.297 a2 1.e-12 ft 2.35e6 fc 30.e6 \
 wf 20.e-6 ahard 1.e-3 angle1 0.5 flow 0.25 randvars 2 806 807 randgen 2 3 3\n");
     fprintf(outputStream, "#latticelinearelastic 1 d 0 talpha 0. calpha 0. e 50.46e9 a1 0.215\n");
     fprintf(outputStream, "BoundaryCondition 1 loadTimeFunction 1 dofs 2 2 3 values 2 0 0 set 1\n");
     fprintf(outputStream, "BoundaryCondition 2 loadTimeFunction 1 dofs 1 3 values 1 0 set 2\n");
-    fprintf(outputStream, "BoundaryCondition 3 loadTimeFunction 1 dofs 2 1 3 values 2 0 0 set 3\n");    
+    fprintf(outputStream, "BoundaryCondition 3 loadTimeFunction 1 dofs 2 1 3 values 2 0 0 set 3\n");
     fprintf(outputStream, "BoundaryCondition 4 loadTimeFunction 1 dofs 1 3 values 1 0 set 4\n");
     fprintf(outputStream, "BoundaryCondition 5 loadTimeFunction 2 dofs 1 2 values 1 -1.e-3 set 2\n");
     fprintf(outputStream, "#NodalLoad 5 loadTimeFunction 2 dofs 6 1 2 3 4 5 6 Components 6 0. 1. 0. 0. 0. 0. set 2\n");
@@ -10284,28 +8957,27 @@ wf 20.e-6 ahard 1.e-3 angle1 0.5 flow 0.25 randvars 2 806 807 randgen 2 3 3\n");
     fprintf(outputStream, "#TIME\n");
     fprintf(outputStream, "#%%END_CHECK%%\n");
     return;
-
-    }
+}
 
 void
-Grid :: give3DImranOutput(const std::string& fileName)
+Grid::give3DImranOutput(const std::string &fileName)
 {
-  return;
+    return;
 }
 
 
 void
-Grid :: give3DNotchOutput(const std::string& fileName)
+Grid::give3DNotchOutput(const std::string &fileName)
 {
-  return;
+    return;
 }
 
 
 
 void
-Grid :: givePOVOutput(const std::string& fileName)
+Grid::givePOVOutput(const std::string &fileName)
 {
-  //    char fileName1 [ MAX_FILENAME_LENGTH + 10 ];
+    //    char fileName1 [ MAX_FILENAME_LENGTH + 10 ];
 
     this->giveVoronoiPOVOutput(fileName);
 
@@ -10314,33 +8986,15 @@ Grid :: givePOVOutput(const std::string& fileName)
 
 
 void
-Grid :: giveVoronoiPOVOutput(const std::string& fileName)
+Grid::giveVoronoiPOVOutput(const std::string &fileName)
 {
-
-  //    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
+    //    FILE* outputStream = converter::fopen_or_die(fileName, "w");
 
     const std::string fileName1 = fileName + ".vor.line.pov";
     FILE *outputStream1 = converter::fopen_or_die(fileName1, "w");
-    
+
     const std::string fileName2 = fileName + ".vor.cross.pov";
     FILE *outputStream2 = converter::fopen_or_die(fileName2, "w");
-
-
-  /* char fileName1 [ MAX_FILENAME_LENGTH + 10 ]; */
-  /*   strcpy(fileName1, fileName); */
-  /*   strcat(fileName1, ".vor.line.pov"); */
-  /*   FILE *outputStream1; */
-  /*   if ( ( outputStream1 = fopen(fileName1, "w") ) == NULL ) { */
-  /*       converter::errorf("Can't open output file %s", fileName1); */
-  /*   } */
-
-  /*   char fileName2 [ MAX_FILENAME_LENGTH + 10 ]; */
-  /*   strcpy(fileName2, fileName); */
-  /*   strcat(fileName2, ".vor.cross.pov"); */
-  /*   FILE *outputStream2; */
-  /*   if ( ( outputStream2 = fopen(fileName2, "w") ) == NULL ) { */
-  /*       converter::errorf("Can't open output file %s", fileName2); */
-  /*   } */
 
 
     oofem::FloatArray coord1, coord2;
@@ -10348,15 +9002,15 @@ Grid :: giveVoronoiPOVOutput(const std::string& fileName)
     for ( int i = 0; i < this->giveNumberOfVoronoiLines(); i++ ) {
         if ( giveVoronoiLine(i + 1)->giveOutsideFlag() == 0 || giveVoronoiLine(i + 1)->giveOutsideFlag() == 2 ) {
             giveVoronoiLine(i + 1)->giveLocalVertices(nodes);
-            giveVoronoiVertex( nodes.at(1) )->giveCoordinates(coord1);
-            giveVoronoiVertex( nodes.at(2) )->giveCoordinates(coord2);
-            fprintf( outputStream1, "cylinder{<%e,%e,%e>,<%e,%e,%e>,r}\n", coord1.at(1), coord1.at(2), coord1.at(3), coord2.at(1), coord2.at(2), coord2.at(3) );
+            giveVoronoiVertex(nodes.at(1) )->giveCoordinates(coord1);
+            giveVoronoiVertex(nodes.at(2) )->giveCoordinates(coord2);
+            fprintf(outputStream1, "cylinder{<%e,%e,%e>,<%e,%e,%e>,r}\n", coord1.at(1), coord1.at(2), coord1.at(3), coord2.at(1), coord2.at(2), coord2.at(3) );
             giveVoronoiLine(i + 1)->giveCrossSectionElements(lines);
             for ( int m = 0; m < lines.giveSize(); m++ ) {
-                giveDelaunayLine( lines.at(m + 1) )->giveLocalVertices(nodes);
-                giveDelaunayVertex( nodes.at(1) )->giveCoordinates(coord1);
-                giveDelaunayVertex( nodes.at(2) )->giveCoordinates(coord2);
-                fprintf( outputStream2, "cylinder{<%e,%e,%e>,<%e,%e,%e>,r}\n", coord1.at(1), coord1.at(2), coord1.at(3), coord2.at(1), coord2.at(2), coord2.at(3) );
+                giveDelaunayLine(lines.at(m + 1) )->giveLocalVertices(nodes);
+                giveDelaunayVertex(nodes.at(1) )->giveCoordinates(coord1);
+                giveDelaunayVertex(nodes.at(2) )->giveCoordinates(coord2);
+                fprintf(outputStream2, "cylinder{<%e,%e,%e>,<%e,%e,%e>,r}\n", coord1.at(1), coord1.at(2), coord1.at(3), coord2.at(1), coord2.at(2), coord2.at(3) );
             }
         }
     }
@@ -10364,14 +9018,11 @@ Grid :: giveVoronoiPOVOutput(const std::string& fileName)
 
 
 void
-Grid :: giveDelaunayPOVOutput(const std::string& fileName)
+Grid::giveDelaunayPOVOutput(const std::string &fileName)
 {
-
-  //    FILE* outputStream = converter::fopen_or_die(fileName, "w");   
-
     const std::string fileName1 = fileName + ".del.line.pov";
     FILE *outputStream1 = converter::fopen_or_die(fileName1, "w");
-    
+
     const std::string fileName2 = fileName + ".del.cross.pov";
     FILE *outputStream2 = converter::fopen_or_die(fileName2, "w");
 
@@ -10379,56 +9030,31 @@ Grid :: giveDelaunayPOVOutput(const std::string& fileName)
     FILE *outputStream3 = converter::fopen_or_die(fileName2, "w");
 
 
-  /* char fileName1 [ MAX_FILENAME_LENGTH + 10 ]; */
-  /*   strcpy(fileName1, fileName); */
-  /*   strcat(fileName1, ".del.line.pov"); */
-  /*   FILE *outputStream1; */
-  /*   if ( ( outputStream1 = fopen(fileName1, "w") ) == NULL ) { */
-  /*       converter::errorf("Can't open output file %s", fileName1); */
-  /*   } */
-
-  /*   char fileName2 [ MAX_FILENAME_LENGTH + 10 ]; */
-  /*   strcpy(fileName2, fileName); */
-  /*   strcat(fileName2, ".del.cross.pov"); */
-  /*   FILE *outputStream2; */
-  /*   if ( ( outputStream2 = fopen(fileName2, "w") ) == NULL ) { */
-  /*       converter::errorf("Can't open output file %s", fileName2); */
-  /*   } */
-
-  /*   char fileName3 [ MAX_FILENAME_LENGTH + 10 ]; */
-  /*   strcpy(fileName3, fileName); */
-  /*   strcat(fileName3, ".crack.pov"); */
-  /*   FILE *outputStream3; */
-  /*   if ( ( outputStream3 = fopen(fileName3, "w") ) == NULL ) { */
-  /*       converter::errorf("Can't open output file %s", fileName3); */
-  /*   } */
-
-
     oofem::FloatArray coord1, coord2;
     oofem::IntArray nodes, lines;
     for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
         if ( giveDelaunayLine(i + 1)->giveOutsideFlag() == 0 || giveDelaunayLine(i + 1)->giveOutsideFlag() == 2 ) {
             giveDelaunayLine(i + 1)->giveLocalVertices(nodes);
-            giveDelaunayVertex( nodes.at(1) )->giveCoordinates(coord1);
-            giveDelaunayVertex( nodes.at(2) )->giveCoordinates(coord2);
-            fprintf( outputStream1, "cylinder{<%e,%e,%e>,<%e,%e,%e>,r}\n", coord1.at(1), coord1.at(2), coord1.at(3), coord2.at(1), coord2.at(2), coord2.at(3) );
+            giveDelaunayVertex(nodes.at(1) )->giveCoordinates(coord1);
+            giveDelaunayVertex(nodes.at(2) )->giveCoordinates(coord2);
+            fprintf(outputStream1, "cylinder{<%e,%e,%e>,<%e,%e,%e>,r}\n", coord1.at(1), coord1.at(2), coord1.at(3), coord2.at(1), coord2.at(2), coord2.at(3) );
             giveDelaunayLine(i + 1)->giveCrossSectionElements(lines);
             for ( int m = 0; m < lines.giveSize(); m++ ) {
-                giveVoronoiLine( lines.at(m + 1) )->giveLocalVertices(nodes);
-                giveVoronoiVertex( nodes.at(1) )->giveCoordinates(coord1);
-                giveVoronoiVertex( nodes.at(2) )->giveCoordinates(coord2);
-                fprintf( outputStream2, "cylinder{<%e,%e,%e>,<%e,%e,%e>,r}\n", coord1.at(1), coord1.at(2), coord1.at(3), coord2.at(1), coord2.at(2), coord2.at(3) );
+                giveVoronoiLine(lines.at(m + 1) )->giveLocalVertices(nodes);
+                giveVoronoiVertex(nodes.at(1) )->giveCoordinates(coord1);
+                giveVoronoiVertex(nodes.at(2) )->giveCoordinates(coord2);
+                fprintf(outputStream2, "cylinder{<%e,%e,%e>,<%e,%e,%e>,r}\n", coord1.at(1), coord1.at(2), coord1.at(3), coord2.at(1), coord2.at(2), coord2.at(3) );
             }
             giveDelaunayLine(i + 1)->giveCrossSectionVertices(nodes);
             //Not working
             fprintf(outputStream3, "polygon{%d", nodes.giveSize() + 1);
             for ( int k = 0; k < nodes.giveSize(); k++ ) {
-                giveVoronoiVertex( nodes.at(k + 1) )->giveCoordinates(coord1);
-                fprintf( outputStream3, ",<%e,%e,%e>", coord1.at(1), coord1.at(2), coord1.at(3) );
+                giveVoronoiVertex(nodes.at(k + 1) )->giveCoordinates(coord1);
+                fprintf(outputStream3, ",<%e,%e,%e>", coord1.at(1), coord1.at(2), coord1.at(3) );
             }
             //Close it
-            giveVoronoiVertex( nodes.at(1) )->giveCoordinates(coord1);
-            fprintf( outputStream3, ",<%e,%e,%e>", coord1.at(1), coord1.at(2), coord1.at(3) );
+            giveVoronoiVertex(nodes.at(1) )->giveCoordinates(coord1);
+            fprintf(outputStream3, ",<%e,%e,%e>", coord1.at(1), coord1.at(2), coord1.at(3) );
             fprintf(outputStream3, "}\n");
         }
     }
@@ -10436,7 +9062,7 @@ Grid :: giveDelaunayPOVOutput(const std::string& fileName)
 
 
 void
-Grid :: giveVoronoiCellVTKOutput(FILE *outputStream)
+Grid::giveVoronoiCellVTKOutput(FILE *outputStream)
 {
     //Here should go the code for the Voronoi nodes
 
@@ -10476,14 +9102,14 @@ Grid :: giveVoronoiCellVTKOutput(FILE *outputStream)
     fprintf(outputStream, "<DataArray type=\"Float64\" NumberOfComponents=\"3\" format=\"ascii\">\n");
 
     int nodeCounter = 0;
-    oofem::IntArray nodeConverter( this->giveNumberOfVoronoiVertices() );
+    oofem::IntArray nodeConverter(this->giveNumberOfVoronoiVertices() );
     for ( int i = 0; i < this->giveNumberOfVoronoiVertices(); i++ ) {
         if ( this->giveVoronoiVertex(i + 1)->giveOutsideFlag() == 0 || this->giveVoronoiVertex(i + 1)->giveOutsideFlag() == 2 ) {
             nodeCounter++;
             nodeConverter.at(i + 1) = nodeCounter;
             this->giveVoronoiVertex(i + 1)->giveCoordinates(coords);
             for ( int i = 0; i < 3; i++ ) {
-                fprintf( outputStream, "%e ", coords.at(i + 1) );
+                fprintf(outputStream, "%e ", coords.at(i + 1) );
             }
             fprintf(outputStream, "\n");
         }
@@ -10500,9 +9126,9 @@ Grid :: giveVoronoiCellVTKOutput(FILE *outputStream)
         if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 2 ) {
             this->giveDelaunayVertex(i + 1)->giveLocalLines(localDelaunayLines);
             for ( int m = 0; m < localDelaunayLines.giveSize(); m++ ) {
-                this->giveDelaunayLine( localDelaunayLines.at(m + 1) )->giveCrossSectionVertices(crossSectionVertices);
+                this->giveDelaunayLine(localDelaunayLines.at(m + 1) )->giveCrossSectionVertices(crossSectionVertices);
                 for ( int k = 0; k < crossSectionVertices.giveSize(); k++ ) {
-                    fprintf(outputStream, "%d ", nodeConverter.at( crossSectionVertices.at(k + 1) ) - 1);
+                    fprintf(outputStream, "%d ", nodeConverter.at(crossSectionVertices.at(k + 1) ) - 1);
                 }
                 fprintf(outputStream, "\n");
             }
@@ -10516,7 +9142,7 @@ Grid :: giveVoronoiCellVTKOutput(FILE *outputStream)
         if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 2 ) {
             this->giveDelaunayVertex(i + 1)->giveLocalLines(localDelaunayLines);
             for ( int m = 0; m < localDelaunayLines.giveSize(); m++ ) {
-                this->giveDelaunayLine( localDelaunayLines.at(m + 1) )->giveCrossSectionVertices(crossSectionVertices);
+                this->giveDelaunayLine(localDelaunayLines.at(m + 1) )->giveCrossSectionVertices(crossSectionVertices);
                 offsetCounter += crossSectionVertices.giveSize();
                 fprintf(outputStream, "%d ", offsetCounter);
             }
@@ -10540,11 +9166,10 @@ Grid :: giveVoronoiCellVTKOutput(FILE *outputStream)
 
 
 void
-Grid :: giveTetraElementVTKOutput(FILE *outputStream)
+Grid::giveTetraElementVTKOutput(FILE *outputStream)
 {
+    printf("In Tetra output\n");
 
-  printf("In Tetra output\n");
-  
     oofem::FloatArray coords;
     oofem::IntArray nodes;
     oofem::IntArray crossSectionNodes;
@@ -10563,19 +9188,19 @@ Grid :: giveTetraElementVTKOutput(FILE *outputStream)
         }
     }
 
-    
+
     oofem::IntArray localTetras;
-    int numberOfVertices =0;
+    int numberOfVertices = 0;
     for ( int i = 0; i < this->giveNumberOfDelaunayVertices(); i++ ) {
-      this->giveDelaunayVertex(i + 1)->giveLocalTetras(localTetras);
-      for ( int k = 0; k < localTetras.giveSize(); k++) {
-	if( this->giveDelaunayTetra(localTetras.at(k+1))->giveOutsideFlag() == 0 || this->giveDelaunayTetra(localTetras.at(k+1))->giveOutsideFlag() == 2){
-	  numberOfVertices++;
-	  break;
-	}
-      }
+        this->giveDelaunayVertex(i + 1)->giveLocalTetras(localTetras);
+        for ( int k = 0; k < localTetras.giveSize(); k++) {
+            if ( this->giveDelaunayTetra(localTetras.at(k + 1) )->giveOutsideFlag() == 0 || this->giveDelaunayTetra(localTetras.at(k + 1) )->giveOutsideFlag() == 2 ) {
+                numberOfVertices++;
+                break;
+            }
+        }
     }
- 
+
     //Start with VTK output
     fprintf(outputStream, "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");
     fprintf(outputStream, "<UnstructuredGrid>\n");
@@ -10586,23 +9211,23 @@ Grid :: giveTetraElementVTKOutput(FILE *outputStream)
     fprintf(outputStream, "<DataArray type=\"Float64\" NumberOfComponents=\"3\" format=\"ascii\">\n");
 
     int vertexCounter = 0;
-    oofem::IntArray vertexConverter( this->giveNumberOfDelaunayVertices() );
+    oofem::IntArray vertexConverter(this->giveNumberOfDelaunayVertices() );
     for ( int i = 0; i < this->giveNumberOfDelaunayVertices(); i++ ) {
-      this->giveDelaunayVertex(i + 1)->giveLocalTetras(localTetras);
-      for ( int k = 0; k < localTetras.giveSize(); k++) {
-	if( this->giveDelaunayTetra(localTetras.at(k+1))->giveOutsideFlag() == 0 || this->giveDelaunayTetra(localTetras.at(k+1))->giveOutsideFlag() == 2){
-	  vertexCounter++;
-	  vertexConverter.at(i + 1) = vertexCounter;
-	  this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
-	  for ( int m = 0; m < 3; m++ ) {
-	    fprintf( outputStream, "%e ", coords.at(m + 1) );
-	  }
-	  fprintf(outputStream, "\n");
-	  break;
-	}
-      }
+        this->giveDelaunayVertex(i + 1)->giveLocalTetras(localTetras);
+        for ( int k = 0; k < localTetras.giveSize(); k++) {
+            if ( this->giveDelaunayTetra(localTetras.at(k + 1) )->giveOutsideFlag() == 0 || this->giveDelaunayTetra(localTetras.at(k + 1) )->giveOutsideFlag() == 2 ) {
+                vertexCounter++;
+                vertexConverter.at(i + 1) = vertexCounter;
+                this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
+                for ( int m = 0; m < 3; m++ ) {
+                    fprintf(outputStream, "%e ", coords.at(m + 1) );
+                }
+                fprintf(outputStream, "\n");
+                break;
+            }
+        }
     }
-    
+
     fprintf(outputStream, "</DataArray>\n");
     fprintf(outputStream, "</Points>\n");
 
@@ -10614,29 +9239,29 @@ Grid :: giveTetraElementVTKOutput(FILE *outputStream)
         if ( this->giveDelaunayTetra(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayTetra(i + 1)->giveOutsideFlag() == 2 ) {
             this->giveDelaunayTetra(i + 1)->giveLocalVertices(localDelaunayVertices);
             for ( int m = 0; m < localDelaunayVertices.giveSize(); m++ ) {
-	      fprintf(outputStream, "%d ", vertexConverter.at( localDelaunayVertices.at(m + 1) )-1);
-	    }
-	}
+                fprintf(outputStream, "%d ", vertexConverter.at(localDelaunayVertices.at(m + 1) ) - 1);
+            }
+        }
     }
     fprintf(outputStream, "</DataArray>\n");
-    
+
     int offsetCounter = 0;
     fprintf(outputStream, " <DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\">\n");
     for ( int i = 0; i < this->giveNumberOfDelaunayTetras(); i++ ) {
-      if ( this->giveDelaunayTetra(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayTetra(i + 1)->giveOutsideFlag() == 2 ) {
-	this->giveDelaunayTetra(i + 1)->giveLocalVertices(localDelaunayVertices);
-	offsetCounter += localDelaunayVertices.giveSize();
-	fprintf(outputStream, "%d ", offsetCounter);
-      }
+        if ( this->giveDelaunayTetra(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayTetra(i + 1)->giveOutsideFlag() == 2 ) {
+            this->giveDelaunayTetra(i + 1)->giveLocalVertices(localDelaunayVertices);
+            offsetCounter += localDelaunayVertices.giveSize();
+            fprintf(outputStream, "%d ", offsetCounter);
+        }
     }
-    //    fprintf(outputStream, "\n");
+
     fprintf(outputStream, "</DataArray>\n");
-    
+
     fprintf(outputStream, " <DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\">\n");
     for ( int i = 0; i < this->giveNumberOfDelaunayTetras(); i++ ) {
-      if ( this->giveDelaunayTetra(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayTetra(i + 1)->giveOutsideFlag() == 2 ) {
-        fprintf(outputStream, "10 ");
-      }
+        if ( this->giveDelaunayTetra(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayTetra(i + 1)->giveOutsideFlag() == 2 ) {
+            fprintf(outputStream, "10 ");
+        }
     }
     fprintf(outputStream, "</DataArray>\n");
     fprintf(outputStream, "</Cells>\n");
@@ -10648,7 +9273,7 @@ Grid :: giveTetraElementVTKOutput(FILE *outputStream)
 
 
 void
-Grid :: giveDelaunayElementVTKOutput(FILE *outputStream)
+Grid::giveDelaunayElementVTKOutput(FILE *outputStream)
 {
     //Here should go the code for the Voronoi nodes
 
@@ -10688,14 +9313,14 @@ Grid :: giveDelaunayElementVTKOutput(FILE *outputStream)
         }
     }
 
-    printf("numberOfLines = %d\n",numberOfLines);
+    printf("numberOfLines = %d\n", numberOfLines);
 
     fprintf(outputStream, "<Piece NumberOfPoints=\"%d\" NumberOfCells=\"%d\">\n", numberOfNodes, numberOfLines);
     // export nodes in region as vtk vertices
 
     fprintf(outputStream, "<Points>\n <DataArray type=\"Float64\" NumberOfComponents=\"3\" format=\"ascii\"> \n");
 
-    oofem::IntArray nodeConverter( this->giveNumberOfDelaunayVertices() );
+    oofem::IntArray nodeConverter(this->giveNumberOfDelaunayVertices() );
     int newNodeNumber = 0;
     for ( int inode = 0; inode < this->giveNumberOfDelaunayVertices(); inode++ ) {
         if ( this->giveDelaunayVertex(inode + 1)->giveOutsideFlag() == 0 || this->giveDelaunayVertex(inode + 1)->giveOutsideFlag() == 2 ) {
@@ -10704,7 +9329,7 @@ Grid :: giveDelaunayElementVTKOutput(FILE *outputStream)
             delaunayVertex = this->giveDelaunayVertex(inode + 1);
             delaunayVertex->giveCoordinates(coords);
             for ( int i = 1; i <= 3; i++ ) {
-                fprintf( outputStream, "%e ", coords.at(i) );
+                fprintf(outputStream, "%e ", coords.at(i) );
             }
             fprintf(outputStream, "\n");
         }
@@ -10722,14 +9347,14 @@ Grid :: giveDelaunayElementVTKOutput(FILE *outputStream)
             delaunayLine = this->giveDelaunayLine(i + 1);
             delaunayLine->giveLocalVertices(nodes);
             delaunayLine->giveCrossSectionVertices(crossSectionNodes);
-            fprintf(outputStream, "%d %d ", nodeConverter.at( nodes.at(1) ) - 1, nodeConverter.at( nodes.at(2) ) - 1);
+            fprintf(outputStream, "%d %d ", nodeConverter.at(nodes.at(1) ) - 1, nodeConverter.at(nodes.at(2) ) - 1);
         }
     }
     fprintf(outputStream, "</DataArray>\n");
     fprintf(outputStream, "<DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\">\n");
 
     for ( int i = 0; i < numberOfLines; i++ ) {
-        fprintf( outputStream, "%d ", 2 * ( i + 1 ) );
+        fprintf(outputStream, "%d ", 2 * ( i + 1 ) );
     }
 
     fprintf(outputStream, "</DataArray>\n");
@@ -10748,75 +9373,8 @@ Grid :: giveDelaunayElementVTKOutput(FILE *outputStream)
 
 
 void
-Grid :: giveVoronoiCrossSectionVTKOutput(FILE *outputStream)
+Grid::giveVoronoiCrossSectionVTKOutput(FILE *outputStream)
 {
-    // //Here should go the code for the Voronoi nodes
-
-    // int numberOfNodes, numberOfLines;
-    // oofem::FloatArray coords;
-    // oofem::IntArray nodes;
-    // oofem::IntArray crossSectionNodes;
-    // Vertex *delaunayVertex;
-    // Line *delaunayLine;
-
-    // FILE *lengthFile;
-
-
-    // fprintf(outputStream, "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");
-    // fprintf(outputStream, "<UnstructuredGrid>\n");
-
-    // numberOfNodes = this->giveNumberOfDelaunayVertices();
-    // numberOfLines = this->giveNumberOfDelaunayLines();
-
-    // fprintf(outputStream, "<Piece NumberOfPoints=\"%d\" NumberOfCells=\"%d\">\n", numberOfNodes, numberOfDelaunayLinesMechanical);
-    // // export nodes in region as vtk vertices
-
-    // fprintf(outputStream, "<Points>\n <DataArray type=\"Float64\" NumberOfComponents=\"3\" format=\"ascii\"> ");
-
-
-    // for ( int inode = 0; inode < numberOfNodes; inode++ ) {
-    //     delaunayVertex = this->giveDelaunayVertex(inode + 1);
-    //     delaunayVertex->giveCoordinates(coords);
-    //     for ( int i = 1; i <= 3; i++ ) {
-    //         fprintf( outputStream, "%e ", coords.at(i) );
-    //     }
-    // }
-
-    // fprintf(outputStream, "</DataArray>\n</Points>\n");
-
-    // fprintf(outputStream, "<Cells>\n");
-    // // output the connectivity data
-    // fprintf(outputStream, " <DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\"> ");
-    // //
-
-    // for ( int i = 0; i < numberOfLines; i++ ) {
-    //     delaunayLine = this->giveDelaunayLine(i + 1);
-    //     delaunayLine->giveLocalVertices(nodes);
-    //     delaunayLine->giveCrossSectionVertices(crossSectionNodes);
-
-    //     std :: cout << this->giveDelaunayLine(i + 1)->giveMechanicalLineFlag() << '\n';
-    //     if ( delaunayLine->giveMechanicalLineFlag() == 1 ) {
-    //         fprintf(outputStream, " %d %d ", nodes.at(1) - 1, nodes.at(2) - 1);
-    //     }
-    // }
-    // fprintf(outputStream, "</DataArray>\n");
-    // fprintf(outputStream, " <DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\"> ");
-
-    // for ( int i = 0; i < numberOfDelaunayLinesMechanical; i++ ) {
-    //     fprintf( outputStream, "%d ", 2 * ( i + 1 ) );
-    // }
-
-    // fprintf(outputStream, "</DataArray>\n");
-    // fprintf(outputStream, " <DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\"> ");
-    // for ( int cell = 0; cell < numberOfDelaunayLinesMechanical; cell++ ) {
-    //     fprintf(outputStream, "%d ", 3);
-    // }
-    // fprintf(outputStream, "</DataArray>\n");
-    // fprintf(outputStream, "</Cells>\n");
-    // fprintf(outputStream, "</Piece>\n");
-    // fprintf(outputStream, "</UnstructuredGrid>\n</VTKFile>");
-
-    // return;
 }
 
 
@@ -10824,7 +9382,7 @@ Grid :: giveVoronoiCrossSectionVTKOutput(FILE *outputStream)
 
 
 void
-Grid :: giveVoronoiElementVTKOutput(FILE *outputStream)
+Grid::giveVoronoiElementVTKOutput(FILE *outputStream)
 {
     //Here should go the code for the Voronoi nodes
 
@@ -10863,7 +9421,7 @@ Grid :: giveVoronoiElementVTKOutput(FILE *outputStream)
     fprintf(outputStream, "<Points>\n <DataArray type=\"Float64\" NumberOfComponents=\"3\" format=\"ascii\">\n");
 
     int nodeCounter = 0;
-    oofem::IntArray nodeConverter( this->giveNumberOfVoronoiVertices() );
+    oofem::IntArray nodeConverter(this->giveNumberOfVoronoiVertices() );
     for ( int inode = 0; inode < this->giveNumberOfVoronoiVertices(); inode++ ) {
         if ( this->giveVoronoiVertex(inode + 1)->giveOutsideFlag() == 0 || this->giveVoronoiVertex(inode + 1)->giveOutsideFlag() == 1 || this->giveVoronoiVertex(inode + 1)->giveOutsideFlag() == 2 ) {
             nodeCounter++;
@@ -10871,7 +9429,7 @@ Grid :: giveVoronoiElementVTKOutput(FILE *outputStream)
             voronoiVertex = this->giveVoronoiVertex(inode + 1);
             voronoiVertex->giveCoordinates(coords);
             for ( int i = 1; i <= 3; i++ ) {
-                fprintf( outputStream, "%e ", coords.at(i) );
+                fprintf(outputStream, "%e ", coords.at(i) );
             }
             fprintf(outputStream, "\n");
         }
@@ -10885,18 +9443,18 @@ Grid :: giveVoronoiElementVTKOutput(FILE *outputStream)
     //
 
     for ( int i = 0; i < this->giveNumberOfVoronoiLines(); i++ ) {
-        if ( this->giveVoronoiLine(i + 1)->giveOutsideFlag() == 0 ||  this->giveVoronoiLine(i + 1)->giveOutsideFlag() == 2 ||this->giveVoronoiLine(i + 1)->giveOutsideFlag() == 3 ) {
+        if ( this->giveVoronoiLine(i + 1)->giveOutsideFlag() == 0 ||  this->giveVoronoiLine(i + 1)->giveOutsideFlag() == 2 || this->giveVoronoiLine(i + 1)->giveOutsideFlag() == 3 ) {
             voronoiLine = this->giveVoronoiLine(i + 1);
             voronoiLine->giveLocalVertices(nodes);
             voronoiLine->giveCrossSectionVertices(crossSectionNodes);
-            fprintf(outputStream, "%d %d ",  nodeConverter.at( nodes.at(1) ) - 1, nodeConverter.at( nodes.at(2) ) - 1);
+            fprintf(outputStream, "%d %d ",  nodeConverter.at(nodes.at(1) ) - 1, nodeConverter.at(nodes.at(2) ) - 1);
         }
     }
     fprintf(outputStream, "</DataArray>\n");
     fprintf(outputStream, " <DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\"> ");
 
     for ( int i = 0; i <  numberOfLines; i++ ) {
-        fprintf( outputStream, "%d ", 2 * ( i + 1 ) );
+        fprintf(outputStream, "%d ", 2 * ( i + 1 ) );
     }
 
     fprintf(outputStream, "</DataArray>\n");
@@ -10915,81 +9473,14 @@ Grid :: giveVoronoiElementVTKOutput(FILE *outputStream)
 
 
 void
-Grid :: giveDelaunayCrossSectionVTKOutput(FILE *outputStream)
+Grid::giveDelaunayCrossSectionVTKOutput(FILE *outputStream)
 {
-    // //Here should go the code for the Voronoi nodes
-
-    // int numberOfNodes, numberOfLines;
-    // oofem::FloatArray coords;
-    // oofem::IntArray nodes;
-    // oofem::IntArray crossSectionNodes;
-    // Vertex *delaunayVertex;
-    // Line *delaunayLine;
-
-    // FILE *lengthFile;
-
-
-    // fprintf(outputStream, "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");
-    // fprintf(outputStream, "<UnstructuredGrid>\n");
-
-    // numberOfNodes = this->giveNumberOfDelaunayVertices();
-    // numberOfLines = this->giveNumberOfDelaunayLines();
-
-    // fprintf(outputStream, "<Piece NumberOfPoints=\"%d\" NumberOfCells=\"%d\">\n", numberOfNodes, numberOfDelaunayLinesMechanical);
-    // // export nodes in region as vtk vertices
-
-    // fprintf(outputStream, "<Points>\n <DataArray type=\"Float64\" NumberOfComponents=\"3\" format=\"ascii\"> ");
-
-
-    // for ( int inode = 0; inode < numberOfNodes; inode++ ) {
-    //     delaunayVertex = this->giveDelaunayVertex(inode + 1);
-    //     delaunayVertex->giveCoordinates(coords);
-    //     for ( int i = 1; i <= 3; i++ ) {
-    //         fprintf( outputStream, "%e ", coords.at(i) );
-    //     }
-    // }
-
-    // fprintf(outputStream, "</DataArray>\n</Points>\n");
-
-    // fprintf(outputStream, "<Cells>\n");
-    // // output the connectivity data
-    // fprintf(outputStream, " <DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\"> ");
-    // //
-
-    // for ( int i = 0; i < numberOfLines; i++ ) {
-    //     delaunayLine = this->giveDelaunayLine(i + 1);
-    //     delaunayLine->giveLocalVertices(nodes);
-    //     delaunayLine->giveCrossSectionVertices(crossSectionNodes);
-
-    //     std :: cout << this->giveDelaunayLine(i + 1)->giveMechanicalLineFlag() << '\n';
-    //     if ( delaunayLine->giveMechanicalLineFlag() == 1 ) {
-    //         fprintf(outputStream, " %d %d ", nodes.at(1) - 1, nodes.at(2) - 1);
-    //     }
-    // }
-    // fprintf(outputStream, "</DataArray>\n");
-    // fprintf(outputStream, " <DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\"> ");
-
-    // for ( int i = 0; i < numberOfDelaunayLinesMechanical; i++ ) {
-    //     fprintf( outputStream, "%d ", 2 * ( i + 1 ) );
-    // }
-
-    // fprintf(outputStream, "</DataArray>\n");
-    // fprintf(outputStream, " <DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\"> ");
-    // for ( int cell = 0; cell < numberOfDelaunayLinesMechanical; cell++ ) {
-    //     fprintf(outputStream, "%d ", 3);
-    // }
-    // fprintf(outputStream, "</DataArray>\n");
-    // fprintf(outputStream, "</Cells>\n");
-    // fprintf(outputStream, "</Piece>\n");
-    // fprintf(outputStream, "</UnstructuredGrid>\n</VTKFile>");
-
-    // return;
 }
 
 
 
 void
-Grid :: createRankTable(oofem::IntArray &rankVector, oofem::FloatArray &randomNumbers) {
+Grid::createRankTable(oofem::IntArray &rankVector, oofem::FloatArray &randomNumbers) {
     int size = randomNumbers.giveSize();
     rankVector.resize(size);
 
@@ -11033,7 +9524,7 @@ Grid :: createRankTable(oofem::IntArray &rankVector, oofem::FloatArray &randomNu
 
 
 void
-Grid :: sortRandomNumbers(oofem::FloatArray &sortedRandomNumbers, oofem::FloatArray &randomNumbers) {
+Grid::sortRandomNumbers(oofem::FloatArray &sortedRandomNumbers, oofem::FloatArray &randomNumbers) {
     int size = randomNumbers.giveSize();
     sortedRandomNumbers.resize(size);
     double *random = new double [ size ];
@@ -11076,11 +9567,11 @@ Grid :: sortRandomNumbers(oofem::FloatArray &sortedRandomNumbers, oofem::FloatAr
 
 
 
-double Grid :: ran1(long *idum)
+double Grid::ran1(long *idum)
 {
     long k;
     static long iy = 0;
-    static long iv [ NTAB ];
+    static long iv[ NTAB ];
     float temp;
 
     if ( * idum <= 0 || !iy ) {
@@ -11122,7 +9613,7 @@ double Grid :: ran1(long *idum)
 }
 
 
-double Grid :: normalCdfInverse(double cdf, double a, double b)
+double Grid::normalCdfInverse(double cdf, double a, double b)
 {
     double x;
     double x2;
@@ -11137,21 +9628,21 @@ double Grid :: normalCdfInverse(double cdf, double a, double b)
     return x;
 }
 
-double Grid :: normal01CdfInverse(double p)
+double Grid::normal01CdfInverse(double p)
 {
-    double a [ 8 ] = {
+    double a[ 8 ] = {
         3.3871328727963666080,     1.3314166789178437745e+2,
         1.9715909503065514427e+3,  1.3731693765509461125e+4,
         4.5921953931549871457e+4,  6.7265770927008700853e+4,
         3.3430575583588128105e+4,  2.5090809287301226727e+3
     };
-    double b [ 8 ] = {
+    double b[ 8 ] = {
         1.0,                       4.2313330701600911252e+1,
         6.8718700749205790830e+2,  5.3941960214247511077e+3,
         2.1213794301586595867e+4,  3.9307895800092710610e+4,
         2.8729085735721942674e+4,  5.2264952788528545610e+3
     };
-    double c [ 8 ] = {
+    double c[ 8 ] = {
         1.42343711074968357734,     4.63033784615654529590,
         5.76949722146069140550,     3.64784832476320460504,
         1.27045825245236838258,     2.41780725177450611770e-1,
@@ -11159,19 +9650,19 @@ double Grid :: normal01CdfInverse(double p)
     };
     double const1 = 0.180625;
     double const2 = 1.6;
-    double d [ 8 ] = {
+    double d[ 8 ] = {
         1.0,                        2.05319162663775882187,
         1.67638483018380384940,     6.89767334985100004550e-1,
         1.48103976427480074590e-1,  1.51986665636164571966e-2,
         5.47593808499534494600e-4,  1.05075007164441684324e-9
     };
-    double e [ 8 ] = {
+    double e[ 8 ] = {
         6.65790464350110377720,     5.46378491116411436990,
         1.78482653991729133580,     2.96560571828504891230e-1,
         2.65321895265761230930e-2,  1.24266094738807843860e-3,
         2.71155556874348757815e-5,  2.01033439929228813265e-7
     };
-    double f [ 8 ] = {
+    double f[ 8 ] = {
         1.0,                        5.99832206555887937690e-1,
         1.36929880922735805310e-1,  1.48753612908506148525e-2,
         7.86869131145613259100e-4,  1.84631831751005468180e-5,
@@ -11211,7 +9702,7 @@ double Grid :: normal01CdfInverse(double p)
             exit;
         }
 
-        r = sqrt( -log(r) );
+        r = sqrt(-log(r) );
         if ( r <= split2 ) {
             r = r - const2;
             value = dpolyValue(8, c, r) / dpolyValue(8, d, r);
@@ -11229,7 +9720,7 @@ double Grid :: normal01CdfInverse(double p)
 }
 
 
-double Grid :: dpolyValue(int n, double a[], double x)
+double Grid::dpolyValue(int n, double a[], double x)
 {
     int i;
     double value;
@@ -11246,7 +9737,7 @@ double Grid :: dpolyValue(int n, double a[], double x)
 #define M 7
 #define NSTACK 50
 
-void Grid :: indexx(int n, double arr[], int indx[])
+void Grid::indexx(int n, double arr[], int indx[])
 {
     int i, indxt, ir = n, itemp, j, k, l = 1;
     int jstack = 0, *istack;
@@ -11308,7 +9799,7 @@ void Grid :: indexx(int n, double arr[], int indx[])
             jstack += 2;
             if ( jstack > NSTACK ) {
                 printf("Error in indexx: NSTACK too small in indexx.");
-                std :: exit(1);
+                std::exit(1);
             }
             if ( ir - i + 1 >= j - l ) {
                 istack [ jstack ] = ir;
@@ -11328,247 +9819,180 @@ void Grid :: indexx(int n, double arr[], int indx[])
 
 #define NR_END 1
 #define FREE_ARG char *
-int *Grid :: ivector(int nl, int nh)
+int *Grid::ivector(int nl, int nh)
 {
     int *v;
 
     v = ( int * ) malloc( ( size_t ) ( ( nh - nl + 1 + NR_END ) * sizeof( int ) ) );
     if ( !v ) {
         printf("allocation failure in ivector()");
-        std :: exit(1);
+        std::exit(1);
     }
     return v - nl + NR_END;
 }
 
-void Grid :: free_ivector(int *v, int nl, int nh)
+void Grid::free_ivector(int *v, int nl, int nh)
 {
     free( ( FREE_ARG ) ( v + nl - NR_END ) );
 }
 
 
 
-void Grid :: giveVtkOutput2(const std::string& fileName, int nb_of_mt )
+void Grid::giveVtkOutput2(const std::string &fileName, int nb_of_mt)
 {
     FILE *outputStream;
-    
-    /* if ( (this->periodicityFlag.at(1) != 1)  && (this->periodicityFlag.at(2) != 1) && (this->periodicityFlag.at(3) != 1)) { */
-    /*     char fileName1 [ MAX_FILENAME_LENGTH + 10 ]; */
-    /*     strcpy(fileName1, fileName); */
-    /*     strcat(fileName1, ".voronoicell.vtu"); */
-    /*     if ( ( outputStream = fopen(fileName1, "w") ) == NULL ) { */
-    /*         converter::errorf("Can't open output file %s", fileName1); */
-    /*     } */
-    /*     giveVoronoiCellVTKOutput(outputStream); */
-    /* } */
 
-    if (periodicityFlag.at(1) != 1 &&
-	periodicityFlag.at(2) != 1 &&
-	periodicityFlag.at(3) != 1)
-      {
-	const std::string fname = fileName + ".voronoicell.vtu";
-	if (FILE* f = converter::fopen_or_die(fname, "w")) {
-	  giveVoronoiCellVTKOutput(f);
-	  std::fclose(f);
-	}
-      }
-    
+
+    if ( periodicityFlag.at(1) != 1 &&
+         periodicityFlag.at(2) != 1 &&
+         periodicityFlag.at(3) != 1 ) {
+        const std::string fname = fileName + ".voronoicell.vtu";
+        if ( FILE *f = converter::fopen_or_die(fname, "w") ) {
+            giveVoronoiCellVTKOutput(f);
+            std::fclose(f);
+        }
+    }
+
 
     for (int imat = 1; imat <= nb_of_mt; ++imat) {
-      const std::string fname =
-        fileName + ".delaunayelement.mat" + std::to_string(imat) + ".vtu";
-      
-      if (FILE* f = converter::fopen_or_die(fname, "w")) {
-        giveDelaunayElementVTKOutput2(f, imat);
-        std::fclose(f);
-      }
-    }
-    
-    /* // one file for each kind of delaunayLine */
-    /* for ( int imat = 1; imat <=nb_of_mt ; imat++ ) { */
-    /*     char fileName2 [ MAX_FILENAME_LENGTH + 10 ]; */
-    /*     strcpy(fileName2, fileName); */
-    /*     char chaine[100]; */
-    /*     sprintf(chaine,".delaunayelement.mat%d.vtu",imat); */
-    /*     strcat(fileName2, chaine); */
-    /*     if ( ( outputStream = fopen(fileName2, "w") ) == NULL ) { */
-    /*         printf("Can't open output file %s", fileName2); */
-    /*         exit(1); */
-    /*     } */
-    /*     giveDelaunayElementVTKOutput2(outputStream,imat); */
-    /* } */
+        const std::string fname =
+            fileName + ".delaunayelement.mat" + std::to_string(imat) + ".vtu";
 
+        if ( FILE *f = converter::fopen_or_die(fname, "w") ) {
+            giveDelaunayElementVTKOutput2(f, imat);
+            std::fclose(f);
+        }
+    }
 
     // Fibre beam elements
     const std::string fname2 = fileName + ".fibre.beamElement.vtu";
-    if (FILE* f = converter::fopen_or_die(fname2, "w")) {
+    if ( FILE *f = converter::fopen_or_die(fname2, "w") ) {
         giveBeamElementVTKOutput(f);
         std::fclose(f);
     }
 
     // Fibre link elements
     const std::string fname3 = fileName + ".fibre.linkElement.vtu";
-    if (FILE* f = converter::fopen_or_die(fname3, "w")) {
+    if ( FILE *f = converter::fopen_or_die(fname3, "w") ) {
         giveLinkElementVTKOutput(f);
         std::fclose(f);
     }
 
     // Voronoi elements
     const std::string fname4 = fileName + ".voronoielement.vtu";
-    if (FILE* f = converter::fopen_or_die(fname4, "w")) {
+    if ( FILE *f = converter::fopen_or_die(fname4, "w") ) {
         giveVoronoiElementVTKOutput(f);
         std::fclose(f);
     }
-    
 
- /* char fileName2 [ MAX_FILENAME_LENGTH + 10 ]; */
- /*    strcpy(fileName2, fileName); */
- /*    char chaine[100]; */
- /*    sprintf(chaine,".fibre.beamElement.vtu"); */
- /*    strcat(fileName2, chaine); */
- /*    if ( ( outputStream = fopen(fileName2, "w") ) == NULL ) { */
- /*        printf("Can't open output file %s", fileName2); */
- /*        exit(1); */
- /*    } */
- /*    giveBeamElementVTKOutput(outputStream); */
-    
- /*    char fileName3 [ MAX_FILENAME_LENGTH + 10 ]; */
- /*    strcpy(fileName3, fileName); */
- /*    char chaine2[100]; */
- /*    sprintf(chaine2,".fibre.linkElement.vtu"); */
- /*    strcat(fileName3, chaine2); */
- /*    if ( ( outputStream = fopen(fileName3, "w") ) == NULL ) { */
- /*        printf("Can't open output file %s", fileName3); */
- /*        exit(1); */
- /*    } */
- /*    giveLinkElementVTKOutput(outputStream); */
 
- /*    char fileName4 [ MAX_FILENAME_LENGTH + 10 ]; */
- /*    strcpy(fileName4, fileName); */
- /*    strcat(fileName4, ".voronoielement.vtu"); */
- /*    if ( ( outputStream = fopen(fileName4, "w") ) == NULL ) { */
- /*        printf("Can't open output file %s", fileName4); */
- /*        exit(1); */
- /*    } */
- /*    giveVoronoiElementVTKOutput(outputStream); */
-    
-    
     return;
 }
 
 
 
-void Grid :: giveVtkOutputTetra(const std::string& fileName, int nb_of_mt )
+void Grid::giveVtkOutputTetra(const std::string &fileName, int nb_of_mt)
 {
-  //    FILE *outputStream;
+    //    FILE *outputStream;
 
     const std::string fname = fileName + ".tetraElement.vtu";
-    if (FILE* f = converter::fopen_or_die(fname, "w")) {
+    if ( FILE *f = converter::fopen_or_die(fname, "w") ) {
         giveTetraElementVTKOutput(f);
         std::fclose(f);
     }
-    
-    /* strcpy(fileName, fileName); */
-    /* strcat(fileName, ".tetraElement.vtu"); */
-    /* if ( ( outputStream = fopen(fileName, "w") ) == NULL ) { */
-    /*     printf("Can't open output file %s", fileName); */
-    /*     exit(1); */
-    /* } */
-    /* giveTetraElementVTKOutput(outputStream); */
-    
+
     return;
 }
 
 
 
 void
-Grid :: giveDelaunayElementVTKOutput2(FILE *outputStream, int nb_mtx)
+Grid::giveDelaunayElementVTKOutput2(FILE *outputStream, int nb_mtx)
 {
     //Here should go the code for the Voronoi nodes
-    
+
     //This should be extended to write out also material properties.
     //In this way, it would be possible to show the mesh with projected properties without having to run any analyses.
-    
+
     int numberOfNodes, numberOfLines;
     oofem::FloatArray coords;
     oofem::IntArray nodes;
     oofem::IntArray crossSectionNodes;
     Vertex *delaunayVertex;
     Line *delaunayLine;
-    
+
     FILE *lengthFile;
-    
-    
+
+
     fprintf(outputStream, "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");
     fprintf(outputStream, "<UnstructuredGrid>\n");
-    
+
     numberOfNodes = 0;
-    
+
     //we eventually keep all nodes so as to display lines which cross boundaries
-    
-    
+
+
     for ( int inode = 0; inode < this->giveNumberOfDelaunayVertices(); inode++ ) {
         //if ( this->giveDelaunayVertex(inode + 1)->giveOutsideFlag() == 0 || this->giveDelaunayVertex(inode + 1)->giveOutsideFlag() == 2 ) {
-            numberOfNodes++;
-       // }
+        numberOfNodes++;
+        // }
     }
-    
+
     numberOfLines = 0;
     for ( int iline = 0; iline < this->giveNumberOfDelaunayLines(); iline++ ) {
         if ( this->giveDelaunayLine(iline + 1)->giveOutsideFlag() != 1 ) {
-            if (this->giveDelaunayLine(iline + 1)->giveMaterial() == nb_mtx)
-            {
+            if ( this->giveDelaunayLine(iline + 1)->giveMaterial() == nb_mtx ) {
                 numberOfLines++;
             }
-            
         }
     }
-    
-    
+
+
     fprintf(outputStream, "<Piece NumberOfPoints=\"%d\" NumberOfCells=\"%d\">\n", numberOfNodes, numberOfLines);
     // export nodes in region as vtk vertices
-    
+
     fprintf(outputStream, "<Points>\n <DataArray type=\"Float64\" NumberOfComponents=\"3\" format=\"ascii\"> \n");
-    
+
     // new numeratation of nodes
-    oofem::IntArray nodeConverter( this->giveNumberOfDelaunayVertices() );
+    oofem::IntArray nodeConverter(this->giveNumberOfDelaunayVertices() );
     int newNodeNumber = 0;
     for ( int inode = 0; inode < this->giveNumberOfDelaunayVertices(); inode++ ) {
         //if ( this->giveDelaunayVertex(inode + 1)->giveOutsideFlag() == 0 || this->giveDelaunayVertex(inode + 1)->giveOutsideFlag() == 2 ) {
-            newNodeNumber++;
-            nodeConverter.at(inode + 1) = newNodeNumber;
-            delaunayVertex = this->giveDelaunayVertex(inode + 1);
-            delaunayVertex->giveCoordinates(coords);
-            for ( int i = 1; i <= 3; i++ ) {
-                fprintf( outputStream, "%e ", coords.at(i) );
-            }
-            fprintf(outputStream, "\n");
+        newNodeNumber++;
+        nodeConverter.at(inode + 1) = newNodeNumber;
+        delaunayVertex = this->giveDelaunayVertex(inode + 1);
+        delaunayVertex->giveCoordinates(coords);
+        for ( int i = 1; i <= 3; i++ ) {
+            fprintf(outputStream, "%e ", coords.at(i) );
+        }
+        fprintf(outputStream, "\n");
         //}
     }
-    
+
     fprintf(outputStream, "</DataArray>\n</Points>\n");
-    
+
     fprintf(outputStream, "<Cells>\n");
     // output the connectivity data
     fprintf(outputStream, "<DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">\n");
     //
-    
+
     for ( int i = 0; i <  this->giveNumberOfDelaunayLines(); i++ ) {
         if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() != 1 ) {
-            if ((this->giveDelaunayLine(i + 1)->giveMaterial())== nb_mtx) {
-            delaunayLine = this->giveDelaunayLine(i + 1);
-            delaunayLine->giveLocalVertices(nodes);
-            delaunayLine->giveCrossSectionVertices(crossSectionNodes);
-            fprintf(outputStream, "%d %d ", nodeConverter.at( nodes.at(1) ) - 1, nodeConverter.at( nodes.at(2) ) - 1);
+            if ( ( this->giveDelaunayLine(i + 1)->giveMaterial() ) == nb_mtx ) {
+                delaunayLine = this->giveDelaunayLine(i + 1);
+                delaunayLine->giveLocalVertices(nodes);
+                delaunayLine->giveCrossSectionVertices(crossSectionNodes);
+                fprintf(outputStream, "%d %d ", nodeConverter.at(nodes.at(1) ) - 1, nodeConverter.at(nodes.at(2) ) - 1);
             }
         }
     }
     fprintf(outputStream, "</DataArray>\n");
     fprintf(outputStream, "<DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\">\n");
-    
+
     for ( int i = 0; i < numberOfLines; i++ ) {
-        fprintf( outputStream, "%d ", 2 * ( i + 1 ) );
+        fprintf(outputStream, "%d ", 2 * ( i + 1 ) );
     }
-    
+
     fprintf(outputStream, "</DataArray>\n");
     fprintf(outputStream, "<DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\"> ");
     for ( int cell = 0; cell < numberOfLines; cell++ ) {
@@ -11578,31 +10002,28 @@ Grid :: giveDelaunayElementVTKOutput2(FILE *outputStream, int nb_mtx)
     fprintf(outputStream, "</Cells>\n");
     fprintf(outputStream, "</Piece>\n");
     fprintf(outputStream, "</UnstructuredGrid>\n</VTKFile>");
-    
+
     return;
 }
 
 // visualise lattice beams and lattice links
 
 void
-Grid :: giveBeamElementVTKOutput(FILE *outputStream)
+Grid::giveBeamElementVTKOutput(FILE *outputStream)
 { // give VTK output for fibre (part I : only beam elements)
-    
     int numberOfNodes, numberOfLines;
     oofem::FloatArray coords;
     oofem::IntArray nodes;
     oofem::IntArray crossSectionNodes;
     Vertex *delaunayVertex;
     Line *delaunayLine;
-    
-    FILE *lengthFile;
-    
-    
+
+
     fprintf(outputStream, "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");
     fprintf(outputStream, "<UnstructuredGrid>\n");
-    
-    numberOfNodes =this->giveNumberOfReinforcementNode();
-    
+
+    numberOfNodes = this->giveNumberOfReinforcementNode();
+
     //This needs to be changed for periodic cells. If elements cross the boundary then the nodes should be included as well.
     //Thus, it needs to be written differently to allow for the case of crossing nodes
     //Also, the structure should be changed so that info on material or cross-sections could be written which originate from underlying meso-structure.
@@ -11610,56 +10031,53 @@ Grid :: giveBeamElementVTKOutput(FILE *outputStream)
     numberOfLines = 0;
     for ( int iline = 0; iline < this->giveNumberOfLatticeBeams(); iline++ ) {
         if ( this->giveLatticeBeam(iline + 1)->giveOutsideFlag() != 1 ) {
-
-                numberOfLines++;
-            
+            numberOfLines++;
         }
     }
-    
-    
+
+
     fprintf(outputStream, "<Piece NumberOfPoints=\"%d\" NumberOfCells=\"%d\">\n", numberOfNodes, numberOfLines);
     // export nodes in region as vtk vertices
-    
+
     fprintf(outputStream, "<Points>\n <DataArray type=\"Float64\" NumberOfComponents=\"3\" format=\"ascii\"> \n");
-    
-    // writing of nodes    
+
+    // writing of nodes
 
     for ( int inode = 0; inode < this->giveNumberOfReinforcementNode(); inode++ ) {
-        
         delaunayVertex = this->giveReinforcementNode(inode + 1);
         delaunayVertex->giveCoordinates(coords);
         for ( int i = 1; i <= 3; i++ ) {
-            fprintf( outputStream, "%e ", coords.at(i) );
+            fprintf(outputStream, "%e ", coords.at(i) );
         }
         fprintf(outputStream, "\n");
     }
 
 
     fprintf(outputStream, "</DataArray>\n</Points>\n");
-    
+
     fprintf(outputStream, "<Cells>\n");
     // output the connectivity data
     fprintf(outputStream, "<DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">\n");
     //
-    
-    printf("\n nb of lattice beam= %d \n",this->giveNumberOfLatticeBeams());////
-    
+
+    printf("\n nb of lattice beam= %d \n", this->giveNumberOfLatticeBeams() );////
+
     for ( int i = 0; i <  this->giveNumberOfLatticeBeams(); i++ ) {
-                if ( this->giveLatticeBeam(i + 1)->giveOutsideFlag() != 1) {
-                            delaunayLine = this->giveLatticeBeam(i + 1);
-                delaunayLine->giveLocalVertices(nodes);
-                               fprintf(outputStream, "%d %d ",
-                                       +  nodes.at(1) -1 ,
-                                      +nodes.at(2)  -1);
+        if ( this->giveLatticeBeam(i + 1)->giveOutsideFlag() != 1 ) {
+            delaunayLine = this->giveLatticeBeam(i + 1);
+            delaunayLine->giveLocalVertices(nodes);
+            fprintf(outputStream, "%d %d ",
+                    +nodes.at(1) - 1,
+                    +nodes.at(2)  - 1);
         }
     }
     fprintf(outputStream, "</DataArray>\n");
     fprintf(outputStream, "<DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\">\n");
-    
+
     for ( int i = 0; i < numberOfLines; i++ ) {
-        fprintf( outputStream, "%d ", 2 * ( i + 1 ) );
+        fprintf(outputStream, "%d ", 2 * ( i + 1 ) );
     }
-    
+
     fprintf(outputStream, "</DataArray>\n");
     fprintf(outputStream, "<DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\"> ");
     for ( int cell = 0; cell < numberOfLines; cell++ ) {
@@ -11669,98 +10087,91 @@ Grid :: giveBeamElementVTKOutput(FILE *outputStream)
     fprintf(outputStream, "</Cells>\n");
     fprintf(outputStream, "</Piece>\n");
     fprintf(outputStream, "</UnstructuredGrid>\n</VTKFile>");
-    
+
     return;
 }
 
 void
-Grid :: giveLinkElementVTKOutput(FILE *outputStream)
+Grid::giveLinkElementVTKOutput(FILE *outputStream)
 { // give VTK output for fibre (part I : only beam elements)
-    
     int numberOfNodes, numberOfLines;
     oofem::FloatArray coords;
     oofem::IntArray nodes;
     oofem::IntArray crossSectionNodes;
     Vertex *delaunayVertex;
     Line *delaunayLine;
-    
-    FILE *lengthFile;
-    
-    
+
+
     fprintf(outputStream, "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");
     fprintf(outputStream, "<UnstructuredGrid>\n");
-    
-    numberOfNodes = this->giveNumberOfDelaunayVertices()+this->giveNumberOfReinforcementNode();
-    
+
+    numberOfNodes = this->giveNumberOfDelaunayVertices() + this->giveNumberOfReinforcementNode();
+
     //This needs to be changed for periodic cells. If elements cross the boundary then the nodes should be included as well.
     //Thus, it needs to be written differently to allow for the case of crossing nodes
     //Also, the structure should be changed so that info on material or cross-sections could be written which originate from underlying meso-structure.
-    
+
     numberOfLines = 0;
     for ( int iline = 0; iline < this->giveNumberOfLatticeLinks(); iline++ ) {
         if ( this->giveLatticeLink(iline + 1)->giveOutsideFlag() != 1 ) {
-            
             numberOfLines++;
-            
         }
     }
-    
-    
+
+
     fprintf(outputStream, "<Piece NumberOfPoints=\"%d\" NumberOfCells=\"%d\">\n", numberOfNodes, numberOfLines);
     // export nodes in region as vtk vertices
-    
+
     fprintf(outputStream, "<Points>\n <DataArray type=\"Float64\" NumberOfComponents=\"3\" format=\"ascii\"> \n");
-    
+
     // writing of nodes
-    
-    
+
+
     for ( int inode = 0; inode < this->giveNumberOfDelaunayVertices(); inode++ ) {
-        
         delaunayVertex = this->giveDelaunayVertex(inode + 1);
         delaunayVertex->giveCoordinates(coords);
         for ( int i = 1; i <= 3; i++ ) {
-            fprintf( outputStream, "%e ", coords.at(i) );
+            fprintf(outputStream, "%e ", coords.at(i) );
         }
         fprintf(outputStream, "\n");
     }
-    
-    
+
+
     for ( int inode = 0; inode < this->giveNumberOfReinforcementNode(); inode++ ) {
-        
         delaunayVertex = this->giveReinforcementNode(inode + 1);
         delaunayVertex->giveCoordinates(coords);
         for ( int i = 1; i <= 3; i++ ) {
-            fprintf( outputStream, "%e ", coords.at(i) );
+            fprintf(outputStream, "%e ", coords.at(i) );
         }
         fprintf(outputStream, "\n");
     }
-    
-    
+
+
     fprintf(outputStream, "</DataArray>\n</Points>\n");
-    
+
     fprintf(outputStream, "<Cells>\n");
     // output the connectivity data
     fprintf(outputStream, "<DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">\n");
     //
-    
-    printf("\n nb of lattice links = %d \n",this->giveNumberOfLatticeLinks());////
-    
+
+    printf("\n nb of lattice links = %d \n", this->giveNumberOfLatticeLinks() );////
+
     for ( int i = 0; i <  this->giveNumberOfLatticeLinks(); i++ ) {
-        if ( this->giveLatticeLink(i + 1)->giveOutsideFlag() != 1) {
+        if ( this->giveLatticeLink(i + 1)->giveOutsideFlag() != 1 ) {
             delaunayLine = this->giveLatticeLink(i + 1);
             delaunayLine->giveLocalVertices(nodes);
             fprintf(outputStream, "%d %d ",
-                    this->giveNumberOfDelaunayVertices()+  nodes.at(1) -1 ,
-                    nodes.at(2)  -1);
+                    this->giveNumberOfDelaunayVertices() +  nodes.at(1) - 1,
+                    nodes.at(2)  - 1);
         }
     }
     fprintf(outputStream, "</DataArray>\n");
     fprintf(outputStream, "<DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\">\n");
-    
+
     for ( int i = 0; i < numberOfLines; i++ ) {
-        fprintf( outputStream, "%d ", 2 * ( i + 1 ) );
+        fprintf(outputStream, "%d ", 2 * ( i + 1 ) );
     }
-    
+
     fprintf(outputStream, "</DataArray>\n");
     fprintf(outputStream, "<DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\"> ");
     for ( int cell = 0; cell < numberOfLines; cell++ ) {
@@ -11770,56 +10181,55 @@ Grid :: giveLinkElementVTKOutput(FILE *outputStream)
     fprintf(outputStream, "</Cells>\n");
     fprintf(outputStream, "</Piece>\n");
     fprintf(outputStream, "</UnstructuredGrid>\n</VTKFile>");
-    
+
     return;
 }
 
-oofem::IntArray Grid::findDelaunayNodesWithinBox(oofem::FloatArray coord,double TOL)
+oofem::IntArray Grid::findDelaunayNodesWithinBox(oofem::FloatArray coord, double TOL)
 { // function created to allow other objects to use the localizer
-  nodeContainerType nodeSet;
-  delaunayLocalizer->giveAllNodesWithinBox(nodeSet, coord, TOL, 0);
-  
-  oofem::IntArray nodeSetNumbers(nodeSet.size());
-  for (int i=1;i<1+nodeSetNumbers.giveSize();i++)
-    {
-      nodeSetNumbers.at(i)= * nodeSet.begin();
-      nodeSet.pop_front();
+    nodeContainerType nodeSet;
+    delaunayLocalizer->giveAllNodesWithinBox(nodeSet, coord, TOL, 0);
+
+    oofem::IntArray nodeSetNumbers(nodeSet.size() );
+    for (int i = 1; i < 1 + nodeSetNumbers.giveSize(); i++) {
+        nodeSetNumbers.at(i) = * nodeSet.begin();
+        nodeSet.pop_front();
     }
-  
-  return nodeSetNumbers;
+
+    return nodeSetNumbers;
 }
 
 
 void Grid::giveTetrahedronBarycentres(oofem::FloatArray &centres, oofem::FloatArray &tetraCoords, oofem::FloatArray &pointCoords)
 {
-  double *tetra = new double [ 12 ];
-  
-  for(int i=0; i<12; i++){
-    tetra[i] = tetraCoords.at(i+1);
-  }
-  
-  double *p = new double [ 3 ];
-  for(int i=0; i<3; i++){
-    p[i] = pointCoords.at(i+1);
-  }
+    double *tetra = new double [ 12 ];
 
-  double *c = new double [ 3 ];
-  c = tetrahedron_barycentric(tetra,p);
+    for (int i = 0; i < 12; i++) {
+        tetra [ i ] = tetraCoords.at(i + 1);
+    }
 
- for(int i=0; i<3; i++){
-   centres.at(i+1) = c[i];
-  }
-  
- delete[] tetra;
- delete[] p;
- delete[] c;
-  
- return;  
+    double *p = new double [ 3 ];
+    for (int i = 0; i < 3; i++) {
+        p [ i ] = pointCoords.at(i + 1);
+    }
+
+    double *c = new double [ 3 ];
+    c = tetrahedron_barycentric(tetra, p);
+
+    for (int i = 0; i < 3; i++) {
+        centres.at(i + 1) = c [ i ];
+    }
+
+    delete[] tetra;
+    delete[] p;
+    delete[] c;
+
+    return;
 }
 
 //****************************************************************************80
 
-double* Grid::tetrahedron_barycentric ( double tetra[3*4], double p[3] )
+double * Grid::tetrahedron_barycentric(double tetra[ 3 * 4 ], double p[ 3 ])
 
 //****************************************************************************80
 //
@@ -11836,13 +10246,13 @@ double* Grid::tetrahedron_barycentric ( double tetra[3*4], double p[3] )
 //    within the tetrahedron.
 //
 //    The barycentric coordinate of point X related to vertex A can be
-//    interpreted as the ratio of the volume of the tetrahedron with 
-//    vertex A replaced by vertex X to the volume of the original 
+//    interpreted as the ratio of the volume of the tetrahedron with
+//    vertex A replaced by vertex X to the volume of the original
 //    tetrahedron.
 //
 //  Licensing:
 //
-//    This code is distributed under the GNU LGPL license. 
+//    This code is distributed under the GNU LGPL license.
 //
 //  Modified:
 //
@@ -11865,63 +10275,63 @@ double* Grid::tetrahedron_barycentric ( double tetra[3*4], double p[3] )
 # define N 3
 # define RHS_NUM 1
 
-  double a[N*(N+RHS_NUM)];
-  double *c;
-  int info;
-//
-//  Set up the linear system
-//
-//    ( X2-X1  X3-X1  X4-X1 ) C1    X - X1
-//    ( Y2-Y1  Y3-Y1  Y4-Y1 ) C2  = Y - Y1
-//    ( Z2-Z1  Z3-Z1  Z4-Z1 ) C3    Z - Z1
-//
-//  which is satisfied by the barycentric coordinates.
-//
+    double a[ N * ( N + RHS_NUM ) ];
+    double *c;
+    int info;
+    //
+    //  Set up the linear system
+    //
+    //    ( X2-X1  X3-X1  X4-X1 ) C1    X - X1
+    //    ( Y2-Y1  Y3-Y1  Y4-Y1 ) C2  = Y - Y1
+    //    ( Z2-Z1  Z3-Z1  Z4-Z1 ) C3    Z - Z1
+    //
+    //  which is satisfied by the barycentric coordinates.
+    //
 
-  a[0+0*N] = tetra[0+1*3] - tetra[0+0*3];
-  a[1+0*N] = tetra[1+1*3] - tetra[1+0*3];
-  a[2+0*N] = tetra[2+1*3] - tetra[2+0*3];
+    a [ 0 + 0 * N ] = tetra [ 0 + 1 * 3 ] - tetra [ 0 + 0 * 3 ];
+    a [ 1 + 0 * N ] = tetra [ 1 + 1 * 3 ] - tetra [ 1 + 0 * 3 ];
+    a [ 2 + 0 * N ] = tetra [ 2 + 1 * 3 ] - tetra [ 2 + 0 * 3 ];
 
-  a[0+1*N] = tetra[0+2*3] - tetra[0+0*3];
-  a[1+1*N] = tetra[1+2*3] - tetra[1+0*3];
-  a[2+1*N] = tetra[2+2*3] - tetra[2+0*3];
+    a [ 0 + 1 * N ] = tetra [ 0 + 2 * 3 ] - tetra [ 0 + 0 * 3 ];
+    a [ 1 + 1 * N ] = tetra [ 1 + 2 * 3 ] - tetra [ 1 + 0 * 3 ];
+    a [ 2 + 1 * N ] = tetra [ 2 + 2 * 3 ] - tetra [ 2 + 0 * 3 ];
 
-  a[0+2*N] = tetra[0+3*3] - tetra[0+0*3];
-  a[1+2*N] = tetra[1+3*3] - tetra[1+0*3];
-  a[2+2*N] = tetra[2+3*3] - tetra[2+0*3];
+    a [ 0 + 2 * N ] = tetra [ 0 + 3 * 3 ] - tetra [ 0 + 0 * 3 ];
+    a [ 1 + 2 * N ] = tetra [ 1 + 3 * 3 ] - tetra [ 1 + 0 * 3 ];
+    a [ 2 + 2 * N ] = tetra [ 2 + 3 * 3 ] - tetra [ 2 + 0 * 3 ];
 
-  a[0+3*N] = p[0]         - tetra[0+0*3];
-  a[1+3*N] = p[1]         - tetra[1+0*3];
-  a[2+3*N] = p[2]         - tetra[2+0*3];
-//
-//  Solve the linear system.
-//
-  info = r8mat_solve ( N, RHS_NUM, a );
+    a [ 0 + 3 * N ] = p [ 0 ]         - tetra [ 0 + 0 * 3 ];
+    a [ 1 + 3 * N ] = p [ 1 ]         - tetra [ 1 + 0 * 3 ];
+    a [ 2 + 3 * N ] = p [ 2 ]         - tetra [ 2 + 0 * 3 ];
+    //
+    //  Solve the linear system.
+    //
+    info = r8mat_solve(N, RHS_NUM, a);
 
-  if ( info != 0 )
-  {
-    std::cout << "\n";
-    std::cout << "TETRAHEDRON_BARYCENTRIC - Fatal error!\n";
-    std::cout << "  The linear system is singular.\n";
-    std::cout << "  The input data does not form a proper tetrahedron.\n";
-    exit ( 1 );
-  }
+    if ( info != 0 ) {
+        std::cout << "\n";
+        std::cout << "TETRAHEDRON_BARYCENTRIC - Fatal error!\n";
+        std::cout << "  The linear system is singular.\n";
+        std::cout << "  The input data does not form a proper tetrahedron.\n";
+        exit(1);
+    }
 
-  c = new double[4];
+    c = new double [ 4 ];
 
-  c[1] = a[0+3*N];
-  c[2] = a[1+3*N];
-  c[3] = a[2+3*N];
+    c [ 1 ] = a [ 0 + 3 * N ];
+    c [ 2 ] = a [ 1 + 3 * N ];
+    c [ 3 ] = a [ 2 + 3 * N ];
 
-  c[0] = 1.0 - c[1] - c[2] - c[3];
+    c [ 0 ] = 1.0 - c [ 1 ] - c [ 2 ] - c [ 3 ];
 
-  return c;
+    return c;
+
 # undef N
 # undef RHS_NUM
 }
 
 
-int Grid::r8mat_solve ( int n, int rhs_num, double a[] )
+int Grid::r8mat_solve(int n, int rhs_num, double a[])
 
 //****************************************************************************80
 //
@@ -11929,7 +10339,7 @@ int Grid::r8mat_solve ( int n, int rhs_num, double a[] )
 //
 //    R8MAT_SOLVE uses Gauss-Jordan elimination to solve an N by N linear system.
 //
-//  Discussion: 							    
+//  Discussion:
 //
 //    A R8MAT is a doubly dimensioned array of double precision values, which
 //    may be stored as a vector in column-major order.
@@ -11938,7 +10348,7 @@ int Grid::r8mat_solve ( int n, int rhs_num, double a[] )
 //
 //  Licensing:
 //
-//    This code is distributed under the GNU LGPL license. 
+//    This code is distributed under the GNU LGPL license.
 //
 //  Modified:
 //
@@ -11967,70 +10377,61 @@ int Grid::r8mat_solve ( int n, int rhs_num, double a[] )
 //    be computed.
 //
 {
-  double apivot;
-  double factor;
-  int i;
-  int ipivot;
-  int j;
-  int k;
-  double temp;
+    double apivot;
+    double factor;
+    int i;
+    int ipivot;
+    int j;
+    int k;
+    double temp;
 
-  for ( j = 0; j < n; j++ )
-  {
-//
-//  Choose a pivot row.
-//
-    ipivot = j;
-    apivot = a[j+j*n];
+    for ( j = 0; j < n; j++ ) {
+        //
+        //  Choose a pivot row.
+        //
+        ipivot = j;
+        apivot = a [ j + j * n ];
 
-    for ( i = j; i < n; i++ )
-    {
-      if ( fabs ( apivot ) < fabs ( a[i+j*n] ) )
-      {
-        apivot = a[i+j*n];
-        ipivot = i;
-      }
-    }
-
-    if ( apivot == 0.0 )
-    {
-      return j;
-    }
-//
-//  Interchange.
-//
-    for ( i = 0; i < n + rhs_num; i++ )
-    {
-      temp          = a[ipivot+i*n];
-      a[ipivot+i*n] = a[j+i*n];
-      a[j+i*n]      = temp;
-    }
-//
-//  A(J,J) becomes 1.
-//
-    a[j+j*n] = 1.0;
-    for ( k = j; k < n + rhs_num; k++ )
-    {
-      a[j+k*n] = a[j+k*n] / apivot;
-    }
-//
-//  A(I,J) becomes 0.
-//
-    for ( i = 0; i < n; i++ )
-    {
-      if ( i != j )
-      {
-        factor = a[i+j*n];
-        a[i+j*n] = 0.0;
-        for ( k = j; k < n + rhs_num; k++ )
-        {
-          a[i+k*n] = a[i+k*n] - factor * a[j+k*n];
+        for ( i = j; i < n; i++ ) {
+            if ( fabs(apivot) < fabs(a [ i + j * n ]) ) {
+                apivot = a [ i + j * n ];
+                ipivot = i;
+            }
         }
-      }
-    }
-  }
 
-  return 0;
+        if ( apivot == 0.0 ) {
+            return j;
+        }
+        //
+        //  Interchange.
+        //
+        for ( i = 0; i < n + rhs_num; i++ ) {
+            temp          = a [ ipivot + i * n ];
+            a [ ipivot + i * n ] = a [ j + i * n ];
+            a [ j + i * n ]      = temp;
+        }
+        //
+        //  A(J,J) becomes 1.
+        //
+        a [ j + j * n ] = 1.0;
+        for ( k = j; k < n + rhs_num; k++ ) {
+            a [ j + k * n ] = a [ j + k * n ] / apivot;
+        }
+        //
+        //  A(I,J) becomes 0.
+        //
+        for ( i = 0; i < n; i++ ) {
+            if ( i != j ) {
+                factor = a [ i + j * n ];
+                a [ i + j * n ] = 0.0;
+                for ( k = j; k < n + rhs_num; k++ ) {
+                    a [ i + k * n ] = a [ i + k * n ] - factor * a [ j + k * n ];
+                }
+            }
+        }
+    }
+
+    return 0;
 }
 
 //#endif

@@ -11,20 +11,16 @@
 #include "convertertxtinputrecord.h"
 
 #ifndef __MAKEDEPEND
-#include <stdio.h>
+ #include <stdio.h>
 #endif
-
-//class FloatArray;
-//class oofem::IntArray;
 
 class GridComponent
 {
-
 protected:
     /// Array storing nodal coordinates.
     int number;
-    
-    Grid* grid;
+
+    Grid *grid;
 public:
 
     /**
@@ -32,19 +28,13 @@ public:
      * @param n node number in grid aGrid
      * @param aGrid grid to which node beloy
      */
-    GridComponent(int n, Grid* aGrid);                      // constructor
+    GridComponent(int n, Grid *aGrid);                      // constructor
     /// Destructor.
     virtual ~GridComponent() = default;                                           // destructor
 
     /// Returns class name of the receiver.
-    const char *giveClassName() const { return "GridComponent"; }
+    virtual const char *giveClassName() const { return "GridComponent"; }
 };
 
 
-#endif // node_h
-
-
-
-
-
-
+#endif // gridcomponent_h

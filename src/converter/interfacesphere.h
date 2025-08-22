@@ -15,7 +15,7 @@
 #include "convertertxtinputrecord.h"
 
 #ifndef __MAKEDEPEND
-#include <stdio.h>
+ #include <stdio.h>
 #endif
 
 #define _IFT_InterfaceSphere_centre "centre"
@@ -28,14 +28,13 @@
 
 class InterfaceSphere : public Inclusion
 {
-
 protected:
     /// Array storing nodal coordinates.
-  oofem::FloatArray centre;
-  double radius;
-  int number;
-  double refinement;
-  double itzThickness;
+    oofem::FloatArray centre;
+    double radius;
+    int number;
+    double refinement;
+    double itzThickness;
 
 public:
 
@@ -44,35 +43,28 @@ public:
      * @param n node number in domain aDomain
      * @param aDomain domain to which node belongs
      */
-    InterfaceSphere(int n, Grid* aGrid);                      // constructor
+    InterfaceSphere(int n, Grid *aGrid);                      // constructor
     /// Destructor.
     ~InterfaceSphere() override = default;                                           // destructor
 
 
-    double giveRadius(){return this->radius;}
-    double giveITZThickness(){return this->itzThickness;}
-  void giveCentre(oofem::FloatArray& cent){cent = centre;}
+    double giveRadius() { return this->radius; }
+    double giveITZThickness() { return this->itzThickness; }
+    void giveCentre(oofem::FloatArray &cent) { cent = centre; }
 
-    
+
 
     InterfaceSphere *ofType();
 
     // miscellaneous
     /// Returns class name of the receiver.
-    const char *giveClassName() const { return "InterfaceSphere"; }
+    const char *giveClassName() const override { return "InterfaceSphere"; }
 
     void initializeFrom(ConverterInputRecord &ir) override;
     //virtual IntArray* ResolveDofIDArray (char* initString);
     /// prints receiver state on stdout. Usefull for debuging.
     void         printYourself();
-
 };
 
 
 #endif // node_h
-
-
-
-
-
-

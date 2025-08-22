@@ -11,10 +11,10 @@
 #include "intarray.h"
 
 #ifndef __MAKEDEPEND
-#include <stdio.h>
-#include <time.h>
-#include <map>
-#include <list>
+ #include <stdio.h>
+ #include <time.h>
+ #include <map>
+ #include <list>
 #endif
 #define _IFT_Grid_type "grid"
 #define _IFT_Grid_macrotype "macrotype"
@@ -78,7 +78,7 @@ private:
 
     /** Grid type. This determines the type of input to generate
      */
-  enum GridType { _3dSM, _3dTM, _3dSMTM, _3dPerSM, _3dPerTM, _3dPerSMTM, _3dFPZ, _3dFPZFibre, _3dFibreBenchmark, _3dWong, _3dPerPoreTM, _3dPerPoreSM, _3dPerPoreSMTM, _3dCantSM, _3dCantTM, _3dCantExtraTM, _3dCantSMTM, _3dBentoniteSM, _3dBentoniteTM, _3dBentoniteSMTM, _3dSphere, _3dCylinder, _3dTetraSM, _3dPerTetraSM, _3dRCPerSM, _3dRCPer2SM, _3dRCSM, _3dTension, _3dGopSha, _3dKupfer, _3dImran, _3dNotch };
+    enum GridType { _3dSM, _3dTM, _3dSMTM, _3dPerSM, _3dPerTM, _3dPerSMTM, _3dFPZ, _3dFPZFibre, _3dFibreBenchmark, _3dWong, _3dPerPoreTM, _3dPerPoreSM, _3dPerPoreSMTM, _3dCantSM, _3dCantTM, _3dCantExtraTM, _3dCantSMTM, _3dBentoniteSM, _3dBentoniteTM, _3dBentoniteSMTM, _3dSphere, _3dCylinder, _3dTetraSM, _3dPerTetraSM, _3dRCPerSM, _3dRCPer2SM, _3dRCSM, _3dTension, _3dGopSha, _3dKupfer, _3dImran, _3dNotch };
 
     GridType gridType;
 
@@ -88,8 +88,8 @@ private:
     // Determines the type of macroscopic element, so that a corresponding number of DOFs is created for the control node
     enum MacroType { _Truss, _Membrane, _Beam, _Plate, _3dVoigt, _3d };
     MacroType macroType;
-    const char* boundElemName;
-    const char* boundBeamElemName;
+    const char *boundElemName;
+    const char *boundBeamElemName;
 
     double diameter, density;
 
@@ -100,7 +100,7 @@ private:
     oofem::IntArray periodicityFlag;
 
     int meshType;
-    
+
     int regularFlag;
 
     int couplingFlag;
@@ -113,13 +113,10 @@ private:
 
     double mechMean, mechCOV, mechMax, mechMin;
 
-    //elastic
     double youngModulus, gammaOne, gammaTwo;
 
-    //plastic
     double tanBeta, tanPhi;
 
-    //plastic
     double confinement;
 
     double deltarad;
@@ -128,56 +125,37 @@ private:
 
     int periodicNodeCounter;
 
-  //AList< Vertex > *delaunayVertexList;
-  std::vector< Vertex * >delaunayVertexList;
+    std::vector< Vertex * >delaunayVertexList;
 
-  //  AList< Vertex > *voronoiVertexList;
     std::vector< Vertex * >voronoiVertexList;
 
-  //  AList< Vertex > *reinforcementNodeList;
-  std::vector< Vertex * >reinforcementNodeList;
+    std::vector< Vertex * >reinforcementNodeList;
 
-  //  AList< Line > *delaunayLineList;
     std::vector< Line * >delaunayLineList;
 
-  //  AList< Line > *voronoiLineList;
     std::vector< Line * >voronoiLineList;
-    
-  //  AList< Fibre > *fibreList;
+
     std::vector< Fibre * >fibreList;
 
-  // AList< Tetra > *delaunayTetraList;
     std::vector< Tetra * >delaunayTetraList;
-    
-  //    AList< Line > *latticeBeamList;
+
     std::vector< Line * >latticeBeamList;
 
-  //  AList< Line > *latticeLinkList;
     std::vector< Line * >latticeLinkList;
-    
-  //    AList< Vertex > *interNodeList;
+
     std::vector< Vertex * >interNodeList;
 
-    /// Line list
-  //    AList< Vertex > *vertexList;
     std::vector< Vertex * >vertexList;
-  
-    /// Curve list
-  //    AList< Curve > *curveList;
+
     std::vector< Curve * >curveList;
 
-    /// Surface list
-  //    AList< Surface > *surfaceList;
     std::vector< Surface * >surfaceList;
 
-    /// Cross section list
-  //    AList< Region > *regionList;
     std::vector< Region * >regionList;
 
-  //    AList< Inclusion > *inclusionList;
     std::vector< Inclusion * >inclusionList;
 
-    typedef std :: list< int >nodeContainerType;
+    typedef std::list< int >nodeContainerType;
 
 public:
 
@@ -185,37 +163,34 @@ public:
     GridLocalizer *voronoiLocalizer;
     GridLocalizer *reinforcementLocalizer;
 
+    /// constructor
+    Grid(int n);
 
-    /**
-     * Constructor. Creates empty n-th grid belonging to given ProblemManager
-     */
-    Grid(int n);  // constructors
     ///  Destructor
     ~Grid();
-    // destructor
 
-    /// Returns grid number
-    int               giveNumber() { return this->number; }
 
-    double giveTol(){return this->TOL;}
+    int giveNumber() { return this->number; }
 
-    /// Returns grid number
-    void               setNumber(int nn) { this->number = nn; }
+    double giveTol() { return this->TOL; }
+
+    void setNumber(int nn) { this->number = nn; }
 
     int giveMaximumIterations() { return this->maxIter; }
+
     double giveDiameter() { return this->diameter; }
 
-  void givePeriodicityFlag(oofem::IntArray& answer) {answer = this->periodicityFlag; }
+    void givePeriodicityFlag(oofem::IntArray &answer) { answer = this->periodicityFlag; }
 
-    int giveRegularFlag(){return this->regularFlag;}
+    int giveRegularFlag() { return this->regularFlag; }
 
-    int giveMeshType(){return this->meshType;}
-    
+    int giveMeshType() { return this->meshType; }
+
     int giveRandomInteger() { return this->randomInteger; }
 
-    void giveVoronoiPOVOutput(const std::string& filename);
+    void giveVoronoiPOVOutput(const std::string &filename);
 
-    void giveDelaunayPOVOutput(const std::string& filename);
+    void giveDelaunayPOVOutput(const std::string &filename);
 
     void giveVoronoiCellVTKOutput(FILE *outputStream);
 
@@ -231,9 +206,9 @@ public:
 
     void giveVoronoiElementVTKOutput(FILE *outputStream);
 
-  void resolveGridType(const std::string &name);
+    void resolveGridType(const std::string &name);
 
-  
+
     void resolveMacroType(const std::string &name);
 
     Vertex *giveVertex(int n);
@@ -253,7 +228,7 @@ public:
     Vertex *giveVoronoiVertex(int n);
 
     Tetra *giveDelaunayTetra(int n);
-    
+
     Line *giveDelaunayLine(int n);
 
 
@@ -263,7 +238,7 @@ public:
     Line * giveLatticeBeam(int n);
     Vertex *giveReinforcementNode(int n);
     Vertex *giveInterNode(int n);
-    
+
     int generateOutput();
 
     void sortRandomNumbers(oofem::FloatArray &sortedRandomNumbers, oofem::FloatArray &randomNumbers);
@@ -282,34 +257,34 @@ public:
     double ran1(long *idum);
 
     /// Returns number of dof managers in grid.
-  int                giveNumberOfVertices() { return converter::size1(vertexList); }
+    int                giveNumberOfVertices() { return converter::size1(vertexList); }
     /// Returns number of lines in grid.
-  int                giveNumberOfCurves() { return converter::size1(curveList); }
+    int                giveNumberOfCurves() { return converter::size1(curveList); }
     /// Returns number of material models in grid
-  int                giveNumberOfSurfaces() { return converter::size1(surfaceList); }
+    int                giveNumberOfSurfaces() { return converter::size1(surfaceList); }
     /// Returns number of cross section models in grid
-  int                giveNumberOfRegions() { return converter::size1(regionList); }
+    int                giveNumberOfRegions() { return converter::size1(regionList); }
 
-  int                giveNumberOfInclusions() { return converter::size1(inclusionList); }
+    int                giveNumberOfInclusions() { return converter::size1(inclusionList); }
 
-  int                giveNumberOfDelaunayVertices() { return converter::size1(delaunayVertexList); }
-  
-  int                giveNumberOfVoronoiVertices() { return converter::size1(voronoiVertexList); }
-  int                giveNumberOfDelaunayLines() { return converter::size1(delaunayLineList); }
+    int                giveNumberOfDelaunayVertices() { return converter::size1(delaunayVertexList); }
 
-  int                giveNumberOfVoronoiLines() { return converter::size1(voronoiLineList); }
+    int                giveNumberOfVoronoiVertices() { return converter::size1(voronoiVertexList); }
+    int                giveNumberOfDelaunayLines() { return converter::size1(delaunayLineList); }
 
-  int                giveNumberOfLatticeBeams() { return converter::size1(latticeBeamList); }
+    int                giveNumberOfVoronoiLines() { return converter::size1(voronoiLineList); }
 
-  int                giveNumberOfLatticeLinks() { return converter::size1(latticeLinkList); }
+    int                giveNumberOfLatticeBeams() { return converter::size1(latticeBeamList); }
 
-  int                giveNumberOfReinforcementNode() { return converter::size1(reinforcementNodeList); }
-  int                giveNumberOfInterNodes() { return converter::size1(interNodeList); }
-    
-  int                giveNumberOfFibres() { return converter::size1(fibreList); }
+    int                giveNumberOfLatticeLinks() { return converter::size1(latticeLinkList); }
 
-  int                giveNumberOfDelaunayTetras() {  return converter::size1(delaunayTetraList); }
-    
+    int                giveNumberOfReinforcementNode() { return converter::size1(reinforcementNodeList); }
+    int                giveNumberOfInterNodes() { return converter::size1(interNodeList); }
+
+    int                giveNumberOfFibres() { return converter::size1(fibreList); }
+
+    int                giveNumberOfDelaunayTetras() {  return converter::size1(delaunayTetraList); }
+
 
     void resizeDelaunayVertices(int _newSize);
     void resizeVoronoiVertices(int _newSize);
@@ -337,7 +312,7 @@ public:
 
     void setDelaunayTetra(int i, Tetra *obj);
 
-    
+
     /// Sets i-th componet. The component will be futher managed and maintained by grid object.
     void setVertex(int i, Vertex *obj);
     /// Sets i-th componet. The component will be futher managed and maintained by grid object.
@@ -349,107 +324,107 @@ public:
 
     /// Sets i-th componet. The component will be futher managed and maintained by grid object.
     void setInclusion(int i, Inclusion *obj);
-    
+
     void setFibre(int i, Fibre *obj);
-    void setLatticeLink(int i,Line *obj);
-    void setLatticeBeam(int i,Line *obj);
-    void setReinforcementNode(int i,Vertex *obj);
-    void setInterNode(int i,Vertex *obj);
+    void setLatticeLink(int i, Line *obj);
+    void setLatticeBeam(int i, Line *obj);
+    void setReinforcementNode(int i, Vertex *obj);
+    void setInterNode(int i, Vertex *obj);
 
 
     const char *giveClassName() const { return "Grid"; }
 
-    void giveOutput(const std::string& fileName);
+    void giveOutput(const std::string &fileName);
 
-    void giveOofemOutput(const std::string& fileName);
+    void giveOofemOutput(const std::string &fileName);
 
-    void giveVtkOutput(const std::string& fileName);
-    void giveVtkOutput2(const std::string& fileName, int nb_of_mt );// alternative function to obtain VTK files for each material
-    
-    void giveVtkOutputTetra(const std::string& fileName, int nb_of_mt);
-    
-    void givePOVOutput(const std::string& fileName);
+    void giveVtkOutput(const std::string &fileName);
+    void giveVtkOutput2(const std::string &fileName, int nb_of_mt); // alternative function to obtain VTK files for each material
 
-    void give3DSMOutput(const std::string& fileName);
+    void giveVtkOutputTetra(const std::string &fileName, int nb_of_mt);
 
-    void give3DSMTMOutput(const std::string& fileName);
+    void givePOVOutput(const std::string &fileName);
 
-    void give3DPeriodicSMTMOutput(const std::string& fileName);
+    void give3DSMOutput(const std::string &fileName);
 
-    void give3DTMOutput(const std::string& fileName);
+    void give3DSMTMOutput(const std::string &fileName);
 
-    void give3DPeriodicSMOutput(const std::string& fileName);
+    void give3DPeriodicSMTMOutput(const std::string &fileName);
 
-    void give3DPeriodicTMOutput(const std::string& fileName);
+    void give3DTMOutput(const std::string &fileName);
 
-    void give3DPeriodicPoreTMOutput(const std::string& fileName);
+    void give3DPeriodicSMOutput(const std::string &fileName);
 
-    void give3DPeriodicPoreSMOutput(const std::string& fileName);
+    void give3DPeriodicTMOutput(const std::string &fileName);
 
-    void give3DPeriodicPoreSMTMOutput(const std::string& fileName);
+    void give3DPeriodicPoreTMOutput(const std::string &fileName);
 
-    void give3DBentoniteSMOutput(const std::string& fileName);
+    void give3DPeriodicPoreSMOutput(const std::string &fileName);
 
-    void give3DBentoniteTMOutput(const std::string& fileName);
+    void give3DPeriodicPoreSMTMOutput(const std::string &fileName);
 
-    void give3DBentoniteCoupledOutput(const std::string& fileName);
+    void give3DBentoniteSMOutput(const std::string &fileName);
 
-    void give3DFPZOutput(const std::string& fileName);
+    void give3DBentoniteTMOutput(const std::string &fileName);
 
-    void give3DFPZFibreOutput(const std::string& fileName);
+    void give3DBentoniteCoupledOutput(const std::string &fileName);
+
+    void give3DFPZOutput(const std::string &fileName);
+
+    void give3DFPZFibreOutput(const std::string &fileName);
 
     //Analysis to test if single fibre solution can be reproduced
-    void give3DFibreBenchmarkOutput(const std::string& fileName);
-    
+    void give3DFibreBenchmarkOutput(const std::string &fileName);
+
     //Analysis for Concreep paper
-    void give3DWongOutput(const std::string& fileName);
+    void give3DWongOutput(const std::string &fileName);
 
     //SM mesh for Cantilver benchmark of 3D Lattice paper
-    void give3DCantileverSMOutput(const std::string& fileName);
+    void give3DCantileverSMOutput(const std::string &fileName);
 
     //TM mesh for Cantilver benchmark of 3D Lattice paper for CMAME
-    void give3DCantileverTMOutput(const std::string& fileName);
+    void give3DCantileverTMOutput(const std::string &fileName);
 
     //TM mesh for extra Cantilver benchmark of 3D Lattice paper for CMAME
-    void give3DCantileverTMExtraOutput(const std::string& fileName);
+    void give3DCantileverTMExtraOutput(const std::string &fileName);
 
     //SMTM mesh for Cantilver benchmark of 3D Lattice paper for CMAME
-    void give3DCantileverSMTMOutput(const std::string& fileName);
+    void give3DCantileverSMTMOutput(const std::string &fileName);
 
-    void give3DSphereOutput(const std::string& fileName);
+    void give3DSphereOutput(const std::string &fileName);
 
-    void give3DCylinderOutput(const std::string& fileName);
+    void give3DCylinderOutput(const std::string &fileName);
 
     //Periodic SM mesh for tetrahedra
-    void give3DPeriodicTetraSMOutput(const std::string& fileName);
+    void give3DPeriodicTetraSMOutput(const std::string &fileName);
 
     //Random SM mesh for tetrahedra
-    void  give3DTetraSMOutput(const std::string& fileName);
+    void  give3DTetraSMOutput(const std::string &fileName);
 
     //Periodic SM mesh for reinforced concrete (concrete with tetrahedra, reinforcement with beams, bond with link elements)
-    void give3DRCPeriodicSMOutput(const std::string& fileName);
+    void give3DRCPeriodicSMOutput(const std::string &fileName);
 
     //Alternative periodic SM mesh for reinforced concrete (concrete with tetrahedra, reinforcement with beams, bond with link elements). Hanging nodes are used.
-    void give3DRCPeriodicSMOutput2(const std::string& fileName);
+    void give3DRCPeriodicSMOutput2(const std::string &fileName);
 
     //Random SM mesh for reinforced concrete
-    void give3DRCSMOutput(const std::string& fileName);
+    void give3DRCSMOutput(const std::string &fileName);
 
     //SM mesh direct tension
-    void give3DTensionOutput(const std::string& fileName);
+    void give3DTensionOutput(const std::string &fileName);
 
     //Random SM mesh for GopSha experiment
-    void give3DGopShaOutput(const std::string& fileName);
+    void give3DGopShaOutput(const std::string &fileName);
 
     //Random SM mesh for Kupfer experiment
-    void give3DKupferOutput(const std::string& fileName);
+    void give3DKupferOutput(const std::string &fileName);
 
     //Random SM mesh for Imran experiment
-    void give3DImranOutput(const std::string& fileName);
+    void give3DImranOutput(const std::string &fileName);
 
     //Random SM mesh for Notch conference
-    void give3DNotchOutput(const std::string& fileName);
-  
+    void give3DNotchOutput(const std::string &fileName);
+
     double normalCdfInverse(double cdf, double a, double b);
 
     double  normal01CdfInverse(double p);
@@ -461,23 +436,22 @@ public:
     int *ivector(int nl, int nh);
 
     void free_ivector(int *v, int nl, int nh);
-    
+
     // tool functions to enable fibre (subobjects) to create Nodes at the scale of the grid
     Vertex *createReinfNode(oofem::FloatArray coordR);
     Vertex *createInterNode(oofem::FloatArray coordS);
-    
+
     // VTK outputs for fibres
     void giveBeamElementVTKOutput(FILE *outputStream);
     void giveLinkElementVTKOutput(FILE *outputStream);
-    
-    oofem::IntArray findDelaunayNodesWithinBox(oofem::FloatArray coord,double TOL); // function created to allow other objects to use the localizer
+
+    oofem::IntArray findDelaunayNodesWithinBox(oofem::FloatArray coord, double TOL); // function created to allow other objects to use the localizer
 
     void giveTetrahedronBarycentres(oofem::FloatArray &centres, oofem::FloatArray &tetraCoords, oofem::FloatArray &pointCoords);
-    
-    double* tetrahedron_barycentric ( double tetra[3*4], double p[3] );
 
-    int r8mat_solve ( int n, int rhs_num, double a[] );
-    
+    double * tetrahedron_barycentric(double tetra[ 3 * 4 ], double p[ 3 ]);
+
+    int r8mat_solve(int n, int rhs_num, double a[]);
 };
 
 #endif // grid_h

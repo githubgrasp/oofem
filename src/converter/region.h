@@ -31,9 +31,9 @@ public:
      * @param n region number in grid aGrid
      * @param aGrid grid to which node belongs
      */
-    Region(int n, Grid *aGrid);                      // constructor
+    Region(int n, Grid *aGrid);
     /// Destructor.
-    virtual ~Region() = default;                                           // destructor
+    virtual ~Region() = default;
 
     virtual void initializeFrom(ConverterInputRecord &ir) = 0;
 
@@ -41,11 +41,11 @@ public:
 
     virtual void findOutsiders(oofem::FloatArray &boundaries) = 0;
 
-    virtual int giveSwitches(oofem::IntArray &switches, oofem::FloatArray &coords){return 0;}
+    virtual int giveSwitches(oofem::IntArray &switches, oofem::FloatArray &coords) { return 0; }
 
-    virtual int modifyVoronoiCrossSection(int elementNumber){return 1;}
+    virtual int modifyVoronoiCrossSection(int elementNumber) { return 1; }
 
-    virtual int areaCheck(int elementNumber){return 0;};
+    virtual int areaCheck(int elementNumber) { return 0; };
 };
 
 

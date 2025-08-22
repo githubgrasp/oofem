@@ -34,11 +34,11 @@ protected:
     oofem::IntArray boundaryElements;
     int mechanicalLineFlag;
     int globalPossition;
-    
+
     double radius;
 
     int edgeFlag;
-    
+
 public:
 
     /**
@@ -55,8 +55,8 @@ public:
     int      giveLocalVertex(int i);
     /// Returns pointer to curve vertex array.
 
-    void giveCoordinates(oofem::FloatArray &coords); 
-    
+    void giveCoordinates(oofem::FloatArray &coords);
+
     void giveLocalVertices(oofem::IntArray &nodes) { nodes = this->vertices; }
     void setPeriodicElement(int element) { this->periodicElement = element; }
     int givePeriodicElement() { return this->periodicElement; }
@@ -74,14 +74,13 @@ public:
 
     void giveInfinityFlags(oofem::IntArray &flags) { flags = this->infinityFlags; }
     void setInfinityFlags(oofem::IntArray &flags) { this->infinityFlags = flags; }
-    
+
 
     /// Returns class name of the receiver.
-    const char *giveClassName() const { return "Line"; }
+    const char *giveClassName() const override { return "Line"; }
 
     /// prints receiver state on stdout. Usefull for debuging.
     void         printYourself();
-    
 };
 
 

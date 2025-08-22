@@ -15,7 +15,7 @@
 #include "convertertxtinputrecord.h"
 
 #ifndef __MAKEDEPEND
-#include <stdio.h>
+ #include <stdio.h>
 #endif
 
 #define _IFT_InterfaceCylinder_line "line"
@@ -23,19 +23,16 @@
 #define _IFT_InterfaceCylinder_refine "refine"
 #define _IFT_InterfaceCylinder_itz "itz"
 
-//class FloatArray;
-//class oofem::IntArray;
 
 class InterfaceCylinder : public Inclusion
 {
-
 protected:
     /// Array storing nodal coordinates.
-  oofem::FloatArray line;
-  double radius;
-  int number;
-  double refinement;
-  double itzThickness;
+    oofem::FloatArray line;
+    double radius;
+    int number;
+    double refinement;
+    double itzThickness;
 
 public:
 
@@ -44,35 +41,28 @@ public:
      * @param n node number in domain aDomain
      * @param aDomain domain to which node belongs
      */
-    InterfaceCylinder(int n, Grid* aGrid);                      // constructor
+    InterfaceCylinder(int n, Grid *aGrid);                      // constructor
     /// Destructor.
     ~InterfaceCylinder() override = default;                                           // destructor
 
 
-    double giveRadius(){return this->radius;}
-    double giveITZThickness(){return this->itzThickness;}
-    void giveLine(oofem::FloatArray& lin){lin = line;}
+    double giveRadius() { return this->radius; }
+    double giveITZThickness() { return this->itzThickness; }
+    void giveLine(oofem::FloatArray &lin) { lin = line; }
 
-    
+
 
     InterfaceCylinder *ofType();
 
     // miscellaneous
     /// Returns class name of the receiver.
-    const char *giveClassName() const { return "InterfaceCylinder"; }
+    const char *giveClassName() const override { return "InterfaceCylinder"; }
 
     void initializeFrom(ConverterInputRecord &ir) override;
-    //virtual oofem::IntArray* ResolveDofIDArray (char* initString);
+
     /// prints receiver state on stdout. Usefull for debuging.
     void         printYourself();
-
 };
 
 
-#endif // node_h
-
-
-
-
-
-
+#endif // interfacecylinder_h

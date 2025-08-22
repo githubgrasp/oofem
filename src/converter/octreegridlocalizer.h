@@ -4,8 +4,8 @@
 #include "gridlocalizer.h"
 
 #ifndef __MAKEDEPEND
-#include <set>
-#include <list>
+ #include <set>
+ #include <list>
 #endif
 
 class Grid;
@@ -23,7 +23,7 @@ class OctreeGridLocalizer;
  * It maintains the link to parent cell or if it it the root cell, this link pointer is set to NULL.
  * Maintains links to possible child octree cells as well as its position and size.
  * Also list of node numbers contained in given octree cell can be maintained if cell is terminal cell.
-
+ *
  */
 class oofemOctantRec
 {
@@ -34,35 +34,35 @@ protected:
     /// link to parent cell record
     oofemOctantRec *parent;
     /// link to octant childs
-    oofemOctantRec *child [ 2 ] [ 2 ] [ 2 ];
+    oofemOctantRec *child[ 2 ] [ 2 ] [ 2 ];
     /// octant origin coordinates
-  oofem::FloatArray origin;
+    oofem::FloatArray origin;
     /// octant size
     double size;
 
     /// octant node list
-    std :: list< int > *nodeList;
+    std::list< int > *nodeList;
     /// element list, containing all elements having ip in cell
-    std :: set< int > *elementList;
+    std::set< int > *elementList;
 
 public:
     enum boundingBoxStatus { BBS_OUTSIDECELL, BBS_INSIDECELL, BBS_CONTAINSCELL };
 
     /// constructor
-  oofemOctantRec(OctreeGridLocalizer *loc, oofemOctantRec *parent, oofem::FloatArray &origin, double size);
+    oofemOctantRec(OctreeGridLocalizer *loc, oofemOctantRec *parent, oofem::FloatArray &origin, double size);
     /// destructor
     ~oofemOctantRec();
 
     /// returns reference to parent; NULL if root
     oofemOctantRec *giveParent() { return this->parent; }
     /// returns the cell origin
-  void giveOrigin(oofem::FloatArray &answer) { answer = this->origin; }
+    void giveOrigin(oofem::FloatArray &answer) { answer = this->origin; }
     /// returns cell size
     double giveSize() { return this->size; }
     /** Returns nonzero if octant contains given point.
      * If not 3-coordinates are given, then missing coordinates are
      * not included in test */
-  int containsPoint(const oofem::FloatArray &coords);
+    int containsPoint(const oofem::FloatArray &coords);
     /// returns the child cell with given local cell coordinates
     oofemOctantRec *giveChild(int xi, int yi, int zi);
     /**
@@ -73,13 +73,13 @@ public:
      * child is set to NULL.
      * @return 1 if o.k, -1 if no childs exists (receiver is terminal octant), -2 point out of receiver volume
      */
-  int giveChildContainingPoint(oofemOctantRec **child, const oofem::FloatArray &coords);
+    int giveChildContainingPoint(oofemOctantRec **child, const oofem::FloatArray &coords);
     /// Returns nonzero if octant is terminal one (no children)
     int isTerminalOctant();
     /// Return reference to node List
-    std :: list< int > *giveNodeList();
+    std::list< int > *giveNodeList();
     /// Return reference to IPelement set
-    std :: set< int > *giveIPElementList();
+    std::set< int > *giveIPElementList();
 
     /**
      * Divide receiver further, creating corresponding childs
@@ -89,7 +89,7 @@ public:
      * Test if receiver within bounding box (sphere)
      * @returns boundingBoxStatus status
      */
-  boundingBoxStatus testBoundingBox(const oofem::FloatArray &coords, double radius);
+    boundingBoxStatus testBoundingBox(const oofem::FloatArray &coords, double radius);
     /**
      * Adds given element to cell list of elements having IP within this cell.
      */
@@ -101,9 +101,11 @@ public:
     /**
      * Clears and deletes the nodeList
      */
-    void deleteNodeList() { if ( elementList ) { delete elementList; }
+    void deleteNodeList() {
+        if ( elementList ) { delete elementList; }
 
-                            elementList = NULL; }
+        elementList = NULL;
+    }
 };
 
 
@@ -121,7 +123,7 @@ public:
 class OctreeGridLocalizer : public GridLocalizer
 {
 protected:
-  int type;
+    int type;
     /// Root cell of octree
     oofemOctantRec *rootCell;
     /// Octree degenerate mask
@@ -130,7 +132,7 @@ protected:
     int elementIPListsInitialized;
 public:
     /// Constructor
- OctreeGridLocalizer(int n, Grid *d, int type) : GridLocalizer(n, d), octreeMask(3) {
+    OctreeGridLocalizer(int n, Grid *d, int type) : GridLocalizer(n, d), octreeMask(3) {
         rootCell = NULL;
         elementIPListsInitialized = 0;
     }
@@ -142,10 +144,11 @@ public:
      * Initialize receiver data structure if not done previously
      * Current implementation calls and returns the buildOctreeDataStructure service response.
      */
-    int init(bool force = false, int nodeType =0);
+    int init(bool force, int nodeType);
+    int init(bool force = false) override;
+  
 
-
-  int checkNodesWithinBox(const oofem::FloatArray &coords, const double radius, int nodeType);
+    int checkNodesWithinBox(const oofem::FloatArray &coords, const double radius, int nodeType);
 
     /**
      * Returns container (list) of all grid nodes within given box.
@@ -153,7 +156,7 @@ public:
      * @param coords center of box of interest
      * @param radius radius of bounding sphere
      */
-  void giveAllNodesWithinBox(nodeContainerType &nodeList, const oofem::FloatArray &coords, const double radius, int nodeType);
+    void giveAllNodesWithinBox(nodeContainerType &nodeList, const oofem::FloatArray &coords, const double radius, int nodeType);
 
 
 
@@ -167,15 +170,15 @@ public:
     void giveNodesWithinBox(nodeContainerType &nodeList, oofemOctantRec *currentCell,
                             const oofem::FloatArray &coords, const double radius, int nodeType);
 
-    
+
     void insertSequentialNode(int nodeNum, const oofem::FloatArray &coords, int nodeType);
 
     /// Returns class name of the receiver.
-    const char *giveClassName() const { return "OctreeGridLocalizer"; }
+    const char *giveClassName() const override { return "OctreeGridLocalizer"; }
     /** Returns the octreeMask value given by the index */
     int giveOctreeMaskValue(int indx) { return octreeMask.at(indx); }
-    
-    
+
+
 protected:
     /**
      * Buids the underlying octree data structure.
@@ -238,14 +241,8 @@ protected:
      * @param radius radius of bounding sphere
      * @param currentCell starting cell
      */
-    void giveListOfTerminalCellsInBoundingBox(std :: list< oofemOctantRec * > &cellList, const oofem::FloatArray &coords,
+    void giveListOfTerminalCellsInBoundingBox(std::list< oofemOctantRec * > &cellList, const oofem::FloatArray &coords,
                                               const double radius, oofemOctantRec *currentCell);
 };
 
-#endif // octreelocalizer_h
-
-
-
-
-
-
+#endif // octreegridlocalizer_h
