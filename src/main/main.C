@@ -198,7 +198,6 @@ int main(int argc, char *argv[])
                     i++;
                     errOutputFileFlag = true;
                     errOutputFileName << argv [ i ];
-                    i++;
                 }
             } else if ( strcmp(argv [ i ], "-qo") == 0 ) {
                 if ( i + 1 < argc ) {
@@ -259,7 +258,8 @@ int main(int argc, char *argv[])
 #endif
 
 #ifdef __PETSC_MODULE
-    PetscInitialize(& modulesArgc, & modulesArgv, PETSC_NULL, PETSC_NULL);
+    PetscInitialize(NULL, NULL, NULL, NULL);
+    //    PetscInitialize(& modulesArgc, & modulesArgv, PETSC_NULL, PETSC_NULL);
 #endif
 
 #ifdef __SLEPC_MODULE
