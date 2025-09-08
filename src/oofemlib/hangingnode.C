@@ -40,6 +40,7 @@
 #include "feinterpol.h"
 #include "spatiallocalizer.h"
 #include "classfactory.h"
+#include "elementgeometrytype.h"
 
 namespace oofem {
 REGISTER_DofManager( HangingNode );
@@ -169,11 +170,12 @@ void HangingNode ::postInitialize()
         }
     }
 
+    //Deal with rotations. Works only for linear tetrahedron so far.
+ if (e->giveGeometryType() == EGT_tetra_1) {
+   
     Dof *dof;
     const int nnodes = e->giveNumberOfNodes();
 
-
-    //Deal with rotations.
     // Compute shape function gradients once
     FloatMatrix dNdX;
     fei->evaldNdx(dNdX, lcoords, FEIElementGeometryWrapper(e));
@@ -296,6 +298,10 @@ void HangingNode ::postInitialize()
         }
     }
 
+} else {
+    OOFEM_WARNING("HangingNode: rotational DOFs only supported for EGT_tetra_1 (linear tetrahedron). Skipping rotational constraint.");
+}
+    
 
 }
 } // end namespace oofem

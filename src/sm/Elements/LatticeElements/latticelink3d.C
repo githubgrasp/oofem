@@ -318,10 +318,7 @@ namespace oofem {
         Node *nodeA, *nodeB;
         FloatArray coordsA(3), coordsB(3);
 
-        //Order of nodes. However, might not matter.
-        //Reinforcement node
         nodeA  = this->giveNode(1);
-        //Lattice node
         nodeB  = this->giveNode(2);
 
         //Calculate components of distance from reinforcement node to lattice node.
@@ -389,7 +386,6 @@ namespace oofem {
         this->globalCentroid.resize(3);
         for ( int i = 1; i <= 3; i++ ) {
             this->globalCentroid.at(i) = nodeA->giveCoordinate(i);
-            ;
         }
 
         this->geometryFlag = 1;
