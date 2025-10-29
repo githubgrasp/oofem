@@ -249,8 +249,6 @@ namespace oofem {
         dbj.times(1. / length);
         bjt.beTranspositionOf(bj);
         answer.beProductOf(bjt, dbj);
-        //printf("answer/n");
-        //answer.printYourself();
         return;
     }
 
