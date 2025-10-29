@@ -298,9 +298,10 @@ void HangingNode ::postInitialize()
         }
     }
 
-} else {
-    OOFEM_WARNING("HangingNode: rotational DOFs only supported for EGT_tetra_1 (linear tetrahedron). Skipping rotational constraint.");
 }
+ /* else { */
+/*     OOFEM_WARNING("HangingNode: rotational DOFs only supported for EGT_tetra_1 (linear tetrahedron). Skipping rotational constraint."); */
+/* } */
     
 
 }
