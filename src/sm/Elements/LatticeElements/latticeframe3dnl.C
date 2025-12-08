@@ -69,7 +69,7 @@ namespace oofem {
     {}
 
     void
-      LatticeFrame3dNL::computeNLBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, TimeStep *tStep)
+    LatticeFrame3dNL::computeNLBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, TimeStep *tStep)
     {
         answer.resize(6, 12);
         answer.zero();
@@ -85,22 +85,22 @@ namespace oofem {
         l2.times( ( 1. - this->s ) / 2.);
 
 
-	FloatMatrix rotationMatrix(3,3);
-	FloatArray spin(3);
-	FloatArray uTotal(12);
-        this->computeVectorOf(VM_Total, tStep, uTotal);       
-	spin.at(1) = uTotal.at(4);
-	spin.at(2) = uTotal.at(5);
-	spin.at(3) = uTotal.at(6);
-	this->computeGlobalRotationMatrix(rotationMatrix, spin);
-	FloatArray c1(3);
-	c1.beProductOf(rotationMatrix, l1);
+        FloatMatrix rotationMatrix(3, 3);
+        FloatArray spin(3);
+        FloatArray uTotal(12);
+        this->computeVectorOf(VM_Total, tStep, uTotal);
+        spin.at(1) = uTotal.at(4);
+        spin.at(2) = uTotal.at(5);
+        spin.at(3) = uTotal.at(6);
+        this->computeGlobalRotationMatrix(rotationMatrix, spin);
+        FloatArray c1(3);
+        c1.beProductOf(rotationMatrix, l1);
 
-	
-	spin.at(1) = uTotal.at(10);
-	spin.at(2) = uTotal.at(11);
-	spin.at(3) = uTotal.at(12);
-	this->computeGlobalRotationMatrix(rotationMatrix, spin);
+
+        spin.at(1) = uTotal.at(10);
+        spin.at(2) = uTotal.at(11);
+        spin.at(3) = uTotal.at(12);
+        this->computeGlobalRotationMatrix(rotationMatrix, spin);
         FloatArray c2(3);
         c2.beProductOf(rotationMatrix, l2);
 
@@ -219,62 +219,69 @@ namespace oofem {
     }
 
 
-void
-LatticeFrame3dNL::computeGlobalRotationMatrix(FloatMatrix &answer, FloatArray &psi)
-{
-    FloatMatrix S(3, 3), SS(3, 3);
-    double psiSize;
+    void
+    LatticeFrame3dNL::computeGlobalRotationMatrix(FloatMatrix &answer, FloatArray &psi)
+    {
+        FloatMatrix S(3, 3), SS(3, 3);
+        double psiSize;
 
-    if ( psi.giveSize() != 3 ) {
-        OOFEM_ERROR("psi param size mismatch");
+        if ( psi.giveSize() != 3 ) {
+            OOFEM_ERROR("psi param size mismatch");
+        }
+
+        answer.resize(3, 3);
+        answer.zero();
+
+        psiSize = psi.computeNorm();
+        answer.at(1, 1) = answer.at(2, 2) = answer.at(3, 3) = 1.;
+
+        if ( psiSize <= 1.e-40 ) {
+            return;
+        }
+
+        this->computeSMtrx(S, psi);
+        SS.beProductOf(S, S);
+        S.times(sin(psiSize) / psiSize);
+        SS.times( ( 1. - cos(psiSize) ) / ( psiSize * psiSize ) );
+
+        answer.add(S);
+        answer.add(SS);
     }
 
-    answer.resize(3, 3);
-    answer.zero();
 
-    psiSize = psi.computeNorm();
-    answer.at(1, 1) = answer.at(2, 2) = answer.at(3, 3) = 1.;
+    void
+    LatticeFrame3dNL::computeSMtrx(FloatMatrix &answer, FloatArray &vec)
+    {
+        if ( vec.giveSize() != 3 ) {
+            OOFEM_ERROR("vec param size mismatch");
+        }
 
-    if ( psiSize <= 1.e-40 ) {
-        return;
+        answer.resize(3, 3);
+
+        answer.at(1, 1) = answer.at(2, 2) = answer.at(3, 3) = 0.;
+        answer.at(1, 2) = -vec.at(3);
+        answer.at(1, 3) =  vec.at(2);
+        answer.at(2, 1) =  vec.at(3);
+        answer.at(2, 3) = -vec.at(1);
+        answer.at(3, 1) = -vec.at(2);
+        answer.at(3, 2) =  vec.at(1);
     }
 
-    this->computeSMtrx(S, psi);
-    SS.beProductOf(S, S);
-    S.times(sin(psiSize) / psiSize);
-    SS.times( ( 1. - cos(psiSize) ) / ( psiSize * psiSize ) );
 
-    answer.add(S);
-    answer.add(SS);
-}
-
-
-void
-LatticeFrame3dNL::computeSMtrx(FloatMatrix &answer, FloatArray &vec)
-{
-    if ( vec.giveSize() != 3 ) {
-        OOFEM_ERROR("vec param size mismatch");
-    }
-
-    answer.resize(3, 3);
-
-    answer.at(1, 1) = answer.at(2, 2) = answer.at(3, 3) = 0.;
-    answer.at(1, 2) = -vec.at(3);
-    answer.at(1, 3) =  vec.at(2);
-    answer.at(2, 1) =  vec.at(3);
-    answer.at(2, 3) = -vec.at(1);
-    answer.at(3, 1) = -vec.at(2);
-    answer.at(3, 2) =  vec.at(1);
-}
-
- 
     void
     LatticeFrame3dNL::computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode,
                                              TimeStep *tStep)
     {
- 
         FloatMatrix d, bt, db, b;
         this->length = computeLength();
+
+        FloatArray u;
+        this->computeVectorOf(VM_Total, tStep, u);
+
+        FloatArray coordA(3), coordB(3), coordGp(3);
+        coordA = giveNode(1)->giveCoordinates();
+        coordB = giveNode(2)->giveCoordinates();
+        giveGpCoordinates(coordGp);
 
         answer.resize(12, 12);
         answer.zero();
@@ -284,7 +291,8 @@ LatticeFrame3dNL::computeSMtrx(FloatMatrix &answer, FloatArray &vec)
 
         //Rotate constitutive stiffness matrix
         FloatMatrix r(6, 6), rT(6, 6), dR(6, 6), rTDR(6, 6);
-        computeGtoLStrainRotationMatrix(r);
+        computeCurrentGtoLStrainRotationMatrix(r, u, coordA, coordB, coordGp);
+
         rT.beTranspositionOf(r);
 
         dR.beProductOf(d, r);
@@ -301,15 +309,15 @@ LatticeFrame3dNL::computeSMtrx(FloatMatrix &answer, FloatArray &vec)
     void
     LatticeFrame3dNL::computeStrainVector(FloatArray &answer, GaussPoint *gp, TimeStep *tStep)
     {
-
         //Compute normalised displacement jumps in global coordinate system first and then rotate it to the local coordiante system.
 
         FloatArray u;
         this->computeVectorOf(VM_Total, tStep, u);
 
-        FloatArray coordA(3), coordB(3), l1(3), l2(3), help(3);
+        FloatArray coordA(3), coordB(3), coordGp(3), l1(3), l2(3), help(3);
         coordA = giveNode(1)->giveCoordinates();
         coordB = giveNode(2)->giveCoordinates();
+        giveGpCoordinates(coordGp);
 
         help = coordB - coordA;
         l1 = help;
@@ -319,21 +327,21 @@ LatticeFrame3dNL::computeSMtrx(FloatMatrix &answer, FloatArray &vec)
 
         this->length = computeLength();
 
-	FloatMatrix rotationMatrix(3,3);
-	FloatArray spin(3);
-	FloatArray uTotal(12);
-        this->computeVectorOf(VM_Total, tStep, uTotal);       
-	spin.at(1) = u.at(4);
-	spin.at(2) = u.at(5);
-	spin.at(3) = u.at(6);
-	this->computeGlobalRotationMatrix(rotationMatrix, spin);
-	FloatArray c1(3);
+        FloatMatrix rotationMatrix(3, 3);
+        FloatArray spin(3);
+        FloatArray uTotal(12);
+        this->computeVectorOf(VM_Total, tStep, uTotal);
+        spin.at(1) = u.at(4);
+        spin.at(2) = u.at(5);
+        spin.at(3) = u.at(6);
+        this->computeGlobalRotationMatrix(rotationMatrix, spin);
+        FloatArray c1(3);
         c1.beProductOf(rotationMatrix, l1);
 
-	spin.at(1) = u.at(10);
-	spin.at(2) = u.at(11);
-	spin.at(3) = u.at(12);
-	this->computeGlobalRotationMatrix(rotationMatrix, spin);
+        spin.at(1) = u.at(10);
+        spin.at(2) = u.at(11);
+        spin.at(3) = u.at(12);
+        this->computeGlobalRotationMatrix(rotationMatrix, spin);
         FloatArray c2(3);
         c2.beProductOf(rotationMatrix, l2);
 
@@ -348,8 +356,9 @@ LatticeFrame3dNL::computeSMtrx(FloatMatrix &answer, FloatArray &vec)
         answer.times(1. / this->length);
 
         //Rotate strain vector to local coordinate system
+
         FloatMatrix rotMatrix(6, 6);
-        computeGtoLStrainRotationMatrix(rotMatrix);
+        computeCurrentGtoLStrainRotationMatrix(rotMatrix, u, coordA, coordB, coordGp);
         answer.rotatedWith(rotMatrix, 'n');
     }
 
@@ -379,21 +388,20 @@ LatticeFrame3dNL::computeSMtrx(FloatMatrix &answer, FloatArray &vec)
         return false;
     }
 
-
     void
     LatticeFrame3dNL::giveInternalForcesVector(FloatArray &answer,
                                                TimeStep *tStep, int useUpdatedGpRecord)
     {
-
         FloatMatrix b, bt, bf, d;
         FloatArray u, stress, strain;
         this->computeVectorOf(VM_Total, tStep, u);
         this->length   = computeLength();
         GaussPoint *gp = this->integrationRulesArray [ 0 ]->getIntegrationPoint(0);
 
-        FloatArray coordA(3), coordB(3), l1(3), l2(3), help(3);
+        FloatArray coordA(3), coordB(3), coordGp(3), l1(3), l2(3), help(3);
         coordA = giveNode(1)->giveCoordinates();
         coordB = giveNode(2)->giveCoordinates();
+        giveGpCoordinates(coordGp);
 
         help = coordB - coordA;
         l1 = help;
@@ -414,25 +422,27 @@ LatticeFrame3dNL::computeSMtrx(FloatMatrix &answer, FloatArray &vec)
             this->computeStressVector(stress, strain, gp, tStep);
         }
 
-
-	FloatMatrix rotationMatrix(3,3);
-	FloatArray spin(3);
-	spin.at(1) = u.at(4);
-	spin.at(2) = u.at(5);
-	spin.at(3) = u.at(6);
-	this->computeGlobalRotationMatrix(rotationMatrix, spin);
+        FloatMatrix rotationMatrix(3, 3);
+        FloatArray spinOne(3);
+        spinOne.at(1) = u.at(4);
+        spinOne.at(2) = u.at(5);
+        spinOne.at(3) = u.at(6);
+        this->computeGlobalRotationMatrix(rotationMatrix, spinOne);
         FloatArray c1(3);
         c1.beProductOf(rotationMatrix, l1);
 
-	spin.at(1) = u.at(10);
-	spin.at(2) = u.at(11);
-	spin.at(3) = u.at(12);
-	this->computeGlobalRotationMatrix(rotationMatrix, spin);
+        FloatArray spinTwo(3);
+        spinTwo.at(1) = u.at(10);
+        spinTwo.at(2) = u.at(11);
+        spinTwo.at(3) = u.at(12);
+        this->computeGlobalRotationMatrix(rotationMatrix, spinTwo);
         FloatArray c2(3);
         c2.beProductOf(rotationMatrix, l2);
 
         FloatMatrix rotMatrix(6, 6);
-        computeGtoLStrainRotationMatrix(rotMatrix);
+        computeCurrentGtoLStrainRotationMatrix(rotMatrix, u, coordA, coordB, coordGp);
+
+        //Calculate stress in global coordinate system
         stress.rotatedWith(rotMatrix, 't');
 
         answer.resize(12);
@@ -448,5 +458,109 @@ LatticeFrame3dNL::computeSMtrx(FloatMatrix &answer, FloatArray &vec)
         answer.at(10) =  stress.at(2) * c2.at(3) - stress.at(3) * c2.at(2) + stress.at(4);
         answer.at(11) = -stress.at(1) * c2.at(3) + stress.at(3) * c2.at(1) + stress.at(5);
         answer.at(12) = stress.at(1) * c2.at(2) - stress.at(2) * c2.at(1) + stress.at(6);
+    }
+
+
+    void LatticeFrame3dNL::computeCurrentGtoLStrainRotationMatrix(FloatMatrix &GtoLCurrent,
+                                                                  const FloatArray &u,
+                                                                  const FloatArray &coordA,
+                                                                  const FloatArray &coordB,
+                                                                  const FloatArray &coordGP)
+    {
+        FloatArray e = coordB - coordA;
+        FloatArray r = coordGP - coordA;
+
+        double num = r.at(1) * e.at(1) + r.at(2) * e.at(2) + r.at(3) * e.at(3);
+        double den = e.at(1) * e.at(1) + e.at(2) * e.at(2) + e.at(3) * e.at(3);
+        double t = num / den;
+        if ( t < 0. ) {
+            t = 0.;
+        }
+        if ( t > 1. ) {
+            t = 1.;
+        }
+
+
+        FloatArray spinOne(3), spinTwo(3);
+        spinOne.at(1) = u.at(4);
+        spinOne.at(2) = u.at(5);
+        spinOne.at(3) = u.at(6);
+
+        spinTwo.at(1) = u.at(10);
+        spinTwo.at(2) = u.at(11);
+        spinTwo.at(3) = u.at(12);
+
+        FloatArray spinAverage(3), help(3);
+        spinAverage = spinOne;
+        spinAverage.times(1. - t);
+        help = spinTwo;
+        help.times(t);
+        spinAverage.add(help);
+
+
+        FloatMatrix GtoL0(6, 6);
+        computeGtoLStrainRotationMatrix(GtoL0);
+
+        FloatArray spinLocal(3);
+        for (int i = 1; i <= 3; ++i) {
+            double s = 0.0;
+            for (int j = 1; j <= 3; ++j) {
+                s += GtoL0.at(i + 3, j + 3) * spinAverage.at(j);
+            }
+            spinLocal.at(i) = s;
+        }
+
+
+        FloatMatrix Qloc(3, 3);
+        this->computeGlobalRotationMatrix(Qloc, spinLocal);
+
+        FloatMatrix Q6(6, 6);
+        for (int i = 1; i <= 3; ++i) {
+            for (int j = 1; j <= 3; ++j) {
+                Q6.at(i,  j) = Qloc.at(i, j);
+                Q6.at(i + 3, j + 3) = Qloc.at(i, j);
+            }
+        }
+
+        GtoLCurrent.beProductOf(Q6, GtoL0);
+
+	
+        FloatArray x1_cur(3), x2_cur(3);
+        x1_cur = coordA;
+        x1_cur.at(1) += u.at(1);
+        x1_cur.at(2) += u.at(2);
+        x1_cur.at(3) += u.at(3);
+
+        x2_cur = coordB;
+        x2_cur.at(1) += u.at(7);
+        x2_cur.at(2) += u.at(8);
+        x2_cur.at(3) += u.at(9);
+
+        FloatArray vaxis(3);
+        vaxis.beDifferenceOf(x2_cur, x1_cur);
+        double norm = sqrt(vaxis.at(1) * vaxis.at(1) +
+                           vaxis.at(2) * vaxis.at(2) +
+                           vaxis.at(3) * vaxis.at(3) );
+        if ( norm > 0.0 ) {
+            vaxis.times(1.0 / norm);
+
+            FloatArray e1_from_R(3);
+            e1_from_R.at(1) = GtoLCurrent.at(1, 1);
+            e1_from_R.at(2) = GtoLCurrent.at(1, 2);
+            e1_from_R.at(3) = GtoLCurrent.at(1, 3);
+
+            double dot = e1_from_R.at(1) * vaxis.at(1)
+                         + e1_from_R.at(2) * vaxis.at(2)
+                         + e1_from_R.at(3) * vaxis.at(3);
+
+            if ( dot < 0.0 ) {
+                for (int i = 1; i <= 3; ++i) {
+                    for (int j = 1; j <= 3; ++j) {
+                        GtoLCurrent.at(i,  j) *= -1.0;
+                        GtoLCurrent.at(i + 3, j + 3) *= -1.0;
+                    }
+                }
+            }
+        }
     }
 } // end namespace oofem

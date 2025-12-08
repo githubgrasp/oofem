@@ -67,17 +67,21 @@ public:
 
     void giveInternalForcesVector(FloatArray &answer, TimeStep *tStep, int useUpdatedGpRecord) override;
 
+
 protected:
 
-  void computeGlobalRotationMatrix(FloatMatrix &answer, FloatArray &rotation);
-  void computeSMtrx(FloatMatrix &answer, FloatArray &vec);
+    void computeGlobalRotationMatrix(FloatMatrix &answer, FloatArray &rotation);
+    void computeSMtrx(FloatMatrix &answer, FloatArray &vec);
 
     bool computeGtoLStrainRotationMatrix(FloatMatrix &answer);
     bool computeGtoLRotationMatrix(FloatMatrix &) override;
-  void computeNLBmatrixAt(GaussPoint *gp, FloatMatrix &, TimeStep *tStep);
+    void computeNLBmatrixAt(GaussPoint *gp, FloatMatrix &, TimeStep *tStep);
 
     void updateYourself(TimeStep *tStep) override;
     void initForNewStep() override;
+
+    void computeCurrentGtoLStrainRotationMatrix(FloatMatrix &GtoLCurrent, const FloatArray &u, const FloatArray &coordA, const FloatArray &coordB, const FloatArray &coordGP);
+
 
     void computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode, TimeStep *tStep) override;
     virtual void  computeStrainVector(FloatArray &answer, GaussPoint *gp, TimeStep *tStep) override;
