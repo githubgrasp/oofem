@@ -77,7 +77,7 @@ namespace oofem {
         //Parameter which limits the stress in slip direction.
         IR_GIVE_FIELD(ir, tauMax, _IFT_LatticeSlip_t0); // Macro
 
-        //Two models available
+        //Three models available
         //0 default. Linear elastic-perfect plastic
         //1 bond slip according first part of CEB model and then constant
         //2 bond slip according to CEB model
