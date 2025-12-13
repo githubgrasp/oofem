@@ -81,8 +81,6 @@ public:
 
     void initializeFrom(InputRecord &ir) override;
 
-  double computeTemperatureReductionFactor(GaussPoint *gp, TimeStep *tStep, ValueModeType mode) const;
-
   
     bool isCharacteristicMtrxSymmetric(MatResponseMode rMode) const override { return false; }
 

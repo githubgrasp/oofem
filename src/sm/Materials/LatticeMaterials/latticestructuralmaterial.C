@@ -130,6 +130,20 @@ namespace oofem {
     }
 
 
+void
+LatticeStructuralMaterial::initializeFrom(InputRecord &ir)
+{
+    StructuralMaterial::initializeFrom(ir);
+
+    //temperature threshold used to compute reduction
+    this->tCrit = 0.;
+    IR_GIVE_OPTIONAL_FIELD(ir, this->tCrit, _IFT_LatticeStructuralMaterial_tcrit); // Macro
+
+    
+}
+
+    
+
     double
     LatticeStructuralMaterial::giveLatticeStress1d(double strain, GaussPoint *gp, TimeStep *tStep)
     {
@@ -195,4 +209,60 @@ namespace oofem {
     {
         OOFEM_ERROR("No general implementation provided");
     }
+
+
+ double LatticeStructuralMaterial::computeTemperatureReductionFactor(GaussPoint *gp, TimeStep *tStep, ValueModeType mode) const
+ {
+   double reductionFactor = 1.;
+
+    FloatArray et;
+    
+    if ( gp->giveIntegrationRule() == NULL ) {
+        ///@todo Hack for loose gausspoints. We shouldn't ask for "gp->giveElement()". FIXME
+        return reductionFactor;
+    }
+    
+    Element *elem = gp->giveElement();
+    StructuralElement *selem = dynamic_cast< StructuralElement * >( gp->giveElement() );
+
+    if ( tStep->giveIntrinsicTime() < this->castingTime ) {
+        return reductionFactor;
+    }
+
+    //sum up all prescribed temperatures over an element
+    //elem->computeResultingIPTemperatureAt(et, tStep, gp, mode);
+    if ( selem ) {
+        selem->computeResultingIPTemperatureAt(et, tStep, gp, mode);
+    }
+
+    /* add external source, if provided */
+    FieldManager *fm = domain->giveEngngModel()->giveContext()->giveFieldManager();
+    FieldPtr tf = fm->giveField(FT_Temperature);
+    if ( tf ) {
+        // temperature field registered
+        FloatArray gcoords, et2;
+        elem->computeGlobalCoordinates(gcoords, gp->giveNaturalCoordinates() );
+        int err;
+        if ( ( err = tf->evaluateAt(et2, gcoords, mode, tStep) ) ) {
+            OOFEM_ERROR("tf->evaluateAt failed, element %d, error code %d", elem->giveNumber(), err);
+        }
+
+        if ( et2.isNotEmpty() ) {
+            if ( et.isEmpty() ) {
+                et = et2;
+            } else {
+                et.at(1) += et2.at(1);
+            }
+        }
+    }
+
+    //Compute reductionFactor
+    if(et.isNotEmpty()) {
+        if ( et.at( 1 ) > this->referenceTemperature && et.at( 1 ) > 0. ) {
+            reductionFactor = exp( -pow( ( et.at( 1 ) - this->referenceTemperature ) / ( tCrit - this->referenceTemperature ), 2. ) );
+        }
+    }
+    return reductionFactor;
+ }
+
 } // end namespace oofem

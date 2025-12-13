@@ -45,6 +45,7 @@
 
 ///@name Input fields for LatticeStructuralMaterial
 //@{
+#define _IFT_LatticeStructuralMaterial_tcrit "tcrit"
 //@}
 
 namespace oofem {
@@ -65,8 +66,11 @@ class GaussPoint;
 class LatticeStructuralMaterial : public StructuralMaterial
 {
 protected:
-    /// Reference temperature (temperature, when material has been built into structure).
 
+  //tempeature threshold used to compute reduction
+  double tCrit = 0.; 
+
+  
 public:
 
     /**
@@ -81,6 +85,8 @@ public:
                              GaussPoint *gp,
                              TimeStep *tStep) override;
 
+  void initializeFrom(InputRecord &ir) override;
+  
     virtual bool hasAnalyticalTangentStiffness() const { return true; }
 
     bool hasMaterialModeCapability(MaterialMode mode) const override;
@@ -100,6 +106,9 @@ public:
 
     virtual FloatMatrixF< 6, 6 >give3dFrameStiffnessMatrix(MatResponseMode mode, GaussPoint *gp, TimeStep *tStep) const;
 
+    double computeTemperatureReductionFactor(GaussPoint *gp, TimeStep *tStep, ValueModeType mode) const;
+
+  
     int giveIPValue(FloatArray &answer, GaussPoint *gp, InternalStateType type, TimeStep *atTime) override;
 };
 } // end namespace oofem

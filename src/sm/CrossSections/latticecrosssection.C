@@ -82,6 +82,11 @@ LatticeCrossSection::initializeFrom(InputRecord &ir)
     IR_GIVE_OPTIONAL_FIELD(ir, area, _IFT_LatticeCrossSection_area);
     propertyDictionary.add(CS_Area, area);
 
+    double thickness = 0.0;
+    IR_GIVE_OPTIONAL_FIELD(ir, area, _IFT_LatticeCrossSection_thickness);
+    propertyDictionary.add(CS_Thickness, thickness);
+
+    
     value = 0.0;
     IR_GIVE_OPTIONAL_FIELD(ir, value, _IFT_LatticeCrossSection_iy);
     propertyDictionary.add(CS_InertiaMomentY, value);

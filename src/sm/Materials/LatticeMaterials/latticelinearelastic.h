@@ -53,6 +53,8 @@
 #define _IFT_LatticeLinearElastic_localrandomtype "randomtype"
 #define _IFT_LatticeLinearElastic_cov "cov"
 #define _IFT_LatticeLinearElastic_calpha "calpha"
+#define _IFT_LatticeLinearElastic_a3 "a3"
+#define _IFT_LatticeLinearElastic_tcrit "tcrit"
 //@}
 
 namespace oofem {
@@ -68,16 +70,20 @@ protected:
     ///Ratio of shear and normal modulus
     double alphaOne = 0.;
 
-    ///Ratio of torsion and normal modulus
+    ///Ratio of bending and normal modulus
     double alphaTwo = 0.;
 
-    /// coefficient variation of the Gaussian distribution
+  ///Ratio of torsion and normal modulus
+  double alphaThree = 0.;
+  
+  /// coefficient variation of the Gaussian distribution
     double coefficientOfVariation = 0.;
 
     /// flag which chooses between no distribution (0) and Gaussian distribution (1)
     double localRandomType = 0.;
 
-    /// parameter which allows to prescribed thermal displacement
+
+  /// parameter which allows to prescribed thermal displacement
     double cAlpha = 0.;
 
 public:

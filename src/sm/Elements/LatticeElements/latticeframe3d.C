@@ -434,7 +434,6 @@ namespace oofem {
             answer.at(3, i) = lz.at(i);
         }
 
-
         return 1;
     }
 

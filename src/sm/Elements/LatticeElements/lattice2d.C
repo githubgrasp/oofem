@@ -149,12 +149,13 @@ Lattice2d :: computeBmatrixAt(GaussPoint *gp, FloatMatrix &answer, int li, int u
 
     answer.at(3, 1) = 0.;
     answer.at(3, 2) = 0.;
-    answer.at(3, 3) = -this->width / sqrt(12.);
+    // answer.at(3, 3) = -this->width / sqrt(12.);
+    answer.at(3, 3) = -1.;
     answer.at(3, 4) = 0.;
     answer.at(3, 5) = 0.;
-    answer.at(3, 6) = this->width / sqrt(12.);
-
-    answer.times(1. / l);
+    // answer.at(3, 6) = this->width / sqrt(12.);
+    answer.at(3, 6) = 1.;
+    //    answer.times(1. / l);
 }
 
 void

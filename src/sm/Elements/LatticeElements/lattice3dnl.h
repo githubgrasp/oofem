@@ -32,19 +32,19 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef lattice3d_h
-#define lattice3d_h
+#ifndef lattice3dnl_h
+#define lattice3dnl_h
 
 #include "latticestructuralelement.h"
 
 ///@name Input fields for Lattice3d
 //@{
-#define _IFT_Lattice3d_Name "lattice3d"
-#define _IFT_Lattice3d_mlength "mlength"
-#define _IFT_Lattice3d_polycoords "polycoords"
-#define _IFT_Lattice3d_couplingflag "couplingflag"
-#define _IFT_Lattice3d_couplingnumber "couplingnumber"
-#define _IFT_Lattice3d_pressures "pressures"
+#define _IFT_Lattice3dNL_Name "lattice3dnl"
+#define _IFT_Lattice3dNL_mlength "mlength"
+#define _IFT_Lattice3dNL_polycoords "polycoords"
+#define _IFT_Lattice3dNL_couplingflag "couplingflag"
+#define _IFT_Lattice3dNL_couplingnumber "couplingnumber"
+#define _IFT_Lattice3dNL_pressures "pressures"
 //@}
 
 namespace oofem {
@@ -52,7 +52,7 @@ namespace oofem {
  * This class implements a 3-dimensional lattice element
  */
 
-class Lattice3d : public LatticeStructuralElement
+class Lattice3dNL : public LatticeStructuralElement
 {
 protected:
     double minLength;
@@ -69,8 +69,8 @@ protected:
     FloatArray pressures;
 
 public:
-    Lattice3d(int n, Domain *);
-    virtual ~Lattice3d();
+    Lattice3dNL(int n, Domain *);
+    virtual ~Lattice3dNL();
 
 
     int giveLocalCoordinateSystem(FloatMatrix &answer) override;
@@ -115,15 +115,11 @@ public:
 
     virtual void computeCrossSectionProperties();
 
-    const char *giveInputRecordName() const override { return _IFT_Lattice3d_Name; }
-    const char *giveClassName() const override { return "Lattice3d"; }
+    const char *giveInputRecordName() const override { return _IFT_Lattice3dNL_Name; }
+    const char *giveClassName() const override { return "Lattice3dnl;"; }
     void initializeFrom(InputRecord &ir) override;
 
-  double giveIk() override;
-  double giveIy() override;
-  double giveIz() override;
 
-  
 
     Element_Geometry_Type giveGeometryType() const override { return EGT_line_1; }
 

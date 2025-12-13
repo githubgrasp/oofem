@@ -161,7 +161,6 @@ LatticeFrameElastic::give3dFrameStiffnessMatrix(MatResponseMode rmode, GaussPoin
      reductionFactor = computeTemperatureReductionFactor(gp,atTime,VM_Total);
    }
    
-   
    double eReduced = reductionFactor*this->e;           
     double g = eReduced / ( 2. * ( 1. + this->nu ) );
 
@@ -172,7 +171,6 @@ LatticeFrameElastic::give3dFrameStiffnessMatrix(MatResponseMode rmode, GaussPoin
     const double shearareay = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveShearAreaY();
     const double shearareaz = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveShearAreaZ();
 
-    //Peter: You need to put here the correct values. Please check this.
     FloatArrayF< 6 >d = {
         eReduced * area,
         g *shearareay,
@@ -185,59 +183,4 @@ LatticeFrameElastic::give3dFrameStiffnessMatrix(MatResponseMode rmode, GaussPoin
     return diag(d);
 }
 
- 
- double LatticeFrameElastic::computeTemperatureReductionFactor(GaussPoint *gp, TimeStep *tStep, ValueModeType mode) const
- {
-   double reductionFactor = 1.;
-
-    FloatArray et;
-    
-    if ( gp->giveIntegrationRule() == NULL ) {
-        ///@todo Hack for loose gausspoints. We shouldn't ask for "gp->giveElement()". FIXME
-        return reductionFactor;
-    }
-    
-    Element *elem = gp->giveElement();
-    StructuralElement *selem = dynamic_cast< StructuralElement * >( gp->giveElement() );
-
-    if ( tStep->giveIntrinsicTime() < this->castingTime ) {
-        return reductionFactor;
-    }
-
-    //sum up all prescribed temperatures over an element
-    //elem->computeResultingIPTemperatureAt(et, tStep, gp, mode);
-    if ( selem ) {
-        selem->computeResultingIPTemperatureAt(et, tStep, gp, mode);
-    }
-
-    /* add external source, if provided */
-    FieldManager *fm = domain->giveEngngModel()->giveContext()->giveFieldManager();
-    FieldPtr tf = fm->giveField(FT_Temperature);
-    if ( tf ) {
-        // temperature field registered
-        FloatArray gcoords, et2;
-        elem->computeGlobalCoordinates(gcoords, gp->giveNaturalCoordinates() );
-        int err;
-        if ( ( err = tf->evaluateAt(et2, gcoords, mode, tStep) ) ) {
-            OOFEM_ERROR("tf->evaluateAt failed, element %d, error code %d", elem->giveNumber(), err);
-        }
-
-        if ( et2.isNotEmpty() ) {
-            if ( et.isEmpty() ) {
-                et = et2;
-            } else {
-                et.at(1) += et2.at(1);
-            }
-        }
-    }
-
-    //Compute reductionFactor
-    if(et.isNotEmpty()) {
-        if ( et.at( 1 ) > this->referenceTemperature && et.at( 1 ) > 0. ) {
-            reductionFactor = exp( -pow( ( et.at( 1 ) - this->referenceTemperature ) / ( tCrit - this->referenceTemperature ), 2. ) );
-        }
-    }
-    return reductionFactor;
- }
- 
 }

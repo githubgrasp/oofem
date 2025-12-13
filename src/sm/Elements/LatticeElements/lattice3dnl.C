@@ -33,7 +33,7 @@
  */
 
 #include "domain.h"
-#include "lattice3d.h"
+#include "lattice3dnl.h"
 #include "../sm/Materials/LatticeMaterials/latticematstatus.h"
 #include "node.h"
 #include "material.h"
@@ -57,9 +57,9 @@
 #endif
 
 namespace oofem {
-REGISTER_Element(Lattice3d);
+REGISTER_Element(Lattice3dNL);
 
-Lattice3d :: Lattice3d(int n, Domain *aDomain) : LatticeStructuralElement(n, aDomain)
+Lattice3dNL :: Lattice3dNL(int n, Domain *aDomain) : LatticeStructuralElement(n, aDomain)
 {
     numberOfDofMans = 2;
     geometryFlag = 0;
@@ -67,12 +67,12 @@ Lattice3d :: Lattice3d(int n, Domain *aDomain) : LatticeStructuralElement(n, aDo
     this->eccT = 0.;
 }
 
-Lattice3d :: ~Lattice3d()
+Lattice3dNL :: ~Lattice3dNL()
 {}
 
 
 void
-Lattice3d :: computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, int li, int ui)
+Lattice3dNL :: computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, int li, int ui)
 // Returns the strain matrix of the receiver.
 {
     if ( geometryFlag == 0 ) {
@@ -136,16 +136,14 @@ Lattice3d :: computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, int 
     answer.at(4, 1) = 0.;
     answer.at(4, 2) = 0;
     answer.at(4, 3) = 0.;
-    answer.at(4, 4) = -1.;
-    //answer.at(4, 4) = -sqrt(Ip / this->area);
+    answer.at(4, 4) = -sqrt(Ip / this->area);
     answer.at(4, 5) = 0.;
     answer.at(4, 6) = 0.;
     //Second node
     answer.at(4, 7) = 0.;
     answer.at(4, 8) = 0.;
     answer.at(4, 9) = 0.;
-    answer.at(4, 10) = 1.;
-    //    answer.at(4, 10) = sqrt(Ip / this->area);
+    answer.at(4, 10) = sqrt(Ip / this->area);
     answer.at(4, 11) = 0.;
     answer.at(4, 12) = 0.;
 
@@ -155,16 +153,14 @@ Lattice3d :: computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, int 
     answer.at(5, 2) = 0.;
     answer.at(5, 3) = 0.;
     answer.at(5, 4) = 0.;
-    answer.at(5, 5) = -1.;
-    //    answer.at(5, 5) = -sqrt(I1 / this->area);
+    answer.at(5, 5) = -sqrt(I1 / this->area);
     answer.at(5, 6) = 0.;
     //Second node
     answer.at(5, 7) = 0.;
     answer.at(5, 8) = 0.;
     answer.at(5, 9) =  0.;
     answer.at(5, 10) = 0.;
-    answer.at(5, 11) = 1.;
-    //answer.at(5, 11) = sqrt(I1 / this->area);
+    answer.at(5, 11) = sqrt(I1 / this->area);
     answer.at(5, 12) = 0.;
 
     //Rotation around z-axis
@@ -174,22 +170,22 @@ Lattice3d :: computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, int 
     answer.at(6, 3) = 0.;
     answer.at(6, 4) = 0.;
     answer.at(6, 5) = 0.;
-    answer.at(6, 6) = -1.;
-    //    answer.at(6, 6) = -sqrt(I2 / this->area);
+    answer.at(6, 6) = -sqrt(I2 / this->area);
     //Second node
     answer.at(6, 7) = 0.;
     answer.at(6, 8) = 0.;
     answer.at(6, 9) =  0.;
     answer.at(6, 10) = 0.;
     answer.at(6, 11) = 0.;
-    answer.at(6, 12) = 1.;
-    //    answer.at(6, 12) = sqrt(I2 / this->area);
-    //    answer.times(1. / this->length);
+    answer.at(6, 12) = sqrt(I2 / this->area);
+
+    answer.times(1. / this->length);
+
     return;
 }
 
 void
-Lattice3d :: giveGPCoordinates(FloatArray &coords)
+Lattice3dNL :: giveGPCoordinates(FloatArray &coords)
 {
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
@@ -199,9 +195,8 @@ Lattice3d :: giveGPCoordinates(FloatArray &coords)
     return;
 }
 
- 
 double
-Lattice3d :: giveLength()
+Lattice3dNL :: giveLength()
 {
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
@@ -212,7 +207,7 @@ Lattice3d :: giveLength()
 
 
 int
-Lattice3d :: giveCrackFlag()
+Lattice3dNL :: giveCrackFlag()
 {
     GaussPoint *gp = this->giveDefaultIntegrationRulePtr()->getIntegrationPoint(0);
     LatticeMaterialStatus *status = static_cast< LatticeMaterialStatus * >( gp->giveMaterialStatus() );
@@ -224,7 +219,7 @@ Lattice3d :: giveCrackFlag()
 
 
 double
-Lattice3d :: giveCrackWidth()
+Lattice3dNL :: giveCrackWidth()
 {
     GaussPoint *gp = this->giveDefaultIntegrationRulePtr()->getIntegrationPoint(0);
     LatticeMaterialStatus *status = static_cast< LatticeMaterialStatus * >( gp->giveMaterialStatus() );
@@ -235,7 +230,7 @@ Lattice3d :: giveCrackWidth()
 }
 
 void
-Lattice3d :: givePlasticStrain(FloatArray &plasticStrain)
+Lattice3dNL :: givePlasticStrain(FloatArray &plasticStrain)
 {
     GaussPoint *gp = this->giveDefaultIntegrationRulePtr()->getIntegrationPoint(0);
     LatticeMaterialStatus *status = static_cast< LatticeMaterialStatus * >( this->giveMaterial()->giveStatus(gp) );
@@ -244,7 +239,7 @@ Lattice3d :: givePlasticStrain(FloatArray &plasticStrain)
 }
 
 void
-Lattice3d :: giveOldPlasticStrain(FloatArray &plasticStrain)
+Lattice3dNL :: giveOldPlasticStrain(FloatArray &plasticStrain)
 {
     GaussPoint *gp = this->giveDefaultIntegrationRulePtr()->getIntegrationPoint(0);
     LatticeMaterialStatus *status = static_cast< LatticeMaterialStatus * >( this->giveMaterial()->giveStatus(gp) );
@@ -253,19 +248,19 @@ Lattice3d :: giveOldPlasticStrain(FloatArray &plasticStrain)
 }
 
 void
-Lattice3d :: computeConstitutiveMatrixAt(FloatMatrix &answer, MatResponseMode rMode, GaussPoint *gp, TimeStep *tStep)
+Lattice3dNL :: computeConstitutiveMatrixAt(FloatMatrix &answer, MatResponseMode rMode, GaussPoint *gp, TimeStep *tStep)
 {
     answer = static_cast< LatticeCrossSection * >( this->giveCrossSection() )->give3dStiffnessMatrix(rMode, gp, tStep);
 }
 
 void
-Lattice3d :: computeStressVector(FloatArray &answer, const FloatArray &strain, GaussPoint *gp, TimeStep *tStep)
+Lattice3dNL :: computeStressVector(FloatArray &answer, const FloatArray &strain, GaussPoint *gp, TimeStep *tStep)
 {
     answer = static_cast< LatticeCrossSection * >( this->giveCrossSection() )->giveLatticeStress3d(strain, gp, tStep);
 }
 
 void
-Lattice3d :: computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode,
+Lattice3dNL :: computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode,
                                     TimeStep *tStep)
 // Computes numerically the stiffness matrix of the receiver.
 {
@@ -276,22 +271,20 @@ Lattice3d :: computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode,
     this->computeBmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), bj);
     this->computeConstitutiveMatrixAt(d, rMode, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
 
-    
-    //    double volume = this->computeVolumeAround(integrationRulesArray [ 0 ]->getIntegrationPoint(0) );
+    double volume = this->computeVolumeAround(integrationRulesArray [ 0 ]->getIntegrationPoint(0) );
 
-    /* for ( int i = 1; i <= 6; i++ ) { */
-    /*     d.at(i, i) *= volume; */
-    /* } */
+    for ( int i = 1; i <= 6; i++ ) {
+        d.at(i, i) *= volume;
+    }
 
     dbj.beProductOf(d, bj);
     bjt.beTranspositionOf(bj);
     answer.beProductOf(bjt, dbj);
-    answer.times(1./this->giveLength());
 
     return;
 }
 
-void Lattice3d :: computeGaussPoints()
+void Lattice3dNL :: computeGaussPoints()
 // Sets up the array of Gauss Points of the receiver.
 {
     integrationRulesArray.resize(1);
@@ -301,7 +294,7 @@ void Lattice3d :: computeGaussPoints()
 
 
 
-double Lattice3d :: giveArea() {
+double Lattice3dNL :: giveArea() {
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
     }
@@ -311,7 +304,7 @@ double Lattice3d :: giveArea() {
 
 
 bool
-Lattice3d :: computeGtoLRotationMatrix(FloatMatrix &answer)
+Lattice3dNL :: computeGtoLRotationMatrix(FloatMatrix &answer)
 {
     FloatMatrix lcs;
     int i, j;
@@ -334,7 +327,7 @@ Lattice3d :: computeGtoLRotationMatrix(FloatMatrix &answer)
 
 
 double
-Lattice3d :: giveNormalStress()
+Lattice3dNL :: giveNormalStress()
 {
     GaussPoint *gp = this->giveDefaultIntegrationRulePtr()->getIntegrationPoint(0);
     LatticeMaterialStatus *status = static_cast< LatticeMaterialStatus * >( gp->giveMaterialStatus() );
@@ -346,7 +339,7 @@ Lattice3d :: giveNormalStress()
 
 
 int
-Lattice3d :: giveLocalCoordinateSystem(FloatMatrix &answer)
+Lattice3dNL :: giveLocalCoordinateSystem(FloatMatrix &answer)
 {
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
@@ -359,7 +352,7 @@ Lattice3d :: giveLocalCoordinateSystem(FloatMatrix &answer)
 
 
 double
-Lattice3d :: computeVolumeAround(GaussPoint *aGaussPoint)
+Lattice3dNL :: computeVolumeAround(GaussPoint *aGaussPoint)
 {
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
@@ -369,7 +362,7 @@ Lattice3d :: computeVolumeAround(GaussPoint *aGaussPoint)
 }
 
 void
-Lattice3d :: giveDofManDofIDMask(int inode, IntArray &answer) const
+Lattice3dNL :: giveDofManDofIDMask(int inode, IntArray &answer) const
 {
     answer = {
         D_u, D_v, D_w, R_u, R_v, R_w
@@ -377,30 +370,30 @@ Lattice3d :: giveDofManDofIDMask(int inode, IntArray &answer) const
 }
 
 void
-Lattice3d :: initializeFrom(InputRecord &ir)
+Lattice3dNL :: initializeFrom(InputRecord &ir)
 {
     LatticeStructuralElement :: initializeFrom(ir);
-    
+
     minLength = 1.e-20;
-    IR_GIVE_OPTIONAL_FIELD(ir, minLength, _IFT_Lattice3d_mlength);
+    IR_GIVE_OPTIONAL_FIELD(ir, minLength, _IFT_Lattice3dNL_mlength);
 
     polygonCoords.resize(0);
-    IR_GIVE_OPTIONAL_FIELD(ir, polygonCoords, _IFT_Lattice3d_polycoords);
+    IR_GIVE_OPTIONAL_FIELD(ir, polygonCoords, _IFT_Lattice3dNL_polycoords);
     numberOfPolygonVertices = polygonCoords.giveSize() / 3.;
 
     couplingFlag = 0;
-    IR_GIVE_OPTIONAL_FIELD(ir, couplingFlag, _IFT_Lattice3d_couplingflag);
+    IR_GIVE_OPTIONAL_FIELD(ir, couplingFlag, _IFT_Lattice3dNL_couplingflag);
 
-    IR_GIVE_OPTIONAL_FIELD(ir, couplingNumbers, _IFT_Lattice3d_couplingnumber);
+    IR_GIVE_OPTIONAL_FIELD(ir, couplingNumbers, _IFT_Lattice3dNL_couplingnumber);
 
     pressures.resize(numberOfPolygonVertices);
     pressures.zero();
-    IR_GIVE_OPTIONAL_FIELD(ir, pressures, _IFT_Lattice3d_pressures);
+    IR_GIVE_OPTIONAL_FIELD(ir, pressures, _IFT_Lattice3dNL_pressures);
 }
 
 
 int
-Lattice3d :: computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords)
+Lattice3dNL :: computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords)
 {
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
@@ -414,7 +407,7 @@ Lattice3d :: computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoo
 
 
 void
-Lattice3d :: computeGeometryProperties()
+Lattice3dNL :: computeGeometryProperties()
 {
     //coordinates of the two nodes
     Node *nodeA, *nodeB;
@@ -452,132 +445,33 @@ Lattice3d :: computeGeometryProperties()
     computeCrossSectionProperties();
 
     this->geometryFlag = 1;
-    
+
     return;
 }
 
- 
+
 void
-  Lattice3d :: computeCrossSectionProperties() {
-   //@Todo: Extend this function so that it can deal with beams and shells.
-   //Currently, polygon vertices are read in which are then used to compute cross-sectional properties.
-   //What we now want is to distinguish three cases: 1) Frame element. No polygon vertices are provided. All properties are read from cross-section, 2) Shell element. Two polygon vertices are provided in one direction is read from two nodes. Thickness is provided by cross-section, 3) Full 3D. Three or more polygon vertices are provided. 
-  if ( this->numberOfPolygonVertices > 0 ) { //Either Full 3D or shell
-     
-     if(this->numberOfPolygonVertices == 1){
-       OOFEM_ERROR("Only one cross-section is provided. Check meshing approach.\n");
-     }
-     else if (this->numberOfPolygonVertices == 2){ //Shell case. Exactly two vertices and thickness are provided.
-      FloatArray th(1);
-      this->giveCrossSection()->give(CS_Thickness, th, this);
-      double t = th.at(1);      
-      if(t <= 0.){
-	OOFEM_ERROR("Two cross-section vertices are provided but no valid shell thickness\n");
-      }
-      
-      // Preserve the two given mid-line points (global coords) BEFORE resize
-      FloatArray m1(3), m2(3);
-      m1.at(1) = polygonCoords.at(1);
-      m1.at(2) = polygonCoords.at(2);
-      m1.at(3) = polygonCoords.at(3);
-      m2.at(1) = polygonCoords.at(4);
-      m2.at(2) = polygonCoords.at(5);
-      m2.at(3) = polygonCoords.at(6);
+Lattice3dNL :: computeLumpedMassMatrix(FloatMatrix &answer, TimeStep *tStep)
+// Returns the lumped mass matrix of the receiver. This expression is
+// valid in both local and global axes.
+{
+    GaussPoint *gp = integrationRulesArray [ 0 ]->getIntegrationPoint(0);
+    double density = static_cast< LatticeCrossSection * >( this->giveCrossSection() )->give('d', gp);
+    double halfMass = density * computeVolumeAround(gp) / 2.;
+    answer.resize(12, 12);
+    answer.zero();
+    answer.at(1, 1) = answer.at(2, 2) = answer.at(3, 3) = halfMass;
+    answer.at(7, 7) = answer.at(8, 8) = answer.at(9, 9) = halfMass;
+}
 
-      // e = element axis (assumed normal to cross-section), already normalized
-      //      const FloatArray &e = this->normal;
 
-    // w = direction along the provided mid-line, projected to be perpendicular to e
-      FloatArray w = m2; w.subtract(m1);
-      double we = w.dotProduct(this->normal);
-      FloatArray proj = this->normal;
-      proj.times(we);
-      w.subtract(proj);
-
-    if ( w.computeNorm() < 1e-12 ) {
-      OOFEM_ERROR("Shell cross-section mid-line is (nearly) parallel to element axis; width direction cannot be formed.\n");
+  
+void
+Lattice3dNL :: computeCrossSectionProperties() {
+    if ( this->numberOfPolygonVertices < 3 ) {
+        printf("Too small number of polygon vertices\n");
+        return;
     }
-    w.normalize();
-
-    // n = thickness direction in the cross-section plane
-    FloatArray n(3);
-    n.beVectorProductOf(this->normal, w);
-    if ( n.computeNorm() < 1e-12 ) {
-        OOFEM_ERROR("Thickness direction cannot be formed (degenerate cross product).\n");
-    }
-    n.normalize();
-
-    // Build 4 corners: (m1±t/2 n, m2±t/2 n)
-    const double h = 0.5 * t;
-    FloatArray off = n; off.times(h);
-
-    FloatArray c1 = m1;
-    c1.add(off);
-    FloatArray c2 = m2;
-    c2.add(off);
-    FloatArray c3 = m2;
-    c3.subtract(off);
-    FloatArray c4 = m1;
-    c4.subtract(off);
-
-    // Overwrite polygonCoordinates with 4 vertices (global coords)
-    this->numberOfPolygonVertices = 4;
-    this->polygonCoords.resize(12);
-
-    //C1
-    for(int i = 1;i<=3;i++){
-      this->polygonCoords.at(i) = c1.at(i);
-    }
-
-    //C2
-    for(int i = 1;i<=3;i++){
-      this->polygonCoords.at(3+i) = c2.at(i);
-    }
-    
-    //C3
-    for(int i = 1;i<=3;i++){
-      this->polygonCoords.at(6+i) = c3.at(i);
-    }
-
-    //C4
-    for(int i = 1;i<=3;i++){
-      this->polygonCoords.at(9+i) = c4.at(i);
-    }
-        
-     }
-
-     //      Debug
-    
-     // --- Compute section reference point x0 on the element axis from polygonCoords ---
-     // coordsA must exist here; if not, rebuild it from nodeA as you do elsewhere.
-     Node *nodeA = this->giveNode(1);
-     FloatArray coordsA(3);
-     for ( int i = 0; i < 3; ++i ) {
-       coordsA.at(i+1) = nodeA->giveCoordinate(i+1);
-     }
-
-     FloatArray x0 = coordsA;
-     double alphaMean = 0.0;
-
-     for ( int k = 0; k < this->numberOfPolygonVertices; ++k ) {
-       FloatArray v(3);
-       v.at(1) = this->polygonCoords.at(3*k + 1);
-       v.at(2) = this->polygonCoords.at(3*k + 2);
-       v.at(3) = this->polygonCoords.at(3*k + 3);
-       
-       v.subtract(coordsA);
-       alphaMean += v.dotProduct(this->normal);
-     }
-     alphaMean /= double(numberOfPolygonVertices);
-
-     FloatArray tmp = this->normal;
-     tmp.times(alphaMean);
-     x0.add(tmp);
-// --- end x0 ---
-
-
-    
-    // Compute the cross-section properties from the geometry provided by the vertices.
 
     //Construct two perpendicular axis so that n is normal to the plane which they create
     //Check, if one of the components of the normal-direction is zero
@@ -616,15 +510,10 @@ void
     FloatArray lpc(3 * numberOfPolygonVertices);
     for ( int k = 0; k < numberOfPolygonVertices; k++ ) {
         for ( int n = 0; n < 3; n++ ) {
-            help(n) = this->polygonCoords(3 * k + n);
+            help(n) = polygonCoords(3 * k + n);
         }
 
-
-	FloatArray rel = help;
-	rel.subtract(x0);
-	test.beProductOf(lcs, rel);
- 
-	//        test.beProductOf(lcs, help);
+        test.beProductOf(lcs, help);
         for ( int n = 0; n < 3; n++ ) {
             lpc(3 * k + n) = test(n);
         }
@@ -648,24 +537,20 @@ void
 
         for ( int k = 0; k < numberOfPolygonVertices; k++ ) {
             for ( int m = 0; m < 3; m++ ) {
-                tempCoords.at(3 * k + m + 1) = this->polygonCoords.at(3 * ( numberOfPolygonVertices - k - 1 ) + m + 1);
+                tempCoords.at(3 * k + m + 1) = polygonCoords.at(3 * ( numberOfPolygonVertices - k - 1 ) + m + 1);
             }
         }
 
-        this->polygonCoords = tempCoords;
+        polygonCoords = tempCoords;
 
         // Calculate again local co-ordinate system for different order
         for ( int k = 0; k < numberOfPolygonVertices; k++ ) {
             for ( int n = 0; n < 3; n++ ) {
-                help(n) = this->polygonCoords(3 * k + n);
+                help(n) = polygonCoords(3 * k + n);
             }
 
-	    FloatArray rel = help;
-	    rel.subtract(x0);
-	    test.beProductOf(lcs, rel);
-	    
-	    //            test.beProductOf(lcs, help);
-	    for ( int n = 0; n < 3; n++ ) {
+            test.beProductOf(lcs, help);
+            for ( int n = 0; n < 3; n++ ) {
                 lpc(3 * k + n) = test(n);
             }
         }
@@ -689,9 +574,8 @@ void
 
     centroid.times(1. / ( 6. * this->area ) );
 
-    //    centroid.at(1) = lpc.at(1); //The first component of all lpcs should be the same
-    centroid.at(1) = 0.0;
-    
+    centroid.at(1) = lpc.at(1); //The first component of all lpcs should be the same
+
     //Shift coordinates to centroid
     for ( int k = 0; k < numberOfPolygonVertices; k++ ) {
         for ( int l = 0; l < 3; l++ ) {
@@ -766,14 +650,10 @@ void
     //Calculate the polygon vertices in the new coordinate system
     for ( int k = 0; k < numberOfPolygonVertices; k++ ) {
         for ( int n = 0; n < 3; n++ ) {
-            help(n) = this->polygonCoords(3 * k + n);
+            help(n) = polygonCoords(3 * k + n);
         }
 
-
-	FloatArray rel = help;
-	rel.subtract(x0);
-	test.beProductOf(this->localCoordinateSystem, rel);
-	//        test.beProductOf(this->localCoordinateSystem, help);
+        test.beProductOf(this->localCoordinateSystem, help);
         for ( int n = 0; n < 3; n++ ) {
             lpc(3 * k + n) = test(n);
         }
@@ -793,95 +673,26 @@ void
 
     centroid.times(1. / ( 6. * this->area ) );
 
-    //    centroid.at(1) = lpc.at(1); //The first component of all lpcs should be the same
-    centroid.at(1) = 0.0;
+    centroid.at(1) = lpc.at(1); //The first component of all lpcs should be the same
 
+    FloatArray midPointLocal(3);
+    midPointLocal.beProductOf(this->localCoordinateSystem, midPoint);
 
-    this->eccS = centroid.at(2);
-    this->eccT = centroid.at(3);
-    
-    /* FloatArray midPointLocal(3); */
-    /* midPointLocal.beProductOf(this->localCoordinateSystem, midPoint); */
-
-    /* //eccentricities stored in the element */
-    /* this->eccS = centroid.at(2) - midPointLocal.at(2); */
-    /* this->eccT = centroid.at(3) - midPointLocal.at(3); */
+    //eccentricities stored in the element
+    this->eccS = centroid.at(2) - midPointLocal.at(2);
+    this->eccT = centroid.at(3) - midPointLocal.at(3);
 
     FloatMatrix transposeLCS;
     transposeLCS.beTranspositionOf(this->localCoordinateSystem);
 
     this->globalCentroid.beProductOf(transposeLCS, centroid);
-    this->globalCentroid.add(x0);
-  } //end of Full 3D case
-  else{ //Frame case. No vertices. Check for degenerated meshes (1 vertex).
-    if(this->numberOfPolygonVertices == 1){
-      OOFEM_ERROR("Too small number of polygon vertices for 3D and shell. Too many for frame element. Check mesh.\n");
-      return;
-    }
-    //Read properties from cross-section
-    FloatArray lc(1);
 
-    this->giveCrossSection()->give(CS_Area, lc, this);
-    this->area = lc.at(1);
-    
-    this->giveCrossSection()->give(CS_InertiaMomentY, lc, this);
-    this->I1 = lc.at(1);
-    
-    this->giveCrossSection()->give(CS_InertiaMomentZ, lc, this);
-    this->I2 = lc.at(1);
-
-    this->giveCrossSection()->give(CS_TorsionConstantX, lc, this);
-    this->Ip = lc.at(1);
-
-    //@TODO. Need to add more. We will need to proide Poisson's ratio if we want to give properties for shear.
-    //But this has to come from the material.
-  }
-  return;
+    return;
 }
-
-double Lattice3d :: giveIy() {
-    if ( geometryFlag == 0 ) {
-        computeGeometryProperties();
-    }
-    return this->I1;
-}
-
-double Lattice3d :: giveIz() {
-    if ( geometryFlag == 0 ) {
-        computeGeometryProperties();
-    }
-
-    return this->I2;
-}
-
-double Lattice3d :: giveIk() {
-    if ( geometryFlag == 0 ) {
-        computeGeometryProperties();
-    }
-
-    return this->Ip;
-}
-
 
 
 void
-Lattice3d :: computeLumpedMassMatrix(FloatMatrix &answer, TimeStep *tStep)
-// Returns the lumped mass matrix of the receiver. This expression is
-// valid in both local and global axes.
-{
-    GaussPoint *gp = integrationRulesArray [ 0 ]->getIntegrationPoint(0);
-    double density = static_cast< LatticeCrossSection * >( this->giveCrossSection() )->give('d', gp);
-    double halfMass = density * computeVolumeAround(gp) / 2.;
-    answer.resize(12, 12);
-    answer.zero();
-    answer.at(1, 1) = answer.at(2, 2) = answer.at(3, 3) = halfMass;
-    answer.at(7, 7) = answer.at(8, 8) = answer.at(9, 9) = halfMass;
-}
-
-
-
-void
-Lattice3d :: saveContext(DataStream &stream, ContextMode mode)
+Lattice3dNL :: saveContext(DataStream &stream, ContextMode mode)
 {
     LatticeStructuralElement :: saveContext(stream, mode);
 
@@ -904,7 +715,7 @@ Lattice3d :: saveContext(DataStream &stream, ContextMode mode)
 
 
 void
-Lattice3d :: restoreContext(DataStream &stream, ContextMode mode)
+Lattice3dNL :: restoreContext(DataStream &stream, ContextMode mode)
 {
     LatticeStructuralElement :: restoreContext(stream, mode);
 
@@ -928,7 +739,7 @@ Lattice3d :: restoreContext(DataStream &stream, ContextMode mode)
 #ifdef __OOFEG
 
 void
-Lattice3d :: drawYourself(oofegGraphicContext &gc, TimeStep *tStep)
+Lattice3dNL :: drawYourself(oofegGraphicContext &gc, TimeStep *tStep)
 {
     OGC_PlotModeType mode = gc.giveIntVarPlotMode();
 
@@ -951,7 +762,7 @@ Lattice3d :: drawYourself(oofegGraphicContext &gc, TimeStep *tStep)
 
 
 
-void Lattice3d :: drawRawGeometry(oofegGraphicContext &gc, TimeStep *tStep)
+void Lattice3dNL :: drawRawGeometry(oofegGraphicContext &gc, TimeStep *tStep)
 {
     GraphicObj *go;
 
@@ -979,7 +790,7 @@ void Lattice3d :: drawRawGeometry(oofegGraphicContext &gc, TimeStep *tStep)
 
 
 void
-Lattice3d :: drawRawCrossSections(oofegGraphicContext &gc, TimeStep *tStep)
+Lattice3dNL :: drawRawCrossSections(oofegGraphicContext &gc, TimeStep *tStep)
 {
     GraphicObj *go;
 
@@ -1021,7 +832,7 @@ Lattice3d :: drawRawCrossSections(oofegGraphicContext &gc, TimeStep *tStep)
 
 
 
-void Lattice3d :: drawDeformedGeometry(oofegGraphicContext &gc, TimeStep *tStep, UnknownType type)
+void Lattice3dNL :: drawDeformedGeometry(oofegGraphicContext &gc, TimeStep *tStep, UnknownType type)
 {
     GraphicObj *go;
 

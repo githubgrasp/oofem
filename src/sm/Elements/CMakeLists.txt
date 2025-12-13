@@ -90,6 +90,7 @@ set (sm_element
     LatticeElements/lattice2d.C
     LatticeElements/lattice2dboundary.C
     LatticeElements/lattice3d.C
+    LatticeElements/lattice3dnl.C
     LatticeElements/lattice3dboundary.C
     LatticeElements/lattice3dboundarytruss.C
     LatticeElements/latticelink3d.C
