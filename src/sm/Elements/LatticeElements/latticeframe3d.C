@@ -437,7 +437,6 @@ namespace oofem {
         return 1;
     }
 
-
     void
     LatticeFrame3d::giveDofManDofIDMask(int inode, IntArray &answer) const
     {

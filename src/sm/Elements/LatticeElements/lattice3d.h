@@ -123,8 +123,11 @@ public:
   double giveIy() override;
   double giveIz() override;
 
-  
 
+
+  void giveInternalForcesVector(FloatArray &answer, TimeStep *tStep, int useUpdatedGpRecord) override;
+
+  
     Element_Geometry_Type giveGeometryType() const override { return EGT_line_1; }
 
     void saveContext(DataStream &stream, ContextMode mode) override;

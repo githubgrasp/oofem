@@ -188,6 +188,49 @@ Lattice3d :: computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, int 
     return;
 }
 
+
+    void
+    Lattice3d::giveInternalForcesVector(FloatArray &answer,
+                                             TimeStep *tStep, int useUpdatedGpRecord)
+    {
+        FloatMatrix b, bt;
+        FloatArray u, stress, strain;
+
+        this->length = giveLength();
+
+        this->computeVectorOf(VM_Total, tStep, u);
+
+        if ( initialDisplacements ) {
+            u.subtract(* initialDisplacements);
+        }
+
+        // zero answer will resize accordingly when adding first contribution
+        answer.clear();
+
+        this->computeBmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), b);
+
+        bt.beTranspositionOf(b);
+
+        if ( useUpdatedGpRecord == 1 ) {
+            LatticeMaterialStatus *lmatStat = dynamic_cast < LatticeMaterialStatus * > ( integrationRulesArray [ 0 ]->getIntegrationPoint(0)->giveMaterialStatus() );
+            stress = lmatStat->giveLatticeStress();
+        } else {
+            if ( !this->isActivated(tStep) ) {
+                strain.zero();
+            }
+            strain.beProductOf(b, u);
+            strain.times(1. / this->length);
+            this->computeStressVector(stress, strain, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
+        }
+
+        answer.beProductOf(bt, stress);
+        if ( !this->isActivated(tStep) ) {
+            answer.zero();
+            return;
+        }
+    }
+
+
 void
 Lattice3d :: giveGPCoordinates(FloatArray &coords)
 {
@@ -568,14 +611,12 @@ void
        v.subtract(coordsA);
        alphaMean += v.dotProduct(this->normal);
      }
-     alphaMean /= double(numberOfPolygonVertices);
+     alphaMean /= double(this->numberOfPolygonVertices);
 
      FloatArray tmp = this->normal;
      tmp.times(alphaMean);
      x0.add(tmp);
 // --- end x0 ---
-
-
     
     // Compute the cross-section properties from the geometry provided by the vertices.
 
@@ -613,8 +654,8 @@ void
 
     //Calculate the local coordinates of the polygon vertices
     FloatArray help(3), test(3);
-    FloatArray lpc(3 * numberOfPolygonVertices);
-    for ( int k = 0; k < numberOfPolygonVertices; k++ ) {
+    FloatArray lpc(3 * this->numberOfPolygonVertices);
+    for ( int k = 0; k < this->numberOfPolygonVertices; k++ ) {
         for ( int n = 0; n < 3; n++ ) {
             help(n) = this->polygonCoords(3 * k + n);
         }
@@ -655,7 +696,7 @@ void
         this->polygonCoords = tempCoords;
 
         // Calculate again local co-ordinate system for different order
-        for ( int k = 0; k < numberOfPolygonVertices; k++ ) {
+        for ( int k = 0; k < this->numberOfPolygonVertices; k++ ) {
             for ( int n = 0; n < 3; n++ ) {
                 help(n) = this->polygonCoords(3 * k + n);
             }
@@ -677,8 +718,8 @@ void
 
     //Calculate centroids
     centroid.resize(3);
-    for ( int k = 0; k < numberOfPolygonVertices; k++ ) {
-        if ( k < numberOfPolygonVertices - 1 ) {
+    for ( int k = 0; k < this->numberOfPolygonVertices; k++ ) {
+        if ( k < this->numberOfPolygonVertices - 1 ) {
             centroid.at(2) += ( lpc(3 * k + 1) + lpc(3 * ( k + 1 ) + 1) ) * ( lpc(3 * k + 1) * lpc(3 * ( k + 1 ) + 2) - lpc(3 * ( k + 1 ) + 1) * lpc(3 * k + 2) );
             centroid.at(3) += ( lpc(3 * k + 2) + lpc(3 * ( k + 1 ) + 2) ) * ( lpc(3 * k + 1) * lpc(3 * ( k + 1 ) + 2) - lpc(3 * ( k + 1 ) + 1) * lpc(3 * k + 2) );
         } else { //Back to zero for n+1
@@ -693,7 +734,7 @@ void
     centroid.at(1) = 0.0;
     
     //Shift coordinates to centroid
-    for ( int k = 0; k < numberOfPolygonVertices; k++ ) {
+    for ( int k = 0; k < this->numberOfPolygonVertices; k++ ) {
         for ( int l = 0; l < 3; l++ ) {
             lpc(3 * k + l) -= centroid(l);
         }
@@ -706,8 +747,8 @@ void
     double Ixy = 0.;
     double a;
 
-    for ( int k = 0; k < numberOfPolygonVertices; k++ ) {
-        if ( k < numberOfPolygonVertices - 1 ) {
+    for ( int k = 0; k < this->numberOfPolygonVertices; k++ ) {
+        if ( k < this->numberOfPolygonVertices - 1 ) {
             a = lpc(3 * k + 1) * lpc(3 * ( k + 1 ) + 2) - lpc(3 * ( k + 1 ) + 1) * lpc(3 * k + 2);
 
             Ixx += ( ( pow(lpc(3 * k + 2), 2.) + lpc(3 * k + 2) * lpc(3 * ( k + 1 ) + 2) + pow(lpc(3 * ( k + 1 ) + 2), 2.) ) * a ) / 12.;
@@ -764,7 +805,7 @@ void
     this->localCoordinateSystem.beProductOf(rotationChange, lcs);
 
     //Calculate the polygon vertices in the new coordinate system
-    for ( int k = 0; k < numberOfPolygonVertices; k++ ) {
+    for ( int k = 0; k < this->numberOfPolygonVertices; k++ ) {
         for ( int n = 0; n < 3; n++ ) {
             help(n) = this->polygonCoords(3 * k + n);
         }
@@ -781,8 +822,8 @@ void
 
     //Calculate centroid again in local coordinate system
     centroid.zero();
-    for ( int k = 0; k < numberOfPolygonVertices; k++ ) {
-        if ( k < numberOfPolygonVertices - 1 ) {
+    for ( int k = 0; k < this->numberOfPolygonVertices; k++ ) {
+        if ( k < this->numberOfPolygonVertices - 1 ) {
             centroid.at(2) += ( lpc(3 * k + 1) + lpc(3 * ( k + 1 ) + 1) ) * ( lpc(3 * k + 1) * lpc(3 * ( k + 1 ) + 2) - lpc(3 * ( k + 1 ) + 1) * lpc(3 * k + 2) );
             centroid.at(3) += ( lpc(3 * k + 2) + lpc(3 * ( k + 1 ) + 2) ) * ( lpc(3 * k + 1) * lpc(3 * ( k + 1 ) + 2) - lpc(3 * ( k + 1 ) + 1) * lpc(3 * k + 2) );
         } else {   //Back to zero for n+1
@@ -984,7 +1025,7 @@ Lattice3d :: drawRawCrossSections(oofegGraphicContext &gc, TimeStep *tStep)
     GraphicObj *go;
 
     //Create as many points as we have polygon vertices
-    numberOfPolygonVertices = this->polygonCoords.giveSize() / 3.;
+    this->numberOfPolygonVertices = this->polygonCoords.giveSize() / 3.;
     WCRec p [ numberOfPolygonVertices ]; /* poin */
 
     if ( !gc.testElementGraphicActivity(this) ) {
