@@ -378,7 +378,8 @@ int Grid::instanciateYourself(ConverterDataReader *dr, const char nodeFileName[]
     irControlRec.finish();
 
     // read grid components
-    int nvertex, nelem, ncurve, nsurface, nregion, ninclusion, nfibre;
+    int nvertex, nelem, ncurve, nsurface, nregion, ninclusion;
+    int nfibre = 0;
     auto &irDomainCompRec = dr->giveInputRecord(ConverterDataReader::CIR_domainCompRec, 1);
     IR_GIVE_FIELD(irDomainCompRec, nvertex, _IFT_Grid_nvertex); // Macro
     IR_GIVE_FIELD(irDomainCompRec, ncurve, _IFT_Grid_ncurve); // Macro
