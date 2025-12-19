@@ -777,7 +777,7 @@ AdaptiveNonLinearStatic :: assembleInitialLoadVector(FloatArray &loadVector, Flo
     for ( int imstep = 1; imstep < mStepNum; imstep++ ) {
         auto iMStep = this->giveMetaStep(imstep);
         auto &ir = iMStep->giveAttributesRecord();
-        //hasfixed = ir.hasField("fixload");
+        //hasfixed = ir->hasField("fixload");
         hasfixed = 1;
         if ( hasfixed ) {
             // test for control mode
@@ -794,7 +794,7 @@ AdaptiveNonLinearStatic :: assembleInitialLoadVector(FloatArray &loadVector, Flo
             IR_GIVE_OPTIONAL_FIELD(ir, mode, _IFT_AdaptiveNonLinearStatic_controlmode);
 
             // check if displacement control takes place
-            if ( ir.hasField(_IFT_AdaptiveNonLinearStatic_ddm) ) {
+            if ( ir->hasField(_IFT_AdaptiveNonLinearStatic_ddm) ) {
                 OOFEM_ERROR("fixload recovery not supported for direct displacement control");
             }
 
@@ -819,7 +819,7 @@ AdaptiveNonLinearStatic :: assembleInitialLoadVector(FloatArray &loadVector, Flo
                 }
             } else if ( mode == ( int ) nls_indirectControl ) {
                 // bad practise here
-                if ( !ir.hasField(_IFT_NonLinearStatic_donotfixload) ) {
+                if ( !ir->hasField(_IFT_NonLinearStatic_donotfixload) ) {
                     TimeStep *old = new TimeStep(firststep, this, imstep, firststep - 1.0, deltaT, 0);
                     this->assembleIncrementalReferenceLoadVectors(_incrementalLoadVector, _incrementalLoadVectorOfPrescribed,
                                                                   rlm, this->giveDomain(domainIndx), old);

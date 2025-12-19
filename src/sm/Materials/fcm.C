@@ -1983,12 +1983,12 @@ FCMMaterial :: initializeFrom(InputRecord &ir)
 
 
     this->crackSpacing = -1.;
-    if ( ir.hasField(_IFT_FCM_crackSpacing) ) {
+    if ( ir->hasField(_IFT_FCM_crackSpacing) ) {
         IR_GIVE_FIELD(ir, crackSpacing, _IFT_FCM_crackSpacing);
     }
 
     this->multipleCrackShear = false;
-    if ( ir.hasField(_IFT_FCM_multipleCrackShear) ) {
+    if ( ir->hasField(_IFT_FCM_multipleCrackShear) ) {
         this->multipleCrackShear = true;
     }
 

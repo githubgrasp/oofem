@@ -37,6 +37,7 @@
 #define volumetricenergyinterface_h
 
 #include "tensor/tensor.h"
+#include "inputrecord.h"
 
 ///@name Input fields for VolumetricEnergyInterface
 //@{
@@ -45,7 +46,6 @@
 //@}
 
 namespace oofem {
-  class InputRecord;
 
 /**
  * This class implements Volumetric form of energy fo Compressible Hyperelastic materials.

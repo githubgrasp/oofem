@@ -131,7 +131,7 @@ IntElLine1PF :: initializeFrom(InputRecord &ir)
 {
     StructuralInterfaceElement :: initializeFrom(ir);
 
-    if ( ir.hasField(_IFT_IntElLine1PF_prescribedDamage) ) {
+    if ( ir->hasField(_IFT_IntElLine1PF_prescribedDamage) ) {
         IR_GIVE_FIELD(ir, this->prescribed_damage, _IFT_IntElLine1PF_prescribedDamage);
         //this->alpha.setValues(2, damage, damage);
     }

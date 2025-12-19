@@ -121,7 +121,7 @@ public:
     /// Destructor
     virtual ~ExportModule();
     /// Initializes receiver according to object description stored in input record.
-    virtual void initializeFrom(InputRecord &ir);
+    virtual void initializeFrom(const InputRecord& ir);
     /**
      * Writes the output. Abstract service.
      * @param tStep Time step.

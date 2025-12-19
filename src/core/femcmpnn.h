@@ -48,13 +48,14 @@
 #include "contextioresulttype.h"
 #include "contextmode.h"
 #include "floatarray.h"
+#include "inputrecord.h"
 
 namespace oofem {
 class DataStream;
 class Domain;
 class Interface;
 class TimeStep;
-class InputRecord;
+// class InputRecord_;
 class DynamicInputRecord;
 class oofegGraphicContext;
 class EntityRenumberingFunctor;

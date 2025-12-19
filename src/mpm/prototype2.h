@@ -411,11 +411,11 @@ namespace oofem {
         void initializeFrom(InputRecord &ir, EngngModel* problem) override {
             MPMSymbolicTerm::initializeFrom(ir, problem);
             int value;
-            if (ir.hasField("lhsmatmode")) {
+            if (ir->hasField("lhsmatmode")) {
                 IR_GIVE_FIELD(ir, value, "lhsmatmode");
                 lhsmatmode = (MatResponseMode) value;
             }
-            if (ir.hasField("rhsmatmode")) {
+            if (ir->hasField("rhsmatmode")) {
                 IR_GIVE_FIELD(ir, value, "rhsmatmode");
                 rhsmatmode = (MatResponseMode) value;
             }

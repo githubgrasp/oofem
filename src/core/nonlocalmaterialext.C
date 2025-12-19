@@ -765,7 +765,7 @@ NonlocalMaterialExtensionInterface :: evaluateSupportRadius(double cl) const
 void
 NonlocalMaterialExtensionInterface :: initializeFrom(InputRecord &ir)
 {
-    if ( ir.hasField(_IFT_NonlocalMaterialExtensionInterface_regionmap) ) {
+    if ( ir->hasField(_IFT_NonlocalMaterialExtensionInterface_regionmap) ) {
         IR_GIVE_FIELD(ir, regionMap, _IFT_NonlocalMaterialExtensionInterface_regionmap);
         if ( regionMap.giveSize() != this->giveDomain()->giveNumberOfRegions() ) {
             OOFEM_ERROR("regionMap size mismatch");

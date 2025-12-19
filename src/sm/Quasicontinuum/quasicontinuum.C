@@ -143,13 +143,13 @@ Quasicontinuum :: createInterpolationElements(Domain *d)
         }
 
         int nelem = d->giveNumberOfElements();
-        DynamicInputRecord irEl;
+        auto irEl=std::make_shared<DynamicInputRecord>();
         // over interpolation elements
         for ( int i = 1; i <= ninterpelem; i++ ) {
             int elemNumber = nelem + i;
             d->resizeElements(elemNumber);
             auto elem = classFactory.createElement(elemType, elemNumber, d);
-            irEl.setField(interpolationMeshNodes [ i - 1 ], Element::IPK_Element_nodes.getNameCStr());
+            irEl->setField(interpolationMeshNodes [ i - 1 ], Element::IPK_Element_nodes.getNameCStr());
             //irEl.setField( ncrosssect, _IFT_Element_crosssect);
             //irEl.setField( nmat, _IFT_Element_mat);
             elem->initializeFrom(irEl, 1);
@@ -167,9 +167,9 @@ Quasicontinuum :: addCrosssectionToInterpolationElements(Domain *d)
     int ncrosssect = d->giveNumberOfCrossSectionModels() + 1;
     d->resizeCrossSectionModels(ncrosssect);
     auto crossSection = classFactory.createCrossSection("SimpleCS", ncrosssect, d);
-    DynamicInputRecord irCS;
-    irCS.setField(1.0, _IFT_SimpleCrossSection_thick);
-    irCS.setField(1.0, _IFT_SimpleCrossSection_width);
+    auto irCS=std::make_shared<DynamicInputRecord>();
+    irCS->setField(1.0, _IFT_SimpleCrossSection_thick);
+    irCS->setField(1.0, _IFT_SimpleCrossSection_width);
     crossSection->initializeFrom(irCS);
     d->setCrossSection(ncrosssect, std::move(crossSection));
 
@@ -188,11 +188,11 @@ Quasicontinuum :: applyApproach1(Domain *d)
     int nmat = d->giveNumberOfMaterialModels() + 1;
     d->resizeMaterials(nmat);
     auto mat = classFactory.createMaterial("IsoLE", nmat, d);
-    DynamicInputRecord irMat;
-    irMat.setField(1.e-20, _IFT_IsotropicLinearElasticMaterial_e);
-    irMat.setField(0.0, _IFT_IsotropicLinearElasticMaterial_n);
-    irMat.setField(0.0, _IFT_IsotropicLinearElasticMaterial_talpha);
-    irMat.setField(0.0, _IFT_Material_density);
+    auto irMat=std::make_shared<DynamicInputRecord>();
+    irMat->setField(1.e-20, _IFT_IsotropicLinearElasticMaterial_e);
+    irMat->setField(0.0, _IFT_IsotropicLinearElasticMaterial_n);
+    irMat->setField(0.0, _IFT_IsotropicLinearElasticMaterial_talpha);
+    irMat->setField(0.0, _IFT_Material_density);
     mat->initializeFrom(irMat);
     d->setMaterial(nmat, std::move(mat));
 
@@ -321,14 +321,14 @@ Quasicontinuum :: applyApproach2(Domain *d, int homMtrxType, double volumeOfInte
     int nmat = d->giveNumberOfMaterialModels() + 1;
     d->resizeMaterials(nmat);
     std::unique_ptr<Material> mat;
-    DynamicInputRecord irMat;
+    auto irMat=std::make_shared<DynamicInputRecord>();
     // isotropic
     if ( homMtrxType == 1 ) {
         mat = classFactory.createMaterial("IsoLE", nmat, d);
-        irMat.setField(homogenizedE, _IFT_IsotropicLinearElasticMaterial_e);
-        irMat.setField(homogenizedNu, _IFT_IsotropicLinearElasticMaterial_n);
-        irMat.setField(0.0, _IFT_IsotropicLinearElasticMaterial_talpha);
-        irMat.setField(0.0, _IFT_Material_density);
+        irMat->setField(homogenizedE, _IFT_IsotropicLinearElasticMaterial_e);
+        irMat->setField(homogenizedNu, _IFT_IsotropicLinearElasticMaterial_n);
+        irMat->setField(0.0, _IFT_IsotropicLinearElasticMaterial_talpha);
+        irMat->setField(0.0, _IFT_Material_density);
         // anisotropic
     } else if ( homMtrxType == 2 ) {
         //OOFEM_ERROR("anisotropic homog. is not inmplemented yet");
@@ -353,9 +353,10 @@ Quasicontinuum :: applyApproach2(Domain *d, int homMtrxType, double volumeOfInte
         } else {
             OOFEM_ERROR("Invalid number of dimensions. Only 2d and 3d domains are supported in QC simulation. \n");
         }
-        irMat.setField(stiff, _IFT_AnisotropicLinearElasticMaterial_stiff);
-        //irMat.setField(alpha, _IFT_AnisotropicLinearElasticMaterial_talpha);
-        irMat.setField(0.0, _IFT_Material_density);
+        irMat->setField(stiff, _IFT_AnisotropicLinearElasticMaterial_stiff);
+        //irMat->setField(alpha, _IFT_AnisotropicLinearElasticMaterial_talpha);
+        irMat->setField(0.0, _IFT_Material_density);
+
     } else {
         OOFEM_ERROR("Invalid homMtrxType");
     }
@@ -535,7 +536,7 @@ Quasicontinuum :: applyApproach3(Domain *d, int homMtrxType)
     int originalNumberOfMaterials = d->giveNumberOfMaterialModels();
     d->resizeMaterials(originalNumberOfMaterials + noIntEl);
     int nmat = originalNumberOfMaterials;
-    DynamicInputRecord irMat;
+    auto irMat=std::make_shared<DynamicInputRecord>();
 
     // isotropic
     if ( homMtrxType == 1 ) {
@@ -544,10 +545,10 @@ Quasicontinuum :: applyApproach3(Domain *d, int homMtrxType)
             nmat++;
             homogenizationOfStiffMatrix(homogenizedE, homogenizedNu, individualStiffnessMatrices [ i - 1 ]);
             auto mat = classFactory.createMaterial("IsoLE", nmat, d);
-            irMat.setField(homogenizedE, _IFT_IsotropicLinearElasticMaterial_e);
-            irMat.setField(homogenizedNu, _IFT_IsotropicLinearElasticMaterial_n);
-            irMat.setField(0.0, _IFT_IsotropicLinearElasticMaterial_talpha);
-            irMat.setField(0.0, _IFT_Material_density);
+            irMat->setField(homogenizedE, _IFT_IsotropicLinearElasticMaterial_e);
+            irMat->setField(homogenizedNu, _IFT_IsotropicLinearElasticMaterial_n);
+            irMat->setField(0.0, _IFT_IsotropicLinearElasticMaterial_talpha);
+            irMat->setField(0.0, _IFT_Material_density);
 
             mat->initializeFrom(irMat);
             d->setMaterial(nmat, std::move(mat));
@@ -578,9 +579,9 @@ Quasicontinuum :: applyApproach3(Domain *d, int homMtrxType)
             } else {
                 OOFEM_ERROR("Invalid number of dimensions. Only 2d and 3d domains are supported in QC simulation. \n");
             }
-            irMat.setField(stiff, _IFT_AnisotropicLinearElasticMaterial_stiff);
-            // irMat.setField(alpha, _IFT_AnisotropicLinearElasticMaterial_talpha);
-            irMat.setField(0.0, _IFT_Material_density);
+            irMat->setField(stiff, _IFT_AnisotropicLinearElasticMaterial_stiff);
+            // irMat->setField(alpha, _IFT_AnisotropicLinearElasticMaterial_talpha);
+            irMat->setField(0.0, _IFT_Material_density);
 
             mat->initializeFrom(irMat);
             d->setMaterial(nmat, std::move(mat));

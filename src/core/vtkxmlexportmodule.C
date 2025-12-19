@@ -96,7 +96,7 @@ VTKXMLExportModule::initializeFrom(InputRecord &ir)
     IR_GIVE_OPTIONAL_FIELD(ir, primaryVarsToExport, _IFT_VTKXMLExportModule_primvars); // Macro - see unknowntype.h
     IR_GIVE_OPTIONAL_FIELD(ir, externalForcesToExport, _IFT_VTKXMLExportModule_externalForces); // Macro - see unknowntype.h
     IR_GIVE_OPTIONAL_FIELD(ir, ipInternalVarsToExport, _IFT_VTKXMLExportModule_ipvars); // Macro - see internalstatetype.h
-    if ( ir.hasField(_IFT_VTKXMLExportModule_exportSetMembershipFlag) ) {
+    if ( ir->hasField(_IFT_VTKXMLExportModule_exportSetMembershipFlag) ) {
         exportSetMembershipFlag = true;
     }
 

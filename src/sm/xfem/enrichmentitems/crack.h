@@ -36,13 +36,13 @@
 
 #include "xfem/enrichmentitem.h"
 #include "xfem/hybridei.h"
+#include "inputrecord.h"
 
 #define _IFT_Crack_Name "crack"
 
 namespace oofem {
 class XfemManager;
 class Domain;
-class InputRecord;
 class GaussPoint;
 class GnuplotExportModule;
 

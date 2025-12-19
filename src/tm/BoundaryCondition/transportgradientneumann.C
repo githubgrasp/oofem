@@ -84,7 +84,7 @@ void TransportGradientNeumann :: initializeFrom(InputRecord &ir)
     this->mCenterCoord.clear();
     IR_GIVE_OPTIONAL_FIELD(ir, mCenterCoord, _IFT_TransportGradientNeumann_centerCoords)
     
-    this->dispControl = ir.hasField(_IFT_TransportGradientNeumann_dispControl);    
+    this->dispControl = ir->hasField(_IFT_TransportGradientNeumann_dispControl);
 }
 
 

@@ -93,7 +93,7 @@ Masonry02 :: initializeFrom(InputRecord &ir)
     IR_GIVE_FIELD(ir, km, _IFT_Masonry02_km);
     IR_GIVE_FIELD(ir, kr, _IFT_Masonry02_kr);
 
-    if ( ir.hasField(_IFT_Masonry02_cplane) ) {
+    if ( ir->hasField(_IFT_Masonry02_cplane) ) {
         this->rmType = mpm_CuttingPlane;
     }
 }

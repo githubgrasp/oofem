@@ -83,8 +83,8 @@ int FractureManager :: instanciateYourself(DataReader &dr)
 
     // Create and initialize all failure criterias
     for ( int i = 1; i <= ( int ) this->criteriaList.size(); i++ ) {
-        auto &mir = dr.giveInputRecord(DataReader :: IR_failCritRec, i);
-        mir.giveRecordKeywordField(name);
+        auto mir = dr.giveInputRecord(DataReader :: IR_failCritRec, i);
+        mir->giveRecordKeywordField(name);
 
         auto failCriteria = classFactory.createFailureCriteria(name.c_str(), i, this);
         if ( !failCriteria ) {

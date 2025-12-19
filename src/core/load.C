@@ -117,7 +117,7 @@ Load :: initializeFrom(InputRecord &ir)
         }
     }
 
-    this->reference = ir.hasField(_IFT_Load_reference);
+    this->reference = ir->hasField(_IFT_Load_reference);
 }
 
 

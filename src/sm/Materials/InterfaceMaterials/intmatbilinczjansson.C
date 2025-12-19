@@ -389,7 +389,7 @@ IntMatBilinearCZJansson :: initializeFrom(InputRecord &ir)
         throw ValueInputException(ir, _IFT_IntMatBilinearCZJansson_gamma, "must be positive");
     }
 
-    if ( ir.hasField(_IFT_IntMatBilinearCZJansson_semiexplicit) ) {
+    if ( ir->hasField(_IFT_IntMatBilinearCZJansson_semiexplicit) ) {
         mSemiExplicit = true;
         printf("In IntMatBilinearCZJansson::initializeFrom: Semi-explicit time integration activated.\n");
     }

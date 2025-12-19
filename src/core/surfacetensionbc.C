@@ -66,7 +66,7 @@ void SurfaceTensionBoundaryCondition :: initializeFrom(InputRecord &ir)
 
     IR_GIVE_FIELD(ir, this->gamma, _IFT_SurfaceTensionBoundaryCondition_gamma);
 
-    this->useTangent = ir.hasField(_IFT_SurfaceTensionBoundaryCondition_useTangent);
+    this->useTangent = ir->hasField(_IFT_SurfaceTensionBoundaryCondition_useTangent);
 }
 
 void SurfaceTensionBoundaryCondition :: giveLocationArrays(std :: vector< IntArray > &rows, std :: vector< IntArray > &cols, CharType type,

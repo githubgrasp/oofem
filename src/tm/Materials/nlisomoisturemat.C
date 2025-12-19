@@ -151,7 +151,7 @@ NlIsoMoistureMaterial::initializeFrom(InputRecord &ir)
         IR_GIVE_FIELD(ir, mu, _IFT_NlIsoMoistureMaterial_mu);
 
         // read temperature - either constant or time-dependent
-        if ( ir.hasField(_IFT_NlIsoMoistureMaterial_ttf) ) {
+        if ( ir->hasField(_IFT_NlIsoMoistureMaterial_ttf) ) {
             IR_GIVE_FIELD(ir, T_TF, _IFT_NlIsoMoistureMaterial_ttf);
         } else {
             IR_GIVE_FIELD(ir, T, _IFT_NlIsoMoistureMaterial_t);

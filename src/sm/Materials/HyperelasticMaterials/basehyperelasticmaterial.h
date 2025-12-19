@@ -36,6 +36,7 @@
 #include "floatmatrix.h"
 #include "floatarray.h"
 #include "mathfem.h"
+#include "inputrecord.h"
 #include "tensor/tensor2.h"
 #include "tensor/tensor4.h"
 
@@ -50,7 +51,6 @@
 
 
 namespace oofem {
-class InputRecord;
 /**
  * Abstract base class for hyperelastic materials
  * It provides calculation of first and second derivative of principal invariants of the left Cauchy green tensor with respect to deformation gradient

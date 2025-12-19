@@ -343,7 +343,7 @@ int main(int argc, char *argv[])
     if ( monitorOutput ) {
          // create solution status monitor (and redirect its output to stdout)
         std :: unique_ptr<ExportModule> module = std :: make_unique< SolutionStatusExportModule >(0, problem.get(), stdout);
-        DynamicInputRecord ir;
+        std::shared_ptr<DynamicInputRecord> ir=std::make_shared<DynamicInputRecord>();
         module->initializeFrom(ir);
         module->initialize();
         problem->giveExportModuleManager()->registerModule(module);

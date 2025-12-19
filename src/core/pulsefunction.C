@@ -87,7 +87,7 @@ PulseFunction :: initializeFrom(InputRecord &ir)
 {
     Function :: initializeFrom(ir);
 
-    if (ir.hasField(_IFT_PulseFunction_tsteptime)) {
+    if (ir->hasField(_IFT_PulseFunction_tsteptime)) {
         mode = 1;
         IR_GIVE_FIELD(ir, time, _IFT_PulseFunction_tsteptime);
     } else {

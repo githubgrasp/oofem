@@ -209,8 +209,8 @@ int XfemManager :: instanciateYourself(DataReader &dr)
 
     enrichmentItemList.resize(numberOfEnrichmentItems);
     for ( int i = 1; i <= numberOfEnrichmentItems; i++ ) {
-        auto &mir = dr.giveInputRecord(DataReader :: IR_enrichItemRec, i);
-        mir.giveRecordKeywordField(name);
+        auto mir = dr.giveInputRecord(DataReader :: IR_enrichItemRec, i);
+        mir->giveRecordKeywordField(name);
 
         std :: unique_ptr< EnrichmentItem >ei( classFactory.createEnrichmentItem( name.c_str(), i, this, this->giveDomain() ) );
         if ( ei.get() == NULL ) {
@@ -224,8 +224,8 @@ int XfemManager :: instanciateYourself(DataReader &dr)
 
     mNucleationCriteria.resize(numberOfNucleationCriteria);
     for ( int i = 1; i <= numberOfNucleationCriteria; i++ ) {
-        auto &mir = dr.giveInputRecord(DataReader :: IR_crackNucleationRec, i);
-        mir.giveRecordKeywordField(name);
+        auto mir = dr.giveInputRecord(DataReader :: IR_crackNucleationRec, i);
+        mir->giveRecordKeywordField(name);
 
         std :: unique_ptr< NucleationCriterion >nc( classFactory.createNucleationCriterion( name.c_str(), this->giveDomain() ) );
         if ( nc.get() == NULL ) {

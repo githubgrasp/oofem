@@ -42,7 +42,7 @@
 namespace oofem {
 class GaussPoint;
 class Domain;
-class InputRecord;
+
 
 /**
  * Dummy material model, no functionality. Convenient for special-purpose elements not

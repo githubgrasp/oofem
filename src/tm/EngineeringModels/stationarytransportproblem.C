@@ -76,7 +76,7 @@ StationaryTransportProblem :: initializeFrom(InputRecord &ir)
     this->sparseMtrxType = ( SparseMtrxType ) val;
 
     ///@todo Combine this option with structural problems, where it is possible to keep the secant tangent elastic tangent (or generally, the initial tangent) etc. One option should fit all common needs here.
-    this->keepTangent = ir.hasField(_IFT_StationaryTransportProblem_keepTangent);
+    this->keepTangent = ir->hasField(_IFT_StationaryTransportProblem_keepTangent);
 
     // read field export flag
     IntArray exportFields;

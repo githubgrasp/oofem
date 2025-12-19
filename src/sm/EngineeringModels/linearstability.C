@@ -120,7 +120,7 @@ LinearStability :: initializeFrom(InputRecord &ir)
 
     nMetaSteps = 0;
 
-    suppressOutput = ir.hasField(_IFT_EngngModel_suppressOutput);
+    suppressOutput = ir->hasField(_IFT_EngngModel_suppressOutput);
 
     if (suppressOutput) {
         printf("Suppressing output.\n");

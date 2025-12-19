@@ -77,7 +77,7 @@ void TransportGradientDirichlet :: initializeFrom(InputRecord &ir)
     mCenterCoord.resize(3);
     IR_GIVE_OPTIONAL_FIELD(ir, mCenterCoord, _IFT_TransportGradientDirichlet_centerCoords);
 
-    this->tractionControl = ir.hasField(_IFT_TransportGradientDirichlet_tractionControl);
+    this->tractionControl = ir->hasField(_IFT_TransportGradientDirichlet_tractionControl);
     if ( this->tractionControl ) {
         IR_GIVE_FIELD(ir, surfSets, _IFT_TransportGradientDirichlet_surfSets);
         //IR_GIVE_FIELD(ir, edgeSets, _IFT_TransportGradientDirichlet_edgeSets);

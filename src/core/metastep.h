@@ -82,7 +82,7 @@ protected:
     /// final time of the metastep
     double finalTime = 0;
     /// Engineering model attributes.
-    std::shared_ptr<InputRecord> attributes;
+    std::shared_ptr<InputRecord_> attributes;
     /// Start solution step number for which receiver is responsible.
     int sindex;
     /// Receiver number.
@@ -119,7 +119,7 @@ public:
     /// Returns time increment.
     double giveTimeIncrement() { return this->deltaT; }
     /// Returns e-model attributes.
-    InputRecord &giveAttributesRecord() { return *this->attributes; }
+    InputRecord &giveAttributesRecord() { return attributes; }
     /**
      * Instanciates the receiver from input record.
      */

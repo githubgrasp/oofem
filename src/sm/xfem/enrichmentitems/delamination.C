@@ -75,8 +75,8 @@ int Delamination :: instanciateYourself(DataReader &dr)
 
     // Instantiate enrichment function
     {
-        auto &mir = dr.giveInputRecord(DataReader :: IR_enrichFuncRec, 1);
-        mir.giveRecordKeywordField(name);
+        auto mir = dr.giveInputRecord(DataReader :: IR_enrichFuncRec, 1);
+        mir->giveRecordKeywordField(name);
 
         mpEnrichmentFunc = classFactory.createEnrichmentFunction( name.c_str(), 1, this->giveDomain() );
         if ( mpEnrichmentFunc ) {
@@ -89,8 +89,8 @@ int Delamination :: instanciateYourself(DataReader &dr)
 
     // Instantiate enrichment domain
     {
-        auto &mir = dr.giveInputRecord(DataReader :: IR_geoRec, 1);
-        mir.giveRecordKeywordField(name);
+        auto mir = dr.giveInputRecord(DataReader :: IR_geoRec, 1);
+        mir->giveRecordKeywordField(name);
 
         IntArray idList;
         IR_GIVE_FIELD(mir, idList, _IFT_ListBasedEI_list);
@@ -109,8 +109,8 @@ int Delamination :: instanciateYourself(DataReader &dr)
     } else {
         std :: string enrFrontNameStart, enrFrontNameEnd;
 
-        auto &enrFrontStartIr = dr.giveInputRecord(DataReader :: IR_enrichFrontRec, mEnrFrontIndex);
-        enrFrontStartIr.giveRecordKeywordField(enrFrontNameStart);
+        auto enrFrontStartIr = dr.giveInputRecord(DataReader :: IR_enrichFrontRec, mEnrFrontIndex);
+        enrFrontStartIr->giveRecordKeywordField(enrFrontNameStart);
 
         mpEnrichmentFrontStart = classFactory.createEnrichmentFront( enrFrontNameStart.c_str() );
         if ( mpEnrichmentFrontStart ) {
@@ -120,8 +120,8 @@ int Delamination :: instanciateYourself(DataReader &dr)
             OOFEM_ERROR( "Failed to create enrichment front (%s)", enrFrontNameStart.c_str() );
         }
 
-        auto &enrFrontEndIr = dr.giveInputRecord(DataReader :: IR_enrichFrontRec, mEnrFrontIndex);
-        enrFrontEndIr.giveRecordKeywordField(enrFrontNameEnd);
+        auto enrFrontEndIr = dr.giveInputRecord(DataReader :: IR_enrichFrontRec, mEnrFrontIndex);
+        enrFrontEndIr->giveRecordKeywordField(enrFrontNameEnd);
 
         mpEnrichmentFrontEnd = classFactory.createEnrichmentFront( enrFrontNameEnd.c_str() );
         if ( mpEnrichmentFrontEnd ) {
@@ -139,8 +139,8 @@ int Delamination :: instanciateYourself(DataReader &dr)
     } else {
         std :: string propLawName;
 
-        auto &propLawir = dr.giveInputRecord(DataReader :: IR_propagationLawRec, mPropLawIndex);
-        propLawir.giveRecordKeywordField(propLawName);
+        auto propLawir = dr.giveInputRecord(DataReader :: IR_propagationLawRec, mPropLawIndex);
+        propLawir->giveRecordKeywordField(propLawName);
 
         mpPropagationLaw = classFactory.createPropagationLaw( propLawName.c_str() );
         if ( mpPropagationLaw ) {
@@ -355,7 +355,7 @@ void Delamination :: initializeFrom(InputRecord &ir)
     // Compute the delamination xi-coord
     IR_GIVE_FIELD(ir, this->interfaceNum, _IFT_Delamination_interfacenum); // interface number from the bottom
     IR_GIVE_FIELD(ir, this->crossSectionNum, _IFT_Delamination_csnum);
-    if ( ir.hasField(_IFT_Delamination_averageStresses) ) {
+    if ( ir->hasField(_IFT_Delamination_averageStresses) ) {
         this->recoverStresses = false;
         //printf("averageStresses");
     }

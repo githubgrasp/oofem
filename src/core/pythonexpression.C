@@ -63,7 +63,7 @@ PythonExpression :: initializeFrom(InputRecord &ir)
     Function :: initializeFrom(ir);
 
     // Check if the f expression is given
-    if (ir.hasField(_IFT_PythonExpression_f)) {
+    if (ir->hasField(_IFT_PythonExpression_f)) {
         IR_GIVE_FIELD(ir, this->fExpression, _IFT_PythonExpression_f);
     } else {
         std::string path;
@@ -76,9 +76,9 @@ PythonExpression :: initializeFrom(InputRecord &ir)
     }
 
     // Check if the dfdt expression is given
-    if (ir.hasField(_IFT_PythonExpression_dfdt)) {
+    if (ir->hasField(_IFT_PythonExpression_dfdt)) {
         IR_GIVE_FIELD(ir, this->dfdtExpression, _IFT_PythonExpression_dfdt);
-    } else if (ir.hasField(_IFT_PythonExpression_dfdtfile)) {
+    } else if (ir->hasField(_IFT_PythonExpression_dfdtfile)) {
         std::string path;
         IR_GIVE_OPTIONAL_FIELD(ir, path, _IFT_PythonExpression_dfdtfile);
         this->readFile2String(path, this->dfdtExpression);
@@ -89,9 +89,9 @@ PythonExpression :: initializeFrom(InputRecord &ir)
     }
 
     // Check if the d2fdt2 expression is given
-    if (ir.hasField(_IFT_PythonExpression_d2fdt2)) {
+    if (ir->hasField(_IFT_PythonExpression_d2fdt2)) {
         IR_GIVE_FIELD(ir, this->d2fdt2Expression, _IFT_PythonExpression_d2fdt2);
-    } else if (ir.hasField(_IFT_PythonExpression_d2fdt2file)) {
+    } else if (ir->hasField(_IFT_PythonExpression_d2fdt2file)) {
         std::string path;
         IR_GIVE_OPTIONAL_FIELD(ir, path, _IFT_PythonExpression_d2fdt2file);
         this->readFile2String(path, this->d2fdt2Expression);

@@ -160,7 +160,7 @@ FRCFCM :: initializeFrom(InputRecord &ir)
     }
 
     if ( ( fiberType == FT_CAF ) || ( fiberType == FT_SAF ) ) {
-        if  ( ir.hasField(_IFT_FRCFCM_orientationVector) ) {
+        if  ( ir->hasField(_IFT_FRCFCM_orientationVector) ) {
             IR_GIVE_FIELD(ir, orientationVector, _IFT_FRCFCM_orientationVector);
 
             if ( !( ( this->orientationVector.giveSize() == 2 ) || ( this->orientationVector.giveSize() == 3 ) ) ) {
@@ -202,7 +202,7 @@ FRCFCM :: initializeFrom(InputRecord &ir)
     // compute or read shear modulus of fibers
     double nuf = 0.;
     Gfib = 0.;
-    if  ( ir.hasField(_IFT_FRCFCM_nuf) ) {
+    if  ( ir->hasField(_IFT_FRCFCM_nuf) ) {
         IR_GIVE_FIELD(ir, nuf, _IFT_FRCFCM_nuf);
         Gfib = Ef / ( 2. * ( 1. + nuf ) );
     } else {
@@ -248,7 +248,7 @@ FRCFCM :: initializeFrom(InputRecord &ir)
         this->w_star = this->Lf * this->Lf * this->tau_0 / ( ( 1. + this->eta ) * this->Ef * this->Df );
     }
 
-    if  ( ir.hasField(_IFT_FRCFCM_computeCrackSpacing) ) {
+    if  ( ir->hasField(_IFT_FRCFCM_computeCrackSpacing) ) {
         this->crackSpacing = this->computeCrackSpacing();
     }
 }

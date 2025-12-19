@@ -168,7 +168,7 @@ NonLinearDynamic :: initializeFrom(InputRecord &ir)
         communicator = new NodeCommunicator(this, commBuff, this->giveRank(),
                                             this->giveNumberOfProcesses());
 
-        if ( ir.hasField(_IFT_NonLinearDynamic_nonlocalext) ) {
+        if ( ir->hasField(_IFT_NonLinearDynamic_nonlocalext) ) {
             nonlocalExt = 1;
             nonlocCommunicator = new ElementCommunicator(this, commBuff, this->giveRank(),
                                                          this->giveNumberOfProcesses());

@@ -54,7 +54,7 @@ ConstantPressureLoad :: initializeFrom(InputRecord &ir)
 
     IR_GIVE_OPTIONAL_FIELD(ir, this->loadOffset, _IFT_ConstantPressureLoad_LoadOffset);
 #if 1
-    if ( ir.hasField(_IFT_GeneralBoundaryCondition_dofs) ) {
+    if ( ir->hasField(_IFT_GeneralBoundaryCondition_dofs) ) {
         throw ValueInputException(ir, _IFT_GeneralBoundaryCondition_dofs, "Constant pressure load should not specify DOFs");
     }
 #endif

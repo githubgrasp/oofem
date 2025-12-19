@@ -184,15 +184,15 @@ DGProblem :: initializeFrom(InputRecord &ir)
     IR_GIVE_OPTIONAL_FIELD(ir, val, _IFT_EngngModel_smtype);
     this->sparseMtrxType = ( SparseMtrxType ) val;
 
-    if ( ir.hasField(_IFT_DGProblem_initt) ) {
+    if ( ir->hasField(_IFT_DGProblem_initt) ) {
         IR_GIVE_FIELD(ir, initT, _IFT_DGProblem_initt);
     }
 
-    if ( ir.hasField(_IFT_DGProblem_deltat) ) {
+    if ( ir->hasField(_IFT_DGProblem_deltat) ) {
         IR_GIVE_FIELD(ir, deltaT, _IFT_DGProblem_deltat);
-    } else if ( ir.hasField(_IFT_DGProblem_deltatfunction) ) {
+    } else if ( ir->hasField(_IFT_DGProblem_deltatfunction) ) {
         IR_GIVE_FIELD(ir, dtFunction, _IFT_DGProblem_deltatfunction);
-    } else if ( ir.hasField(_IFT_DGProblem_prescribedtimes) ) {
+    } else if ( ir->hasField(_IFT_DGProblem_prescribedtimes) ) {
         IR_GIVE_FIELD(ir, prescribedTimes, _IFT_DGProblem_prescribedtimes);
     } else {
         throw ValueInputException(ir, "none", "Time step not defined");
@@ -206,7 +206,7 @@ DGProblem :: initializeFrom(InputRecord &ir)
     }
     OOFEM_LOG_RELEVANT("DG: %s formulation\n", problemType.c_str());
     
-    this->keepTangent = ir.hasField(_IFT_DGProblem_keepTangent);
+    this->keepTangent = ir->hasField(_IFT_DGProblem_keepTangent);
     field = std::make_unique<DofDistributedPrimaryField>(this, 1, FT_TransportProblemUnknowns, 2, this->alpha);
 
     // read field export flag
@@ -224,7 +224,7 @@ DGProblem :: initializeFrom(InputRecord &ir)
             }
         }
     }
-    if ( ir.hasField(_IFT_DGProblem_preprocessFEM2DG) ) {
+    if ( ir->hasField(_IFT_DGProblem_preprocessFEM2DG) ) {
         preprocessFEM2DG = true;
     
         IR_GIVE_OPTIONAL_FIELD(ir, sets2preprocess, _IFT_DGProblem_sets2preprocess);

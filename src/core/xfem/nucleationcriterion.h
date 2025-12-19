@@ -38,6 +38,7 @@
 
 #include <memory>
 #include <vector>
+#include "inputrecord.h"
 
 namespace oofem {
 
@@ -45,7 +46,6 @@ class EnrichmentItem;
 class Domain;
 class DataReader;
 class DynamicDataReader;
-class InputRecord;
 class EnrichmentFunction;
 
 class NucleationCriterion

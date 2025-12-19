@@ -50,13 +50,13 @@ SimpleTransportCrossSection :: initializeFrom(InputRecord &ir)
 
     IR_GIVE_FIELD(ir, this->matNumber, _IFT_SimpleTransportCrossSection_material);
     this->propertyDictionary.clear();
-    if ( ir.hasField(_IFT_SimpleTransportCrossSection_thickness) ) {
+    if ( ir->hasField(_IFT_SimpleTransportCrossSection_thickness) ) {
         double thickness;
         IR_GIVE_FIELD(ir, thickness, _IFT_SimpleTransportCrossSection_thickness);
         this->propertyDictionary.add(CS_Thickness, thickness);
     }
     double area = 0.0;
-    if ( ir.hasField(_IFT_SimpleTransportCrossSection_area) ) {
+    if ( ir->hasField(_IFT_SimpleTransportCrossSection_area) ) {
         IR_GIVE_FIELD(ir, area, _IFT_SimpleTransportCrossSection_area);
     }
     propertyDictionary.add(CS_Area, area);

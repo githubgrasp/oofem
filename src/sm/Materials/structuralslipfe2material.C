@@ -69,8 +69,8 @@ StructuralSlipFE2Material :: initializeFrom(InputRecord &ir)
 {
     StructuralFE2Material :: initializeFrom(ir);
 
-    useExtStiff = ir.hasField(_IFT_StructuralSlipFE2Material_useExternalStiffness);
-    allGPRes = ir.hasField(_IFT_StructuralSlipFE2Material_allGPResults);
+    useExtStiff = ir->hasField(_IFT_StructuralSlipFE2Material_useExternalStiffness);
+    allGPRes = ir->hasField(_IFT_StructuralSlipFE2Material_allGPResults);
     IR_GIVE_OPTIONAL_FIELD(ir, outputSelected, _IFT_StructuralSlipFE2Material_outputSelectedResults);
     IR_GIVE_OPTIONAL_FIELD(ir, givendStressdEpsTangent, _IFT_StructuralSlipFE2Material_dStressdEps);
     IR_GIVE_OPTIONAL_FIELD(ir, givendStressdEpsTangent, _IFT_StructuralSlipFE2Material_dStressdEps);

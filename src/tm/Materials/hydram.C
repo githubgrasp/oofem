@@ -120,7 +120,7 @@ HydrationModel :: initializeFrom(InputRecord &ir)
         throw ValueInputException(ir, _IFT_HydrationModel_hydration, "must be between 0 and 1");
     }
 
-    if ( ir.hasField(_IFT_HydrationModel_c60mix) ) {
+    if ( ir->hasField(_IFT_HydrationModel_c60mix) ) {
         OOFEM_LOG_INFO("HydrationModel: Model parameters for Skanska C60/75 mixture.");
         setMixture(mtC60);
     }

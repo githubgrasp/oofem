@@ -478,9 +478,9 @@ T3DInterface :: t3d_2_OOFEM(const char *t3dOutFile, Domain **dNew)
     int ncrosssect = domain->giveNumberOfCrossSectionModels();
     ( * dNew )->resizeCrossSectionModels(ncrosssect);
     for ( int i = 1; i <= ncrosssect; i++ ) {
-        DynamicInputRecord ir;
-        domain->giveCrossSection(i)->giveInputRecord(ir);
-        ir.giveRecordKeywordField(name);
+        auto ir=std::make_shared<DynamicInputRecord>();
+        domain->giveCrossSection(i)->giveInputRecord(*ir);
+        ir->giveRecordKeywordField(name);
 
         auto crossSection = classFactory.createCrossSection(name.c_str(), i, * dNew);
         crossSection->initializeFrom(ir);
@@ -491,9 +491,9 @@ T3DInterface :: t3d_2_OOFEM(const char *t3dOutFile, Domain **dNew)
     int nmat = domain->giveNumberOfMaterialModels();
     ( * dNew )->resizeMaterials(nmat);
     for ( int i = 1; i <= nmat; i++ ) {
-        DynamicInputRecord ir;
-        domain->giveMaterial(i)->giveInputRecord(ir);
-        ir.giveRecordKeywordField(name);
+        auto ir=std::make_shared<DynamicInputRecord>();
+        domain->giveMaterial(i)->giveInputRecord(*ir);
+        ir->giveRecordKeywordField(name);
 
         auto mat = classFactory.createMaterial(name.c_str(), i, * dNew);
         mat->initializeFrom(ir);
@@ -504,9 +504,9 @@ T3DInterface :: t3d_2_OOFEM(const char *t3dOutFile, Domain **dNew)
     int nbarriers = domain->giveNumberOfNonlocalBarriers();
     ( * dNew )->resizeNonlocalBarriers(nbarriers);
     for ( int i = 1; i <= nbarriers; i++ ) {
-        DynamicInputRecord ir;
-        domain->giveNonlocalBarrier(i)->giveInputRecord(ir);
-        ir.giveRecordKeywordField(name);
+        auto ir=std::make_shared<DynamicInputRecord>();
+        domain->giveNonlocalBarrier(i)->giveInputRecord(*ir);
+        ir->giveRecordKeywordField(name);
 
         auto barrier = classFactory.createNonlocalBarrier(name.c_str(), i, * dNew);
         barrier->initializeFrom(ir);
@@ -517,9 +517,9 @@ T3DInterface :: t3d_2_OOFEM(const char *t3dOutFile, Domain **dNew)
     int nbc = domain->giveNumberOfBoundaryConditions();
     ( * dNew )->resizeBoundaryConditions(nbc);
     for ( int i = 1; i <= nbc; i++ ) {
-        DynamicInputRecord ir;
-        domain->giveBc(i)->giveInputRecord(ir);
-        ir.giveRecordKeywordField(name);
+        auto ir=std::make_shared<DynamicInputRecord>();
+        domain->giveBc(i)->giveInputRecord(*ir);
+        ir->giveRecordKeywordField(name);
 
         auto bc = classFactory.createBoundaryCondition(name.c_str(), i, * dNew);
         bc->initializeFrom(ir);
@@ -530,9 +530,9 @@ T3DInterface :: t3d_2_OOFEM(const char *t3dOutFile, Domain **dNew)
     int nic = domain->giveNumberOfInitialConditions();
     ( * dNew )->resizeInitialConditions(nic);
     for ( int i = 1; i <= nic; i++ ) {
-        DynamicInputRecord ir;
-        domain->giveIc(i)->giveInputRecord(ir);
-        ir.giveRecordKeywordField(name);
+        auto ir=std::make_shared<DynamicInputRecord>();
+        domain->giveIc(i)->giveInputRecord(*ir);
+        ir->giveRecordKeywordField(name);
 
         auto ic = std::make_unique<InitialCondition>(i, *dNew);
         ic->initializeFrom(ir);
@@ -545,10 +545,10 @@ T3DInterface :: t3d_2_OOFEM(const char *t3dOutFile, Domain **dNew)
     // ( * dNew )->resizeLoadTimeFunctions(nltf);
     ( * dNew )->resizeFunctions(nltf);
     for ( int i = 1; i <= nltf; i++ ) {
-        DynamicInputRecord ir;
-        //domain->giveLoadTimeFunction(i)->giveInputRecord(ir);
-        domain->giveFunction(i)->giveInputRecord(ir);
-        ir.giveRecordKeywordField(name);
+        auto ir=std::make_shared<DynamicInputRecord>();
+        //domain->giveLoadTimeFunction(i)->giveInputRecord(*ir);
+        domain->giveFunction(i)->giveInputRecord(*ir);
+        ir->giveRecordKeywordField(name);
         
         //ltf = classFactory.createLoadTimeFunction(name.c_str(), i, * dNew);
         auto ltf = classFactory.createFunction(name.c_str(), i, * dNew);

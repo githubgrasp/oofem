@@ -72,7 +72,7 @@ StructuralFE2Material :: initializeFrom(InputRecord &ir)
     StructuralMaterial :: initializeFrom(ir);
     IR_GIVE_FIELD(ir, this->inputfile, _IFT_StructuralFE2Material_fileName);
 
-    useNumTangent = ir.hasField(_IFT_StructuralFE2Material_useNumericalTangent);
+    useNumTangent = ir->hasField(_IFT_StructuralFE2Material_useNumericalTangent);
 }
 
 
@@ -501,9 +501,9 @@ void StructuralFE2MaterialStatus :: copyStateVariables(const MaterialStatus &iSt
                 ext_ei->appendInputRecords(dataReader);
 
 
-                auto &mir = dataReader.giveInputRecord(DataReader :: IR_enrichItemRec, i);
+                auto mir = dataReader.giveInputRecord(DataReader :: IR_enrichItemRec, i);
                 std :: string name;
-                mir.giveRecordKeywordField(name);
+                mir->giveRecordKeywordField(name);
 
                 std :: unique_ptr< EnrichmentItem >ei( classFactory.createEnrichmentItem( name.c_str(), i, this_xMan, rve_domain ) );
                 if ( ei.get() == NULL ) {

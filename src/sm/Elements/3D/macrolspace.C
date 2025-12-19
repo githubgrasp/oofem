@@ -74,7 +74,7 @@ void MacroLSpace :: initializeFrom(InputRecord &ir, int priority)
 
 
 #if 0 // obsolete
-    if ( ir.hasField(_IFT_MacroLspace_stiffMatrxFileName) ) {
+    if ( ir->hasField(_IFT_MacroLspace_stiffMatrxFileName) ) {
         IR_GIVE_OPTIONAL_FIELD(ir, this->stiffMatrxFileName, _IFT_MacroLspace_stiffMatrxFileName);
         if ( fopen(this->stiffMatrxFileName, "r") != NULL ) { //if the file exist
             stiffMatrxFile = fopen(this->stiffMatrxFileName, "r");
@@ -160,7 +160,9 @@ void MacroLSpace :: computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode 
 //assign values to DOF on the boundary according to definition on macrolspace and actual displacement stage
 void MacroLSpace :: changeMicroBoundaryConditions(TimeStep *tStep)
 {
-    DynamicInputRecord ir_func, ir_bc;
+    auto ir_func=std::make_shared<DynamicInputRecord>();
+    auto ir_bc=std::make_shared<DynamicInputRecord>();
+
     FloatArray n(8), answer, localCoords;
     double displ;
     FloatArray displ_x(8), displ_y(8), displ_z(8);
@@ -179,8 +181,8 @@ void MacroLSpace :: changeMicroBoundaryConditions(TimeStep *tStep)
         microDomain->resizeFunctions(1);
     }
 
-    ir_func.setRecordKeywordField("constantfunction", 1);
-    ir_func.setField(1.0, _IFT_ConstantFunction_f);
+    ir_func->setRecordKeywordField("constantfunction", 1);
+    ir_func->setField(1.0, _IFT_ConstantFunction_f);
     auto timeFunct = classFactory.createFunction("constantfunction", 1, microDomain);
     if ( !timeFunct ) {
         OOFEM_ERROR("Couldn't create constant time function");
@@ -206,9 +208,9 @@ void MacroLSpace :: changeMicroBoundaryConditions(TimeStep *tStep)
                 dof->setBcId(counter);
                 DofIDItem id = dof->giveDofID();
                 displ = n.dotProduct( id == D_u ? displ_x : ( id == D_v ? displ_y : displ_z ) );
-                ir_bc.setRecordKeywordField("boundarycondition", counter);
-                ir_bc.setField(1, _IFT_GeneralBoundaryCondition_timeFunct);
-                ir_bc.setField(displ, _IFT_BoundaryCondition_PrescribedValue);
+                ir_bc->setRecordKeywordField("boundarycondition", counter);
+                ir_bc->setField(1, _IFT_GeneralBoundaryCondition_timeFunct);
+                ir_bc->setField(displ, _IFT_BoundaryCondition_PrescribedValue);
                 auto bc = classFactory.createBoundaryCondition("boundarycondition", counter, microDomain);
                 if ( !bc ) {
                     OOFEM_ERROR("Couldn't create boundary condition.");

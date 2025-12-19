@@ -81,23 +81,23 @@ TransientTransportProblem :: initializeFrom(InputRecord &ir)
 
     IR_GIVE_FIELD(ir, this->alpha, _IFT_TransientTransportProblem_alpha);
 
-    if ( ir.hasField(_IFT_TransientTransportProblem_initt) ) {
+    if ( ir->hasField(_IFT_TransientTransportProblem_initt) ) {
         IR_GIVE_FIELD(ir, initT, _IFT_TransientTransportProblem_initt);
     }
     
     prescribedTimes.clear();
     dtFunction = 0;
-    if ( ir.hasField(_IFT_TransientTransportProblem_dtFunction) ) {
+    if ( ir->hasField(_IFT_TransientTransportProblem_dtFunction) ) {
         IR_GIVE_FIELD(ir, this->dtFunction, _IFT_TransientTransportProblem_dtFunction);
-    } else if ( ir.hasField(_IFT_TransientTransportProblem_prescribedTimes) ) {
+    } else if ( ir->hasField(_IFT_TransientTransportProblem_prescribedTimes) ) {
         IR_GIVE_FIELD(ir, this->prescribedTimes, _IFT_TransientTransportProblem_prescribedTimes);
     } else {
         IR_GIVE_FIELD(ir, this->deltaT, _IFT_TransientTransportProblem_deltaT);
     }
 
-    this->keepTangent = ir.hasField(_IFT_TransientTransportProblem_keepTangent);
+    this->keepTangent = ir->hasField(_IFT_TransientTransportProblem_keepTangent);
 
-    this->lumped = ir.hasField(_IFT_TransientTransportProblem_lumped);
+    this->lumped = ir->hasField(_IFT_TransientTransportProblem_lumped);
 
     field = std::make_unique<DofDistributedPrimaryField>(this, 1, FT_TransportProblemUnknowns, 2, this->alpha);
 

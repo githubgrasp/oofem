@@ -34,6 +34,7 @@
 
 #include "xfem/enrichmentfronts/enrichmentfront.h"
 #include "floatarray.h"
+#include "inputrecord.h"
 
 #ifndef ENRICHMENTFRONTINTERSECTION_H_
  #define ENRICHMENTFRONTINTERSECTION_H_
@@ -45,7 +46,6 @@ namespace oofem {
 class XfemManager;
 class DofManager;
 class FloatArray;
-class InputRecord;
 class DynamicInputRecord;
 class LinElBranchFunction;
 

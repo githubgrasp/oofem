@@ -204,7 +204,7 @@ MPSMaterial::initializeFrom(InputRecord &ir)
     }
 
     // initialize exponent p or p_tilde of the governing equation
-    if ( ir.hasField(_IFT_MPSMaterial_p_tilde) && ir.hasField(_IFT_MPSMaterial_p) ) {
+    if ( ir->hasField(_IFT_MPSMaterial_p_tilde) && ir->hasField(_IFT_MPSMaterial_p) ) {
         throw ValueInputException(ir, _IFT_MPSMaterial_p_tilde, "for MPS p and p_tilde cannot be defined at the same time");
     }
 
@@ -231,17 +231,17 @@ MPSMaterial::initializeFrom(InputRecord &ir)
     if ( mode == 0 ) { // default - estimate model parameters q1,..,q4 from composition
         IR_GIVE_FIELD(ir, fc, _IFT_MPSMaterial_fc); // 28-day standard cylinder compression strength [MPa]
         IR_GIVE_FIELD(ir,  c, _IFT_MPSMaterial_cc); // cement content of concrete [kg/m^3]
-        if ( ir.hasField(_IFT_MPSMaterial_wc) ) { // ratio (by weight) of water to cementitious material
+        if ( ir->hasField(_IFT_MPSMaterial_wc) ) { // ratio (by weight) of water to cementitious material
             IR_GIVE_FIELD(ir, wc, _IFT_MPSMaterial_wc);
-        } else if (ir.hasField(_IFT_MPSMaterial_wcr)) {
+        } else if (ir->hasField(_IFT_MPSMaterial_wcr)) {
             IR_GIVE_FIELD(ir, wc, _IFT_MPSMaterial_wcr);
         } else {
             throw ValueInputException(ir, "none", "w/c not defined");
         }
 
-        if ( ir.hasField(_IFT_MPSMaterial_ac)){  // ratio (by weight) of aggregate to cement
+        if ( ir->hasField(_IFT_MPSMaterial_ac)){  // ratio (by weight) of aggregate to cement
             IR_GIVE_FIELD(ir, ac, _IFT_MPSMaterial_ac);
-        } else if ( ir.hasField(_IFT_MPSMaterial_acr)){
+        } else if ( ir->hasField(_IFT_MPSMaterial_acr)){
             IR_GIVE_FIELD(ir, ac, _IFT_MPSMaterial_acr);
         } else {
             throw ValueInputException(ir, "none", "a/c not defined");
@@ -292,7 +292,7 @@ MPSMaterial::initializeFrom(InputRecord &ir)
         IR_GIVE_OPTIONAL_FIELD(ir, sh_n, _IFT_MPSMaterial_sh_n);
 
 
-        if ( ir.hasField(_IFT_MPSMaterial_factor_ksh_h) && ir.hasField(_IFT_MPSMaterial_factor_ksh_fh) ) {
+        if ( ir->hasField(_IFT_MPSMaterial_factor_ksh_h) && ir->hasField(_IFT_MPSMaterial_factor_ksh_fh) ) {
             IR_GIVE_FIELD(ir, ksh_h, _IFT_MPSMaterial_factor_ksh_h);
             IR_GIVE_FIELD(ir, ksh_fh, _IFT_MPSMaterial_factor_ksh_fh);
 
@@ -301,7 +301,7 @@ MPSMaterial::initializeFrom(InputRecord &ir)
             }
         }
 
-        if ( ir.hasField(_IFT_MPSMaterial_timedependent_ksh) ) {
+        if ( ir->hasField(_IFT_MPSMaterial_timedependent_ksh) ) {
             this->timeDependent_ksh = true;
         }
 
@@ -345,7 +345,7 @@ MPSMaterial::initializeFrom(InputRecord &ir)
 
         /// flag - if true, external fields and reference temperature are in Celsius
         this->temperScaleDifference = 0.;
-        if ( ir.hasField(_IFT_MPSMaterial_temperInCelsius) ) {
+        if ( ir->hasField(_IFT_MPSMaterial_temperInCelsius) ) {
             this->temperScaleDifference = 273.15;
         }
 
@@ -366,7 +366,7 @@ MPSMaterial::initializeFrom(InputRecord &ir)
     this->eps_cas0 = 0.;
     IR_GIVE_OPTIONAL_FIELD(ir, eps_cas0, _IFT_MPSMaterial_eps_cas0);
 
-    if ( ir.hasField(_IFT_MPSMaterial_alpha_as) && ir.hasField(_IFT_MPSMaterial_fc) ) {
+    if ( ir->hasField(_IFT_MPSMaterial_alpha_as) && ir->hasField(_IFT_MPSMaterial_fc) ) {
         double alpha_as;
         // table 5.1-13 from fib2010
         // alpha_as = 800 for cem 32.5N
@@ -386,7 +386,7 @@ MPSMaterial::initializeFrom(InputRecord &ir)
     b4_alpha = 0.;
     b4_r_t = 0.;
 
-    if ( ir.hasField(_IFT_MPSMaterial_B4_cem_type) ) {
+    if ( ir->hasField(_IFT_MPSMaterial_B4_cem_type) ) {
         /// auxiliary parameters for autogenous shrinkage according to B4 model
         double b4_r_alpha = 0., b4_eps_au_cem = 0., b4_tau_au_cem = 0., b4_r_ea, b4_r_ew, b4_r_tw;
         int b4_cem_type;
@@ -422,7 +422,7 @@ MPSMaterial::initializeFrom(InputRecord &ir)
         }
 
 
-        if ( ir.hasField(_IFT_MPSMaterial_B4_eps_au_infty) ) {
+        if ( ir->hasField(_IFT_MPSMaterial_B4_eps_au_infty) ) {
             IR_GIVE_FIELD(ir, b4_eps_au_infty, _IFT_MPSMaterial_B4_eps_au_infty);
         } else {
             IR_GIVE_FIELD(ir, wc, _IFT_MPSMaterial_wc);
@@ -430,7 +430,7 @@ MPSMaterial::initializeFrom(InputRecord &ir)
             b4_eps_au_infty = -b4_eps_au_cem *pow(ac / 6., b4_r_ea) *  pow(wc / 0.38, b4_r_ew);
         }
 
-        if ( ir.hasField(_IFT_MPSMaterial_B4_tau_au) ) {
+        if ( ir->hasField(_IFT_MPSMaterial_B4_tau_au) ) {
             IR_GIVE_FIELD(ir, b4_tau_au, _IFT_MPSMaterial_B4_tau_au); // must be in units of the analysis
         } else {
             IR_GIVE_FIELD(ir, wc, _IFT_MPSMaterial_wc);
@@ -438,7 +438,7 @@ MPSMaterial::initializeFrom(InputRecord &ir)
             b4_tau_au *= lambda0; // converted to desired time unit
         }
 
-        if ( ir.hasField(_IFT_MPSMaterial_B4_alpha) ) {
+        if ( ir->hasField(_IFT_MPSMaterial_B4_alpha) ) {
             IR_GIVE_FIELD(ir, b4_alpha, _IFT_MPSMaterial_B4_alpha);
         } else {
             IR_GIVE_FIELD(ir, wc, _IFT_MPSMaterial_wc);

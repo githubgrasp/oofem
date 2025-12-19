@@ -55,7 +55,7 @@ ConcreteFCMViscoElastic::initializeFrom(InputRecord &ir)
 
     this->fib = false;
 
-    if ( ir.hasField(_IFT_ConcreteFCMViscoElastic_timedepfracturing) ) {
+    if ( ir->hasField(_IFT_ConcreteFCMViscoElastic_timedepfracturing) ) {
         this->fib = true;
         //
         IR_GIVE_FIELD(ir, fib_s, _IFT_ConcreteFCMViscoElastic_fib_s);

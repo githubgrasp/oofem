@@ -36,6 +36,7 @@
 
 //#include "xfem/enrichmentitem.h"
 #include "xfem/enrichmentitems/crack.h"
+#include "inputrecord.h"
 
 #define _IFT_ShellCrack_Name "shellcrack"
 #define _IFT_ShellCrack_xiBottom "xibottom"
@@ -49,7 +50,6 @@
 namespace oofem {
 class XfemManager;
 class Domain;
-class InputRecord;
 class GaussPoint;
 class GnuplotExportModule;
 

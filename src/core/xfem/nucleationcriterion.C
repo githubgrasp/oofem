@@ -68,8 +68,8 @@ int NucleationCriterion::instanciateYourself(DataReader &dr)
     std :: string name;
 
     // Instantiate enrichment function
-    auto &mir = dr.giveInputRecord(DataReader :: IR_crackNucleationRec, 1);
-    mir.giveRecordKeywordField(name);
+    auto mir = dr.giveInputRecord(DataReader :: IR_crackNucleationRec, 1);
+    mir->giveRecordKeywordField(name);
 
     mpEnrichmentFunc = classFactory.createEnrichmentFunction( name.c_str(), 1, mpDomain );
     if ( mpEnrichmentFunc ) {
@@ -82,7 +82,7 @@ int NucleationCriterion::instanciateYourself(DataReader &dr)
 
 void NucleationCriterion :: appendInputRecords(DynamicDataReader &oDR)
 {
-    auto ir = std::make_unique<DynamicInputRecord>();
+    auto ir = std::make_shared<DynamicInputRecord>();
 
     ir->setRecordKeywordField( this->giveInputRecordName(), 1 );
 
@@ -94,7 +94,7 @@ void NucleationCriterion :: appendInputRecords(DynamicDataReader &oDR)
 //        eiRec->setField(_IFT_EnrichmentItem_inheritbc);
 //    }
 
-    oDR.insertInputRecord(DataReader :: IR_crackNucleationRec, std::move(ir));
+    oDR.insertInputRecord(DataReader :: IR_crackNucleationRec, ir);
 
 
 //    // Enrichment function

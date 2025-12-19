@@ -112,7 +112,7 @@ void IncrementalLinearStatic :: initializeFrom(InputRecord &ir)
     sparseMtrxType = ( SparseMtrxType ) val;
 
 
-    suppressOutput = ir.hasField(_IFT_EngngModel_suppressOutput);
+    suppressOutput = ir->hasField(_IFT_EngngModel_suppressOutput);
 
     if(suppressOutput) {
     	printf("Suppressing output.\n");

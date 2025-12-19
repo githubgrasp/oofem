@@ -65,7 +65,7 @@ void StructuralMaterialEvaluator :: initializeFrom(InputRecord &ir)
 
     IR_GIVE_FIELD(ir, this->cmpntFunctions, _IFT_StructuralMaterialEvaluator_componentFunctions);
     IR_GIVE_FIELD(ir, this->sControl, _IFT_StructuralMaterialEvaluator_stressControl);
-    this->keepTangent = ir.hasField(_IFT_StructuralMaterialEvaluator_keepTangent);
+    this->keepTangent = ir->hasField(_IFT_StructuralMaterialEvaluator_keepTangent);
 
     tolerance = 1.0;
     if ( this->sControl.giveSize() > 0 ) {

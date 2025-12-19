@@ -42,6 +42,7 @@
 #include "contextmode.h"
 #include "enumitem.h"
 #include "intarray.h"
+#include "inputrecord.h"
 #include <string>
 #include <memory>
 
@@ -72,7 +73,6 @@ class TimeStep;
 class FloatArray;
 class DofManager;
 class DataStream;
-class InputRecord;
 
 class Field;
 typedef std::shared_ptr<Field> FieldPtr;
