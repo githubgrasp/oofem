@@ -49,7 +49,7 @@ class DataReader;
  * Class representing the Input Record for OOFEM txt input file format.
  * The input record is represented as string consisting of several fields.
  */
-class OOFEM_EXPORT OOFEMTXTInputRecord : public InputRecord
+class OOFEM_EXPORT OOFEMTXTInputRecord : public InputRecord_
 {
 protected:
     /**
@@ -74,7 +74,7 @@ public:
     /// Assignment operator.
     OOFEMTXTInputRecord &operator = ( const OOFEMTXTInputRecord & );
 
-    std::shared_ptr<InputRecord> clone() const override { return std::make_shared<OOFEMTXTInputRecord>(*this); }
+    std::shared_ptr<InputRecord_> clone() const override { return std::make_shared<OOFEMTXTInputRecord>(*this); }
 
 public:
     /// Sets the record string.

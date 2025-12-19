@@ -36,11 +36,12 @@
 #define dynamicdatareader_h
 
 #include "datareader.h"
+#include "inputrecord.h"
 #include <vector>
 #include <memory>
 
 namespace oofem {
-class InputRecord;
+
 
 /**
  * Class representing the implementation of a dynamic data reader for in-code use.
@@ -55,9 +56,9 @@ class OOFEM_EXPORT DynamicDataReader : public DataReader
 protected:
     std :: string name;
     /// Keeps track of the current position in the list
-    std :: vector< std :: unique_ptr< InputRecord > > :: iterator it;
+    std :: vector< std :: shared_ptr< InputRecord_ > > :: iterator it;
     /// All record types will be appended to this list, no split in terms of InputRecordType is implemented yet.
-    std :: vector< std :: unique_ptr< InputRecord > >recordList;
+    std :: vector< std :: shared_ptr< InputRecord_ > >recordList;
 
 public:
     /// Constructor.
@@ -73,7 +74,7 @@ public:
      * @param type Currently ignored, but left here for consistency with giveInputRecord
      * @param record New record to be added at the end. New input records have to be added in the same order as the text input files do it.
      */
-    void insertInputRecord(InputRecordType type, std::unique_ptr<InputRecord> record);
+    void insertInputRecord(InputRecordType type, std::shared_ptr<InputRecord_> record);
 
     /**
      * Sets the output file name. Used for writing input files.
@@ -84,7 +85,7 @@ public:
      */
     void setDescription(const std :: string &description) { this->description = description; }
 
-    InputRecord &giveInputRecord(InputRecordType, int recordId) override;
+    std::shared_ptr<InputRecord_> giveInputRecord(InputRecordType, int recordId) override;
     bool peekNext(const std :: string &keyword) override;
     void finish() override;
     std :: string giveReferenceName() const override { return name; }

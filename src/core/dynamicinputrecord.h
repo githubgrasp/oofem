@@ -56,7 +56,7 @@ OOFEM_EXPORT std::unique_ptr<DynamicInputRecord> CreateElementIR(int i, InputFie
  * This is intended for internal usage, where new input records and such are created dynamically.
  * @author Mikael Öhman
  */
-class OOFEM_EXPORT DynamicInputRecord : public InputRecord
+class OOFEM_EXPORT DynamicInputRecord : public InputRecord_
 {
 protected:
     std :: string recordKeyword;
@@ -87,7 +87,7 @@ public:
     /// Assignment operator.
     DynamicInputRecord &operator = ( const DynamicInputRecord & );
 
-    std::shared_ptr<InputRecord> clone() const override { return std::make_shared<DynamicInputRecord>(*this); }
+    std::shared_ptr<InputRecord_> clone() const override { return std::make_shared<DynamicInputRecord>(*this); }
     void finish(bool wrn = true) override;
 
     std :: string giveRecordAsString() const override { return giveRecordInTXTFormat(); }

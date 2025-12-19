@@ -167,7 +167,7 @@ void DynamicInputRecord :: giveField(int &answer, InputFieldType id)
 {
     std :: map< std :: string, int > :: iterator it = this->intRecord.find(id);
     if ( it == this->intRecord.end() ) {
-        throw MissingKeywordInputException(*this, id, recordNumber);
+        throw MissingKeywordInputException(shared_from_this(), id, recordNumber);
     }
     answer = it->second;
 }
@@ -179,7 +179,7 @@ void DynamicInputRecord :: giveField(double &answer, InputFieldType id)
         // try to look in intRecord
         std :: map< std :: string, int > :: iterator it2 = this->intRecord.find(id);
         if ( it2 == this->intRecord.end() ) {
-            throw MissingKeywordInputException(*this, id, recordNumber);
+            throw MissingKeywordInputException(shared_from_this(), id, recordNumber);
         }
         answer = it2->second;
     }
@@ -190,7 +190,7 @@ void DynamicInputRecord :: giveField(bool &answer, InputFieldType id)
 {
     std :: map< std :: string, bool > :: iterator it = this->boolRecord.find(id);
     if ( it == this->boolRecord.end() ) {
-        throw MissingKeywordInputException(*this, id, recordNumber);
+        throw MissingKeywordInputException(shared_from_this(), id, recordNumber);
     }
     answer = it->second;
 }
@@ -199,7 +199,7 @@ void DynamicInputRecord :: giveField(std :: string &answer, InputFieldType id)
 {
     std :: map< std :: string, std :: string > :: iterator it = this->stringRecord.find(id);
     if ( it == this->stringRecord.end() ) {
-        throw MissingKeywordInputException(*this, id, recordNumber);
+        throw MissingKeywordInputException(shared_from_this(), id, recordNumber);
     }
     answer = it->second;
 }
@@ -208,7 +208,7 @@ void DynamicInputRecord :: giveField(FloatArray &answer, InputFieldType id)
 {
     std :: map< std :: string, FloatArray > :: iterator it = this->floatArrayRecord.find(id);
     if ( it == this->floatArrayRecord.end() ) {
-        throw MissingKeywordInputException(*this, id, recordNumber);
+        throw MissingKeywordInputException(shared_from_this(), id, recordNumber);
     }
     answer = it->second;
 }
@@ -217,7 +217,7 @@ void DynamicInputRecord :: giveField(IntArray &answer, InputFieldType id)
 {
     std :: map< std :: string, IntArray > :: iterator it = this->intArrayRecord.find(id);
     if ( it == this->intArrayRecord.end() ) {
-        throw MissingKeywordInputException(*this, id, recordNumber);
+        throw MissingKeywordInputException(shared_from_this(), id, recordNumber);
     }
     answer = it->second;
 }
@@ -226,7 +226,7 @@ void DynamicInputRecord :: giveField(FloatMatrix &answer, InputFieldType id)
 {
     std :: map< std :: string, FloatMatrix > :: iterator it = this->matrixRecord.find(id);
     if ( it == this->matrixRecord.end() ) {
-        throw MissingKeywordInputException(*this, id, recordNumber);
+        throw MissingKeywordInputException(shared_from_this(), id, recordNumber);
     }
     answer = it->second;
 }
@@ -235,7 +235,7 @@ void DynamicInputRecord :: giveField(std :: vector< std :: string > &answer, Inp
 {
     std :: map< std :: string, std :: vector< std :: string > > :: iterator it = this->stringListRecord.find(id);
     if ( it == this->stringListRecord.end() ) {
-        throw MissingKeywordInputException(*this, id, recordNumber);
+        throw MissingKeywordInputException(shared_from_this(), id, recordNumber);
     }
     answer = it->second;
 }
@@ -244,7 +244,7 @@ void DynamicInputRecord :: giveField(Dictionary &answer, InputFieldType id)
 {
     std :: map< std :: string, Dictionary > :: iterator it = this->dictionaryRecord.find(id);
     if ( it == this->dictionaryRecord.end() ) {
-        throw MissingKeywordInputException(*this, id, recordNumber);
+        throw MissingKeywordInputException(shared_from_this(), id, recordNumber);
     }
     answer = it->second;
 }
@@ -253,7 +253,7 @@ void DynamicInputRecord :: giveField(std :: list< Range > &answer, InputFieldTyp
 {
     std :: map< std :: string, std :: list< Range > > :: iterator it = this->rangeRecord.find(id);
     if ( it == this->rangeRecord.end() ) {
-        throw MissingKeywordInputException(*this, id, recordNumber);
+        throw MissingKeywordInputException(shared_from_this(), id, recordNumber);
     }
     answer = it->second;
 }
@@ -262,7 +262,7 @@ void DynamicInputRecord :: giveField(ScalarFunction &answer, InputFieldType id)
 {
     std :: map< std :: string, ScalarFunction > :: iterator it = this->scalarFunctionRecord.find(id);
     if ( it == this->scalarFunctionRecord.end() ) {
-        throw MissingKeywordInputException(*this, id, recordNumber);
+        throw MissingKeywordInputException(shared_from_this(), id, recordNumber);
     }
     answer = it->second;
 }

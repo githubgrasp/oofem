@@ -37,13 +37,13 @@
 
 namespace oofem{
 
-InputRecord *DataReader::giveChildRecord( const std::shared_ptr<InputRecord> &ir, InputFieldType ift, const std::string &name, InputRecordType irType, bool optional )
+std::shared_ptr<InputRecord_> DataReader::giveChildRecord( const std::shared_ptr<InputRecord_> &ir, InputFieldType ift, const std::string &name, InputRecordType irType, bool optional )
 {
-    if ( ir->hasChild( ift, name, optional ) ) return &( this->giveInputRecord( irType, /*recordId*/ 1 ) );
+    if ( ir->hasChild( ift, name, optional ) ) return this->giveInputRecord( irType, /*recordId*/ 1 );
     return nullptr;
 };
 
-DataReader::GroupRecords DataReader::giveGroupRecords( const std::shared_ptr<InputRecord> &ir, InputFieldType ift, const std::string &name, InputRecordType irType, bool optional )
+DataReader::GroupRecords DataReader::giveGroupRecords( const std::shared_ptr<InputRecord_> &ir, InputFieldType ift, const std::string &name, InputRecordType irType, bool optional )
 {
     return GroupRecords( *this, name, irType, ir->giveGroupCount( ift, name, optional ) );
 }
@@ -64,7 +64,7 @@ DataReader::GroupRecords::Iterator::Iterator( DataReader &dr_, const std::string
             entered = true;
             dr.enterGroup( this->group );
         }
-        irPtr = &dr.giveInputRecord( irType, /*recordId*/ 1 );
+        irPtr = dr.giveInputRecord( irType, /*recordId*/ 1 );
         if ( irPtr ) dr.enterRecord( irPtr );
     }
     #if 0
@@ -80,10 +80,10 @@ DataReader::GroupRecords::Iterator &DataReader::GroupRecords::Iterator::operator
     index++;
     /* don't read past the last line, assign nullptr instead */
     if ( index >= size ) {
-        irPtr = nullptr;
+        irPtr = {};
         if ( entered ) dr.leaveGroup( this->group );
     } else {
-        irPtr = &dr.giveInputRecord( irType, /*recordId*/ index + 1 );
+        irPtr = dr.giveInputRecord( irType, /*recordId*/ index + 1 );
         if ( irPtr ) dr.enterRecord( irPtr );
     }
     return *this;

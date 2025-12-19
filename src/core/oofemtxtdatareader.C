@@ -84,7 +84,7 @@ OOFEMTXTDataReader :: OOFEMTXTDataReader(std :: string inputfilename) : DataRead
     /// (might make debugging faulty input files harder for users as well)
     for ( auto &line: lines ) {
         //printf("line: %s\n", line.second.c_str());
-        this->recordList.emplace_back(line.first, line.second);
+        this->recordList.push_back(std::make_shared<OOFEMTXTInputRecord>(line.first,line.second));
     }
     this->it = this->recordList.begin();
 }
@@ -95,21 +95,21 @@ OOFEMTXTDataReader :: ~OOFEMTXTDataReader()
 {
 }
 
-InputRecord &
+std::shared_ptr<InputRecord_>
 OOFEMTXTDataReader :: giveInputRecord(InputRecordType typeId, int recordId)
 {
     if ( this->it == this->recordList.end() ) {
         OOFEM_ERROR("Out of input records, file contents must be missing");
     }
-    this->it->setInputRecordType(typeId);
-    return *this->it++;
+    (*(this->it))->setInputRecordType(typeId);
+    return *(this->it++);
 }
 
 bool
 OOFEMTXTDataReader :: peekNext(const std :: string &keyword)
 {
     std :: string nextKey;
-    this->it->giveRecordKeywordField(nextKey);
+    (*(this->it))->giveRecordKeywordField(nextKey);
     return keyword.compare( nextKey ) == 0;
 }
 
@@ -120,7 +120,7 @@ OOFEMTXTDataReader :: finish()
         std::ostringstream oss;
         int i=0;
         for(; it!=recordList.end(); it++){
-            oss<<"   "<<it->giveLineNumber()<<": "<<it->giveRecordAsString()<<std::endl;
+            oss<<"   "<<(*it)->giveLineNumber()<<": "<<(*it)->giveRecordAsString()<<std::endl;
             if(i++>10) { oss<<"   ...\n"; break; }
         }
         OOFEM_WARNING("There are unread lines in the input file (the most common cause are missing entries in the domain record, e.g. 'nset'):\n%s",oss.str().c_str());

@@ -64,7 +64,7 @@ typedef const char *InputFieldType;
  * field identified by __kwd and stores the  result into __value parameter.
  * Includes also the error reporting.
  */
-#define IR_GIVE_FIELD(__ir, __value, __id) (__ir).giveField(__value, __id);
+#define IR_GIVE_FIELD(__ir, __value, __id) (__ir)->giveField(__value, __id);
 
 /**
  * Macro facilitating the use of input record reading methods.
@@ -72,7 +72,7 @@ typedef const char *InputFieldType;
  * field identified by __kwd and stores the  result into __value parameter.
  * Includes also the error reporting.
  */
-#define IR_GIVE_OPTIONAL_FIELD(__ir, __value, __id) (__ir).giveOptionalField(__value, __id);
+#define IR_GIVE_OPTIONAL_FIELD(__ir, __value, __id) (__ir)->giveOptionalField(__value, __id);
 
 /**
  * Macro facilitating the use of input record reading methods.
@@ -80,7 +80,7 @@ typedef const char *InputFieldType;
  * and its number (__value param). Includes also the error reporting.
  */
 #define IR_GIVE_RECORD_KEYWORD_FIELD(__ir, __name, __value) \
-    (__ir).giveRecordKeywordField(__name, __value);
+    (__ir)->giveRecordKeywordField(__name, __value);
 
 
 // #define _INPUTRECORD_OPTIONAL_OLD
@@ -94,19 +94,18 @@ typedef const char *InputFieldType;
  * resolve all dependencies. This allows to create a copy of input record instance for later use
  * without the need to re-open input files (used for metasteps).
  */
-class OOFEM_EXPORT InputRecord: public std::enable_shared_from_this<InputRecord>
+class OOFEM_EXPORT InputRecord_: public std::enable_shared_from_this<InputRecord_>
 {
     DataReader* reader = nullptr;
 public:
 
-    InputRecord() {}
-    InputRecord(DataReader* reader_);
+    InputRecord_() {}
+    InputRecord_(DataReader* reader_);
     /// Destructor
-    virtual ~InputRecord() = default;
-
+    virtual ~InputRecord_() = default;
     /** Creates a newly allocated copy of the receiver */
-    virtual std::shared_ptr<InputRecord> clone() const = 0;
-    std::shared_ptr<InputRecord> ptr();
+    virtual std::shared_ptr<InputRecord_> clone() const = 0;
+    std::shared_ptr<InputRecord_> ptr() { return shared_from_this(); }
 
     /// Returns string representation of record in OOFEMs text format.
     virtual std :: string giveRecordAsString() const = 0;
@@ -201,32 +200,7 @@ public:
     // return whether a single child of given type exists
     virtual bool hasChild(InputFieldType id, const std::string& name, bool optional) = 0;
     //@}
-#ifdef _INPUTRECORD_OPTIONAL_OLD
-    //@{
-    /// Reads the integer field value.
-    void giveOptionalField(int &answer, InputFieldType id);
-    /// Reads the double field value.
-    void giveOptionalField(double &answer, InputFieldType id);
-    /// Reads the bool field value.
-    void giveOptionalField(bool &answer, InputFieldType id);
-    /// Reads the string field value.
-    void giveOptionalField(std :: string &answer, InputFieldType id);
-    /// Reads the FloatArray field value.
-    void giveOptionalField(FloatArray &answer, InputFieldType id);
-    /// Reads the IntArray field value.
-    void giveOptionalField(IntArray &answer, InputFieldType id);
-    /// Reads the FloatMatrix field value.
-    void giveOptionalField(FloatMatrix &answer, InputFieldType id);
-    /// Reads the vector of strings.
-    void giveOptionalField(std :: vector< std :: string > &answer, InputFieldType id);
-    /// Reads the Dictionary field value.
-    void giveOptionalField(Dictionary &answer, InputFieldType id);
-    /// Reads the std::list<Range> field value.
-    void giveOptionalField(std :: list< Range > &answer, InputFieldType id);
-    /// Reads the ScalarFunction field value.
-    void giveOptionalField(ScalarFunction &function, InputFieldType id);
-    //@}
-#endif
+
     /// Returns true if record contains field identified by idString keyword.
     virtual bool hasField(InputFieldType id) = 0;
 
@@ -240,13 +214,15 @@ public:
 };
 
 
+typedef const std::shared_ptr<InputRecord_> InputRecord;
+
 class InputException : public std::exception
 {
 public:
     std::string record;
     std::string keyword;
     int number;
-    InputException(const InputRecord &ir, std::string keyword, int number);
+    InputException(const InputRecord_ &ir, std::string keyword, int number);
 };
 
 
@@ -256,7 +232,8 @@ protected:
     std::string msg;
 
 public:
-    MissingKeywordInputException(const InputRecord &ir, std::string keyword, int number);
+    MissingKeywordInputException(const InputRecord_ &ir, std::string keyword, int number);
+    // MissingKeywordInputException(const InputRecord_ &ir, std::string keyword, int number);
     const char* what() const noexcept override;
 };
 
@@ -267,7 +244,8 @@ protected:
     std::string msg;
 
 public:
-    BadFormatInputException(const InputRecord &ir, std::string keyword, int number);
+    BadFormatInputException(const InputRecord_ &ir, std::string keyword, int number);
+    // BadFormatInputException(const InputRecord_ &ir, std::string keyword, int number): BadFormatInputException(irshared_from_this(),keyword,number){}
     const char* what() const noexcept override;
 };
 
@@ -278,7 +256,7 @@ protected:
     std::string msg;
 
 public:
-    ValueInputException(const InputRecord &ir, std::string keyword, const std::string &reason);
+    ValueInputException(const InputRecord_ &ir, std::string keyword, const std::string &reason);
     const char* what() const noexcept override;
 };
 

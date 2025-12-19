@@ -51,7 +51,7 @@ namespace oofem {
  * component initialization. The input record identification facilitates the
  * implementation of database readers with direct or random access.
  */
-class OOFEM_EXPORT DataReader
+class OOFEM_EXPORT DataReader: public std::enable_shared_from_this<DataReader>
 {
 protected:
     /// Output file name (first line in OOFEM input files).
@@ -93,11 +93,11 @@ public:
      * @param irType Determines type of record to be returned.
      * @param recordId Determines the record  number corresponding to component number.
      */
-    virtual InputRecord &giveInputRecord(InputRecordType irType, int recordId) = 0;
+    virtual std::shared_ptr<InputRecord_> giveInputRecord(InputRecordType irType, int recordId) = 0;
     /**
      * Returns top input record, for readers which support it; others return empty pointer
      */
-    virtual InputRecord* giveTopInputRecord(){ return nullptr; }
+    virtual std::shared_ptr<InputRecord_> giveTopInputRecord(){ return {}; }
 
     /**
      * Peak in advance into the record list.
@@ -121,15 +121,15 @@ public:
 
     virtual void enterGroup(const std::string& name) {};
     virtual void leaveGroup(const std::string& name) {};
-    virtual void enterRecord(InputRecord* rec) {};
-    virtual void leaveRecord(InputRecord* rec) {};
+    virtual void enterRecord(InputRecord rec) {};
+    virtual void leaveRecord(InputRecord rec) {};
 
     /// RAII guard for DataReader::enterRecord and DataReader::leaveRecord.
     class RecordGuard{
         DataReader& reader;
-        InputRecord* rec;
+        InputRecord rec;
     public:
-        RecordGuard(DataReader& reader_, InputRecord* rec_): reader(reader_), rec(rec_) { reader.enterRecord(rec); }
+        RecordGuard(DataReader& reader_, InputRecord rec_): reader(reader_), rec(rec_) { reader.enterRecord(rec); }
         ~RecordGuard() { reader.leaveRecord(rec); }
     };
 
@@ -146,12 +146,12 @@ public:
             InputRecordType irType;
             int size;
             int index;
-            InputRecord* irPtr=nullptr;
+            std::shared_ptr<InputRecord_> irPtr;
             bool entered=false;
         public:
             Iterator( DataReader &dr_, const std::string &group_, InputRecordType irType_, int size_, int index_ );
             Iterator &operator++();
-            InputRecord& operator*() { return *irPtr; }
+            InputRecord operator*() { return irPtr; }
             bool operator!=(const Iterator& other){ return this->index!=other.index; }
             int index1() const { return index+1; }
         };
@@ -181,7 +181,7 @@ public:
      * @param optional If not optional and the number of records is not given, fail with error. Otherwise assume 0-sized subgroup.
      * @return Object providing begin(), end() iterators and size().
      */
-    GroupRecords giveGroupRecords(const std::shared_ptr<InputRecord> &ir, InputFieldType ift, const std::string &name, InputRecordType irType, bool optional );
+    GroupRecords giveGroupRecords(const std::shared_ptr<InputRecord_> &ir, InputFieldType ift, const std::string &name, InputRecordType irType, bool optional );
     /**
      * Give range to iterate over records within a named group
      * @param name Subgroup name; if not given, give records within the current group
@@ -191,7 +191,7 @@ public:
      */
     GroupRecords giveGroupRecords(const std::string& name, InputRecordType irType, int numRequired=-1);
     /// Return pointer to subrecord of given type (must be exactly one); if not present, returns nullptr.
-    InputRecord *giveChildRecord( const std::shared_ptr<InputRecord> &ir, InputFieldType ift, const std::string &name, InputRecordType irType, bool optional );
+    std::shared_ptr<InputRecord_> giveChildRecord( const std::shared_ptr<InputRecord_> &ir, InputFieldType ift, const std::string &name, InputRecordType irType, bool optional );
 
 
 };
