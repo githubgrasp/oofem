@@ -168,7 +168,7 @@ py::object createEngngModelOfType(const char* type, py::args args, py::kwargs kw
     oofem::EngngModel* master = len(args)>1? PY_CAST(oofem::EngngModel *,args[1]) : nullptr;
     std::unique_ptr<EngngModel> engngm = classFactory.createEngngModel(type,number,master);
     if ( !engngm ) { OOFEM_RAISE("engngModel: wrong input data"); }
-    auto ir=std::make_shared<oofem::OOFEMTXTInputRecord>(kw);
+    auto ir=makeOutputManagerOOFEMTXTInputRecordFrom(kw);
     // instanciateYourself
     ///@todo Output filename isn't stored like this (and has never been!)!?
     std::string outFile;

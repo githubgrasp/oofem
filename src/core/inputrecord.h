@@ -105,7 +105,7 @@ public:
     virtual ~InputRecord_() = default;
     /** Creates a newly allocated copy of the receiver */
     virtual std::shared_ptr<InputRecord_> clone() const = 0;
-    std::shared_ptr<InputRecord_> ptr() { return shared_from_this(); }
+    std::shared_ptr<InputRecord_> ptr();
 
     /// Returns string representation of record in OOFEMs text format.
     virtual std :: string giveRecordAsString() const = 0;
@@ -222,7 +222,7 @@ public:
     std::string record;
     std::string keyword;
     int number;
-    InputException(const InputRecord_ &ir, std::string keyword, int number);
+    InputException(const InputRecord& ir, std::string keyword, int number);
 };
 
 
@@ -232,7 +232,7 @@ protected:
     std::string msg;
 
 public:
-    MissingKeywordInputException(const InputRecord_ &ir, std::string keyword, int number);
+    MissingKeywordInputException(const InputRecord& ir, std::string keyword, int number);
     // MissingKeywordInputException(const InputRecord_ &ir, std::string keyword, int number);
     const char* what() const noexcept override;
 };
@@ -244,7 +244,7 @@ protected:
     std::string msg;
 
 public:
-    BadFormatInputException(const InputRecord_ &ir, std::string keyword, int number);
+    BadFormatInputException(const InputRecord &ir, std::string keyword, int number);
     // BadFormatInputException(const InputRecord_ &ir, std::string keyword, int number): BadFormatInputException(irshared_from_this(),keyword,number){}
     const char* what() const noexcept override;
 };
@@ -256,7 +256,7 @@ protected:
     std::string msg;
 
 public:
-    ValueInputException(const InputRecord_ &ir, std::string keyword, const std::string &reason);
+    ValueInputException(const InputRecord& ir, std::string keyword, const std::string &reason);
     const char* what() const noexcept override;
 };
 

@@ -211,12 +211,12 @@ InternalElementDofManErrorCheckingRule::InternalElementDofManErrorCheckingRule (
 
 InternalElementDofManErrorCheckingRule::InternalElementDofManErrorCheckingRule(InputRecord& ir, double tol): ErrorCheckingRule(tol) {
     std::string unknown;
-    ir.giveField(tstep,"tStep");
-    ir.giveField(number,"number");
-    ir.giveField(idofman,"dofman");
-    ir.giveField(dofid,"dof");
-    ir.giveField(unknown,"unknown");
-    ir.giveField(value,"value");
+    ir->giveField(tstep,"tStep");
+    ir->giveField(number,"number");
+    ir->giveField(idofman,"dofman");
+    ir->giveField(dofid,"dof");
+    ir->giveField(unknown,"unknown");
+    ir->giveField(value,"value");
     if(unknown=="d") mode=VM_Total;
     else if(unknown=="v") mode=VM_Velocity;
     else if(unknown=="a") mode=VM_Acceleration;
@@ -425,15 +425,15 @@ BeamElementErrorCheckingRule :: BeamElementErrorCheckingRule(const std :: string
 }
 
 BeamElementErrorCheckingRule :: BeamElementErrorCheckingRule(InputRecord& ir, double tol): ErrorCheckingRule(tol) {
-    ir.giveField(tstep,"tStep");
-    ir.giveOptionalField(tsubstep,"tStepVer");
-    ir.giveField(number,"number");
+    ir->giveField(tstep,"tStep");
+    ir->giveOptionalField(tsubstep,"tStepVer");
+    ir->giveField(number,"number");
     int istnum;
-    ir.giveField(istnum,"keyword");
+    ir->giveField(istnum,"keyword");
     ist = (BeamElementErrorCheckingRule::BeamElementValueType)istnum;
-    ir.giveField(component,"component");
-    ir.giveField(value,"value");
-    ir.giveOptionalField(tolerance,"tolerance");
+    ir->giveField(component,"component");
+    ir->giveField(value,"value");
+    ir->giveOptionalField(tolerance,"tolerance");
 }
 
 bool
@@ -668,9 +668,9 @@ LoadLevelErrorCheckingRule :: LoadLevelErrorCheckingRule(const std :: string &li
 }
 
 LoadLevelErrorCheckingRule :: LoadLevelErrorCheckingRule(InputRecord& ir, double tol): ErrorCheckingRule(tol) {
-    ir.giveField(tstep,"tStep");
-    ir.giveField(value,"value");
-    ir.giveOptionalField(tolerance,"tolerance");
+    ir->giveField(tstep,"tStep");
+    ir->giveField(value,"value");
+    ir->giveOptionalField(tolerance,"tolerance");
 }
 
 
@@ -712,10 +712,10 @@ EigenValueErrorCheckingRule :: EigenValueErrorCheckingRule(const std :: string &
 }
 
 EigenValueErrorCheckingRule :: EigenValueErrorCheckingRule(InputRecord& ir, double tol): ErrorCheckingRule(tol) {
-    ir.giveField(tstep,"tStep");
-    ir.giveField(number,"EigNum");
-    ir.giveField(value,"value");
-    ir.giveOptionalField(tolerance,"tolerance");
+    ir->giveField(tstep,"tStep");
+    ir->giveField(number,"EigNum");
+    ir->giveField(value,"value");
+    ir->giveOptionalField(tolerance,"tolerance");
 }
 
 bool

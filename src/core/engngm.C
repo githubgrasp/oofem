@@ -200,7 +200,7 @@ EngngModel :: Instanciate_init()
 
 int EngngModel :: instanciateYourself(DataReader &dr, InputRecord &ir, const char *dataOutputFileName, const char *desc)
 {
-    // std::shared_ptr<InputRecord> irPtr(ir.ptr());
+    // std::shared_ptr<InputRecord> irPtr(ir->ptr());
     Timer timer;
     timer.startTimer();
 
@@ -239,7 +239,7 @@ int EngngModel :: instanciateYourself(DataReader &dr, InputRecord &ir, const cha
             timeStepController->instanciateDefaultMetaStep( ir );
         } else {
             // records for metasteps are under this one (no-op for text reader)
-            DataReader::RecordGuard guard(dr,&ir);
+            DataReader::RecordGuard guard(dr,ir);
             timeStepController->instanciateMetaSteps( dr );
         }
 
@@ -310,7 +310,7 @@ EngngModel :: initializeFrom(InputRecord &ir)
 
     // get explicit nmsteps param (text), or size of the <Metasteps> sub-group (xml)
     /* needs to use clone() and not ptr()... unclear why; the ownership of InputRecord should be specified better */
-    nMetaSteps = ir.giveReader()->giveGroupRecords(ir.clone(),_IFT_EngngModel_nmsteps,"Metasteps",DataReader::IR_mstepRec,/*optional*/true).size();
+    nMetaSteps = ir->giveReader()->giveGroupRecords(ir->clone(),_IFT_EngngModel_nmsteps,"Metasteps",DataReader::IR_mstepRec,/*optional*/true).size();
 
     int _val = 1;
     IR_GIVE_OPTIONAL_FIELD(ir, _val, _IFT_EngngModel_nonLinFormulation);
@@ -370,7 +370,7 @@ EngngModel :: instanciateDomains(DataReader &dr)
     auto Idomain=domainList.begin();
     for(size_t i=0; i<domainList.size(); i++){
         InputRecord& rec=dr.giveInputRecord(DataReader::IR_domainRec,i+1);
-        DataReader::RecordGuard guard(dr,&rec);
+        DataReader::RecordGuard guard(dr,rec);
         result&=(*Idomain)->instanciateYourself(dr,rec);
     }
     this->postInitialize();

@@ -48,9 +48,9 @@ Variable::initializeFrom(InputRecord &ir)
     this->interpolation = interpolationCatalogue.getInterpolationByName(name);
     
     // read variable type
-    ir.giveField(this->type,"type");
+    ir->giveField(this->type,"type");
     // read quantity
-    ir.giveField(this->q,"quantity");
+    ir->giveField(this->q,"quantity");
     // read variable size
     IR_GIVE_FIELD(ir, this->size, "size");
     // read dofs 

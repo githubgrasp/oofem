@@ -53,7 +53,7 @@ void
 TimeStepController :: initializeFrom(InputRecord &ir)
 {
 
-  numberOfMetaSteps = ir.giveReader()->giveGroupRecords(ir.ptr(),_IFT_EngngModel_nmsteps,"Metasteps",DataReader::IR_mstepRec,/*optional*/true).size();
+  numberOfMetaSteps = ir->giveReader()->giveGroupRecords(ir,_IFT_EngngModel_nmsteps,"Metasteps",DataReader::IR_mstepRec,/*optional*/true).size();
   IR_GIVE_OPTIONAL_FIELD(ir, this->alpha, _IFT_TimeStepController_alpha);
 
 }

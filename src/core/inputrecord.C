@@ -157,31 +157,31 @@ InputRecord_::ptr() {
 }
 
 
-InputException::InputException(const InputRecord_& ir, std::string keyword, int number) :
+InputException::InputException(const InputRecord& ir, std::string keyword, int number) :
     record(ir->giveRecordAsString()), keyword(std::move(keyword)), number(number)
 { }
 
 
-MissingKeywordInputException::MissingKeywordInputException(const InputRecord_& ir, std::string kw, int n) :
+MissingKeywordInputException::MissingKeywordInputException(const InputRecord& ir, std::string kw, int n) :
     InputException(ir, std::move(kw), n)
 {
-    msg = ir.giveLocation()+": missing keyword \"" + keyword + "\"" \
+    msg = ir->giveLocation()+": missing keyword \"" + keyword + "\"" \
           "\n  \"" + record.substr(0, maxMsgLen) + (record.size()>maxMsgLen?"...":"")+ "\"";
 }
 
 
-BadFormatInputException::BadFormatInputException(const InputRecord_& ir, std::string kw, int n) :
+BadFormatInputException::BadFormatInputException(const InputRecord& ir, std::string kw, int n) :
     InputException(ir, std::move(kw), n)
 {
-    msg = ir.giveLocation()+": bad format for keyword \"" + keyword + "\"" \
+    msg = ir->giveLocation()+": bad format for keyword \"" + keyword + "\"" \
           "\n   \"" + record.substr(0, maxMsgLen) + (record.size()>maxMsgLen?"...":"") + "\"";
 }
 
 
-ValueInputException::ValueInputException(const InputRecord_& ir, std::string kw, const std::string &reason) :
+ValueInputException::ValueInputException(const InputRecord& ir, std::string kw, const std::string &reason) :
     InputException(ir, std::move(kw), -1)
 {
-    msg = ir.giveLocation()+": value input error for keyword \"" + keyword + "\"" + \
+    msg = ir->giveLocation()+": value input error for keyword \"" + keyword + "\"" + \
           "\nReason: \"" + reason + "\"\n" + \
           "\n  \"" + record.substr(0, maxMsgLen) + (record.size()>maxMsgLen?"...":"") + "\"";
 }

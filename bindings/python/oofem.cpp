@@ -1026,19 +1026,19 @@ PYBIND11_MODULE(oofempy, m) {
     py::implicitly_convertible<py::sequence, oofem::IntArray>();
     #endif
 
-    py::class_<oofem::DataReader>(m, "DataReader")
+    py::class_<oofem::DataReader,std::shared_ptr<DataReader>>(m, "DataReader")
     ;
 
-    py::class_<oofem::OOFEMTXTDataReader, oofem::DataReader>(m, "OOFEMTXTDataReader")
+    py::class_<oofem::OOFEMTXTDataReader, oofem::DataReader, std::shared_ptr<oofem::OOFEMTXTDataReader>>(m, "OOFEMTXTDataReader")
         .def(py::init<std::string>())
     ;
 
 
-    py::class_<oofem::InputRecord,std::shared_ptr<InputRecord>>(m, "InputRecord")
+    py::class_<oofem::InputRecord_,std::shared_ptr<InputRecord_>>(m, "InputRecord")
     ;
 
     typedef const char *InputFieldType;
-    py::class_<oofem::DynamicInputRecord, oofem::InputRecord,std::shared_ptr<DynamicInputRecord>>(m, "DynamicInputRecord")
+    py::class_<oofem::DynamicInputRecord, oofem::InputRecord_, std::shared_ptr<DynamicInputRecord>>(m, "DynamicInputRecord")
         .def(py::init<std::string, int>(), py::arg("answer") = "", py::arg("value")=0)
         .def("finish", &oofem::DynamicInputRecord::finish, py::arg("wrn")=true)
         .def("setRecordKeywordField", &oofem::DynamicInputRecord::setRecordKeywordField)
@@ -1055,7 +1055,7 @@ PYBIND11_MODULE(oofempy, m) {
         .def("setField", (void (oofem::DynamicInputRecord::*)(InputFieldType)) &oofem::DynamicInputRecord::setField)
     ;
 
-    py::class_<oofem::OOFEMTXTInputRecord, oofem::InputRecord, std::shared_ptr<OOFEMTXTInputRecord>>(m, "OOFEMTXTInputRecord")
+    py::class_<oofem::OOFEMTXTInputRecord, oofem::InputRecord_, std::shared_ptr<OOFEMTXTInputRecord>>(m, "OOFEMTXTInputRecord")
         .def(py::init<>())
         .def(py::init<int, std::string>())
         .def("finish", &oofem::OOFEMTXTInputRecord::finish, py::arg("wrn")=true)

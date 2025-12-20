@@ -641,7 +641,7 @@ Domain :: instanciateYourself(DataReader &dr, InputRecord& irDomain)
             OOFEM_ERROR("Contact surface entry already exist (num=%d)", num);
 	  }
 	  
-	  ir.finish();
+	  ir->finish();
 	}
 	
 
