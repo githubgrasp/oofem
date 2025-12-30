@@ -5,7 +5,7 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4339630.svg)](https://doi.org/10.5281/zenodo.4339630)
 
 
-OOFEM is parallel, object-oriented finite element code for solving mechanical, transport and fluid mechanics problems. 
+OOFEM is parallel, object-oriented finite element code for solving mechanical, transport and fluid mechanics problems. Read more about its [features here](https://oofem.org/doku.php?id=en:features) or visit [OOFEM web page](https://oofem.org).
 
 OOFEM is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation; either version 2.1 of the License, or (at your option) any later version.
@@ -14,7 +14,7 @@ Copyright (C) 1993 - 2025   Borek Patzak
     
 ## Getting Started
 ### What is here
-The source directory tree holds source code to the OOFEM package.  
+This repository holds source code of the OOFEM.  
 ```
   OOFEM_TOP_DIR
   |
@@ -24,97 +24,35 @@ The source directory tree holds source code to the OOFEM package.
   |
   |-- src - source files of all oofem modules
   |   |
-  |   |-- core     - sources of the core part of OOFEM.
+  |   |-- core     - sources of the core part of OOFEM
   |   |
-  |   |-- sm       - sources of structural analysis module.
+  |   |-- sm       - sources of structural analysis module
   |   |
-  |   |-- tm       - sources of transport problem module.
+  |   |-- tm       - sources of transport problem module
   |   |
-  |   |-- fm       - sources of fluid mechanics module.
+  |   |-- fm       - sources of fluid mechanics module
   |   |
-  |   |-- dss      - includes the sources for Direct Sparse Solver (DSS),
-  |   |              contributed by R. Vondracek)
+  |   |-- dss      - sources for Direct Sparse Solver
   |   |
   |   |-- main     - contains the sources of main() and implementation of some 
-  |                  global functions for oofem, oofeg.
+  |                  global functions for oofem, oofeg
   |
-  |-- tools   - sources for several utility programs.
+  |-- tools   - sources for several utility programs
   |
-  |-- tests   - contains several tests, which are useful to verify
-  |             the program functionality.
+  |-- tests   - contains tests & benchmarks
   |
-  |-- bindings - holds sources to generate OOFEM bindings to Python programming language.
+  |-- bindings - holds sources to generate OOFEM bindings to Python programming language
 ```
 
 
-### Pre-requisites
+## First steps
+Follow our [Getting Started Guide](http://www.oofem.org/resources/doc/usermanual/index.html) on how to install the OOFEM and make fist steps.
 
-* The oofem requires the CMake cross-platform build system and C++ compiler with STL support (Standard Template Library).
-
-* The oofem contains interface to IML++ library. It is the C++ templated library of modern iterative methods for solving both symmetric and 
-non-symmetric linear systems of equations, written by Roldan Pozo. It can be downloaded from http://math.nist.gov/iml++/. 
-
-* Parallel support for distributed memory requires MPI library to be installed. If you do not have any, we recommend to use Open MPI. 
-This is a freely available, high-performance, and portable implementation of MPI (http://www.open-mpi.org/).
-
-* For high performance linear solvers, OOFEM can use [PETSc](https://www.mcs.anl.gov/petsc/), [SuperLU](http://crd-legacy.lbl.gov/~xiaoye/SuperLU/), MKL [Pardiso](https://software.intel.com/en-us/mkl-developer-reference-fortran-intel-mkl-pardiso-parallel-direct-sparse-solver-interface) or [Pardiso-project.org]( http://www.pardiso-project.org/) solvers. 
-
-* For high performance eigenvalue solvers, oofem uses SLEPc. The toolkit can be downloaded from SLEPc project home page 
-(http://www.grycap.upv.es/slepc). 
-
-## Installation
-
-* unpack sources 
-* create an out-of-tree build directory
-```
-   mkdir -p ~/build/debug
-```
-* configure the target
-```
-   cd ~/build/debug; cmake PATH_TO_OOFEM_SOURCES
-```
-   where PATH_TO_OOFEM_SOURCES is the path to OOFEM source directory,
-   created in step 0 (~/oofem-2.2, for example). 
-* compile OOFEM
-```
-  make
-```
-
-### Running the tests
-To run the tests, go to your build directory and run ctest
-```
-ctest
-```
-
-
-### Additional instructions 
-* Instead of cmake you can use ccmake which uses an ncurses interface, 
-  or cmake-gui for a GUI. Use the command make help for a list of all targets. 
-
-* You can find detailed installation (including installation on Windows)
-  instruction on OOFEM wiki (http://www.oofem.org/wiki/doku.php?id=installation)
-
-* To get support check out oofem wiki (www.oofem.org/wiki) and
-  oofem forum (www.oofem.org/forum) as well.
-
-
-### Running oofem 
-The oofem program prints out the available options when run without
-any option. To run a specific job, you can enter
-```
-oofem -f input_file_name
-```
-## Documentation
-You may find OOFEM documentation [here](https://www.oofem.org/doku.php?id=en:manual).
-
-
-
-## Further information
-Please consult oofem home page (http://www.oofem.org) for 
-more documentation, manuals and new versions.
+## Documentation & Support
+* You may find OOFEM documentation [here](https://www.oofem.org/doku.php?id=en:manual).
+* Use [OOFEM forum](https://www.oofem.org/forum/) to post your questions, get support, and much more.
 
 ## Authors
-
 See the list of [contributors](http://www.oofem.org/doku.php?id=en:credits) who participated in this project.
 
 ## Acknowledgments
