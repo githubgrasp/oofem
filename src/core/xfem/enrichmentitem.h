@@ -298,7 +298,7 @@ protected:
     static const double mLevelSetRelTol;
     const double mLevelSetTol2;
 
-    std::shared_ptr<InputRecord> thisIr;
+    std::shared_ptr<InputRecord_> thisIr;
 };
 
 inline bool EnrichmentItem :: isDofManEnriched(const DofManager &iDMan) const
