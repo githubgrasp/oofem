@@ -557,7 +557,7 @@ Quad10_2D_SUPG :: giveIPValue(FloatArray &answer, GaussPoint *gp, InternalStateT
         if ( mi ) {
             FloatArray val;
             mi->giveElementMaterialMixture( val, gp->giveElement()->giveNumber() );
-            answer = FloatArray{val.at(1)};
+            answer = Vec1(val.at(1));
             return 1;
         } else {
             answer = Vec1(1.0);

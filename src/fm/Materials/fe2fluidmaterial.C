@@ -261,10 +261,10 @@ int FE2FluidMaterial :: giveIPValue(FloatArray &answer, GaussPoint *gp, Internal
 {
     FE2FluidMaterialStatus *status = static_cast< FE2FluidMaterialStatus * >( this->giveStatus(gp) );
     if ( type == IST_VOFFraction ) {
-        answer = FloatArray{status->giveVOFFraction()};
+        answer = Vec1(status->giveVOFFraction());
         return true;
     } else if ( type == IST_Pressure ) {
-        answer = FloatArray{status->givePressure()};
+        answer = Vec1(status->givePressure());
         return true;
     } else if ( type == IST_Undefined ) { ///@todo What should one call this value? Relation between pressure and volumetric strain-rate.
 #if 0
@@ -289,7 +289,7 @@ int FE2FluidMaterial :: giveIPValue(FloatArray &answer, GaussPoint *gp, Internal
             OOFEM_ERROR("Error in volumetric pressure tangent");
         }
 #endif
-        answer = FloatArray{status->giveVolumetricPressureTangent()};
+        answer = Vec1(status->giveVolumetricPressureTangent());
         return true;
     } else {
         return FluidDynamicMaterial :: giveIPValue(answer, gp, type, tStep);
