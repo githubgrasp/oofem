@@ -103,7 +103,7 @@ LatticeDamage :: computeEquivalentStrain(const FloatArrayF< 6 > &strain, GaussPo
     double paramC = 0.5 * ( this->ec * e0 - e0 );
 
     double shearNorm = norm(strain [ { 1, 2 } ]);
-    return norm({ this->alphaOne * shearNorm / paramB, ( strain.at(1) + paramC ) / paramA }) * paramA - paramC;
+    return norm(Vec2( this->alphaOne * shearNorm / paramB, ( strain.at(1) + paramC ) / paramA )) * paramA - paramC;
 }
 
 

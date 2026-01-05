@@ -102,7 +102,7 @@ public:
         } else if ( this->giveDomain()->giveNumberOfSpatialDimensions() == 2 ) {
             answer = this->giveInterfaceCrossSection()->giveEngTraction_2d(jump, gp, tStep);
         } else if ( this->giveDomain()->giveNumberOfSpatialDimensions() == 1 ) {
-            answer = {this->giveInterfaceCrossSection()->giveEngTraction_1d(jump.at(1), gp, tStep)};
+            answer = Vec1(this->giveInterfaceCrossSection()->giveEngTraction_1d(jump.at(1), gp, tStep));
         }
     }
 

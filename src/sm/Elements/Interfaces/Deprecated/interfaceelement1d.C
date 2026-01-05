@@ -93,7 +93,7 @@ InterfaceElem1d :: computeStressVector(FloatArray &answer, const FloatArray &str
 {
     setCoordMode();
     switch ( mode ) {
-        case ie1d_1d: answer = FloatArray{static_cast< StructuralInterfaceCrossSection* >(this->giveCrossSection())->giveEngTraction_1d(strain.at(1), gp, tStep)}; return;
+        case ie1d_1d: answer = Vec1(static_cast< StructuralInterfaceCrossSection* >(this->giveCrossSection())->giveEngTraction_1d(strain.at(1), gp, tStep)); return;
         case ie1d_2d: answer = static_cast< StructuralInterfaceCrossSection* >(this->giveCrossSection())->giveEngTraction_2d(strain, gp, tStep); return;
         case ie1d_3d: answer = static_cast< StructuralInterfaceCrossSection* >(this->giveCrossSection())->giveEngTraction_3d(strain, gp, tStep); return;
     }

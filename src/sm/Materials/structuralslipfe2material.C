@@ -209,7 +209,7 @@ void StructuralSlipFE2Material::giveHomogenizedFields( FloatArray &stress, Float
 //    OOFEM_LOG_INFO("Stress is  %10.6e, %10.6e, %10.6e \n Transfer stress is %10.6e, %10.6e \n Reinforcement membrane stress is %10.6e, %10.6e, %10.6e, %10.6e \n",  stress4.at(1), stress4.at(2), stress4.at(3), bStress.at(1), bStress.at(2), rStress.at(1), rStress.at(2), rStress.at(3), rStress.at(4) );
 
     if (stress4.giveSize() == 4 ) {
-        stress = {stress4[0], stress4[1], 0.5*(stress4[2]+stress4[3])};
+        stress = Vec3(stress4[0], stress4[1], 0.5*(stress4[2]+stress4[3]));
     } else {
         OOFEM_ERROR("Only 2D plane stress mode supported");
     }
@@ -240,7 +240,7 @@ void StructuralSlipFE2Material::giveSensitivities( FloatMatrix &dStressdEps, Flo
 
         FloatArray eps;
         if ( epsRed.giveSize() != 3 ) {
-            eps = { epsRed[0], epsRed[1], epsRed[5] };
+            eps = Vec3( epsRed[0], epsRed[1], epsRed[5] );
         } else {
             eps = epsRed;
         }

@@ -507,7 +507,7 @@ void TransportGradientDirichlet :: computeXi()
         for ( int n : setPointer.giveNodeList() ) {
             int eq = eqs[n];
             if ( eq > 0 ) {
-                this->xis[n] = {x.at(eq, 1), x.at(eq, 2), x.at(eq, 3)};
+                this->xis[n] = Vec3(x.at(eq, 1), x.at(eq, 2), x.at(eq, 3));
             }
         }
     }
@@ -630,7 +630,7 @@ void TransportGradientDirichlet :: computeXi()
         for ( int n : setPointer->giveNodeList() ) {
             int eq = eqs[n];
             if ( eq > 0 ) {
-                this->xis[n] = {x.at(eq, 1), x.at(eq, 2), x.at(eq, 3)};
+                this->xis[n] = Vec3(x.at(eq, 1), x.at(eq, 2), x.at(eq, 3));
             }
         }
 

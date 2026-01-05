@@ -98,9 +98,8 @@ IntMatBilinearCZFagerstromRate :: giveFirstPKTraction_3d(const FloatArrayF<3> &d
         Qtrial += dot(Kstiff, dJ);
 
         double Qn = Qtrial.at(3);
-        auto QtrialShear = {Qtrial.at(1), Qtrial.at(2), 0.};
 
-        double Qt = norm(QtrialShear);
+        double Qt = norm(Vec2(Qtrial.at(1), Qtrial.at(2)));
 
         //double S = this->GIc/this->sigf;
         double sigf = this->sigf;

@@ -361,7 +361,7 @@ PlaneStress2dXfem :: giveCompositeExportData(std::vector< ExportRegion > &vtkPie
 
                 if ( type == DisplacementVector ) { // compute displacement
 
-                        FloatArray u = {0.0, 0.0, 0.0};
+                        FloatArray u = Vec3(0.0, 0.0, 0.0);
 
                         // Fetch global coordinates (in undeformed configuration)
                         const FloatArray &x = nodeCoords[nodeInd-1];
@@ -382,7 +382,7 @@ PlaneStress2dXfem :: giveCompositeExportData(std::vector< ExportRegion > &vtkPie
                             u = uTemp;
                         }
                         else {
-                            u = {uTemp[0], uTemp[1], 0.0};
+                            u = Vec3(uTemp[0], uTemp[1], 0.0);
                         }
 
                         vtkPieces[0].setPrimaryVarInNode(type, nodeInd, u);
@@ -472,7 +472,7 @@ PlaneStress2dXfem :: giveCompositeExportData(std::vector< ExportRegion > &vtkPie
                             }
 
 
-                            FloatArray valueArray = {levelSet};
+                            FloatArray valueArray = Vec1(levelSet);
                             vtkPieces[0].setInternalXFEMVarInNode(field, enrItIndex, nodeInd, valueArray);
 
                         } else if ( xfemstype == XFEMST_LevelSetGamma ) {
@@ -486,7 +486,7 @@ PlaneStress2dXfem :: giveCompositeExportData(std::vector< ExportRegion > &vtkPie
                             }
 
 
-                            FloatArray valueArray = {levelSet};
+                            FloatArray valueArray = Vec1(levelSet);
                             vtkPieces[0].setInternalXFEMVarInNode(field, enrItIndex, nodeInd, valueArray);
 
                         } else if ( xfemstype == XFEMST_NodeEnrMarker ) {
@@ -500,7 +500,7 @@ PlaneStress2dXfem :: giveCompositeExportData(std::vector< ExportRegion > &vtkPie
                             }
 
 
-                            FloatArray valueArray = {nodeEnrMarker};
+                            FloatArray valueArray = Vec1(nodeEnrMarker);
                             vtkPieces[0].setInternalXFEMVarInNode(field, enrItIndex, nodeInd, valueArray);
                         }
 

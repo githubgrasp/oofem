@@ -105,7 +105,7 @@ Q4Axisymm :: computeBmatrixAt(GaussPoint *gp, FloatMatrix &answer, int li, int u
     if ( numberOfFiAndShGaussPoints == 1 ) { // Reduced integration
         FEInterpolation *interp = this->giveInterpolation();
         
-        FloatArray N, NRed, redCoord = {0.0, 0.0}; // eval in centroid
+        FloatArray N, NRed, redCoord = Vec2(0.0, 0.0); // eval in centroid
         interp->evalN( N, gp->giveNaturalCoordinates(), FEIElementGeometryWrapper(this) );
         interp->evalN( NRed, redCoord, FEIElementGeometryWrapper(this) );
         

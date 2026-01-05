@@ -69,7 +69,7 @@ IntElLine2IntPen :: computeCovarBaseVectorAt(IntegrationPoint *ip) const
 
     // Since we are averaging over the whole element, always evaluate the base vectors at xi = 0.
 
-	FloatArray xi_0 = {0.0};
+	FloatArray xi_0 = Vec1(0.0);
 
     FEInterpolation *interp = this->giveInterpolation();
     FloatMatrix dNdxi;
