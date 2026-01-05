@@ -942,10 +942,10 @@ if (DOXYGEN_FOUND)
 
     configure_file (
         "${oofem_SOURCE_DIR}/doc/refman/footer.html.in"
-        "${oofem_BINARY_DIR}/footer.html")
+        "${oofem_SOURCE_DIR}/doc/refman/footer.html")
     configure_file (
         "${oofem_SOURCE_DIR}/doc/refman/doxygen.cfg.in"
-        "${oofem_BINARY_DIR}/doxygen.cfg")
+        "${oofem_SOURCE_DIR}/doc/refman/doxygen.cfg")
 
     add_custom_target (
         apidoc
