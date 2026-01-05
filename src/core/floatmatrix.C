@@ -1658,9 +1658,9 @@ void FloatMatrix :: beLocalCoordSys(const FloatArray &normal)
 
     } else if ( normal.giveSize() == 3 ) {
         // Create a permutated vector of n, *always* length 1 and significantly different from n.
-        FloatArray b, t = {
+        FloatArray b, t = Vec3(
             normal(1), -normal(2), normal(0)
-        };                                                    // binormal and tangent
+        );                                                    // binormal and tangent
 
         // Construct orthogonal vector
         double npn = t.dotProduct(normal);

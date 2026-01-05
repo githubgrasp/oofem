@@ -283,7 +283,7 @@ FEI3dHexaConst :: edgeComputeLength(const IntArray &edgeNodes, const FEICellGeom
 void
 FEI3dHexaConst :: surfaceEvalN(FloatArray &answer, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
 {
-   answer = {};
+   answer = FloatArray();
 }
 
 void

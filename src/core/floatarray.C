@@ -1065,7 +1065,7 @@ void FloatArray :: beVectorForm(const FloatMatrix &aMatrix)
     }
 
 #  endif
-    *this = {
+    *this = Vec9(
         aMatrix.at(1, 1),
         aMatrix.at(2, 2),
         aMatrix.at(3, 3),
@@ -1075,7 +1075,7 @@ void FloatArray :: beVectorForm(const FloatMatrix &aMatrix)
         aMatrix.at(3, 2),
         aMatrix.at(3, 1),
         aMatrix.at(2, 1)
-    };
+    );
 }
 
 void FloatArray :: beSymVectorFormOfStrain(const FloatMatrix &aMatrix)
@@ -1088,14 +1088,14 @@ void FloatArray :: beSymVectorFormOfStrain(const FloatMatrix &aMatrix)
     }
 #  endif
 
-    *this = {
+    *this = Vec6(
         aMatrix.at(1, 1),
         aMatrix.at(2, 2),
         aMatrix.at(3, 3),
         ( aMatrix.at(2, 3) + aMatrix.at(3, 2) ),
         ( aMatrix.at(1, 3) + aMatrix.at(3, 1) ),
         ( aMatrix.at(1, 2) + aMatrix.at(2, 1) )
-    };
+            );
 }
 
 
@@ -1109,14 +1109,14 @@ void FloatArray :: beSymVectorForm(const FloatMatrix &aMatrix)
 
 #  endif
 
-    *this = {
+    *this = Vec6(
         aMatrix.at(1, 1),
         aMatrix.at(2, 2),
         aMatrix.at(3, 3),
         0.5 * ( aMatrix.at(2, 3) + aMatrix.at(3, 2) ),
         0.5 * ( aMatrix.at(1, 3) + aMatrix.at(3, 1) ),
         0.5 * ( aMatrix.at(1, 2) + aMatrix.at(2, 1) )
-    };
+    );
 }
 
 void FloatArray :: changeComponentOrder()

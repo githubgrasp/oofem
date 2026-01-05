@@ -72,7 +72,7 @@ int DiscontinuousSegmentIntegrationRule :: SetUpPointsOnLine(int iNumPointsPerSe
             FloatArray global;
             GaussPoint * &gp = this->gaussPoints [ pointsPassed ];
 
-            gp = new GaussPoint(this, pointsPassed + 1, {coords_xi.at(j + 1)}, weights.at(j + 1), mode);
+            gp = new GaussPoint(this, pointsPassed + 1, Vec1(coords_xi.at(j + 1)), weights.at(j + 1), mode);
 
             const FloatArray &coord = gp->giveNaturalCoordinates();
 
@@ -91,9 +91,9 @@ int DiscontinuousSegmentIntegrationRule :: SetUpPointsOnLine(int iNumPointsPerSe
 
             // Local coordinate along the line segment
             double xi = 2.0 * ( distance(global, xS) / totalLength - 0.5 );
-            gp->setNaturalCoordinates({ xi });
+            gp->setNaturalCoordinates(Vec1( xi ));
 
-            gp->setSubPatchCoordinates({ xi });
+            gp->setSubPatchCoordinates(Vec1( xi ));
             gp->setGlobalCoordinates(global);
 
             gp->setWeight(1.0 * gp->giveWeight() * mSegments [ i ].giveLength() / totalLength);  // update integration weight

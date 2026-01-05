@@ -1559,15 +1559,15 @@ void PolygonLine :: computeIntersectionPoints(const FloatArray &iXStart, const F
         const FloatArray &xStart = this->giveVertex(segIndex);
         const FloatArray &xEnd = this->giveVertex(segIndex+1);
 
-        const FloatArray t1 = {xEnd(0) - xStart(0), xEnd(1) - xStart(1)};
-        const FloatArray t2 = {iXEnd(0) - iXStart(0), iXEnd(1) - iXStart(1)};
+        const FloatArray t1 =Vec2(xEnd(0) - xStart(0), xEnd(1) - xStart(1));
+        const FloatArray t2 = Vec2(iXEnd(0) - iXStart(0), iXEnd(1) - iXStart(1));
 
         double xi1 = 0.0, xi2 = 0.0;
         int maxIter = 1;
 
         for(int iter = 0; iter < maxIter; iter++) {
-            FloatArray temp = {iXStart(0) + xi2*t2(0) - xStart(0) - xi1*t1(0), iXStart(1) + xi2*t2(1) - xStart(1) - xi1*t1(1)};
-            FloatArray res = {-t1.dotProduct(temp), t2.dotProduct(temp)};
+            FloatArray temp = Vec2(iXStart(0) + xi2*t2(0) - xStart(0) - xi1*t1(0), iXStart(1) + xi2*t2(1) - xStart(1) - xi1*t1(1));
+            FloatArray res = Vec2(-t1.dotProduct(temp), t2.dotProduct(temp));
 
             //printf("iter: %d res: %e\n", iter, res.computeNorm() );
 
@@ -1710,9 +1710,9 @@ bool PolygonLine :: giveTips(TipInfo &oStartTipInfo, TipInfo &oEndTipInfo) const
         info1.mTangDir.normalize();
 
         // Tip normal
-        info1.mNormalDir = {
+        info1.mNormalDir = Vec2(
             -info1.mTangDir.at(2), info1.mTangDir.at(1)
-        };
+        );
 
         info1.mTipIndex = 0;
         info1.mArcPos = 0.0;
@@ -1732,9 +1732,9 @@ bool PolygonLine :: giveTips(TipInfo &oStartTipInfo, TipInfo &oEndTipInfo) const
         info2.mTangDir.normalize();
 
         // Tip normal
-        info2.mNormalDir = {
+        info2.mNormalDir = Vec2(
             -info2.mTangDir.at(2), info2.mTangDir.at(1)
-        };
+        );
 
         info2.mTipIndex = 1;
         info2.mArcPos = 1.0;
@@ -1750,9 +1750,9 @@ bool PolygonLine :: giveTips(TipInfo &oStartTipInfo, TipInfo &oEndTipInfo) const
 void PolygonLine :: giveBoundingSphere(FloatArray &oCenter, double &oRadius)
 {
     int nVert = giveNrVertices();
-    oCenter = {
+    oCenter = Vec2(
         0.0, 0.0
-    };
+    );
     oRadius = 0.0;
 
     if ( nVert > 0 ) {

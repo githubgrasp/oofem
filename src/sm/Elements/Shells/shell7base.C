@@ -894,7 +894,7 @@ Shell7Base :: computeMassMatrix(FloatMatrix &answer, TimeStep *tStep)
         this->computeNmatrixAt(lCoords, N);
         FloatArray unknowns, m(3);
         unknowns.beProductOf(N, solVec);        // [x, m, gam]^T
-        m = { unknowns.at(4), unknowns.at(5), unknowns.at(6) };
+        m = Vec3( unknowns.at(4), unknowns.at(5), unknowns.at(6) );
         double gam = unknowns.at(7);
 
         // Analytically integrated through the tickness
@@ -1037,9 +1037,9 @@ Shell7Base :: computeConvectiveMassForce(FloatArray &answer, TimeStep *tStep)
         
         a.beProductOf(N, aVec);        // [ x,  m,  gam]^T
         da.beProductOf(N, daVec);      // [dx, dm, dgam]^T
-        m = { a.at(4), a.at(5), a.at(6) };
+        m = Vec3( a.at(4), a.at(5), a.at(6) );
         gam =  a.at(7);
-        dm = { da.at(4), da.at(5), da.at(6) };
+        dm = Vec3( da.at(4), da.at(5), da.at(6) );
         dgam = da.at(7);
 
         double a1, a2, a3, h, h2, h3, h5, fac1, fac2, fac3, rho;
@@ -1252,8 +1252,8 @@ Shell7Base :: computeTractionForce(FloatArray &answer, const int iEdge, Boundary
             Q.beTranspositionOf(gcov);
 
             FloatArray distrForces(3), distrMoments(3), t1, t2;
-            distrForces = { components.at(1), components.at(2), components.at(3)};
-            distrMoments = { components.at(4), components.at(5), components.at(6) };
+            distrForces = Vec3( components.at(1), components.at(2), components.at(3));
+            distrMoments = Vec3( components.at(4), components.at(5), components.at(6) );
             t1.beTProductOf(Q, distrForces);
             t2.beTProductOf(Q, distrMoments);
             fT.addSubVector(t1,1);
@@ -2138,9 +2138,9 @@ Shell7Base :: giveSPRcontribution(FloatMatrix &eltIPvalues, FloatMatrix &eltPoly
         // Collect global coordinates for IP and assemble to P.
         FloatArray IpCoords;
         IpCoords = ip->giveGlobalCoordinates();
-        FloatArray iRowP = {1,IpCoords.at(1),IpCoords.at(2),IpCoords.at(3),
+        FloatArray iRowP = Vec9(1,IpCoords.at(1),IpCoords.at(2),IpCoords.at(3),
                             IpCoords.at(2)*IpCoords.at(3),IpCoords.at(1)*IpCoords.at(3),IpCoords.at(1)*IpCoords.at(2),
-                            IpCoords.at(1)*IpCoords.at(1),IpCoords.at(2)*IpCoords.at(2)};
+                            IpCoords.at(1)*IpCoords.at(1),IpCoords.at(2)*IpCoords.at(2));
         eltPolynomialValues.addSubVectorRow(iRowP,iIP+1,1);
         
     }
@@ -2302,7 +2302,7 @@ Shell7Base :: recoverShearStress(TimeStep *tStep)
 #endif
 
     // All transverse stress components
-    fitRecoveredStress2BC(dSmatIPupd, dSmatupd, dSmat, dSmatIP, SmatOld, tractionBtm, tractionTop, zeroThicknessLevel, {0.0,0.0,1.0}, 1, numberOfLayers);    // {0.0,0.0,1.0}: only Szz fulfills BC, shear stress integration error is only distributed to top and btm
+    fitRecoveredStress2BC(dSmatIPupd, dSmatupd, dSmat, dSmatIP, SmatOld, tractionBtm, tractionTop, zeroThicknessLevel, Vec3(0.0,0.0,1.0), 1, numberOfLayers);    // {0.0,0.0,1.0}: only Szz fulfills BC, shear stress integration error is only distributed to top and btm
     
     for ( int layer = 1; layer <= numberOfLayers; layer++ ) {
         //if (this->giveGlobalNumber() == 84 ) { dSmatIPupd[layer -1].printYourself(); }
@@ -2385,7 +2385,7 @@ Shell7Base :: giveRecoveredTransverseInterfaceStress(std::vector<FloatMatrix> &t
 
     // All transverse stress components
     transverseStress.resize(numberOfLayers-1);              //recovered stress values at layer interfaces 
-    fitRecoveredStress2BC(dSmatIPupd, dSmatupd, dSmat, dSmatIP, SmatOld, tractionBtm, tractionTop, zeroThicknessLevel, {0.0,0.0,1.0}, 1, numberOfLayers);    // {0.0,0.0,1.0}: only Szz fulfills BC, shear stress integration error is only distributed to top and btm
+    fitRecoveredStress2BC(dSmatIPupd, dSmatupd, dSmat, dSmatIP, SmatOld, tractionBtm, tractionTop, zeroThicknessLevel, Vec3(0.0,0.0,1.0), 1, numberOfLayers);    // {0.0,0.0,1.0}: only Szz fulfills BC, shear stress integration error is only distributed to top and btm
     
     for ( int layer = 1 ; layer < numberOfLayers ; layer++ ) {
         transverseStress[layer-1] = dSmatupd[layer-1];
@@ -2461,10 +2461,10 @@ Shell7Base :: giveLayerContributionToSR(FloatMatrix &dSmatLayer, FloatMatrix &dS
                                 IpCoords.at(2)*IpCoords.at(3),IpCoords.at(1)*IpCoords.at(3),IpCoords.at(1)*IpCoords.at(2),
                                 IpCoords.at(1)*IpCoords.at(1),IpCoords.at(2)*IpCoords.at(2)};  */ 
             // P = [1 x y z yz xz xy x² y² x²y x²z]
-            FloatArray iRowP = {1.0,IpCoords.at(1),IpCoords.at(2),IpCoords.at(3),
+            FloatArray iRowP = FloatArray::fromIniList({1.0,IpCoords.at(1),IpCoords.at(2),IpCoords.at(3),
                                 IpCoords.at(2)*IpCoords.at(3),IpCoords.at(1)*IpCoords.at(3),IpCoords.at(1)*IpCoords.at(2),
                                 IpCoords.at(1)*IpCoords.at(1),IpCoords.at(2)*IpCoords.at(2),
-                                IpCoords.at(1)*IpCoords.at(1)*IpCoords.at(3),IpCoords.at(2)*IpCoords.at(2)*IpCoords.at(3)}; 
+                                IpCoords.at(1)*IpCoords.at(1)*IpCoords.at(3),IpCoords.at(2)*IpCoords.at(2)*IpCoords.at(3)});
             // P = [x y yz xz xy x² y² x²y x²z]
 //             FloatArray iRowP = {IpCoords.at(1),IpCoords.at(2),
 //                                 IpCoords.at(2)*IpCoords.at(3),IpCoords.at(1)*IpCoords.at(3),IpCoords.at(1)*IpCoords.at(2),
@@ -2965,8 +2965,8 @@ Shell7Base :: giveZintegratedPolynomialGradientForStressRecAt(FloatArray &answer
 //               0,           0,coords.at(3),0,0.5*coords.at(3)*coords.at(3),                                  0,coords.at(1)*coords.at(3),                            0,2.0*coords.at(2)*coords.at(3)};
     
     // P = [1 x y z yz xz xy x² y² x²z y²z]
-    answer = {0,coords.at(3),0,0,0,0.5*coords.at(3)*coords.at(3),coords.at(2)*coords.at(3),2.0*coords.at(1)*coords.at(3),0,coords.at(1)*coords.at(3)*coords.at(3),0,
-              0,0,coords.at(3),0,0.5*coords.at(3)*coords.at(3),0,coords.at(1)*coords.at(3),0,2.0*coords.at(2)*coords.at(3),0,coords.at(2)*coords.at(3)*coords.at(3)};
+    answer = FloatArray::fromIniList({0,coords.at(3),0,0,0,0.5*coords.at(3)*coords.at(3),coords.at(2)*coords.at(3),2.0*coords.at(1)*coords.at(3),0,coords.at(1)*coords.at(3)*coords.at(3),0,
+              0,0,coords.at(3),0,0.5*coords.at(3)*coords.at(3),0,coords.at(1)*coords.at(3),0,2.0*coords.at(2)*coords.at(3),0,coords.at(2)*coords.at(3)*coords.at(3)});
     
     // P = [x y yz xz xy x² y² x²z y²z]
 //     answer = {coords.at(3),0,0,0.5*coords.at(3)*coords.at(3),coords.at(2)*coords.at(3),2.0*coords.at(1)*coords.at(3),0,coords.at(1)*coords.at(3)*coords.at(3),0,
@@ -2996,9 +2996,9 @@ Shell7Base :: giveZ2integratedPolynomial2GradientForStressRecAt(FloatArray &answ
     answer.zero();
     
     // P = [1 x y z yz xz xy x² y² x²z y²z]
-    answer = {0,0,0,0,0,0,0,coords.at(3)*coords.at(3),0,(1.0/3.0)*coords.at(3)*coords.at(3)*coords.at(3),0,
+    answer = FloatArray::fromIniList({0,0,0,0,0,0,0,coords.at(3)*coords.at(3),0,(1.0/3.0)*coords.at(3)*coords.at(3)*coords.at(3),0,
               0,0,0,0,0,0,0.5*coords.at(3)*coords.at(3),0,0,0,0,
-              0,0,0,0,0,0,0,0,coords.at(3)*coords.at(3),0,(1.0/3.0)*coords.at(3)*coords.at(3)*coords.at(3)};
+              0,0,0,0,0,0,0,0,coords.at(3)*coords.at(3),0,(1.0/3.0)*coords.at(3)*coords.at(3)*coords.at(3)});
     
     // P = [x y yz xz xy x² y² x²z y²z]
 //     answer = {0,0,0,0,0,coords.at(3)*coords.at(3),0,(1.0/3.0)*coords.at(3)*coords.at(3)*coords.at(3),0,

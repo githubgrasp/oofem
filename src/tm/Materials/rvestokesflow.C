@@ -154,7 +154,7 @@ RVEStokesFlow :: giveIPValue(FloatArray &answer, GaussPoint *gp, InternalStateTy
     case IST_Tangent:
     {
         const auto &temp = status->giveTangentMatrix();
-        answer = {temp(0,0), temp(0,1), temp(0,2), temp(1,0), temp(1,1), temp(1,2), temp(2,0), temp(2,1), temp(2,2)};
+        answer = Vec9(temp(0,0), temp(0,1), temp(0,2), temp(1,0), temp(1,1), temp(1,2), temp(2,0), temp(2,1), temp(2,2));
         return 1;
     }
     default:
