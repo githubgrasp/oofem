@@ -117,11 +117,11 @@ std::string InputRecord::error_msg_with_hints(const std::string& val, const std:
         static std::set<size_t> written;
         if(written.count(hash)>0) return;
         written.insert(hash);
-        const std::shared_ptr<InputRecord>::TraceFields::out<<s<<std::endl;
+        InputRecord::TraceFields::out<<s<<std::endl;
     }
 
     void InputRecord::traceEnum(const std::string& name, const std::map<int,std::vector<std::string>>& val2names){
-        if(!const std::shared_ptr<InputRecord>:_:TraceFields::active) return;
+        if(!InputRecord::TraceFields::active) return;
         std::ostringstream rec;
         // write as tag;id;json
         rec<<"~Enum~;"<<name<<";";
@@ -144,16 +144,6 @@ InputRecord :: InputRecord(DataReader* r){
 DataReader*
 InputRecord :: giveReader() const {
     return reader;
-}
-
-std::shared_ptr<InputRecord>
-InputRecord::ptr() {
-    // we could just return this->shared_from_this, but it throws std::bad_weak_ptr (with no backtrace)
-    // so we do essentially the same, but provide a nice message and abort immediately
-    auto weak=this->weak_from_this();
-    std::shared_ptr<InputRecord> ret=weak.lock();
-    if(!ret) OOFEM_ERROR("shared_ptr<const std::shared_ptr<InputRecord>>::ptr(): object lifetime expired (programming error)");
-    return ret;
 }
 
 

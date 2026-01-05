@@ -689,7 +689,7 @@ OOFEMTXTInputRecord :: readMatrix(const char *helpSource, int r, int c, FloatMat
 
 #ifdef _USE_TRACE_FIELDS
     void OOFEMTXTInputRecord::traceField(InputFieldType id, const char* type) {
-        if(!const std::shared_ptr<InputRecord>::TraceFields::active) return;
+        if(!InputRecord::TraceFields::active) return;
         std::string tag;
         /* synthetic tags for records which have no leading tag (only data) */
         if(inputRecordType==DataReader::IR_outManRec) tag="~OutputManager~";
@@ -697,7 +697,7 @@ OOFEMTXTInputRecord :: readMatrix(const char *helpSource, int r, int c, FloatMat
         else if(inputRecordType==DataReader::IR_mstepRec) tag="~MetaStep~";
         else if(inputRecordType==DataReader::IR_unspecified) tag="?UNSPECIFIED?";
         else this->giveRecordKeywordField(tag);
-        const std::shared_ptr<InputRecord>::TraceFields::write(tag+";"+id+";"+type);
+        InputRecord::TraceFields::write(tag+";"+id+";"+type);
     }
 #endif
 

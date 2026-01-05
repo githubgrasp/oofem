@@ -66,12 +66,11 @@ public:
     std::tuple<std::string,pugi::xml_node> _attr_traced_read_with_node(const char* name);
 
     XMLInputRecord(XMLDataReader* reader_, const pugi::xml_node& node_);
-    std::shared_ptr<InputRecord> clone() const override { return std::make_shared<XMLInputRecord>(*this); }
 
     void finish(bool wrn = true) override;
 
     std::string loc() const { return loc(node); }
-    std::string loc(const pugi::xml_node& node) const ;
+    std::string loc(const pugi::xml_node& node) const;
     int setRecId(int lastRecId);
 
 

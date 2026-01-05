@@ -309,8 +309,7 @@ EngngModel :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
     IR_GIVE_OPTIONAL_FIELD(ir, profileOpt, _IFT_EngngModel_profileOpt);
 
     // get explicit nmsteps param (text), or size of the <Metasteps> sub-group (xml)
-    /* needs to use clone() and not ptr()... unclear why; the ownership of const std::shared_ptr<InputRecord> should be specified better */
-    nMetaSteps = ir->giveReader()->giveGroupRecords(ir->clone(),_IFT_EngngModel_nmsteps,"Metasteps",DataReader::IR_mstepRec,/*optional*/true).size();
+    nMetaSteps = ir->giveReader()->giveGroupRecords(ir,_IFT_EngngModel_nmsteps,"Metasteps",DataReader::IR_mstepRec,/*optional*/true).size();
 
     int _val = 1;
     IR_GIVE_OPTIONAL_FIELD(ir, _val, _IFT_EngngModel_nonLinFormulation);

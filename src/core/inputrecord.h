@@ -103,9 +103,6 @@ public:
     InputRecord(DataReader* reader_);
     /// Destructor
     virtual ~InputRecord() = default;
-    /** Creates a newly allocated copy of the receiver */
-    virtual std::shared_ptr<InputRecord> clone() const = 0;
-    std::shared_ptr<InputRecord> ptr();
 
     /// Returns string representation of record in OOFEMs text format.
     virtual std :: string giveRecordAsString() const = 0;
@@ -155,7 +152,7 @@ public:
         std::string s;
         giveField(s,id);
         #ifdef _USE_TRACE_FIELDS
-            if(const std::shared_ptr<InputRecord>::TraceFields::active){
+            if(InputRecord::TraceFields::active){
                 traceEnum(Traits::enum_name,Traits::all_values_to_names());
                 traceField(id,(std::string("enum:")+Traits::enum_name).c_str());
             }

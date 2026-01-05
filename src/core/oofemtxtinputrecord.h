@@ -74,8 +74,6 @@ public:
     /// Assignment operator.
     OOFEMTXTInputRecord &operator = ( const OOFEMTXTInputRecord & );
 
-    std::shared_ptr<InputRecord> clone() const override { return std::make_shared<OOFEMTXTInputRecord>(*this); }
-
 public:
     /// Sets the record string.
     void setRecordString(std :: string newStr);

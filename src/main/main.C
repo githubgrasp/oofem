@@ -309,12 +309,12 @@ int main(int argc, char *argv[])
 
     std::shared_ptr<DataReader> dr=DataReader::makeFromFilename(inputFileName.str());
 
-    if(const char* csv=getenv("OOFEM_TRACE_FIELDS_CSV")){
+    if(const char* out=getenv("OOFEM_TRACE_FIELDS_OUT")){
         #ifdef _USE_TRACE_FIELDS
-            const std::shared_ptr<InputRecord>::TraceFields::active=true;
-            const std::shared_ptr<InputRecord>::TraceFields::out.open(csv,std::ios::app);
-            if(!const std::shared_ptr<InputRecord>::TraceFields::out.good()) OOFEM_ERROR("Unable to open '%s' (passed via OOFEM_TRACE_FIELDS_CSV)",csv);
-            OOFEM_LOG_FORCED("Tracing field access (OOFEM_TRACE_FIELDS_CSV=%s)\n.",csv);
+            InputRecord::TraceFields::active=true;
+            InputRecord::TraceFields::out.open(out,std::ios::app);
+            if(!InputRecord::TraceFields::out.good()) OOFEM_ERROR("Unable to open '%s' (passed via OOFEM_TRACE_FIELDS_OUT)",out);
+            OOFEM_LOG_FORCED("Tracing field access (OOFEM_TRACE_FIELDS_OUT=%s)\n.",out);
         #else
             OOFEM_ERROR("Oofem must be compiled with -DUSE_TRACE_FIELDS so that OOFEM_TRACE_FIELDS_CSV='%s' passed is effective.",csv);
         #endif
