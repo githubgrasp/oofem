@@ -163,7 +163,7 @@ public:
 #endif
     void _resize_internal(Index newsize);
     /// Initializer list constructor.
-    FloatArray(std :: initializer_list< double >list) { (*this)=fromIniList(list); }
+    // FloatArray(std :: initializer_list< double >list) { (*this)=fromIniList(list); }
     static FloatArray fromVector(const std::vector<double>& v);
     static FloatArray fromList(const std::list<double>& l);
     static FloatArray fromConcatenated(std::initializer_list<FloatArray> ini);
@@ -182,7 +182,7 @@ public:
 
 
     /// Assignment operator.
-    inline FloatArray &operator = (std :: initializer_list< double >list) { (*this)=fromIniList(list); return *this; }
+    // inline FloatArray &operator = (std :: initializer_list< double >list) { (*this)=fromIniList(list); return *this; }
     /// Assign from fixed size array
     template< std::size_t N >
     inline FloatArray &operator = (const FloatArrayF<N> &src){
@@ -569,7 +569,6 @@ public:
     OOFEM_EXPORT FloatArray &operator -= ( FloatArray & x, const FloatArray & y );
     //@}
 #endif
-
 
 ///@name IML compatibility: functions
 //@{
