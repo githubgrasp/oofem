@@ -166,7 +166,7 @@ Shell7BaseXFEM :: computeFailureCriteriaQuantities(FailureCriteriaStatus *fcStat
 }
 
 
-void Shell7BaseXFEM :: initializeFrom(InputRecord &ir, int priority)
+void Shell7BaseXFEM :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     Shell7Base :: initializeFrom(ir, priority);
     

@@ -55,7 +55,7 @@ HangingNode :: HangingNode(int n, Domain *aDomain) : Node(n, aDomain)
 #endif
 }
 
-void HangingNode :: initializeFrom(InputRecord &ir, int priority)
+void HangingNode :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     ParameterManager &ppm =  this->giveDomain()->dofmanPPM;
 

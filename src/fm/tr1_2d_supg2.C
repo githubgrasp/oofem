@@ -98,7 +98,7 @@ TR1_2D_SUPG2 :: giveDofManDofIDMask(int inode, IntArray &answer) const
 }
 
 void
-TR1_2D_SUPG2 :: initializeFrom(InputRecord &ir, int priority)
+TR1_2D_SUPG2 :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     SUPGElement :: initializeFrom(ir, priority);
 

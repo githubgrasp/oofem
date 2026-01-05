@@ -55,7 +55,7 @@ class Steel1 : public PerfectlyPlasticMaterial
 public:
     Steel1(int n, Domain * d);
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
     const char *giveInputRecordName() const override { return _IFT_Steel1_Name; }
     const char *giveClassName() const override { return "Steel1MaterialClass"; }
     void updateIfFailure(GaussPoint *gp, FloatArray *, FloatArray *) const override { }

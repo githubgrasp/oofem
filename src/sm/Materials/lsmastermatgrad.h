@@ -60,7 +60,7 @@ class LargeStrainMasterMaterialGrad : public LargeStrainMasterMaterial, Gradient
 public:
     LargeStrainMasterMaterialGrad(int n, Domain *d);
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
     bool hasMaterialModeCapability(MaterialMode mode) const override;
     Interface *giveInterface(InterfaceType t) override {
         if ( t == GradientDamageMaterialExtensionInterfaceType ) {

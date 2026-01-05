@@ -56,7 +56,7 @@ ParamKey IGAElement::IPK_IGAElement_knotSpanParallelMode(_IFT_IGAElement_KnotSpa
 #endif
 
 
-void IGAElement :: initializeFrom(InputRecord &ir, int priority)
+void IGAElement :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     ParameterManager &ppm = domain->elementPPM;
     Element :: initializeFrom(ir, priority); // read nodes , material, cross section
@@ -217,7 +217,7 @@ IGAElement :: giveKnotSpanParallelMode(int knotSpanIndex) const
 
 // integration elements are setup in the same way as for IGAElement for now HUHU
 
-void IGATSplineElement :: initializeFrom(InputRecord &ir, int priority)
+void IGATSplineElement :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     ParameterManager &pm = domain->elementPPM;
     TSplineInterpolation *interpol = static_cast< TSplineInterpolation * >( this->giveInterpolation() );

@@ -149,7 +149,7 @@ public:
      */
     virtual int mapStatus(MaterialStatus &oStatus) const = 0;
 
-    virtual void initializeFrom(InputRecord &ir) { }
+    virtual void initializeFrom(const std::shared_ptr<InputRecord> &ir) { }
     /**
      * Setups the input record of receiver.
      * @param input Input record to be filled.

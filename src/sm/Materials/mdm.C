@@ -772,7 +772,7 @@ MDM :: giveThermalDilatationVector(GaussPoint *gp,  TimeStep *tStep) const
 
 
 void
-MDM :: initializeFrom(InputRecord &ir)
+MDM :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 //
 // initializes according to string
 //

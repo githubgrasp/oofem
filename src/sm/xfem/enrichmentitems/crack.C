@@ -51,7 +51,7 @@ Crack :: Crack(int n, XfemManager *xm, Domain *aDomain) : HybridEI(n, xm, aDomai
     };
 }
 
-void Crack :: initializeFrom(InputRecord &ir)
+void Crack :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     EnrichmentItem :: initializeFrom(ir);
 }

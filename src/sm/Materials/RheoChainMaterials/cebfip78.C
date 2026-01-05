@@ -41,7 +41,7 @@ namespace oofem {
 REGISTER_Material(CebFip78Material);
 
 void
-CebFip78Material :: initializeFrom(InputRecord &ir)
+CebFip78Material :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     MaxwellChainMaterial :: initializeFrom(ir);
 

@@ -284,7 +284,7 @@ LargeStrainMasterMaterialGrad :: giveFirstPKStressVectorGrad(FloatArray &answer1
 
 
 void
-LargeStrainMasterMaterialGrad :: initializeFrom(InputRecord &ir)
+LargeStrainMasterMaterialGrad :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     LargeStrainMasterMaterial :: initializeFrom(ir);
 }

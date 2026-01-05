@@ -141,7 +141,7 @@ IntElLine1 :: computeAreaAround(IntegrationPoint *ip)
 
 
 void
-IntElLine1 :: initializeFrom(InputRecord &ir, int priority)
+IntElLine1 :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     StructuralInterfaceElement :: initializeFrom(ir, priority);
     ParameterManager &ppm = domain->elementPPM;

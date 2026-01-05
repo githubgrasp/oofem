@@ -44,7 +44,7 @@ SimpleTransportCrossSection :: SimpleTransportCrossSection(int n, Domain *d) : T
 
 
 void
-SimpleTransportCrossSection :: initializeFrom(InputRecord &ir)
+SimpleTransportCrossSection :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     TransportCrossSection :: initializeFrom(ir);
 

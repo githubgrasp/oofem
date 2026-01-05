@@ -50,14 +50,14 @@ DynamicDataReader :: ~DynamicDataReader()
 }
 
 void
-DynamicDataReader :: insertInputRecord(InputRecordType type, std::shared_ptr<InputRecord_> record)
+DynamicDataReader :: insertInputRecord(InputRecordType type, std::shared_ptr<InputRecord> record)
 {
     // Should care about the record type, but its a hassle.
     this->recordList.push_back(record);
     this->it = recordList.end();
 }
 
-std::shared_ptr<InputRecord_>
+std::shared_ptr<InputRecord>
 DynamicDataReader :: giveInputRecord(InputRecordType typeId, int recordId)
 {
     // Ignores recordId in favor of having a dynamic list (just incremental access). typeId could be supported, but its a hassle.

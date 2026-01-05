@@ -111,7 +111,7 @@ public:
     const char *giveInputRecordName() const override { return _IFT_LatticeSlip_Name; }
     const char *giveClassName() const override { return "LatticeSlip"; }
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
 
     FloatArrayF< 6 >giveThermalDilatationVector(GaussPoint *gp, TimeStep *tStep) const override;
 

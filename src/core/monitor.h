@@ -42,7 +42,7 @@
 namespace oofem {
 class EngngModel;
 class TimeStep;
-class InputRecord_;
+class InputRecord;
 
 ///@name Input fields for Monitor
 //@{
@@ -69,7 +69,7 @@ public:
     virtual ~Monitor() {}
 
     /// Initializes receiver according to object description stored in input record.
-    virtual void initializeFrom(const std::shared_ptr<InputRecord_> &ir) = 0;
+    virtual void initializeFrom(const std::shared_ptr<InputRecord> &ir) = 0;
     /**
      * updates the monitor state. This can also mean updating received eModel state.
      * @param eModel instance of EngngModel
@@ -90,7 +90,7 @@ class OOFEM_EXPORT DummyMonitor : public Monitor
       DummyMonitor (int n) : Monitor (n) {}
 
         /// Initializes receiver according to object description stored in input record.
-        void initializeFrom(const std::shared_ptr<InputRecord_> &ir) override;
+        void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
         void update(EngngModel* eModel, TimeStep *tStep, MonitorEvent event) override;
         virtual const char *giveClassName() const override {return "DummuMonitor"; }
 };

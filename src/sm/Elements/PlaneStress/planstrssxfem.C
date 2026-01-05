@@ -296,7 +296,7 @@ void PlaneStress2dXfem :: drawScalar(oofegGraphicContext &gc, TimeStep *tStep)
 
 
 void
-PlaneStress2dXfem :: initializeFrom(InputRecord &ir, int priority)
+PlaneStress2dXfem :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     PlaneStress2d :: initializeFrom(ir, priority);
     XfemStructuralElementInterface :: initializeCZFrom(ir, priority);

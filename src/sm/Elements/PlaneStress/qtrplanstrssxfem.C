@@ -224,7 +224,7 @@ QTrPlaneStress2dXFEM :: giveGeometryType() const
 }
 
 void
-QTrPlaneStress2dXFEM :: initializeFrom(InputRecord &ir, int priority)
+QTrPlaneStress2dXFEM :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     ParameterManager &ppm = this->giveDomain()->elementPPM;
     QTrPlaneStress2d :: initializeFrom(ir, priority);

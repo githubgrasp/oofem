@@ -87,7 +87,7 @@ NumericalMethod *IncrementalLinearStatic :: giveNumericalMethod(MetaStep *mStep)
 }
 
 
-void IncrementalLinearStatic :: initializeFrom(InputRecord &ir)
+void IncrementalLinearStatic :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     IR_GIVE_OPTIONAL_FIELD(ir, discreteTimes, _IFT_IncrementalLinearStatic_prescribedtimes);
     if ( discreteTimes.giveSize() > 0 ) {

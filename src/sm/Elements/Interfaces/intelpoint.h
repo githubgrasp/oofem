@@ -87,7 +87,7 @@ public:
 
     // definition & identification
     const char *giveInputRecordName() const override { return _IFT_IntElPoint_Name; }
-    void initializeFrom(InputRecord &ir, int priority) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
     void postInitialize() override;
     Element_Geometry_Type giveGeometryType() const override { return EGT_line_1; }
 

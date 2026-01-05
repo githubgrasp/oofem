@@ -156,7 +156,7 @@ public:
     virtual const char *giveClassName() const = 0;
 
     // for Field classes supporting instantiation from input record
-    virtual void initializeFrom(InputRecord &ir) { };
+    virtual void initializeFrom(const std::shared_ptr<InputRecord> &ir) { };
 };
 } // end namespace oofem
 #endif // field_h

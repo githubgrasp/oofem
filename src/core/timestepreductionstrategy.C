@@ -94,7 +94,7 @@ SimpleReductionStrategy :: giveNoConvergenceTimeIncrementReductionFactor()
   
 
 void
-SimpleReductionStrategy :: initializeFrom(InputRecord &ir)
+SimpleReductionStrategy :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     noConvergenceReductionFactor = 0.5;
     IR_GIVE_OPTIONAL_FIELD(ir, noConvergenceReductionFactor, _IFT_SimpleReductionStrategy_noConvergenceReductionFactor);

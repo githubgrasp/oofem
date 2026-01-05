@@ -95,7 +95,7 @@ FieldManager :: giveRegisteredKeys()
 
 
 
-int FieldManager::instanciateYourself(DataReader &dr, InputRecord &ir)
+int FieldManager::instanciateYourself(DataReader &dr, const std::shared_ptr<InputRecord> &ir)
 {
   for(auto& fieldRecord: dr.giveGroupRecords(ir,"nfields","Fields",DataReader::IR_fieldRec,/*optional*/true)){
     std :: string fname;

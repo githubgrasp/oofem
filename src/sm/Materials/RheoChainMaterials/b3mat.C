@@ -43,7 +43,7 @@ namespace oofem {
 REGISTER_Material(B3Material);
 
 void
-B3Material :: initializeFrom(InputRecord &ir)
+B3Material :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     MaxwellChainMaterial :: initializeFrom(ir);
 

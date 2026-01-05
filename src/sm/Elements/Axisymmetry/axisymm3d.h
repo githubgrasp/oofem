@@ -92,7 +92,7 @@ public:
     const char *giveInputRecordName() const override { return _IFT_Axisymm3d_Name; }
     Element_Geometry_Type giveGeometryType() const override {return EGT_triangle_1;}
 
-    void initializeFrom(InputRecord &ir, int priority) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
     void postInitialize() override;
 };
 } // end namespace oofem

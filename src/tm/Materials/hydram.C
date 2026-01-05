@@ -107,7 +107,7 @@ HydrationModel :: HydrationModel(MixtureType mix, FindRootMethod usefr) : Materi
 }
 
 void
-HydrationModel :: initializeFrom(InputRecord &ir)
+HydrationModel :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     double value;
 
@@ -567,7 +567,7 @@ HydrationModelStatusInterface :: printOutputAt(FILE *file, TimeStep *tStep) cons
 // ======= HydrationModelInterface implementation =======
 
 void
-HydrationModelInterface :: initializeFrom(InputRecord &ir)
+HydrationModelInterface :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     double value;
 

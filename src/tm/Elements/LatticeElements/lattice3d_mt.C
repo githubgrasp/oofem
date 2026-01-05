@@ -177,7 +177,7 @@ Lattice3d_mt ::   giveDofManDofIDMask(int inode, IntArray &answer) const
 }
 
 void
-Lattice3d_mt :: initializeFrom(InputRecord &ir, int priority)
+Lattice3d_mt :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     this->Element :: initializeFrom(ir, priority);
     ParameterManager &ppm =  this->giveDomain()->elementPPM;

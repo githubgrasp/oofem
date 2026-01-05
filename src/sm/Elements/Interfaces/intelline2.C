@@ -118,7 +118,7 @@ IntElLine2 :: giveInterpolation() const
 
 
 void
-IntElLine2 :: initializeFrom(InputRecord &ir, int priority)
+IntElLine2 :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     IntElLine1 :: initializeFrom(ir, priority);
     ParameterManager &ppm = domain->elementPPM;

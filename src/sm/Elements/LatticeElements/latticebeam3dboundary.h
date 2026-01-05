@@ -74,7 +74,7 @@ public:
 
     virtual const char *giveInputRecordName() const override { return _IFT_LatticeBeam3dBoundary_Name; }
     virtual const char *giveClassName() const override { return "LatticeBeam3dBoundary"; }
-    void initializeFrom(InputRecord &ir, int priority) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
     void postInitialize() override;
     
     virtual Element_Geometry_Type giveGeometryType() const override { return EGT_line_1; }

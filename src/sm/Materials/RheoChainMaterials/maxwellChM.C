@@ -273,7 +273,7 @@ MaxwellChainMaterial :: CreateStatus(GaussPoint *gp) const
 
 
 void
-MaxwellChainMaterial :: initializeFrom(InputRecord &ir)
+MaxwellChainMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     RheoChainMaterial :: initializeFrom(ir);
 }

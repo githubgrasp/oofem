@@ -283,7 +283,7 @@ double PrescribedGenStrainShell7 :: domainSize()
 
 
 
-void PrescribedGenStrainShell7 :: initializeFrom(InputRecord &ir)
+void PrescribedGenStrainShell7 :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     GeneralBoundaryCondition :: initializeFrom(ir);
 

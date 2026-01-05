@@ -68,7 +68,7 @@ LinearConstraintBC :: ~LinearConstraintBC()
 }
 
 
-void LinearConstraintBC :: initializeFrom(InputRecord &ir)
+void LinearConstraintBC :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     ActiveBoundaryCondition :: initializeFrom(ir);
     rhsTf = 0;

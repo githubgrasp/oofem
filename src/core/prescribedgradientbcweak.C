@@ -151,7 +151,7 @@ DofManager *PrescribedGradientBCWeak :: giveInternalDofManager(int i)
 }
 
 
-void PrescribedGradientBCWeak :: initializeFrom(InputRecord &ir)
+void PrescribedGradientBCWeak :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     ActiveBoundaryCondition :: initializeFrom(ir);
     PrescribedGradientHomogenization :: initializeFrom(ir);

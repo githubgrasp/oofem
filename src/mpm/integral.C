@@ -41,7 +41,7 @@
 
 namespace oofem {
 void
-Integral::initializeFrom (InputRecord &ir, EngngModel *emodel) {
+Integral::initializeFrom (const std::shared_ptr<InputRecord> &ir, EngngModel *emodel) {
     int di;
     IR_GIVE_FIELD (ir, di, "domain");
     this->domain = emodel->giveDomain(di);

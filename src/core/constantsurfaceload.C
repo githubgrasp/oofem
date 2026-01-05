@@ -48,7 +48,7 @@ ConstantSurfaceLoad :: ConstantSurfaceLoad(int i, Domain *d) : SurfaceLoad(i, d)
 }
 
 void
-ConstantSurfaceLoad :: initializeFrom(InputRecord &ir)
+ConstantSurfaceLoad :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     SurfaceLoad :: initializeFrom(ir);
 

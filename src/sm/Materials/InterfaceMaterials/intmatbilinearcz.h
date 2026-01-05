@@ -124,7 +124,7 @@ private:
     FloatArrayF<3> computeTraction(const FloatArrayF<3> &iTTrial, double iPlastMultInc) const;
 
 public:
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
     void giveInputRecord(DynamicInputRecord &input) override;
 
     std::unique_ptr<MaterialStatus> CreateStatus(GaussPoint *gp) const override { return std::make_unique<IntMatBilinearCZStatus>(gp); }

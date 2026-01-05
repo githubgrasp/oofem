@@ -173,7 +173,7 @@ public:
     std :: string errorInfo(const char *func) const { return std :: string(giveClassName()) + func; }
     Interface *giveInterface(InterfaceType it) override;
 
-    void initializeFrom(InputRecord &ir, int priority) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
     void giveDofManDofIDMask(int inode, IntArray &answer) const override;
     int giveNumberOfDofs() override;
 

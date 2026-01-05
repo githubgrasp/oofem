@@ -55,7 +55,7 @@ StructuralMaterialEvaluator :: StructuralMaterialEvaluator(int i, EngngModel *_m
 StructuralMaterialEvaluator :: ~StructuralMaterialEvaluator()
 { }
 
-void StructuralMaterialEvaluator :: initializeFrom(InputRecord &ir)
+void StructuralMaterialEvaluator :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     this->deltaT = 1.0;
     IR_GIVE_OPTIONAL_FIELD(ir, this->deltaT, _IFT_StructuralMaterialEvaluator_deltat);

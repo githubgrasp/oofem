@@ -103,7 +103,7 @@ public:
     /// Destructor.
     virtual ~StructuralPenaltyContactBoundaryCondition() {};
     // initialization, i.e., reading input filex
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
     void postInitialize() override;
     virtual const char *giveClassName() const override { return "StructuralPenaltyContactBoundaryCondition"; }
     virtual const char *giveInputRecordName() const override { return _IFT_StructuralPenaltyContactBoundaryCondition_Name; }

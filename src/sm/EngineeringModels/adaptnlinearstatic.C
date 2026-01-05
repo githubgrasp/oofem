@@ -86,7 +86,7 @@ AdaptiveNonLinearStatic :: ~AdaptiveNonLinearStatic()
 
 
 void
-AdaptiveNonLinearStatic :: initializeFrom(InputRecord &ir)
+AdaptiveNonLinearStatic :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     NonLinearStatic :: initializeFrom(ir);
 
@@ -868,7 +868,7 @@ AdaptiveNonLinearStatic :: assembleInitialLoadVector(FloatArray &loadVector, Flo
  * {
  * int mStepNum = tStep->giveMetaStepNumber() ;
  * int mode;
- * InputRecord* ir;
+ * const std::shared_ptr<InputRecord>* ir;
  * MetaStep* mStep = sourceProblem->giveMetaStep(mStepNum);
  * FloatArray _incrementalLoadVector, _incrementalLoadVectorOfPrescribed;
  * SparseNonLinearSystemNM::referenceLoadInputModeType rlm;

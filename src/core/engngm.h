@@ -638,7 +638,7 @@ public:
      * Prints header, opens the outFileName, instanciate itself the receiver using
      * using virtual initializeFrom service and instanciates all problem domains.
      */
-    virtual int instanciateYourself(DataReader &dr, InputRecord &ir, const char *outFileName, const char *desc);
+    virtual int instanciateYourself(DataReader &dr, const std::shared_ptr<InputRecord> &ir, const char *outFileName, const char *desc);
     /**
      * Initialization of the receiver state (opening the default output stream, empty domain creation,
      * initialization of parallel context, etc)
@@ -651,13 +651,13 @@ public:
      * InitString can be imagined as data record in component database
      * belonging to receiver. Receiver may use value-name extracting functions
      * to extract particular field from record.*/
-    virtual void initializeFrom(InputRecord &ir);
+    virtual void initializeFrom(const std::shared_ptr<InputRecord> &ir);
     /// Instanciate problem domains by calling their instanciateYourself() service
     int instanciateDomains(DataReader &dr);
     /// Instanciate problem meta steps by calling their instanciateYourself() service
     int instanciateMetaSteps(DataReader &dr);
     /// Instanciate default metastep, if nmsteps is zero
-    virtual int instanciateDefaultMetaStep(InputRecord &ir);
+    virtual int instanciateDefaultMetaStep(const std::shared_ptr<InputRecord> &ir);
 
     /**
      * Update receiver attributes according to step metaStep attributes.
@@ -1063,7 +1063,7 @@ public:
     }   
     /// instanciates mpm stuff (variables, terms, and integrals)
     /// returns nonzero if succesfull
-    int instanciateMPM (DataReader &dr, InputRecord &ir);
+    int instanciateMPM (DataReader &dr, const std::shared_ptr<InputRecord> &ir);
     // end mpm experimental
 #endif
 

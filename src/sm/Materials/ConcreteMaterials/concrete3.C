@@ -478,7 +478,7 @@ Concrete3 :: giveNormalCrackingStress(GaussPoint *gp, double crackStrain, int i)
 
 
 void
-Concrete3 :: initializeFrom(InputRecord &ir)
+Concrete3 :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     RCM2Material :: initializeFrom(ir);
 

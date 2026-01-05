@@ -96,7 +96,7 @@ MatlabExportModule :: ~MatlabExportModule()
 
 
 void
-MatlabExportModule :: initializeFrom(InputRecord &ir)
+MatlabExportModule :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     ExportModule :: initializeFrom(ir);
 

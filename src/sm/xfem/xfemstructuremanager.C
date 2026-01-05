@@ -60,7 +60,7 @@ XfemStructureManager :: XfemStructureManager(Domain *domain) :
 XfemStructureManager :: ~XfemStructureManager()
 {}
 
-void XfemStructureManager :: initializeFrom(InputRecord &ir)
+void XfemStructureManager :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     XfemManager :: initializeFrom(ir);
 

@@ -64,7 +64,7 @@ CrackExportModule :: ~CrackExportModule()
 
 
 void
-CrackExportModule :: initializeFrom(InputRecord &ir)
+CrackExportModule :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     ExportModule :: initializeFrom(ir);
 

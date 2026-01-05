@@ -64,7 +64,7 @@ MFrontUserMaterial :: ~MFrontUserMaterial()
 
 }
 
-void MFrontUserMaterial :: initializeFrom(InputRecord &ir)
+void MFrontUserMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     using namespace mgis::behaviour;
 

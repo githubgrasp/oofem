@@ -65,7 +65,7 @@ Shell7Base :: Shell7Base(int n, Domain *aDomain) : NLStructuralElement(n, aDomai
     recoverStress(false) 
     {}
 
-void Shell7Base :: initializeFrom(InputRecord &ir, int priority)
+void Shell7Base :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     ParameterManager & pm = this->giveDomain()->elementPPM;
     NLStructuralElement :: initializeFrom(ir, priority);

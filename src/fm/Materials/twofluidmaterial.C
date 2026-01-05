@@ -54,7 +54,7 @@ TwoFluidMaterial :: checkConsistency()
 
 
 void
-TwoFluidMaterial :: initializeFrom(InputRecord &ir)
+TwoFluidMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     IR_GIVE_FIELD(ir, this->slaveMaterial, _IFT_TwoFluidMaterial_mat);
     if ( this->slaveMaterial.giveSize() != 2 ) {

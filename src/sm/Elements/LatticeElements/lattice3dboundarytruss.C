@@ -423,7 +423,7 @@ Lattice3dBoundaryTruss ::   giveDofManDofIDMask(int inode, IntArray &answer) con
 }
 
 void
-Lattice3dBoundaryTruss :: initializeFrom(InputRecord &ir, int priority)
+Lattice3dBoundaryTruss :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     ParameterManager &ppm = this->giveDomain()->elementPPM;
     Lattice3d :: initializeFrom(ir, priority);

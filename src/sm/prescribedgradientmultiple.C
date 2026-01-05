@@ -69,7 +69,7 @@ PrescribedGradientMultiple :: ~PrescribedGradientMultiple()
 }
 
 
-void PrescribedGradientMultiple :: initializeFrom(InputRecord &ir)
+void PrescribedGradientMultiple :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     ActiveBoundaryCondition :: initializeFrom(ir);
     PrescribedGradientHomogenization :: initializeFrom(ir);

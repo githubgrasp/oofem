@@ -2453,7 +2453,7 @@ StructuralMaterial::giveThermalDilatationVector(GaussPoint *gp, TimeStep *tStep)
 }
 
 void
-StructuralMaterial::initializeFrom(InputRecord &ir)
+StructuralMaterial::initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     Material::initializeFrom(ir);
 

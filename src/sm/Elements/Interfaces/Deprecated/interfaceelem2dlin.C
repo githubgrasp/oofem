@@ -134,7 +134,7 @@ InterfaceElem2dLin :: computeConstitutiveMatrixAt(FloatMatrix &answer, MatRespon
 
 
 void
-InterfaceElem2dLin :: initializeFrom(InputRecord &ir, int priority)
+InterfaceElem2dLin :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     ParameterManager &ppm =  this->giveDomain()->elementPPM;
     PM_UPDATE_PARAMETER(axisymmode, ppm, ir, this->number, IPK_InterfaceElem2dLin_axisymmode, priority) ;

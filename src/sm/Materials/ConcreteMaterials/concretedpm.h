@@ -474,7 +474,7 @@ public:
     /// Constructor
     ConcreteDPM(int n, Domain *d);
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
 
     const char *giveClassName() const override { return "ConcreteDPM"; }
     const char *giveInputRecordName() const override { return _IFT_ConcreteDPM_Name; }

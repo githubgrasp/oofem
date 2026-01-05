@@ -561,7 +561,7 @@ TrPlaneStrRot :: GiveDerivativeVY(const FloatArray &lCoords)
 
 
 void
-TrPlaneStrRot :: initializeFrom(InputRecord &ir, int priority)
+TrPlaneStrRot :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     ParameterManager &pm = this->giveDomain()->elementPPM;
     TrPlaneStress2d :: initializeFrom(ir, priority);

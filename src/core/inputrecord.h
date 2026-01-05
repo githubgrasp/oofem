@@ -94,18 +94,18 @@ typedef const char *InputFieldType;
  * resolve all dependencies. This allows to create a copy of input record instance for later use
  * without the need to re-open input files (used for metasteps).
  */
-class OOFEM_EXPORT InputRecord_: public std::enable_shared_from_this<InputRecord_>
+class OOFEM_EXPORT InputRecord: public std::enable_shared_from_this<InputRecord>
 {
     DataReader* reader = nullptr;
 public:
 
-    InputRecord_() {}
-    InputRecord_(DataReader* reader_);
+    InputRecord() {}
+    InputRecord(DataReader* reader_);
     /// Destructor
-    virtual ~InputRecord_() = default;
+    virtual ~InputRecord() = default;
     /** Creates a newly allocated copy of the receiver */
-    virtual std::shared_ptr<InputRecord_> clone() const = 0;
-    std::shared_ptr<InputRecord_> ptr();
+    virtual std::shared_ptr<InputRecord> clone() const = 0;
+    std::shared_ptr<InputRecord> ptr();
 
     /// Returns string representation of record in OOFEMs text format.
     virtual std :: string giveRecordAsString() const = 0;
@@ -155,7 +155,7 @@ public:
         std::string s;
         giveField(s,id);
         #ifdef _USE_TRACE_FIELDS
-            if(InputRecord::TraceFields::active){
+            if(const std::shared_ptr<InputRecord>::TraceFields::active){
                 traceEnum(Traits::enum_name,Traits::all_values_to_names());
                 traceField(id,(std::string("enum:")+Traits::enum_name).c_str());
             }
@@ -214,7 +214,7 @@ public:
 };
 
 
-typedef const std::shared_ptr<InputRecord_> InputRecord;
+
 
 class InputException : public std::exception
 {
@@ -222,7 +222,7 @@ public:
     std::string record;
     std::string keyword;
     int number;
-    InputException(const InputRecord& ir, std::string keyword, int number);
+    InputException(const std::shared_ptr<InputRecord>& ir, std::string keyword, int number);
 };
 
 
@@ -232,8 +232,8 @@ protected:
     std::string msg;
 
 public:
-    MissingKeywordInputException(const InputRecord& ir, std::string keyword, int number);
-    // MissingKeywordInputException(const InputRecord_ &ir, std::string keyword, int number);
+    MissingKeywordInputException(const std::shared_ptr<InputRecord>& ir, std::string keyword, int number);
+    // MissingKeywordInputException(const InputRecord &ir, std::string keyword, int number);
     const char* what() const noexcept override;
 };
 
@@ -244,8 +244,8 @@ protected:
     std::string msg;
 
 public:
-    BadFormatInputException(const InputRecord &ir, std::string keyword, int number);
-    // BadFormatInputException(const InputRecord_ &ir, std::string keyword, int number): BadFormatInputException(irshared_from_this(),keyword,number){}
+    BadFormatInputException(const std::shared_ptr<InputRecord> &ir, std::string keyword, int number);
+    // BadFormatInputException(const InputRecord &ir, std::string keyword, int number): BadFormatInputException(irshared_from_this(),keyword,number){}
     const char* what() const noexcept override;
 };
 
@@ -256,7 +256,7 @@ protected:
     std::string msg;
 
 public:
-    ValueInputException(const InputRecord& ir, std::string keyword, const std::string &reason);
+    ValueInputException(const std::shared_ptr<InputRecord>& ir, std::string keyword, const std::string &reason);
     const char* what() const noexcept override;
 };
 

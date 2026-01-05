@@ -63,7 +63,7 @@ Q27Space :: Q27Space(int n, Domain *aDomain) : Structural3DElement(n, aDomain), 
 
 
 void
-Q27Space :: initializeFrom(InputRecord &ir, int priority)
+Q27Space :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     Structural3DElement :: initializeFrom(ir, priority);
 }

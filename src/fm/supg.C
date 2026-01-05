@@ -225,7 +225,7 @@ NumericalMethod *SUPG :: giveNumericalMethod(MetaStep *mStep)
 }
 
 void
-SUPG :: initializeFrom(InputRecord &ir)
+SUPG :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     FluidModel :: initializeFrom(ir);
 

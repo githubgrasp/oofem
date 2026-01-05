@@ -218,7 +218,7 @@ public:
     /// Returns time discretization.
     TimeDiscretizationType giveTimeDiscretization() { return timeDiscretization; }
 
-    void initializeFrom(InputRecord &ir) { }
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) { }
     /**
      * Stores receiver state to output stream.
      * @param stream Output stream.

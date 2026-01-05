@@ -67,7 +67,7 @@ StructuralFE2Material :: StructuralFE2Material(int n, Domain *d) : StructuralMat
 
 
 void
-StructuralFE2Material :: initializeFrom(InputRecord &ir)
+StructuralFE2Material :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralMaterial :: initializeFrom(ir);
     IR_GIVE_FIELD(ir, this->inputfile, _IFT_StructuralFE2Material_fileName);

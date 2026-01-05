@@ -43,7 +43,7 @@ namespace oofem {
 REGISTER_Material(AnisotropicLinearElasticMaterial);
 
 void
-AnisotropicLinearElasticMaterial :: initializeFrom(InputRecord &ir)
+AnisotropicLinearElasticMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     LinearElasticMaterial :: initializeFrom(ir);
 

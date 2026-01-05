@@ -277,7 +277,7 @@ void PrescribedGenStrainShell7 :: computeTangent(FloatMatrix &tangent, EquationI
 }
 
 
-void PrescribedGenStrainShell7 :: initializeFrom(InputRecord &ir)
+void PrescribedGenStrainShell7 :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     GeneralBoundaryCondition :: initializeFrom(ir);
 

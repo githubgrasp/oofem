@@ -53,7 +53,7 @@ FEContactSurface :: FEContactSurface(int n, Domain *d) : ContactSurface(n, d)
 
 
   
-void FEContactSurface :: initializeFrom(InputRecord &ir)
+void FEContactSurface :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     ContactSurface :: initializeFrom(ir);
     IR_GIVE_FIELD(ir, this->contactElementSetNumber, _IFT_FEContactSurface_contactElementSetNumber);

@@ -60,7 +60,7 @@
 namespace oofem {
 REGISTER_BoundaryCondition(SurfaceTensionBoundaryCondition);
 
-void SurfaceTensionBoundaryCondition :: initializeFrom(InputRecord &ir)
+void SurfaceTensionBoundaryCondition :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     ActiveBoundaryCondition :: initializeFrom(ir);
 

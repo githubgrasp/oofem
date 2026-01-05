@@ -85,7 +85,7 @@ public:
     // definition & identification
     const char *giveInputRecordName() const override { return _IFT_Quad1Mindlin_Name; }
     const char *giveClassName() const override { return "Quad1Mindlin"; }
-    void initializeFrom(InputRecord &ir, int priority) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
 
     int computeNumberOfDofs() override { return 12; }
     void giveDofManDofIDMask(int inode, IntArray &) const override;

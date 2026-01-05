@@ -98,7 +98,7 @@ FEInterpolation *
 TR1_2D_SUPG :: giveInterpolation() const { return & interp; }
 
 void
-TR1_2D_SUPG :: initializeFrom(InputRecord &ir, int priority)
+TR1_2D_SUPG :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     SUPGElement :: initializeFrom(ir, priority);
 

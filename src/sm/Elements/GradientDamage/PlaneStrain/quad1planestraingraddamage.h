@@ -52,7 +52,7 @@ public:
     Quad1PlaneStrainGradDamage(int n, Domain * d);
     virtual ~Quad1PlaneStrainGradDamage() { }
 
-    //void initializeFrom(InputRecord &ir) override;
+    //void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
 
     const char *giveInputRecordName() const override { return _IFT_Quad1PlaneStrainGradDamage_Name; }
     const char *giveClassName() const override { return "Quad1PlaneStrainGradDamage"; }

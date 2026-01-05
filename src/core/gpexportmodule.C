@@ -55,7 +55,7 @@ GPExportModule :: ~GPExportModule()
 
 
 void
-GPExportModule :: initializeFrom(InputRecord &ir)
+GPExportModule :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     ExportModule :: initializeFrom(ir);
     IR_GIVE_FIELD(ir, vartypes, _IFT_GPExportModule_vartypes);

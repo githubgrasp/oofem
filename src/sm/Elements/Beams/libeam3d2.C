@@ -301,7 +301,7 @@ LIBeam3d2::computeLength()
 
 
 void
-LIBeam3d2::initializeFrom(InputRecord &ir, int priority)
+LIBeam3d2::initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     // first call parent
     NLStructuralElement::initializeFrom(ir, priority);

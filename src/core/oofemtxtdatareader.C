@@ -95,7 +95,7 @@ OOFEMTXTDataReader :: ~OOFEMTXTDataReader()
 {
 }
 
-std::shared_ptr<InputRecord_>
+std::shared_ptr<InputRecord>
 OOFEMTXTDataReader :: giveInputRecord(InputRecordType typeId, int recordId)
 {
     if ( this->it == this->recordList.end() ) {

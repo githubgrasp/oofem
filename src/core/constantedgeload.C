@@ -42,7 +42,7 @@ namespace oofem {
 REGISTER_BoundaryCondition(ConstantEdgeLoad);
 
 void
-ConstantEdgeLoad :: initializeFrom(InputRecord &ir)
+ConstantEdgeLoad :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     BoundaryLoad :: initializeFrom(ir);
 }

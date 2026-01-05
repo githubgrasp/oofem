@@ -832,7 +832,7 @@ TrabBone3D :: constructFabricTransformationMatrix() const
 }
 
 void
-TrabBone3D :: initializeFrom(InputRecord &ir)
+TrabBone3D :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralMaterial :: initializeFrom(ir);
 

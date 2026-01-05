@@ -50,7 +50,7 @@ DummyEngngModel :: DummyEngngModel(int i, EngngModel *_master) : EngngModel (i, 
 }
 
 void
-DummyEngngModel :: initializeFrom(InputRecord &ir)
+DummyEngngModel :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     this->numberOfSteps = 1;
     this->nMetaSteps   = 0;

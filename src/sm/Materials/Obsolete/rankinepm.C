@@ -50,7 +50,7 @@ RankinePlasticMaterial :: RankinePlasticMaterial(int n, Domain *d) : MPlasticMat
 
 
 void
-RankinePlasticMaterial :: initializeFrom(InputRecord &ir)
+RankinePlasticMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     MPlasticMaterial :: initializeFrom(ir);
     linearElasticMaterial->initializeFrom(ir);

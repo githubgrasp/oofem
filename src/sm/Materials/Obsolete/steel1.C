@@ -173,7 +173,7 @@ Steel1 :: GiveLCPlasticStrainGradient(GaussPoint *gp,
 
 
 void
-Steel1 :: initializeFrom(InputRecord &ir)
+Steel1 :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     PerfectlyPlasticMaterial :: initializeFrom(ir);
 

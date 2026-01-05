@@ -196,7 +196,7 @@ Lattice2d_mt :: giveDofManDofIDMask(int inode, IntArray &answer) const
 }
 
 void
-Lattice2d_mt :: initializeFrom(InputRecord &ir, int priority)
+Lattice2d_mt :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     ParameterManager &ppm =  this->giveDomain()->elementPPM;
 

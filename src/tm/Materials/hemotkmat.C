@@ -49,7 +49,7 @@ HeMoTKMaterial :: hasMaterialModeCapability(MaterialMode mode) const
 
 
 void
-HeMoTKMaterial :: initializeFrom(InputRecord &ir)
+HeMoTKMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     Material :: initializeFrom(ir);
 

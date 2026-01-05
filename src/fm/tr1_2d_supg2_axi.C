@@ -76,7 +76,7 @@ TR1_2D_SUPG2_AXI :: TR1_2D_SUPG2_AXI(int n, Domain *aDomain) :
 
 
 void
-TR1_2D_SUPG2_AXI :: initializeFrom(InputRecord &ir, int priority)
+TR1_2D_SUPG2_AXI :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     SUPGElement :: initializeFrom(ir, priority);
 

@@ -181,7 +181,7 @@ PolylineNonlocalBarrier :: giveDistancePointLine(const FloatArray &coordsA, cons
 
 
 void
-PolylineNonlocalBarrier :: initializeFrom(InputRecord &ir)
+PolylineNonlocalBarrier :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     IR_GIVE_FIELD(ir, vertexNodes, _IFT_PolylineNonlocalBarrier_vertexnodes);
 

@@ -158,7 +158,7 @@ InterfaceElem2dQuad :: computeConstitutiveMatrixAt(FloatMatrix &answer, MatRespo
 
 
 void
-InterfaceElem2dQuad :: initializeFrom(InputRecord &ir, int priority)
+InterfaceElem2dQuad :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     ParameterManager &ppm = this->giveDomain()->elementPPM;
     PM_UPDATE_PARAMETER(axisymmode, ppm, ir, this->number, IPK_InterfaceElem2dQuad_axisymmode, priority);

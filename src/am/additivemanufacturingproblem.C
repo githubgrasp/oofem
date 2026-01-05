@@ -534,7 +534,7 @@ AdditiveManufacturingProblem ::~AdditiveManufacturingProblem()
 }
 
 ///////////
-int AdditiveManufacturingProblem ::instanciateYourself( DataReader &dr, InputRecord &ir, const char *dataOutputFileName, const char *desc )
+int AdditiveManufacturingProblem ::instanciateYourself( DataReader &dr, const std::shared_ptr<InputRecord> &ir, const char *dataOutputFileName, const char *desc )
 {
     int result;
     result = EngngModel ::instanciateYourself( dr, ir, dataOutputFileName, desc );
@@ -544,7 +544,7 @@ int AdditiveManufacturingProblem ::instanciateYourself( DataReader &dr, InputRec
     return result;
 }
 
-int AdditiveManufacturingProblem ::instanciateDefaultMetaStep( InputRecord &ir )
+int AdditiveManufacturingProblem ::instanciateDefaultMetaStep( const std::shared_ptr<InputRecord> &ir )
 {
     if ( timeDefinedByProb ) {
         /* just set a nonzero number of steps;
@@ -584,7 +584,7 @@ int AdditiveManufacturingProblem ::instanciateSlaveProblems()
 }
 
 
-void AdditiveManufacturingProblem ::initializeFrom( InputRecord &ir )
+void AdditiveManufacturingProblem ::initializeFrom( const std::shared_ptr<InputRecord> &ir )
 {
     OOFEM_LOG_INFO( "Starting Additive Manufacturing solver\n" );
 

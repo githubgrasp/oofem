@@ -127,7 +127,7 @@ public:
 
     const char *giveClassName() const override { return "B3SolidMaterial"; }
     const char *giveInputRecordName() const override { return _IFT_B3SolidMaterial_Name; }
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
 
     std::unique_ptr<MaterialStatus> CreateStatus(GaussPoint *gp) const override;
 

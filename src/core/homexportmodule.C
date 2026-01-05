@@ -52,7 +52,7 @@ HOMExportModule :: HOMExportModule(int n, EngngModel *e) : ExportModule(n, e) { 
 HOMExportModule :: ~HOMExportModule() { }
 
 void
-HOMExportModule :: initializeFrom(InputRecord &ir)
+HOMExportModule :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     ExportModule :: initializeFrom(ir);
 

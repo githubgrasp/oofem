@@ -42,7 +42,7 @@ MetaStep :: MetaStep(int n, EngngModel *e) :
     number(n)
 {}
 
-MetaStep :: MetaStep(int n, EngngModel *e, int nsteps, InputRecord& attrib) :
+MetaStep :: MetaStep(int n, EngngModel *e, int nsteps, const std::shared_ptr<InputRecord>& attrib) :
     eModel(e),
     numberOfSteps(nsteps),
     attributes(attrib),
@@ -51,7 +51,7 @@ MetaStep :: MetaStep(int n, EngngModel *e, int nsteps, InputRecord& attrib) :
 
 
 void
-MetaStep :: initializeFrom(InputRecord &ir)
+MetaStep :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     timeStepReductionStrategyType = "NoReduction";
     // read time step reduction strategy type

@@ -191,7 +191,7 @@ NonLinearStatic :: updateAttributes(MetaStep *mStep)
 
 
 void
-NonLinearStatic :: initializeFrom(InputRecord &ir)
+NonLinearStatic :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     LinearStatic :: initializeFrom(ir);
 

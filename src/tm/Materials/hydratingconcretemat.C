@@ -44,7 +44,7 @@ REGISTER_Material(HydratingConcreteMat);
 HydratingConcreteMat :: HydratingConcreteMat(int n, Domain *d) : IsotropicHeatTransferMaterial(n, d){ }
         
 void
-HydratingConcreteMat :: initializeFrom(InputRecord &ir)
+HydratingConcreteMat :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     // set conductivity k and capacity c
     IsotropicHeatTransferMaterial :: initializeFrom(ir);

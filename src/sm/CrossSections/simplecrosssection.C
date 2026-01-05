@@ -504,7 +504,7 @@ SimpleCrossSection::give2dPlateSubSoilStiffMtrx(MatResponseMode rMode, GaussPoin
 
 
 void
-SimpleCrossSection::initializeFrom(InputRecord &ir)
+SimpleCrossSection::initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     CrossSection::initializeFrom(ir);
 

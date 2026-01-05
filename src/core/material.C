@@ -90,7 +90,7 @@ Material :: modifyProperty(int aProperty, double value, GaussPoint *gp)
 
 
 void
-Material :: initializeFrom(InputRecord &ir)
+Material :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     double value;
 

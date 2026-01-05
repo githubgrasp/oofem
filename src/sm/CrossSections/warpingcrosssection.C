@@ -41,7 +41,7 @@ REGISTER_CrossSection(WarpingCrossSection);
 
 
 void
-WarpingCrossSection :: initializeFrom(InputRecord &ir)
+WarpingCrossSection :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     SimpleCrossSection :: initializeFrom(ir);
 

@@ -100,7 +100,7 @@ NRSolver :: ~NRSolver()
 
 
 void
-NRSolver :: initializeFrom(InputRecord &ir)
+NRSolver :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     SparseNonLinearSystemNM :: initializeFrom(ir);
 

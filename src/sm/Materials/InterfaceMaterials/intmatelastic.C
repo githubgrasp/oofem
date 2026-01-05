@@ -69,7 +69,7 @@ IntMatElastic :: give3dStiffnessMatrix_dTdj(MatResponseMode rMode, GaussPoint *g
 }
 
 void
-IntMatElastic :: initializeFrom(InputRecord &ir)
+IntMatElastic :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralInterfaceMaterial :: initializeFrom(ir);
 

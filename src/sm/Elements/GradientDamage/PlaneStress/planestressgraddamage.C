@@ -91,7 +91,7 @@ PlaneStressGradDamage :: giveDofManDofIDMask_d(IntArray &answer) const
 
 
 void
-PlaneStressGradDamage :: initializeFrom(InputRecord &ir, int priority)
+PlaneStressGradDamage :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     PlaneStress2d :: initializeFrom(ir, priority);
 }

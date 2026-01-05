@@ -64,7 +64,7 @@ LatticeCrossSection :: checkConsistency()
 }
 
 void
-LatticeCrossSection :: initializeFrom(InputRecord &ir)
+LatticeCrossSection :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     CrossSection :: initializeFrom(ir);
     IR_GIVE_FIELD(ir, this->materialNum, _IFT_LatticeCrossSection_Material);

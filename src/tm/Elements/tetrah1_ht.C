@@ -85,7 +85,7 @@ Tetrah1_ht :: computeGaussPoints()
 
 
 void
-Tetrah1_ht :: initializeFrom(InputRecord &ir, int priority)
+Tetrah1_ht :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     TransportElement :: initializeFrom(ir, priority);
 }

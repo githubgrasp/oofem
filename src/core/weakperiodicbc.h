@@ -161,7 +161,7 @@ public:
     WeakPeriodicBoundaryCondition(int n, Domain * d);
     virtual ~WeakPeriodicBoundaryCondition();
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
     void postInitialize() override;
 
     basisType giveBasisType() { return useBasisType; }

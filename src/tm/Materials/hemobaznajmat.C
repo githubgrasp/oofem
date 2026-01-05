@@ -50,7 +50,7 @@ HeMoBazNajMaterial :: hasMaterialModeCapability(MaterialMode mode) const
 
 
 void
-HeMoBazNajMaterial :: initializeFrom(InputRecord &ir)
+HeMoBazNajMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     Material :: initializeFrom(ir);
 

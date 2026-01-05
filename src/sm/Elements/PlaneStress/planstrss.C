@@ -137,7 +137,7 @@ PlaneStress2d :: computeBHmatrixAt(GaussPoint *gp, FloatMatrix &answer)
 
 
 void
-PlaneStress2d :: initializeFrom(InputRecord &ir, int priority)
+PlaneStress2d :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     PlaneStressElement :: initializeFrom(ir, priority);
 }

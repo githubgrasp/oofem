@@ -77,7 +77,7 @@ StaggeredProblem :: ~StaggeredProblem()
 
 ///////////
 int
-StaggeredProblem :: instanciateYourself(DataReader &dr, InputRecord &ir, const char *dataOutputFileName, const char *desc)
+StaggeredProblem :: instanciateYourself(DataReader &dr, const std::shared_ptr<InputRecord> &ir, const char *dataOutputFileName, const char *desc)
 {
     int result;
     result = EngngModel :: instanciateYourself(dr, ir, dataOutputFileName, desc);
@@ -115,7 +115,7 @@ StaggeredProblem :: instanciateSlaveProblems()
 
 
 void
-StaggeredProblem :: initializeFrom(InputRecord &ir)
+StaggeredProblem :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     IR_GIVE_FIELD(ir, numberOfSteps, _IFT_EngngModel_nsteps);
     if ( numberOfSteps <= 0 ) {

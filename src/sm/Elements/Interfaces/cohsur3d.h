@@ -91,7 +91,7 @@ public:
 
 
     // input and output
-    void initializeFrom(InputRecord &ir, int priority) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
     void postInitialize() override;
 
 #ifdef __OOFEG

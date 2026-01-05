@@ -84,7 +84,7 @@ SimoPisterMaterial::CreateStatus(GaussPoint *gp) const
 
 
 void
-SimoPisterMaterial::initializeFrom(InputRecord &ir)
+SimoPisterMaterial::initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralMaterial::initializeFrom(ir);
     BaseHyperElasticMaterial::initializeFrom(ir);

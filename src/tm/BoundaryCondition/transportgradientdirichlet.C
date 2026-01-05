@@ -68,7 +68,7 @@ namespace oofem {
 REGISTER_BoundaryCondition(TransportGradientDirichlet);
 
 
-void TransportGradientDirichlet :: initializeFrom(InputRecord &ir)
+void TransportGradientDirichlet :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     GeneralBoundaryCondition :: initializeFrom(ir);
 

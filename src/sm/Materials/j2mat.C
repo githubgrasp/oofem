@@ -51,7 +51,7 @@ J2Mat :: J2Mat(int n, Domain *d) : MPlasticMaterial2(n, d)
 }
 
 void
-J2Mat :: initializeFrom(InputRecord &ir)
+J2Mat :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     double value;
 

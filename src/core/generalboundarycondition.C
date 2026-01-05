@@ -63,7 +63,7 @@ Function *GeneralBoundaryCondition :: giveTimeFunction()
 
 
 void
-GeneralBoundaryCondition :: initializeFrom(InputRecord &ir)
+GeneralBoundaryCondition :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     IR_GIVE_FIELD(ir, timeFunction, _IFT_GeneralBoundaryCondition_timeFunct);
     if ( timeFunction <= 0 ) {

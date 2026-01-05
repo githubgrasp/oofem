@@ -73,7 +73,7 @@ VTKExportModule :: ~VTKExportModule() { }
 
 
 void
-VTKExportModule :: initializeFrom(InputRecord &ir)
+VTKExportModule :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     ExportModule :: initializeFrom(ir);
 

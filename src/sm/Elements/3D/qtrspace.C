@@ -64,7 +64,7 @@ QTRSpace :: QTRSpace(int n, Domain *aDomain) : Structural3DElement(n, aDomain), 
 
 
 void
-QTRSpace :: initializeFrom(InputRecord &ir, int priority)
+QTRSpace :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     Structural3DElement :: initializeFrom(ir, priority);
 }

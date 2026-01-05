@@ -44,7 +44,7 @@ namespace oofem {
 REGISTER_Material(AnisotropicMassTransferMaterial);
 
 void
-AnisotropicMassTransferMaterial :: initializeFrom(InputRecord &ir)
+AnisotropicMassTransferMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     TransportMaterial :: initializeFrom(ir);
 

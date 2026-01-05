@@ -402,7 +402,7 @@ void CemhydMat :: averageTemperature()
     }
 }
 
-void CemhydMat :: initializeFrom(InputRecord &ir)
+void CemhydMat :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     castingTime = 0.;
 

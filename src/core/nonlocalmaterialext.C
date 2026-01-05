@@ -763,7 +763,7 @@ NonlocalMaterialExtensionInterface :: evaluateSupportRadius(double cl) const
 
 
 void
-NonlocalMaterialExtensionInterface :: initializeFrom(InputRecord &ir)
+NonlocalMaterialExtensionInterface :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     if ( ir->hasField(_IFT_NonlocalMaterialExtensionInterface_regionmap) ) {
         IR_GIVE_FIELD(ir, regionMap, _IFT_NonlocalMaterialExtensionInterface_regionmap);

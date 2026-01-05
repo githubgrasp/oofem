@@ -76,7 +76,7 @@ PrescribedGradientBCNeumann :: ~PrescribedGradientBCNeumann()
 }
 
 
-void PrescribedGradientBCNeumann :: initializeFrom(InputRecord &ir)
+void PrescribedGradientBCNeumann :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     ActiveBoundaryCondition :: initializeFrom(ir);
     PrescribedGradientHomogenization :: initializeFrom(ir);

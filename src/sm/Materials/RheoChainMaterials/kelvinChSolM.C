@@ -231,7 +231,7 @@ KelvinChainSolidMaterial :: CreateStatus(GaussPoint *gp) const
 }
 
 void
-KelvinChainSolidMaterial :: initializeFrom(InputRecord &ir)
+KelvinChainSolidMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     RheoChainMaterial :: initializeFrom(ir);
 }

@@ -75,7 +75,7 @@ Node :: Node(int n, Domain *aDomain) :
 { }
 
 
-void Node :: initializeFrom(InputRecord &ir, int priority)
+void Node :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 // Gets from the source line from the data file all the data of the receiver.
 {
     int size;

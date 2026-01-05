@@ -68,7 +68,7 @@ public:
     /// Destructor.
     virtual ~Structural3DElement() { }
 
-    void initializeFrom(InputRecord &ir, int priority) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
 
     MaterialMode giveMaterialMode() override;
     int computeNumberOfDofs() override;

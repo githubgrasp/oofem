@@ -46,7 +46,7 @@ ShellCrack :: ShellCrack(int n, XfemManager *xm, Domain *aDomain) : Crack(n, xm,
 }
 
 
-void ShellCrack :: initializeFrom(InputRecord &ir)
+void ShellCrack :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     Crack :: initializeFrom(ir);
 

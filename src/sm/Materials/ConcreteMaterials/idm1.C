@@ -83,7 +83,7 @@ IsotropicDamageMaterial1 :: ~IsotropicDamageMaterial1()
 }
 
 void
-IsotropicDamageMaterial1 :: initializeFrom(InputRecord &ir)
+IsotropicDamageMaterial1 :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     int equivStrainTypeRecord;
     IsotropicDamageMaterial :: initializeFrom(ir);

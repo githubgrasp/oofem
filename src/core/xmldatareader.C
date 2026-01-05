@@ -195,14 +195,14 @@ namespace oofem {
         }
         stack.pop_back();
     }
-    void XMLDataReader::enterRecord(InputRecord rec) {
+    void XMLDataReader::enterRecord(const std::shared_ptr<InputRecord> rec) {
         _XML_DEBUG(loc()<<"::"<<giveStackPath());
         std::shared_ptr<XMLInputRecord> r=std::dynamic_pointer_cast<XMLInputRecord>(rec);
         if(!r) OOFEM_ERROR("Error reading %s: input record is not a XMLInputRecord?",loc().c_str());
         _XML_DEBUG("   entering '"<<r->node.name()<<"' @ "<<(void*)(&r->node));
         stack.push_back(StackItem{r->node,r->node.first_child()});
     }
-    void XMLDataReader::leaveRecord(InputRecord rec) {
+    void XMLDataReader::leaveRecord(const std::shared_ptr<InputRecord> rec) {
         _XML_DEBUG(loc()<<"::"<<giveStackPath());
         std::shared_ptr<XMLInputRecord> r=std::dynamic_pointer_cast<XMLInputRecord>(rec);
         if(!r) OOFEM_ERROR("Error reading %s: input record is not a XMLInputRecord?",loc().c_str());
@@ -233,7 +233,7 @@ namespace oofem {
         }
     }
 
-    std::shared_ptr<InputRecord_>
+    std::shared_ptr<InputRecord>
     XMLDataReader :: giveInputRecord(InputRecordType typeId, int recordId)
     {
         std::string tag=DataReader::InputRecordTags[typeId];

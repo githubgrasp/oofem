@@ -67,7 +67,7 @@ public:
     double evaluateVelocityAtTime(double t) override { return 0.; }
     double evaluateAccelerationAtTime(double t) override { return 0.; }
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
     const char *giveClassName() const override { return "InterpolatingFuction"; }
     const char *giveInputRecordName() const override { return _IFT_InterpolatingFuction_Name; }
 };

@@ -130,7 +130,7 @@ MicroplaneMaterial :: give3dMaterialStiffnessMatrix(MatResponseMode mode,
 }
 
 void
-MicroplaneMaterial :: initializeFrom(InputRecord &ir)
+MicroplaneMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralMaterial :: initializeFrom(ir);
 

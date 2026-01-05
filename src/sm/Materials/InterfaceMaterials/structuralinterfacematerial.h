@@ -133,7 +133,7 @@ public:
     virtual bool hasAnalyticalTangentStiffness() const = 0;
 
     // identification and auxiliary functions
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
     void giveInputRecord(DynamicInputRecord &input) override;
 
     virtual FloatArray giveInterfaceStrength() { return Vec1(0); }

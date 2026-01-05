@@ -115,7 +115,7 @@ int MeshQualityErrorEstimator :: estimateError(EE_ErrorMode mode, TimeStep *tSte
     return true;
 }
 
-void MeshQualityErrorEstimator :: initializeFrom(InputRecord &ir)
+void MeshQualityErrorEstimator :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     ErrorEstimator :: initializeFrom(ir);
 }

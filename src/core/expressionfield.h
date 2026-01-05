@@ -81,7 +81,7 @@ public:
     
     const char *giveClassName() const override { return "ExpressionField"; }
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
 };
 
 } // end namespace oofem

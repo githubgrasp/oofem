@@ -49,7 +49,7 @@ LatticePlasticityDamageViscoelastic::LatticePlasticityDamageViscoelastic(int n, 
 {}
 
 void
-LatticePlasticityDamageViscoelastic::initializeFrom(InputRecord &ir)
+LatticePlasticityDamageViscoelastic::initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     LatticePlasticityDamage::initializeFrom(ir);
 

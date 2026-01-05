@@ -72,7 +72,7 @@ VTKXMLLatticeExportModule::~VTKXMLLatticeExportModule()
 
 
 void
-VTKXMLLatticeExportModule::initializeFrom(InputRecord &ir)
+VTKXMLLatticeExportModule::initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     VTKXMLExportModule::initializeFrom(ir);
     this->crossSectionExportFlag = false;

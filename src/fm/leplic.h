@@ -185,7 +185,7 @@ public:
     double giveUpdatedXCoordinate(int num) { return updated_XCoords.at(num); }
     double giveUpdatedYCoordinate(int num) { return updated_YCoords.at(num); }
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
     void giveInputRecord(DynamicInputRecord &input) override;
 
     // identification

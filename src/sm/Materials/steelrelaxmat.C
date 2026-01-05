@@ -57,7 +57,7 @@ SteelRelaxMat::hasMaterialModeCapability(MaterialMode mode) const
 
 // reads the model parameters from the input file
 void
-SteelRelaxMat::initializeFrom(InputRecord &ir)
+SteelRelaxMat::initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralMaterial::initializeFrom(ir);
 

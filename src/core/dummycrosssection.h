@@ -63,7 +63,7 @@ protected:
     int matNumber = 0;
 public:
     DummyCrossSection(int n, Domain *d);
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
     void giveInputRecord(DynamicInputRecord &input) override;
 
     bool isCharacteristicMtrxSymmetric(MatResponseMode rMode) const override;

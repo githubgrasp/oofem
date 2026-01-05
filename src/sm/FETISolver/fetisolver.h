@@ -118,7 +118,7 @@ public:
     /// Sets up the communication maps
     void setUpCommunicationMaps();
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
 
     // identification
     const char *giveClassName() const override { return "FETISolver"; }

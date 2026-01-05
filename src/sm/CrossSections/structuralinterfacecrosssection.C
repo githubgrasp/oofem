@@ -62,7 +62,7 @@ StructuralInterfaceCrossSection :: checkConsistency()
 }
 
 void
-StructuralInterfaceCrossSection :: initializeFrom(InputRecord &ir)
+StructuralInterfaceCrossSection :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     CrossSection :: initializeFrom(ir);
     IR_GIVE_FIELD(ir, this->materialNum, _IFT_StructuralInterfaceCrossSection_Material);

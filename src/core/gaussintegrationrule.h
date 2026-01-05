@@ -74,7 +74,7 @@ public:
 
     const char *giveClassName() const override { return "GaussIntegrationRule"; }
     IntegrationRuleType giveIntegrationRuleType() const override { return IRT_Gauss; }
-    void initializeFrom(InputRecord &ir) override { }
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override { }
 
     int getRequiredNumberOfIntegrationPoints(integrationDomain dType, int approxOrder) override;
 

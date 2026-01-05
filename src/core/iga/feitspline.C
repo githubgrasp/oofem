@@ -43,7 +43,7 @@ namespace oofem {
 #define OPTIMIZED_VERSION_A4dot4
 
 
-void TSplineInterpolation :: initializeFrom(InputRecord &ir, ParameterManager&pm, int elnum, int priority)
+void TSplineInterpolation :: initializeFrom(const std::shared_ptr<InputRecord> &ir, ParameterManager&pm, int elnum, int priority)
 {
     BSplineInterpolation :: initializeFrom(ir, pm, elnum, priority);
 

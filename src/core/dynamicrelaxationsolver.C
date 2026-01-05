@@ -57,7 +57,7 @@ DynamicRelaxationSolver :: DynamicRelaxationSolver(Domain *d, EngngModel *m) : N
 
 
 void
-DynamicRelaxationSolver :: initializeFrom(InputRecord &ir)
+DynamicRelaxationSolver :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     NRSolver :: initializeFrom(ir);
 }

@@ -91,7 +91,7 @@ public:
 
     Element_Geometry_Type giveGeometryType() const override;
 
-    void initializeFrom(InputRecord &ir, int priority) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
     MaterialMode giveMaterialMode() override;
     void giveInputRecord(DynamicInputRecord &input) override;
 

@@ -69,7 +69,7 @@ BaseHyperElasticMaterial::compute_d2VolumetricEnergy_dF2(const Tensor2_3d &F) co
 
 
 void
-BaseHyperElasticMaterial::initializeFrom(InputRecord &ir)
+BaseHyperElasticMaterial::initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     // volumetric energy constant, usually bulk modulus
     IR_GIVE_FIELD(ir, K, _IFT_BaseHyperElasticMaterial_k);

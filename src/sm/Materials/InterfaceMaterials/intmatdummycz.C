@@ -56,7 +56,7 @@ FloatMatrixF<3,3> IntMatDummyCZ :: give3dStiffnessMatrix_dTdj(MatResponseMode rM
     return zero<3,3>();
 }
 
-void IntMatDummyCZ :: initializeFrom(InputRecord &ir)
+void IntMatDummyCZ :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralInterfaceMaterial :: initializeFrom(ir);
 }

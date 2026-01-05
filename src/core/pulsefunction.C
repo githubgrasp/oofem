@@ -83,7 +83,7 @@ PulseFunction :: evaluateAtTime(double time)
 }
 
 void
-PulseFunction :: initializeFrom(InputRecord &ir)
+PulseFunction :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     Function :: initializeFrom(ir);
 

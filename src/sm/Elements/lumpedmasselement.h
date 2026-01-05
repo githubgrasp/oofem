@@ -93,7 +93,7 @@ public:
     // definition & identification
     const char *giveInputRecordName() const override { return _IFT_LumpedMassElement_Name; }
     const char *giveClassName() const override { return "LumpedMassElement"; }
-    void initializeFrom(InputRecord &ir, int priority) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
     void postInitialize() override;
     Element_Geometry_Type giveGeometryType() const override { return EGT_point; }
 

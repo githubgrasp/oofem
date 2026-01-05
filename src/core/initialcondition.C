@@ -117,7 +117,7 @@ void InitialCondition :: printYourself()
 
 
 void
-InitialCondition :: initializeFrom(InputRecord &ir)
+InitialCondition :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 // Sets up the dictionary where the receiver stores the conditions it
 // imposes.
 {

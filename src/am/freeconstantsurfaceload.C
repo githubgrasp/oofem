@@ -56,7 +56,7 @@ FreeConstantSurfaceLoad :: FreeConstantSurfaceLoad(int i, Domain *d) : SurfaceLo
 }
 
 void
-FreeConstantSurfaceLoad :: initializeFrom(InputRecord &ir)
+FreeConstantSurfaceLoad :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     Load :: initializeFrom(ir);
 

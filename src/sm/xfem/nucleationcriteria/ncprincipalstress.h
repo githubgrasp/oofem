@@ -56,7 +56,7 @@ public:
 
     std::vector<std::unique_ptr<EnrichmentItem>> nucleateEnrichmentItems() override;
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
 
     void appendInputRecords(DynamicDataReader &oDR) override;
 

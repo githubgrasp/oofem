@@ -93,7 +93,7 @@ public:
     /// Destructor.
     virtual ~LinearConstraintBC();
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
     const char *giveInputRecordName() const override { return _IFT_LinearConstraintBC_Name; }
     void assemble(SparseMtrx &answer, TimeStep *tStep,
                   CharType type, const UnknownNumberingScheme &r_s, 

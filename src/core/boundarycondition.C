@@ -77,7 +77,7 @@ double BoundaryCondition :: give(Dof *dof, ValueModeType mode, double time)
 
 
 void
-BoundaryCondition :: initializeFrom(InputRecord &ir)
+BoundaryCondition :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     GeneralBoundaryCondition :: initializeFrom(ir);
 

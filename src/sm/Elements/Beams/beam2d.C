@@ -381,7 +381,7 @@ Beam2d :: giveLocalCoordinateSystem(FloatMatrix &answer)
 
 
 void
-Beam2d :: initializeFrom(InputRecord &ir, int priority)
+Beam2d :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     // first call parent
     BeamBaseElement :: initializeFrom(ir, priority);

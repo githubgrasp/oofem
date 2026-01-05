@@ -118,7 +118,7 @@ public:
 
     bool hasFailed(int i) { return failedFlags.at(i - 1); }
 
-    virtual void initializeFrom(InputRecord &ir);
+    virtual void initializeFrom(const std::shared_ptr<InputRecord> &ir);
     virtual int instanciateYourself(DataReader &dr) { return 1; }
     virtual const char *giveClassName() const { return "FailureCriteriaStatus"; }
 };
@@ -145,7 +145,7 @@ public:
     FractureManager *giveFractureManager() { return this->fMan; }
     void setType(FailureCriteriaType _type) { this->type = _type; }
 
-    virtual void initializeFrom(InputRecord &ir);
+    virtual void initializeFrom(const std::shared_ptr<InputRecord> &ir);
     int instanciateYourself(DataReader &dr);
     virtual const char *giveClassName() const { return "FailureCriteria"; }
 
@@ -179,7 +179,7 @@ public:
     bool evaluateFailureCriteria(FailureCriteriaStatus *fcStatus) override;
     const char *giveClassName() const override { return "DamagedNeighborLayered"; }
     const char *giveInputRecordName() const { return _IFT_DamagedNeighborLayered_Name; }
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
 
     FailureCriteriaStatus * CreateStatus(Element *el) override
     { return new DamagedNeighborLayeredStatus(el, this); }
@@ -222,7 +222,7 @@ public:
     void updateXFEM(TimeStep *tStep);
     void updateXFEM(FailureCriteriaStatus *fc, TimeStep *tStep);
 
-    void initializeFrom(InputRecord &ir);
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir);
     int instanciateYourself(DataReader &dr);
     const char *giveClassName() const { return "FractureManager"; }
     const char *giveInputRecordName() const { return "FractureManager"; }

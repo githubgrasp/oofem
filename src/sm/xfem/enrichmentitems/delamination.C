@@ -109,7 +109,7 @@ int Delamination :: instanciateYourself(DataReader &dr)
         mpEnrichmentFrontEnd = std::make_unique<EnrFrontDoNothing>(this->giveNumber());
     } else {
         int i=0;
-        for(InputRecord& efIr: dr.giveGroupRecords("EnrichmentFront",DataReader :: IR_enrichFrontRec,/*numRequired*/2)){
+        for(const std::shared_ptr<InputRecord>& efIr: dr.giveGroupRecords("EnrichmentFront",DataReader :: IR_enrichFrontRec,/*numRequired*/2)){
             std::string enrFrontName;
             efIr->giveRecordKeywordField(enrFrontName);
             auto ef = classFactory.createEnrichmentFront( enrFrontName.c_str() );
@@ -340,7 +340,7 @@ void Delamination :: evaluateEnrFuncAt(std :: vector< double > &oEnrFunc, const 
 }
 
 
-void Delamination :: initializeFrom(InputRecord &ir)
+void Delamination :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     EnrichmentItem :: initializeFrom(ir);
 

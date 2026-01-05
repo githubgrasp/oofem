@@ -72,7 +72,7 @@ bool reductionFlag;
 public:
    TimeStepReductionStrategy(int n){this->number = n;}
    virtual ~TimeStepReductionStrategy() = default;
-   virtual void initializeFrom(InputRecord &ir)  = 0;
+   virtual void initializeFrom(const std::shared_ptr<InputRecord> &ir)  = 0;
    virtual TimeStepReductionStrategyType giveTimeStepReductionStrategyType() = 0;
    //virtual double giveMaxMaterialTimeIncrementAdaptationFactor(std::unique_ptr<TimeStep> &ts) = 0;
    virtual double giveMaterialTimeIncrementAdaptationFactorMax() = 0;
@@ -98,7 +98,7 @@ class NoReductionStrategy : public TimeStepReductionStrategy
 {
 public:
   NoReductionStrategy(int n);
-    void initializeFrom(InputRecord &ir) override {};
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override {};
   TimeStepReductionStrategyType giveTimeStepReductionStrategyType() override{return TSRST_NoReduction;}
   double giveMaterialTimeIncrementAdaptationFactorMax() override {return 1.;}
   double giveMaterialTimeIncrementAdaptationFactorMin() override {return 1.;}
@@ -120,7 +120,7 @@ private:
   int numberOfMaxTimeStepReductions;
 public:
   SimpleReductionStrategy(int n);
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
   TimeStepReductionStrategyType giveTimeStepReductionStrategyType() override{return TSRST_SimpleReduction;}
   double giveMaterialTimeIncrementAdaptationFactorMax() override;
   double giveMaterialTimeIncrementAdaptationFactorMin() override;

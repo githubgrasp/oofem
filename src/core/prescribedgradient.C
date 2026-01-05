@@ -228,7 +228,7 @@ void PrescribedGradient :: computeTangent(FloatMatrix &tangent, TimeStep *tStep)
 }
 
 
-void PrescribedGradient :: initializeFrom(InputRecord &ir)
+void PrescribedGradient :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     GeneralBoundaryCondition :: initializeFrom(ir);
     PrescribedGradientHomogenization :: initializeFrom(ir);

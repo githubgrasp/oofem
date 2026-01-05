@@ -141,7 +141,7 @@ namespace oofem {
         }
     };
 
-    XMLInputRecord :: XMLInputRecord(XMLDataReader* reader_, const pugi::xml_node& node_): InputRecord_((DataReader*)reader_), node(node_) {
+    XMLInputRecord :: XMLInputRecord(XMLDataReader* reader_, const pugi::xml_node& node_): InputRecord((DataReader*)reader_), node(node_) {
         node_seen_set(node,true);
         _XML_DEBUG(loc()<<": node.name()="<<node.name());
     }

@@ -57,7 +57,7 @@ MisesMat::MisesMat(int n, Domain *d) : StructuralMaterial(n, d),
 
 
 void
-MisesMat::initializeFrom(InputRecord &ir)
+MisesMat::initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralMaterial::initializeFrom(ir);
     linearElasticMaterial.initializeFrom(ir); // takes care of elastic constants

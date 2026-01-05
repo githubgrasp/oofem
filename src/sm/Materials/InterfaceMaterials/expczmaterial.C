@@ -110,7 +110,7 @@ ExpCZMaterial :: giveIPValue(FloatArray &answer, GaussPoint *gp, InternalStateTy
 
 
 void
-ExpCZMaterial :: initializeFrom(InputRecord &ir)
+ExpCZMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     IR_GIVE_FIELD(ir, this->GIc, _IFT_ExpCZMaterial_g1c);
 

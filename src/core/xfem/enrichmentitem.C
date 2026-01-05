@@ -81,7 +81,7 @@ EnrichmentItem :: ~EnrichmentItem()
 {
 }
 
-void EnrichmentItem :: initializeFrom(InputRecord &ir)
+void EnrichmentItem :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     thisIr=ir;
     mEnrFrontIndex = ir->giveGroupCount(_IFT_EnrichmentItem_front,"EnrichmentFront",/*optional*/true);

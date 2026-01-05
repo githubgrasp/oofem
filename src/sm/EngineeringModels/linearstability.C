@@ -97,7 +97,7 @@ SparseLinearSystemNM *LinearStability :: giveNumericalMethodForLinStaticProblem(
 
 
 void
-LinearStability :: initializeFrom(InputRecord &ir)
+LinearStability :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     //StructuralEngngModel::instanciateFrom(ir);
     IR_GIVE_FIELD(ir, numberOfRequiredEigenValues, _IFT_LinearStability_nroot);

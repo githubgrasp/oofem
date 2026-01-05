@@ -78,7 +78,7 @@ NumericalMethod *EigenValueDynamic :: giveNumericalMethod(MetaStep *mStep)
 
 
 void
-EigenValueDynamic :: initializeFrom(InputRecord &ir)
+EigenValueDynamic :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     //EngngModel::instanciateFrom (ir);
 

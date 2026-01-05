@@ -176,7 +176,7 @@ NumericalMethod *DGProblem :: giveNumericalMethod(MetaStep *mStep)
 
   
 void
-DGProblem :: initializeFrom(InputRecord &ir)
+DGProblem :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     EngngModel :: initializeFrom(ir);
 

@@ -71,7 +71,7 @@ QWedge_mt :: QWedge_mt(int n, Domain *aDomain) : QWedge_ht(n, aDomain)
 
 
 void
-QWedge_ht :: initializeFrom(InputRecord &ir, int priority)
+QWedge_ht :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     TransportElement :: initializeFrom(ir, priority);
 

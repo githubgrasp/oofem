@@ -53,7 +53,7 @@ RankineMatGrad :: RankineMatGrad(int n, Domain *d) : RankineMat(n, d), GradientD
 
 /////////////////////////////////////////////////////////////////////////////
 void
-RankineMatGrad :: initializeFrom(InputRecord &ir)
+RankineMatGrad :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     RankineMat :: initializeFrom(ir);
 

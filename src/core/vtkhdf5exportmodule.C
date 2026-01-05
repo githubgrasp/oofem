@@ -89,7 +89,7 @@ VTKHDF5ExportModule::~VTKHDF5ExportModule() {}
 
 
 void
-VTKHDF5ExportModule::initializeFrom(InputRecord &ir)
+VTKHDF5ExportModule::initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     ExportModule::initializeFrom(ir);
 

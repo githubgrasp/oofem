@@ -71,7 +71,7 @@ AbaqusUserMaterial::~AbaqusUserMaterial()
 #endif
 }
 
-void AbaqusUserMaterial::initializeFrom(InputRecord &ir)
+void AbaqusUserMaterial::initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     std::string umatname;
 

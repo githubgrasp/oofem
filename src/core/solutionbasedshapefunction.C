@@ -70,7 +70,7 @@ SolutionbasedShapeFunction :: SolutionbasedShapeFunction(int n, Domain *d) : Act
 
 
 void
-SolutionbasedShapeFunction :: initializeFrom(InputRecord &ir)
+SolutionbasedShapeFunction :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     ActiveBoundaryCondition :: initializeFrom(ir);
 

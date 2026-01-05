@@ -49,7 +49,7 @@ namespace oofem {
 REGISTER_BoundaryCondition(NeumannMomentLoad);
 
 void
-NeumannMomentLoad :: initializeFrom(InputRecord &ir)
+NeumannMomentLoad :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     BoundaryLoad :: initializeFrom(ir);
 

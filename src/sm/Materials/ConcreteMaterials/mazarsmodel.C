@@ -56,7 +56,7 @@ MazarsMaterial :: MazarsMaterial(int n, Domain *d) : IsotropicDamageMaterial1(n,
 
 
 void
-MazarsMaterial :: initializeFrom(InputRecord &ir)
+MazarsMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     int ver;
 

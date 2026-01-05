@@ -151,7 +151,7 @@ IntArray XfemManager :: giveEnrichedDofIDs(const DofManager &iDMan) const
     return dofIdArray;
 }
 
-void XfemManager :: initializeFrom(InputRecord &ir)
+void XfemManager :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     thisIr=ir;
     // read later in instanciateYourself
@@ -211,7 +211,7 @@ int XfemManager :: instanciateYourself(DataReader &dr)
     numberOfEnrichmentItems=enrichRecs.size();
     enrichmentItemList.resize(numberOfEnrichmentItems);
     int i=1;
-    for(InputRecord& mir: enrichRecs){
+    for(const std::shared_ptr<InputRecord>& mir: enrichRecs){
         mir->giveRecordKeywordField(name);
 
         std :: unique_ptr< EnrichmentItem >ei( classFactory.createEnrichmentItem( name.c_str(), i, this, this->giveDomain() ) );

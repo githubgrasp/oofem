@@ -64,7 +64,7 @@ PFEMElement :: ~PFEMElement()
 { }
 
 void
-PFEMElement :: initializeFrom(InputRecord &ir, int priority)
+PFEMElement :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     FMElement :: initializeFrom(ir, priority);
 

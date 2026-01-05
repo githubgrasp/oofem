@@ -40,11 +40,11 @@
 
 namespace oofem {
 CompCol_ILUPreconditioner ::
-CompCol_ILUPreconditioner(const SparseMtrx &A, InputRecord &attributes) : Preconditioner(A, attributes)
+CompCol_ILUPreconditioner(const SparseMtrx &A, const std::shared_ptr<InputRecord> &attributes) : Preconditioner(A, attributes)
 { }
 
 void
-CompCol_ILUPreconditioner :: initializeFrom(InputRecord &ir)
+CompCol_ILUPreconditioner :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     Preconditioner :: initializeFrom(ir);
 }

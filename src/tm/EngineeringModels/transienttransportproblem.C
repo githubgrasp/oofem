@@ -71,7 +71,7 @@ NumericalMethod *TransientTransportProblem :: giveNumericalMethod(MetaStep *mSte
 
 
 void
-TransientTransportProblem :: initializeFrom(InputRecord &ir)
+TransientTransportProblem :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     EngngModel :: initializeFrom(ir);
 

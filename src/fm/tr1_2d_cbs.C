@@ -101,7 +101,7 @@ TR1_2D_CBS :: giveDofManDofIDMask(int inode, IntArray &answer) const
 
 
 void
-TR1_2D_CBS :: initializeFrom(InputRecord &ir, int priority)
+TR1_2D_CBS :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     CBSElement :: initializeFrom(ir, priority);
     ParameterManager &ppm =  this->giveDomain()->elementPPM;

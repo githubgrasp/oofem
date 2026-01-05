@@ -50,7 +50,7 @@ REGISTER_CrossSection(VariableCrossSection);
 
 
 void
-VariableCrossSection :: initializeFrom(InputRecord &ir)
+VariableCrossSection :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     if ( ir->hasField(_IFT_SimpleCrossSection_thick) ) {
         IR_GIVE_OPTIONAL_FIELD(ir, thicknessExpr, _IFT_SimpleCrossSection_thick);

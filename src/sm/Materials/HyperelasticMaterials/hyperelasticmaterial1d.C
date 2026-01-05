@@ -103,7 +103,7 @@ HyperelasticMaterial1d::CreateStatus(GaussPoint *gp) const
 
 
 void
-HyperelasticMaterial1d::initializeFrom(InputRecord &ir)
+HyperelasticMaterial1d::initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralMaterial :: initializeFrom(ir);
 

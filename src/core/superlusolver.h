@@ -82,7 +82,7 @@ public:
     SparseMtrxType giveRecommendedMatrix(bool symmetric) const override { return SMT_CompCol; }
 
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
     const char *giveClassName() const override { return "SuperLUSolver"; }
     LinSystSolverType giveLinSystSolverType() const override { return ST_SuperLU_MT; }
 

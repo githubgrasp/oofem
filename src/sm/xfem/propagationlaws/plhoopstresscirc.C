@@ -53,7 +53,7 @@ namespace oofem {
 REGISTER_PropagationLaw(PLHoopStressCirc)
 
 /////////////////////////////////////////////
-void PLHoopStressCirc :: initializeFrom(InputRecord &ir)
+void PLHoopStressCirc :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     IR_GIVE_FIELD(ir, mRadius,                          _IFT_PLHoopStressCirc_Radius);
     IR_GIVE_FIELD(ir, mAngleInc,                        _IFT_PLHoopStressCirc_AngleInc);

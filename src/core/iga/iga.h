@@ -96,7 +96,7 @@ protected:
 #endif
 public:
     IGAElement(int n, Domain * aDomain) : Element(n, aDomain) { numberOfGaussPoints=1;}
-    void initializeFrom(InputRecord &ir, int priority) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
     void initializeFinish() override;
 
 #ifdef __MPI_PARALLEL_MODE
@@ -119,7 +119,7 @@ class OOFEM_EXPORT IGATSplineElement : public IGAElement
 {
 public:
     IGATSplineElement(int n, Domain * aDomain) : IGAElement(n, aDomain) { }
-    void initializeFrom(InputRecord &ir, int priority) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
     void initializeFinish() override;
 };
 } // end namespace oofem

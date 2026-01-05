@@ -64,7 +64,7 @@ Masonry02 :: hasMaterialModeCapability(MaterialMode mode) const
 }
 
 void
-Masonry02 :: initializeFrom(InputRecord &ir)
+Masonry02 :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     MPlasticMaterial2 :: initializeFrom(ir);
     linearElasticMaterial->initializeFrom(ir);

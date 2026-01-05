@@ -135,7 +135,7 @@ TrabBoneNLEmbed :: giveInterface(InterfaceType type)
 }
 
 void
-TrabBoneNLEmbed :: initializeFrom(InputRecord &ir)
+TrabBoneNLEmbed :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     TrabBoneEmbed :: initializeFrom(ir);
     StructuralNonlocalMaterialExtensionInterface :: initializeFrom(ir);

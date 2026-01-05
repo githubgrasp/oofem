@@ -47,7 +47,7 @@ ConcreteFCMViscoElastic::ConcreteFCMViscoElastic(int n, Domain *d) : ConcreteFCM
 
 
 void
-ConcreteFCMViscoElastic::initializeFrom(InputRecord &ir)
+ConcreteFCMViscoElastic::initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     ConcreteFCM::initializeFrom(ir);
 

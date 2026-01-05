@@ -337,7 +337,7 @@ Lattice2d :: giveLocalCoordinateSystem(FloatMatrix &answer)
 }
 
 void
-Lattice2d :: initializeFrom(InputRecord &ir, int priority)
+Lattice2d :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     ParameterManager &ppm = this->giveDomain()->elementPPM;
     LatticeStructuralElement :: initializeFrom(ir, priority);

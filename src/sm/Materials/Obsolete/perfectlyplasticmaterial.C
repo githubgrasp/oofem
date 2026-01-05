@@ -625,7 +625,7 @@ PerfectlyPlasticMaterial :: GiveStressCorrectionBackToYieldSurface(GaussPoint *g
 
 
 void
-PerfectlyPlasticMaterial :: initializeFrom(InputRecord &ir)
+PerfectlyPlasticMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     Material :: initializeFrom(ir);
     this->giveLinearElasticMaterial()->initializeFrom(ir);

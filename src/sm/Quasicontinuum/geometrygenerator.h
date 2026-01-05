@@ -70,14 +70,14 @@ public:
     GeometryGenerator();
     virtual ~GeometryGenerator();
 
-    void initializeParticleGenerator(InputRecord &ir);
+    void initializeParticleGenerator(const std::shared_ptr<InputRecord> &ir);
     void generateParticles();
     void loadParticles();
 
     bool CheckDistances(double R, FloatArray coords, int n);
 
 
-    void initializeLinkGenerator(InputRecord &ir);
+    void initializeLinkGenerator(const std::shared_ptr<InputRecord> &ir);
     void generateLinks();
     void loadLinks();
 

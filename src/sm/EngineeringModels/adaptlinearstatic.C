@@ -134,7 +134,7 @@ void AdaptiveLinearStatic :: restoreContext(DataStream &stream, ContextMode mode
 }
 
 void
-AdaptiveLinearStatic :: initializeFrom(InputRecord &ir)
+AdaptiveLinearStatic :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     LinearStatic :: initializeFrom(ir);
 

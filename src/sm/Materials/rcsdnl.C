@@ -338,7 +338,7 @@ RCSDNLMaterial :: giveRealStressVector(FloatArray &answer, GaussPoint *gp,
 
 
 void
-RCSDNLMaterial :: initializeFrom(InputRecord &ir)
+RCSDNLMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     //RCSDEMaterial::instanciateFrom (ir);
     this->giveLinearElasticMaterial()->initializeFrom(ir);

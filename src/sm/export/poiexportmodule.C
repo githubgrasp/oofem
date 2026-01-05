@@ -63,7 +63,7 @@ POIExportModule :: ~POIExportModule()
 
 
 void
-POIExportModule :: initializeFrom(InputRecord &ir)
+POIExportModule :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     ExportModule :: initializeFrom(ir);
 

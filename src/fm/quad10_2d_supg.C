@@ -115,7 +115,7 @@ Quad10_2D_SUPG :: giveInternalDofManDofIDMask(int i, IntArray &answer) const
 
 
 void
-Quad10_2D_SUPG :: initializeFrom(InputRecord &ir, int priority)
+Quad10_2D_SUPG :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     this->pressureNode.initializeFrom(ir, priority);
 

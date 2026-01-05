@@ -59,7 +59,7 @@ class SUPGElement2 : public SUPGElement
 public:
     SUPGElement2(int n, Domain * aDomain);
 
-    void initializeFrom(InputRecord &ir, int priority) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
     void giveInputRecord(DynamicInputRecord &input) override;
 
     // characteristic  matrix

@@ -56,7 +56,7 @@ ExportModule :: ~ExportModule()
 
 
 void
-ExportModule :: initializeFrom(const InputRecord& ir)
+ExportModule :: initializeFrom(const std::shared_ptr<InputRecord>& ir)
 {
     tstep_all_out_flag = ir->hasField(_IFT_ExportModule_tstepall);
 

@@ -72,7 +72,7 @@ public:
         Function(i, d), datevalues(datevalues) {}
     virtual ~StepFunction() { }
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
     void giveInputRecord(DynamicInputRecord &input) override;
     const char *giveClassName() const override { return "StepFunction"; }
     const char *giveInputRecordName() const override { return _IFT_StepFunction_Name; }

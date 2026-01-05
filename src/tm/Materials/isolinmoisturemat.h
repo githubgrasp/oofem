@@ -60,7 +60,7 @@ protected:
 public:
     IsotropicLinMoistureTransferMaterial(int n, Domain * d) : IsotropicMoistureTransferMaterial(n, d) { }
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
     double givePermeability(GaussPoint *gp, TimeStep *tStep) const override;
     double giveMoistureCapacity(GaussPoint *gp, TimeStep *tStep) const override;
 

@@ -55,7 +55,7 @@ Set::Set(int n, Domain * d) : FEMComponent(n, d), mElementListIsSorted(false), e
 #endif
  }
 
-void Set :: initializeFrom(InputRecord &ir)
+void Set :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     FEMComponent :: initializeFrom(ir);
 

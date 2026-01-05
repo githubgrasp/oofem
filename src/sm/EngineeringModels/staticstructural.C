@@ -102,7 +102,7 @@ StaticStructural :: giveUnknownDictHashIndx(ValueModeType mode, TimeStep *tStep)
 }
 
 void
-StaticStructural :: initializeFrom(InputRecord &ir)
+StaticStructural :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralEngngModel :: initializeFrom(ir);
 

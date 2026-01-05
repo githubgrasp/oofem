@@ -345,13 +345,13 @@ template <class ElementBase = oofem::Element> struct PyElement : public PyFemCom
                 PYBIND11_OVERLOAD (double, EngngModelBase, giveUnknownComponent, vm,t,domain,d);
             }
             //  virtual FieldPtr giveField (FieldType key, TimeStep *) { return FieldPtr();}
-            int instanciateYourself(DataReader &dr, InputRecord &ir, const char *outFileName, const char *desc)  override {
+            int instanciateYourself(DataReader &dr, const std::shared_ptr<InputRecord> &ir, const char *outFileName, const char *desc)  override {
                 PYBIND11_OVERLOAD (int, EngngModelBase, instanciateYourself, dr, ir, outFileName, desc);
             }
-            void initializeFrom(InputRecord &ir)  override {
+            void initializeFrom(const std::shared_ptr<InputRecord> &ir)  override {
                 PYBIND11_OVERLOAD (void, EngngModelBase, initializeFrom, ir);
             }
-            int instanciateDefaultMetaStep(InputRecord &ir)  override {
+            int instanciateDefaultMetaStep(const std::shared_ptr<InputRecord> &ir)  override {
                 PYBIND11_OVERLOAD (int, EngngModelBase, instanciateDefaultMetaStep, ir);
             }
             void updateAttributes(MetaStep *mStep)  override {
@@ -517,7 +517,7 @@ template <class ElementBase = oofem::Element> struct PyElement : public PyFemCom
         int giveIPValue(oofem::FloatArray &answer, oofem::GaussPoint *gp, oofem::InternalStateType type, oofem::TimeStep *tStep) override {
             PYBIND11_OVERLOAD(int, MaterialBase, giveIPValue, std::ref(answer), gp, type, tStep);
         }
-        void initializeFrom(oofem::InputRecord &ir) override {
+        void initializeFrom(const std::shared_ptr<InputRecord> &ir) override {
             PYBIND11_OVERLOAD(void, MaterialBase, initializeFrom, ir);
         }
         //virtual void saveIPContext(DataStream &stream, ContextMode mode, GaussPoint *gp);
@@ -590,7 +590,7 @@ template <class ElementBase = oofem::Element> struct PyElement : public PyFemCom
         const char *giveClassName() const override {
             PYBIND11_OVERLOAD(const char*, StructuralMaterialBase, giveClassName, );
         }
-        void initializeFrom(oofem::InputRecord &ir) override {
+        void initializeFrom(const std::shared_ptr<InputRecord> &ir) override {
             PYBIND11_OVERLOAD(void, StructuralMaterialBase, initializeFrom, ir);
         }
         void giveInputRecord(oofem::DynamicInputRecord &input) override {
@@ -1034,11 +1034,11 @@ PYBIND11_MODULE(oofempy, m) {
     ;
 
 
-    py::class_<oofem::InputRecord_,std::shared_ptr<InputRecord_>>(m, "InputRecord")
+    py::class_<oofem::InputRecord,std::shared_ptr<InputRecord>>(m, "InputRecord")
     ;
 
     typedef const char *InputFieldType;
-    py::class_<oofem::DynamicInputRecord, oofem::InputRecord_, std::shared_ptr<DynamicInputRecord>>(m, "DynamicInputRecord")
+    py::class_<oofem::DynamicInputRecord, oofem::InputRecord, std::shared_ptr<DynamicInputRecord>>(m, "DynamicInputRecord")
         .def(py::init<std::string, int>(), py::arg("answer") = "", py::arg("value")=0)
         .def("finish", &oofem::DynamicInputRecord::finish, py::arg("wrn")=true)
         .def("setRecordKeywordField", &oofem::DynamicInputRecord::setRecordKeywordField)
@@ -1055,7 +1055,7 @@ PYBIND11_MODULE(oofempy, m) {
         .def("setField", (void (oofem::DynamicInputRecord::*)(InputFieldType)) &oofem::DynamicInputRecord::setField)
     ;
 
-    py::class_<oofem::OOFEMTXTInputRecord, oofem::InputRecord_, std::shared_ptr<OOFEMTXTInputRecord>>(m, "OOFEMTXTInputRecord")
+    py::class_<oofem::OOFEMTXTInputRecord, oofem::InputRecord, std::shared_ptr<OOFEMTXTInputRecord>>(m, "OOFEMTXTInputRecord")
         .def(py::init<>())
         .def(py::init<int, std::string>())
         .def("finish", &oofem::OOFEMTXTInputRecord::finish, py::arg("wrn")=true)
@@ -1256,7 +1256,7 @@ PYBIND11_MODULE(oofempy, m) {
         .def("giveDefaultIntegrationRulePtr", &oofem::Element::giveDefaultIntegrationRulePtr, py::return_value_policy::reference)
         .def("giveIPValue", &oofem::Element::giveIPValue)
         .def("giveLabel", &oofem::Element::giveLabel)
-        .def("initializeFrom", (void (oofem::Element::*)(oofem::InputRecord & , int)) &oofem::Element::initializeFrom)
+        .def("initializeFrom", (void (oofem::Element::*)(const std::shared_ptr<InputRecord> & , int)) &oofem::Element::initializeFrom)
         .def("postInitialize", &oofem::Element::postInitialize)
         .def("setDofManagers", &oofem::Element::setDofManagers)
         .def("setNumberOfDofManagers", &oofem::Element::setNumberOfDofManagers)

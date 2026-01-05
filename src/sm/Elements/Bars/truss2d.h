@@ -101,7 +101,7 @@ public:
     // definition & identification
     const char *giveInputRecordName() const override { return _IFT_Truss2d_Name; }
     const char *giveClassName() const override { return "Truss2d"; }
-    void initializeFrom(InputRecord &ir, int priority) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
     void postInitialize() override;
     ///@todo Introduce interpolator and remove these:
     Element_Geometry_Type giveGeometryType() const override { return EGT_line_1; }

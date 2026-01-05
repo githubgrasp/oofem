@@ -61,7 +61,7 @@ Structural2DElement::~Structural2DElement()
 
 
 void
-Structural2DElement::initializeFrom(InputRecord &ir, int priority)
+Structural2DElement::initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     ParameterManager &ppm = domain->elementPPM;
     NLStructuralElement::initializeFrom(ir, priority);

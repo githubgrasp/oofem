@@ -308,7 +308,7 @@ ConcreteDPM::ConcreteDPM(int n, Domain *d) :
 
 
 void
-ConcreteDPM::initializeFrom(InputRecord &ir)
+ConcreteDPM::initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     // call the corresponding service for the linear elastic material
     StructuralMaterial::initializeFrom(ir);

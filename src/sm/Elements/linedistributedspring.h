@@ -80,7 +80,7 @@ public:
     const char *giveClassName() const override { return "LineDistributedSpring"; }
     Element_Geometry_Type giveGeometryType() const override {return EGT_line_1;}
 
-    void initializeFrom(InputRecord &ir, int priority) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
     void postInitialize() override;
 
     int computeNumberOfDofs() override { return this->dofs.giveSize(); }

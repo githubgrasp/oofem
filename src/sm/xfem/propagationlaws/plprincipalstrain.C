@@ -63,7 +63,7 @@ PLPrincipalStrain::~PLPrincipalStrain() {
 
 }
 
-void PLPrincipalStrain :: initializeFrom(InputRecord &ir)
+void PLPrincipalStrain :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     IR_GIVE_FIELD(ir, mRadius,                          _IFT_PLPrincipalStrain_Radius);
     IR_GIVE_FIELD(ir, mIncrementLength,         _IFT_PLPrincipalStrain_IncLength);

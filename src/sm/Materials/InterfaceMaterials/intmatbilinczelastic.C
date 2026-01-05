@@ -110,7 +110,7 @@ IntMatBilinearCZElastic :: give3dStiffnessMatrix_dTdj(MatResponseMode rMode, Gau
 
 const double tolerance = 1.0e-12; // small number
 void
-IntMatBilinearCZElastic :: initializeFrom(InputRecord &ir)
+IntMatBilinearCZElastic :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     IR_GIVE_FIELD(ir, kn0, _IFT_IntMatBilinearCZElastic_kn);
     this->knc = kn0;                        // Defaults to the same stiffness in compression and tension

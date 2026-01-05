@@ -80,7 +80,7 @@ NumericalMethod *DIIDynamic :: giveNumericalMethod(MetaStep *mStep)
 
 
 void
-DIIDynamic :: initializeFrom(InputRecord &ir)
+DIIDynamic :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralEngngModel :: initializeFrom(ir);
 

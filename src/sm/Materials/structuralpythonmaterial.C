@@ -47,7 +47,7 @@ StructuralPythonMaterial :: StructuralPythonMaterial(int n, Domain *d) :
 {}
 
 
-void StructuralPythonMaterial :: initializeFrom(InputRecord &ir)
+void StructuralPythonMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralMaterial :: initializeFrom(ir);
 

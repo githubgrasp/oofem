@@ -120,7 +120,7 @@ NonLinearDynamic :: updateAttributes(MetaStep *mStep)
 
 
 void
-NonLinearDynamic :: initializeFrom(InputRecord &ir)
+NonLinearDynamic :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralEngngModel :: initializeFrom(ir);
 

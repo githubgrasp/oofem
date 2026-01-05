@@ -65,7 +65,7 @@ StructuralSlipFE2Material :: StructuralSlipFE2Material(int n, Domain *d) : Struc
 
 
 void
-StructuralSlipFE2Material :: initializeFrom(InputRecord &ir)
+StructuralSlipFE2Material :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralFE2Material :: initializeFrom(ir);
 

@@ -78,7 +78,7 @@ AbaqusUserElement::~AbaqusUserElement()
 }
 
 
-void AbaqusUserElement::initializeFrom(InputRecord &ir, int priority)
+void AbaqusUserElement::initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     StructuralElement::initializeFrom(ir, priority);
 

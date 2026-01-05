@@ -59,7 +59,7 @@ StokesFlow :: StokesFlow(int i, EngngModel *_master) : FluidModel(i, _master)
 StokesFlow :: ~StokesFlow() { }
 
 
-void StokesFlow :: initializeFrom(InputRecord &ir)
+void StokesFlow :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     FluidModel :: initializeFrom(ir);
     int val;

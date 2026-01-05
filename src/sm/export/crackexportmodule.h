@@ -63,7 +63,7 @@ public:
     /// Destructor
     virtual ~CrackExportModule();
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
     void doOutput(TimeStep *tStep, bool forcedOutput) override;
     void initialize() override;
     void terminate() override;

@@ -42,7 +42,7 @@ namespace oofem {
 REGISTER_Material(HydratingIsoHeatMaterial);
 
 void
-HydratingIsoHeatMaterial :: initializeFrom(InputRecord &ir)
+HydratingIsoHeatMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     int value;
     double dvalue;

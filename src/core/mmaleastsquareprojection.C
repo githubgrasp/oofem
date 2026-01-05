@@ -409,7 +409,7 @@ MMALeastSquareProjection :: giveNumberOfUnknownPolynomialCoefficients(MMALeastSq
 
 
 void
-MMALeastSquareProjection :: initializeFrom(InputRecord &ir)
+MMALeastSquareProjection :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     this->stateFilter = 0;
     IR_GIVE_OPTIONAL_FIELD(ir, this->stateFilter, _IFT_MMALeastSquareProjection_statefilter);

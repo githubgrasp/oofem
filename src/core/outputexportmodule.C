@@ -52,7 +52,7 @@ OutputExportModule :: OutputExportModule(int n, EngngModel *e) : ExportModule(n,
 }
 
 void
-OutputExportModule :: initializeFrom(InputRecord &ir)
+OutputExportModule :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     nodeSets.clear();
     IR_GIVE_OPTIONAL_FIELD(ir, nodeSets, _IFT_OutputExportModule_nodeSets);

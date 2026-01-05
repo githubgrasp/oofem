@@ -202,7 +202,7 @@ MPSDamMaterial :: hasMaterialModeCapability(MaterialMode mode) const
 
 
 void
-MPSDamMaterial :: initializeFrom(InputRecord &ir)
+MPSDamMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     MPSMaterial :: initializeFrom(ir);
 

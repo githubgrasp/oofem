@@ -104,7 +104,7 @@ class VoxelVOFField : public oofem::Field
     }
 
     // for Field classes supporting instantiation from input record
-    virtual void initializeFrom(InputRecord &ir) override { };
+    virtual void initializeFrom(const std::shared_ptr<InputRecord> &ir) override { };
 };
 } // end namespace oofem
 #endif // fvoxelvoffield_h

@@ -88,7 +88,7 @@ public:
     VTKMemoryExportModule(int n, EngngModel *e);
     /// Destructor
     virtual ~VTKMemoryExportModule();
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
     void doOutput(TimeStep *tStep, bool forcedOutput = false) override;
     std::vector< ExportRegion>& getExportRegions(); 
 };

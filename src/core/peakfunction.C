@@ -53,7 +53,7 @@ PeakFunction :: evaluateAtTime(double time)
 }
 
 void
-PeakFunction :: initializeFrom(InputRecord &ir)
+PeakFunction :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     Function :: initializeFrom(ir);
 

@@ -69,7 +69,7 @@ TF1 :: computeValueAt(FloatArray &answer, TimeStep *tStep, const FloatArray &coo
 }
 
 void
-TF1 :: initializeFrom(InputRecord &ir)
+TF1 :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
 }
 } // end namespace oofem

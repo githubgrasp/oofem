@@ -44,7 +44,7 @@ namespace oofem {
 REGISTER_Material(NewtonianFluidMaterial);
 
 void
-NewtonianFluidMaterial :: initializeFrom(InputRecord &ir)
+NewtonianFluidMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     FluidDynamicMaterial :: initializeFrom(ir);
     IR_GIVE_FIELD(ir, viscosity, _IFT_NewtonianFluidMaterial_mu);

@@ -138,7 +138,7 @@ void EnrFrontLinearBranchFuncOneEl :: evaluateEnrFuncJumps(std :: vector< double
     oEnrFuncJumps.insert( oEnrFuncJumps.end(), jumps.begin(), jumps.end() );
 }
 
-void EnrFrontLinearBranchFuncOneEl :: initializeFrom(InputRecord &ir)
+void EnrFrontLinearBranchFuncOneEl :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
 }
 

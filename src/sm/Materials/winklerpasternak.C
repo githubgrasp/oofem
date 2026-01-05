@@ -47,7 +47,7 @@ WinklerPasternakMaterial:: WinklerPasternakMaterial (int n, Domain* d): Structur
 
 
 void
-WinklerPasternakMaterial :: initializeFrom(InputRecord &ir)
+WinklerPasternakMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralMaterial :: initializeFrom(ir);
 

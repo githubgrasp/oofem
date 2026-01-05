@@ -65,7 +65,7 @@ MacroLSpace :: MacroLSpace(int n, Domain *aDomain) : LSpace(n, aDomain)
 MacroLSpace :: ~MacroLSpace() { }
 
 
-void MacroLSpace :: initializeFrom(InputRecord &ir, int priority)
+void MacroLSpace :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     LSpace :: initializeFrom(ir, priority);
     ParameterManager &ppm = domain->elementPPM;

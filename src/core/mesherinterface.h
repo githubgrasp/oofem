@@ -77,7 +77,7 @@ public:
      * belonging to receiver. Receiver may use value-name extracting functions
      * to extract particular field from record.
      */
-    virtual void initializeFrom(InputRecord &ir) { }
+    virtual void initializeFrom(const std::shared_ptr<InputRecord> &ir) { }
 };
 } // end namespace oofem
 #endif // mesherinterface_h

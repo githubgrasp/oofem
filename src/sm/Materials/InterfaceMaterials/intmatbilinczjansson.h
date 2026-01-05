@@ -180,7 +180,7 @@ public:
 
     bool hasAnalyticalTangentStiffness() const override { return true; }
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
 
     FloatArray giveInterfaceStrength() override { return Vec3(this->sigf*this->gamma,this->sigf*this->gamma,this->sigf); }
 

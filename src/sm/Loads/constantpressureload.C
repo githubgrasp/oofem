@@ -48,7 +48,7 @@ ConstantPressureLoad :: ConstantPressureLoad(int i, Domain *d) : SurfaceLoad(i, 
 }
 
 void
-ConstantPressureLoad :: initializeFrom(InputRecord &ir)
+ConstantPressureLoad :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     BoundaryLoad :: initializeFrom(ir);
 

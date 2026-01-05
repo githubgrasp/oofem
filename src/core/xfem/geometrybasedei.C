@@ -104,7 +104,7 @@ int GeometryBasedEI :: instanciateYourself(DataReader &dr)
         mpEnrichmentFrontEnd = std::make_unique<EnrFrontDoNothing>();
     } else {
         int i=0;
-        for(InputRecord& efIr: dr.giveGroupRecords("EnrichmentFront",DataReader :: IR_enrichFrontRec,/*numRequired*/2)){
+        for(const std::shared_ptr<InputRecord>& efIr: dr.giveGroupRecords("EnrichmentFront",DataReader :: IR_enrichFrontRec,/*numRequired*/2)){
             std::string enrFrontName;
             efIr->giveRecordKeywordField(enrFrontName);
             auto ef = classFactory.createEnrichmentFront( enrFrontName.c_str() );

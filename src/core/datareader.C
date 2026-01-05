@@ -47,13 +47,13 @@ std::shared_ptr<DataReader> DataReader::makeFromFilename(const std::string& f){
     return std::make_shared<OOFEMTXTDataReader>(f);
 }
 
-std::shared_ptr<InputRecord_> DataReader::giveChildRecord( const std::shared_ptr<InputRecord_> &ir, InputFieldType ift, const std::string &name, InputRecordType irType, bool optional )
+std::shared_ptr<InputRecord> DataReader::giveChildRecord( const std::shared_ptr<InputRecord> &ir, InputFieldType ift, const std::string &name, InputRecordType irType, bool optional )
 {
     if ( ir->hasChild( ift, name, optional ) ) return this->giveInputRecord( irType, /*recordId*/ 1 );
     return nullptr;
 };
 
-DataReader::GroupRecords DataReader::giveGroupRecords( const std::shared_ptr<InputRecord_> &ir, InputFieldType ift, const std::string &name, InputRecordType irType, bool optional )
+DataReader::GroupRecords DataReader::giveGroupRecords( const std::shared_ptr<InputRecord> &ir, InputFieldType ift, const std::string &name, InputRecordType irType, bool optional )
 {
     return GroupRecords( *this, name, irType, ir->giveGroupCount( ift, name, optional ) );
 }

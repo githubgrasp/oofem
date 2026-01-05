@@ -408,7 +408,7 @@ namespace oofem {
             answer.beTProductOf(B, sig);
         }
         void getDimensions(Element& cell) const override {}
-        void initializeFrom(InputRecord &ir, EngngModel* problem) override {
+        void initializeFrom(const std::shared_ptr<InputRecord> &ir, EngngModel* problem) override {
             MPMSymbolicTerm::initializeFrom(ir, problem);
             int value;
             if (ir->hasField("lhsmatmode")) {
@@ -527,7 +527,7 @@ namespace oofem {
         }
         
         void getDimensions(Element& cell) const override {}
-        void initializeFrom(InputRecord &ir, EngngModel* problem) override {
+        void initializeFrom(const std::shared_ptr<InputRecord> &ir, EngngModel* problem) override {
             MPMSymbolicTerm::initializeFrom(ir, problem);
             IR_GIVE_FIELD(ir, flux, "flux");
         }
@@ -558,7 +558,7 @@ namespace oofem {
     public:
         TestProblem(int i, EngngModel * _master) : EngngModel(i, _master) { ndomains = 1;}
 
-        void initializeFrom(InputRecord &ir) override {
+        void initializeFrom(const std::shared_ptr<InputRecord> &ir) override {
             EngngModel::initializeFrom(ir);
             IR_GIVE_FIELD(ir, lhsIntegrals, "lhsterms");
             IR_GIVE_FIELD(ir, rhsIntegrals, "rhsterms");

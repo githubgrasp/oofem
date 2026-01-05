@@ -42,7 +42,7 @@
 
 namespace oofem {
 void
-LinearElasticMaterial :: initializeFrom(InputRecord &ir)
+LinearElasticMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralMaterial :: initializeFrom(ir);
 

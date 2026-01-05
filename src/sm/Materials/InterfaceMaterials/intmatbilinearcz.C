@@ -270,7 +270,7 @@ FloatArrayF<3> IntMatBilinearCZ :: computeTraction(const FloatArrayF<3> &iTTrial
     return oT;
 }
 
-void IntMatBilinearCZ :: initializeFrom(InputRecord &ir)
+void IntMatBilinearCZ :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralInterfaceMaterial :: initializeFrom(ir);
 

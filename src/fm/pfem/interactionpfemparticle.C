@@ -60,7 +60,7 @@ InteractionPFEMParticle :: InteractionPFEMParticle(int n, Domain *aDomain) : PFE
  * Gets from the source line from the data file all the data of the receiver.
  */
 void
-InteractionPFEMParticle :: initializeFrom(InputRecord &ir, int priority)
+InteractionPFEMParticle :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     PFEMParticle :: initializeFrom(ir, priority);
     ParameterManager &ppm =  this->giveDomain()->dofmanPPM;

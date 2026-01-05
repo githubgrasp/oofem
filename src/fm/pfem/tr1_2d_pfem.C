@@ -117,7 +117,7 @@ TR1_2D_PFEM ::   giveElementDofIDMask(IntArray &answer) const
 
 
 void
-TR1_2D_PFEM :: initializeFrom(InputRecord &ir, int priority)
+TR1_2D_PFEM :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     PFEMElement :: initializeFrom(ir, priority);
 

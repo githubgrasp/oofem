@@ -79,7 +79,7 @@ public:
     virtual void  computeLoadVectorAt(FloatArray &answer, TimeStep *stepN, ValueModeType mode);
 
     const char *giveClassName() const override { return "LatticeNeumannCouplingNode"; }
-    void initializeFrom(InputRecord &ir, int priority) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
     void postInitialize() override;
 
     IntArray *giveCouplingNodes();

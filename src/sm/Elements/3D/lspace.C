@@ -92,7 +92,7 @@ LSpace :: giveInterface(InterfaceType interface)
 
 
 void
-LSpace :: initializeFrom(InputRecord &ir, int priority)
+LSpace :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     Structural3DElement :: initializeFrom(ir, priority);
     ParameterManager &ppm = this->giveDomain()->elementPPM;

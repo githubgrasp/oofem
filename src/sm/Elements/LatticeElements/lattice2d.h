@@ -109,7 +109,7 @@ public:
     //
     const char *giveInputRecordName() const override { return _IFT_Lattice2d_Name; }
     const char *giveClassName() const override { return "Lattice2d"; }
-    void initializeFrom(InputRecord &ir, int priority) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
     
     Element_Geometry_Type giveGeometryType() const override { return EGT_line_1; }
 

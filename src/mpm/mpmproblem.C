@@ -243,7 +243,7 @@ NumericalMethod *MPMProblem :: giveNumericalMethod(MetaStep *mStep)
 
   
 void
-MPMProblem :: initializeFrom(InputRecord &ir)
+MPMProblem :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     EngngModel :: initializeFrom(ir);
 

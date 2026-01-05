@@ -140,7 +140,7 @@ public:
 
     const char *giveClassName() const override { return "Beam2d"; }
     const char *giveInputRecordName() const override { return _IFT_Beam2d_Name; }
-    void initializeFrom(InputRecord &ir, int priority) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
     void postInitialize() override;
 
 #ifdef __OOFEG

@@ -184,7 +184,7 @@ MPSMaterialStatus::restoreContext(DataStream &stream, ContextMode mode)
 
 
 void
-MPSMaterial::initializeFrom(InputRecord &ir)
+MPSMaterial::initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     double fc, c, wc, ac;
 

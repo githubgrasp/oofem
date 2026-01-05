@@ -96,7 +96,7 @@ public:
     /// Destructor.
     virtual ~RigidArmNode(void) { }
 
-    void initializeFrom(InputRecord &ir, int priority) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
     void postInitialize() override;
     void updateLocalNumbering(EntityRenumberingFunctor &f) override;
     int checkConsistency() override;

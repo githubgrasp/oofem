@@ -213,7 +213,7 @@ RankineMatNl :: giveInterface(InterfaceType type)
 
 
 void
-RankineMatNl :: initializeFrom(InputRecord &ir)
+RankineMatNl :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     RankineMat :: initializeFrom(ir);
     StructuralNonlocalMaterialExtensionInterface :: initializeFrom(ir);

@@ -138,7 +138,7 @@ TrabBoneEmbed :: constructIsoComplTensor(double eps0, double nu0)
 
 
 void
-TrabBoneEmbed :: initializeFrom(InputRecord &ir)
+TrabBoneEmbed :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralMaterial :: initializeFrom(ir);
 

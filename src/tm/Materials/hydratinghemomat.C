@@ -45,7 +45,7 @@ namespace oofem {
 REGISTER_Material(HydratingHeMoMaterial);
 
 void
-HydratingHeMoMaterial :: initializeFrom(InputRecord &ir)
+HydratingHeMoMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     int value;
     double dvalue;

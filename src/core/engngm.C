@@ -198,9 +198,9 @@ EngngModel :: Instanciate_init()
 }
 
 
-int EngngModel :: instanciateYourself(DataReader &dr, InputRecord &ir, const char *dataOutputFileName, const char *desc)
+int EngngModel :: instanciateYourself(DataReader &dr, const std::shared_ptr<InputRecord> &ir, const char *dataOutputFileName, const char *desc)
 {
-    // std::shared_ptr<InputRecord> irPtr(ir->ptr());
+    // std::shared_ptr<const std::shared_ptr<InputRecord>> irPtr(ir->ptr());
     Timer timer;
     timer.startTimer();
 
@@ -289,7 +289,7 @@ int EngngModel :: instanciateYourself(DataReader &dr, InputRecord &ir, const cha
 
 
 void
-EngngModel :: initializeFrom(InputRecord &ir)
+EngngModel :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     numberOfSteps = 1;
     IR_GIVE_OPTIONAL_FIELD( ir, numberOfSteps, _IFT_EngngModel_nsteps );
@@ -309,7 +309,7 @@ EngngModel :: initializeFrom(InputRecord &ir)
     IR_GIVE_OPTIONAL_FIELD(ir, profileOpt, _IFT_EngngModel_profileOpt);
 
     // get explicit nmsteps param (text), or size of the <Metasteps> sub-group (xml)
-    /* needs to use clone() and not ptr()... unclear why; the ownership of InputRecord should be specified better */
+    /* needs to use clone() and not ptr()... unclear why; the ownership of const std::shared_ptr<InputRecord> should be specified better */
     nMetaSteps = ir->giveReader()->giveGroupRecords(ir->clone(),_IFT_EngngModel_nmsteps,"Metasteps",DataReader::IR_mstepRec,/*optional*/true).size();
 
     int _val = 1;
@@ -369,7 +369,7 @@ EngngModel :: instanciateDomains(DataReader &dr)
     // read problem domains
     auto Idomain=domainList.begin();
     for(size_t i=0; i<domainList.size(); i++){
-        InputRecord& rec=dr.giveInputRecord(DataReader::IR_domainRec,i+1);
+        const std::shared_ptr<InputRecord>& rec=dr.giveInputRecord(DataReader::IR_domainRec,i+1);
         DataReader::RecordGuard guard(dr,rec);
         result&=(*Idomain)->instanciateYourself(dr,rec);
     }
@@ -392,7 +392,7 @@ EngngModel :: instanciateMetaSteps(DataReader &dr)
     // read problem domains
     auto mrecs=dr.giveGroupRecords("Metasteps",DataReader::IR_mstepRec,nMetaSteps);
     int i=0;
-    for(InputRecord& mrec: mrecs){
+    for(const std::shared_ptr<InputRecord>& mrec: mrecs){
         metaStepList[i++].initializeFrom(mrec);
     }
 
@@ -402,7 +402,7 @@ EngngModel :: instanciateMetaSteps(DataReader &dr)
 
 
 int
-EngngModel :: instanciateDefaultMetaStep(InputRecord &ir)
+EngngModel :: instanciateDefaultMetaStep(const std::shared_ptr<InputRecord> &ir)
 {
     if ( numberOfSteps == 0 ) {
         OOFEM_ERROR("nsteps cannot be zero");
@@ -419,7 +419,7 @@ EngngModel :: instanciateDefaultMetaStep(InputRecord &ir)
 
 #ifdef __MPM_MODULE
 int 
-EngngModel:: instanciateMPM (DataReader &dr, InputRecord &ir) {
+EngngModel:: instanciateMPM (DataReader &dr, const std::shared_ptr<InputRecord> &ir) {
     std::string name;
     int num=-1;
     DataReader::RecordGuard scope(dr,ir);

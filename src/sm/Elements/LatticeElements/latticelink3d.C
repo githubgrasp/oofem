@@ -273,7 +273,7 @@ LatticeLink3d ::   giveDofManDofIDMask(int inode, IntArray &answer) const
 }
 
 void
-LatticeLink3d :: initializeFrom(InputRecord &ir, int priority)
+LatticeLink3d :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     ParameterManager &ppm = this->giveDomain()->elementPPM;
     // first call parent

@@ -96,7 +96,7 @@ QTrPlaneStrainGradDamage :: giveDofManDofIDMask_d(IntArray &answer) const
   
 
 void
-QTrPlaneStrainGradDamage :: initializeFrom(InputRecord &ir, int priority)
+QTrPlaneStrainGradDamage :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     numberOfGaussPoints = 4;
     QTrPlaneStrain :: initializeFrom(ir, priority);

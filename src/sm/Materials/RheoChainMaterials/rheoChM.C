@@ -562,7 +562,7 @@ RheoChainMaterial :: CreateStatus(GaussPoint *gp) const
 
 
 void
-RheoChainMaterial :: initializeFrom(InputRecord &ir)
+RheoChainMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralMaterial :: initializeFrom(ir);
 

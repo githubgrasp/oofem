@@ -82,7 +82,7 @@ protected:
     /// final time of the metastep
     double finalTime = 0;
     /// Engineering model attributes.
-    std::shared_ptr<InputRecord_> attributes;
+    std::shared_ptr<InputRecord> attributes;
     /// Start solution step number for which receiver is responsible.
     int sindex;
     /// Receiver number.
@@ -109,7 +109,7 @@ public:
      * @param e Reference to corresponding engineering model.
      */
     MetaStep(int n, EngngModel * e);
-    MetaStep(int n, EngngModel * e, int nsteps, InputRecord & attrib);
+    MetaStep(int n, EngngModel * e, int nsteps, const std::shared_ptr<InputRecord> & attrib);
     MetaStep(MetaStep &&ms) = default;
 
     /// Returns receiver's number.
@@ -119,11 +119,11 @@ public:
     /// Returns time increment.
     double giveTimeIncrement() { return this->deltaT; }
     /// Returns e-model attributes.
-    InputRecord &giveAttributesRecord() { return attributes; }
+    const std::shared_ptr<InputRecord> &giveAttributesRecord() { return attributes; }
     /**
      * Instanciates the receiver from input record.
      */
-    void initializeFrom(InputRecord &ir);
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir);
     /// Sets the receiver bounds according to given solution step number, returns end index.
     int setStepBounds(int startStepNumber);
     /// Sets the number of steps within the metastep.

@@ -85,7 +85,7 @@ public:
     void initializeYourself(TimeStep *tStep) override;
     int initializeAdaptive(int stepNumber) override { return 0; }
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
 
     void printYourself();
     void printDofOutputAt(FILE *stream, Dof *iDof, TimeStep *atTime) override { }

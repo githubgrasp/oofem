@@ -88,7 +88,7 @@ public:
     const char *giveClassName() const override { return "TrabBoneGrad3D"; }
     const char *giveInputRecordName() const override { return _IFT_TrabBoneGrad3D_Name; }
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
     bool hasMaterialModeCapability(MaterialMode mode) const override;
     Interface *giveInterface(InterfaceType t) override {
         if ( t == GradientDamageMaterialExtensionInterfaceType ) {

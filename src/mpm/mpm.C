@@ -39,7 +39,7 @@
 namespace oofem {
 
 void
-Variable::initializeFrom(InputRecord &ir)
+Variable::initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     // read interpolation type
     std::string name;
@@ -58,7 +58,7 @@ Variable::initializeFrom(InputRecord &ir)
 }    
 
 void
-Term::initializeFrom(InputRecord &ir, EngngModel* problem)
+Term::initializeFrom(const std::shared_ptr<InputRecord> &ir, EngngModel* problem)
 {
     // read field and test field ids (names)
     std::string name;

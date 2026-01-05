@@ -77,7 +77,7 @@ StaggeredSolver :: StaggeredSolver(Domain *d, EngngModel *m) : NRSolver(d, m)
 
 
 void
-StaggeredSolver :: initializeFrom(InputRecord &ir)
+StaggeredSolver :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     NRSolver ::initializeFrom(ir);
 

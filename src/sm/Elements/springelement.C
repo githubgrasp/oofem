@@ -162,7 +162,7 @@ SpringElement :: computeNumberOfGlobalDofs()
 
 
 void
-SpringElement :: initializeFrom(InputRecord &ir, int priority)
+SpringElement :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     ParameterManager &ppm =  this->giveDomain()->elementPPM;
 

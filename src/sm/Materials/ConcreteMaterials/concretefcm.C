@@ -45,7 +45,7 @@ ConcreteFCM :: ConcreteFCM(int n, Domain *d) : FCMMaterial(n, d), RandomMaterial
 {}
 
 void
-ConcreteFCM :: initializeFrom(InputRecord &ir)
+ConcreteFCM :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     FCMMaterial :: initializeFrom(ir);
     RandomMaterialExtensionInterface :: initializeFrom(ir);

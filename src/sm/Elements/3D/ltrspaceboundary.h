@@ -91,7 +91,7 @@ public:
     void recalculateCoordinates(int nodeNumber, FloatArray &coords) override;
 
     // definition & identification
-    void initializeFrom(InputRecord &ir, int priority) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
     void postInitialize() override;
     const char *giveInputRecordName() const override { return _IFT_LTRSpaceBoundary_Name; }
     const char *giveClassName() const override { return "LTRSpaceBoundary"; }

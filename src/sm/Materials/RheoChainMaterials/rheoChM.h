@@ -246,7 +246,7 @@ public:
     bool hasCastingTimeSupport() const override { return true; }
 
     const char *giveClassName() const override { return "RheoChainMaterial"; }
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
 
     int giveIPValue(FloatArray &answer, GaussPoint *gp, InternalStateType type, TimeStep *tStep) override;
 

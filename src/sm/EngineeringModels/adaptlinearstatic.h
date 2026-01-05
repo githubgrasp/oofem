@@ -76,7 +76,7 @@ public:
 
     void updateDomainLinks() override;
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
 
     // identification
     const char *giveClassName() const override { return "AdaptiveLinearStatic"; }

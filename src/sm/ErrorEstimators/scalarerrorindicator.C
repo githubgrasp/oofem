@@ -90,7 +90,7 @@ ScalarErrorIndicator :: giveElementError(EE_ErrorType type, Element *elem, TimeS
 
 
 void
-ScalarErrorIndicator :: initializeFrom(InputRecord &ir)
+ScalarErrorIndicator :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     ErrorEstimator :: initializeFrom(ir);
 

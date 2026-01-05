@@ -127,7 +127,7 @@ IntElLine1PF :: computeAreaAround(IntegrationPoint *ip)
 
 
 void
-IntElLine1PF :: initializeFrom(InputRecord &ir)
+IntElLine1PF :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralInterfaceElement :: initializeFrom(ir);
 

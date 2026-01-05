@@ -684,7 +684,7 @@ Element :: giveCharacteristicValue(CharType mtrx, TimeStep *tStep)
 }
 
 void
-Element :: initializeFrom(InputRecord &ir, int priority)
+Element :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
 #  ifdef VERBOSE
     // VERBOSE_PRINT1("Instanciating element ",number);

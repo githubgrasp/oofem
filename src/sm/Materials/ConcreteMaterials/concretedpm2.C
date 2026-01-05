@@ -486,7 +486,7 @@ ConcreteDPM2::hasMaterialModeCapability(MaterialMode mode) const
 
 
 void
-ConcreteDPM2::initializeFrom(InputRecord &ir)
+ConcreteDPM2::initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     // call the corresponding service for the linear elastic material
     StructuralMaterial::initializeFrom(ir);

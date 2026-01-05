@@ -41,7 +41,7 @@ namespace oofem {
 REGISTER_Material(NlIsoMoistureMaterial);
 
 void
-NlIsoMoistureMaterial::initializeFrom(InputRecord &ir)
+NlIsoMoistureMaterial::initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     IsotropicMoistureTransferMaterial::initializeFrom(ir);
 

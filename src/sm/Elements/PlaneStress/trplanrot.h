@@ -80,7 +80,7 @@ public:
     // definition & identification
     const char *giveInputRecordName() const override { return _IFT_TrPlaneStrRot_Name; }
     const char *giveClassName() const override { return "TrPlaneStrRot"; }
-    void initializeFrom(InputRecord &ir, int priority) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
     void postInitialize() override;
     MaterialMode giveMaterialMode() override { return _PlaneStressRot; }
 

@@ -69,7 +69,7 @@ public:
     const char *giveClassName() const override { return "L4Axisymm"; }
     Element_Geometry_Type giveGeometryType() const override {return EGT_quad_1;}
 
-    void initializeFrom(InputRecord &ir, int priority) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
     void postInitialize() override;
 
     void SPRNodalRecoveryMI_giveSPRAssemblyPoints(IntArray &pap) override;

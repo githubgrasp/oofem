@@ -279,7 +279,7 @@ MisesMatNl :: giveInterface(InterfaceType type)
 
 
 void
-MisesMatNl :: initializeFrom(InputRecord &ir)
+MisesMatNl :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     MisesMat :: initializeFrom(ir);
     StructuralNonlocalMaterialExtensionInterface :: initializeFrom(ir);

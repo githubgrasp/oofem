@@ -59,7 +59,7 @@ private:
 
 public:
     /// Constructor. Initializes the the receiver (constructs the precontioning matrix M) of given matrix.
-    CompCol_ILUPreconditioner(const SparseMtrx & A, InputRecord & attributes);
+    CompCol_ILUPreconditioner(const SparseMtrx & A, const std::shared_ptr<InputRecord> & attributes);
     /// Constructor. The user should call initializeFrom and init services in this given order to ensure consistency.
     CompCol_ILUPreconditioner() : Preconditioner() { }
     /// Destructor
@@ -74,7 +74,7 @@ public:
     void trans_solve(const FloatArray &x, FloatArray &y) const override;
 
     const char *giveClassName() const override { return "ILU"; }
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
 
 protected:
     void qsortRow(IntArray &, FloatArray &, int l, int r);

@@ -61,7 +61,7 @@ IsotropicAsymmetric1DMaterial :: IsotropicAsymmetric1DMaterial(int n, Domain *d,
 
 
 void
-IsotropicAsymmetric1DMaterial :: initializeFrom(InputRecord &ir)
+IsotropicAsymmetric1DMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralMaterial :: initializeFrom(ir);
 

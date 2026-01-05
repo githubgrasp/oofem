@@ -38,11 +38,11 @@
 
 namespace oofem {
 CompRow_ILUPreconditioner ::
-CompRow_ILUPreconditioner(const SparseMtrx &A, InputRecord &attributes) : Preconditioner(A, attributes)
+CompRow_ILUPreconditioner(const SparseMtrx &A, const std::shared_ptr<InputRecord> &attributes) : Preconditioner(A, attributes)
 { }
 
 void
-CompRow_ILUPreconditioner :: initializeFrom(InputRecord &ir)
+CompRow_ILUPreconditioner :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     Preconditioner :: initializeFrom(ir);
     this->drop_tol = 1.e-8;

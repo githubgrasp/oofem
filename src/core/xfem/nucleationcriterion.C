@@ -59,7 +59,7 @@ std::vector<std::unique_ptr<EnrichmentItem>> NucleationCriterion::nucleateEnrich
 */
 }
 
-void NucleationCriterion::initializeFrom(InputRecord &ir) 
+void NucleationCriterion::initializeFrom(const std::shared_ptr<InputRecord> &ir) 
 {
 }
 

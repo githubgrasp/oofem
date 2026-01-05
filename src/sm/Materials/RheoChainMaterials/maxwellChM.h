@@ -75,7 +75,7 @@ public:
 
     // identification and auxiliary functions
     const char *giveClassName() const override { return "MaxwellChainMaterial"; }
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
 
     void giveShrinkageStrainVector(FloatArray &answer,
                                    GaussPoint *gp,

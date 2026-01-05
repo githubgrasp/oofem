@@ -236,7 +236,7 @@ public:
 
 
     /// Initialization from given input record
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
 
     // consistency check
     int checkConsistency() override; // returns nonzero if o.k.

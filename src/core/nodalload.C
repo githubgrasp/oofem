@@ -42,7 +42,7 @@ namespace oofem {
 REGISTER_BoundaryCondition(NodalLoad);
 
 void
-NodalLoad :: initializeFrom(InputRecord &ir)
+NodalLoad :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     Load :: initializeFrom(ir);
     int value = 1;

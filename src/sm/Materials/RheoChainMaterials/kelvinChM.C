@@ -279,7 +279,7 @@ KelvinChainMaterial :: CreateStatus(GaussPoint *gp) const
 }
 
 void
-KelvinChainMaterial :: initializeFrom(InputRecord &ir)
+KelvinChainMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     RheoChainMaterial :: initializeFrom(ir);
     this->giveDiscreteTimes(); // Makes sure the new discrete times are evaluated.

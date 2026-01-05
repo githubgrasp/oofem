@@ -46,7 +46,7 @@ namespace oofem {
 constexpr static int maxMsgLen=80;
 
 /* MIT-licensed, from https://github.com/guilhermeagostinelli/levenshtein/blob/master/levenshtein.cpp */
-int InputRecord_::giveLevenshteinDist(const std::string& word1, const std::string& word2){
+int InputRecord::giveLevenshteinDist(const std::string& word1, const std::string& word2){
     int size1 = word1.size();
     int size2 = word2.size();
     // Verification matrix i.e. 2D array which will store the calculated distance.
@@ -88,8 +88,8 @@ int InputRecord_::giveLevenshteinDist(const std::string& word1, const std::strin
     return verif[size1][size2];
 }
 
-std::string InputRecord_::error_msg_with_hints(const std::string& val, const std::map<int,std::vector<std::string>>& v2nn) {
-     //std::string InputRecord::error_msg_with_hints(const std::string& val, const std::vector<std::string>& all_names){
+std::string InputRecord::error_msg_with_hints(const std::string& val, const std::map<int,std::vector<std::string>>& v2nn) {
+     //std::string const std::shared_ptr<InputRecord>::error_msg_with_hints(const std::string& val, const std::vector<std::string>& all_names){
     std::ostringstream oss, oss2;
     std::string minName; int minDist=1000;
     for(const auto& [num,names]: v2nn){
@@ -109,19 +109,19 @@ std::string InputRecord_::error_msg_with_hints(const std::string& val, const std
 
 
 #ifdef _USE_TRACE_FIELDS
-    bool InputRecord_::TraceFields::active=false;
-    std::ofstream InputRecord_::TraceFields::out;
-    void InputRecord_::TraceFields::write(const std::string& s){
-        if(!InputRecord_::TraceFields::active) return;
+    bool InputRecord::TraceFields::active=false;
+    std::ofstream InputRecord::TraceFields::out;
+    void InputRecord::TraceFields::write(const std::string& s){
+        if(!InputRecord::TraceFields::active) return;
         size_t hash=std::hash<std::string>{}(s);
         static std::set<size_t> written;
         if(written.count(hash)>0) return;
         written.insert(hash);
-        InputRecord::TraceFields::out<<s<<std::endl;
+        const std::shared_ptr<InputRecord>::TraceFields::out<<s<<std::endl;
     }
 
-    void InputRecord_::traceEnum(const std::string& name, const std::map<int,std::vector<std::string>>& val2names){
-        if(!InputRecord:_:TraceFields::active) return;
+    void InputRecord::traceEnum(const std::string& name, const std::map<int,std::vector<std::string>>& val2names){
+        if(!const std::shared_ptr<InputRecord>:_:TraceFields::active) return;
         std::ostringstream rec;
         // write as tag;id;json
         rec<<"~Enum~;"<<name<<";";
@@ -133,36 +133,36 @@ std::string InputRecord_::error_msg_with_hints(const std::string& val, const std
             rec<<']';
         }
         rec<<'}';
-        InputRecord_::TraceFields::write(rec.str());
+        InputRecord::TraceFields::write(rec.str());
     }
 #endif
 
-InputRecord_ :: InputRecord_(DataReader* r){
+InputRecord :: InputRecord(DataReader* r){
     reader = r;
 }
 
 DataReader*
-InputRecord_ :: giveReader() const {
+InputRecord :: giveReader() const {
     return reader;
 }
 
-std::shared_ptr<InputRecord_>
-InputRecord_::ptr() {
+std::shared_ptr<InputRecord>
+InputRecord::ptr() {
     // we could just return this->shared_from_this, but it throws std::bad_weak_ptr (with no backtrace)
     // so we do essentially the same, but provide a nice message and abort immediately
     auto weak=this->weak_from_this();
-    std::shared_ptr<InputRecord_> ret=weak.lock();
-    if(!ret) OOFEM_ERROR("shared_ptr<InputRecord>::ptr(): object lifetime expired (programming error)");
+    std::shared_ptr<InputRecord> ret=weak.lock();
+    if(!ret) OOFEM_ERROR("shared_ptr<const std::shared_ptr<InputRecord>>::ptr(): object lifetime expired (programming error)");
     return ret;
 }
 
 
-InputException::InputException(const InputRecord& ir, std::string keyword, int number) :
+InputException::InputException(const std::shared_ptr<InputRecord>& ir, std::string keyword, int number) :
     record(ir->giveRecordAsString()), keyword(std::move(keyword)), number(number)
 { }
 
 
-MissingKeywordInputException::MissingKeywordInputException(const InputRecord& ir, std::string kw, int n) :
+MissingKeywordInputException::MissingKeywordInputException(const std::shared_ptr<InputRecord>& ir, std::string kw, int n) :
     InputException(ir, std::move(kw), n)
 {
     msg = ir->giveLocation()+": missing keyword \"" + keyword + "\"" \
@@ -170,7 +170,7 @@ MissingKeywordInputException::MissingKeywordInputException(const InputRecord& ir
 }
 
 
-BadFormatInputException::BadFormatInputException(const InputRecord& ir, std::string kw, int n) :
+BadFormatInputException::BadFormatInputException(const std::shared_ptr<InputRecord>& ir, std::string kw, int n) :
     InputException(ir, std::move(kw), n)
 {
     msg = ir->giveLocation()+": bad format for keyword \"" + keyword + "\"" \
@@ -178,7 +178,7 @@ BadFormatInputException::BadFormatInputException(const InputRecord& ir, std::str
 }
 
 
-ValueInputException::ValueInputException(const InputRecord& ir, std::string kw, const std::string &reason) :
+ValueInputException::ValueInputException(const std::shared_ptr<InputRecord>& ir, std::string kw, const std::string &reason) :
     InputException(ir, std::move(kw), -1)
 {
     msg = ir->giveLocation()+": value input error for keyword \"" + keyword + "\"" + \

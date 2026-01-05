@@ -82,7 +82,7 @@ FEMComponent :: errorInfo(const char *func) const
     return std :: string(this->giveClassName()) + "::" + func + ", number: " + std::to_string(this->giveNumber());
 }
 
-void FEMComponent :: initializeFrom(InputRecord &ir)
+void FEMComponent :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
 }
 

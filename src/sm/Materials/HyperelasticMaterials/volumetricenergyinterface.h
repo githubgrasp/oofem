@@ -73,7 +73,7 @@ class VolumetricEnergyInterface
 
   Tensor2_3d compute_dVolumetricEnergy_dF(const Tensor2_3d &F) const;
   Tensor4_3d compute_d2VolumetricEnergy_dF2(const Tensor2_3d &F) const;
-  void initializeFrom(InputRecord &ir);
+  void initializeFrom(const std::shared_ptr<InputRecord> &ir);
 };
  
 } // end namespace oofem

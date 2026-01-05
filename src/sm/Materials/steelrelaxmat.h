@@ -158,7 +158,7 @@ public:
      */
     void computeIncrOfPrestressLossAtVarStrain(double &answer, GaussPoint *gp, TimeStep *tStep, double stress) const;
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
 
     bool hasMaterialModeCapability(MaterialMode mode) const override;
 

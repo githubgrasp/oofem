@@ -85,7 +85,7 @@ VTKXMLExportModule::~VTKXMLExportModule() {}
 
 
 void
-VTKXMLExportModule::initializeFrom(InputRecord &ir)
+VTKXMLExportModule::initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     ExportModule::initializeFrom(ir);
 

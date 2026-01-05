@@ -138,7 +138,7 @@ public:
     }
 
     int giveNsd(const Element_Geometry_Type)  const override { return nsd; }
-    void initializeFrom(InputRecord &ir, ParameterManager&pm, int elnum, int priority) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, ParameterManager&pm, int elnum, int priority) override;
     void postInitialize(ParameterManager&pm, int elnum) override;
 
     IntArray boundaryEdgeGiveNodes(int boundary, const Element_Geometry_Type, bool includeHierarchical=false) const override

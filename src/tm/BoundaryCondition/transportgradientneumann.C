@@ -74,7 +74,7 @@ TransportGradientNeumann :: TransportGradientNeumann(int n, Domain *d) :
 }
 
 
-void TransportGradientNeumann :: initializeFrom(InputRecord &ir)
+void TransportGradientNeumann :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     ActiveBoundaryCondition :: initializeFrom(ir);
 

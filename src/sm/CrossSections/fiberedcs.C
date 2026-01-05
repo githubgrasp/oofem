@@ -475,7 +475,7 @@ FiberedCrossSection::giveIPValue(FloatArray &answer, GaussPoint *gp, InternalSta
 
 
 void
-FiberedCrossSection::initializeFrom(InputRecord &ir)
+FiberedCrossSection::initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
 #  ifdef VERBOSE
     // VERBOSE_PRINT1 ("Instanciating cross section ",this->giveNumber())

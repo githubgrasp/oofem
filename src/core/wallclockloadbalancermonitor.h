@@ -94,7 +94,7 @@ public:
 
     LoadBalancerDecisionType decide(TimeStep *) override;
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
 
     const char *giveClassName() const override { return "WallClockLoadBalancerMonitor"; }
 };

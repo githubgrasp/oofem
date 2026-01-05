@@ -86,7 +86,7 @@ public:
     HOMExportModule(int n, EngngModel * e);
     /// Destructor.
     virtual ~HOMExportModule();
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
     void doOutput(TimeStep *tStep, bool forcedOutput = false) override;
     //returns averaged property
     void average(FloatArray &answer, double &volTot, int ist, bool subtractStressDepStrain, TimeStep *tStep);

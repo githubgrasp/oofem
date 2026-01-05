@@ -71,7 +71,7 @@ FluidStructureProblem :: ~FluidStructureProblem()
 
 
 void
-FluidStructureProblem :: initializeFrom(InputRecord &ir)
+FluidStructureProblem :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StaggeredProblem :: initializeFrom(ir);
 

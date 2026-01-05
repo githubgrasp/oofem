@@ -144,7 +144,7 @@ protected:
     void giveSurfaceDofMapping(IntArray &answer, int iSurf) const override = 0;
     void giveEdgeDofMapping(IntArray &answer, int iEdge) const override = 0;
 
-    void initializeFrom(InputRecord &ir, int priority) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
 
     // Integration
     virtual double edgeComputeLengthAround(GaussPoint *gp, const int iedge);

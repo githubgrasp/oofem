@@ -207,7 +207,7 @@ public:
         return tempAmatrx;
     }
 
-    void initializeFrom(InputRecord &ir, int priority) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
     void giveInputRecord(DynamicInputRecord &input) override;
     void postInitialize() override;
 

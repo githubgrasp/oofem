@@ -45,7 +45,7 @@ namespace oofem {
 REGISTER_Material(Eurocode2CreepMaterial);
 
 void
-Eurocode2CreepMaterial :: initializeFrom(InputRecord &ir)
+Eurocode2CreepMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     IR_GIVE_FIELD(ir, fcm28, _IFT_Eurocode2CreepMaterial_fcm28);
 

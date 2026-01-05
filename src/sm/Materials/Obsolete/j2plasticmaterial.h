@@ -64,7 +64,7 @@ protected:
 public:
     J2plasticMaterial(int n, Domain * d);
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
     void giveInputRecord(DynamicInputRecord &input) override;
     const char *giveInputRecordName() const override { return _IFT_J2plasticMaterial_Name; }
     const char *giveClassName() const override { return "J2plasticMaterial"; }

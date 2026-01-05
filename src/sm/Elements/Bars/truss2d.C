@@ -286,7 +286,7 @@ Truss2d::resolveCoordIndices(int &c1, int &c2)
 }
 
 void
-Truss2d::initializeFrom(InputRecord &ir, int priority)
+Truss2d::initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     NLStructuralElement::initializeFrom(ir, priority);
     ParameterManager &ppm = this->giveDomain()->dofmanPPM;

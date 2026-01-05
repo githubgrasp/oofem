@@ -106,7 +106,7 @@ NumericalMethod *NonStationaryTransportProblem :: giveNumericalMethod(MetaStep *
 }
 
 void
-NonStationaryTransportProblem :: initializeFrom(InputRecord &ir)
+NonStationaryTransportProblem :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     EngngModel :: initializeFrom(ir);
 

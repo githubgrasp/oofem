@@ -48,7 +48,7 @@ VTKMemoryExportModule::VTKMemoryExportModule(int n, EngngModel *e) : VTKBaseExpo
 VTKMemoryExportModule::~VTKMemoryExportModule() {}
 
 void
-VTKMemoryExportModule::initializeFrom(InputRecord &ir)
+VTKMemoryExportModule::initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
   VTKBaseExportModule::initializeFrom(ir);
   

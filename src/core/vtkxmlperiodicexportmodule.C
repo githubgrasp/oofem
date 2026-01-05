@@ -68,7 +68,7 @@ VTKXMLPeriodicExportModule :: ~VTKXMLPeriodicExportModule()
 
 
 void
-VTKXMLPeriodicExportModule :: initializeFrom(InputRecord &ir)
+VTKXMLPeriodicExportModule :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     VTKXMLExportModule :: initializeFrom(ir);
 }

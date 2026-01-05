@@ -119,7 +119,7 @@ double PiecewiseLinFunction :: evaluateVelocityAtTime(double time)
 }
 
 void
-PiecewiseLinFunction :: initializeFrom(InputRecord &ir)
+PiecewiseLinFunction :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     Function :: initializeFrom(ir);
 

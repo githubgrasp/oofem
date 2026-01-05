@@ -63,7 +63,7 @@ void PLDoNothing :: giveInputRecord(DynamicInputRecord &input)
     input.setRecordKeywordField(this->giveInputRecordName(), number);
 }
 
-void PLCrackPrescribedDir :: initializeFrom(InputRecord &ir)
+void PLCrackPrescribedDir :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     IR_GIVE_FIELD(ir, mAngle, _IFT_PLCrackPrescribedDir_Dir);
     IR_GIVE_FIELD(ir, mIncrementLength, _IFT_PLCrackPrescribedDir_IncLength);
@@ -112,7 +112,7 @@ bool PLCrackPrescribedDir :: propagateInterface(Domain &iDomain, EnrichmentFront
     return true;
 }
 
-void PLnodeRadius :: initializeFrom(InputRecord &ir)
+void PLnodeRadius :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     IR_GIVE_FIELD(ir, mRadius, _IFT_PLnodeRadius_Radius);
 

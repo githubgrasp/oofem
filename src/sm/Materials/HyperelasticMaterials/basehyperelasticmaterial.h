@@ -85,7 +85,7 @@ public:
     ~BaseHyperElasticMaterial() {; }
 
     /// initialization for the input file
-    void initializeFrom(InputRecord &ir);
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir);
 
     /**
      * Compute the first invariant of Cauchy-Green deformation tensor C

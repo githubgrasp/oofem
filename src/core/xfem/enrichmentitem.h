@@ -111,7 +111,7 @@ public:
     EnrichmentItem(int n, XfemManager *xm, Domain *aDomain);
     virtual ~EnrichmentItem();
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
     virtual int instanciateYourself(DataReader &dr) = 0;
     //void postInitialize() override = 0;
 
@@ -298,7 +298,7 @@ protected:
     static const double mLevelSetRelTol;
     const double mLevelSetTol2;
 
-    std::shared_ptr<InputRecord_> thisIr;
+    std::shared_ptr<InputRecord> thisIr;
 };
 
 inline bool EnrichmentItem :: isDofManEnriched(const DofManager &iDMan) const

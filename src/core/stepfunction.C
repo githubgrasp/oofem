@@ -118,7 +118,7 @@ double StepFunction :: evaluateVelocityAtTime(double time)
 }
 
 void
-StepFunction :: initializeFrom(InputRecord &ir)
+StepFunction :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     Function :: initializeFrom(ir);
 

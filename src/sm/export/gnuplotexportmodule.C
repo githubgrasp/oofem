@@ -84,7 +84,7 @@ GnuplotExportModule::GnuplotExportModule(int n, EngngModel *e):
 GnuplotExportModule::~GnuplotExportModule()
 {}
 
-void GnuplotExportModule::initializeFrom(InputRecord &ir)
+void GnuplotExportModule::initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     ExportModule::initializeFrom(ir);
 

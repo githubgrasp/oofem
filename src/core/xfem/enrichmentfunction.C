@@ -44,7 +44,7 @@ REGISTER_EnrichmentFunction(DiscontinuousFunction)
 REGISTER_EnrichmentFunction(HeavisideFunction)
 REGISTER_EnrichmentFunction(RampFunction)
 
-void EnrichmentFunction :: initializeFrom(InputRecord &ir)
+void EnrichmentFunction :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
 }
 

@@ -18,7 +18,7 @@ PrescribedGradientBCWeakPeriodic :: PrescribedGradientBCWeakPeriodic(int n, Doma
 
 PrescribedGradientBCWeakPeriodic :: ~PrescribedGradientBCWeakPeriodic() {}
 
-void PrescribedGradientBCWeakPeriodic :: initializeFrom(InputRecord &ir)
+void PrescribedGradientBCWeakPeriodic :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     PrescribedGradientBCWeak :: initializeFrom(ir);
     mMeshIsPeriodic = true;

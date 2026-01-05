@@ -66,7 +66,7 @@ PrescribedDispSlipMultiple :: ~PrescribedDispSlipMultiple()
 }
 
 
-void PrescribedDispSlipMultiple :: initializeFrom(InputRecord &ir)
+void PrescribedDispSlipMultiple :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     ActiveBoundaryCondition :: initializeFrom(ir);
     PrescribedDispSlipHomogenization :: initializeFrom(ir);

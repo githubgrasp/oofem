@@ -83,7 +83,7 @@ bool Inclusion :: isMaterialModified(GaussPoint &iGP, Element &iEl, CrossSection
     return false;
 }
 
-void Inclusion :: initializeFrom(InputRecord &ir)
+void Inclusion :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     EnrichmentItem :: initializeFrom(ir);
 

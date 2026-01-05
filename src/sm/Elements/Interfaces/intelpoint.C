@@ -233,7 +233,7 @@ IntElPoint :: computeAreaAround(GaussPoint *gp)
 
 
 void
-IntElPoint :: initializeFrom(InputRecord &ir, int priority)
+IntElPoint :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     // Initialize the receiver from the given input record.
     bool flag;

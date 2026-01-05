@@ -84,7 +84,7 @@ Line1_ht :: computeGaussPoints()
 
 
 void
-Line1_ht :: initializeFrom(InputRecord &ir, int priority)
+Line1_ht :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     TransportElement :: initializeFrom(ir, priority);
 }

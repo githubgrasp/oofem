@@ -50,7 +50,7 @@ public:
     QTrPlaneStrainGradDamage(int n, Domain * d);
     virtual ~QTrPlaneStrainGradDamage() { }
 
-    void initializeFrom(InputRecord &ir, int priority) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
 
     //const char *giveInputRecordName() const override { return _IFT_QtrPlaneStrainGradDamage_Name; }
     const char *giveClassName() const override { return "QTrPlaneStrainGrad"; }

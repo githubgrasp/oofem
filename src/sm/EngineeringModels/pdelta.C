@@ -66,7 +66,7 @@ Pdelta :: Pdelta(int i, EngngModel *_master) : LinearStatic(i, _master)
 }
 
 void
-Pdelta :: initializeFrom(InputRecord &ir)
+Pdelta :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     LinearStatic :: initializeFrom(ir);
 

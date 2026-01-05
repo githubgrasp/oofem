@@ -35,7 +35,7 @@
 #include "precond.h"
 
 namespace oofem {
-Preconditioner :: Preconditioner(const SparseMtrx &a, InputRecord &attributes)
+Preconditioner :: Preconditioner(const SparseMtrx &a, const std::shared_ptr<InputRecord> &attributes)
 {
     this->initializeFrom(attributes);
     this->init(a);

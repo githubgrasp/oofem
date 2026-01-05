@@ -46,7 +46,7 @@ FRCFCM :: FRCFCM(int n, Domain *d) : ConcreteFCM(n, d) {}
 
 
 void
-FRCFCM :: initializeFrom(InputRecord &ir)
+FRCFCM :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     ConcreteFCM :: initializeFrom(ir);
 

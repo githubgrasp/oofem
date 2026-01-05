@@ -19,7 +19,7 @@ public:
     PrescribedGradientBCWeakPeriodic(int n, Domain *d);
     virtual ~PrescribedGradientBCWeakPeriodic();
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
 
     void postInitialize() override;
 

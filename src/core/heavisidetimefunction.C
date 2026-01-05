@@ -52,7 +52,7 @@ HeavisideTimeFunction :: evaluateAtTime(double time)
 
 
 void
-HeavisideTimeFunction :: initializeFrom(InputRecord &ir)
+HeavisideTimeFunction :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     Function :: initializeFrom(ir);
 

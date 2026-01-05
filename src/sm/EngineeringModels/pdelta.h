@@ -75,7 +75,7 @@ public:
     virtual ~Pdelta() { }
 
     void solveYourselfAt(TimeStep *tStep) override;
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
 
     // identification
     const char *giveInputRecordName() const override { return _IFT_Pdelta_Name; }

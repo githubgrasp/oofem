@@ -131,7 +131,7 @@ public:
     void solveYourself() override;
     void solveYourselfAt(TimeStep *tStep) override;
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
 
     // identification
     const char *giveInputRecordName() const override { return _IFT_QClinearStatic_Name; }
@@ -141,7 +141,7 @@ public:
     virtual void updateNodeTypes(Domain *d);
     virtual void setQCNodeType(Domain *d);
 
-    virtual void initializeFullSolvedDomain(InputRecord &ir);
+    virtual void initializeFullSolvedDomain(const std::shared_ptr<InputRecord> &ir);
     virtual bool nodeInFullSolvedDomainTest(Node *n);
     virtual void setRepNodesInVerticesOfInterpolationMesh(Domain *d);
 

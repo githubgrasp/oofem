@@ -75,7 +75,7 @@ LatticeDirichletCouplingNode :: ~LatticeDirichletCouplingNode()
 {}
 
 void
-LatticeDirichletCouplingNode :: initializeFrom(InputRecord &ir, int priority)
+LatticeDirichletCouplingNode :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 // Gets from the source line from the data file all the data of the receiver.
 {
     ParameterManager &ppm =  this->giveDomain()->elementPPM;

@@ -58,7 +58,7 @@ PythonExpression :: ~PythonExpression()
 }
 
 void
-PythonExpression :: initializeFrom(InputRecord &ir)
+PythonExpression :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     Function :: initializeFrom(ir);
 

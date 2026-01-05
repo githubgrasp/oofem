@@ -230,7 +230,7 @@ public:
     /// Constructor
     DruckerPragerPlasticitySM(int n, Domain * d);
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
 
     const char *giveClassName() const override { return "DruckerPragerPlasticitySM"; }
     const char *giveInputRecordName() const override { return _IFT_DruckerPragerPlasticitySM_Name; }

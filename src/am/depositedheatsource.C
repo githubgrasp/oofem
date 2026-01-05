@@ -94,7 +94,7 @@ void DepositedHeatSource :: computeValueAt(FloatArray &answer, TimeStep *tStep, 
     }
 }
 
-void DepositedHeatSource::initializeFrom(InputRecord &ir)
+void DepositedHeatSource::initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     GeneralBoundaryCondition::initializeFrom(ir);
     IR_GIVE_FIELD (ir, depositedMaterialID, _IFT_DepositedHeatSource_depositedmaterialid);

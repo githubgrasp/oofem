@@ -82,7 +82,7 @@ private:
     /// Precond. init flag.
     bool precondInit;
     // Preconditioner attribute string
-    // InputRecord precondAttributes;
+    // const std::shared_ptr<InputRecord> precondAttributes;
 
     /// Tolerance of residual.
     double tol;
@@ -97,7 +97,7 @@ public:
 
     ConvergedReason solve(SparseMtrx &A, FloatArray &b, FloatArray &x) override;
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
     const char *giveClassName() const override { return "IMLSolver"; }
     LinSystSolverType giveLinSystSolverType() const override { return ST_IML; }
     SparseMtrxType giveRecommendedMatrix(bool symmetric) const override { return symmetric ? SMT_SymCompCol : SMT_CompCol; }

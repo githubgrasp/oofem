@@ -121,7 +121,7 @@ public:
     const char *giveInputRecordName() const override { return _IFT_TrabBoneEmbed_Name; }
     const char *giveClassName() const override { return "TrabBoneEmbed"; }
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
 
     std::unique_ptr<MaterialStatus> CreateStatus(GaussPoint *gp) const override;
 

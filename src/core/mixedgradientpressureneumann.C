@@ -685,7 +685,7 @@ void MixedGradientPressureNeumann :: computeTangents(FloatMatrix &Ed, FloatArray
 }
 
 
-void MixedGradientPressureNeumann :: initializeFrom(InputRecord &ir)
+void MixedGradientPressureNeumann :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     MixedGradientPressureBC :: initializeFrom(ir);
 }

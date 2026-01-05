@@ -89,7 +89,7 @@ public:
     // definition & identification
     const char *giveInputRecordName() const override { return _IFT_LIBeam3dNL2_Name; }
     const char *giveClassName() const override { return "LIBeam3dNL2"; }
-    void initializeFrom(InputRecord &ir, int prio) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, int prio) override;
     void postInitialize() override;
     Element_Geometry_Type giveGeometryType() const override { return EGT_line_1; }
 

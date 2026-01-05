@@ -1209,7 +1209,7 @@ public:
     IntArray *giveBoundaryLoadArray();
 
     // Overloaded methods:
-    void initializeFrom(InputRecord &ir, int priority) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
     void initializeFinish() override;
     /// Performs post initialization steps.
     void postInitialize() override;

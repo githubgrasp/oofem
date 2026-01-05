@@ -91,7 +91,7 @@ public:
 
     RemeshingCriteria *giveRemeshingCrit() override { return nullptr; }
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
     const char *giveClassName() const override { return "MeshQualityErrorEstimator"; }
     const char *giveInputRecordName() const override { return _IFT_MeshQualityErrorEstimator_Name; }
 };

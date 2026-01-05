@@ -89,7 +89,7 @@ PrescribedDispSlipBCNeumannRC :: ~PrescribedDispSlipBCNeumannRC()
 }
 
 
-void PrescribedDispSlipBCNeumannRC :: initializeFrom(InputRecord &ir)
+void PrescribedDispSlipBCNeumannRC :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     ActiveBoundaryCondition :: initializeFrom(ir);
     PrescribedDispSlipHomogenization :: initializeFrom(ir);

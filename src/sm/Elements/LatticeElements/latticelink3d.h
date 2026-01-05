@@ -100,7 +100,7 @@ public:
 
     const char *giveInputRecordName() const override { return _IFT_LatticeLink3d_Name; }
     const char *giveClassName()  const override { return "LatticeLink3d"; }
-    void initializeFrom(InputRecord &ir, int priority) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
     void postInitialize() override;
 
     Element_Geometry_Type giveGeometryType() const override { return EGT_line_1; }

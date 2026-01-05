@@ -88,7 +88,7 @@ MooneyRivlinCompressibleMaterial::CreateStatus(GaussPoint *gp) const
 
 
 void
-MooneyRivlinCompressibleMaterial::initializeFrom(InputRecord &ir)
+MooneyRivlinCompressibleMaterial::initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralMaterial::initializeFrom(ir);
     BaseHyperElasticMaterial::initializeFrom(ir);
