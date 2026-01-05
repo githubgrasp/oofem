@@ -34,12 +34,16 @@
 
 #include "datareader.h"
 #include "oofemtxtdatareader.h"
-#include "xmldatareader.h"
+#ifdef _USE_XML
+    #include "xmldatareader.h"
+#endif
 
 namespace oofem{
 
 std::shared_ptr<DataReader> DataReader::makeFromFilename(const std::string& f){
-    if(XMLDataReader::canRead(f)) return std::make_shared<XMLDataReader>(f);
+    #ifdef _USE_XML
+        if(XMLDataReader::canRead(f)) return std::make_shared<XMLDataReader>(f);
+    #endif
     return std::make_shared<OOFEMTXTDataReader>(f);
 }
 
