@@ -87,6 +87,8 @@ public:
     DataReader() { }
     virtual ~DataReader() { }
 
+    static std::shared_ptr<DataReader> makeFromFilename(const std::string& f);
+
     /**
      * Returns input record corresponding to given InputRecordType value and its record_id.
      * The returned InputRecord reference is valid only until the next call.

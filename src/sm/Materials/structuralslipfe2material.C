@@ -418,9 +418,9 @@ PrescribedDispSlipHomogenization* StructuralSlipFE2MaterialStatus::giveBC()
 
 bool StructuralSlipFE2MaterialStatus :: createRVE(const std :: string &inputfile, int rank, int el, int gp)
 {
-    OOFEMTXTDataReader dr( inputfile );
-    this->rve = InstanciateProblem(dr, _processor, 0); // Everything but nrsolver is updated.
-    dr.finish();
+    auto dr=DataReader::makeFromFilename( inputfile );
+    this->rve = InstanciateProblem(*dr, _processor, 0); // Everything but nrsolver is updated.
+    dr->finish();
     this->rve->setProblemScale(microScale);
     this->rve->checkProblemConsistency();
     this->rve->initMetaStepAttributes( this->rve->giveMetaStep(1) );
