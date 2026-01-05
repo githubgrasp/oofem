@@ -316,7 +316,7 @@ int main(int argc, char *argv[])
             if(!InputRecord::TraceFields::out.good()) OOFEM_ERROR("Unable to open '%s' (passed via OOFEM_TRACE_FIELDS_OUT)",out);
             OOFEM_LOG_FORCED("Tracing field access (OOFEM_TRACE_FIELDS_OUT=%s)\n.",out);
         #else
-            OOFEM_ERROR("Oofem must be compiled with -DUSE_TRACE_FIELDS so that OOFEM_TRACE_FIELDS_CSV='%s' passed is effective.",csv);
+            OOFEM_ERROR("Oofem must be compiled with -DUSE_TRACE_FIELDS so that OOFEM_TRACE_FIELDS_OUT='%s' passed is effective.",out);
         #endif
     }
 
