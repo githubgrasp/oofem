@@ -33,9 +33,16 @@
  */
 
 #include "datareader.h"
-
+#include "oofemtxtdatareader.h"
+#include "xmldatareader.h"
 
 namespace oofem{
+
+std::shared_ptr<DataReader> DataReader::makeFromFilename(const std::string& f){
+    if(XMLDataReader::canRead(f)) return std::make_shared<XMLDataReader>(f);
+    return std::make_shared<OOFEMTXTDataReader>(f);
+}
+
 
 InputRecord *DataReader::giveChildRecord( const std::shared_ptr<InputRecord> &ir, InputFieldType ift, const std::string &name, InputRecordType irType, bool optional )
 {

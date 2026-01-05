@@ -361,9 +361,9 @@ PrescribedGradientHomogenization* StructuralFE2MaterialStatus::giveBC()
 bool
 StructuralFE2MaterialStatus :: createRVE(int n, const std :: string &inputfile, int rank)
 {
-    OOFEMTXTDataReader dr( inputfile.c_str() );
-    this->rve = InstanciateProblem(dr, _processor, 0); // Everything but nrsolver is updated.
-    dr.finish();
+    auto dr=DataReader::makeFromFilename(inputfile.c_str());
+    this->rve = InstanciateProblem(*dr, _processor, 0); // Everything but nrsolver is updated.
+    dr->finish();
     this->rve->setProblemScale(microScale);
     this->rve->checkProblemConsistency();
     this->rve->initMetaStepAttributes( this->rve->giveMetaStep(1) );

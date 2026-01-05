@@ -1658,10 +1658,10 @@ Domain :: restoreContext(DataStream &stream, ContextMode mode)
         if ( serNum != this->giveSerialNumber() ) {
             // read corresponding domain
             OOFEM_LOG_INFO("restoring domain %d.%d\n", this->number, this->giveSerialNumber());
-            OOFEMTXTDataReader domainDr(this->engineeringModel->giveDomainFileName(1, this->giveSerialNumber()));
+            auto domainDr=DataReader::makeFromFilename(this->engineeringModel->giveDomainFileName(1, this->giveSerialNumber()));
             this->clear();
 
-            if ( !this->instanciateYourself(domainDr) ) {
+            if ( !this->instanciateYourself(*domainDr) ) {
                 OOFEM_ERROR("domain Instanciation failed");
             }
 

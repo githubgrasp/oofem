@@ -426,8 +426,8 @@ AdaptiveNonLinearStatic :: initializeAdaptive(int tStepNumber)
     int sernum = this->giveDomain(1)->giveSerialNumber();
     OOFEM_LOG_INFO("restoring domain %d.%d\n", 1, sernum + 1);
     Domain *dNew = new Domain(2, sernum + 1, this);
-    OOFEMTXTDataReader domainDr(this->giveDomainFileName(1, sernum + 1));
-    if ( !dNew->instanciateYourself(domainDr) ) {
+    auto domainDr=DataReader::makeFromFilename(this->giveDomainFileName(1, sernum + 1));
+    if ( !dNew->instanciateYourself(*domainDr) ) {
         OOFEM_ERROR("domain Instanciation failed");
     }
 

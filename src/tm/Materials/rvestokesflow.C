@@ -57,10 +57,10 @@ RVEStokesFlowMaterialStatus :: RVEStokesFlowMaterialStatus(int n, int rank, Gaus
     TransportMaterialStatus(g), oldTangent(true)
 {
     OOFEM_LOG_INFO( "************************** Instanciating microproblem from file %s\n", inputfile.c_str() );
-    OOFEMTXTDataReader dr( inputfile.c_str() );
+    auto dr=DataReader::makeFromFilename(inputfile);
 
-    auto e = InstanciateProblem(dr, _processor, 0);
-    dr.finish();
+    auto e = InstanciateProblem(*dr, _processor, 0);
+    dr->finish();
  
     if ( dynamic_cast< StokesFlowVelocityHomogenization* >(e.get()) ) {
         this->rve.reset( dynamic_cast< StokesFlowVelocityHomogenization* >(e.release()) );

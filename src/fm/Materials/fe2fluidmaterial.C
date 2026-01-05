@@ -324,9 +324,9 @@ FE2FluidMaterialStatus :: FE2FluidMaterialStatus(int n, int rank, GaussPoint *gp
 // Uses an input file for now, should eventually create the RVE itself.
 bool FE2FluidMaterialStatus :: createRVE(int n, int rank, GaussPoint *gp, const std :: string &inputfile)
 {
-    OOFEMTXTDataReader dr( inputfile.c_str() );
-    this->rve = InstanciateProblem(dr, _processor, 0); // Everything but nrsolver is updated.
-    dr.finish();
+    auto dr=DataReader::makeFromFilename(inputfile);
+    this->rve = InstanciateProblem(*dr, _processor, 0); // Everything but nrsolver is updated.
+    dr->finish();
     this->rve->setProblemScale(microScale);
     this->rve->checkProblemConsistency();
     this->rve->initMetaStepAttributes( this->rve->giveMetaStep(1) );
