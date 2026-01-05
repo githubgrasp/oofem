@@ -17,7 +17,7 @@ help:
 
 www-install:
 ifdef INSTALLDIR
-	cd _build; $(RCP) -r html $(INSTALLDIR)/resources/doc/usermanual
+	cd _build/html; $(RCP) -r . $(INSTALLDIR)/resources/doc/usermanual
 	cd _build; $(RCP) -r latex/oofemusermanual.pdf $(INSTALLDIR)/resources/doc/usermanual
 else
 	echo "INSTALLDIR not defined"

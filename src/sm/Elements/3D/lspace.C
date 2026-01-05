@@ -111,7 +111,7 @@ LSpace :: computeBmatrixAt(GaussPoint *gp, FloatMatrix &answer, int li, int ui)
     FloatMatrix dNdx, dNdxShear;
     interp->evaldNdx( dNdx, gp->giveNaturalCoordinates(), FEIElementGeometryWrapper(this) );
     if ( this->reducedShearIntegration ) {
-        interp->evaldNdx( dNdxShear, { 0., 0., 0. }, FEIElementGeometryWrapper(this) );
+        interp->evaldNdx( dNdxShear, Vec3( 0., 0., 0. ), FEIElementGeometryWrapper(this) );
     } else {
         dNdxShear =  dNdx;
     }

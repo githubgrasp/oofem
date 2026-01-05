@@ -202,7 +202,7 @@ StructuralInterfaceElement :: computeTraction(FloatArray &traction, IntegrationP
     }
 
     StructuralInterfaceMaterialStatus *status = static_cast< StructuralInterfaceMaterialStatus * >( ip->giveMaterialStatus() );
-    FloatArray normal = {rotationMatGtoL.at(2,1), rotationMatGtoL.at(2,2), 0.};
+    FloatArray normal = Vec3(rotationMatGtoL.at(2,1), rotationMatGtoL.at(2,2), 0.);
 //    printf("normal: "); normal.printYourself();
     status->letNormalBe(normal);
 

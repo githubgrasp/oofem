@@ -157,7 +157,7 @@ BTamNTerm::BTamNTerm (const Variable *testField, const Variable* unknownField, M
 
 void BTamNTerm::evaluate_lin (FloatMatrix& answer, MPElement& e, GaussPoint* gp, TimeStep* tstep) const  {
     FloatMatrix B, mn;
-    FloatArray m({1,1,1,0,0,0}), Np;
+    FloatArray m=Vec6(1,1,1,0,0,0), Np;
     MaterialMode mmode = (mode==0)?gp->giveMaterialMode():mode;
     this->field->interpolation->evalN(Np, gp->giveNaturalCoordinates(), FEIElementGeometryWrapper(&e));
     m.times(e.giveCrossSection()->giveMaterial(gp)->giveCharacteristicValue(aType, gp, tstep));
@@ -222,7 +222,7 @@ NTamTBTerm::NTamTBTerm (const Variable *testField, const Variable* unknownField,
 
 void NTamTBTerm::evaluate_lin (FloatMatrix& answer, MPElement& e, GaussPoint* gp, TimeStep* tstep) const  {
     FloatMatrix B, mb;
-    FloatArray m({1,1,1,0,0,0}), Np;
+    FloatArray m=Vec6(1,1,1,0,0,0), Np;
     MaterialMode mmode = (mode==0)?gp->giveMaterialMode():mode;
     this->testField->interpolation->evalN(Np, gp->giveNaturalCoordinates(), FEIElementGeometryWrapper(&e));
     m.times(e.giveCrossSection()->giveMaterial(gp)->giveCharacteristicValue(aType, gp, tstep));

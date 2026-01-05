@@ -182,7 +182,7 @@ public:
 
     void initializeFrom(InputRecord &ir) override;
 
-    FloatArray giveInterfaceStrength() override { return {this->sigf*this->gamma,this->sigf*this->gamma,this->sigf}; }
+    FloatArray giveInterfaceStrength() override { return Vec3(this->sigf*this->gamma,this->sigf*this->gamma,this->sigf); }
 
     std::unique_ptr<MaterialStatus> CreateStatus(GaussPoint *gp) const override { return std::make_unique<IntMatBilinearCZJanssonStatus>(gp); }
     void printYourself() override;

@@ -97,7 +97,7 @@ WARN_LOGFILE           = @oofem_BINARY_DIR@/apierrors.txt
 # configuration options related to the input files
 #---------------------------------------------------------------------------
 
-INPUT                  = @oofem_SOURCE_DIR@/doc/refman/mainpage \
+INPUT                  = @oofem_SOURCE_DIR@/doc/refman/mainpage.h \
                          @oofem_SOURCE_DIR@/doc/refman/intro \
                          @oofem_SOURCE_DIR@/src
 INPUT_ENCODING         = UTF-8
@@ -144,6 +144,7 @@ HTML_HEADER            =
 HTML_FOOTER            = footer.html
 HTML_STYLESHEET        =
 HTML_EXTRA_FILES       =
+HTML_COLORSTYLE        = "LIGHT"
 HTML_COLORSTYLE_HUE    = 220
 HTML_COLORSTYLE_SAT    = 100
 HTML_COLORSTYLE_GAMMA  = 100
@@ -292,7 +293,7 @@ PERL_PATH              =
 CLASS_DIAGRAMS         = YES
 MSCGEN_PATH            =
 HIDE_UNDOC_RELATIONS   = YES
-HAVE_DOT               = NO
+HAVE_DOT               = YES
 DOT_NUM_THREADS        = 0
 DOT_FONTNAME           = Helvetica
 DOT_FONTSIZE           = 10
@@ -309,7 +310,7 @@ CALL_GRAPH             = NO
 CALLER_GRAPH           = NO
 GRAPHICAL_HIERARCHY    = NO
 DIRECTORY_GRAPH        = YES
-DOT_IMAGE_FORMAT       = png
+DOT_IMAGE_FORMAT       = svg
 INTERACTIVE_SVG        = NO
 DOT_PATH               =
 DOTFILE_DIRS           =

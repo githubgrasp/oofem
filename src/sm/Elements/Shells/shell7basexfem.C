@@ -1592,8 +1592,8 @@ Shell7BaseXFEM :: computeEnrTractionForce(FloatArray &answer, const int iEdge, B
             Q = transpose(gcov);
 
             FloatArray distrForces, distrMoments, t1, t2;
-            distrForces = { components.at(1), components.at(2), components.at(3) };
-            distrMoments = { components.at(4), components.at(5), components.at(6) };
+            distrForces = Vec3( components.at(1), components.at(2), components.at(3) );
+            distrMoments = Vec3( components.at(4), components.at(5), components.at(6) );
             t1.beTProductOf(Q, distrForces);
             t2.beTProductOf(Q, distrMoments);
             fT.addSubVector(t1,1);
@@ -2535,7 +2535,7 @@ Shell7BaseXFEM :: giveLocalNodeCoordsForExport(FloatArray &nodeLocalXi1Coords, F
     double d = loc12.at(1);
     double e = loc23.at(1);
     double f = loc31.at(1);
-    nodeLocalXi1Coords = { a, b, c, a, b, c, d, e, f, d, e, f, a, b, c };
+    nodeLocalXi1Coords = FloatArray::fromIniList({ a, b, c, a, b, c, d, e, f, d, e, f, a, b, c });
     
     a = loc1.at(2);
     b = loc2.at(2);
@@ -2543,9 +2543,9 @@ Shell7BaseXFEM :: giveLocalNodeCoordsForExport(FloatArray &nodeLocalXi1Coords, F
     d = loc12.at(2);
     e = loc23.at(2);
     f = loc31.at(2);
-    nodeLocalXi2Coords = { a, b, c, a, b, c, d, e, f, d, e, f, a, b, c };
+    nodeLocalXi2Coords = FloatArray::fromIniList({ a, b, c, a, b, c, d, e, f, d, e, f, a, b, c });
 
-    nodeLocalXi3Coords = { -z, -z, -z, z, z, z, -z, -z, -z, z, z, z, 0., 0., 0. };
+    nodeLocalXi3Coords = FloatArray::fromIniList({ -z, -z, -z, z, z, z, -z, -z, -z, z, z, z, 0., 0., 0. });
 
     FloatMatrix localNodeCoordsT = FloatMatrix::fromCols({nodeLocalXi1Coords, nodeLocalXi2Coords, nodeLocalXi3Coords});
     localNodeCoords.beTranspositionOf(localNodeCoordsT);
@@ -2586,7 +2586,7 @@ Shell7BaseXFEM :: giveLocalCZNodeCoordsForExport(FloatArray &nodeLocalXi1Coords,
     double d = loc12.at(1);
     double e = loc23.at(1);
     double f = loc31.at(1);
-    nodeLocalXi1Coords = { a, b, c, d, e, f };
+    nodeLocalXi1Coords = Vec6( a, b, c, d, e, f );
     
     a = loc1.at(2);
     b = loc2.at(2);
@@ -2594,9 +2594,9 @@ Shell7BaseXFEM :: giveLocalCZNodeCoordsForExport(FloatArray &nodeLocalXi1Coords,
     d = loc12.at(2);
     e = loc23.at(2);
     f = loc31.at(2);
-    nodeLocalXi2Coords = { a, b, c, d, e, f };
+    nodeLocalXi2Coords = Vec6( a, b, c, d, e, f );
 
-    nodeLocalXi3Coords = { 0., 0., 0., 0., 0., 0. };
+    nodeLocalXi3Coords = Vec6( 0., 0., 0., 0., 0., 0. );
 
     FloatMatrix localNodeCoordsT = FloatMatrix::fromCols({nodeLocalXi1Coords, nodeLocalXi2Coords, nodeLocalXi3Coords});
     localNodeCoords.beTranspositionOf(localNodeCoordsT);
@@ -2728,7 +2728,7 @@ Shell7BaseXFEM :: giveCZExportData(ExportRegion &vtkPiece, IntArray &primaryVars
         for ( int layer = 1; layer <= numInterfaces; layer++ ) {
             for ( int subCell = 1; subCell <= numSubCells; subCell++ ) {
                 if ( type == IST_CrossSectionNumber ) {
-                    average = FloatArray{ -double(layer) }; // Set a negative number for interfaces
+                    average = Vec1(-double(layer)); // Set a negative number for interfaces
                 } else {
                     std :: unique_ptr< IntegrationRule > &iRuleL = integrationRulesArray [ layer - 1 ];
                     VTKXMLExportModule::computeIPAverage(average, iRuleL.get(), this, type, tStep);
@@ -3052,7 +3052,7 @@ Shell7BaseXFEM :: recoverShearStress(TimeStep *tStep)
             }
 
             // Adjust recovered stresses to traction BC (divide integration error 50/50 at top and btm of delamination)
-            this->fitRecoveredStress2BC(dSmatIPupd, dSmatupd, dSmat, dSmatIP, SmatOld, tractionBC[iInt], tractionBC[iInt+1], zeroThicknessLevel, {0.0,0.0,1.0}, layerOld+1, topLayer);
+            this->fitRecoveredStress2BC(dSmatIPupd, dSmatupd, dSmat, dSmatIP, SmatOld, tractionBC[iInt], tractionBC[iInt+1], zeroThicknessLevel, Vec3(0.0,0.0,1.0), layerOld+1, topLayer);
 
             for ( int layer = 1 ; layer <= numDelLayers; layer++ ) {
                 //if (this->giveGlobalNumber() == 48 ) { dSmatIPupd[layer-1].printYourself(); }
@@ -3200,7 +3200,7 @@ Shell7BaseXFEM :: giveFailedInterfaceNumber(IntArray &failedInterfaces, FloatArr
                 OOFEM_ERROR("NULL pointer to material, shell %i interface %i",this->giveGlobalNumber(),iInterface);
             }
 
-            FloatArray sigF = {1,1,1};
+            FloatArray sigF = Vec3(1,1,1);
             FloatArray temp = intMat->giveInterfaceStrength();
             if (temp.giveSize() == 1 && temp.at(1) > 0) {
                 // Same strength in all directions
@@ -3484,7 +3484,7 @@ Shell7BaseXFEM :: giveRecoveredTransverseInterfaceStress(std::vector<FloatMatrix
 
             // Adjust recovered stresses to traction BC (divide integration error 50/50 at top and btm of delamination)
 
-            this->fitRecoveredStress2BC(dSmatIPupd, dSmatupd, dSmat, dSmatIP, SmatOld, tractionBC[iInt], tractionBC[iInt+1], zeroThicknessLevel, {0.0,0.0,1.0}, layerOld+1, topLayer);
+            this->fitRecoveredStress2BC(dSmatIPupd, dSmatupd, dSmat, dSmatIP, SmatOld, tractionBC[iInt], tractionBC[iInt+1], zeroThicknessLevel, Vec3(0.0,0.0,1.0), layerOld+1, topLayer);
 
             for ( int delLayer = 1 ; delLayer <= numDelLayers; delLayer++ ) {
                 if ( (delLayer + layerOld) < numberOfLayers ) {

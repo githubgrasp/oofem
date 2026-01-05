@@ -1247,7 +1247,7 @@ IsotropicDamageMaterial1 :: initDamaged(double kappa, FloatArray &strainVector, 
                 double psi = acos(twoPsi) / 2.;
                 for ( int i = 1; i <= 3; i++ ) {
                     crackV.at(i) = principalDir.at(i, indexMin);
-                    // crackPlaneN = principalDir.at(i, indexMax);
+                    // crackPlaneN = Vec1(principalDir.at(i, indexMax));
                 }
 
                 //rotate around indexMid axis

@@ -121,7 +121,7 @@ IntMatIsoDamage :: give2dStiffnessMatrix_Eng(MatResponseMode rMode, GaussPoint *
     }
 
     const auto &jump3d = status->giveTempJump();
-    FloatArray jump2d = {jump3d.at(1),jump3d.at(2)};
+    FloatArray jump2d = Vec2(jump3d.at(1),jump3d.at(2));
     double om = min(status->giveTempDamage(), maxOmega);
     double un = jump2d.at(1);
 

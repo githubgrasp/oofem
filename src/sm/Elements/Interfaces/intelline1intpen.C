@@ -33,10 +33,10 @@ int IntElLine1IntPen :: computeGlobalCoordinates(FloatArray &answer, const Float
     answer.zero();
 
     double xi_0 = 0.;
-    FloatArray xiScaled = {0.};
+    FloatArray xiScaled = Vec1(0.);
 
     if ( lcoords.at(1) < xi_0 ) {
-        xiScaled = {lcoords.at(1)*2. + 1.};
+        xiScaled = Vec1(lcoords.at(1)*2. + 1.);
         interp->evalN( N, xiScaled, FEIElementGeometryWrapper(this) );
 
         const auto &x1 = this->giveDofManager(1)->giveCoordinates();
@@ -45,7 +45,7 @@ int IntElLine1IntPen :: computeGlobalCoordinates(FloatArray &answer, const Float
         const FloatArray &x3 = this->giveDofManager(3)->giveCoordinates();
         answer.add(N.at(2), x3 );
     } else {
-        xiScaled = {lcoords.at(1)*2. - 1.};
+        xiScaled = Vec1(lcoords.at(1)*2. - 1.);
         interp->evalN( N, xiScaled, FEIElementGeometryWrapper(this) );
 
         const auto &x3 = this->giveDofManager(3)->giveCoordinates();
@@ -65,7 +65,7 @@ IntElLine1IntPen :: computeCovarBaseVectorAt(IntegrationPoint *ip) const
 
     // Since we are averaging over the whole element, always evaluate the base vectors at xi = 0.
 
-    FloatArray xi_0 = {0.0};
+    FloatArray xi_0 = Vec1(0.0);
     //FloatArray xi_0 = {ip->giveNaturalCoordinate(1)};
 
     FloatMatrix dNdxi;
@@ -460,13 +460,13 @@ IntElLine1IntPen :: computeNmatrixAt(GaussPoint *ip, FloatMatrix &answer)
 //    interp->evalN( N, ip->giveNaturalCoordinates(), FEIElementGeometryWrapper(this) );
 
     double xi_0 = 0.;
-    FloatArray xiScaled = {0.};
+    FloatArray xiScaled = Vec1(0.);
 
     answer.resize(2, 12);
     answer.zero();
 
     if ( ip->giveNaturalCoordinate(1) < xi_0 ) {
-        xiScaled = {ip->giveNaturalCoordinate(1)*2. + 1.};
+        xiScaled = Vec1(ip->giveNaturalCoordinate(1)*2. + 1.);
         interp->evalN( N, xiScaled, FEIElementGeometryWrapper(this) );
 
         answer.at(1, 1) = answer.at(2, 2) = -N.at(1);
@@ -477,7 +477,7 @@ IntElLine1IntPen :: computeNmatrixAt(GaussPoint *ip, FloatMatrix &answer)
         //answer.at(1, 9) = answer.at(2, 10) = N.at(2);
         answer.at(1, 11) = answer.at(2, 12) = N.at(2);
     } else {
-        xiScaled = {ip->giveNaturalCoordinate(1)*2. - 1.};
+        xiScaled = Vec1(ip->giveNaturalCoordinate(1)*2. - 1.);
         interp->evalN( N, xiScaled, FEIElementGeometryWrapper(this) );
 
         //answer.at(1, 1) = answer.at(2, 2) = -N.at(1);

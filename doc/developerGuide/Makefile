@@ -7,6 +7,7 @@ SPHINXOPTS    ?=
 SPHINXBUILD   ?= sphinx-build
 SOURCEDIR     = .
 BUILDDIR      = _build
+RCP = scp
 
 # Put it first so that "make" without argument is like "make help".
 help:
@@ -16,8 +17,8 @@ help:
 
 www-install:
 ifdef INSTALLDIR
-	cd _build; $(RCP) -r html $(INSTALLDIR)/resources/doc/developperGuide
-	cd _build; $(RCP) -r latex/OOFEMDeveloperguide.pdf $(INSTALLDIR)/resources/doc/developerguide
+	cd _build/html; $(RCP) -r . $(INSTALLDIR)/resources/doc/developerguide
+	cd _build; $(RCP) -r latex/oofemdeveloperguide.pdf $(INSTALLDIR)/resources/doc/developerguide
 else
 	echo "INSTALLDIR not defined"
 endif

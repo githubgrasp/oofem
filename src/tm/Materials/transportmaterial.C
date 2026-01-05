@@ -385,7 +385,7 @@ TransportMaterial :: giveIPValue(FloatArray &answer, GaussPoint *gp, InternalSta
 {
     TransportMaterialStatus *ms = static_cast< TransportMaterialStatus * >( this->giveStatus(gp) );
     if ( type == IST_Temperature || type == IST_MassConcentration_1 || type == IST_Humidity ) {
-        answer = FloatArray{ms->giveField()};
+        answer = Vec1(ms->giveField());
         return 1;
     } else if ( type == IST_TemperatureFlow ) {
         TransportElement *transpElem = static_cast< TransportElement * >( gp->giveElement() );
@@ -400,16 +400,16 @@ TransportMaterial :: giveIPValue(FloatArray &answer, GaussPoint *gp, InternalSta
         answer.resizeWithValues(3);
         return 1;
     } else if ( type == IST_Density ) {
-        answer = FloatArray{ this->give('d', gp) };
+        answer = Vec1( this->give('d', gp) );
         return 1;
     } else if ( type == IST_HeatCapacity ) {
-        answer = FloatArray{ this->give('c', gp) };
+        answer = Vec1( this->give('c', gp) );
         return 1;
     } else if ( type == IST_ThermalConductivityIsotropic ) {
-        answer = FloatArray{ this->give('k', gp) };
+        answer = Vec1( this->give('k', gp) );
         return 1;
     } else if ( type == IST_Maturity ) {
-        answer = FloatArray{ ms->giveMaturity() };
+        answer = Vec1( ms->giveMaturity() );
         return 1;
     } else if ( type == IST_InternalSource ) {
         if(hasInternalSource()){

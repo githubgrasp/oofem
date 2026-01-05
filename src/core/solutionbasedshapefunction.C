@@ -359,9 +359,9 @@ SolutionbasedShapeFunction :: loadProblem()
         OOFEM_LOG_INFO("************************** Instanciating microproblem from file %s for dimension %u\n", filename.c_str(), i);
 
         // Set up and solve problem
-        OOFEMTXTDataReader drMicro( filename.c_str() );
-        auto myEngngModel = InstanciateProblem(drMicro, _processor, 0, NULL, false);
-        drMicro.finish();
+        auto drMicro=DataReader::makeFromFilename( filename );
+        auto myEngngModel = InstanciateProblem(*drMicro, _processor, 0, NULL, false);
+        drMicro->finish();
         myEngngModel->checkProblemConsistency();
         myEngngModel->initMetaStepAttributes( myEngngModel->giveMetaStep(1) );
         thisTimestep = myEngngModel->giveNextStep();

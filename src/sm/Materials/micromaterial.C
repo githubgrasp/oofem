@@ -98,9 +98,9 @@ void MicroMaterial :: initializeFrom(InputRecord &ir)
     IR_GIVE_FIELD(ir, this->inputFileNameMicro, _IFT_MicroMaterial_fileName);
 
     OOFEM_LOG_INFO( "** Instanciating microproblem with BC from file %s\n", inputFileNameMicro.c_str() );
-    OOFEMTXTDataReader drMicro( inputFileNameMicro.c_str() );
-    this->problemMicro = InstanciateProblem(drMicro, _processor, 0); //0=contextFlag-store/resore
-    drMicro.finish();
+    auto drMicro=DataReader::makeFromFilename(inputFileNameMicro );
+    this->problemMicro = InstanciateProblem(*drMicro, _processor, 0); //0=contextFlag-store/resore
+    drMicro->finish();
     OOFEM_LOG_INFO("Microproblem instanciated\n");
 }
 

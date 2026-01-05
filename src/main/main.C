@@ -52,10 +52,6 @@
 #include "contextioerr.h"
 #include "oofem_terminate.h"
 
-#ifdef _USE_XML
-  #include "xmldatareader.h"
-#endif
-
 
 #ifdef __MPI_PARALLEL_MODE
  #include "dyncombuff.h"
@@ -311,25 +307,17 @@ int main(int argc, char *argv[])
     } 
     OOFEM_LOG_FORCED("Job: %s\n", inputFileName.str().c_str());
 
-    std::unique_ptr<DataReader> dr;
-    #ifdef _USE_XML
-        if(XMLDataReader::canRead(inputFileName.str())){
-            dr=std::make_unique<XMLDataReader>(inputFileName.str());
-        } else
-    #endif
-    {
-        dr=std::make_unique<OOFEMTXTDataReader>(inputFileName.str());
-        if(const char* csv=getenv("OOFEM_TRACE_FIELDS_CSV")){
-            #ifdef _USE_TRACE_FIELDS
-                InputRecord::TraceFields::active=true;
-                InputRecord::TraceFields::out.open(csv,std::ios::app);
-                if(!InputRecord::TraceFields::out.good()) OOFEM_ERROR("Unable to open '%s' (passed via OOFEM_TRACE_FIELDS_CSV)",csv);
-                OOFEM_LOG_FORCED("Tracing field access (OOFEM_TRACE_FIELDS_CSV=%s)\n.",csv);
-            #else
-                OOFEM_ERROR("Oofem must be compiled with -DUSE_TRACE_FIELDS so that OOFEM_TRACE_FIELDS_CSV='%s' passed is effective.",csv);
-            #endif
+    std::shared_ptr<DataReader> dr=DataReader::makeFromFilename(inputFileName.str());
 
-        }
+    if(const char* csv=getenv("OOFEM_TRACE_FIELDS_CSV")){
+        #ifdef _USE_TRACE_FIELDS
+            InputRecord::TraceFields::active=true;
+            InputRecord::TraceFields::out.open(csv,std::ios::app);
+            if(!InputRecord::TraceFields::out.good()) OOFEM_ERROR("Unable to open '%s' (passed via OOFEM_TRACE_FIELDS_CSV)",csv);
+            OOFEM_LOG_FORCED("Tracing field access (OOFEM_TRACE_FIELDS_CSV=%s)\n.",csv);
+        #else
+            OOFEM_ERROR("Oofem must be compiled with -DUSE_TRACE_FIELDS so that OOFEM_TRACE_FIELDS_CSV='%s' passed is effective.",csv);
+        #endif
     }
 
     auto problem = :: InstanciateProblem(*dr, _processor, contextFlag, NULL, parallelFlag);

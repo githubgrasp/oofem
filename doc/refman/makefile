@@ -1,7 +1,7 @@
 # $Header: /home/cvs/bp/oofem/doc/refman/makefile,v 1.8 2003/04/23 14:19:22 bp Exp $
 
 SHELL      = /bin/sh
-BUILD_DIR_HTML  = html
+BUILD_DIR_HTML  = ../../build/doc/api
 BUILD_DIR_LATEX = latex
 INST_DIR = oofemrefman
 DOCXX      = doxygen
@@ -24,9 +24,9 @@ pdf: html
 
 www-install: html
 ifdef INSTALLDIR
-	mv $(BUILD_DIR_HTML) $(INST_DIR)
-	$(RCP) -r $(INST_DIR) $(INSTALLDIR)/resources/doc
-	mv $(INST_DIR) $(BUILD_DIR_HTML)
+	#mv $(BUILD_DIR_HTML) $(INST_DIR)
+	$(RCP) -r $(BUILD_DIR_HTML)/html $(INSTALLDIR)/resources/doc/oofemrefman/
+	#mv $(INST_DIR) $(BUILD_DIR_HTML)
 else
 	echo "INSTALLDIR not defined"
 endif
