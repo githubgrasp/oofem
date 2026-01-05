@@ -10,7 +10,7 @@
  *
  *             OOFEM : Object Oriented Finite Element Code
  *
- *               Copyright (C) 1993 - 2013   Borek Patzak
+ *               Copyright (C) 1993 - 2025   Borek Patzak
  *
  *
  *
@@ -195,9 +195,9 @@ FEInterpolation3d :: surfaceGiveJacobianMatrixAt(int isurf, const FloatArray &lc
     auto [G1, G2] = this->surfaceEvalBaseVectorsAt(isurf, lcoords, cellgeo);
     auto G3 = cross(G1, G2);
     FloatMatrixF<3,3> jacobianMatrix;
-    jacobianMatrix.setColumn(G1,1);
-    jacobianMatrix.setColumn(G2,2);
-    jacobianMatrix.setColumn(G3,3);
+    jacobianMatrix.setColumn(G1,0);
+    jacobianMatrix.setColumn(G2,1);
+    jacobianMatrix.setColumn(G3,2);
     return jacobianMatrix;
 }
 

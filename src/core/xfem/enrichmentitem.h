@@ -10,7 +10,7 @@
  *
  *             OOFEM : Object Oriented Finite Element Code
  *
- *               Copyright (C) 1993 - 2013   Borek Patzak
+ *               Copyright (C) 1993 - 2025   Borek Patzak
  *
  *
  *
@@ -297,6 +297,8 @@ protected:
     static const double mLevelSetTol;
     static const double mLevelSetRelTol;
     const double mLevelSetTol2;
+
+    std::shared_ptr<InputRecord> thisIr;
 };
 
 inline bool EnrichmentItem :: isDofManEnriched(const DofManager &iDMan) const

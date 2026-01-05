@@ -36,7 +36,7 @@ set(CMAKE_POLICY_DEFAULT_CMP0074 NEW)
 
 project (oofem CXX C)
 set (OOFEM_HOMEPAGE "http://www.oofem.org")
-set (bp_HOMEPAGE "http://ksm.fsv.cvut.cz/%7Ebp/bp.html")
+set (bp_HOMEPAGE "http://ksm.fsv.cvut.cz/~bp/bp.html")
 string(TIMESTAMP YEAR "%Y")
 set (OOFEM_COPYRIGHT "Copyright (C) 1994-${YEAR} Borek Patzak")
 set (OOFEM_EMAIL "oofem@fsv.cvut.cz")
@@ -147,7 +147,7 @@ option (USE_PARMETIS "Enable Parmetis support" OFF)
 option (USE_OPENMP_PARALLEL "Enable OpenMP, shared memory parallelism" OFF)
 # Solvers and such
 option (USE_DSS "Enable DSS module" OFF) # No reason to use this
-option (USE_IML "Enable iml++ solvers" OFF) # or this
+option (USE_IML "Enable iml++ solvers" ON) # or this
 option (USE_SPOOLES "Enable SPOOLES-solver" OFF) # or this
 option (USE_INTEL_MKL_PARDISO "Enable MKLPARDISO solver support" OFF)
 option (USE_ONEAPI "Enable OneMKL solver support via OneAPI" OFF)
@@ -172,7 +172,7 @@ option (USE_PYBIND_BINDINGS "Enable Python Pybind11 bindings (OOFEM callable fro
 option (USE_NANOBIND "Use nanobind instead of pybind; requires USE_PYBIND_BINDINGS" OFF)
 option (USE_PYTHON_EXTENSION "Enable Python extension for exposing C++ code to python. Uses Python.h library." OFF)
 option (USE_HDF5 "HDF5 support" OFF)
-option (USE_MPM "Enable experimental multiphysics module" OFF)
+option (USE_MPM "Enable experimental multiphysics module" ON)
 option (USE_OOFEM_EXE "Build oofem executable" ON)
 OPTION (USE_EIGEN "Use Eigen instead of home-made array classes (experimental)" OFF)
 OPTION (USE_XML "Reader for XML input format (requires pugixml)" OFF)
@@ -958,7 +958,9 @@ endif (DOXYGEN_FOUND)
 
 configure_file (
     "${oofem_SOURCE_DIR}/doc/include.tex.in"
-    "${oofem_BINARY_DIR}")
+    "${oofem_SOURCE_DIR}/doc/include/include.tex"
+    )
+message (STATUS "Generating include.tex for manuals")
 
 # TODO: Manuals not done yet
 add_custom_target (
@@ -1174,9 +1176,9 @@ endif()
 ######################## Packing ######################################
 #######################################################################
 ### versions
-set (CPACK_PACKAGE_VERSION_MAJOR ${oofem_VERSION_MAJOR})
-set (CPACK_PACKAGE_VERSION_MINOR ${oofem_VERSION_MINOR})
-set (CPACK_PACKAGE_VERSION_PATCH ${oofem_VERSION_PATCH})
+set (CPACK_PACKAGE_VERSION_MAJOR ${OOFEM_VERSION_MAJOR})
+set (CPACK_PACKAGE_VERSION_MINOR ${OOFEM_VERSION_MINOR})
+set (CPACK_PACKAGE_VERSION_PATCH ${OOFEM_VERSION_PATCH})
 set (CPACK_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}")
 
 ### general settings

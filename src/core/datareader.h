@@ -10,7 +10,7 @@
  *
  *             OOFEM : Object Oriented Finite Element Code
  *
- *               Copyright (C) 1993 - 2013   Borek Patzak
+ *               Copyright (C) 1993 - 2025   Borek Patzak
  *
  *
  *
@@ -77,9 +77,9 @@ public:
         "Domain","OutputManager","DomainComp","Geometry","GBPM",
         "Analysis","Metastep",/*ExportModule*/"",/*Node*/"",/*Element*/"",
         /*CrossSection*/"",/*Material*/"",/*"NonlocalBarrier"*/"",/*BoundaryCondition*/"","InitialCondition",/*TimeFunction*/"","Set",
-        "XFemManager","EnrichmentFunction","Geometry","EnrichmentItem",
-        "EnrichmentFront","PropagationLaw","CrackNucleation","FractureManager","FailCriterion",
-        "ContactSurface","Field",
+        "XFemManager","EnrichmentFunction","EnrichmentGeometry",/*EnrichmentItem*/"",
+        /*EnrichmentFront*/"","PropagationLaw","CrackNucleation","FractureManager","FailCriterion",
+        /*ContactSurface*/"","Field",
         "MPMVariable",/*"MPMTerm"*/"","MPMIntegral",
         "UNSPECIFIED"
     };

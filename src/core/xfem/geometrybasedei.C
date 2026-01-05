@@ -10,7 +10,7 @@
  *
  *             OOFEM : Object Oriented Finite Element Code
  *
- *               Copyright (C) 1993 - 2013   Borek Patzak
+ *               Copyright (C) 1993 - 2025   Borek Patzak
  *
  *
  *
@@ -57,6 +57,7 @@
 #include <algorithm>
 #include <set>
 #include <memory>
+#include <cassert>
 
 namespace oofem {
 //REGISTER_EnrichmentItem(GeometryBasedEI)
@@ -74,7 +75,7 @@ int GeometryBasedEI :: instanciateYourself(DataReader &dr)
 
     // Instantiate enrichment function
     {
-        auto mir = dr.giveInputRecord(DataReader :: IR_enrichFuncRec, 1);
+        auto mir = dr.giveChildRecord(thisIr,"",DataReader::InputRecordTags[DataReader::IR_enrichFuncRec],DataReader::IR_enrichFuncRec,/*optional*/false);
         mir->giveRecordKeywordField(name);
 
         mpEnrichmentFunc = classFactory.createEnrichmentFunction( name.c_str(), 1, this->giveDomain() );
@@ -87,7 +88,8 @@ int GeometryBasedEI :: instanciateYourself(DataReader &dr)
 
     // Instantiate geometry
     {
-        auto mir = dr.giveInputRecord(DataReader :: IR_geoRec, 1);
+        auto mir = dr.giveChildRecord(thisIr,"",DataReader::InputRecordTags[DataReader::IR_geoRec],DataReader::IR_geoRec,/*optional*/false);
+        // auto &mir = dr.giveInputRecord(DataReader :: IR_geoRec, 1);
         mir->giveRecordKeywordField(name);
         mpBasicGeometry = classFactory.createGeometry( name.c_str() );
         if ( !mpBasicGeometry ) {
@@ -96,32 +98,24 @@ int GeometryBasedEI :: instanciateYourself(DataReader &dr)
 
         mpBasicGeometry->initializeFrom(mir);
     }
-
     // Instantiate EnrichmentFront
     if ( mEnrFrontIndex == 0 ) {
         mpEnrichmentFrontStart = std::make_unique<EnrFrontDoNothing>();
         mpEnrichmentFrontEnd = std::make_unique<EnrFrontDoNothing>();
     } else {
-        std :: string enrFrontNameStart, enrFrontNameEnd;
-
-        auto enrFrontStartIr = dr.giveInputRecord(DataReader :: IR_enrichFrontRec, mEnrFrontIndex);
-        enrFrontStartIr->giveRecordKeywordField(enrFrontNameStart);
-
-        mpEnrichmentFrontStart = classFactory.createEnrichmentFront( enrFrontNameStart.c_str() );
-        if ( mpEnrichmentFrontStart ) {
-            mpEnrichmentFrontStart->initializeFrom(enrFrontStartIr);
-        } else {
-            OOFEM_ERROR( "Failed to create enrichment front (%s)", enrFrontNameStart.c_str() );
-        }
-
-        auto enrFrontEndIr = dr.giveInputRecord(DataReader :: IR_enrichFrontRec, mEnrFrontIndex);
-        enrFrontEndIr->giveRecordKeywordField(enrFrontNameEnd);
-
-        mpEnrichmentFrontEnd = classFactory.createEnrichmentFront( enrFrontNameEnd.c_str() );
-        if ( mpEnrichmentFrontEnd ) {
-            mpEnrichmentFrontEnd->initializeFrom(enrFrontEndIr);
-        } else {
-            OOFEM_ERROR( "Failed to create enrichment front (%s)", enrFrontNameEnd.c_str() );
+        int i=0;
+        for(InputRecord& efIr: dr.giveGroupRecords("EnrichmentFront",DataReader :: IR_enrichFrontRec,/*numRequired*/2)){
+            std::string enrFrontName;
+            efIr->giveRecordKeywordField(enrFrontName);
+            auto ef = classFactory.createEnrichmentFront( enrFrontName.c_str() );
+            if ( ef ) {
+                assert(i==0 || i==1);
+                ef->initializeFrom(efIr);
+                (i==0?mpEnrichmentFrontStart:mpEnrichmentFrontEnd)=std::move(ef);
+            } else {
+                OOFEM_ERROR( "Failed to create enrichment front (%s)", enrFrontName.c_str() );
+            }
+            i++;
         }
     }
 
@@ -132,7 +126,7 @@ int GeometryBasedEI :: instanciateYourself(DataReader &dr)
     } else {
         std :: string propLawName;
 
-        auto propLawir = dr.giveInputRecord(DataReader :: IR_propagationLawRec, mPropLawIndex);
+        auto propLawir = dr.giveChildRecord(thisIr,"",DataReader::InputRecordTags[DataReader::IR_propagationLawRec],DataReader :: IR_propagationLawRec,/*optional*/false);
         propLawir->giveRecordKeywordField(propLawName);
 
         mpPropagationLaw = classFactory.createPropagationLaw( propLawName.c_str() );

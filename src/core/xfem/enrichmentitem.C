@@ -10,7 +10,7 @@
  *
  *             OOFEM : Object Oriented Finite Element Code
  *
- *               Copyright (C) 1993 - 2013   Borek Patzak
+ *               Copyright (C) 1993 - 2025   Borek Patzak
  *
  *
  *
@@ -83,12 +83,9 @@ EnrichmentItem :: ~EnrichmentItem()
 
 void EnrichmentItem :: initializeFrom(InputRecord &ir)
 {
-    mEnrFrontIndex = 0;
-    IR_GIVE_OPTIONAL_FIELD(ir, mEnrFrontIndex, _IFT_EnrichmentItem_front);
-
-
-    mPropLawIndex = 0;
-    IR_GIVE_OPTIONAL_FIELD(ir, mPropLawIndex, _IFT_EnrichmentItem_propagationlaw);
+    thisIr=ir.clone();
+    mEnrFrontIndex = ir.giveGroupCount(_IFT_EnrichmentItem_front,"EnrichmentFront",/*optional*/true);
+    mPropLawIndex = ir.hasChild(_IFT_EnrichmentItem_propagationlaw,"PropagationLaw",/*optional*/true);
 
     if ( ir->hasField(_IFT_EnrichmentItem_inheritbc) ) {
         mInheritBoundaryConditions = true;

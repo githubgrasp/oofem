@@ -10,7 +10,7 @@
  *
  *             OOFEM : Object Oriented Finite Element Code
  *
- *               Copyright (C) 1993 - 2013   Borek Patzak
+ *               Copyright (C) 1993 - 2025   Borek Patzak
  *
  *
  *
@@ -313,6 +313,7 @@ void FloatMatrix :: copyColumn(FloatArray &dest, int c) const { dest=this->col(c
 void FloatMatrix :: plusDyadSymmUpper(const FloatArray &a, double dV)                             { _zeroedIfEmpty(*this,a.size(),a.size()); this->selfadjointView<Eigen::Upper>().rankUpdate(a,dV); }
 void FloatMatrix :: plusProductUnsym(const FloatMatrix &a, const FloatMatrix &b, double dV)       { _zeroedIfEmpty(*this,a.cols(),b.cols()); *this+=a.transpose()*b*dV; }
 void FloatMatrix :: plusDyadUnsym(const FloatArray &a, const FloatArray &b, double dV)            { _zeroedIfEmpty(*this,a.size(),b.size()); *this+=a*b.transpose()*dV; }
+void FloatMatrix :: plus_Nt_a_otimes_b_B(const FloatMatrix &N, const FloatArray &a, const FloatArray &b, const FloatMatrix &B, double dV){ _zeroedIfEmpty(*this,N.cols(),B.cols()); *this=dV*((N*a)*(b.transpose()*B).transpose()); }
 bool FloatMatrix :: beInverseOf(const FloatMatrix &src){
     Eigen::FullPivLU<Eigen::MatrixXd> lu(src);
     // lu.setThreshold(1e-30); // this is what the original code uses

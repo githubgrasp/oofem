@@ -10,7 +10,7 @@
  *
  *             OOFEM : Object Oriented Finite Element Code
  *
- *               Copyright (C) 1993 - 2013   Borek Patzak
+ *               Copyright (C) 1993 - 2025   Borek Patzak
  *
  *
  *
@@ -110,6 +110,7 @@ class OOFEM_EXPORT XfemManager
 {
 protected:
     Domain *domain;
+    std::shared_ptr<InputRecord> thisIr;
     /// Enrichment item list.
     std :: vector< std :: unique_ptr< EnrichmentItem > >enrichmentItemList;
 

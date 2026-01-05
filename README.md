@@ -3,6 +3,9 @@
 [![Windows MSVC](https://github.com/oofem/oofem/actions/workflows/windows.yml/badge.svg)](https://github.com/oofem/oofem/actions/workflows/windows.yml)
 [![License: LGPL v2.1](https://img.shields.io/badge/License-LGPL%20v2.1-blue.svg)](https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4339630.svg)](https://doi.org/10.5281/zenodo.4339630)
+![GitHub contributors](https://img.shields.io/github/contributors/oofem/oofem) ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/oofem/oofem) 
+ ![GitHub Downloads (all assets, specific tag)](https://img.shields.io/github/downloads/oofem/oofem/v3.0/total) 
+
 
 
 OOFEM is parallel, object-oriented finite element code for solving mechanical, transport and fluid mechanics problems. 
@@ -10,7 +13,7 @@ OOFEM is parallel, object-oriented finite element code for solving mechanical, t
 OOFEM is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
 License as published by the Free Software Foundation; either version 2.1 of the License, or (at your option) any later version.
 
-Copyright (C) 1993 - 2024   Borek Patzak
+Copyright (C) 1993 - 2025   Borek Patzak
     
 ## Getting Started
 ### What is here

@@ -10,7 +10,7 @@
  *
  *             OOFEM : Object Oriented Finite Element Code
  *
- *               Copyright (C) 1993 - 2023   Borek Patzak
+ *               Copyright (C) 1993 - 2025   Borek Patzak
  *
  *
  *
@@ -310,7 +310,7 @@ StructuralPenaltyContactBoundaryCondition::computeInternalForcesFromContact (Flo
       ContactProcess mode = ContactProcess::None;
       this->computeTractions(normalTraction, tangentialTraction, tangentialTractionTrial, mode, contactPair, tStep);
       // traction in global coordinate system
-      auto tractionVector = normalTraction * normal;
+      FloatArray tractionVector = normalTraction * normal;
       if (frictionShouldBeConsidered(friction, tStep)) {
 		const auto tangentVectors = contactPair->giveTangentVectors();
 		FloatMatrix contravariant_metric = this->computeContravariantMetric(tangentVectors);
