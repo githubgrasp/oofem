@@ -126,7 +126,7 @@ double RotatingBoundary :: give(Dof *dof, ValueModeType mode, double time)
 }
 
 void
-RotatingBoundary :: initializeFrom(InputRecord &ir)
+RotatingBoundary :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     GeneralBoundaryCondition :: initializeFrom(ir);
 

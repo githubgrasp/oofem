@@ -157,7 +157,7 @@ IsoInterfaceDamageMaterial :: giveIPValue(FloatArray &answer, GaussPoint *gp, In
 
 
 void
-IsoInterfaceDamageMaterial :: initializeFrom(InputRecord &ir)
+IsoInterfaceDamageMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralInterfaceMaterial :: initializeFrom(ir);
 

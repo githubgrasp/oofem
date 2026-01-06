@@ -87,7 +87,6 @@ public:
     /// Assignment operator.
     DynamicInputRecord &operator = ( const DynamicInputRecord & );
 
-    std::shared_ptr<InputRecord> clone() const override { return std::make_shared<DynamicInputRecord>(*this); }
     void finish(bool wrn = true) override;
 
     std :: string giveRecordAsString() const override { return giveRecordInTXTFormat(); }

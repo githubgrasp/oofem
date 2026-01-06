@@ -77,7 +77,7 @@ LatticeNeumannCouplingNode :: ~LatticeNeumannCouplingNode()
 {}
 
 void
-LatticeNeumannCouplingNode :: initializeFrom(InputRecord &ir, int priority)
+LatticeNeumannCouplingNode :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 // Gets from the source line from the data file all the data of the receiver.
 {
     ParameterManager &ppm =  this->giveDomain()->dofmanPPM;

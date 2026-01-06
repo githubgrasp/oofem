@@ -47,7 +47,7 @@ WinklerMaterial:: WinklerMaterial (int n, Domain* d): StructuralMaterial(n, d)
 
 
 void
-WinklerMaterial :: initializeFrom(InputRecord &ir)
+WinklerMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralMaterial :: initializeFrom(ir);
 

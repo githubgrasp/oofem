@@ -406,7 +406,7 @@ StructuralPenaltyContactBoundaryCondition :: computeTractions(double& normalTrac
 
 
 void
-StructuralPenaltyContactBoundaryCondition::initializeFrom(InputRecord &ir)
+StructuralPenaltyContactBoundaryCondition::initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     ContactBoundaryCondition::initializeFrom(ir);
     // contact surfaces

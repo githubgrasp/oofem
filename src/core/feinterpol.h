@@ -180,7 +180,7 @@ public:
     FEInterpolation(int o) : order(o) { }
     virtual ~FEInterpolation() = default;
     /// Initializes receiver according to object description stored in input record.
-    virtual void initializeFrom(InputRecord &ir, ParameterManager&pm, int elnum, int priority) { }
+    virtual void initializeFrom(const std::shared_ptr<InputRecord> &ir, ParameterManager&pm, int elnum, int priority) { }
     virtual void postInitialize(ParameterManager&pm, int elnum) {}
 
     /* @name basic interpolation services */

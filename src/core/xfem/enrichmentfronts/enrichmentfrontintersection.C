@@ -120,7 +120,7 @@ void EnrFrontIntersection :: evaluateEnrFuncJumps(std :: vector< double > &oEnrF
     oEnrFuncJumps.insert( oEnrFuncJumps.end(), jumps.begin(), jumps.end() );
 }
 
-void EnrFrontIntersection :: initializeFrom(InputRecord &ir)
+void EnrFrontIntersection :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     IR_GIVE_FIELD(ir, mTangent, _IFT_EnrFrontIntersection_Tangent);
 }

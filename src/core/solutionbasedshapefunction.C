@@ -70,7 +70,7 @@ SolutionbasedShapeFunction :: SolutionbasedShapeFunction(int n, Domain *d) : Act
 
 
 void
-SolutionbasedShapeFunction :: initializeFrom(InputRecord &ir)
+SolutionbasedShapeFunction :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     ActiveBoundaryCondition :: initializeFrom(ir);
 
@@ -462,16 +462,16 @@ SolutionbasedShapeFunction :: updateModelWithFactors(modeStruct &m)
 void
 SolutionbasedShapeFunction :: setLoads(EngngModel &myEngngModel, int d)
 {
-    DynamicInputRecord ir;
+    auto ir=std::make_shared<DynamicInputRecord>();
     FloatArray gradP;
 
     gradP.resize( this->giveDomain()->giveNumberOfSpatialDimensions() );
     gradP.zero();
     gradP.at(d) = 1.0;
 
-    ir.setRecordKeywordField("deadweight", 1);
-    ir.setField(gradP, _IFT_Load_components);
-    ir.setField(1, _IFT_GeneralBoundaryCondition_timeFunct);
+    ir->setRecordKeywordField("deadweight", 1);
+    ir->setField(gradP, _IFT_Load_components);
+    ir->setField(1, _IFT_GeneralBoundaryCondition_timeFunct);
 
     int bcID = myEngngModel.giveDomain(1)->giveNumberOfBoundaryConditions() + 1;
     auto myBodyLoad = classFactory.createBoundaryCondition( "deadweight", bcID, myEngngModel.giveDomain(1) );
@@ -604,10 +604,10 @@ SolutionbasedShapeFunction :: setBoundaryConditionOnDof(Dof *d, double value)
     int bcID = d->giveBcId();
 
     if ( bcID == 0 ) {
-        DynamicInputRecord ir;
-        ir.setRecordKeywordField("boundarycondition", 1);
-        ir.setField(1, _IFT_GeneralBoundaryCondition_timeFunct);
-        ir.setField(value, _IFT_BoundaryCondition_PrescribedValue);
+        std::shared_ptr<DynamicInputRecord> ir=std::make_shared<DynamicInputRecord>();
+        ir->setRecordKeywordField("boundarycondition", 1);
+        ir->setField(1, _IFT_GeneralBoundaryCondition_timeFunct);
+        ir->setField(value, _IFT_BoundaryCondition_PrescribedValue);
 
         bcID = d->giveDofManager()->giveDomain()->giveNumberOfBoundaryConditions() + 1;
 

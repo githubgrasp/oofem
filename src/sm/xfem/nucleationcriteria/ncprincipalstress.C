@@ -287,7 +287,7 @@ std::vector<std::unique_ptr<EnrichmentItem>> NCPrincipalStress::nucleateEnrichme
 }
 
 
-void NCPrincipalStress::initializeFrom(InputRecord &ir)
+void NCPrincipalStress::initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     NucleationCriterion::initializeFrom(ir);
 

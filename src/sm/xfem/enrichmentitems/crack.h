@@ -36,13 +36,13 @@
 
 #include "xfem/enrichmentitem.h"
 #include "xfem/hybridei.h"
+#include "inputrecord.h"
 
 #define _IFT_Crack_Name "crack"
 
 namespace oofem {
 class XfemManager;
 class Domain;
-class InputRecord;
 class GaussPoint;
 class GnuplotExportModule;
 
@@ -58,7 +58,7 @@ public:
 
     const char *giveClassName() const override { return "Crack"; }
     const char *giveInputRecordName() const override { return _IFT_Crack_Name; }
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
 
     void AppendCohesiveZoneGaussPoint(GaussPoint *ipGP);
     void ClearCohesiveZoneGaussPoints() {mCohesiveZoneGaussPoints.clear(); mCohesiveZoneArcPositions.clear();}

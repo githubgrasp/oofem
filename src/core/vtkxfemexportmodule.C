@@ -80,7 +80,7 @@ VTKXMLXFemExportModule::VTKXMLXFemExportModule(int n, EngngModel *e) : VTKXMLExp
 VTKXMLXFemExportModule::~VTKXMLXFemExportModule() { }
 
 void
-VTKXMLXFemExportModule::initializeFrom(InputRecord &ir)
+VTKXMLXFemExportModule::initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     ExportModule::initializeFrom(ir);
 }

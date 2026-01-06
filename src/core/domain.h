@@ -444,7 +444,7 @@ public:
      * @see FemComponent::initializeFrom
      */
     int instanciateYourself(DataReader &dr);
-    int instanciateYourself(DataReader &dr, InputRecord& ir);
+    int instanciateYourself(DataReader &dr, const std::shared_ptr<InputRecord>& ir);
     void initializeFinish();
     /**
      * Performs post-initialization for all the domain contents (which is called after initializeFrom).

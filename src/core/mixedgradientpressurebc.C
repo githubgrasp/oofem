@@ -58,7 +58,7 @@ double MixedGradientPressureBC :: domainSize()
 }
 
 
-void MixedGradientPressureBC :: initializeFrom(InputRecord &ir)
+void MixedGradientPressureBC :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     GeneralBoundaryCondition :: initializeFrom(ir);
 

@@ -66,7 +66,7 @@ VTKPFEMXMLExportModule::VTKPFEMXMLExportModule(int n, EngngModel *e) : VTKBaseEx
 VTKPFEMXMLExportModule::~VTKPFEMXMLExportModule() { }
 
 void
-VTKPFEMXMLExportModule::initializeFrom(InputRecord &ir)
+VTKPFEMXMLExportModule::initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     ExportModule::initializeFrom(ir);
 }

@@ -286,7 +286,7 @@ LIBeam3d :: computeLength()
 
 
 void
-LIBeam3d :: initializeFrom(InputRecord &ir, int priority)
+LIBeam3d :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     StructuralElement :: initializeFrom(ir, priority);
     ParameterManager &ppm = domain->elementPPM;

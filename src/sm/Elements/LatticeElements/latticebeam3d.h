@@ -94,7 +94,7 @@ public:
 
     const char *giveInputRecordName() const override { return _IFT_LatticeBeam3d_Name; }
     const char *giveClassName() const override { return "LatticeBeam3d"; }
-    void initializeFrom(InputRecord &ir, int priority) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
     void postInitialize() override;
 
     virtual void giveInternalForcesVector(FloatArray &answer, TimeStep *tStep, int useUpdatedGpRecord = 0) override;

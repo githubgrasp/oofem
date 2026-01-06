@@ -78,7 +78,7 @@ public:
     /// Destructor
     virtual ~QuasicontinuumVTKXMLExportModule();
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
 
 protected:
     //

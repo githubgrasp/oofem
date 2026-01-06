@@ -46,7 +46,7 @@ namespace oofem {
 REGISTER_Material(B3SolidMaterial);
 
 void
-B3SolidMaterial :: initializeFrom(InputRecord &ir)
+B3SolidMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     // ph!!!
     //KelvinChainMaterial :: initializeFrom(ir);

@@ -196,8 +196,8 @@ protected:
     void terminate( TimeStep *tStep ) override;
     void doStepOutput( TimeStep *tStep ) override;
 
-    int instanciateYourself( DataReader &dr, InputRecord &ir, const char *outFileName, const char *desc ) override;
-    void initializeFrom( InputRecord &ir ) override;
+    int instanciateYourself( DataReader &dr, const std::shared_ptr<InputRecord> &ir, const char *outFileName, const char *desc ) override;
+    void initializeFrom( const std::shared_ptr<InputRecord> &ir ) override;
     void updateAttributes( MetaStep *mStep ) override;
 
     void saveContext( DataStream &stream, ContextMode mode ) override;
@@ -259,7 +259,7 @@ protected:
 
     EngngModel *giveSlaveProblem( int i ) override;
     int giveNumberOfSlaveProblems() override { return (int)inputStreamNames.size(); }
-    int instanciateDefaultMetaStep( InputRecord &ir ) override;
+    int instanciateDefaultMetaStep( const std::shared_ptr<InputRecord> &ir ) override;
 
 protected:
     int instanciateSlaveProblems();

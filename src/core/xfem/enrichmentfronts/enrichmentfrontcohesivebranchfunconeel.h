@@ -49,7 +49,6 @@ namespace oofem {
 class XfemManager;
 class DofManager;
 class FloatArray;
-class InputRecord;
 class DynamicInputRecord;
 class LinElBranchFunction;
 
@@ -77,7 +76,7 @@ public:
     const char *giveClassName() const override { return "EnrFrontCohesiveBranchFuncOneEl"; }
     const char *giveInputRecordName() const override { return _IFT_EnrFrontCohesiveBranchFuncOneEl_Name; }
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
     void giveInputRecord(DynamicInputRecord &input) override;
 
     double giveSupportRadius() const override { return 0.0; }

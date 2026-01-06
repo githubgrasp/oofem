@@ -120,7 +120,7 @@ NonLinearDynamic :: updateAttributes(MetaStep *mStep)
 
 
 void
-NonLinearDynamic :: initializeFrom(InputRecord &ir)
+NonLinearDynamic :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralEngngModel :: initializeFrom(ir);
 
@@ -168,7 +168,7 @@ NonLinearDynamic :: initializeFrom(InputRecord &ir)
         communicator = new NodeCommunicator(this, commBuff, this->giveRank(),
                                             this->giveNumberOfProcesses());
 
-        if ( ir.hasField(_IFT_NonLinearDynamic_nonlocalext) ) {
+        if ( ir->hasField(_IFT_NonLinearDynamic_nonlocalext) ) {
             nonlocalExt = 1;
             nonlocCommunicator = new ElementCommunicator(this, commBuff, this->giveRank(),
                                                          this->giveNumberOfProcesses());

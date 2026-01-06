@@ -86,7 +86,7 @@ protected:
 public:
     FluidMaterialEvaluator(int i, EngngModel * _master = nullptr);
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
 
     void solveYourself() override;
 

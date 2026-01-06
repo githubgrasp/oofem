@@ -188,7 +188,7 @@ protected:
 public:
     StructuralSlipFE2Material(int n, Domain * d);
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
     void giveInputRecord(DynamicInputRecord &input) override;
     const char *giveInputRecordName() const override { return _IFT_StructuralSlipFE2Material_Name; }
     const char *giveClassName() const override { return "StructuralSlipFE2Material"; }

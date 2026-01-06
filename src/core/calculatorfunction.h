@@ -79,7 +79,7 @@ public:
      * - dfdt(t) (optional)
      * - d2fdt2(t) (optional)
      */
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
     void giveInputRecord(DynamicInputRecord &ir) override;
 
     void evaluate(FloatArray &answer, const std :: map< std :: string, FunctionArgument > &valDict, GaussPoint *gp=nullptr, double param=0.) override;

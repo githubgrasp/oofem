@@ -398,7 +398,7 @@ bool TransportGradientPeriodic :: isGradDof(Dof *dof)
 }
 
 
-void TransportGradientPeriodic :: initializeFrom(InputRecord &ir)
+void TransportGradientPeriodic :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     ActiveBoundaryCondition :: initializeFrom(ir);
     //PrescribedGradientHomogenization::initializeFrom(ir);

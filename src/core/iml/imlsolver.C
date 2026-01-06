@@ -64,7 +64,7 @@ IMLSolver :: IMLSolver(Domain *d, EngngModel *m) : SparseLinearSystemNM(d, m),
 
 
 void
-IMLSolver :: initializeFrom(InputRecord &ir)
+IMLSolver :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     int val = 0;
     IR_GIVE_OPTIONAL_FIELD(ir, val, _IFT_IMLSolver_stype);

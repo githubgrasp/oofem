@@ -43,7 +43,7 @@ namespace oofem {
 REGISTER_Material(SimpleVitrificationMaterial);
 
 
-void SimpleVitrificationMaterial :: initializeFrom(InputRecord &ir)
+void SimpleVitrificationMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralMaterial :: initializeFrom(ir);
 

@@ -72,7 +72,7 @@ LocalGaussianRandomFunction :: evaluateAccelerationAtTime(double t)
 }
 
 void
-LocalGaussianRandomFunction :: initializeFrom(InputRecord &ir)
+LocalGaussianRandomFunction :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     IR_GIVE_FIELD(ir, mean, _IFT_LocalGaussianRandomFunction_mean);
     IR_GIVE_FIELD(ir, variance, _IFT_LocalGaussianRandomFunction_variance);

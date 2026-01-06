@@ -153,7 +153,7 @@ class BTamNTerm : public MPMSymbolicTerm {
      */
     void evaluate (FloatArray&, MPElement& cell, GaussPoint* gp, TimeStep* tstep) const override;
     void getDimensions(Element& cell) const override;
-    void initializeFrom(InputRecord &ir, EngngModel* problem) override {
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, EngngModel* problem) override {
         MPMSymbolicTerm::initializeFrom(ir, problem);
         int value = 0;
         IR_GIVE_FIELD(ir, value, "atype");
@@ -202,7 +202,7 @@ class NTamTBTerm : public MPMSymbolicTerm {
      */
     void evaluate (FloatArray&, MPElement& cell, GaussPoint* gp, TimeStep* tstep) const override;
     void getDimensions(Element& cell) const override;
-    void initializeFrom(InputRecord &ir, EngngModel* problem) override {
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, EngngModel* problem) override {
         MPMSymbolicTerm::initializeFrom(ir, problem);
         int value = 0;
         IR_GIVE_FIELD(ir, value, "atype");
@@ -254,7 +254,7 @@ class NTcN : public MPMSymbolicTerm {
      */
     void evaluate (FloatArray&, MPElement& cell, GaussPoint* gp, TimeStep* tstep) const override;
     void getDimensions(Element& cell) const override;
-    void initializeFrom(InputRecord &ir, EngngModel* problem) override {
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, EngngModel* problem) override {
         MPMSymbolicTerm::initializeFrom(ir, problem);
         int value = 0;
         IR_GIVE_FIELD(ir, value, "ctype");

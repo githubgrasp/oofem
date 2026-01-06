@@ -92,7 +92,7 @@ public:
 
     TransportCrossSection * giveTransportCrossSection();
     Material * giveMaterial() override;
-    void initializeFrom(InputRecord &ir, int priority) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
     void postInitialize() override;
     const char *giveClassName() const override { return "TransportElement"; }
     

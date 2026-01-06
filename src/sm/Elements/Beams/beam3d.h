@@ -177,7 +177,7 @@ public:
     // definition & identification
     const char *giveClassName() const override { return "Beam3d"; }
     const char *giveInputRecordName() const override { return _IFT_Beam3d_Name; }
-    void initializeFrom(InputRecord &ir, int priority) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
     void postInitialize() override;
     ///@todo Introduce interpolator and remove these two:
     integrationDomain giveIntegrationDomain() const override { return _Line; }

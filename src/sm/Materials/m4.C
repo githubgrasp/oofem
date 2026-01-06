@@ -188,7 +188,7 @@ M4Material :: giveRealMicroplaneStressVector(GaussPoint *gp, int mnumber,
 
 
 void
-M4Material :: initializeFrom(InputRecord &ir)
+M4Material :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     MicroplaneMaterial_Bazant :: initializeFrom(ir);
 

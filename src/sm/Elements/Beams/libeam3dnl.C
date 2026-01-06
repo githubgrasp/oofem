@@ -349,7 +349,7 @@ LIBeam3dNL::computeGaussPoints()
 
 
 void
-LIBeam3dNL::initializeFrom(InputRecord &ir, int priority)
+LIBeam3dNL::initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     // first call parent
     NLStructuralElement::initializeFrom(ir, priority);

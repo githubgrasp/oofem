@@ -65,7 +65,7 @@ CrossSection :: setupIntegrationPoints(IntegrationRule &irule, int npointsXY, in
 }
 
 void
-CrossSection :: initializeFrom(InputRecord &ir)
+CrossSection :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     // Read set number the cross section is applied to
     this->setNumber = 0;

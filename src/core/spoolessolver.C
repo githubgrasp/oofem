@@ -94,7 +94,7 @@ SpoolesSolver :: ~SpoolesSolver()
 }
 
 void
-SpoolesSolver :: initializeFrom(InputRecord &ir)
+SpoolesSolver :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     int val;
     std :: string msgFileName;

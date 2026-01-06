@@ -59,7 +59,7 @@ LTRSpaceBoundaryBeam :: LTRSpaceBoundaryBeam(int n, Domain *aDomain) :
 {}
 
 void
-LTRSpaceBoundaryBeam :: initializeFrom(InputRecord &ir, int priority)
+LTRSpaceBoundaryBeam :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     LTRSpaceBoundary :: initializeFrom(ir, priority);
 }

@@ -454,7 +454,7 @@ LIBeam3dNL2::computeStressVector(FloatArray &answer, const FloatArray &strain, G
 
 
 void
-LIBeam3dNL2::initializeFrom(InputRecord &ir, int priority)
+LIBeam3dNL2::initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     // first call parent
     NLStructuralElement::initializeFrom(ir, priority);

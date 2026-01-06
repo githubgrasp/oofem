@@ -117,7 +117,7 @@ public:
      * - pressure p (required)
      * The gradient should be in Voigt notation (only the deviatoric part will be used)
      */
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
     void giveInputRecord(DynamicInputRecord &input) override;
 
     void scale(double s) override;

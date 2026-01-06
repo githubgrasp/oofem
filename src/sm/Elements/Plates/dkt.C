@@ -346,7 +346,7 @@ DKTPlate::giveNodeCoordinates(double &x1, double &x2, double &x3,
 
 
 void
-DKTPlate::initializeFrom(InputRecord &ir, int priority)
+DKTPlate::initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     StructuralElement::initializeFrom(ir, priority);
 }

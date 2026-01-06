@@ -37,7 +37,7 @@
 #include "voidprecond.h"
 
 namespace oofem {
-VoidPreconditioner :: VoidPreconditioner(const SparseMtrx &a, InputRecord &attributes) : Preconditioner(a, attributes)
+VoidPreconditioner :: VoidPreconditioner(const SparseMtrx &a, const std::shared_ptr<InputRecord> &attributes) : Preconditioner(a, attributes)
 { }
 
 VoidPreconditioner :: VoidPreconditioner() : Preconditioner()

@@ -40,7 +40,7 @@ namespace oofem {
 REGISTER_BoundaryCondition(Reinforcement);
 
 void
-Reinforcement :: initializeFrom(InputRecord &ir)
+Reinforcement :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
 #  ifdef VERBOSE
     // VERBOSE_PRINT1 ("Instanciating load ",number)

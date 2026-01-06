@@ -62,7 +62,7 @@ TR_SHELL01 :: TR_SHELL01(int n, Domain *aDomain) : StructuralElement(n, aDomain)
 
 
 void
-TR_SHELL01 :: initializeFrom(InputRecord &ir, int priority)
+TR_SHELL01 :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     // proc tady neni return = this...   ??? termitovo
     StructuralElement :: initializeFrom(ir, priority);

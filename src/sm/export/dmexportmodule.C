@@ -56,7 +56,7 @@ DofManExportModule :: ~DofManExportModule()
 
 
 void
-DofManExportModule :: initializeFrom(InputRecord &ir)
+DofManExportModule :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     ExportModule :: initializeFrom(ir);
 

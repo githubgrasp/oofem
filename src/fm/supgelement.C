@@ -64,7 +64,7 @@ SUPGElement :: SUPGElement(int n, Domain *aDomain) :
 
 
 void
-SUPGElement :: initializeFrom(InputRecord &ir, int priority)
+SUPGElement :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     FMElement :: initializeFrom(ir, priority);
 

@@ -1999,7 +1999,7 @@ AnisotropicDamageMaterial :: giveIPValue(FloatArray &answer, GaussPoint *gp, Int
 
 
 void
-AnisotropicDamageMaterial :: initializeFrom(InputRecord &ir)
+AnisotropicDamageMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralMaterial :: initializeFrom(ir);
     linearElasticMaterial.initializeFrom(ir);

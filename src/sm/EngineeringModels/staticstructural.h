@@ -89,7 +89,7 @@ protected:
 public:
     StaticStructural(int i, EngngModel *master=nullptr);
     virtual ~StaticStructural();
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
     void updateAttributes(MetaStep *mStep) override;
 
     void solveYourself() override;

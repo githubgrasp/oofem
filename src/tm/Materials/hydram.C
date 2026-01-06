@@ -107,7 +107,7 @@ HydrationModel :: HydrationModel(MixtureType mix, FindRootMethod usefr) : Materi
 }
 
 void
-HydrationModel :: initializeFrom(InputRecord &ir)
+HydrationModel :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     double value;
 
@@ -120,7 +120,7 @@ HydrationModel :: initializeFrom(InputRecord &ir)
         throw ValueInputException(ir, _IFT_HydrationModel_hydration, "must be between 0 and 1");
     }
 
-    if ( ir.hasField(_IFT_HydrationModel_c60mix) ) {
+    if ( ir->hasField(_IFT_HydrationModel_c60mix) ) {
         OOFEM_LOG_INFO("HydrationModel: Model parameters for Skanska C60/75 mixture.");
         setMixture(mtC60);
     }
@@ -567,7 +567,7 @@ HydrationModelStatusInterface :: printOutputAt(FILE *file, TimeStep *tStep) cons
 // ======= HydrationModelInterface implementation =======
 
 void
-HydrationModelInterface :: initializeFrom(InputRecord &ir)
+HydrationModelInterface :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     double value;
 

@@ -51,7 +51,7 @@ namespace oofem {
 REGISTER_Material(OrthotropicLinearElasticMaterial);
 
 void
-OrthotropicLinearElasticMaterial :: initializeFrom(InputRecord &ir)
+OrthotropicLinearElasticMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     double value;
     int size;

@@ -181,7 +181,7 @@ public:
     TimeStep *giveSolutionStepWhenIcApply(bool force = false) override;
     NumericalMethod *giveNumericalMethod(MetaStep *mStep) override;
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
 
     bool requiresEquationRenumbering(TimeStep *tStep) override;
     int forceEquationNumbering() override;
@@ -216,7 +216,7 @@ public:
     void updateYourself(TimeStep *tStep) override;
     double giveUnknownComponent(ValueModeType mode, TimeStep *tStep, Domain *d, Dof *dof) override;
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
 
     // identification
     const char *giveInputRecordName() const { return _IFT_MPMProblem_Name; }

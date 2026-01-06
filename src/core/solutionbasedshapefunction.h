@@ -145,7 +145,7 @@ public:
     SolutionbasedShapeFunction(int n, Domain * d);
     virtual ~SolutionbasedShapeFunction() {}
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
 
     bool requiresActiveDofs() override { return true; }
     int giveNumberOfInternalDofManagers() override { return 1; }

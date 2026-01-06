@@ -32,7 +32,7 @@
 #include "sparsemtrx.h"
 
 namespace oofem {
-DiagPreconditioner :: DiagPreconditioner(const SparseMtrx &C, InputRecord &attributes) : Preconditioner(C, attributes),
+DiagPreconditioner :: DiagPreconditioner(const SparseMtrx &C, const std::shared_ptr<InputRecord> &attributes) : Preconditioner(C, attributes),
     diag( C.giveNumberOfRows() )
 { }
 

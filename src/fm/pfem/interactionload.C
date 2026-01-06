@@ -46,7 +46,7 @@ namespace oofem {
 REGISTER_BoundaryCondition(InteractionLoad);
 
 void
-InteractionLoad :: initializeFrom(InputRecord &ir)
+InteractionLoad :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     LinearEdgeLoad :: initializeFrom(ir);
 

@@ -66,7 +66,7 @@ FractureManager :: clear() { }
 
 
 
-void FractureManager :: initializeFrom(InputRecord &ir)
+void FractureManager :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     // Read number of failure criterias to evaluate
     int numCriterias;
@@ -83,8 +83,8 @@ int FractureManager :: instanciateYourself(DataReader &dr)
 
     // Create and initialize all failure criterias
     for ( int i = 1; i <= ( int ) this->criteriaList.size(); i++ ) {
-        auto &mir = dr.giveInputRecord(DataReader :: IR_failCritRec, i);
-        mir.giveRecordKeywordField(name);
+        auto mir = dr.giveInputRecord(DataReader :: IR_failCritRec, i);
+        mir->giveRecordKeywordField(name);
 
         auto failCriteria = classFactory.createFailureCriteria(name.c_str(), i, this);
         if ( !failCriteria ) {
@@ -238,12 +238,12 @@ DamagedNeighborLayered :: evaluateFailureCriteria(FailureCriteriaStatus *fcStatu
 
 
 
-void FailureCriteria :: initializeFrom(InputRecord &ir)
+void FailureCriteria :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
 }
 
 
-void DamagedNeighborLayered :: initializeFrom(InputRecord &ir)
+void DamagedNeighborLayered :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     // Read damage threshold value
     IR_GIVE_FIELD(ir, this->DamageThreshold, _IFT_DamagedNeighborLayered_DamageThreshold);
@@ -258,7 +258,7 @@ void DamagedNeighborLayered :: initializeFrom(InputRecord &ir)
 //===================================================
 // Failure Criteria Status
 //===================================================
-void FailureCriteriaStatus :: initializeFrom(InputRecord &ir)
+void FailureCriteriaStatus :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
 }
 } // end namespace oofem

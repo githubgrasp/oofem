@@ -156,7 +156,7 @@ LineDistributedSpring::giveInternalForcesVector(FloatArray &answer,
 
   
 void
-LineDistributedSpring :: initializeFrom(InputRecord &ir, int priority)
+LineDistributedSpring :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     ParameterManager &ppm =  this->giveDomain()->elementPPM;
     StructuralElement::initializeFrom(ir, priority);

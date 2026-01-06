@@ -40,7 +40,7 @@ namespace oofem {
 REGISTER_Material(DoublePowerLawMaterial);
 
 void
-DoublePowerLawMaterial :: initializeFrom(InputRecord &ir)
+DoublePowerLawMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     MaxwellChainMaterial :: initializeFrom(ir);
 

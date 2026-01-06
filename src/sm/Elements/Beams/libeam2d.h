@@ -94,7 +94,7 @@ public:
     // definition & identification
     const char *giveInputRecordName() const override { return _IFT_LIBeam2d_Name; }
     const char *giveClassName() const override { return "LIBeam2d"; }
-    void initializeFrom(InputRecord &ir, int priority) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
     void initializeFinish() override;
 
     MaterialMode giveMaterialMode() override { return _2dBeam; }

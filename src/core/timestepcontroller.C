@@ -50,10 +50,10 @@ namespace oofem {
 
 
 void
-TimeStepController :: initializeFrom(InputRecord &ir)
+TimeStepController :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
 
-  numberOfMetaSteps = ir.giveReader()->giveGroupRecords(ir.ptr(),_IFT_EngngModel_nmsteps,"Metasteps",DataReader::IR_mstepRec,/*optional*/true).size();
+  numberOfMetaSteps = ir->giveReader()->giveGroupRecords(ir,_IFT_EngngModel_nmsteps,"Metasteps",DataReader::IR_mstepRec,/*optional*/true).size();
   IR_GIVE_OPTIONAL_FIELD(ir, this->alpha, _IFT_TimeStepController_alpha);
 
 }
@@ -117,7 +117,7 @@ TimeStepController :: instanciateMetaSteps(DataReader &dr)
     // read problem domains
     auto mrecs=dr.giveGroupRecords("Metasteps",DataReader::IR_mstepRec,this->numberOfMetaSteps);
     int i=0;
-    for(InputRecord& mrec: mrecs){
+    for(const std::shared_ptr<InputRecord>& mrec: mrecs){
         metaStepList[i].initializeFrom(mrec);
         if(i > 0) {
             metaStepList[i].setPreviousMetaStepFinalTime(metaStepList[i-1].giveFinalTime());
@@ -143,7 +143,7 @@ TimeStepController :: giveMetaStep(int i)
 
 
 int
-TimeStepController :: instanciateDefaultMetaStep(InputRecord &ir)
+TimeStepController :: instanciateDefaultMetaStep(const std::shared_ptr<InputRecord> &ir)
 {
 
   metaStepList.clear();

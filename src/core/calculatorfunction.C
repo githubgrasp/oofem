@@ -46,7 +46,7 @@ REGISTER_Function(CalculatorFunction);
 CalculatorFunction :: CalculatorFunction(int n, Domain *d) : Function(n, d) { }
 
 void
-CalculatorFunction :: initializeFrom(InputRecord &ir)
+CalculatorFunction :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     Function :: initializeFrom(ir);
 

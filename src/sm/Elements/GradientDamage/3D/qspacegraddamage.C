@@ -62,7 +62,7 @@ QSpaceGradDamage :: QSpaceGradDamage(int n, Domain *aDomain) :  QSpace(n, aDomai
 
 
 void
-QSpaceGradDamage :: initializeFrom(InputRecord &ir, int priority)
+QSpaceGradDamage :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     numberOfGaussPoints = 27;
     Structural3DElement :: initializeFrom(ir, priority);

@@ -166,11 +166,11 @@ Shell7BaseXFEM :: computeFailureCriteriaQuantities(FailureCriteriaStatus *fcStat
 }
 
 
-void Shell7BaseXFEM :: initializeFrom(InputRecord &ir, int priority)
+void Shell7BaseXFEM :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     Shell7Base :: initializeFrom(ir, priority);
     
-    if ( ir.hasField(_IFT_Shell7BaseXFEM_CohesiveZoneMaterial) ) {
+    if ( ir->hasField(_IFT_Shell7BaseXFEM_CohesiveZoneMaterial) ) {
         OOFEM_ERROR("'czmaterial' this keyword is not in use anymore! Instead define cz material for each interface in the cross secton, ex: interfacematerials 3 x x x ");
     }
 }

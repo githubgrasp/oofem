@@ -172,7 +172,7 @@ public:
      */
     virtual double computeDamageParam(double kappa, const FloatArrayF<3> &strain, GaussPoint *gp) const;
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
     void giveInputRecord(DynamicInputRecord &input) override;
 
     std::unique_ptr<MaterialStatus> CreateStatus(GaussPoint *gp) const override { return std::make_unique<IsoInterfaceDamageMaterialStatus_2>(gp); }

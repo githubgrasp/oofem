@@ -57,8 +57,8 @@ namespace oofem {
     { \
         std::size_t _indx=_paramkey.getIndex(); \
         const char* _kwd = _paramkey.getName().c_str(); \
-        if ((_prio >= _pm.getPriority(_componentnum, _indx)) && (_ir.hasField(_kwd))) { \
-            _ir.giveField(_val, _kwd); \
+        if ((_prio >= _pm.getPriority(_componentnum, _indx)) && (_ir->hasField(_kwd))) { \
+            _ir->giveField(_val, _kwd); \
             _pm.setPriority(_componentnum, _indx, _prio); \
         } \
     }
@@ -67,8 +67,8 @@ namespace oofem {
     { \
         std::size_t _indx=_paramkey.getIndex(); \
         const char* _kwd = _paramkey.getName().c_str(); \
-        if ((_prio >= _pm.getPriority(_componentnum, _indx)) && (_ir.hasField(_kwd))) { \
-            _ir.giveField(_val, _kwd); \
+        if ((_prio >= _pm.getPriority(_componentnum, _indx)) && (_ir->hasField(_kwd))) { \
+            _ir->giveField(_val, _kwd); \
             _pm.setPriority(_componentnum, _indx, _prio); \
             _flag=true; \
         } else { \
@@ -80,9 +80,9 @@ namespace oofem {
     { \
         std::size_t _indx=_paramkey.getIndex(); \
         const char* _kwd = _paramkey.getName().c_str(); \
-        if ((_prio >= _pm.getPriority(_componentnum, _indx)) && (_ir.hasField(_kwd))) { \
+        if ((_prio >= _pm.getPriority(_componentnum, _indx)) && (_ir->hasField(_kwd))) { \
             _type _val; \
-            _ir.giveField(_val, _kwd); \
+            _ir->giveField(_val, _kwd); \
             _pm.setPriority(_componentnum, _indx, _prio); \
             _pm.setTemParam(_componentnum, _indx, _val); \
         } \
@@ -92,7 +92,7 @@ namespace oofem {
     { \
         std::size_t _indx=_paramkey.getIndex(); \
         const char* _kwd = _paramkey.getName().c_str(); \
-        if ((_prio >= _pm.getPriority(_componentnum, _indx)) && (_ir.hasField(_kwd))) { \
+        if ((_prio >= _pm.getPriority(_componentnum, _indx)) && (_ir->hasField(_kwd))) { \
             _pm.setPriority(_componentnum, _indx, _prio); \
             _flag=true; \
         } else { \

@@ -75,7 +75,7 @@ public:
     LIBeam3d2(int n, Domain *d);
     virtual ~LIBeam3d2() { }
 
-    void initializeFrom(InputRecord &ir, int prio) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, int prio) override;
     void postInitialize() override;
 
     void updateYourself(TimeStep *tStep) override;

@@ -87,7 +87,7 @@ UsrDefBoundaryLoad :: computeValueAt(FloatArray &answer, TimeStep *tStep, const 
 
 
 void
-UsrDefBoundaryLoad :: initializeFrom(InputRecord &ir)
+UsrDefBoundaryLoad :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     BoundaryLoad :: initializeFrom(ir);
 

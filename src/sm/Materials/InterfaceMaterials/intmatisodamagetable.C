@@ -51,7 +51,7 @@ IntMatIsoDamageTable :: IntMatIsoDamageTable(int n, Domain *d) : IntMatIsoDamage
 
 
 void
-IntMatIsoDamageTable :: initializeFrom(InputRecord &ir)
+IntMatIsoDamageTable :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralInterfaceMaterial :: initializeFrom(ir);
 

@@ -178,7 +178,7 @@ protected:
 public:
     NlIsoMoistureMaterial(int n, Domain *d) : IsotropicMoistureTransferMaterial(n, d) { }
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
 
     /// evaluates slope of the sorption isotherm
     double giveMoistureCapacity(GaussPoint *gp, TimeStep *tStep) const override;

@@ -47,12 +47,12 @@ WinklerPasternakMaterial:: WinklerPasternakMaterial (int n, Domain* d): Structur
 
 
 void
-WinklerPasternakMaterial :: initializeFrom(InputRecord &ir)
+WinklerPasternakMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralMaterial :: initializeFrom(ir);
 
     IR_GIVE_FIELD(ir, c1, _IFT_WinklerPasternakMaterial_C1);
-    if ( ir.hasField(_IFT_WinklerPasternakMaterial_C2)) {
+    if ( ir->hasField(_IFT_WinklerPasternakMaterial_C2)) {
       // isotropic case
       IR_GIVE_FIELD(ir, c2x, _IFT_WinklerPasternakMaterial_C2);
       c2y = c2x;

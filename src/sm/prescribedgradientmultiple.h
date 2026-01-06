@@ -58,7 +58,7 @@ public:
     PrescribedGradientMultiple(int n, Domain *d);
     virtual ~PrescribedGradientMultiple();
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
     void giveInputRecord(DynamicInputRecord &input) override;
 
     bcType giveType() const override { return UnknownBT; }

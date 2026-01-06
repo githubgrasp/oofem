@@ -46,7 +46,7 @@ namespace oofem {
 ParamKey NURBSInterpolation::IPK_NURBSInterpolation_weights("weights");
 
 void
-NURBSInterpolation :: initializeFrom(InputRecord &ir, ParameterManager&pm, int elnum, int priority)
+NURBSInterpolation :: initializeFrom(const std::shared_ptr<InputRecord> &ir, ParameterManager&pm, int elnum, int priority)
 {
     BSplineInterpolation :: initializeFrom(ir, pm, elnum, priority);
     PM_UPDATE_PARAMETER(weights, pm, ir, elnum, IPK_NURBSInterpolation_weights, priority);

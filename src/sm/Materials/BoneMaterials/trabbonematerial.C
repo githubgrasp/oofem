@@ -212,7 +212,7 @@ TrabBoneMaterial :: giveRealStressVector_1d(const FloatArrayF<1> &totalStrain,
 
 
 void
-TrabBoneMaterial :: initializeFrom(InputRecord &ir)
+TrabBoneMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralMaterial :: initializeFrom(ir);
 

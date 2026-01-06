@@ -104,7 +104,7 @@ public:
     const char *giveInputRecordName() const override { return _IFT_LatticeViscoelastic_Name; }
     const char *giveClassName() const override { return "LatticeViscoelastic"; }
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
 
     FloatMatrixF< 6, 6 >give3dLatticeStiffnessMatrix(MatResponseMode rmode,
                                                      GaussPoint *gp,

@@ -41,7 +41,7 @@ namespace oofem {
 REGISTER_Material(BazantNajjarMoistureTransferMaterial);
 
 void
-BazantNajjarMoistureTransferMaterial :: initializeFrom(InputRecord &ir)
+BazantNajjarMoistureTransferMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     IsotropicMoistureTransferMaterial :: initializeFrom(ir);
 

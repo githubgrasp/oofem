@@ -62,7 +62,7 @@ IsotropicLinearElasticMaterial :: IsotropicLinearElasticMaterial(int n, Domain *
 
 
 void
-IsotropicLinearElasticMaterial :: initializeFrom(InputRecord &ir)
+IsotropicLinearElasticMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     LinearElasticMaterial :: initializeFrom(ir);
 

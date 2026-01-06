@@ -220,7 +220,7 @@ public:
      * Not a standard material - initializes from master material record, doesn't call parent initializeFrom
      * Use hm_ prefix in parameter names to avoid confusion with master material parameters
      */
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
 
     /**
      * Returns the hydration degree at end of TimeStep tStep in given integraion point.
@@ -309,7 +309,7 @@ public:
      * Creates and initializes the hydration model according to object description stored in input record.
      * The parent class instanciateFrom method is not called here.
      */
-    virtual void initializeFrom(InputRecord &ir);
+    virtual void initializeFrom(const std::shared_ptr<InputRecord> &ir);
 
     void saveContext(DataStream &stream, ContextMode mode)
     {

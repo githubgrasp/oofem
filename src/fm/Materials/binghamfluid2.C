@@ -60,7 +60,7 @@ BinghamFluidMaterial2 :: BinghamFluidMaterial2(int n, Domain *d) : FluidDynamicM
 
 
 void
-BinghamFluidMaterial2 :: initializeFrom(InputRecord &ir)
+BinghamFluidMaterial2 :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     FluidDynamicMaterial :: initializeFrom(ir);
     // we use rather object's member data than to store data into slow

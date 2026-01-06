@@ -47,7 +47,7 @@ LatticeViscoelastic::LatticeViscoelastic(int n, Domain *d) : LatticeLinearElasti
 
 
 void
-LatticeViscoelastic::initializeFrom(InputRecord &ir)
+LatticeViscoelastic::initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     LatticeLinearElastic::initializeFrom(ir);
 

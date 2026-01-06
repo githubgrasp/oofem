@@ -66,7 +66,7 @@ public:
     GradientDamageElement();
     virtual ~GradientDamageElement() { }
 
-    virtual void initializeFrom(InputRecord &ir);
+    virtual void initializeFrom(const std::shared_ptr<InputRecord> &ir);
 
 protected:
     virtual StructuralElement *giveStructuralElement() = 0;

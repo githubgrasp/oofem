@@ -52,7 +52,7 @@ J2MPlasticMaterial :: J2MPlasticMaterial(int n, Domain *d) : MPlasticMaterial(n,
 
 
 void
-J2MPlasticMaterial :: initializeFrom(InputRecord &ir)
+J2MPlasticMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     double value;
 

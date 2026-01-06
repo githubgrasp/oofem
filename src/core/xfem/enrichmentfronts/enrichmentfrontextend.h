@@ -47,7 +47,6 @@ namespace oofem {
 class XfemManager;
 class DofManager;
 class FloatArray;
-class InputRecord;
 class DynamicInputRecord;
 
 /**
@@ -77,7 +76,7 @@ public:
     const char *giveClassName() const override { return "EnrFrontExtend"; }
     const char *giveInputRecordName() const override { return _IFT_EnrFrontExtend_Name; }
 
-    void initializeFrom(InputRecord &ir) override { }
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override { }
     void giveInputRecord(DynamicInputRecord &input) override;
 
     double giveSupportRadius() const override { return 0.0; }

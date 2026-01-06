@@ -254,7 +254,7 @@ InterpolatingFuction :: evaluateAtTime(double t)
 
 
 void
-InterpolatingFuction :: initializeFrom(InputRecord &ir)
+InterpolatingFuction :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     std :: string name;
 

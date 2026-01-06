@@ -193,7 +193,7 @@ public:
     IntArray giveEnrichedDofIDs(const DofManager &iDMan) const;
 
     /// Initializes receiver according to object description stored in input record.
-    virtual void initializeFrom(InputRecord &ir);
+    virtual void initializeFrom(const std::shared_ptr<InputRecord> &ir);
     virtual void giveInputRecord(DynamicInputRecord &input);
 
     virtual int instanciateYourself(DataReader &dr);

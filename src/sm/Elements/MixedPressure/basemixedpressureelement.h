@@ -55,7 +55,7 @@ public:
     BaseMixedPressureElement();
     virtual ~BaseMixedPressureElement() { }
 
-    virtual void initializeFrom(InputRecord &ir);
+    virtual void initializeFrom(const std::shared_ptr<InputRecord> &ir);
 
 protected:
 

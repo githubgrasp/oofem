@@ -123,7 +123,7 @@ public:
 
     void updateVolumetricStressTo(GaussPoint *gp, int mnumber, double sigv) const override;
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
     const char *giveInputRecordName() const override { return _IFT_M4Material_Name; }
     const char *giveClassName() const override { return "M4Material"; }
 

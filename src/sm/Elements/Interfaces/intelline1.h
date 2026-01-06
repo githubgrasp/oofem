@@ -84,7 +84,7 @@ public:
     // definition & identification
     const char *giveInputRecordName() const override { return _IFT_IntElLine1_Name; }
     const char *giveClassName() const override { return "IntElLine1"; }
-    void initializeFrom(InputRecord &ir, int priority) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
     void postInitialize() override;
 
     void giveEngTraction(FloatArray &answer, GaussPoint *gp, const FloatArray &jump, TimeStep *tStep) override

@@ -42,7 +42,7 @@ namespace oofem {
 REGISTER_Function(ConstantFunction);
 
 void
-ConstantFunction :: initializeFrom(InputRecord &ir)
+ConstantFunction :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     Function :: initializeFrom(ir);
 

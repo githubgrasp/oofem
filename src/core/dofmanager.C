@@ -331,7 +331,7 @@ int DofManager :: giveNumberOfPrimaryMasterDofs(const IntArray &dofIDArray) cons
 
 
 void
-DofManager :: initializeFrom(InputRecord &ir, int priority)
+DofManager :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     bool boundaryFlag, sharedFlag, remoteFlag, nullFlag;
     ParameterManager &ppm =  this->giveDomain()->dofmanPPM;

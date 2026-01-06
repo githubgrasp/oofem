@@ -56,22 +56,22 @@ class OOFEM_EXPORT XMLInputRecord : public InputRecord
 {
     pugi::xml_node node;
     friend XMLDataReader;
+    // keep reaader alive as we need underlying pugi structures to read attributes etc.
+    std::shared_ptr<XMLDataReader> reader;
     std::set<std::string> attrQueried;
     std::set<std::string> attrRead;
     int recId=-1;
-    XMLDataReader* _reader() const { return (XMLDataReader*)(this->giveReader()); }
     static std::string xmlizeAttrName(const std::string& s);
 public:
     std::string _attr_traced_read(const char* name){ return std::get<0>(_attr_traced_read_with_node(name)); }
     std::tuple<std::string,pugi::xml_node> _attr_traced_read_with_node(const char* name);
 
     XMLInputRecord(XMLDataReader* reader_, const pugi::xml_node& node_);
-    std::shared_ptr<InputRecord> clone() const override { return std::make_shared<XMLInputRecord>(*this); }
 
     void finish(bool wrn = true) override;
 
     std::string loc() const { return loc(node); }
-    std::string loc(const pugi::xml_node& node) const ;
+    std::string loc(const pugi::xml_node& node) const;
     int setRecId(int lastRecId);
 
 

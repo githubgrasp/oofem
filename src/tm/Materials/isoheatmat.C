@@ -46,7 +46,7 @@ IsotropicHeatTransferMaterial :: IsotropicHeatTransferMaterial(int n, Domain *d)
 
 
 void
-IsotropicHeatTransferMaterial :: initializeFrom(InputRecord &ir)
+IsotropicHeatTransferMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     Material :: initializeFrom(ir);
 

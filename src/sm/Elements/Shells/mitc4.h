@@ -101,7 +101,7 @@ public:
     const char *giveInputRecordName() const override { return _IFT_MITC4Shell_Name; }
     integrationDomain giveIntegrationDomain() const override { return _3dDegShell; }
     MaterialMode giveMaterialMode() override { return _3dDegeneratedShell; }
-    void initializeFrom(InputRecord &ir, int priority) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
     void postInitialize() override;
     int computeNumberOfDofs() override { return 24; }
     int computeNumberOfGlobalDofs() override { return 24; }

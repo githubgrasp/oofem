@@ -71,7 +71,7 @@ SuperLUSolver :: ~SuperLUSolver() {
 
 
 void
-SuperLUSolver :: initializeFrom(InputRecord &ir)
+SuperLUSolver :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
   /*
    * Get column permutation vector perm_c[], according to permc_spec:

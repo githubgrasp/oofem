@@ -49,7 +49,7 @@ LatticePlasticityDamageViscoelastic::LatticePlasticityDamageViscoelastic(int n, 
 {}
 
 void
-LatticePlasticityDamageViscoelastic::initializeFrom(InputRecord &ir)
+LatticePlasticityDamageViscoelastic::initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     LatticePlasticityDamage::initializeFrom(ir);
 
@@ -65,7 +65,7 @@ LatticePlasticityDamageViscoelastic::initializeFrom(InputRecord &ir)
 
     this->eNormalMean = E28; // swap elastic modulus/stiffness
 
-    if ( ir.hasField(_IFT_LatticePlasticityDamageViscoelastic_timedepfracturing) ) {
+    if ( ir->hasField(_IFT_LatticePlasticityDamageViscoelastic_timedepfracturing) ) {
         this->fib = true;
         IR_GIVE_FIELD(ir, fib_fcm28, _IFT_LatticePlasticityDamageViscoelastic_fcm28);
         IR_GIVE_FIELD(ir, fib_s, _IFT_LatticePlasticityDamageViscoelastic_fib_s);

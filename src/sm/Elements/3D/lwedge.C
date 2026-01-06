@@ -62,7 +62,7 @@ LWedge :: LWedge(int n, Domain *aDomain) : Structural3DElement(n, aDomain), ZZNo
 
 
 void
-LWedge :: initializeFrom(InputRecord &ir, int priority)
+LWedge :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     Structural3DElement :: initializeFrom(ir, priority);
 }

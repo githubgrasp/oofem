@@ -62,7 +62,7 @@ LatticeDamage :: hasMaterialModeCapability(MaterialMode mode) const
 
 
 void
-LatticeDamage :: initializeFrom(InputRecord &ir)
+LatticeDamage :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     LatticeLinearElastic :: initializeFrom(ir);
 

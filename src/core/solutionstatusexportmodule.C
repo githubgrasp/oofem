@@ -52,7 +52,7 @@ SolutionStatusExportModule :: SolutionStatusExportModule(int n, EngngModel *e, F
 }
 
 void
-SolutionStatusExportModule :: initializeFrom(InputRecord &ir)
+SolutionStatusExportModule :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     ExportModule :: initializeFrom(ir);
 

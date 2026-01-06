@@ -159,7 +159,7 @@ OgdenCompressibleMaterial::CreateStatus(GaussPoint *gp) const
 
 
 void
-OgdenCompressibleMaterial::initializeFrom(InputRecord &ir)
+OgdenCompressibleMaterial::initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralMaterial::initializeFrom(ir);
     BaseHyperElasticMaterial::initializeFrom(ir);

@@ -340,7 +340,7 @@ LIBeam2d :: givePitch()
 
 
 void
-LIBeam2d :: initializeFrom(InputRecord &ir, int priority)
+LIBeam2d :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     StructuralElement :: initializeFrom(ir, priority);
     ParameterManager &ppm = domain->elementPPM;

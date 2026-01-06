@@ -92,7 +92,7 @@ FETISolver :: estimateMaxPackSize(IntArray &map, DataStream &buff, int &packUnpa
 
 
 void
-FETISolver :: initializeFrom(InputRecord &ir)
+FETISolver :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     IR_GIVE_FIELD(ir, ni, _IFT_FETISolver_maxiter);
     IR_GIVE_FIELD(ir, err, _IFT_FETISolver_maxerr);

@@ -82,7 +82,7 @@ public:
     PrescribedDispSlipHomogenization() { }
     virtual ~PrescribedDispSlipHomogenization() { }
 
-    virtual void initializeFrom(InputRecord &ir);
+    virtual void initializeFrom(const std::shared_ptr<InputRecord> &ir);
     virtual void giveInputRecord(DynamicInputRecord &input);
 
     // Methods for field homogenization implemented by respective BCs

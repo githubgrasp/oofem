@@ -62,7 +62,7 @@ QuasicontinuumVTKXMLExportModule :: ~QuasicontinuumVTKXMLExportModule()
 
 
 void
-QuasicontinuumVTKXMLExportModule :: initializeFrom(InputRecord &ir)
+QuasicontinuumVTKXMLExportModule :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     VTKXMLExportModule :: initializeFrom(ir);
 

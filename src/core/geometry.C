@@ -354,7 +354,7 @@ void Line :: transformIntoPolar(FloatArray *point, FloatArray &answer)
     answer.at(2) = atan2( xp.at(2), xp.at(1) );
 }
 
-void Line :: initializeFrom(InputRecord &ir)
+void Line :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     mVertices.resize(2);
     IR_GIVE_FIELD(ir, mVertices [ 0 ], _IFT_Line_start);
@@ -670,7 +670,7 @@ void Circle :: giveGlobalCoordinates(FloatArray &oGlobalCoord, const double &iAr
     oGlobalCoord = Vec2( mVertices[0][0] + radius*cos(angle), mVertices[0][1] + radius*sin(angle) );
 }
 
-void Circle :: initializeFrom(InputRecord &ir)
+void Circle :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     mVertices.resize(1);
     IR_GIVE_FIELD(ir, mVertices [ 0 ], _IFT_Circle_center);
@@ -1245,7 +1245,7 @@ void PolygonLine :: giveTangent(FloatArray &oTangent, const double &iArcPosition
     OOFEM_ERROR("Arc position not found.")
 }
 
-void PolygonLine :: initializeFrom(InputRecord &ir)
+void PolygonLine :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     FloatArray points;
     IR_GIVE_FIELD(ir, points, _IFT_PolygonLine_points);
@@ -1780,7 +1780,7 @@ void PolygonLine :: cropPolygon(const double &iArcPosStart, const double &iArcPo
 
 }
 
-void PointSwarm :: initializeFrom(InputRecord &ir)
+void PointSwarm :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     IntArray idList;
 

@@ -35,13 +35,13 @@
 #include "mathfem.h"
 
 namespace oofem {
-CompCol_ICPreconditioner :: CompCol_ICPreconditioner(const SparseMtrx &A, InputRecord &attributes) :
+CompCol_ICPreconditioner :: CompCol_ICPreconditioner(const SparseMtrx &A, const std::shared_ptr<InputRecord> &attributes) :
     Preconditioner(A, attributes)
 { }
 
 
 void
-CompCol_ICPreconditioner :: initializeFrom(InputRecord &ir)
+CompCol_ICPreconditioner :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     Preconditioner :: initializeFrom(ir);
 }

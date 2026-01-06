@@ -257,7 +257,7 @@ public:
 
     const char *giveClassName() const override { return "IsotropicDamageMaterial1"; }
     const char *giveInputRecordName() const override { return _IFT_IsotropicDamageMaterial1_Name; }
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
     void giveInputRecord(DynamicInputRecord &input) override;
     /**
      * Computes invariants I1 and J2 of the strain tensor

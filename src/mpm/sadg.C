@@ -299,7 +299,7 @@ class SADGBLine1 : public SADGBoundaryElement {
             this->numberOfGaussPoints = 2;
     }
     
-    void initializeFrom(InputRecord &ir, int priority) override {
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override {
         SADGBoundaryElement::initializeFrom(ir, priority);
         this->numberOfDofMans = this->dofManArray.giveSize();
         if (!((numberOfDofMans == 2) || (numberOfDofMans == 4))) {
@@ -519,7 +519,7 @@ class SADGBQuad1 : public SADGBoundaryElement {
             this->numberOfGaussPoints = 8;
         }
     
-    void initializeFrom(InputRecord &ir, int priority) override {
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override {
         SADGBoundaryElement::initializeFrom(ir, priority);
         this->numberOfDofMans = this->dofManArray.giveSize();
         if (!((numberOfDofMans == 4) || (numberOfDofMans == 8))) {

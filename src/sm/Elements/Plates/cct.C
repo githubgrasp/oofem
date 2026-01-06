@@ -308,7 +308,7 @@ CCTPlate::computeArea()
 }
 
 void
-CCTPlate::initializeFrom(InputRecord &ir, int priority)
+CCTPlate::initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     StructuralElement::initializeFrom(ir, priority);
 }

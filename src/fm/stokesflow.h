@@ -108,7 +108,7 @@ public:
 
     int forceEquationNumbering(int id) override;
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
 
     int checkConsistency() override;
     void doStepOutput(TimeStep *tStep) override;

@@ -120,7 +120,7 @@ CebFipSlip90Material :: giveIPValue(FloatArray &answer, GaussPoint *gp, Internal
 
 
 void
-CebFipSlip90Material :: initializeFrom(InputRecord &ir)
+CebFipSlip90Material :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralInterfaceMaterial :: initializeFrom(ir);
 

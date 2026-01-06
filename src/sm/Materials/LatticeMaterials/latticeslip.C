@@ -63,7 +63,7 @@ LatticeSlip :: hasMaterialModeCapability(MaterialMode mode) const
 
 
 void
-LatticeSlip :: initializeFrom(InputRecord &ir)
+LatticeSlip :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     LatticeLinearElastic :: initializeFrom(ir);
 

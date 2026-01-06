@@ -62,7 +62,7 @@ qcNode :: qcNode(int n, Domain *aDomain) : Node(n, aDomain)
 #endif
 }
 
-void qcNode :: initializeFrom(InputRecord &ir, int priority)
+void qcNode :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     Node :: initializeFrom(ir, priority);
 

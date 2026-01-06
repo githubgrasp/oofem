@@ -1457,7 +1457,7 @@ void XfemStructuralElementInterface :: XfemElementInterface_computeConsistentMas
 }
 
 void
-XfemStructuralElementInterface :: initializeCZFrom(InputRecord &ir, int priority)
+XfemStructuralElementInterface :: initializeCZFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     ParameterManager &pm = this->element->giveDomain()->elementPPM;
     PM_UPDATE_PARAMETER(mCZMaterialNum, pm, ir, element->giveNumber(), IPK_XfemElementInterface_CohesiveZoneMaterial, priority);

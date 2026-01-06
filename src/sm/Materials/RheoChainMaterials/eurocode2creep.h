@@ -179,7 +179,7 @@ public:
 
     const char *giveClassName() const override { return "Eurocode2CreepMaterial"; }
     const char *giveInputRecordName() const override { return _IFT_Eurocode2CreepMaterial_Name; }
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
 
     std::unique_ptr<MaterialStatus> CreateStatus(GaussPoint *gp) const override;
 

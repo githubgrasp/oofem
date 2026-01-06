@@ -52,7 +52,7 @@ NLTransientTransportProblem :: NLTransientTransportProblem(int i, EngngModel *_m
 }
 
 void
-NLTransientTransportProblem :: initializeFrom(InputRecord &ir)
+NLTransientTransportProblem :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
      NonStationaryTransportProblem :: initializeFrom(ir);
 

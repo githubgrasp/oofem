@@ -455,7 +455,7 @@ Quad1MindlinShell3D::computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode
 
 
 void
-Quad1MindlinShell3D::initializeFrom(InputRecord &ir, int priority)
+Quad1MindlinShell3D::initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     ParameterManager &ppm = this->giveDomain()->elementPPM;
     StructuralElement::initializeFrom(ir, priority);

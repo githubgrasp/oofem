@@ -601,7 +601,7 @@ GradientDamageElement :: computeStiffnessMatrix_ud(FloatMatrix &answer, MatRespo
 
 
 void
-GradientDamageElement :: initializeFrom(InputRecord &ir)
+GradientDamageElement :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     //nlGeo = 0;
     penalty = 0.;

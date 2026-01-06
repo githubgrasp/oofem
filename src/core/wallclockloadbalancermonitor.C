@@ -224,7 +224,7 @@ WallClockLoadBalancerMonitor :: decide(TimeStep *tStep)
 
 
 void
-WallClockLoadBalancerMonitor :: initializeFrom(InputRecord &ir)
+WallClockLoadBalancerMonitor :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     LoadBalancerMonitor :: initializeFrom(ir);
 

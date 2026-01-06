@@ -283,7 +283,7 @@ MITC4Shell::giveLocalCoordinates(const FloatArrayF< 3 > &global)
 }
 
 void
-MITC4Shell::initializeFrom(InputRecord &ir, int priority)
+MITC4Shell::initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     StructuralElement::initializeFrom(ir, priority);
     ParameterManager &ppm = this->giveDomain()->elementPPM;

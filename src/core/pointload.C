@@ -54,7 +54,7 @@ PointLoad :: computeValueAt(FloatArray &answer, TimeStep *tStep, const FloatArra
 }
 
 void
-PointLoad :: initializeFrom(InputRecord &ir)
+PointLoad :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     Load :: initializeFrom(ir);
 

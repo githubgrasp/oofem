@@ -71,6 +71,7 @@ protected:
     std::string giveStackPath(); // string representation
     pugi::xml_document& loadXml(pugi::xml_node parent, const std::string& xml);
     pugi::xml_node resolveXiInclude(const pugi::xml_node& n);
+
     std::tuple<size_t,size_t> offset2lc(const std::vector<size_t>& nl, size_t offset) const;
     std::string loc() const ;
     std::string loc(const pugi::xml_node&) const;
@@ -85,15 +86,15 @@ public:
 
     //! guess whether given file is XML
     static bool canRead(const std::string& xmlFile);
-    InputRecord& giveInputRecord(InputRecordType, int recordId) override;
-    InputRecord* giveTopInputRecord() override { return topRecord.get(); }
+    std::shared_ptr<InputRecord> giveInputRecord(InputRecordType, int recordId) override;
+    std::shared_ptr<InputRecord> giveTopInputRecord() override;
     bool peekNext(const std :: string &keyword) override { return false; } /* no peeking, it is used for hacks only */
     void finish() override;
     std::string giveReferenceName() const override { return topXmlFile; }
     void enterGroup(const std::string& name) override;
     void leaveGroup(const std::string& name) override;
-    void enterRecord(InputRecord*) override;
-    void leaveRecord(InputRecord*) override;
+    void enterRecord(const std::shared_ptr<InputRecord>) override;
+    void leaveRecord(const std::shared_ptr<InputRecord>) override;
 
     int giveGroupCount(const std::string& name) override;
     int giveCurrentGroupCount();

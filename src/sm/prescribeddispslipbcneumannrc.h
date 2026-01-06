@@ -73,7 +73,7 @@ public:
     int giveNumberOfInternalDofManagers() override;
     DofManager *giveInternalDofManager(int i) override;
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
     void giveInputRecord(DynamicInputRecord &input) override;
 
     bcType giveType() const override { return UnknownBT; }

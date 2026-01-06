@@ -120,7 +120,7 @@ class Variable {
     /// Returns DodIF mask in node; need generalization (which dofMan)
     const IntArray& getDofManDofIDs () const {return this->dofIDs;}
 
-    void initializeFrom(InputRecord &ir); // enable instantiation from input record
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir); // enable instantiation from input record
 };
 
 
@@ -149,7 +149,7 @@ class Term {
     virtual void initializeCell(Element& cell) const =0;
     virtual IntegrationRule* giveElementIntegrationRule(Element* e) const {return NULL;};
 
-    virtual void initializeFrom(InputRecord &ir, EngngModel* problem); // enable instantiation from input record
+    virtual void initializeFrom(const std::shared_ptr<InputRecord> &ir, EngngModel* problem); // enable instantiation from input record
 
 };
 
@@ -165,7 +165,7 @@ class Term {
         public:
         MPMSymbolicTerm() : Term() {}
         MPMSymbolicTerm (const Variable *testField, const Variable* unknownField, MaterialMode m)  : Term(testField, unknownField, m) {};
-        void initializeFrom(InputRecord &ir, EngngModel* problem) override {
+        void initializeFrom(const std::shared_ptr<InputRecord> &ir, EngngModel* problem) override {
             Term::initializeFrom(ir, problem);
             IR_GIVE_OPTIONAL_FIELD(ir, nip, "nip");
         }

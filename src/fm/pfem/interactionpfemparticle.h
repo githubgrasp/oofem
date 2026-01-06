@@ -71,7 +71,7 @@ public:
      */
     virtual ~InteractionPFEMParticle(void) { }
 
-    void initializeFrom(InputRecord &ir, int priority) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
     int checkConsistency() override;
 
     void updateYourself(TimeStep *tStep) override;

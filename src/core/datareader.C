@@ -42,15 +42,14 @@ namespace oofem{
 
 std::shared_ptr<DataReader> DataReader::makeFromFilename(const std::string& f){
     #ifdef _USE_XML
-        if(XMLDataReader::canRead(f)) return std::make_shared<XMLDataReader>(f);
+    if(XMLDataReader::canRead(f)) return std::make_shared<XMLDataReader>(f);
     #endif
     return std::make_shared<OOFEMTXTDataReader>(f);
 }
 
-
-InputRecord *DataReader::giveChildRecord( const std::shared_ptr<InputRecord> &ir, InputFieldType ift, const std::string &name, InputRecordType irType, bool optional )
+std::shared_ptr<InputRecord> DataReader::giveChildRecord( const std::shared_ptr<InputRecord> &ir, InputFieldType ift, const std::string &name, InputRecordType irType, bool optional )
 {
-    if ( ir->hasChild( ift, name, optional ) ) return &( this->giveInputRecord( irType, /*recordId*/ 1 ) );
+    if ( ir->hasChild( ift, name, optional ) ) return this->giveInputRecord( irType, /*recordId*/ 1 );
     return nullptr;
 };
 
@@ -75,7 +74,7 @@ DataReader::GroupRecords::Iterator::Iterator( DataReader &dr_, const std::string
             entered = true;
             dr.enterGroup( this->group );
         }
-        irPtr = &dr.giveInputRecord( irType, /*recordId*/ 1 );
+        irPtr = dr.giveInputRecord( irType, /*recordId*/ 1 );
         if ( irPtr ) dr.enterRecord( irPtr );
     }
     #if 0
@@ -91,10 +90,10 @@ DataReader::GroupRecords::Iterator &DataReader::GroupRecords::Iterator::operator
     index++;
     /* don't read past the last line, assign nullptr instead */
     if ( index >= size ) {
-        irPtr = nullptr;
+        irPtr = {};
         if ( entered ) dr.leaveGroup( this->group );
     } else {
-        irPtr = &dr.giveInputRecord( irType, /*recordId*/ index + 1 );
+        irPtr = dr.giveInputRecord( irType, /*recordId*/ index + 1 );
         if ( irPtr ) dr.enterRecord( irPtr );
     }
     return *this;

@@ -128,7 +128,7 @@ RVEStokesFlow :: RVEStokesFlow(int n, Domain *d) : TransportMaterial(n, d)
 { }
 
 
-void RVEStokesFlow :: initializeFrom(InputRecord &ir)
+void RVEStokesFlow :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     IR_GIVE_FIELD(ir, this->rveFilename, _IFT_RVEStokesFlow_fileName);
 }

@@ -166,8 +166,8 @@ public:
     // miscellaneous
     const char *giveClassName() const override { return "Node"; }
     const char *giveInputRecordName() const override { return _IFT_Node_Name; }
-    void initializeFrom(InputRecord &ir) override { initializeFrom(ir, 1); }
-    void initializeFrom(InputRecord &ir, int priority) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override { initializeFrom(ir, 1); }
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
      /// Performs post initialization steps.
      void initializeFinish() override;
     void giveInputRecord(DynamicInputRecord &input) override;

@@ -304,7 +304,7 @@ TrabBoneGrad3D :: computeCumPlastStrain(GaussPoint *gp, TimeStep *tStep) const
 
 
 void
-TrabBoneGrad3D :: initializeFrom(InputRecord &ir)
+TrabBoneGrad3D :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     TrabBone3D :: initializeFrom(ir);
 

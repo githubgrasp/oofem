@@ -55,7 +55,7 @@ protected:
 public:
     WarpingCrossSection(int n, Domain *d) : SimpleCrossSection(n, d), WarpingNodeNumber(0) { }
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
 
     // identification and auxiliary functions
 

@@ -42,12 +42,16 @@
 #include "contextmode.h"
 #include "enumitem.h"
 #include "intarray.h"
+#include "inputrecord.h"
 #include <string>
 #include <memory>
 
 namespace oofem {
 ///@todo FieldType and UnknownType basically determine the same thing. Should be possible to stick to one. Combinations of fields should be possible with logical bitfields.
-#define FieldType_DEF \
+
+#define ENUM_TYPE FieldType
+#define ENUM_PREFIX "FT_"
+#define ENUM_DEF \
     ENUM_ITEM_WITH_VALUE(FT_Unknown, 0) \
     ENUM_ITEM_WITH_VALUE(FT_Velocity, 1) \
     ENUM_ITEM_WITH_VALUE(FT_Displacements, 2) \
@@ -60,19 +64,13 @@ namespace oofem {
     ENUM_ITEM_WITH_VALUE(FT_EigenStrain, 9) \
     ENUM_ITEM_WITH_VALUE(FT_VOF, 10)
 
-/// Physical type of field.
-enum FieldType {
-    FieldType_DEF
-};
-#undef ENUM_ITEM
-#undef ENUM_ITEM_WITH_VALUE
-#undef enumitem_h
+#include "enum-impl.h"
+
 
 class TimeStep;
 class FloatArray;
 class DofManager;
 class DataStream;
-class InputRecord;
 
 class Field;
 typedef std::shared_ptr<Field> FieldPtr;
@@ -156,7 +154,7 @@ public:
     virtual const char *giveClassName() const = 0;
 
     // for Field classes supporting instantiation from input record
-    virtual void initializeFrom(InputRecord &ir) { };
+    virtual void initializeFrom(const std::shared_ptr<InputRecord> &ir) { };
 };
 } // end namespace oofem
 #endif // field_h

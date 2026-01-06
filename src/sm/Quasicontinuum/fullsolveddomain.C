@@ -59,7 +59,7 @@ QCFullsolveddomain :: ~QCFullsolveddomain()
 { }
 
 void
-QCFullsolveddomain :: initializeFrom(InputRecord &ir)
+QCFullsolveddomain :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     IR_GIVE_OPTIONAL_FIELD(ir, FullSolvedDomainNodes, _IFT_FullSolvedDomain_nodes);
     IR_GIVE_OPTIONAL_FIELD(ir, FullSolvedDomainElements, _IFT_FullSolvedDomain_elements);

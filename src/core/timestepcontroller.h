@@ -117,7 +117,7 @@ public:
     
 
     
-    void initializeFrom(InputRecord &ir);
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir);
     /**
      * Stores receiver state to output stream.
      * @param stream Output stream.
@@ -135,7 +135,7 @@ public:
     /// Returns the i-th meta step.
     MetaStep *giveMetaStep(int i);
 
-    int instanciateDefaultMetaStep(InputRecord &ir);
+    int instanciateDefaultMetaStep(const std::shared_ptr<InputRecord> &ir);
     int instanciateMetaSteps(DataReader &dr);
     void initMetaStepAttributes(MetaStep *mStep);
     int giveMetaStepNumber(){return 1;}

@@ -111,7 +111,7 @@ public:
     const char *giveInputRecordName() const override { return _IFT_MazarsMaterial_Name; }
     const char *giveClassName() const override { return "MazarsMaterial"; }
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
 
     double computeEquivalentStrain(const FloatArray &strain, GaussPoint *gp, TimeStep *tStep) const override;
     double computeDamageParam(double kappa, const FloatArray &strain, GaussPoint *gp) const override;

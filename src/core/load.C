@@ -97,7 +97,7 @@ Load :: computeComponentArrayAt(FloatArray &answer, TimeStep *tStep, ValueModeTy
 
 
 void
-Load :: initializeFrom(InputRecord &ir)
+Load :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     GeneralBoundaryCondition :: initializeFrom(ir);
 
@@ -117,7 +117,7 @@ Load :: initializeFrom(InputRecord &ir)
         }
     }
 
-    this->reference = ir.hasField(_IFT_Load_reference);
+    this->reference = ir->hasField(_IFT_Load_reference);
 }
 
 

@@ -111,7 +111,7 @@ void EnrFrontCohesiveBranchFuncOneEl :: evaluateEnrFuncJumps(std :: vector< doub
     oEnrFuncJumps.insert( oEnrFuncJumps.end(), jumps.begin(), jumps.end() );
 }
 
-void EnrFrontCohesiveBranchFuncOneEl :: initializeFrom(InputRecord &ir)
+void EnrFrontCohesiveBranchFuncOneEl :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
 }
 

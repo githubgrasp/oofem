@@ -48,12 +48,10 @@ ExpressionField :: ExpressionField(void) : Field(FieldType::FT_Unknown)
 {
 }
 
-void ExpressionField :: initializeFrom(InputRecord &ir)
+void ExpressionField :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     IR_GIVE_FIELD(ir, this->expression, "f");
-    int val;
-    IR_GIVE_FIELD(ir, val, "type");
-    this->type = static_cast<FieldType>(val);
+    IR_GIVE_FIELD(ir, type, "type");
 }
 
 

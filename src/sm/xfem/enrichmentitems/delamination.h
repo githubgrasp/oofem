@@ -78,7 +78,7 @@ public:
     Delamination(int n, XfemManager *xm, Domain *aDomain);
     virtual ~Delamination() { }
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
     int instanciateYourself(DataReader &dr) override;
     void postInitialize() override;
     void appendInputRecords(DynamicDataReader &oDR) override;

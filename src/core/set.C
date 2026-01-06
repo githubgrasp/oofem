@@ -55,13 +55,13 @@ Set::Set(int n, Domain * d) : FEMComponent(n, d), mElementListIsSorted(false), e
 #endif
  }
 
-void Set :: initializeFrom(InputRecord &ir)
+void Set :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     FEMComponent :: initializeFrom(ir);
 
     IntArray inputNodes;
     std :: list< Range >inputNodeRanges;
-    if ( ir.hasField(_IFT_Set_allNodes) ) { // generate a list with all the node numbers
+    if ( ir->hasField(_IFT_Set_allNodes) ) { // generate a list with all the node numbers
        this->nodes.enumerate(this->giveDomain()->giveNumberOfDofManagers()); 
     } else {
         IR_GIVE_OPTIONAL_FIELD(ir, inputNodes, _IFT_Set_nodes);
@@ -69,7 +69,7 @@ void Set :: initializeFrom(InputRecord &ir)
         this->computeIntArray(this->nodes, inputNodes, inputNodeRanges);
     }
 
-    if ( ir.hasField(_IFT_Set_allElements) ) { // generate a list with all the element numbers
+    if ( ir->hasField(_IFT_Set_allElements) ) { // generate a list with all the element numbers
         this->elements.enumerate(this->giveDomain()->giveNumberOfElements());
         mElementListIsSorted = false;
     } else {

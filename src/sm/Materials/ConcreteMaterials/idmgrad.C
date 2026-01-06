@@ -57,7 +57,7 @@ IsotropicGradientDamageMaterial :: IsotropicGradientDamageMaterial(int n, Domain
 
 
 void
-IsotropicGradientDamageMaterial :: initializeFrom(InputRecord &ir)
+IsotropicGradientDamageMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     IsotropicDamageMaterial1 :: initializeFrom(ir);
     GradientDamageMaterialExtensionInterface :: initializeFrom(ir);

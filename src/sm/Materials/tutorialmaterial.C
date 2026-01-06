@@ -49,7 +49,7 @@ TutorialMaterial :: TutorialMaterial(int n, Domain *d) : StructuralMaterial(n, d
 
 
 void
-TutorialMaterial :: initializeFrom(InputRecord &ir)
+TutorialMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralMaterial :: initializeFrom(ir);
 

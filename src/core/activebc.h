@@ -72,7 +72,7 @@ public:
     /// Destructor.
     virtual ~ActiveBoundaryCondition() { }
 
-    void initializeFrom(InputRecord &ir) override
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override
     {
         GeneralBoundaryCondition :: initializeFrom(ir);
 

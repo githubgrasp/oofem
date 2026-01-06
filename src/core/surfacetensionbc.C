@@ -60,13 +60,13 @@
 namespace oofem {
 REGISTER_BoundaryCondition(SurfaceTensionBoundaryCondition);
 
-void SurfaceTensionBoundaryCondition :: initializeFrom(InputRecord &ir)
+void SurfaceTensionBoundaryCondition :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     ActiveBoundaryCondition :: initializeFrom(ir);
 
     IR_GIVE_FIELD(ir, this->gamma, _IFT_SurfaceTensionBoundaryCondition_gamma);
 
-    this->useTangent = ir.hasField(_IFT_SurfaceTensionBoundaryCondition_useTangent);
+    this->useTangent = ir->hasField(_IFT_SurfaceTensionBoundaryCondition_useTangent);
 }
 
 void SurfaceTensionBoundaryCondition :: giveLocationArrays(std :: vector< IntArray > &rows, std :: vector< IntArray > &cols, CharType type,

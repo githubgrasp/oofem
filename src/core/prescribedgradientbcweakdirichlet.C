@@ -23,7 +23,7 @@ PrescribedGradientBCWeakDirichlet :: ~PrescribedGradientBCWeakDirichlet()
     // TODO Auto-generated destructor stub
 }
 
-void PrescribedGradientBCWeakDirichlet :: initializeFrom(InputRecord &ir)
+void PrescribedGradientBCWeakDirichlet :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     PrescribedGradientBCWeak :: initializeFrom(ir);
     mMeshIsPeriodic = false;

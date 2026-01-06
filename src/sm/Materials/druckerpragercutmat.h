@@ -106,7 +106,7 @@ public:
     
     bool hasCastingTimeSupport() const override { return true; }
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
 
     std::unique_ptr<MaterialStatus> CreateStatus(GaussPoint *gp) const override;
 

@@ -121,7 +121,7 @@ SymmetryBarrier :: applyConstraint(const double cl, const FloatArray &c1, const 
 }
 
 void
-SymmetryBarrier :: initializeFrom(InputRecord &ir)
+SymmetryBarrier :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     FloatArray normals;
 

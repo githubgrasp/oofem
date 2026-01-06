@@ -254,7 +254,7 @@ LatticeBeam3d ::   giveDofManDofIDMask(int inode, IntArray &answer) const
 }
 
 void
-LatticeBeam3d :: initializeFrom(InputRecord &ir, int priority)
+LatticeBeam3d :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     ParameterManager &ppm =  this->giveDomain()->elementPPM;
     LatticeStructuralElement :: initializeFrom(ir, priority);

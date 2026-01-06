@@ -43,7 +43,7 @@ namespace oofem {
 REGISTER_Material(NonlinearMassTransferMaterial);
 
 void
-NonlinearMassTransferMaterial :: initializeFrom(InputRecord &ir)
+NonlinearMassTransferMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     Material :: initializeFrom(ir);
 

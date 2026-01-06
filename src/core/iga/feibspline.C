@@ -53,7 +53,7 @@ ParamKey BSplineInterpolation::IPK_BSplineInterpolation_knotMultiplicityW("knotm
 
 
 void
-BSplineInterpolation :: initializeFrom(InputRecord &ir, ParameterManager&pm, int elnum, int priority)
+BSplineInterpolation :: initializeFrom(const std::shared_ptr<InputRecord> &ir, ParameterManager&pm, int elnum, int priority)
 {
     bool flag;
     IntArray degree_tmp;

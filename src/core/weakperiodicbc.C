@@ -75,7 +75,7 @@ WeakPeriodicBoundaryCondition :: ~WeakPeriodicBoundaryCondition()
 }
 
 void
-WeakPeriodicBoundaryCondition :: initializeFrom(InputRecord &ir)
+WeakPeriodicBoundaryCondition :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     ActiveBoundaryCondition :: initializeFrom(ir);     ///@todo Carl, remove this line and use elementsidespositive/negative instead.
 

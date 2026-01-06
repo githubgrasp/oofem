@@ -1196,7 +1196,7 @@ LayeredCrossSection::imposeStrainConstrainsOnGradient(GaussPoint *gp, FloatArray
 
 
 void
-LayeredCrossSection::initializeFrom(InputRecord &ir)
+LayeredCrossSection::initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     CrossSection::initializeFrom(ir);
 

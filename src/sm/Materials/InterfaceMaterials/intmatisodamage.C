@@ -230,7 +230,7 @@ IntMatIsoDamage :: giveIPValue(FloatArray &answer, GaussPoint *gp, InternalState
 
 
 void
-IntMatIsoDamage :: initializeFrom(InputRecord &ir)
+IntMatIsoDamage :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralInterfaceMaterial :: initializeFrom(ir);
 

@@ -81,7 +81,7 @@ public:
     StructuralMaterialEvaluator(int i, EngngModel *master = nullptr);
     virtual ~StructuralMaterialEvaluator();
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
 
     void solveYourself() override;
 

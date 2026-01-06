@@ -50,7 +50,7 @@ LatticeDamageViscoelastic :: LatticeDamageViscoelastic(int n, Domain *d) : Latti
 {}
 
 void
-LatticeDamageViscoelastic :: initializeFrom(InputRecord &ir)
+LatticeDamageViscoelastic :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     LatticeDamage :: initializeFrom(ir);
 

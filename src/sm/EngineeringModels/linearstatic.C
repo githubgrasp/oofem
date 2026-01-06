@@ -88,7 +88,7 @@ NumericalMethod *LinearStatic :: giveNumericalMethod(MetaStep *mStep)
 }
 
 void
-LinearStatic :: initializeFrom(InputRecord &ir)
+LinearStatic :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralEngngModel :: initializeFrom(ir);
 

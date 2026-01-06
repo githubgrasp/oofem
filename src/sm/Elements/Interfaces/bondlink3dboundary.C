@@ -199,7 +199,7 @@ BondLink3dBoundary ::   giveDofManDofIDMask(int inode, IntArray &answer) const
 }
 
 void
-BondLink3dBoundary :: initializeFrom(InputRecord &ir, int priority)
+BondLink3dBoundary :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     // first call parent
     StructuralElement :: initializeFrom(ir, priority);

@@ -264,7 +264,7 @@ public:
      */
     virtual double predictRelativeRedistributionCost(GaussPoint *gp) { return 1.0; }
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
     void giveInputRecord(DynamicInputRecord &input) override;
 
     #pragma GCC diagnostic push

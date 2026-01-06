@@ -61,7 +61,7 @@ Tr1Darcy :: Tr1Darcy(int n, Domain *aDomain) : TransportElement(n, aDomain)
     this->numberOfGaussPoints = 1;
 }
 
-void Tr1Darcy :: initializeFrom(InputRecord &ir, int priority)
+void Tr1Darcy :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     TransportElement :: initializeFrom(ir, priority);
 }

@@ -117,28 +117,28 @@ void InitialCondition :: printYourself()
 
 
 void
-InitialCondition :: initializeFrom(InputRecord &ir)
+InitialCondition :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 // Sets up the dictionary where the receiver stores the conditions it
 // imposes.
 {
-    if ( ir.hasField(_IFT_InitialCondition_conditions) ) {
+    if ( ir->hasField(_IFT_InitialCondition_conditions) ) {
         // compatibility with old input files
         IR_GIVE_FIELD(ir, initialValueDictionary, _IFT_InitialCondition_conditions);
         this->mode = 0;
-    } else if ( ir.hasField(_IFT_InitialCondition_f) ) {
+    } else if ( ir->hasField(_IFT_InitialCondition_f) ) {
         this->mode = 1;
         // new input file format
         valueExpr.setValue(0.0);
         IR_GIVE_OPTIONAL_FIELD(ir, valueExpr, _IFT_InitialCondition_f);
         velocityExpr.setValue(0.0);
-        if ( ir.hasField(_IFT_InitialCondition_dfdt) ) {
+        if ( ir->hasField(_IFT_InitialCondition_dfdt) ) {
             IR_GIVE_OPTIONAL_FIELD(ir, velocityExpr, _IFT_InitialCondition_dfdt);
         }
         accelerationExpr.setValue(0.0);
-        if ( ir.hasField(_IFT_InitialCondition_d2fdt2) ) {
+        if ( ir->hasField(_IFT_InitialCondition_d2fdt2) ) {
             IR_GIVE_OPTIONAL_FIELD(ir, accelerationExpr, _IFT_InitialCondition_d2fdt2);
         }
-    } else if ( ir.hasField(_IFT_InitialCondition_field) ) {
+    } else if ( ir->hasField(_IFT_InitialCondition_field) ) {
         this->mode = 2;
         int val;
         IR_GIVE_FIELD(ir, val, _IFT_InitialCondition_field);

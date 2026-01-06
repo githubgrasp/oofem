@@ -434,7 +434,7 @@ void PrescribedDispSlipBCDirichletRC :: computeTangent(FloatMatrix &tangent, Tim
     }
 }
 
-void PrescribedDispSlipBCDirichletRC :: initializeFrom(InputRecord &ir)
+void PrescribedDispSlipBCDirichletRC :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     GeneralBoundaryCondition :: initializeFrom(ir);
     PrescribedDispSlipHomogenization::initializeFrom(ir);

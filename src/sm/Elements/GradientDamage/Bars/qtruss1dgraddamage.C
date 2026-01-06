@@ -99,7 +99,7 @@ QTruss1dGradDamage :: giveDofManDofIDMask_d(IntArray &answer) const
 
 
 void
-QTruss1dGradDamage :: initializeFrom(InputRecord &ir, int priority)
+QTruss1dGradDamage :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     StructuralElement :: initializeFrom(ir, priority);
 }

@@ -181,7 +181,7 @@ DruckerPragerPlasticitySM :: DruckerPragerPlasticitySM(int n, Domain *d) :
 
 
 void
-DruckerPragerPlasticitySM :: initializeFrom(InputRecord &ir)
+DruckerPragerPlasticitySM :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     // call the corresponding service of structural material
     StructuralMaterial :: initializeFrom(ir);

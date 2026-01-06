@@ -167,7 +167,7 @@ public:
 
     void printYourself() override;
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
     const char *giveClassName() const override { return "InitialCondition"; }
     const char *giveInputRecordName() const override { return _IFT_InitialCondition_Name; }
 };

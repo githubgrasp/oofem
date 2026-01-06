@@ -69,7 +69,7 @@ LatticeLinearElastic :: hasMaterialModeCapability(MaterialMode mode) const
 
 
 void
-LatticeLinearElastic :: initializeFrom(InputRecord &ir)
+LatticeLinearElastic :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     LatticeStructuralMaterial :: initializeFrom(ir);
     RandomMaterialExtensionInterface :: initializeFrom(ir);

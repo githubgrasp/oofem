@@ -49,14 +49,14 @@ OutputManager :: OutputManager(Domain *d) : dofman_out(), dofman_except(), eleme
 }
 
 void
-OutputManager :: initializeFrom(InputRecord &ir)
+OutputManager :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
-    tstep_all_out_flag  = ir.hasField(_IFT_OutputManager_tstepall);
+    tstep_all_out_flag  = ir->hasField(_IFT_OutputManager_tstepall);
     tstep_step_out      = 0;
     IR_GIVE_OPTIONAL_FIELD(ir, tstep_step_out, _IFT_OutputManager_tstepstep);
 
-    dofman_all_out_flag = ir.hasField(_IFT_OutputManager_dofmanall);
-    element_all_out_flag = ir.hasField(_IFT_OutputManager_elementall);
+    dofman_all_out_flag = ir->hasField(_IFT_OutputManager_dofmanall);
+    element_all_out_flag = ir->hasField(_IFT_OutputManager_elementall);
 
     tsteps_out.clear();
     IR_GIVE_OPTIONAL_FIELD(ir, tsteps_out, _IFT_OutputManager_tstepsout);

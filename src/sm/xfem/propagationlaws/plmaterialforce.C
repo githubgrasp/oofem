@@ -36,7 +36,7 @@ PLMaterialForce :: PLMaterialForce():
 PLMaterialForce :: ~PLMaterialForce()
 {}
 
-void PLMaterialForce :: initializeFrom(InputRecord &ir)
+void PLMaterialForce :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     IR_GIVE_FIELD(ir, mRadius,                          _IFT_PLMaterialForce_Radius);
     IR_GIVE_FIELD(ir, mIncrementLength,                 _IFT_PLMaterialForce_IncLength);

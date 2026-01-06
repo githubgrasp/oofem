@@ -338,7 +338,7 @@ RCSDNLMaterial :: giveRealStressVector(FloatArray &answer, GaussPoint *gp,
 
 
 void
-RCSDNLMaterial :: initializeFrom(InputRecord &ir)
+RCSDNLMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     //RCSDEMaterial::instanciateFrom (ir);
     this->giveLinearElasticMaterial()->initializeFrom(ir);
@@ -360,10 +360,10 @@ RCSDNLMaterial :: initializeFrom(InputRecord &ir)
         R = 0.0;
     }
 
-    if ( ir.hasField(_IFT_RCSDNLMaterial_ef) ) { // if ef is specified, Gf is computed acordingly
+    if ( ir->hasField(_IFT_RCSDNLMaterial_ef) ) { // if ef is specified, Gf is computed acordingly
         IR_GIVE_FIELD(ir, this->ef, _IFT_RCSDNLMaterial_ef);
         this->Gf = this->Ft * this->ef;
-    } else if ( ir.hasField(_IFT_RCSDNLMaterial_gf) ) { // otherwise if Gf is specified, ef is computed acordingly
+    } else if ( ir->hasField(_IFT_RCSDNLMaterial_gf) ) { // otherwise if Gf is specified, ef is computed acordingly
         IR_GIVE_FIELD(ir, this->Gf, _IFT_RCSDNLMaterial_gf);
         this->ef = this->Gf / this->Ft;
     } else {

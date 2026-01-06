@@ -55,7 +55,7 @@ public:
     QWedgeGradDamage(int, Domain *);
     virtual ~QWedgeGradDamage() { }
 
-    void initializeFrom(InputRecord &ir, int priority) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
     void giveDofManDofIDMask(int inode, IntArray &answer) const override;
     void giveDofManDofIDMask_u(IntArray &answer) const override;
     void giveDofManDofIDMask_d(IntArray &answer) const override;

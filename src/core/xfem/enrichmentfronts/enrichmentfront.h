@@ -46,7 +46,6 @@ namespace oofem {
 class XfemManager;
 class DofManager;
 class FloatArray;
-class InputRecord;
 class DynamicInputRecord;
 class GaussPoint;
 enum NodeEnrichmentType : int;
@@ -122,7 +121,7 @@ public:
     virtual const char *giveClassName() const = 0;
     virtual const char *giveInputRecordName() const = 0;
 
-    virtual void initializeFrom(InputRecord &ir) = 0;
+    virtual void initializeFrom(const std::shared_ptr<InputRecord> &ir) = 0;
     virtual void giveInputRecord(DynamicInputRecord &input) = 0;
 
     virtual double giveSupportRadius() const = 0;

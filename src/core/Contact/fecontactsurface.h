@@ -100,7 +100,7 @@ public:
     /// Virtual destructor.
     virtual ~FEContactSurface(){;}
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
     void postInitialize() override;
     /**
      * @brief Returns the i-th contact element associated with this surface.

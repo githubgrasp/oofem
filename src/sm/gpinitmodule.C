@@ -58,7 +58,7 @@ GPInitModule :: ~GPInitModule()
 
 
 void
-GPInitModule :: initializeFrom(InputRecord &ir)
+GPInitModule :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     InitModule :: initializeFrom(ir);
 }

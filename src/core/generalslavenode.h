@@ -82,7 +82,7 @@ public:
     /// Destructor.
     virtual ~GeneralSlaveNode(void) {}
 
-    void initializeFrom(InputRecord &ir, int priority) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
     void initializeFinish() override;
     void postInitialize() override;
     virtual bool isDofTypeCompatible(dofType type) const override {

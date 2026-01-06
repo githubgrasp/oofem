@@ -87,7 +87,7 @@ public:
     /**
      * Initialize receiver from input record.
      */
-    int instanciateYourself(DataReader &dr, InputRecord &ir);
+    int instanciateYourself(DataReader &dr, const std::shared_ptr<InputRecord> &ir);
 };
 } // end namespace oofem
 #endif // fieldmanager_h

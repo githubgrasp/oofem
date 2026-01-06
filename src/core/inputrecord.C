@@ -89,7 +89,7 @@ int InputRecord::giveLevenshteinDist(const std::string& word1, const std::string
 }
 
 std::string InputRecord::error_msg_with_hints(const std::string& val, const std::map<int,std::vector<std::string>>& v2nn) {
-     //std::string InputRecord::error_msg_with_hints(const std::string& val, const std::vector<std::string>& all_names){
+     //std::string const std::shared_ptr<InputRecord>::error_msg_with_hints(const std::string& val, const std::vector<std::string>& all_names){
     std::ostringstream oss, oss2;
     std::string minName; int minDist=1000;
     for(const auto& [num,names]: v2nn){
@@ -146,155 +146,32 @@ InputRecord :: giveReader() const {
     return reader;
 }
 
-std::shared_ptr<InputRecord>
-InputRecord::ptr() {
-    // we could just return this->shared_from_this, but it throws std::bad_weak_ptr (with no backtrace)
-    // so we do essentially the same, but provide a nice message and abort immediately
-    auto weak=this->weak_from_this();
-    std::shared_ptr<InputRecord> ret=weak.lock();
-    if(!ret) OOFEM_ERROR("shared_ptr<InputRecord>::ptr(): object lifetime expired (programming error)");
-    return ret;
-}
 
-
-#ifdef _INPUTRECORD_OPTIONAL_OLD
-void
-InputRecord :: giveOptionalField(int &answer, InputFieldType id)
-{
-    if ( this->hasField(id) ) {
-        try {
-            this->giveField(answer, id);
-        } catch ( MissingKeywordInputException & ) { }
-    }
-}
-
-void
-InputRecord :: giveOptionalField(double &answer, InputFieldType id)
-{
-    if ( this->hasField(id) ) {
-        try {
-            this->giveField(answer, id);
-        } catch ( MissingKeywordInputException & ) { }
-    }
-}
-
-void
-InputRecord :: giveOptionalField(bool &answer, InputFieldType id)
-{
-    if ( this->hasField(id) ) {
-        try {
-            this->giveField(answer, id);
-        } catch ( MissingKeywordInputException & ) { }
-    }
-}
-
-void
-InputRecord :: giveOptionalField(std :: string &answer, InputFieldType id)
-{
-    if ( this->hasField(id) ) {
-        try {
-            this->giveField(answer, id);
-        } catch ( MissingKeywordInputException & ) { }
-    }
-}
-
-void
-InputRecord :: giveOptionalField(FloatArray &answer, InputFieldType id)
-{
-    if ( this->hasField(id) ) {
-        try {
-            this->giveField(answer, id);
-        } catch ( MissingKeywordInputException & ) { }
-    }
-}
-
-void
-InputRecord :: giveOptionalField(IntArray &answer, InputFieldType id)
-{
-    if ( this->hasField(id) ) {
-        try {
-            this->giveField(answer, id);
-        } catch ( MissingKeywordInputException & ) { }
-    }
-}
-
-void
-InputRecord :: giveOptionalField(FloatMatrix &answer, InputFieldType id)
-{
-    if ( this->hasField(id) ) {
-        try {
-            this->giveField(answer, id);
-        } catch ( MissingKeywordInputException & ) { }
-    }
-}
-
-void
-InputRecord :: giveOptionalField(std :: vector< std :: string > &answer, InputFieldType id)
-{
-    if ( this->hasField(id) ) {
-        try {
-            this->giveField(answer, id);
-        } catch ( MissingKeywordInputException & ) { }
-    }
-}
-
-void
-InputRecord :: giveOptionalField(Dictionary &answer, InputFieldType id)
-{
-    if ( this->hasField(id) ) {
-        try {
-            this->giveField(answer, id);
-        } catch ( MissingKeywordInputException & ) { }
-    }
-}
-
-void
-InputRecord :: giveOptionalField(std :: list< Range > &answer, InputFieldType id)
-{
-    if ( this->hasField(id) ) {
-        try {
-            this->giveField(answer, id);
-        } catch ( MissingKeywordInputException & ) { }
-    }
-}
-
-void
-InputRecord :: giveOptionalField(ScalarFunction &answer, InputFieldType id)
-{
-    if ( this->hasField(id) ) {
-        try {
-            this->giveField(answer, id);
-        } catch ( MissingKeywordInputException & ) { }
-    }
-}
-#endif
-
-
-InputException::InputException(const InputRecord& ir, std::string keyword, int number) : 
-    record(ir.giveRecordAsString()), keyword(std::move(keyword)), number(number)
+InputException::InputException(const std::shared_ptr<InputRecord>& ir, std::string keyword, int number) :
+    record(ir->giveRecordAsString()), keyword(std::move(keyword)), number(number)
 { }
 
 
-MissingKeywordInputException::MissingKeywordInputException(const InputRecord& ir, std::string kw, int n) :
+MissingKeywordInputException::MissingKeywordInputException(const std::shared_ptr<InputRecord>& ir, std::string kw, int n) :
     InputException(ir, std::move(kw), n)
 {
-    msg = ir.giveLocation()+": missing keyword \"" + keyword + "\"" \
+    msg = ir->giveLocation()+": missing keyword \"" + keyword + "\"" \
           "\n  \"" + record.substr(0, maxMsgLen) + (record.size()>maxMsgLen?"...":"")+ "\"";
 }
 
 
-BadFormatInputException::BadFormatInputException(const InputRecord& ir, std::string kw, int n) :
+BadFormatInputException::BadFormatInputException(const std::shared_ptr<InputRecord>& ir, std::string kw, int n) :
     InputException(ir, std::move(kw), n)
 {
-    msg = ir.giveLocation()+": bad format for keyword \"" + keyword + "\"" \
+    msg = ir->giveLocation()+": bad format for keyword \"" + keyword + "\"" \
           "\n   \"" + record.substr(0, maxMsgLen) + (record.size()>maxMsgLen?"...":"") + "\"";
 }
 
 
-ValueInputException::ValueInputException(const InputRecord& ir, std::string kw, const std::string &reason) :
+ValueInputException::ValueInputException(const std::shared_ptr<InputRecord>& ir, std::string kw, const std::string &reason) :
     InputException(ir, std::move(kw), -1)
 {
-    msg = ir.giveLocation()+": value input error for keyword \"" + keyword + "\"" + \
+    msg = ir->giveLocation()+": value input error for keyword \"" + keyword + "\"" + \
           "\nReason: \"" + reason + "\"\n" + \
           "\n  \"" + record.substr(0, maxMsgLen) + (record.size()>maxMsgLen?"...":"") + "\"";
 }

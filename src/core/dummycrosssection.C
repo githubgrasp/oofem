@@ -47,7 +47,7 @@ DummyCrossSection :: DummyCrossSection(int n, Domain* d) : CrossSection(n, d)
 }
 
 void
-DummyCrossSection :: initializeFrom(InputRecord &ir)
+DummyCrossSection :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     CrossSection :: initializeFrom(ir);
 

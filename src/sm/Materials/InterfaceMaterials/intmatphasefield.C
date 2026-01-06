@@ -209,7 +209,7 @@ IntMatPhaseField :: compute_gBis(double d) const
 
 
 void
-IntMatPhaseField :: initializeFrom(InputRecord &ir)
+IntMatPhaseField :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     IR_GIVE_FIELD(ir, this->k, _IFT_IntMatPhaseField_kn);
     IR_GIVE_FIELD(ir, this->Gc, _IFT_IntMatPhaseField_gc);

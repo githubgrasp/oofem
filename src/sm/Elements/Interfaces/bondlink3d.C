@@ -257,7 +257,7 @@ BondLink3d ::   giveDofManDofIDMask(int inode, IntArray &answer) const
 }
 
 void
-BondLink3d :: initializeFrom(InputRecord &ir, int priority)
+BondLink3d :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     // first call parent
     StructuralElement :: initializeFrom(ir, priority);

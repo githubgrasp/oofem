@@ -66,7 +66,7 @@ LinkSlip :: LinkSlip(int n, Domain *d) : StructuralInterfaceMaterial(n, d)
 
 
 void
-LinkSlip :: initializeFrom(InputRecord &ir)
+LinkSlip :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralInterfaceMaterial :: initializeFrom(ir);;
     

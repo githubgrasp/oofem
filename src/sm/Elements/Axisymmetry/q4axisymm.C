@@ -81,7 +81,7 @@ Q4Axisymm :: giveInterpolation() const
 
 
 void
-Q4Axisymm :: initializeFrom(InputRecord &ir, int priority)
+Q4Axisymm :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
     // Initialize the receiver from the input record ir.
     // The priority is used to resolve conflicts in the input record
     // (e.g. when two elements are defined in the same input record).

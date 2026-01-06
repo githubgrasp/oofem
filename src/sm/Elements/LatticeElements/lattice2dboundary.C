@@ -437,7 +437,7 @@ double Lattice2dBoundary :: givePitch()
 
 
 void
-Lattice2dBoundary :: initializeFrom(InputRecord &ir, int priority)
+Lattice2dBoundary :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     ParameterManager &ppm = this->giveDomain()->elementPPM;
     // first call parent

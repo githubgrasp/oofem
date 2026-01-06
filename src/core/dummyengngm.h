@@ -61,7 +61,7 @@ public:
     virtual ~DummyEngngModel() {}
 
     void solveYourselfAt(TimeStep *tStep) override;
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
     TimeStep * giveNextStep() override;
     const char *giveClassName() const override { return "DummyEngngModel"; }
  

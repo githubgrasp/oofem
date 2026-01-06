@@ -83,11 +83,11 @@ PulseFunction :: evaluateAtTime(double time)
 }
 
 void
-PulseFunction :: initializeFrom(InputRecord &ir)
+PulseFunction :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     Function :: initializeFrom(ir);
 
-    if (ir.hasField(_IFT_PulseFunction_tsteptime)) {
+    if (ir->hasField(_IFT_PulseFunction_tsteptime)) {
         mode = 1;
         IR_GIVE_FIELD(ir, time, _IFT_PulseFunction_tsteptime);
     } else {

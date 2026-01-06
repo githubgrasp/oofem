@@ -135,7 +135,9 @@ namespace oofem {
         XMLInputRecord::node_seen_set(description_node,true);
         outputFileName=output_node.text().as_string();
         description=description_node.text().as_string();
-        topRecord=std::shared_ptr<InputRecord>(new XMLInputRecord(this,root));
+    }
+    std::shared_ptr<InputRecord> XMLDataReader::giveTopInputRecord() {
+        return std::make_shared<XMLInputRecord>(this,stack.back().parent);
     }
 
     bool XMLDataReader :: canRead(const std::string& xml){
@@ -195,16 +197,16 @@ namespace oofem {
         }
         stack.pop_back();
     }
-    void XMLDataReader::enterRecord(InputRecord* rec) {
+    void XMLDataReader::enterRecord(const std::shared_ptr<InputRecord> rec) {
         _XML_DEBUG(loc()<<"::"<<giveStackPath());
-        XMLInputRecord* r=dynamic_cast<XMLInputRecord*>(rec);
+        std::shared_ptr<XMLInputRecord> r=std::dynamic_pointer_cast<XMLInputRecord>(rec);
         if(!r) OOFEM_ERROR("Error reading %s: input record is not a XMLInputRecord?",loc().c_str());
         _XML_DEBUG("   entering '"<<r->node.name()<<"' @ "<<(void*)(&r->node));
         stack.push_back(StackItem{r->node,r->node.first_child()});
     }
-    void XMLDataReader::leaveRecord(InputRecord* rec) {
+    void XMLDataReader::leaveRecord(const std::shared_ptr<InputRecord> rec) {
         _XML_DEBUG(loc()<<"::"<<giveStackPath());
-        XMLInputRecord* r=dynamic_cast<XMLInputRecord*>(rec);
+        std::shared_ptr<XMLInputRecord> r=std::dynamic_pointer_cast<XMLInputRecord>(rec);
         if(!r) OOFEM_ERROR("Error reading %s: input record is not a XMLInputRecord?",loc().c_str());
         _XML_DEBUG("   leaving '"<<r->node.name()<<"' @ "<<(void*)(&r->node));
         // if an exception is being propagated, and enterRecord/leaveRecord were not used via RAII-guard (RecordGuard),
@@ -233,7 +235,7 @@ namespace oofem {
         }
     }
 
-    InputRecord &
+    std::shared_ptr<InputRecord>
     XMLDataReader :: giveInputRecord(InputRecordType typeId, int recordId)
     {
         std::string tag=DataReader::InputRecordTags[typeId];
@@ -270,6 +272,6 @@ namespace oofem {
         tip.lastRecord=std::make_shared<XMLInputRecord>(this,n);
         tip.lastRecId=tip.lastRecord->setRecId(tip.lastRecId);
         _XML_DEBUG("   tip.curr="<<tip.curr.name()<<": "<<XMLInputRecord::node_seen_get(tip.curr));
-        return *tip.lastRecord;
+        return tip.lastRecord;
     }
 } // end namespace oofem

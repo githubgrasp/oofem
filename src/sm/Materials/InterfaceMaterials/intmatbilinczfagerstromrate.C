@@ -297,7 +297,7 @@ IntMatBilinearCZFagerstromRate :: giveFirstPKTraction_3d(const FloatArrayF<3> &d
 
 //const double tolerance = 1.0e-12; // small number
 void
-IntMatBilinearCZFagerstromRate :: initializeFrom(InputRecord &ir)
+IntMatBilinearCZFagerstromRate :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     IR_GIVE_FIELD(ir, kn0, _IFT_IntMatBilinearCZFagerstrom_kn);
     this->knc = kn0;                        // Defaults to the same stiffness in compression and tension

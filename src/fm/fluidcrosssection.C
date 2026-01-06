@@ -45,7 +45,7 @@ FluidCrossSection :: FluidCrossSection(int n, Domain *d) : CrossSection(n, d), m
 
 
 void
-FluidCrossSection :: initializeFrom(InputRecord &ir)
+FluidCrossSection :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     CrossSection :: initializeFrom(ir);
     IR_GIVE_FIELD(ir, this->matNumber, _IFT_FluidCrossSection_material);

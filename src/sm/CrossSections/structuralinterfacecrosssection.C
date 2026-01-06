@@ -62,13 +62,13 @@ StructuralInterfaceCrossSection :: checkConsistency()
 }
 
 void
-StructuralInterfaceCrossSection :: initializeFrom(InputRecord &ir)
+StructuralInterfaceCrossSection :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     CrossSection :: initializeFrom(ir);
     IR_GIVE_FIELD(ir, this->materialNum, _IFT_StructuralInterfaceCrossSection_Material);
 
     double thickness = 0.0;
-    if ( ir.hasField(_IFT_StructuralInterfaceCrossSection_thickness) ) {
+    if ( ir->hasField(_IFT_StructuralInterfaceCrossSection_thickness) ) {
         IR_GIVE_OPTIONAL_FIELD(ir, thickness, _IFT_StructuralInterfaceCrossSection_thickness);
         propertyDictionary.add(CS_Thickness, thickness);
     }

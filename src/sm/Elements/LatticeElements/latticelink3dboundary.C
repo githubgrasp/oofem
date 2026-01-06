@@ -321,7 +321,7 @@ LatticeLink3dBoundary ::   giveDofManDofIDMask(int inode, IntArray &answer) cons
 }
 
 void
-LatticeLink3dBoundary :: initializeFrom(InputRecord &ir, int priority)
+LatticeLink3dBoundary :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {   
     ParameterManager &ppm = this->giveDomain()->elementPPM;
     LatticeLink3d :: initializeFrom(ir, priority);

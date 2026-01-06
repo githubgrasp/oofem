@@ -534,7 +534,7 @@ AdditiveManufacturingProblem ::~AdditiveManufacturingProblem()
 }
 
 ///////////
-int AdditiveManufacturingProblem ::instanciateYourself( DataReader &dr, InputRecord &ir, const char *dataOutputFileName, const char *desc )
+int AdditiveManufacturingProblem ::instanciateYourself( DataReader &dr, const std::shared_ptr<InputRecord> &ir, const char *dataOutputFileName, const char *desc )
 {
     int result;
     result = EngngModel ::instanciateYourself( dr, ir, dataOutputFileName, desc );
@@ -544,7 +544,7 @@ int AdditiveManufacturingProblem ::instanciateYourself( DataReader &dr, InputRec
     return result;
 }
 
-int AdditiveManufacturingProblem ::instanciateDefaultMetaStep( InputRecord &ir )
+int AdditiveManufacturingProblem ::instanciateDefaultMetaStep( const std::shared_ptr<InputRecord> &ir )
 {
     if ( timeDefinedByProb ) {
         /* just set a nonzero number of steps;
@@ -584,7 +584,7 @@ int AdditiveManufacturingProblem ::instanciateSlaveProblems()
 }
 
 
-void AdditiveManufacturingProblem ::initializeFrom( InputRecord &ir )
+void AdditiveManufacturingProblem ::initializeFrom( const std::shared_ptr<InputRecord> &ir )
 {
     OOFEM_LOG_INFO( "Starting Additive Manufacturing solver\n" );
 
@@ -671,21 +671,21 @@ void AdditiveManufacturingProblem ::initializeFrom( InputRecord &ir )
     if ( numberOfSteps <= 0 ) {
         throw ValueInputException( ir, _IFT_EngngModel_nsteps, "nsteps must be > 0" );
     }
-    if ( ir.hasField( _IFT_AdditiveManufacturingProblem_deltat ) ) {
+    if ( ir->hasField( _IFT_AdditiveManufacturingProblem_deltat ) ) {
         EngngModel ::initializeFrom( ir );
         IR_GIVE_FIELD( ir, deltaT, _IFT_AdditiveManufacturingProblem_deltat );
         dtFunction = 0;
-    } else if ( ir.hasField( _IFT_AdditiveManufacturingProblem_prescribedtimes ) ) {
+    } else if ( ir->hasField( _IFT_AdditiveManufacturingProblem_prescribedtimes ) ) {
         EngngModel ::initializeFrom( ir );
         IR_GIVE_FIELD( ir, discreteTimes, _IFT_AdditiveManufacturingProblem_prescribedtimes );
         dtFunction = 0;
-    } else if ( ir.hasField( _IFT_AdditiveManufacturingProblem_dtf ) ) {
+    } else if ( ir->hasField( _IFT_AdditiveManufacturingProblem_dtf ) ) {
         IR_GIVE_OPTIONAL_FIELD( ir, dtFunction, _IFT_AdditiveManufacturingProblem_dtf );
     } else {
         IR_GIVE_FIELD( ir, timeDefinedByProb, _IFT_AdditiveManufacturingProblem_timeDefinedByProb );
     }
 
-    if ( ir.hasField( _IFT_AdditiveManufacturingProblem_adaptiveStepLength ) ) {
+    if ( ir->hasField( _IFT_AdditiveManufacturingProblem_adaptiveStepLength ) ) {
         adaptiveStepLength  = true;
         this->minStepLength = 0.;
         IR_GIVE_OPTIONAL_FIELD( ir, minStepLength, _IFT_AdditiveManufacturingProblem_minsteplength );
@@ -709,7 +709,7 @@ void AdditiveManufacturingProblem ::initializeFrom( InputRecord &ir )
     //    IR_GIVE_OPTIONAL_FIELD(ir, timeLag, _IFT_AdditiveManufacturingProblem_timeLag);
 
     inputStreamNames.resize( 2 );
-    if ( ir.hasField( _IFT_AdditiveManufacturingProblem_prob3 ) ) {
+    if ( ir->hasField( _IFT_AdditiveManufacturingProblem_prob3 ) ) {
         inputStreamNames.resize( 3 );
     }
 
@@ -733,7 +733,7 @@ void AdditiveManufacturingProblem ::initializeFrom( InputRecord &ir )
         domainList.clear();
     }
 
-    suppressOutput = ir.hasField( _IFT_EngngModel_suppressOutput );
+    suppressOutput = ir->hasField( _IFT_EngngModel_suppressOutput );
 
     if ( suppressOutput ) {
         printf( "Suppressing output.\n" );
@@ -768,14 +768,14 @@ void AdditiveManufacturingProblem ::updateAttributes( MetaStep *mStep )
     }
 
     if ( !timeDefinedByProb ) {
-        if ( ir.hasField( _IFT_AdditiveManufacturingProblem_deltat ) ) {
+        if ( ir->hasField( _IFT_AdditiveManufacturingProblem_deltat ) ) {
             IR_GIVE_FIELD( ir, deltaT, _IFT_AdditiveManufacturingProblem_deltat );
             IR_GIVE_OPTIONAL_FIELD( ir, dtFunction, _IFT_AdditiveManufacturingProblem_dtf );
             IR_GIVE_OPTIONAL_FIELD( ir, stepMultiplier, _IFT_AdditiveManufacturingProblem_stepmultiplier );
             if ( stepMultiplier < 0 ) {
                 OOFEM_ERROR( "stepMultiplier must be > 0" )
             }
-        } else if ( ir.hasField( _IFT_AdditiveManufacturingProblem_prescribedtimes ) ) {
+        } else if ( ir->hasField( _IFT_AdditiveManufacturingProblem_prescribedtimes ) ) {
             IR_GIVE_FIELD( ir, discreteTimes, _IFT_AdditiveManufacturingProblem_prescribedtimes );
         }
     }

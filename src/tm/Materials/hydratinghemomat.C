@@ -45,7 +45,7 @@ namespace oofem {
 REGISTER_Material(HydratingHeMoMaterial);
 
 void
-HydratingHeMoMaterial :: initializeFrom(InputRecord &ir)
+HydratingHeMoMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     int value;
     double dvalue;
@@ -77,7 +77,7 @@ HydratingHeMoMaterial :: initializeFrom(InputRecord &ir)
         setMixture( ( MixtureType ) value );
         printf("\nHydratingHeMoMat %d: using mixture %d.\n", giveNumber(), value);
 
-        if ( ir.hasField(_IFT_HydratingHeMoMaterial_noHeat) ) {
+        if ( ir->hasField(_IFT_HydratingHeMoMaterial_noHeat) ) {
             hydrationHeat = false;
             printf( "HydratingHeMoMat %d: hydration heat neglected.\n", giveNumber() );
         } else {
@@ -86,7 +86,7 @@ HydratingHeMoMaterial :: initializeFrom(InputRecord &ir)
 
         if ( hydrationHeat ) {
             // include hydration internal source in LHS?
-            if ( ir.hasField(_IFT_HydratingHeMoMaterial_noLHS) ) {
+            if ( ir->hasField(_IFT_HydratingHeMoMaterial_noLHS) ) {
                 hydrationLHS = false;
                 printf( "HydratingHeMoMat %d: hydration heat not included in LHS.\n", giveNumber() );
             } else {

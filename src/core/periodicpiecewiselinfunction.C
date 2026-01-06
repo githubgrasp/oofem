@@ -105,7 +105,7 @@ double PeriodicPiecewiseLinFunction :: evaluateVelocityAtTime(double time)
 }
 
 void
-PeriodicPiecewiseLinFunction :: initializeFrom(InputRecord &ir)
+PeriodicPiecewiseLinFunction :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     PiecewiseLinFunction :: initializeFrom(ir);
     period = -1.0;

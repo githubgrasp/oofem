@@ -368,7 +368,7 @@ bool PrescribedGradientBCPeriodic :: isStrainDof(Dof *dof)
 }
 
 
-void PrescribedGradientBCPeriodic :: initializeFrom(InputRecord &ir)
+void PrescribedGradientBCPeriodic :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     ActiveBoundaryCondition :: initializeFrom(ir);
     PrescribedGradientHomogenization::initializeFrom(ir);

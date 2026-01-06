@@ -42,16 +42,16 @@ MetaStep :: MetaStep(int n, EngngModel *e) :
     number(n)
 {}
 
-MetaStep :: MetaStep(int n, EngngModel *e, int nsteps, InputRecord &attrib) :
+MetaStep :: MetaStep(int n, EngngModel *e, int nsteps, const std::shared_ptr<InputRecord>& attrib) :
     eModel(e),
     numberOfSteps(nsteps),
-    attributes(attrib.clone()),
+    attributes(attrib),
     number(n)
 {}
 
 
 void
-MetaStep :: initializeFrom(InputRecord &ir)
+MetaStep :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     timeStepReductionStrategyType = "NoReduction";
     // read time step reduction strategy type
@@ -75,9 +75,9 @@ MetaStep :: initializeFrom(InputRecord &ir)
 	OOFEM_ERROR("Numer of steps has to be positive number");
       } else {
 	dtFunction = 0;
-	if ( ir.hasField(_IFT_MetaStep_dtFunction) ) {
+	if ( ir->hasField(_IFT_MetaStep_dtFunction) ) {
 	  IR_GIVE_FIELD(ir, this->dtFunction, _IFT_MetaStep_dtFunction);
-	} else if ( ir.hasField(_IFT_MetaStep_prescribedTimes) ) {
+	} else if ( ir->hasField(_IFT_MetaStep_prescribedTimes) ) {
 	  IR_GIVE_OPTIONAL_FIELD(ir, prescribedTimes, _IFT_MetaStep_prescribedTimes);
 	  if ( prescribedTimes.giveSize() > 0 ) {
 	    numberOfSteps = prescribedTimes.giveSize();
@@ -90,7 +90,7 @@ MetaStep :: initializeFrom(InputRecord &ir)
       }
     } 
     
-    this->attributes = ir.clone();
+    this->attributes = ir;
 }
 
 int

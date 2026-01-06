@@ -119,12 +119,12 @@ double PiecewiseLinFunction :: evaluateVelocityAtTime(double time)
 }
 
 void
-PiecewiseLinFunction :: initializeFrom(InputRecord &ir)
+PiecewiseLinFunction :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     Function :: initializeFrom(ir);
 
     // Optional means, read data from external file (useful for very large sets of data)
-    if ( ir.hasField(_IFT_PiecewiseLinFunction_dataFile) ) {
+    if ( ir->hasField(_IFT_PiecewiseLinFunction_dataFile) ) {
         std :: list< double >t, ft;
         // Open the file;
         std :: string fname;

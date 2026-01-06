@@ -371,7 +371,7 @@ CohesiveSurface3d :: evaluateLocalCoordinateSystem()
 
 
 void
-CohesiveSurface3d :: initializeFrom(InputRecord &ir, int priority)
+CohesiveSurface3d :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     // first call parent
     StructuralElement :: initializeFrom(ir, priority);

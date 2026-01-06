@@ -64,7 +64,7 @@ public:
     LIBeam3d(int n, Domain * d);
     virtual ~LIBeam3d() { }
 
-    void initializeFrom(InputRecord &ir, int prio) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, int prio) override;
     void postInitialize() override;
 
     void computeLumpedMassMatrix(FloatMatrix &answer, TimeStep *tStep) override;

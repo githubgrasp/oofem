@@ -74,7 +74,7 @@ LatticeBondPlasticity::computeDHardeningDKappa(double kappa) const
 
 
 void
-LatticeBondPlasticity::initializeFrom(InputRecord &ir)
+LatticeBondPlasticity::initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     LatticeLinearElastic::initializeFrom(ir);
 

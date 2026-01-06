@@ -65,8 +65,8 @@ LoadBalancer :: LoadBalancer(Domain *d)  : wtpList()
 
 void LoadBalancer::migrateLoad(Domain *d) {}
 void LoadBalancer::printStatistics() const {}
-void LoadBalancer::initializeFrom(InputRecord &ir) { }
-void LoadBalancerMonitor::initializeFrom(InputRecord &ir) { }
+void LoadBalancer::initializeFrom(const std::shared_ptr<InputRecord> &ir) { }
+void LoadBalancerMonitor::initializeFrom(const std::shared_ptr<InputRecord> &ir) { }
 
 #else
 
@@ -78,7 +78,7 @@ LoadBalancer :: LoadBalancer(Domain *d)  : wtpList()
 
 
 void
-LoadBalancer :: initializeFrom(InputRecord &ir)
+LoadBalancer :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     IntArray wtp;
     IR_GIVE_OPTIONAL_FIELD(ir, wtp, _IFT_LoadBalancer_wtp);
@@ -545,7 +545,7 @@ LoadBalancer :: printStatistics() const
 
 
 void
-LoadBalancerMonitor :: initializeFrom(InputRecord &ir)
+LoadBalancerMonitor :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     int nproc = emodel->giveNumberOfProcesses();
     int nodeWeightMode = 0;

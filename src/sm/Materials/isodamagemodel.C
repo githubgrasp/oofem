@@ -370,7 +370,7 @@ double IsotropicDamageMaterial :: give(int aProperty, GaussPoint *gp) const
 }
 
 void
-IsotropicDamageMaterial :: initializeFrom(InputRecord &ir)
+IsotropicDamageMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralMaterial :: initializeFrom(ir);
 

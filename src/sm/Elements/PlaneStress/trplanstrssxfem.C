@@ -301,7 +301,7 @@ void TrPlaneStress2dXFEM :: drawScalar(oofegGraphicContext &gc, TimeStep *tStep)
 #endif
 
 void
-TrPlaneStress2dXFEM :: initializeFrom(InputRecord &ir, int priority)
+TrPlaneStress2dXFEM :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     ParameterManager &ppm = giveDomain()->elementPPM;
     TrPlaneStress2d :: initializeFrom(ir, priority);

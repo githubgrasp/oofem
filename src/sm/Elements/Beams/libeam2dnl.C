@@ -494,7 +494,7 @@ double LIBeam2dNL::givePitch()
 
 
 void
-LIBeam2dNL::initializeFrom(InputRecord &ir, int priority)
+LIBeam2dNL::initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     NLStructuralElement::initializeFrom(ir, priority);
 }

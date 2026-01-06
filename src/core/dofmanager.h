@@ -453,8 +453,8 @@ public:
      */
     virtual bool giveMasterDofMans(IntArray &masters);
 
-    void initializeFrom(InputRecord &ir) override { initializeFrom(ir, 1); };
-    void initializeFrom(InputRecord &ir, int priority) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override { initializeFrom(ir, 1); };
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
     void initializeFinish() override;
     void postInitialize() override;
 

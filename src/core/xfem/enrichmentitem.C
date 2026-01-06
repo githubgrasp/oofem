@@ -81,16 +81,16 @@ EnrichmentItem :: ~EnrichmentItem()
 {
 }
 
-void EnrichmentItem :: initializeFrom(InputRecord &ir)
+void EnrichmentItem :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
-    thisIr=ir.clone();
-    mEnrFrontIndex = ir.giveGroupCount(_IFT_EnrichmentItem_front,"EnrichmentFront",/*optional*/true);
-    mPropLawIndex = ir.hasChild(_IFT_EnrichmentItem_propagationlaw,"PropagationLaw",/*optional*/true);
+    thisIr=ir;
+    mEnrFrontIndex = ir->giveGroupCount(_IFT_EnrichmentItem_front,"EnrichmentFront",/*optional*/true);
+    mPropLawIndex = ir->hasChild(_IFT_EnrichmentItem_propagationlaw,"PropagationLaw",/*optional*/true);
 
-    if ( ir.hasField(_IFT_EnrichmentItem_inheritbc) ) {
+    if ( ir->hasField(_IFT_EnrichmentItem_inheritbc) ) {
         mInheritBoundaryConditions = true;
     }
-    if ( ir.hasField(_IFT_EnrichmentItem_inheritorderedbc) ) {
+    if ( ir->hasField(_IFT_EnrichmentItem_inheritorderedbc) ) {
         mInheritOrderedBoundaryConditions = true;
     }
 }

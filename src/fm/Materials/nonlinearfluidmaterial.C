@@ -50,7 +50,7 @@ REGISTER_Material(NonlinearFluidMaterial);
 
 
 void
-NonlinearFluidMaterial :: initializeFrom(InputRecord &ir)
+NonlinearFluidMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     FluidDynamicMaterial :: initializeFrom(ir);
     IR_GIVE_FIELD(ir, viscosity, _IFT_NonlinearFluidMaterial_mu);

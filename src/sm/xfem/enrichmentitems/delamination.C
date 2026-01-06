@@ -81,7 +81,7 @@ int Delamination :: instanciateYourself(DataReader &dr)
 
         mpEnrichmentFunc = classFactory.createEnrichmentFunction( name.c_str(), 1, this->giveDomain() );
         if ( mpEnrichmentFunc ) {
-            mpEnrichmentFunc->initializeFrom(*mir);
+            mpEnrichmentFunc->initializeFrom(mir);
         } else {
             OOFEM_ERROR( "failed to create enrichment function (%s)", name.c_str() );
         }
@@ -90,8 +90,8 @@ int Delamination :: instanciateYourself(DataReader &dr)
 
     // Instantiate enrichment domain
     {
-        auto &mir = dr.giveInputRecord(DataReader :: IR_geoRec, 1);
-        mir.giveRecordKeywordField(name);
+        auto mir = dr.giveInputRecord(DataReader :: IR_geoRec, 1);
+        mir->giveRecordKeywordField(name);
 
         IntArray idList;
         IR_GIVE_FIELD(mir, idList, _IFT_ListBasedEI_list);
@@ -109,9 +109,9 @@ int Delamination :: instanciateYourself(DataReader &dr)
         mpEnrichmentFrontEnd = std::make_unique<EnrFrontDoNothing>(this->giveNumber());
     } else {
         int i=0;
-        for(InputRecord& efIr: dr.giveGroupRecords("EnrichmentFront",DataReader :: IR_enrichFrontRec,/*numRequired*/2)){
+        for(const std::shared_ptr<InputRecord>& efIr: dr.giveGroupRecords("EnrichmentFront",DataReader :: IR_enrichFrontRec,/*numRequired*/2)){
             std::string enrFrontName;
-            efIr.giveRecordKeywordField(enrFrontName);
+            efIr->giveRecordKeywordField(enrFrontName);
             auto ef = classFactory.createEnrichmentFront( enrFrontName.c_str() );
             if ( ef ) {
                 assert(i==0 || i==1);
@@ -136,7 +136,7 @@ int Delamination :: instanciateYourself(DataReader &dr)
 
         mpPropagationLaw = classFactory.createPropagationLaw( propLawName.c_str() );
         if ( mpPropagationLaw ) {
-            mpPropagationLaw->initializeFrom(*propLawir);
+            mpPropagationLaw->initializeFrom(propLawir);
         } else {
             OOFEM_ERROR( "Failed to create propagation law (%s)", propLawName.c_str() );
         }
@@ -340,14 +340,14 @@ void Delamination :: evaluateEnrFuncAt(std :: vector< double > &oEnrFunc, const 
 }
 
 
-void Delamination :: initializeFrom(InputRecord &ir)
+void Delamination :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     EnrichmentItem :: initializeFrom(ir);
 
     // Compute the delamination xi-coord
     IR_GIVE_FIELD(ir, this->interfaceNum, _IFT_Delamination_interfacenum); // interface number from the bottom
     IR_GIVE_FIELD(ir, this->crossSectionNum, _IFT_Delamination_csnum);
-    if ( ir.hasField(_IFT_Delamination_averageStresses) ) {
+    if ( ir->hasField(_IFT_Delamination_averageStresses) ) {
         this->recoverStresses = false;
         //printf("averageStresses");
     }
@@ -383,8 +383,9 @@ void Delamination :: initializeFrom(InputRecord &ir)
                 throw ValueInputException(ir, _IFT_Delamination_csnum, "Delamination cross section have different number of layers");
             }
             
-        } else 
-        numberOfLayers = layeredCS->giveNumberOfLayers();
+        } else {
+            numberOfLayers = layeredCS->giveNumberOfLayers();
+        }
         totalThickness = layeredCS->give(CS_Thickness, FloatArray(), nullptr, false); // no position available
         for ( int i = 1 ; i <= numberOfLayers ; i++) {
             double layerThickness = layeredCS->giveLayerThickness(i);

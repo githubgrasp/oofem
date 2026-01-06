@@ -900,7 +900,7 @@ TR_SHELL11 :: printOutputAt(FILE *file, TimeStep *tStep)
 }
 
 void
-TR_SHELL11 :: initializeFrom(InputRecord &ir, int priority)
+TR_SHELL11 :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     StructuralElement :: initializeFrom(ir, priority);
 }

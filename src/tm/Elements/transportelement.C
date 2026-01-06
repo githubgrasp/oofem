@@ -80,7 +80,7 @@ TransportElement :: TransportElement(int n, Domain *aDomain, ElementMode em) :
 
 
 void
-TransportElement :: initializeFrom(InputRecord &ir, int priority)
+TransportElement :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     Element::initializeFrom(ir, priority);
     ParameterManager &ppm =  this->giveDomain()->elementPPM;

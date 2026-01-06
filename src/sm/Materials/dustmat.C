@@ -144,7 +144,7 @@ DustMaterial :: DustMaterial(int n, Domain *d) : StructuralMaterial(n, d),
 
 
 void
-DustMaterial :: initializeFrom(InputRecord &ir)
+DustMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     // call the corresponding service of structural material
     StructuralMaterial :: initializeFrom(ir);

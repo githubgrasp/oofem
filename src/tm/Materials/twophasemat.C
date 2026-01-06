@@ -43,7 +43,7 @@ namespace oofem {
 REGISTER_Material(TwoPhaseMaterial);
 
 void
-TwoPhaseMaterial :: initializeFrom(InputRecord &ir)
+TwoPhaseMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     IR_GIVE_FIELD(ir, this->slaveMaterial, _IFT_TwoPhaseMaterial_mat);
     if ( this->slaveMaterial.giveSize() != 2 ) {

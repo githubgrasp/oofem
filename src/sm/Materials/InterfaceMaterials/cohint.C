@@ -117,7 +117,7 @@ CohesiveInterfaceMaterial :: give3dStiffnessMatrix_Eng(MatResponseMode rMode, Ga
 
 
 void
-CohesiveInterfaceMaterial :: initializeFrom(InputRecord &ir)
+CohesiveInterfaceMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralInterfaceMaterial :: initializeFrom(ir);
 

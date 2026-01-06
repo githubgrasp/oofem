@@ -36,6 +36,7 @@
 
 //#include "xfem/enrichmentitem.h"
 #include "xfem/enrichmentitems/crack.h"
+#include "inputrecord.h"
 
 #define _IFT_ShellCrack_Name "shellcrack"
 #define _IFT_ShellCrack_xiBottom "xibottom"
@@ -49,7 +50,6 @@
 namespace oofem {
 class XfemManager;
 class Domain;
-class InputRecord;
 class GaussPoint;
 class GnuplotExportModule;
 
@@ -60,7 +60,7 @@ public:
 
     const char *giveClassName() const override { return "ShellCrack"; }
     const char *giveInputRecordName() const override { return _IFT_ShellCrack_Name; }
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
 
     double xiBottom;
     double xiTop;

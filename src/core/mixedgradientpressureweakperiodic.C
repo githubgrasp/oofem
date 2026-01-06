@@ -94,7 +94,7 @@ DofManager *MixedGradientPressureWeakPeriodic :: giveInternalDofManager(int i)
 }
 
 
-void MixedGradientPressureWeakPeriodic :: initializeFrom(InputRecord &ir)
+void MixedGradientPressureWeakPeriodic :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     MixedGradientPressureBC :: initializeFrom(ir);
 

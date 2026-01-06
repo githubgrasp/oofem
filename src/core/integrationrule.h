@@ -248,7 +248,7 @@ public:
     /// Error printing helper.
     std :: string errorInfo(const char *func) const { return std :: string(giveClassName()) + func; }
     virtual IntegrationRuleType giveIntegrationRuleType() const { return IRT_None; }
-    virtual void initializeFrom(InputRecord &ir) { }
+    virtual void initializeFrom(const std::shared_ptr<InputRecord> &ir) { }
 
     /**
      * Trivial implementation, only creates a single point.

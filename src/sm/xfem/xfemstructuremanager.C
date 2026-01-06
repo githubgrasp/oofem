@@ -60,7 +60,7 @@ XfemStructureManager :: XfemStructureManager(Domain *domain) :
 XfemStructureManager :: ~XfemStructureManager()
 {}
 
-void XfemStructureManager :: initializeFrom(InputRecord &ir)
+void XfemStructureManager :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     XfemManager :: initializeFrom(ir);
 
@@ -201,7 +201,7 @@ void XfemStructureManager :: splitCracks()
                                 //                        EnrichmentItem *newEI_1 = new Crack(n1, this, this->giveDomain() );
                                 auto newCrack = std::make_unique<Crack>( n1, this, this->giveDomain() );
 
-                                auto &ir = dataReader.giveInputRecord(DataReader :: IR_enrichItemRec, i);
+                                auto ir = dataReader.giveInputRecord(DataReader :: IR_enrichItemRec, i);
                                 newCrack->initializeFrom(ir);
                                 newCrack->instanciateYourself(dataReader);
 

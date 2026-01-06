@@ -111,7 +111,7 @@ public:
     EnrichmentItem(int n, XfemManager *xm, Domain *aDomain);
     virtual ~EnrichmentItem();
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
     virtual int instanciateYourself(DataReader &dr) = 0;
     //void postInitialize() override = 0;
 

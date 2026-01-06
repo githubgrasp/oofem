@@ -99,9 +99,9 @@ public:
         DataReader::GroupRecords modRecs=dr.giveGroupRecords(irPtr,ift,name,irType,/*optional*/true);
         moduleList.reserve(modRecs.size());
         int modIndex0=0;
-        for (auto& mir: modRecs){
+        for (auto mir: modRecs){
             std::string modName;
-            mir.giveRecordKeywordField(modName);
+            mir->giveRecordKeywordField(modName);
 
             // read type of module
             std :: unique_ptr< M > module = this->CreateModule(modName.c_str(), modIndex0, emodel);

@@ -225,7 +225,7 @@ NumericalMethod *SUPG :: giveNumericalMethod(MetaStep *mStep)
 }
 
 void
-SUPG :: initializeFrom(InputRecord &ir)
+SUPG :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     FluidModel :: initializeFrom(ir);
 
@@ -234,7 +234,7 @@ SUPG :: initializeFrom(InputRecord &ir)
     IR_GIVE_OPTIONAL_FIELD(ir, atolv, _IFT_SUPG_atolv);
 
 
-    stopmaxiter = ir.hasField(_IFT_SUPG_stopmaxiter);
+    stopmaxiter = ir->hasField(_IFT_SUPG_stopmaxiter);
 
     maxiter = 200;
     IR_GIVE_OPTIONAL_FIELD(ir, maxiter, _IFT_SUPG_maxiter);

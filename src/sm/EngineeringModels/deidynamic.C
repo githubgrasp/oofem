@@ -59,7 +59,7 @@ NumericalMethod *DEIDynamic :: giveNumericalMethod(MetaStep *mStep)
 
 
 void
-DEIDynamic :: initializeFrom(InputRecord &ir)
+DEIDynamic :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralEngngModel :: initializeFrom(ir);
 

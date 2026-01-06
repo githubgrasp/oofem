@@ -452,7 +452,7 @@ bool MixedGradientPressureDirichlet :: isDevDof(Dof *dof)
 }
 
 
-void MixedGradientPressureDirichlet :: initializeFrom(InputRecord &ir)
+void MixedGradientPressureDirichlet :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     MixedGradientPressureBC :: initializeFrom(ir);
 

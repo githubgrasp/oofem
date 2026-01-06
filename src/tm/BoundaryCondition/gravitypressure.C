@@ -42,7 +42,7 @@ namespace oofem {
 REGISTER_BoundaryCondition(GravityPressure);
 
 void
-GravityPressure :: initializeFrom(InputRecord &ir)
+GravityPressure :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     Load :: initializeFrom(ir);
 

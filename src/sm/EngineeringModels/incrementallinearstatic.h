@@ -84,7 +84,7 @@ public:
     IncrementalLinearStatic(int i, EngngModel *master = nullptr);
     virtual ~IncrementalLinearStatic();
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
 
     void solveYourself() override;
     void solveYourselfAt(TimeStep *tStep) override;

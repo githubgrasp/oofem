@@ -79,7 +79,7 @@ public:
      */
     void updateLoad(const FloatArray &newValue) { componentArray = newValue; }
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
     void giveInputRecord(DynamicInputRecord &input) override;
     bcGeomType giveBCGeoType() const override { return SurfaceLoadBGT; }
 

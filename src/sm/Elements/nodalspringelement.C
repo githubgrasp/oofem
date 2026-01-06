@@ -111,7 +111,7 @@ NodalSpringElement :: computeNumberOfGlobalDofs()
 
 
 void
-NodalSpringElement :: initializeFrom(InputRecord &ir, int priority)
+NodalSpringElement :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     ParameterManager &ppm =  this->giveDomain()->elementPPM;
     //StructuralElement::initializeFrom(ir, priority);

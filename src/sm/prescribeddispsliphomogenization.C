@@ -42,7 +42,7 @@
 
 namespace oofem {
 
-void PrescribedDispSlipHomogenization::initializeFrom(InputRecord &ir)
+void PrescribedDispSlipHomogenization::initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     mCenterCoord.resize( dispGradient.giveNumberOfColumns() );
     mCenterCoord.zero();

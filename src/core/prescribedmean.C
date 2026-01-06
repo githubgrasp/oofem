@@ -55,7 +55,7 @@ double PrescribedMean :: domainSize;
 REGISTER_BoundaryCondition(PrescribedMean);
 
 void
-PrescribedMean :: initializeFrom(InputRecord &ir)
+PrescribedMean :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     GeneralBoundaryCondition :: initializeFrom(ir);
 

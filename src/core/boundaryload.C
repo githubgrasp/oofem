@@ -91,7 +91,7 @@ BoundaryLoad :: computeValueAt(FloatArray &answer, TimeStep *tStep, const FloatA
 
 
 void
-BoundaryLoad :: initializeFrom(InputRecord &ir)
+BoundaryLoad :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     Load :: initializeFrom(ir);
 

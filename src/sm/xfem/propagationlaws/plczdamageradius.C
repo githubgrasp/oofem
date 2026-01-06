@@ -54,7 +54,7 @@ namespace oofem {
 REGISTER_PropagationLaw(PLCZdamageRadius)
 
 /////////////////////////////////////////////
-void PLCZdamageRadius :: initializeFrom(InputRecord &ir)
+void PLCZdamageRadius :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     IR_GIVE_FIELD(ir, mIncrementRadius,         _IFT_PLCZdamageRadius_IncRadius);
     IR_GIVE_FIELD(ir, mDamageThreshold, _IFT_PLCZdamageRadius_DamageThreshold);

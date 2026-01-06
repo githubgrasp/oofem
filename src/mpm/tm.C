@@ -682,7 +682,7 @@ class TMSimpleMaterial : public Material {
         }
     };
 
-    void initializeFrom(InputRecord &ir) override {
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override {
         Material :: initializeFrom(ir);
 
         IR_GIVE_OPTIONAL_FIELD(ir, e, _IFT_TMSimpleMaterial_E);

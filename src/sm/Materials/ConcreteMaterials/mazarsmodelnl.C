@@ -111,7 +111,7 @@ MazarsNLMaterial :: computeEquivalentStrain(const FloatArray &strain, GaussPoint
 }
 
 void
-MazarsNLMaterial :: initializeFrom(InputRecord &ir)
+MazarsNLMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     MazarsMaterial :: initializeFrom(ir);
     StructuralNonlocalMaterialExtensionInterface :: initializeFrom(ir);

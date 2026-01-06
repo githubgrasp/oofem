@@ -66,7 +66,7 @@ public:
     LIBeam3dBoundary(int n, Domain *d);
     virtual ~LIBeam3dBoundary() { }
 
-    void initializeFrom(InputRecord &ir, int prio) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir, int prio) override;
     void postInitialize() override;
 
     int computeNumberOfDofs() override { return 21; }

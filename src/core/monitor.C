@@ -40,7 +40,7 @@ namespace oofem {
 
 REGISTER_Monitor( DummyMonitor )
 
-void DummyMonitor::initializeFrom(InputRecord &ir) 
+void DummyMonitor::initializeFrom(const std::shared_ptr<InputRecord>& ir)
 {}
 void DummyMonitor::update(EngngModel* eModel, TimeStep *tStep, MonitorEvent event) 
 {

@@ -61,7 +61,7 @@ FRCFCMNL :: FRCFCMNL(int n, Domain *d) : FRCFCM(n, d), StructuralNonlocalMateria
 
 
 void
-FRCFCMNL :: initializeFrom(InputRecord &ir)
+FRCFCMNL :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     FRCFCM :: initializeFrom(ir);
     StructuralNonlocalMaterialExtensionInterface :: initializeFrom(ir);

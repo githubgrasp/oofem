@@ -75,7 +75,7 @@ VolumetricEnergyInterface :: compute_d2VolumetricEnergy_dF2(const Tensor2_3d &F)
 
 
 void
-VolumetricEnergyInterface :: initializeFrom(InputRecord &ir)
+VolumetricEnergyInterface :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
   IR_GIVE_FIELD(ir, K, _IFT_VolumetricEnergyInterface_k);
   IR_GIVE_OPTIONAL_FIELD(ir, type, _IFT_VolumetricEnergyInterface_type)

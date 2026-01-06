@@ -62,7 +62,7 @@ LIBeam3dBoundary :: LIBeam3dBoundary(int n, Domain *aDomain) : LIBeam3d(n, aDoma
 
 
 void
-LIBeam3dBoundary :: initializeFrom(InputRecord &ir, int priority)
+LIBeam3dBoundary :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     LIBeam3d :: initializeFrom(ir, priority);
     ParameterManager &ppm = giveDomain()->elementPPM;

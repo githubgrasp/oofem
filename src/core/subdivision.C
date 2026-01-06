@@ -3797,14 +3797,14 @@ Subdivision :: createMesh(TimeStep *tStep, int domainNumber, int domainSerNum, D
 #endif
         if ( parent ) {
             // Copy most of the existing parent element:
-            DynamicInputRecord ir( *domain->giveElement ( parent ) );
-            ir.setField(* mesh->giveElement(ielem)->giveNodes(), Element::IPK_Element_nodes.getNameCStr());
-            ir.giveRecordKeywordField(name);
+            auto ir=std::make_shared<DynamicInputRecord>( *domain->giveElement ( parent ) );
+            ir->setField(* mesh->giveElement(ielem)->giveNodes(), Element::IPK_Element_nodes.getNameCStr());
+            ir->giveRecordKeywordField(name);
             auto elem = classFactory.createElement(name.c_str(), eNum, * dNew);
             elem->initializeFrom(ir,1);
             elem->setGlobalNumber( mesh->giveElement(ielem)->giveGlobalNumber() );
 #ifdef __MPI_PARALLEL_MODE
-            //ir.setRecordKeywordNumber( mesh->giveElement(ielem)->giveGlobalNumber() );
+            //ir->setRecordKeywordNumber( mesh->giveElement(ielem)->giveGlobalNumber() );
             // not subdivided elements inherit globNum, subdivided give -1
             // local elements have array partitions empty !
 #endif
@@ -3819,8 +3819,8 @@ Subdivision :: createMesh(TimeStep *tStep, int domainNumber, int domainSerNum, D
     int ncrosssect = domain->giveNumberOfCrossSectionModels();
     ( * dNew )->resizeCrossSectionModels(ncrosssect);
     for ( int i = 1; i <= ncrosssect; i++ ) {
-        DynamicInputRecord ir( *domain->giveCrossSection ( i ) );
-        ir.giveRecordKeywordField(name);
+        auto ir=std::make_shared<DynamicInputRecord>( *domain->giveCrossSection ( i ) );
+        ir->giveRecordKeywordField(name);
 
         auto crossSection = classFactory.createCrossSection(name.c_str(), i, * dNew);
         crossSection->initializeFrom(ir);
@@ -3831,8 +3831,8 @@ Subdivision :: createMesh(TimeStep *tStep, int domainNumber, int domainSerNum, D
     int nmat = domain->giveNumberOfMaterialModels();
     ( * dNew )->resizeMaterials(nmat);
     for ( int i = 1; i <= nmat; i++ ) {
-        DynamicInputRecord ir( *domain->giveMaterial ( i ) );
-        ir.giveRecordKeywordField(name);
+        auto ir=std::make_shared<DynamicInputRecord>( *domain->giveMaterial ( i ) );
+        ir->giveRecordKeywordField(name);
 
         auto mat = classFactory.createMaterial(name.c_str(), i, * dNew);
         mat->initializeFrom(ir);
@@ -3843,8 +3843,8 @@ Subdivision :: createMesh(TimeStep *tStep, int domainNumber, int domainSerNum, D
     int nbarriers = domain->giveNumberOfNonlocalBarriers();
     ( * dNew )->resizeNonlocalBarriers(nbarriers);
     for ( int i = 1; i <= nbarriers; i++ ) {
-        DynamicInputRecord ir( *domain->giveNonlocalBarrier ( i ) );
-        ir.giveRecordKeywordField(name);
+        auto ir=std::make_shared<DynamicInputRecord>( *domain->giveNonlocalBarrier ( i ) );
+        ir->giveRecordKeywordField(name);
 
         auto barrier = classFactory.createNonlocalBarrier(name.c_str(), i, * dNew);
         barrier->initializeFrom(ir);
@@ -3855,8 +3855,8 @@ Subdivision :: createMesh(TimeStep *tStep, int domainNumber, int domainSerNum, D
     int nbc = domain->giveNumberOfBoundaryConditions();
     ( * dNew )->resizeBoundaryConditions(nbc);
     for ( int i = 1; i <= nbc; i++ ) {
-        DynamicInputRecord ir( *domain->giveBc ( i ) );
-        ir.giveRecordKeywordField(name);
+        auto ir=std::make_shared<DynamicInputRecord>( *domain->giveBc ( i ) );
+        ir->giveRecordKeywordField(name);
 
         auto bc = classFactory.createBoundaryCondition(name.c_str(), i, * dNew);
         bc->initializeFrom(ir);
@@ -3867,7 +3867,7 @@ Subdivision :: createMesh(TimeStep *tStep, int domainNumber, int domainSerNum, D
     int nic = domain->giveNumberOfInitialConditions();
     ( * dNew )->resizeInitialConditions(nic);
     for ( int i = 1; i <= nic; i++ ) {
-        DynamicInputRecord ir( *domain->giveIc ( i ) );
+        auto ir=std::make_shared<DynamicInputRecord>( *domain->giveIc ( i ) );
 
         auto ic = std::make_unique<InitialCondition>(i, *dNew);
         ic->initializeFrom(ir);
@@ -3878,8 +3878,8 @@ Subdivision :: createMesh(TimeStep *tStep, int domainNumber, int domainSerNum, D
     int nfunc = domain->giveNumberOfFunctions();
     ( * dNew )->resizeFunctions(nfunc);
     for ( int i = 1; i <= nfunc; i++ ) {
-        DynamicInputRecord ir( *domain->giveFunction ( i ) );
-        ir.giveRecordKeywordField(name);
+        auto ir=std::make_shared<DynamicInputRecord>( *domain->giveFunction ( i ) );
+        ir->giveRecordKeywordField(name);
 
         auto func = classFactory.createFunction(name.c_str(), i, * dNew);
         func->initializeFrom(ir);
@@ -3890,8 +3890,8 @@ Subdivision :: createMesh(TimeStep *tStep, int domainNumber, int domainSerNum, D
     int nset = domain->giveNumberOfSets();
     ( * dNew )->resizeSets(nset);
     for ( int i = 1; i <= nset; i++ ) {
-        DynamicInputRecord ir( *domain->giveSet ( i ) );
-        ir.giveRecordKeywordField(name);
+        auto ir=std::make_shared<DynamicInputRecord>( *domain->giveSet ( i ) );
+        ir->giveRecordKeywordField(name);
 
         auto set = std::make_unique<Set>(i, * dNew);
         set->initializeFrom(ir);
@@ -3949,7 +3949,7 @@ Subdivision :: createMesh(TimeStep *tStep, int domainNumber, int domainSerNum, D
       for (int in=1; in<=(*dNew)->giveNumberOfDofManagers(); in++) {
         DynamicInputRecord ir;
         (*dNew)->giveDofManager(in)->giveInputRecord(ir);
-        OOFEM_LOG_INFO("[%d]:[%d]:%s\n", this->giveRank(), (*dNew)->giveDofManager(in)->giveGlobalNumber(), ir.giveRecordAsString().c_str());
+        OOFEM_LOG_INFO("[%d]:[%d]:%s\n", this->giveRank(), (*dNew)->giveDofManager(in)->giveGlobalNumber(), ir->giveRecordAsString().c_str());
       }
       IntArray nodes;
       for (int in=1; in<=(*dNew)->giveNumberOfElements(); in++) {
@@ -3959,8 +3959,8 @@ Subdivision :: createMesh(TimeStep *tStep, int domainNumber, int domainSerNum, D
         // translate local node numbers to globnums
         for (int ii=1; ii<=nodes.giveSize(); ii++)
           nodes.at(ii) = (*dNew)->giveNode(nodes.at(ii))->giveGlobalNumber();
-        ir.setField(nodes, "gnodes");
-        OOFEM_LOG_INFO("[%d]:[%d]:%s\n", this->giveRank(), (*dNew)->giveElement(in)->giveGlobalNumber(), ir.giveRecordAsString().c_str());
+        ir->setField(nodes, "gnodes");
+        OOFEM_LOG_INFO("[%d]:[%d]:%s\n", this->giveRank(), (*dNew)->giveElement(in)->giveGlobalNumber(), ir->giveRecordAsString().c_str());
       }
     }
     nelems = ( * dNew )->giveNumberOfElements();

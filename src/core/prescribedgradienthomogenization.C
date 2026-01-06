@@ -42,7 +42,7 @@
 
 namespace oofem {
 
-void PrescribedGradientHomogenization :: initializeFrom(InputRecord &ir)
+void PrescribedGradientHomogenization :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     IR_GIVE_FIELD(ir, mGradient, _IFT_PrescribedGradientHomogenization_gradient);
 

@@ -74,7 +74,7 @@ public:
     /// Destructor.
     virtual ~LatticeCrossSection() { }
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
 
     int testCrossSectionExtension(CrossSectExtension ext) override { return this->crossSectionType; }
 

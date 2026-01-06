@@ -52,7 +52,7 @@ HOMExportModule :: HOMExportModule(int n, EngngModel *e) : ExportModule(n, e) { 
 HOMExportModule :: ~HOMExportModule() { }
 
 void
-HOMExportModule :: initializeFrom(InputRecord &ir)
+HOMExportModule :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     ExportModule :: initializeFrom(ir);
 
@@ -61,7 +61,7 @@ HOMExportModule :: initializeFrom(InputRecord &ir)
     IR_GIVE_OPTIONAL_FIELD(ir, this->reactions, _IFT_HOMExportModule_reactions);
     this->scale = 1.;
     IR_GIVE_OPTIONAL_FIELD(ir, this->scale, _IFT_HOMExportModule_scale);
-    this->strainEnergy = ir.hasField(_IFT_HOMExportModule_strain_energy);
+    this->strainEnergy = ir->hasField(_IFT_HOMExportModule_strain_energy);
     this->strainEnergySumStressDep = 0;
     
     lastStress.resize(0);

@@ -47,7 +47,7 @@ namespace oofem {
 REGISTER_Material(LatticeTransportMaterial);
 
 void
-LatticeTransportMaterial :: initializeFrom(InputRecord &ir)
+LatticeTransportMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     Material :: initializeFrom(ir);
 

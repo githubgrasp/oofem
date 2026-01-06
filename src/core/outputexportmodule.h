@@ -72,7 +72,7 @@ public:
     OutputExportModule(int n, EngngModel * e);
     virtual ~OutputExportModule() {}
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
     FILE *giveOutputStream();
 
     void doOutput(TimeStep *tStep, bool forcedOutput = false) override;

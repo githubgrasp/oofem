@@ -69,7 +69,7 @@ ExternalTemperatureFieldLoad :: computeValueAt(FloatArray &answer, TimeStep *tSt
 }
 
 void
-ExternalTemperatureFieldLoad :: initializeFrom(InputRecord &ir)
+ExternalTemperatureFieldLoad :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     set = 0;
     IR_GIVE_OPTIONAL_FIELD(ir, set, _IFT_GeneralBoundaryCondition_set);

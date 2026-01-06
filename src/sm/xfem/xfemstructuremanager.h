@@ -66,7 +66,7 @@ public:
     virtual ~XfemStructureManager();
 
     /// Initializes receiver according to object description stored in input record.
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
     void giveInputRecord(DynamicInputRecord &input) override;
 
     int instanciateYourself(DataReader &dr) override;

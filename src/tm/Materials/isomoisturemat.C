@@ -38,7 +38,7 @@
 
 namespace oofem {
 void
-IsotropicMoistureTransferMaterial :: initializeFrom(InputRecord &ir)
+IsotropicMoistureTransferMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     Material :: initializeFrom(ir);
 }

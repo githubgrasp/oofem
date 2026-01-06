@@ -80,7 +80,7 @@ int GeometryBasedEI :: instanciateYourself(DataReader &dr)
 
         mpEnrichmentFunc = classFactory.createEnrichmentFunction( name.c_str(), 1, this->giveDomain() );
         if ( mpEnrichmentFunc ) {
-            mpEnrichmentFunc->initializeFrom(*mir);
+            mpEnrichmentFunc->initializeFrom(mir);
         } else {
             OOFEM_ERROR( "failed to create enrichment function (%s)", name.c_str() );
         }
@@ -96,7 +96,7 @@ int GeometryBasedEI :: instanciateYourself(DataReader &dr)
             OOFEM_ERROR( "unknown geometry domain (%s)", name.c_str() );
         }
 
-        mpBasicGeometry->initializeFrom(*mir);
+        mpBasicGeometry->initializeFrom(mir);
     }
     // Instantiate EnrichmentFront
     if ( mEnrFrontIndex == 0 ) {
@@ -104,9 +104,9 @@ int GeometryBasedEI :: instanciateYourself(DataReader &dr)
         mpEnrichmentFrontEnd = std::make_unique<EnrFrontDoNothing>();
     } else {
         int i=0;
-        for(InputRecord& efIr: dr.giveGroupRecords("EnrichmentFront",DataReader :: IR_enrichFrontRec,/*numRequired*/2)){
+        for(const std::shared_ptr<InputRecord>& efIr: dr.giveGroupRecords("EnrichmentFront",DataReader :: IR_enrichFrontRec,/*numRequired*/2)){
             std::string enrFrontName;
-            efIr.giveRecordKeywordField(enrFrontName);
+            efIr->giveRecordKeywordField(enrFrontName);
             auto ef = classFactory.createEnrichmentFront( enrFrontName.c_str() );
             if ( ef ) {
                 assert(i==0 || i==1);
@@ -131,7 +131,7 @@ int GeometryBasedEI :: instanciateYourself(DataReader &dr)
 
         mpPropagationLaw = classFactory.createPropagationLaw( propLawName.c_str() );
         if ( mpPropagationLaw ) {
-            mpPropagationLaw->initializeFrom(*propLawir);
+            mpPropagationLaw->initializeFrom(propLawir);
         } else {
             OOFEM_ERROR( "Failed to create propagation law (%s)", propLawName.c_str() );
         }

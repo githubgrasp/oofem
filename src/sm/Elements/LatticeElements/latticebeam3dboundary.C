@@ -260,7 +260,7 @@ LatticeBeam3dBoundary ::   giveDofManDofIDMask(int inode, IntArray &answer) cons
 }
 
 void
-LatticeBeam3dBoundary :: initializeFrom(InputRecord &ir, int priority)
+LatticeBeam3dBoundary :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     ParameterManager &ppm =  this->giveDomain()->elementPPM;
     LatticeBeam3d :: initializeFrom(ir, priority);

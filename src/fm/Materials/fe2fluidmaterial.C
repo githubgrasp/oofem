@@ -244,7 +244,7 @@ FE2FluidMaterial :: computeTangents3D(MatResponseMode mode, GaussPoint *gp, Time
     };
 }
 
-void FE2FluidMaterial :: initializeFrom(InputRecord &ir)
+void FE2FluidMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     FluidDynamicMaterial :: initializeFrom(ir);
     IR_GIVE_FIELD(ir, this->inputfile, _IFT_FE2FluidMaterial_fileName);

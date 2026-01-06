@@ -93,7 +93,7 @@ NumericalMethod *FreeWarping :: giveNumericalMethod(MetaStep *mStep)
 }
 
 void
-FreeWarping :: initializeFrom(InputRecord &ir)
+FreeWarping :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralEngngModel :: initializeFrom(ir);
 

@@ -131,7 +131,7 @@ BondCEBMaterial :: giveIPValue(FloatArray &answer, GaussPoint *gp, InternalState
 }
 
 void
-BondCEBMaterial :: initializeFrom(InputRecord &ir)
+BondCEBMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralInterfaceMaterial :: initializeFrom(ir);
 

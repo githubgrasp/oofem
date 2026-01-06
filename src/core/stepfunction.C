@@ -118,12 +118,12 @@ double StepFunction :: evaluateVelocityAtTime(double time)
 }
 
 void
-StepFunction :: initializeFrom(InputRecord &ir)
+StepFunction :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     Function :: initializeFrom(ir);
 
     // Optional means, read data from external file (useful for very large sets of data)
-    if ( ir.hasField(_IFT_StepFunction_dataFile) ) {
+    if ( ir->hasField(_IFT_StepFunction_dataFile) ) {
         datevalues.clear();
         // Open the file;
         std :: string fname;

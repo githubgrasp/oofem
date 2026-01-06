@@ -60,7 +60,7 @@ RandomMaterialStatusExtensionInterface :: _setProperty(int key, double value)
 
 
 void
-RandomMaterialExtensionInterface :: initializeFrom(InputRecord &ir)
+RandomMaterialExtensionInterface :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     randVariables.clear();
     randomVariableGenerators.clear();

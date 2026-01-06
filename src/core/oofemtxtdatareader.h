@@ -53,10 +53,10 @@ class OOFEM_EXPORT OOFEMTXTDataReader : public DataReader
 {
 protected:
     std :: string dataSourceName;
-    std :: list< OOFEMTXTInputRecord > recordList;
+    std :: list< std::shared_ptr<OOFEMTXTInputRecord> > recordList;
 
     /// Keeps track of the current position in the list
-    std :: list< OOFEMTXTInputRecord > :: iterator it;
+    std :: list< std::shared_ptr<OOFEMTXTInputRecord> > :: iterator it;
 
 public:
     /// Constructor.
@@ -64,7 +64,7 @@ public:
     OOFEMTXTDataReader(const OOFEMTXTDataReader & x);
     virtual ~OOFEMTXTDataReader();
 
-    InputRecord &giveInputRecord(InputRecordType, int recordId) override;
+    std::shared_ptr<InputRecord> giveInputRecord(InputRecordType, int recordId) override;
     bool peekNext(const std :: string &keyword) override;
     void finish() override;
     std :: string giveReferenceName() const override { return dataSourceName; }

@@ -41,7 +41,7 @@ REGISTER_Material(BlatzKoMaterial);
 
 
 void
-BlatzKoMaterial::initializeFrom(InputRecord &ir)
+BlatzKoMaterial::initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralMaterial::initializeFrom(ir);
     IR_GIVE_FIELD(ir, mu, _IFT_BlatzKoMaterial_mu);

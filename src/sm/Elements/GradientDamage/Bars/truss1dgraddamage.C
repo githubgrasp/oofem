@@ -87,7 +87,7 @@ Truss1dGradDamage :: giveDofManDofIDMask_d(IntArray &answer) const
 
 
 void
-Truss1dGradDamage :: initializeFrom(InputRecord &ir, int priority)
+Truss1dGradDamage :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     GradientDamageElement :: initializeFrom(ir);
     StructuralElement :: initializeFrom(ir, priority);

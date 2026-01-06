@@ -91,7 +91,7 @@ CombinedZZSIErrorEstimator :: giveRemeshingCrit()
 }
 
 void
-CombinedZZSIErrorEstimator :: initializeFrom(InputRecord &ir)
+CombinedZZSIErrorEstimator :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     zzee.initializeFrom(ir);
     siee.initializeFrom(ir);
@@ -161,7 +161,7 @@ CombinedZZSIRemeshingCriteria :: estimateMeshDensities(TimeStep *tStep)
 }
 
 void
-CombinedZZSIRemeshingCriteria :: initializeFrom(InputRecord &ir)
+CombinedZZSIRemeshingCriteria :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     zzrc.initializeFrom(ir);
     dirc.initializeFrom(ir);

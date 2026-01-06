@@ -279,7 +279,7 @@ InterfaceElem1d :: computeVolumeAround(GaussPoint *gp)
 
 
 void
-InterfaceElem1d :: initializeFrom(InputRecord &ir, int priority)
+InterfaceElem1d :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     ParameterManager &ppm =  this->giveDomain()->elementPPM;
     StructuralElement :: initializeFrom(ir, priority);

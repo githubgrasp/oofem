@@ -102,7 +102,7 @@ StaticStructural :: giveUnknownDictHashIndx(ValueModeType mode, TimeStep *tStep)
 }
 
 void
-StaticStructural :: initializeFrom(InputRecord &ir)
+StaticStructural :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralEngngModel :: initializeFrom(ir);
 
@@ -131,7 +131,7 @@ StaticStructural :: initializeFrom(InputRecord &ir)
     IR_GIVE_OPTIONAL_FIELD(ir, _val, _IFT_EngngModel_initialGuess);
     this->initialGuessType = ( InitialGuess ) _val;
 
-    mRecomputeStepAfterPropagation = ir.hasField(_IFT_StaticStructural_recomputeaftercrackpropagation);
+    mRecomputeStepAfterPropagation = ir->hasField(_IFT_StaticStructural_recomputeaftercrackpropagation);
 
 #ifdef __MPI_PARALLEL_MODE
     ///@todo Where is the best place to create these?
@@ -142,7 +142,7 @@ StaticStructural :: initializeFrom(InputRecord &ir)
         communicator = new NodeCommunicator(this, commBuff, this->giveRank(),
                                             this->giveNumberOfProcesses());
 
-        if ( ir.hasField(_IFT_StaticStructural_nonlocalExtension) ) {
+        if ( ir->hasField(_IFT_StaticStructural_nonlocalExtension) ) {
             nonlocalExt = 1;
             nonlocCommunicator = new ElementCommunicator(this, commBuff, this->giveRank(),
                                                          this->giveNumberOfProcesses());
@@ -182,7 +182,7 @@ StaticStructural :: updateAttributes(MetaStep *mStep)
     IR_GIVE_OPTIONAL_FIELD(ir, _val, _IFT_EngngModel_initialGuess);
     this->initialGuessType = ( InitialGuess ) _val;
 
-    mRecomputeStepAfterPropagation = ir.hasField(_IFT_StaticStructural_recomputeaftercrackpropagation);
+    mRecomputeStepAfterPropagation = ir->hasField(_IFT_StaticStructural_recomputeaftercrackpropagation);
 
     EngngModel :: updateAttributes(mStep1);
 }

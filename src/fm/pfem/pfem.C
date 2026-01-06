@@ -210,7 +210,7 @@ PFEM :: forceEquationNumbering(int id)
 
 
 void
-PFEM :: initializeFrom(InputRecord &ir)
+PFEM :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     EngngModel :: initializeFrom(ir);
     int val = 0;

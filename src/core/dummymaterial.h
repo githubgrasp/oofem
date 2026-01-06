@@ -42,7 +42,7 @@
 namespace oofem {
 class GaussPoint;
 class Domain;
-class InputRecord;
+
 
 /**
  * Dummy material model, no functionality. Convenient for special-purpose elements not
@@ -57,7 +57,7 @@ public:
 
     const char *giveClassName() const override { return "DummyMaterial"; }
     const char *giveInputRecordName() const override { return _IFT_DummyMaterial_Name; }
-    void initializeFrom(InputRecord &ir) override { }
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override { }
 };
 } // end namespace oofem
 #endif // material_h

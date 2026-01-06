@@ -58,7 +58,7 @@ QSpace :: QSpace(int n, Domain *aDomain) : Structural3DElement(n, aDomain), ZZNo
 
 
 void
-QSpace :: initializeFrom(InputRecord &ir, int priority)
+QSpace :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     Structural3DElement :: initializeFrom(ir, priority);
 }

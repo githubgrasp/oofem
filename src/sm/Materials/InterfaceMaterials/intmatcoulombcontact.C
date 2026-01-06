@@ -108,7 +108,7 @@ IntMatCoulombContact :: give3dStiffnessMatrix_Eng(MatResponseMode rMode, GaussPo
 
 
 void
-IntMatCoulombContact :: initializeFrom(InputRecord &ir)
+IntMatCoulombContact :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     StructuralInterfaceMaterial :: initializeFrom( ir );
 

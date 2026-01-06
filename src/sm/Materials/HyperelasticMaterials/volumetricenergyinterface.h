@@ -37,6 +37,7 @@
 #define volumetricenergyinterface_h
 
 #include "tensor/tensor.h"
+#include "inputrecord.h"
 
 ///@name Input fields for VolumetricEnergyInterface
 //@{
@@ -45,7 +46,6 @@
 //@}
 
 namespace oofem {
-  class InputRecord;
 
 /**
  * This class implements Volumetric form of energy fo Compressible Hyperelastic materials.
@@ -73,7 +73,7 @@ class VolumetricEnergyInterface
 
   Tensor2_3d compute_dVolumetricEnergy_dF(const Tensor2_3d &F) const;
   Tensor4_3d compute_d2VolumetricEnergy_dF2(const Tensor2_3d &F) const;
-  void initializeFrom(InputRecord &ir);
+  void initializeFrom(const std::shared_ptr<InputRecord> &ir);
 };
  
 } // end namespace oofem

@@ -164,7 +164,7 @@ public:
 
     RemeshingCriteria *giveRemeshingCrit() override;
 
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
 
     const char *giveInputRecordName() const override { return nullptr; }
     const char *giveClassName() const override { return "HuertaErrorEstimator"; }
@@ -318,7 +318,7 @@ public:
     double giveDofManDensity(int num) override;
     RemeshingStrategy giveRemeshingStrategy(TimeStep *tStep) override;
     int estimateMeshDensities(TimeStep *tStep) override;
-    void initializeFrom(InputRecord &ir) override;
+    void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
 
     const char *giveInputRecordName() const override { return nullptr; }
     const char *giveClassName() const override { return "HuertaErrorEstimator"; }

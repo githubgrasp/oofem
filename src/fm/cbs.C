@@ -132,7 +132,7 @@ NumericalMethod *CBS :: giveNumericalMethod(MetaStep *mStep)
 }
 
 void
-CBS :: initializeFrom(InputRecord &ir)
+CBS :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     EngngModel :: initializeFrom(ir);
     int val = 0;

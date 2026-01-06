@@ -84,7 +84,7 @@ QClinearStatic :: ~QClinearStatic()
 
 
 void
-QClinearStatic :: initializeFrom(InputRecord &ir)
+QClinearStatic :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     LinearStatic :: initializeFrom(ir);
 
@@ -287,7 +287,7 @@ void QClinearStatic :: solveYourselfAt(TimeStep *tStep)
 
 
 void
-QClinearStatic :: initializeFullSolvedDomain(InputRecord &ir)
+QClinearStatic :: initializeFullSolvedDomain(const std::shared_ptr<InputRecord> &ir)
 {
     IR_GIVE_OPTIONAL_FIELD(ir, FullSolvedDomainNodes, _IFT_FullSolvedDomain_nodes);
     IR_GIVE_OPTIONAL_FIELD(ir, FullSolvedDomainElements, _IFT_FullSolvedDomain_elements);

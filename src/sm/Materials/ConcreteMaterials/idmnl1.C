@@ -374,7 +374,7 @@ IDNLMaterial :: giveInterface(InterfaceType type)
 
 
 void
-IDNLMaterial :: initializeFrom(InputRecord &ir)
+IDNLMaterial :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     IsotropicDamageMaterial1 :: initializeFrom(ir);
     StructuralNonlocalMaterialExtensionInterface :: initializeFrom(ir);
