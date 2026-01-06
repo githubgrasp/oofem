@@ -190,6 +190,7 @@ void FloatArray :: copySubVector(const FloatArray &src, int si){ this->resizeWit
 void FloatArray :: power(const double exponent){ *this=this->array().pow(exponent).matrix(); }
 void FloatArray :: beColumnOf(const FloatMatrix &mat, int col){ *this=mat.col(col-1); }
 void FloatArray :: beRowOf(const FloatMatrix &mat, Index row){ *this=mat.row(row-1).transpose(); }
+FloatArray &FloatArray :: operator = ( const double & val ){ this->array()=val; return *this; }
 #else
 
 bool FloatArray :: isAllFinite() const
