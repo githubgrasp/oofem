@@ -48,7 +48,10 @@
 
 namespace oofem {
 ///@todo FieldType and UnknownType basically determine the same thing. Should be possible to stick to one. Combinations of fields should be possible with logical bitfields.
-#define FieldType_DEF \
+
+#define ENUM_TYPE FieldType
+#define ENUM_PREFIX "_"
+#define ENUM_DEF \
     ENUM_ITEM_WITH_VALUE(FT_Unknown, 0) \
     ENUM_ITEM_WITH_VALUE(FT_Velocity, 1) \
     ENUM_ITEM_WITH_VALUE(FT_Displacements, 2) \
@@ -61,13 +64,8 @@ namespace oofem {
     ENUM_ITEM_WITH_VALUE(FT_EigenStrain, 9) \
     ENUM_ITEM_WITH_VALUE(FT_VOF, 10)
 
-/// Physical type of field.
-enum FieldType {
-    FieldType_DEF
-};
-#undef ENUM_ITEM
-#undef ENUM_ITEM_WITH_VALUE
-#undef enumitem_h
+#include "enum-impl.h"
+
 
 class TimeStep;
 class FloatArray;
