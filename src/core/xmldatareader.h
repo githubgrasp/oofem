@@ -87,7 +87,7 @@ public:
     //! guess whether given file is XML
     static bool canRead(const std::string& xmlFile);
     std::shared_ptr<InputRecord> giveInputRecord(InputRecordType, int recordId) override;
-    std::shared_ptr<InputRecord> giveTopInputRecord() override { return topRecord; }
+    std::shared_ptr<InputRecord> giveTopInputRecord() override;
     bool peekNext(const std :: string &keyword) override { return false; } /* no peeking, it is used for hacks only */
     void finish() override;
     std::string giveReferenceName() const override { return topXmlFile; }

@@ -135,7 +135,9 @@ namespace oofem {
         XMLInputRecord::node_seen_set(description_node,true);
         outputFileName=output_node.text().as_string();
         description=description_node.text().as_string();
-        topRecord=std::make_shared<XMLInputRecord>(this,root);
+    }
+    std::shared_ptr<InputRecord> XMLDataReader::giveTopInputRecord() {
+        return std::make_shared<XMLInputRecord>(this,stack.back().parent);
     }
 
     bool XMLDataReader :: canRead(const std::string& xml){

@@ -56,10 +56,11 @@ class OOFEM_EXPORT XMLInputRecord : public InputRecord
 {
     pugi::xml_node node;
     friend XMLDataReader;
+    // keep reaader alive as we need underlying pugi structures to read attributes etc.
+    std::shared_ptr<XMLDataReader> reader;
     std::set<std::string> attrQueried;
     std::set<std::string> attrRead;
     int recId=-1;
-    XMLDataReader* _reader() const { return (XMLDataReader*)(this->giveReader()); }
     static std::string xmlizeAttrName(const std::string& s);
 public:
     std::string _attr_traced_read(const char* name){ return std::get<0>(_attr_traced_read_with_node(name)); }

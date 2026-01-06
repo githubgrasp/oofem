@@ -72,7 +72,7 @@ namespace oofem {
     }
 
     std::string XMLInputRecord::loc(const pugi::xml_node& node) const {
-        return _reader()->loc(node);
+        return reader->loc(node);
     }
 
     template<typename T>
@@ -142,6 +142,7 @@ namespace oofem {
     };
 
     XMLInputRecord :: XMLInputRecord(XMLDataReader* reader_, const pugi::xml_node& node_): InputRecord((DataReader*)reader_), node(node_) {
+        reader=std::static_pointer_cast<XMLDataReader>(reader_->shared_from_this());
         node_seen_set(node,true);
         _XML_DEBUG(loc()<<": node.name()="<<node.name());
     }
@@ -156,7 +157,7 @@ namespace oofem {
     int XMLInputRecord::giveGroupCount(InputFieldType id, const std::string& name, bool optional){
         _XML_DEBUG("id="<<id<<", name="<<name<<", optional="<<optional);
         _XML_DEBUG(loc(node)<<", node.name()="<<node.name());
-        pugi::xml_node ch=_reader()->giveNamedChild(node,name);
+        pugi::xml_node ch=reader->giveNamedChild(node,name);
         if(!ch){
             if(optional) return 0; // return DataReader::NoSuchGroup;
             OOFEM_ERROR("%s: %s has no child node %s.",loc().c_str(),node.name(),name.c_str());
@@ -168,7 +169,7 @@ namespace oofem {
         return ret;
     }
     bool XMLInputRecord::hasChild(InputFieldType id, const std::string& name, bool optional){
-        bool has=!!_reader()->giveNamedChild(node,name);
+        bool has=!!reader->giveNamedChild(node,name);
         if(!has && !optional) OOFEM_ERROR("%s: %s has no no child node '%s' (required).",loc().c_str(),node.name(),name.c_str());
         return has;
     }
@@ -176,7 +177,7 @@ namespace oofem {
     void
     XMLInputRecord :: giveRecordKeywordField(std :: string &answer){
         _XML_DEBUG("node.name()="<<node.name());
-        if(node.attribute("type")) answer=_attr_traced_read("type");
+        if(node.attribute("_")) answer=_attr_traced_read("_");
         else answer=node.name();
     }
     void XMLInputRecord::giveRecordKeywordField(std::string& answer, int& value){
