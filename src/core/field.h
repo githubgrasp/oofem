@@ -50,7 +50,7 @@ namespace oofem {
 ///@todo FieldType and UnknownType basically determine the same thing. Should be possible to stick to one. Combinations of fields should be possible with logical bitfields.
 
 #define ENUM_TYPE FieldType
-#define ENUM_PREFIX "_"
+#define ENUM_PREFIX "FT_"
 #define ENUM_DEF \
     ENUM_ITEM_WITH_VALUE(FT_Unknown, 0) \
     ENUM_ITEM_WITH_VALUE(FT_Velocity, 1) \

@@ -253,7 +253,10 @@ int EngngModel :: instanciateYourself(DataReader &dr, const std::shared_ptr<Inpu
             exportModuleManager.instanciateYourself(dr, irParent, "nmodules", "ExportModules",DataReader::IR_expModuleRec);
             // instanciate monitor manager
             monitorManager.instanciateYourself(dr, irParent, "nmonitors", "Monitors",DataReader::IR_expModuleRec);
-            this->giveContext()->giveFieldManager()->instanciateYourself(dr, ir);
+            {
+                DataReader::RecordGuard scope(dr,ir);
+                this->giveContext()->giveFieldManager()->instanciateYourself(dr, ir);
+            }
             /* on the other hand, MPM stuff *should* be nested under Analysis, so pass ir there */
             #ifdef __MPM_MODULE
                 // instanciate mpm stuff (variables, terms, and integrals)

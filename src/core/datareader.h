@@ -79,8 +79,8 @@ public:
         /*CrossSection*/"",/*Material*/"",/*"NonlocalBarrier"*/"",/*BoundaryCondition*/"","InitialCondition",/*TimeFunction*/"","Set",
         "XFemManager","EnrichmentFunction","EnrichmentGeometry",/*EnrichmentItem*/"",
         /*EnrichmentFront*/"","PropagationLaw","CrackNucleation","FractureManager","FailCriterion",
-        /*ContactSurface*/"","Field",
-        "MPMVariable",/*"MPMTerm"*/"","MPMIntegral",
+        /*ContactSurface*/"",/*Field*/"",
+        "Variable",/*"MPMTerm"*/"","Integral",
         "UNSPECIFIED"
     };
 

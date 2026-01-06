@@ -96,6 +96,7 @@ StaggeredProblem :: instanciateSlaveProblems()
         auto dr=DataReader::makeFromFilename(inputStreamNames [ timeDefinedByProb - 1 ]);
         std :: unique_ptr< EngngModel >prob( InstanciateProblem(*dr, this->pMode, this->contextOutputMode, this) );
         //timeDefProb = prob.get();
+        dr->finish();
         emodelList [ timeDefinedByProb - 1 ] = std :: move(prob);
     }
 
@@ -107,6 +108,7 @@ StaggeredProblem :: instanciateSlaveProblems()
         auto dr=DataReader::makeFromFilename(inputStreamNames [ i - 1 ]);
         //the slave problem dictating time needs to have attribute master=NULL, other problems point to the dictating slave
         std :: unique_ptr< EngngModel >prob( InstanciateProblem(*dr, this->pMode, this->contextOutputMode, this) );
+        dr->finish();
         emodelList [ i - 1 ] = std :: move(prob);
     }
 
