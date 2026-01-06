@@ -243,7 +243,7 @@ TR1_2D_PFEM :: computeDeviatoricStress(FloatArray &answer, GaussPoint *gp, TimeS
 {
     /* one should call material driver instead */
     FloatArray u(6);
-    FloatArrayF<3> eps(3);
+    FloatArrayF<3> eps;
     answer.resize(3);
 
 

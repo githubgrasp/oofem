@@ -20,10 +20,10 @@ newtonianfluid 1 d 1.e3 mu 1.e-3
 BoundaryCondition 1 loadTimeFunction 1 dofs 1 7 values 1 0.0 valtype 5 set 1
 #prescribed zero velocity - wall condition
 BoundaryCondition 2 loadTimeFunction 1 dofs 1 8 values 1 0.0 valtype 5 set 2
-#pressure 
-BoundaryCondition 4 loadTimeFunction 1 dofs 1 11 values 1 0.0 valtype 3
 #gravity 
 deadweight 3 components 2 0.0 -9.81 loadTimeFunction 1 valtype 2
+#pressure 
+BoundaryCondition 4 loadTimeFunction 1 dofs 1 11 values 1 0.0 valtype 3
 #ic for velocity
 InitialCondition 1 conditions 1 u 1.0 valtype 5
 ConstantFunction 1 f(t) 1.0

@@ -48,7 +48,7 @@
 namespace oofem {
 REGISTER_DofManager(InteractionPFEMParticle);
 
-ParamKey InteractionPFEMParticle::IPK_InteractionPFEMParticle_coupledNode("couplednode");
+ParamKey InteractionPFEMParticle::IPK_InteractionPFEMParticle_CoupledNode("couplednode");
 /**
  * Constructor. Creates a particle with number n, belonging to aDomain.
  */
