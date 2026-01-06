@@ -138,7 +138,7 @@ public:
     int eachGP;
     /// XML input file name for CEMHYD3D.
     std :: string XMLfileName;
-    MaterialStatus *CreateStatus(GaussPoint *gp) const override;
+    std::unique_ptr<MaterialStatus> CreateStatus(GaussPoint *gp) const override;
     /**
      * Pointer to master CemhydMatStatus, which is shared among related integration points (on element, for example).
      * When Cemhyd3D runs seperately in each GP, MasterCemhydMatStatus belongs to the first instance, from which the microstructure is copied to the rest of integration points.

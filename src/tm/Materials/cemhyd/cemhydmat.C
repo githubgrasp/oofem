@@ -173,9 +173,9 @@ double CemhydMat :: giveIsotropicConductivity(GaussPoint *gp, TimeStep *tStep) c
     }
 
     if ( conductivityType == 0 ) { //given from OOFEM input file
-        conduct = IsotropicHeatTransferMaterial :: give('k', gp, tStep);
+        conduct = IsotropicHeatTransferMaterial :: giveProperty('k', gp, tStep);
     } else if ( conductivityType == 1 ) { //compute according to Ruiz, Schindler, Rasmussen. Kim, Chang: Concrete temperature modeling and strength prediction using maturity concepts in the FHWA HIPERPAV software, 7th international conference on concrete pavements, Orlando (FL), USA, 2001
-        conduct = IsotropicHeatTransferMaterial :: give('k', gp, tStep) * ( 1.33 - 0.33 * ms->GiveDoHActual() );
+        conduct = IsotropicHeatTransferMaterial :: giveProperty('k', gp, tStep) * ( 1.33 - 0.33 * ms->GiveDoHActual() );
     } else {
         OOFEM_ERROR("Unknown conductivityType %d\n", conductivityType);
     }
@@ -204,7 +204,7 @@ double CemhydMat :: giveConcreteCapacity(GaussPoint *gp, TimeStep *tStep) const
     }
 
     if ( capacityType == 0 ) { //given from OOFEM input file
-        capacityConcrete = IsotropicHeatTransferMaterial :: give('c', gp, tStep);
+        capacityConcrete = IsotropicHeatTransferMaterial :: giveProperty('c', gp, tStep);
     } else if ( capacityType == 1 ) { //compute from CEMHYD3D according to Bentz
         capacityConcrete = ms->computeConcreteCapacityBentz();
     } else if ( capacityType == 2 ) { //compute from CEMHYD3D directly
@@ -235,7 +235,7 @@ double CemhydMat :: giveConcreteDensity(GaussPoint *gp, TimeStep *tStep) const
     }
 
     if ( densityType == 0 ) { //get from OOFEM input file
-        concreteBulkDensity = IsotropicHeatTransferMaterial :: give('d', gp, tStep);
+        concreteBulkDensity = IsotropicHeatTransferMaterial :: giveProperty('d', gp, tStep);
     } else if ( densityType == 1 ) { //get from XML input file
         concreteBulkDensity = ms->GiveDensity();
     } else {
@@ -352,18 +352,18 @@ int
 CemhydMat :: initMaterial(Element *element)
 {
     for ( GaussPoint *gp: *element->giveDefaultIntegrationRulePtr() ) {
-        CemhydMatStatus *ms;
+        std::unique_ptr<CemhydMatStatus> ms;
         if ( !MasterCemhydMatStatus && !eachGP ) {
-            ms = new CemhydMatStatus(gp, NULL, this, 1);
-            MasterCemhydMatStatus = ms;
+            ms = std::make_unique<CemhydMatStatus>(gp, nullptr, this, 1);
+            MasterCemhydMatStatus = ms.get();
         } else if ( eachGP ) {
-            ms = new CemhydMatStatus(gp, MasterCemhydMatStatus, this, 1);
+            ms = std::make_unique<CemhydMatStatus>(gp, MasterCemhydMatStatus, this, 1);
         } else {
-            ms = new CemhydMatStatus(gp, nullptr, this, 0);
+            ms = std::make_unique<CemhydMatStatus>(gp, nullptr, this, 0);
         }
 
 //         if(!gp->giveMaterialStatus()){
-            gp->setMaterialStatus( ms );
+            gp->setMaterialStatus( std::move(ms) );
 //         }
     }
 
@@ -440,11 +440,11 @@ void CemhydMat :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 }
 
 
-MaterialStatus *
+std::unique_ptr<MaterialStatus>
 CemhydMat :: CreateStatus(GaussPoint *gp) const
 {
      OOFEM_ERROR("Use function CemhydMat :: initMaterial instead");
-     return NULL;
+     return {};
 }
 
 
