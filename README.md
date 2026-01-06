@@ -2,7 +2,7 @@
 [![Linux](https://github.com/oofem/oofem/actions/workflows/linux.yml/badge.svg)](https://github.com/oofem/oofem/actions/workflows/linux.yml)
 [![Windows MSVC](https://github.com/oofem/oofem/actions/workflows/windows.yml/badge.svg)](https://github.com/oofem/oofem/actions/workflows/windows.yml)
 [![License: LGPL v2.1](https://img.shields.io/badge/License-LGPL%20v2.1-blue.svg)](https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4339630.svg)](https://doi.org/10.5281/zenodo.4339630)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4339629.svg)](https://doi.org/10.5281/zenodo.4339629)
 ![GitHub contributors](https://img.shields.io/github/contributors/oofem/oofem) ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/oofem/oofem) 
  ![GitHub Downloads (all assets, specific tag)](https://img.shields.io/github/downloads/oofem/oofem/v3.0/total) 
 
