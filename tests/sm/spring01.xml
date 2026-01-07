@@ -1,7 +1,7 @@
 <oofem>
   <Output>spring01.out</Output>
   <Description>Patch test of 1D spring element along x axis</Description>
-  <Analysis type="StaticStructural" nsteps="1" />
+  <Analysis _="StaticStructural" nsteps="1" />
   <Domain domain="1dtruss">
     <OutputManager tstep_all="" dofman_all="" element_all="" />
     <Nodes>
