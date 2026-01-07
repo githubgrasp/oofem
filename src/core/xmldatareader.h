@@ -55,14 +55,9 @@ class OOFEM_EXPORT XMLDataReader : public DataReader
 protected:
     friend XMLInputRecord;
     std::string topXmlFile;
-    #if 0
-        /* map parent xml node (which is either empty for top-level file for xi:include node for included files) to filenames */
-        std::map<pugi::xml_node,std::string> xmlFiles;
-        /* map document node to ordered list of newline offsets (used to compute line:column from offset in messages) */
-        std::map<pugi::xml_node,std::vector<size_t>> newlines;
-        /* map parent xml node (which is either empty for top-level file for xi:include node for included files) to (sub)document */
-        std::map<pugi::xml_node,pugi::xml_document> docs;
-    #endif
+    static constexpr int FormatLowest=1;
+    static constexpr int FormatHighest=2;
+    int formatVersion=FormatLowest;
     std::map<pugi::xml_node,std::shared_ptr<xmlutil::XmlDoc>> docs;
     struct StackItem{
         pugi::xml_node parent;
@@ -85,7 +80,7 @@ protected:
 public:
     XMLDataReader(const std::string& xmlFile);
     virtual ~XMLDataReader(){};
-    bool hasFlattenedStructure() override { return true; }
+    bool hasFeature(FormatFeature f) override;
 
     //! guess whether given file is XML
     static bool canRead(const std::string& xmlFile);

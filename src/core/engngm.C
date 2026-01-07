@@ -245,7 +245,7 @@ int EngngModel :: instanciateYourself(DataReader &dr, const std::shared_ptr<Inpu
 
         {
             /* This is somewhat messy since we want the XML input format NOT to nest modules under Analysis, keeping them under the top-level <oofem> tag instead */
-            auto irParent=(dr.hasFlattenedStructure()?dr.giveTopInputRecord():ir);
+            auto irParent=(dr.hasFeature(DataReader::FormatFeature::DomainNotUnderAnalysis)?dr.giveTopInputRecord():ir);
             DataReader::RecordGuard scope(dr,irParent);
             // instanciate initialization module manager
             initModuleManager.instanciateYourself(dr, irParent, "ninitmodules", "InitModules",DataReader::IR_expModuleRec);

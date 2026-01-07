@@ -60,6 +60,12 @@ protected:
     std :: string description;
 
 public:
+    enum class FormatFeature {
+        NoDomainCompRec,
+        DomainNotUnderAnalysis,
+        OutputAndDescriptionOptional
+    };
+    virtual bool hasFeature(FormatFeature f){ return false; }
     /// Determines the type of input record.
     enum InputRecordType {
         IR_domainRec, IR_outManRec, IR_domainCompRec, IR_geometryRec, IR_gbpmRec,

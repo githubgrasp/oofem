@@ -102,18 +102,44 @@ namespace oofem {
         return pugi::xml_node();
     }
 
+    bool XMLDataReader::hasFeature(FormatFeature f){
+        switch(f){
+            case DataReader::FormatFeature::NoDomainCompRec: return formatVersion>=1;
+            case DataReader::FormatFeature::DomainNotUnderAnalysis: return formatVersion>=1;
+            case DataReader::FormatFeature::OutputAndDescriptionOptional:
+                return formatVersion>=2;
+        };
+        return false;
+    };
+
     XMLDataReader::XMLDataReader(const std::string& xmlFile_): topXmlFile(xmlFile_) {
         pugi::xml_document& doc=loadXml(pugi::xml_node(),topXmlFile);
         stack.push_back(StackItem{doc,doc});
+        auto oo=doc.first_child();
+        if(!oo || std::string(oo.name())!="oofem") OOFEM_ERROR("%s: no top-level <oofem> group.",topXmlFile.c_str());
+        auto ver=oo.attribute("version");
+        if(!ver){ OOFEM_WARNING("%s: missing version attribute (implying 1)",loc(oo).c_str()); }
+        else { formatVersion=xmlutil::string_to<int>(std::string(ver.value()),[this,&oo](){ return loc(oo); }); }
+        if(formatVersion<FormatLowest || formatVersion>FormatHighest) OOFEM_ERROR("%s: <oofem version=\"%d\">: version out of valid range %d...%d",loc(oo).c_str(),formatVersion,FormatLowest,FormatHighest);
         enterGroup("oofem");
         pugi::xml_node root=stack.back().parent;
         pugi::xml_node output_node=root.child("Output"), description_node=root.child("Description");
-        if(!output_node) OOFEM_ERROR("Error reading %s: <Output> node missing in %s.",topXmlFile.c_str(),root.name());
-        if(!description_node) OOFEM_ERROR("Error reading %s: <Description> node missing.",topXmlFile.c_str());
-        XMLInputRecord::node_seen_set(output_node,true);
-        XMLInputRecord::node_seen_set(description_node,true);
-        outputFileName=output_node.text().as_string();
-        description=description_node.text().as_string();
+        if(output_node){
+            XMLInputRecord::node_seen_set(output_node,true);
+            outputFileName=output_node.text().as_string();
+        } else {
+            if(hasFeature(DataReader::FormatFeature::OutputAndDescriptionOptional)){
+                outputFileName=std::filesystem::path(topXmlFile).replace_extension(".out").string();
+                // OOFEM_WARNING("%s: deduced output filename '%s'",topXmlFile.c_str(),outputFileName.c_str());
+            }
+            else OOFEM_ERROR("Error reading %s: <Output> node missing in %s.",topXmlFile.c_str(),root.name());
+        }
+        if(description_node){
+            XMLInputRecord::node_seen_set(description_node,true);
+            description=description_node.text().as_string();
+        } else {
+            if(!hasFeature(DataReader::FormatFeature::OutputAndDescriptionOptional)) OOFEM_ERROR("Error reading %s: <Description> node missing.",topXmlFile.c_str());
+        }
     }
     std::shared_ptr<InputRecord> XMLDataReader::giveTopInputRecord() {
         return std::make_shared<XMLInputRecord>(this,stack.back().parent);
