@@ -47,19 +47,22 @@ std::shared_ptr<DataReader> DataReader::makeFromFilename(const std::string& f){
     return std::make_shared<OOFEMTXTDataReader>(f);
 }
 
-std::shared_ptr<InputRecord> DataReader::giveChildRecord( const std::shared_ptr<InputRecord> &ir, InputFieldType ift, const std::string &name, InputRecordType irType, bool optional )
+std::shared_ptr<InputRecord> DataReader::giveChildRecord( const std::shared_ptr<InputRecord> &ir, InputFieldType ift, InputRecordType irType, bool optional )
 {
+    std::string name=DataReader::InputRecordTags[irType].tag;
     if ( ir->hasChild( ift, name, optional ) ) return this->giveInputRecord( irType, /*recordId*/ 1 );
     return nullptr;
 };
 
-DataReader::GroupRecords DataReader::giveGroupRecords( const std::shared_ptr<InputRecord> &ir, InputFieldType ift, const std::string &name, InputRecordType irType, bool optional )
+DataReader::GroupRecords DataReader::giveGroupRecords( const std::shared_ptr<InputRecord> &ir, InputFieldType ift, InputRecordType irType, bool optional )
 {
+    std::string name=DataReader::InputRecordTags[irType].group;
     return GroupRecords( *this, name, irType, ir->giveGroupCount( ift, name, optional ) );
 }
 
-DataReader::GroupRecords DataReader::giveGroupRecords(const std::string& name, InputRecordType irType, int numRequired)
+DataReader::GroupRecords DataReader::giveGroupRecords(InputRecordType irType, int numRequired)
 {
+    std::string name=DataReader::InputRecordTags[irType].group;
     int count=giveGroupCount(name);
     if(count>=0 && numRequired>=0 && count!=numRequired) OOFEM_ERROR("Mismatch in %s: %d records of type '%s' required, %d found.",giveReferenceName().c_str(),numRequired,name.c_str(),count);
     return GroupRecords(*this,name,irType,numRequired>=0?numRequired:count);

@@ -829,7 +829,7 @@ void ErrorCheckingExportModule::readRulesFromTextFile(const std::shared_ptr<Inpu
 void ErrorCheckingExportModule::readRulesFromRecords(DataReader& dr, const std::shared_ptr<InputRecord>& ir){
     double tol=1e-6;
     ir->giveOptionalField(tol,"tolerance");
-    DataReader::GroupRecords ruleRecs=dr.giveGroupRecords("",DataReader::IR_errorcheckRec,-1);
+    DataReader::GroupRecords ruleRecs=dr.giveGroupRecords(DataReader::IR_errorcheckRec,-1);
     for(auto rir: ruleRecs){
         std::string n;
         rir->giveRecordKeywordField(n);

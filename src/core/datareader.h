@@ -192,7 +192,7 @@ public:
      * @param optional If not optional and the number of records is not given, fail with error. Otherwise assume 0-sized subgroup.
      * @return Object providing begin(), end() iterators and size().
      */
-    GroupRecords giveGroupRecords(const std::shared_ptr<InputRecord> &ir, InputFieldType ift, const std::string &name, InputRecordType irType, bool optional );
+    GroupRecords giveGroupRecords(const std::shared_ptr<InputRecord> &ir, InputFieldType ift, InputRecordType irType, bool optional );
     /**
      * Give range to iterate over records within a named group
      * @param name Subgroup name; if not given, give records within the current group
@@ -200,9 +200,9 @@ public:
      * @param numRequired if non-negative, this number is checked against number of records present (for readers which can determine that), and mismatch error is thrown when they are different
      * @return Object providing being(), end() iterators and size().
      */
-    GroupRecords giveGroupRecords(const std::string& name, InputRecordType irType, int numRequired=-1);
+    GroupRecords giveGroupRecords(InputRecordType irType, int numRequired=-1);
     /// Return pointer to subrecord of given type (must be exactly one); if not present, returns nullptr.
-    std::shared_ptr<InputRecord> giveChildRecord( const std::shared_ptr<InputRecord> &ir, InputFieldType ift, const std::string &name, InputRecordType irType, bool optional );
+    std::shared_ptr<InputRecord> giveChildRecord( const std::shared_ptr<InputRecord> &ir, InputFieldType ift, InputRecordType irType, bool optional );
 
 
 };

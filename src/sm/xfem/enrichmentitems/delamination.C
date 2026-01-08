@@ -76,7 +76,7 @@ int Delamination :: instanciateYourself(DataReader &dr)
 
     // Instantiate enrichment function
     {
-        auto mir = dr.giveChildRecord(thisIr,"",DataReader::InputRecordTags[DataReader::IR_enrichFuncRec].tag,DataReader::IR_enrichFuncRec,/*optional*/false);
+        auto mir = dr.giveChildRecord(thisIr,"",DataReader::IR_enrichFuncRec,/*optional*/false);
         mir->giveRecordKeywordField(name);
 
         mpEnrichmentFunc = classFactory.createEnrichmentFunction( name.c_str(), 1, this->giveDomain() );
@@ -109,7 +109,7 @@ int Delamination :: instanciateYourself(DataReader &dr)
         mpEnrichmentFrontEnd = std::make_unique<EnrFrontDoNothing>(this->giveNumber());
     } else {
         int i=0;
-        for(const std::shared_ptr<InputRecord>& efIr: dr.giveGroupRecords("EnrichmentFront",DataReader :: IR_enrichFrontRec,/*numRequired*/2)){
+        for(const std::shared_ptr<InputRecord>& efIr: dr.giveGroupRecords(DataReader :: IR_enrichFrontRec,/*numRequired*/2)){
             std::string enrFrontName;
             efIr->giveRecordKeywordField(enrFrontName);
             auto ef = classFactory.createEnrichmentFront( enrFrontName.c_str() );
@@ -131,7 +131,7 @@ int Delamination :: instanciateYourself(DataReader &dr)
     } else {
         std :: string propLawName;
 
-        auto propLawir = dr.giveChildRecord(thisIr,"",DataReader::InputRecordTags[DataReader::IR_propagationLawRec].tag,DataReader :: IR_propagationLawRec,/*optional*/false);
+        auto propLawir = dr.giveChildRecord(thisIr,"",DataReader :: IR_propagationLawRec,/*optional*/false);
         propLawir->giveRecordKeywordField(propLawName);
 
         mpPropagationLaw = classFactory.createPropagationLaw( propLawName.c_str() );
