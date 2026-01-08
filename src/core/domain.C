@@ -882,7 +882,7 @@ Domain :: instanciateYourself(DataReader &dr, const std::shared_ptr<InputRecord>
         }
     #  endif
 
-    const std::shared_ptr<InputRecord> xfmIr=dr.giveChildRecord(irdPtr,_IFT_Domain_nxfemman,DataReader::InputRecordTags[DataReader::IR_xfemManRec],DataReader::IR_xfemManRec,/*optional*/true);
+    const std::shared_ptr<InputRecord> xfmIr=dr.giveChildRecord(irdPtr,_IFT_Domain_nxfemman,DataReader::InputRecordTags[DataReader::IR_xfemManRec].tag,DataReader::IR_xfemManRec,/*optional*/true);
     if(xfmIr){
         DataReader::RecordGuard scope(dr,xfmIr);
         IR_GIVE_RECORD_KEYWORD_FIELD(xfmIr, name, num);

@@ -245,14 +245,14 @@ int EngngModel :: instanciateYourself(DataReader &dr, const std::shared_ptr<Inpu
 
         {
             /* This is somewhat messy since we want the XML input format NOT to nest modules under Analysis, keeping them under the top-level <oofem> tag instead */
-            auto irParent=(dr.hasFeature(DataReader::FormatFeature::DomainNotUnderAnalysis)?dr.giveTopInputRecord():ir);
+            auto irParent=(dr.hasFeature(DataReader::FormatFeature::DomainUnderTop)?dr.giveTopInputRecord():ir);
             DataReader::RecordGuard scope(dr,irParent);
             // instanciate initialization module manager
-            initModuleManager.instanciateYourself(dr, irParent, "ninitmodules", "InitModules",DataReader::IR_expModuleRec);
+            initModuleManager.instanciateYourself(dr, irParent, "ninitmodules", "InitModules",DataReader::IR_initModuleRec);
             // instanciate export module manager
             exportModuleManager.instanciateYourself(dr, irParent, "nmodules", "ExportModules",DataReader::IR_expModuleRec);
             // instanciate monitor manager
-            monitorManager.instanciateYourself(dr, irParent, "nmonitors", "Monitors",DataReader::IR_expModuleRec);
+            monitorManager.instanciateYourself(dr, irParent, "nmonitors", "Monitors",DataReader::IR_monitorRec);
             {
                 DataReader::RecordGuard scope(dr,ir);
                 this->giveContext()->giveFieldManager()->instanciateYourself(dr, ir);
@@ -312,7 +312,7 @@ EngngModel :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
     IR_GIVE_OPTIONAL_FIELD(ir, profileOpt, _IFT_EngngModel_profileOpt);
 
     // get explicit nmsteps param (text), or size of the <Metasteps> sub-group (xml)
-    nMetaSteps = ir->giveReader()->giveGroupRecords(ir,_IFT_EngngModel_nmsteps,"Metasteps",DataReader::IR_mstepRec,/*optional*/true).size();
+    nMetaSteps = ir->giveReader()->giveGroupRecords(ir,_IFT_EngngModel_nmsteps,DataReader::InputRecordTags[DataReader::IR_mstepRec].group,DataReader::IR_mstepRec,/*optional*/true).size();
 
     int _val = 1;
     IR_GIVE_OPTIONAL_FIELD(ir, _val, _IFT_EngngModel_nonLinFormulation);

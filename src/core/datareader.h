@@ -62,32 +62,35 @@ protected:
 public:
     enum class FormatFeature {
         NoDomainCompRec,
-        DomainNotUnderAnalysis,
+        DomainUnderTop,
         OutputAndDescriptionOptional
     };
     virtual bool hasFeature(FormatFeature f){ return false; }
     /// Determines the type of input record.
     enum InputRecordType {
         IR_domainRec, IR_outManRec, IR_domainCompRec, IR_geometryRec, IR_gbpmRec,
-        IR_emodelRec, IR_mstepRec, IR_expModuleRec, IR_dofmanRec, IR_elemRec,
+        IR_emodelRec, IR_mstepRec, IR_initModuleRec, IR_expModuleRec, IR_monitorRec, IR_dofmanRec, IR_elemRec,
         IR_crosssectRec, IR_matRec, IR_nlocBarRec, IR_bcRec, IR_icRec, IR_funcRec, IR_setRec,
         IR_xfemManRec, IR_enrichFuncRec, IR_geoRec, IR_enrichItemRec,
         IR_enrichFrontRec, IR_propagationLawRec, IR_crackNucleationRec, IR_fracManRec, IR_failCritRec,
         IR_contactSurfaceRec, IR_fieldRec, 
         // MPM specific
         IR_mpmVarRec, IR_mpmTermRec, IR_mpmIntegralRec,
+        IR_errorcheckRec,
         IR_unspecified // internal use only, signifies error in setting record type
     };
     /* XML tags corresponding to record types; those with "" are just enumeration group where arbitrary tags may be used */
-    static constexpr const char* InputRecordTags[]={
-        "Domain","OutputManager","DomainComp","Geometry","GBPM",
-        "Analysis","Metastep",/*ExportModule*/"",/*Node*/"",/*Element*/"",
-        /*CrossSection*/"",/*Material*/"",/*"NonlocalBarrier"*/"",/*BoundaryCondition*/"","InitialCondition",/*TimeFunction*/"","Set",
-        "XFemManager","EnrichmentFunction","EnrichmentGeometry",/*EnrichmentItem*/"",
-        /*EnrichmentFront*/"","PropagationLaw","CrackNucleation","FractureManager","FailCriterion",
-        /*ContactSurface*/"",/*Field*/"",
-        "Variable",/*"MPMTerm"*/"","Integral",
-        "UNSPECIFIED"
+    struct TagGroup { const char* tag; const char* group; };
+    static constexpr TagGroup InputRecordTags[]={
+        {"Domain",""},{"OutputManager",""},{"DomainComp",""},{"Geometry",""},{"GBPM",""},
+        {"Analysis",""},{"Metastep","Metasteps"},{"","InitModules"},{"","ExportModules"},{"","Monitors"},{"","Nodes"},{"","Elements"},
+        {"","CrossSections"},{"","Materials"},{"","NonlocalBarriers"},{"","BoundaryConditions"},{"","InitialConditions"},{"","LoadTimeFunctions"},{"Set","Sets"},
+        {"XFemManager",""},{"EnrichmentFunction",""},{"EnrichmentGeometry",""},{"","EnrichmentItems"},
+        {"","EnrichmentFront"},{"PropagationLaw",""},{"CrackNucleation","NucleationCriteria"},{"FractureManager",""},{"FailCriterion",""},
+        {"","ContactSurfaces"},{"","Fields"},
+        {"Variable","MPMVariables"},{"","MPMTerms"},{"Integral","MPMIntegrals"},
+        {/*errorcheck: both empty*/"",""},
+        {"UNSPECIFIED",""}
     };
 
     DataReader() { }

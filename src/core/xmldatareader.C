@@ -105,7 +105,7 @@ namespace oofem {
     bool XMLDataReader::hasFeature(FormatFeature f){
         switch(f){
             case DataReader::FormatFeature::NoDomainCompRec: return formatVersion>=1;
-            case DataReader::FormatFeature::DomainNotUnderAnalysis: return formatVersion>=1;
+            case DataReader::FormatFeature::DomainUnderTop: return formatVersion>=1;
             case DataReader::FormatFeature::OutputAndDescriptionOptional:
                 return formatVersion>=2;
         };
@@ -235,7 +235,7 @@ namespace oofem {
     std::shared_ptr<InputRecord>
     XMLDataReader :: giveInputRecord(InputRecordType typeId, int recordId)
     {
-        std::string tag=DataReader::InputRecordTags[typeId];
+        std::string tag=DataReader::InputRecordTags[typeId].tag;
         _XML_DEBUG(loc()<<"::"<<giveStackPath()<<": tag '"<<tag<<"'");
         StackItem& tip(stack.back());
         if(tag.empty()){

@@ -75,7 +75,7 @@ int GeometryBasedEI :: instanciateYourself(DataReader &dr)
 
     // Instantiate enrichment function
     {
-        auto mir = dr.giveChildRecord(thisIr,"",DataReader::InputRecordTags[DataReader::IR_enrichFuncRec],DataReader::IR_enrichFuncRec,/*optional*/false);
+        auto mir = dr.giveChildRecord(thisIr,"",DataReader::InputRecordTags[DataReader::IR_enrichFuncRec].tag,DataReader::IR_enrichFuncRec,/*optional*/false);
         mir->giveRecordKeywordField(name);
 
         mpEnrichmentFunc = classFactory.createEnrichmentFunction( name.c_str(), 1, this->giveDomain() );
@@ -88,7 +88,7 @@ int GeometryBasedEI :: instanciateYourself(DataReader &dr)
 
     // Instantiate geometry
     {
-        auto mir = dr.giveChildRecord(thisIr,"",DataReader::InputRecordTags[DataReader::IR_geoRec],DataReader::IR_geoRec,/*optional*/false);
+        auto mir = dr.giveChildRecord(thisIr,"",DataReader::InputRecordTags[DataReader::IR_geoRec].tag,DataReader::IR_geoRec,/*optional*/false);
         // auto &mir = dr.giveInputRecord(DataReader :: IR_geoRec, 1);
         mir->giveRecordKeywordField(name);
         mpBasicGeometry = classFactory.createGeometry( name.c_str() );
@@ -126,7 +126,7 @@ int GeometryBasedEI :: instanciateYourself(DataReader &dr)
     } else {
         std :: string propLawName;
 
-        auto propLawir = dr.giveChildRecord(thisIr,"",DataReader::InputRecordTags[DataReader::IR_propagationLawRec],DataReader :: IR_propagationLawRec,/*optional*/false);
+        auto propLawir = dr.giveChildRecord(thisIr,"",DataReader::InputRecordTags[DataReader::IR_propagationLawRec].tag,DataReader :: IR_propagationLawRec,/*optional*/false);
         propLawir->giveRecordKeywordField(propLawName);
 
         mpPropagationLaw = classFactory.createPropagationLaw( propLawName.c_str() );
