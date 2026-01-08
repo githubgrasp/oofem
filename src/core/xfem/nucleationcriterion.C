@@ -68,7 +68,7 @@ int NucleationCriterion::instanciateYourself(DataReader &dr)
     std :: string name;
 
     // Instantiate enrichment function
-    auto mir = dr.giveInputRecord(DataReader :: IR_crackNucleationRec);
+    auto mir = dr.giveNextInputRecord(DataReader :: IR_crackNucleationRec);
     mir->giveRecordKeywordField(name);
 
     mpEnrichmentFunc = classFactory.createEnrichmentFunction( name.c_str(), 1, mpDomain );

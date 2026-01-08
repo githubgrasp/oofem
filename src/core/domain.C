@@ -478,7 +478,7 @@ void Domain :: clearBoundaryConditions() { bcList.clear(); }
 void Domain :: clearElements() { elementList.clear(); }
 
 int Domain::instanciateYourself(DataReader& dr){
-    auto ir = dr.giveInputRecord(DataReader :: IR_domainRec);
+    auto ir = dr.giveNextInputRecord(DataReader :: IR_domainRec);
     return this->instanciateYourself(dr,ir);
 }
 int
@@ -508,7 +508,7 @@ Domain :: instanciateYourself(DataReader &dr, const std::shared_ptr<InputRecord>
     // read output manager record
     {
         std :: string tmp;
-        auto ir = dr.giveInputRecord(DataReader :: IR_outManRec);
+        auto ir = dr.giveNextInputRecord(DataReader :: IR_outManRec);
         ir->giveRecordKeywordField(tmp);
 
         if ( !giveEngngModel()->giveSuppressOutput() ) {
@@ -519,7 +519,7 @@ Domain :: instanciateYourself(DataReader &dr, const std::shared_ptr<InputRecord>
 
     // XML format (and perhaps others) does not contain DomainComp nested group, rather nests everything under domain directly
 
-    std::shared_ptr<InputRecord> irdPtr=(dr.hasFeature(DataReader::FormatFeature::NoDomainCompRec)?irDomain:dr.giveInputRecord(DataReader :: IR_domainCompRec));
+    std::shared_ptr<InputRecord> irdPtr=(dr.hasFeature(DataReader::FormatFeature::NoDomainCompRec)?irDomain:dr.giveNextInputRecord(DataReader :: IR_domainCompRec));
     IR_GIVE_OPTIONAL_FIELD(irdPtr, topologytype, _IFT_Domain_topology);
     this->nsd = -1; ///@todo Change this to default 0 when the domaintype record has been removed.
     IR_GIVE_OPTIONAL_FIELD(irdPtr, this->nsd, _IFT_Domain_numberOfSpatialDimensions);

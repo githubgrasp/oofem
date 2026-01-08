@@ -50,7 +50,7 @@ std::shared_ptr<DataReader> DataReader::makeFromFilename(const std::string& f){
 std::shared_ptr<InputRecord> DataReader::giveChildRecord( const std::shared_ptr<InputRecord> &ir, InputFieldType ift, InputRecordType irType, bool optional )
 {
     std::string name=DataReader::InputRecordTags[irType].tag;
-    if ( ir->hasChild( ift, name, optional ) ) return this->giveInputRecord( irType);
+    if ( ir->hasChild( ift, name, optional ) ) return this->giveNextInputRecord( irType);
     return nullptr;
 };
 
@@ -77,7 +77,7 @@ DataReader::GroupRecords::Iterator::Iterator( DataReader &dr_, const std::string
             entered = true;
             dr.enterGroup( this->group );
         }
-        irPtr = dr.giveInputRecord( irType );
+        irPtr = dr.giveNextInputRecord( irType );
         if ( irPtr ) dr.enterRecord( irPtr );
     }
     #if 0
@@ -96,7 +96,7 @@ DataReader::GroupRecords::Iterator &DataReader::GroupRecords::Iterator::operator
         irPtr = {};
         if ( entered ) dr.leaveGroup( this->group );
     } else {
-        irPtr = dr.giveInputRecord( irType );
+        irPtr = dr.giveNextInputRecord( irType );
         if ( irPtr ) dr.enterRecord( irPtr );
     }
     return *this;

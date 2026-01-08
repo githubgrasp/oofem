@@ -104,7 +104,7 @@ public:
      * @param irType Determines type of record to be returned.
      * @param recordId Determines the record  number corresponding to component number.
      */
-    virtual std::shared_ptr<InputRecord> giveInputRecord(InputRecordType irType) = 0;
+    virtual std::shared_ptr<InputRecord> giveNextInputRecord(InputRecordType irType) = 0;
     /**
      * Returns top input record, for readers which support it; others return empty pointer
      */
