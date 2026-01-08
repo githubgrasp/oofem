@@ -90,7 +90,7 @@ int Delamination :: instanciateYourself(DataReader &dr)
 
     // Instantiate enrichment domain
     {
-        auto mir = dr.giveInputRecord(DataReader :: IR_geoRec, 1);
+        auto mir = dr.giveInputRecord(DataReader :: IR_geoRec);
         mir->giveRecordKeywordField(name);
 
         IntArray idList;

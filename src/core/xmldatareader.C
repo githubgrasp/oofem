@@ -233,7 +233,7 @@ namespace oofem {
     }
 
     std::shared_ptr<InputRecord>
-    XMLDataReader :: giveInputRecord(InputRecordType typeId, int recordId)
+    XMLDataReader :: giveInputRecord(InputRecordType typeId)
     {
         std::string tag=DataReader::InputRecordTags[typeId].tag;
         _XML_DEBUG(loc()<<"::"<<giveStackPath()<<": tag '"<<tag<<"'");

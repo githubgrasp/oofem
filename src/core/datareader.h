@@ -104,7 +104,7 @@ public:
      * @param irType Determines type of record to be returned.
      * @param recordId Determines the record  number corresponding to component number.
      */
-    virtual std::shared_ptr<InputRecord> giveInputRecord(InputRecordType irType, int recordId) = 0;
+    virtual std::shared_ptr<InputRecord> giveInputRecord(InputRecordType irType) = 0;
     /**
      * Returns top input record, for readers which support it; others return empty pointer
      */
@@ -127,8 +127,6 @@ public:
     std :: string giveOutputFileName() { return this->outputFileName; }
     /// Gives the problem description
     std :: string giveDescription() { return this->description; }
-
-    virtual bool hasFlattenedStructure() { return false; }
 
     virtual void enterGroup(const std::string& name) {};
     virtual void leaveGroup(const std::string& name) {};
