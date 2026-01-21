@@ -1,0 +1,119 @@
+/*
+ *
+ *                 #####    #####   ######  ######  ###   ###
+ *               ##   ##  ##   ##  ##      ##      ## ### ##
+ *              ##   ##  ##   ##  ####    ####    ##  #  ##
+ *             ##   ##  ##   ##  ##      ##      ##     ##
+ *            ##   ##  ##   ##  ##      ##      ##     ##
+ *            #####    #####   ##      ######  ##     ##
+ *
+ *
+ *             OOFEM : Object Oriented Finite Element Code
+ *
+ *               Copyright (C) 1993 - 2023   Borek Patzak
+ *
+ *
+ *
+ *       Czech Technical University, Faculty of Civil Engineering,
+ *   Department of Structural Mechanics, 166 29 Prague, Czech Republic
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2.1 of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ */
+#ifndef node2segmentthermalcontact_h
+#define node2segmentthermalcontact_h
+
+
+#include "activebc.h"
+//#include "sm/Contact/ContactSegment/contactsegment.h"
+//#include "sm/Contact/Materials/structuralcontactmaterial.h"
+#include "sm/Contact/ContactSegment/thermalfemcontactsegment.h"
+
+///@name Input fields for _IFT_ContactElement
+//@{
+#define _IFT_Node2SegmentThermalContact_Name "n2sthermalcontact"
+#define _IFT_Node2SegmentThermalContact_segmentNum "segment"
+#define _IFT_Node2SegmentThermalContact_nodeSetNum "nodeset"
+#define _IFT_Node2SegmentThermalContact_matNum "material"
+
+
+//@}
+
+namespace oofem {
+class Domain;
+class SparseMtrx;
+class TimeStep;
+class DofManager;
+class GaussPoint;
+class UnknownNumberingScheme;
+class FloatMatrix;
+class IntegrationRule;
+class Node;
+
+/**
+ * Boundary condition class for node-to-segment thermal contact. Maintains set of corresponding pairs of nodes and segments that are checked for contact. Size of thermal is user-defined. All operations are always iterated over all pairs.
+ *
+ * Tasks:
+ * - managing its node set and segment set.
+ * - calculating contact contributions to the stiffness matrix and to the force vector.
+ * - calculating location arrays to determine DOFs interacting as a result of contact.
+ */
+
+
+class OOFEM_EXPORT Node2SegmentThermalContact : public ActiveBoundaryCondition
+{
+private:
+    int nodeSetNumber;
+    int segmentNum;
+    int materialNumber;
+    IntArray nodeSet;
+    IntArray segmentSet;
+    FloatArray prescribedNormal;
+    ThermalFEMContactSegment *thermalContactSegment;
+
+ public:
+
+    /// Constructor.
+    Node2SegmentThermalContact(int n, Domain *d) : ActiveBoundaryCondition(n, d) { }
+    /// Destructor.
+    virtual ~Node2SegmentThermalContact() {};
+
+    void initializeFrom(InputRecord &ir) override;
+
+    virtual void assemble(SparseMtrx &answer, TimeStep *tStep, CharType type, const UnknownNumberingScheme &r_s, const UnknownNumberingScheme &c_s, double scale = 1.0, void *lock = nullptr) override;
+
+    virtual void assembleVector(FloatArray &answer, TimeStep *tStep, CharType type, ValueModeType mode, const UnknownNumberingScheme &s, FloatArray *eNorms = NULL, void *lock = nullptr) override;
+
+
+    virtual const char *giveClassName() const override { return "Node2SegmentThermalContact"; }
+    virtual const char *giveInputRecordName() const override { return _IFT_Node2SegmentThermalContact_Name; }
+
+    void postInitialize() override;
+
+
+    void giveLocationArrays(std::vector< IntArray > &rows, std::vector< IntArray > &cols, CharType type, const UnknownNumberingScheme &r_s, const UnknownNumberingScheme &c_s) override;
+
+private:
+    void  computeTangentFromContact(FloatMatrix &answer, Node *node, StructuralFEMContactSegment *segment, GaussPoint *gp, TimeStep *tStep);
+    double compute_gap(Node *node, ContactSegment *segment, GaussPoint *gp,TimeStep *tStep);
+    void computeInternalForcesFromContact(FloatArray &answer, Node *node, StructuralFEMContactSegment *segment, GaussPoint *gp, TimeStep *tStep);
+    void giveLocationArray(IntArray &loc, const UnknownNumberingScheme &ns, const Node *node, const ContactSegment *segment);
+
+    //upadate these methods
+    void computeNmatrixAt(Node *node, ThermalFEMContactSegment *segment, GaussPoint *gp, FloatMatrix &answer);
+    //StructuralContactMaterial* giveStructuralContactMaterial();
+    void updateYourself(TimeStep *tStep) override;
+};
+} // end namespace oofem
+#endif // node2segmentthermalcontact_h
