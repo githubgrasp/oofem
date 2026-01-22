@@ -580,7 +580,7 @@ EngngModel :: solveYourself()
 
     TimeStep *timeStep = this->giveCurrentStep();
     if ( timeStep ) {
-      smstep = timeStepController->giveMetaStepNumber();
+      smstep = timeStepController->giveMetaStepNumber(timeStep->giveTargetTime());
     }
    
 

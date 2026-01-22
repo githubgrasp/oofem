@@ -138,7 +138,7 @@ public:
     int instanciateDefaultMetaStep(const std::shared_ptr<InputRecord> &ir);
     int instanciateMetaSteps(DataReader &dr);
     void initMetaStepAttributes(MetaStep *mStep);
-    int giveMetaStepNumber(){return 1;}
+    int giveMetaStepNumber(double time);
     void postInitialize();
     void reduceTimeStep();
     void adaptTimeStep(int nIter);
