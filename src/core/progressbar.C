@@ -39,6 +39,7 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#include <io.h>
 #else
 #include <sys/ioctl.h>
 #include <unistd.h>
