@@ -34,6 +34,17 @@
 
 #include "progressbar.h"
 
+#include <iostream>
+#include <string>
+
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <sys/ioctl.h>
+#include <unistd.h>
+#include <signal.h>
+#endif
+
 namespace oofem {
 
 ProgressBar oofem_ProgressBar;
@@ -284,7 +295,7 @@ void ProgressBar::finish() {
 
         std::cout << msg << " [";
         for (int i = 0; i < barWidth; ++i)
-            std::cout << (i < filled ? '#' : '-');
+            std::cout << (i < filled ? "█" : "░");
         std::cout << "]" << " " << pctColor << int(value * 100) << "%\033[0m";
 
         std::cout << "\033[u";                     // restore cursor
