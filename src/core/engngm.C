@@ -576,6 +576,8 @@ void
 EngngModel :: solveYourself()
 {
     int smstep = 1;
+    bool showProgress=true;
+    std::string progressMsg = std::string(PRG_VERSION_SHORT) + " | Solution Progress:";
 
     this->timer.startTimer(EngngModelTimer :: EMTT_AnalysisTimer);
 
@@ -583,7 +585,14 @@ EngngModel :: solveYourself()
     if ( timeStep ) {
       smstep = timeStepController->giveMetaStepNumber(timeStep->giveTargetTime());
     }
-   
+    
+    
+    if ( ( this->giveNumberOfSteps() == 1 ) && ( this->giveNumberOfMetaSteps() == 1 ) ) {
+        showProgress=false;
+    }
+
+    if ( showProgress ) oofem_ProgressBar.initialize();
+
 
     for ( int imstep = smstep; imstep <= timeStepController->giveNumberOfMetaSteps(); imstep++ ) { //loop over meta steps
         auto activeMStep = this->giveMetaStep(imstep);
@@ -592,8 +601,7 @@ EngngModel :: solveYourself()
         timeStepController->initMetaStepAttributes( activeMStep );
         double msFinalTime = activeMStep->giveFinalTime() - this->giveInitialTime();
         //
-        oofem_ProgressBar.initialize();
-        oofem_ProgressBar.update(0, "OOFEM");
+        if ( showProgress ) oofem_ProgressBar.update(0, "OOFEM");
         do {
             this->timer.startTimer(EngngModelTimer :: EMTT_SolutionStepTimer);
             this->timer.initTimer(EngngModelTimer :: EMTT_NetComputationalStepTimer);
@@ -647,7 +655,7 @@ EngngModel :: solveYourself()
             
             this->terminate( this->giveCurrentStep() );
             // update progress bar
-            oofem_ProgressBar.update( this->giveCurrentStep()->giveTargetTime() / this->giveFinalTime(), "OOFEM | Solution Progress:" );
+            if ( showProgress ) oofem_ProgressBar.update( this->giveCurrentStep()->giveTargetTime() / this->giveFinalTime(), progressMsg.c_str() );
 
 
             OOFEM_LOG_INFO("EngngModel info: user time consumed by solution step %d: %.2fs\n",
