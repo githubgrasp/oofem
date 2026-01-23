@@ -146,7 +146,7 @@ public:
     int giveNumberOfSteps(){return this->giveCurrentMetaStep()->giveNumberOfSteps();}
 
     
-    int giveFinalTime(){return 0;}
+    int giveFinalTime(){return metaStepList.back().giveFinalTime();}
     double giveDeltaT(){return this->giveCurrentMetaStep()->giveDeltaT();}
     double giveMinDeltaT(){return this->giveCurrentMetaStep()->giveMinDeltaT();}
     void setDeltaT(double dT){return this->giveCurrentMetaStep()->setDeltaT(dT);}
