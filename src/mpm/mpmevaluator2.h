@@ -49,6 +49,15 @@
 using namespace std;
 
 namespace oofem {
+/**
+ * --- VM TYPE SYSTEM ---
+ */
+enum class VarType { MATRIX, OBJECT };
+
+struct VarSlot {
+    FloatMatrix data;
+    VarType type = VarType::MATRIX;
+};
 
 /**
  * --- DATA LAYER ---
@@ -67,7 +76,7 @@ struct Instruction {
     int output_idx;      
 };
 using ObjectRegistry = std::map<int, void*>;
-using Provider = std::function<void(ObjectRegistry&, const std::vector<const FloatMatrix*>&, FloatMatrix&)>;
+using Provider = std::function<void(ObjectRegistry&, const std::vector<const VarSlot*>&, VarSlot&)>;
 
 /**
  * --- COMPILER LAYER ---
@@ -215,7 +224,7 @@ public:
 class MPMEvaluator {
 
     std::vector<Instruction> program;
-    std::vector<FloatMatrix> pool;
+    std::vector<VarSlot> pool;
     ObjectRegistry object_registry; // ID -> Pointer
     std::vector<Provider> providers;
 
@@ -223,42 +232,51 @@ public:
     MPMEvaluator(std::vector<Instruction> pr, int sz, const std::vector<std::pair<int, FloatMatrix>>& constants, std::vector<Provider> pvs)
         : program(pr), providers(pvs) {
         pool.resize(sz);
-        for (auto& c : constants) pool[c.first] = c.second;
+        for (auto& c : constants) {
+            pool[c.first].data = c.second;
+            pool[c.first].type = VarType::MATRIX;
+        }
     }
 
-// This connects a Variable's Pool Index to a C++ Object Pointer
+    // Method to bind a Matrix (Immediate value)
+    void set_matrix(int symbol_id, const FloatMatrix& mat) {
+        pool[symbol_id].data = mat;
+        pool[symbol_id].type = VarType::MATRIX;
+    }
+
+    // Method to bind a Class Pointer (Object ID)
     void bind_object(int symbol_id, void* ptr) {
         object_registry[symbol_id] = ptr;
-        
-        // Also store the ID itself in the pool so the provider can read it
-        pool[symbol_id] = FloatMatrix::fromScalar((double)symbol_id);
+        pool[symbol_id].data = FloatMatrix::fromScalar((double)symbol_id);
+        pool[symbol_id].type = VarType::OBJECT;
     }
 
     void execute() {
         for (size_t i = 0; i < program.size(); ++i) {
             const auto& instr = program[i];
             auto& O = pool[instr.output_idx];
-            const auto& R = pool[instr.rhs_idx];
-            const auto& L = pool[instr.lhs_idx];
+            const auto& R = pool[instr.rhs_idx].data;
+            const auto& L = pool[instr.lhs_idx].data;
  
             if (instr.op == OpCode::CALL_FUNC) {
-                std::vector<const FloatMatrix*> args;
+                std::vector<const VarSlot*> args;
                 for (int idx : instr.inputs) args.push_back(&pool[idx]);
                 providers[instr.func_id](object_registry, args, O);
+                O.type = VarType::MATRIX; // Functions typically output matrix data
                 continue;
             } else if (instr.op == OpCode::MAT_NEG) { 
-                if (instr.rhs_trans) O.beTranspositionOf(R);
-                else O = R;
+                if (instr.rhs_trans) O.data.beTranspositionOf(R);
+                else O.data = R;
                 continue; 
             } else if (instr.op == OpCode::MAT_MUL) {
                 // Implicit scalar broadcasting
                 // Optimized execution: detect if one operand is a 1x1 scalar
                 if (L.rows() == 1 && L.cols() == 1) {
-                    if (instr.rhs_trans) {O.beTranspositionOf(R);} else {O=R;}
-                    O.times(L(0,0));
+                    if (instr.rhs_trans) {O.data.beTranspositionOf(R);} else {O.data=R;}
+                    O.data.times(L(0,0));
                 } else if (R.rows() == 1 && R.cols() == 1) {
-                    if (instr.lhs_trans) {O.beTranspositionOf(L);} else {O=L;}
-                    O.times(R(0,0));
+                    if (instr.lhs_trans) {O.data.beTranspositionOf(L);} else {O.data=L;}
+                    O.data.times(R(0,0));
                 }
                 else { // Standard Matrix-Matrix product
                     // check dimensions
@@ -267,12 +285,12 @@ public:
                     if (lcols != rrows) {
                         throw std::runtime_error("Step " + std::to_string(i) + " Multiplication Mismatch: LHS Cols(" + std::to_string(lcols) + ") != RHS Rows(" + std::to_string(rrows) + ")");
                     }   
-                    if (!instr.lhs_trans && !instr.rhs_trans)      O.beProductOf(L, R);
-                    else if (instr.lhs_trans && !instr.rhs_trans)  O.beTProductOf(L, R);
-                    else if (!instr.lhs_trans && instr.rhs_trans)  O.beProductTOf(L, R);
-                    else                                           O.beTProductTOf(L, R);
+                    if (!instr.lhs_trans && !instr.rhs_trans)      O.data.beProductOf(L, R);
+                    else if (instr.lhs_trans && !instr.rhs_trans)  O.data.beTProductOf(L, R);
+                    else if (!instr.lhs_trans && instr.rhs_trans)  O.data.beProductTOf(L, R);
+                    else                                           O.data.beTProductTOf(L, R);
                 }
-            } else if (instr.op == OpCode::MAT_ADD) {
+            } else if (instr.op == OpCode::MAT_ADD) { // Can be heavily optimized if suitable method exists (O.data.beAdditionOf(L,R)) 
                 //O.noalias() = LV + RV; break;
                 // check dimensions
                 int lcols = (instr.lhs_trans) ? L.giveNumberOfRows() : L.giveNumberOfColumns();
@@ -283,14 +301,14 @@ public:
                     throw std::runtime_error("Step " + std::to_string(i) + " ADD Mismatch: LHS(" + std::to_string(lrows) + ", " + std::to_string(lcols) + ") != RHS (" + std::to_string(rrows) + ", " + std::to_string(rcols) + ")");
                 }   
                 if (instr.lhs_trans) {
-                    O.beTranspositionOf(L);
+                    O.data.beTranspositionOf(L);
                 } else {
-                    O = L;
+                    O.data = L;
                 }
                 if (instr.rhs_trans) {
-                    FloatMatrix _RT; _RT.beTranspositionOf(R); O.add(_RT);
+                    FloatMatrix _RT; _RT.beTranspositionOf(R); O.data.add(_RT);
                 } else {
-                    O.add(R);
+                    O.data.add(R);
                 }
                 
             } else if (instr.op == OpCode::MAT_SUB) {
@@ -303,19 +321,19 @@ public:
                     throw std::runtime_error("Step " + std::to_string(i) + " SUBTRACT Mismatch: LHS(" + std::to_string(lrows) + ", " + std::to_string(lcols) + ") != RHS (" + std::to_string(rrows) + ", " + std::to_string(rcols) + ")");
                 }   
                 if (instr.lhs_trans) {
-                    O.beTranspositionOf(L);
+                    O.data.beTranspositionOf(L);
                 } else {
-                    O = L;
+                    O.data = L;
                 }
                 if (instr.rhs_trans) {
-                    FloatMatrix _RT; _RT.beTranspositionOf(R); O.subtract(_RT);
+                    FloatMatrix _RT; _RT.beTranspositionOf(R); O.data.subtract(_RT);
                 } else {
-                    O.subtract(R);
+                    O.data.subtract(R);
                 }
             }
         }// end for
     }
-    const FloatMatrix& result() const { return pool.back(); }
+    const FloatMatrix& result() const { return pool.back().data; }
 };
 
 

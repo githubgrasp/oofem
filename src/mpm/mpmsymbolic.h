@@ -87,13 +87,15 @@ class SymbolicTerm : public GenericCellTerm {
         // register functors
         compiler.add_function("GetNodal", 0);
         auto Nodal_provider = [](ObjectRegistry& reg, const auto& args, auto& out) {
+            if (args[0]->type != VarType::OBJECT) throw std::runtime_error("Arg 0 must be an Object");
             // 1. Recover the Symbolic IDs from the 1x1 matrices in args
-            int id_field = (int)(*args[0])(0,0);    
+            int id_field = (int)args[0]->data(0,0);    
             // 2. Resolve to C++ Pointers
             TestField* f = static_cast<TestField*>(reg[id_field]);
             if(!f) throw std::runtime_error("Dynamic resolution failed!");
 
-            out=f->values; 
+            out.data = f->values; 
+            out.type = VarType::MATRIX;
         };
         providers.push_back(Nodal_provider);
 
