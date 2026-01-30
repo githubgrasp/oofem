@@ -66,6 +66,8 @@ struct Instruction {
     bool rhs_trans = false;
     int output_idx;      
 };
+using ObjectRegistry = std::map<int, void*>;
+using Provider = std::function<void(ObjectRegistry&, const std::vector<const FloatMatrix*>&, FloatMatrix&)>;
 
 /**
  * --- COMPILER LAYER ---
@@ -211,10 +213,10 @@ public:
  * --- EVALUATOR LAYER ---
  */
 class MPMEvaluator {
+
     std::vector<Instruction> program;
     std::vector<FloatMatrix> pool;
-    std::map<std::string, void*> class_registry;
-    using Provider = std::function<void(std::map<std::string, void*>&, const std::vector<const FloatMatrix*>&, FloatMatrix&)>;
+    ObjectRegistry object_registry; // ID -> Pointer
     std::vector<Provider> providers;
 
 public:
@@ -224,7 +226,13 @@ public:
         for (auto& c : constants) pool[c.first] = c.second;
     }
 
-    void bind_class(const std::string& name, void* ptr) { class_registry[name] = ptr; }
+// This connects a Variable's Pool Index to a C++ Object Pointer
+    void bind_object(int symbol_id, void* ptr) {
+        object_registry[symbol_id] = ptr;
+        
+        // Also store the ID itself in the pool so the provider can read it
+        pool[symbol_id] = FloatMatrix::fromScalar((double)symbol_id);
+    }
 
     void execute() {
         for (size_t i = 0; i < program.size(); ++i) {
@@ -236,7 +244,7 @@ public:
             if (instr.op == OpCode::CALL_FUNC) {
                 std::vector<const FloatMatrix*> args;
                 for (int idx : instr.inputs) args.push_back(&pool[idx]);
-                providers[instr.func_id](class_registry, args, O);
+                providers[instr.func_id](object_registry, args, O);
                 continue;
             } else if (instr.op == OpCode::MAT_NEG) { 
                 if (instr.rhs_trans) O.beTranspositionOf(R);

@@ -54,7 +54,6 @@
 #include "gaussintegrationrule.h"
 #include "classfactory.h"
 #include "enum.h"
-#include "mpmevaluator2.h"
 
 
 namespace oofem {
@@ -269,58 +268,6 @@ class GenericCellTerm : public Term {
     }
 };
 
-/**
- * @brief Symbolic term allowing to parse and evaluate user defined expressions
- * 
- */
-class SymbolicTerm : public GenericCellTerm {
-    protected:
-        std::string expression;
-    public:
-    SymbolicTerm() : GenericCellTerm() {}
-    SymbolicTerm (const Variable *testField, const Variable* unknownField, const std::string& expr, MaterialMode m=MaterialMode::_Unknown)  : GenericCellTerm(testField, unknownField, m), expression(expr) {}
-
-    void initializeFrom(const std::shared_ptr<InputRecord> &ir, EngngModel* problem) override {
-        GenericCellTerm::initializeFrom(ir, problem);
-        IR_GIVE_FIELD(ir, expression, "expression");
-
-        MPMCompiler compiler;
-        compiler.add_variable("u");
-        compiler.add_function("GetNodal", 0);
-
-        std::vector<Instruction> program;
-        std::map<std::string, int> symbols;
-        std::vector<std::pair<int, FloatMatrix>> constants;
-        int pool_size;
-
-        // SCENARIO: (A + B).dot(C) syntax test
-        std::string expr = "(GetNodal(u) + [1; 1; 1]).T*([0; 1; 2]) * 1.5e2";
-        
-        try {
-            compiler.compile(expr, program, symbols, constants, pool_size);
-            
-            auto Nodal_provider = [](auto& classes, const auto& args, auto& out) {
-                FloatArray* f = static_cast<FloatArray*>(classes["u"]);
-                out.fromArray(*f); 
-            };
-    
-            MPMEvaluator vm(program, pool_size, constants, {Nodal_provider});
-            FloatArray myField = FloatArray::fromIniList({10.0, 20.0, 30.0}); 
-            vm.bind_class("u", &myField);
-            
-            vm.execute();
-            std::cout << "Success! Calculated Scalar Result:\n" << vm.result() << std::endl;
-
-        } catch (const std::exception& e) {
-            std::cerr << "VM ERROR: " << e.what() << std::endl;
-        }
-    }
-    void evaluate_lin (FloatMatrix& , MPElement& cell, GaussPoint* gp, TimeStep* tStep) const override {}
-    void evaluate (FloatArray&, MPElement& cell, GaussPoint* gp, TimeStep* tStep) const override{}
-    void getDimensions(Element& cell) const override {}
-
-};
-#define _IFT_SymbolicTerm_Name "SymbolicTerm"
 
 
 /**

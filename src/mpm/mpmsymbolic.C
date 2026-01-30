@@ -32,44 +32,13 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "mpm.h"
-#include "interpolationcatalogue.h"
-#include "engngm.h"
+#include "mpmsymbolic.h"
+
 
 namespace oofem {
+#define _IFT_SymbolicTerm_Name "SymbolicTerm"
 
-void
-Variable::initializeFrom(const std::shared_ptr<InputRecord> &ir)
-{
-    // read interpolation type
-    std::string name;
-    IR_GIVE_FIELD(ir, name, "interpolation");
-    // get corresponding interpolation from catalogue
-    this->interpolation = interpolationCatalogue.getInterpolationByName(name);
-    
-    // read variable type
-    ir->giveField(this->type,"type");
-    // read quantity
-    ir->giveField(this->q,"quantity");
-    // read variable size
-    IR_GIVE_FIELD(ir, this->size, "size");
-    // read dofs 
-    IR_GIVE_FIELD(ir, this->dofIDs, "dofs");
-}    
-
-void
-Term::initializeFrom(const std::shared_ptr<InputRecord> &ir, EngngModel* problem)
-{
-    // read field and test field ids (names)
-    std::string name;
-    IR_GIVE_FIELD(ir, name, "variable");
-    this->field = problem->giveVariableByName(name);
-    IR_GIVE_FIELD(ir, name, "testvariable");
-    this->testField = problem->giveVariableByName(name);
-    IR_GIVE_FIELD(ir, this->mode, "mmode");
-}
-
-
+REGISTER_Term(SymbolicTerm)
 
 } // end namespace oofem
 
