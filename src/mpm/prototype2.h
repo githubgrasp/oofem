@@ -368,14 +368,14 @@ namespace oofem {
     };
 
 
-    class BTSigmaTerm2 : public MPMSymbolicTerm {
+    class BTSigmaTerm2 : public GenericCellTerm {
         protected:
             MatResponseMode lhsmatmode = MatResponseMode::TangentStiffness;
             MatResponseMode rhsmatmode = MatResponseMode::Stress;
 
         public:
-        BTSigmaTerm2() : MPMSymbolicTerm() {}
-        BTSigmaTerm2 (const Variable *testField, const Variable* unknownField, MaterialMode m)  : MPMSymbolicTerm(testField, unknownField, m) {};
+        BTSigmaTerm2() : GenericCellTerm() {}
+        BTSigmaTerm2 (const Variable *testField, const Variable* unknownField, MaterialMode m)  : GenericCellTerm(testField, unknownField, m) {};
 
         /**
          * @brief Evaluates the linearization of $B^T\sigma(u)$, i.e. $B^TDBu$
@@ -409,7 +409,7 @@ namespace oofem {
         }
         void getDimensions(Element& cell) const override {}
         void initializeFrom(const std::shared_ptr<InputRecord> &ir, EngngModel* problem) override {
-            MPMSymbolicTerm::initializeFrom(ir, problem);
+            GenericCellTerm::initializeFrom(ir, problem);
             int value;
             if (ir->hasField("lhsmatmode")) {
                 IR_GIVE_FIELD(ir, value, "lhsmatmode");
@@ -499,13 +499,13 @@ namespace oofem {
     };
     #define _IFT_BTSigmaTerm2_Name "BTSigmaTerm"
 
-    class NTfTerm : public MPMSymbolicTerm {
+    class NTfTerm : public GenericCellTerm {
         protected:
         FloatArray flux;
         public:
-        NTfTerm () : MPMSymbolicTerm() {}
-        NTfTerm (const Variable *testField, const Variable* unknownField, MaterialMode m)  : MPMSymbolicTerm(testField, unknownField, m) {};
-        NTfTerm (const Variable *testField, const Variable* unknownField, MaterialMode m, const FloatArray* f)  : MPMSymbolicTerm(testField, unknownField, m) {flux = *f;};
+        NTfTerm () : GenericCellTerm() {}
+        NTfTerm (const Variable *testField, const Variable* unknownField, MaterialMode m)  : GenericCellTerm(testField, unknownField, m) {};
+        NTfTerm (const Variable *testField, const Variable* unknownField, MaterialMode m, const FloatArray* f)  : GenericCellTerm(testField, unknownField, m) {flux = *f;};
 
         void evaluate_lin (FloatMatrix& answer, MPElement& e, GaussPoint* gp, TimeStep* tstep) const override {}
 
@@ -528,7 +528,7 @@ namespace oofem {
         
         void getDimensions(Element& cell) const override {}
         void initializeFrom(const std::shared_ptr<InputRecord> &ir, EngngModel* problem) override {
-            MPMSymbolicTerm::initializeFrom(ir, problem);
+            GenericCellTerm::initializeFrom(ir, problem);
             IR_GIVE_FIELD(ir, flux, "flux");
         }
     };

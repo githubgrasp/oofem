@@ -130,11 +130,11 @@ class gNTfTerm : public Term {
 /**
  * @brief A continuity equation term $Qp=(B)^T \alpha\bf{m}N_p$. 
  */
-class BTamNTerm : public MPMSymbolicTerm {
+class BTamNTerm : public GenericCellTerm {
     protected:
         MatResponseMode aType = BiotConstant;
     public:
-    BTamNTerm() : MPMSymbolicTerm() {}
+    BTamNTerm() : GenericCellTerm() {}
     BTamNTerm (const Variable *testField, const Variable* unknownField, MatResponseMode at = BiotConstant) ;
 
     /**
@@ -154,7 +154,7 @@ class BTamNTerm : public MPMSymbolicTerm {
     void evaluate (FloatArray&, MPElement& cell, GaussPoint* gp, TimeStep* tstep) const override;
     void getDimensions(Element& cell) const override;
     void initializeFrom(const std::shared_ptr<InputRecord> &ir, EngngModel* problem) override {
-        MPMSymbolicTerm::initializeFrom(ir, problem);
+        GenericCellTerm::initializeFrom(ir, problem);
         int value = 0;
         IR_GIVE_FIELD(ir, value, "atype");
         aType = static_cast<MatResponseMode>(value);
@@ -178,12 +178,12 @@ class BTamNTerm : public MPMSymbolicTerm {
 /**
  * @brief A continuity equation term $Q^T(du\over dt)=(N)^T \alpha\bf{m}^TB du\over dt$. 
  */
-class NTamTBTerm : public MPMSymbolicTerm {
+class NTamTBTerm : public GenericCellTerm {
     protected:
         MatResponseMode aType = BiotConstant;
         ValueModeType unknownFieldVMT = VM_Velocity;
     public:
-    NTamTBTerm () : MPMSymbolicTerm() {}
+    NTamTBTerm () : GenericCellTerm() {}
     NTamTBTerm (const Variable *testField, const Variable* unknownField, MatResponseMode at = BiotConstant, ValueModeType unknownFieldVMT = VM_Velocity) ;
 
     /**
@@ -203,7 +203,7 @@ class NTamTBTerm : public MPMSymbolicTerm {
     void evaluate (FloatArray&, MPElement& cell, GaussPoint* gp, TimeStep* tstep) const override;
     void getDimensions(Element& cell) const override;
     void initializeFrom(const std::shared_ptr<InputRecord> &ir, EngngModel* problem) override {
-        MPMSymbolicTerm::initializeFrom(ir, problem);
+        GenericCellTerm::initializeFrom(ir, problem);
         int value = 0;
         IR_GIVE_FIELD(ir, value, "atype");
         aType = static_cast<MatResponseMode>(value);
@@ -230,12 +230,12 @@ class NTamTBTerm : public MPMSymbolicTerm {
 /**
  * @brief A continuity equation compressibility matrix $S=(N_p)^T c\ N_p$, where $c=({\alpha-n}\over{K_s}+{n}\over{K_w})$. 
  */
-class NTcN : public MPMSymbolicTerm {
+class NTcN : public GenericCellTerm {
     protected:
         MatResponseMode ctype;
         ValueModeType unknownFieldVMT = VM_Velocity;
     public:
-    NTcN () : MPMSymbolicTerm() {}
+    NTcN () : GenericCellTerm() {}
     NTcN (const Variable *testField, const Variable* unknownField, MatResponseMode ctype, ValueModeType uFieldVMT = VM_Velocity) ;
 
     /**
@@ -255,7 +255,7 @@ class NTcN : public MPMSymbolicTerm {
     void evaluate (FloatArray&, MPElement& cell, GaussPoint* gp, TimeStep* tstep) const override;
     void getDimensions(Element& cell) const override;
     void initializeFrom(const std::shared_ptr<InputRecord> &ir, EngngModel* problem) override {
-        MPMSymbolicTerm::initializeFrom(ir, problem);
+        GenericCellTerm::initializeFrom(ir, problem);
         int value = 0;
         IR_GIVE_FIELD(ir, value, "ctype");
         ctype = static_cast<MatResponseMode>(value);

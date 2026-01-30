@@ -159,12 +159,12 @@ class Term {
      * The symbolic terms are assumed to be evaluated on generic cells (and not on problem-specific elements).
      * Therefore the need to ensure that proper DOFs and integration rules are set-up.
      */
-    class MPMSymbolicTerm : public Term {
+    class GenericCellTerm : public Term {
         protected:
         int nip=0; // assumed order of interpolation for the term
         public:
-        MPMSymbolicTerm() : Term() {}
-        MPMSymbolicTerm (const Variable *testField, const Variable* unknownField, MaterialMode m)  : Term(testField, unknownField, m) {};
+        GenericCellTerm() : Term() {}
+        GenericCellTerm (const Variable *testField, const Variable* unknownField, MaterialMode m)  : Term(testField, unknownField, m) {};
         void initializeFrom(const std::shared_ptr<InputRecord> &ir, EngngModel* problem) override {
             Term::initializeFrom(ir, problem);
             IR_GIVE_OPTIONAL_FIELD(ir, nip, "nip");
