@@ -38,6 +38,8 @@
 
 namespace oofem {
 
+REGISTER_Term(SymbolicTerm)
+
 void
 Variable::initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {

@@ -285,33 +285,43 @@ class SymbolicTerm : public GenericCellTerm {
         IR_GIVE_FIELD(ir, expression, "expression");
 
         MPMCompiler compiler;
-        // 1. Define Fields and Parameters
-        auto u_meta = std::make_shared<FieldMetadata>(FieldMetadata{"u", 8});
-        compiler.add_constant("u", TypedShape::Field(u_meta));
-    
-        // Matrix parameter (Material Properties)
-        compiler.add_constant("C_mat", TypedShape::Matrix(3, 3));
-    
-        // Vector parameter (External Gravity/Force)
-        compiler.add_constant("gravity", TypedShape::Matrix(3, 1));
+        compiler.add_variable("u");
+        compiler.add_function("GetNodal", 0);
 
-        // 2. Define Function Logic
-        compiler.add_function("B", DataType::MATRIX, {DataType::FIELD_INFO}, 
-            [](const auto& a){ cout << "Resolving B with DOFs: " << a[0].field_meta->dofs << endl; return TypedShape::Matrix(3, a[0].field_meta->dofs); }, 0);
-
-        // 3. Compile a complex expression: B(u).T * C_mat * gravity
-        // This represents a force vector: [8x3] * [3x3] * [3x1] = [8x1]
-        std::string expr = "B(u).T * C_mat * gravity";
         std::vector<Instruction> program;
-        std::vector<FloatMatrix> pool;
         std::map<std::string, int> symbols;
+        std::vector<std::pair<int, FloatMatrix>> constants;
+        int pool_size;
+
+        // SCENARIO: (A + B).dot(C) syntax test
+        std::string expr = "(GetNodal(u) + [1; 1; 1]).T*([0; 1; 2]) * 1.5e2";
+        
+        try {
+            compiler.compile(expr, program, symbols, constants, pool_size);
+            
+            auto Nodal_provider = [](auto& classes, const auto& args, auto& out) {
+                FloatArray* f = static_cast<FloatArray*>(classes["u"]);
+                out.fromArray(*f); 
+            };
     
-        std::cout << "Compiling: " << expr << std::endl;
-        compiler.compile(expr, program, pool, symbols);
+            MPMEvaluator vm(program, pool_size, constants, {Nodal_provider});
+            FloatArray myField = FloatArray::fromIniList({10.0, 20.0, 30.0}); 
+            vm.bind_class("u", &myField);
+            
+            vm.execute();
+            std::cout << "Success! Calculated Scalar Result:\n" << vm.result() << std::endl;
 
-
+        } catch (const std::exception& e) {
+            std::cerr << "VM ERROR: " << e.what() << std::endl;
+        }
     }
+    void evaluate_lin (FloatMatrix& , MPElement& cell, GaussPoint* gp, TimeStep* tStep) const override {}
+    void evaluate (FloatArray&, MPElement& cell, GaussPoint* gp, TimeStep* tStep) const override{}
+    void getDimensions(Element& cell) const override {}
+
 };
+#define _IFT_SymbolicTerm_Name "SymbolicTerm"
+
 
 /**
 * Element code sample:
