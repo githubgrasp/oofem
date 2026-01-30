@@ -621,7 +621,7 @@ void FloatArray :: assemble(const FloatArray &fe, const IntArray &loc)
     Index n = fe.size();
 #  ifndef NDEBUG
     if ( n != (Index) loc.size() ) {
-        OOFEM_ERROR("dimensions of 'fe' (%d) and 'loc' (%d) mismatch", fe.giveSize(), loc.giveSize() );
+        OOFEM_ERROR("dimensions of 'fe' (%d) and 'loc' (%d) mismatch", (int)fe.giveSize(), (int)loc.giveSize() );
     }
 
 #  endif
@@ -642,7 +642,7 @@ void FloatArray :: assembleSquared(const FloatArray &fe, const IntArray &loc)
     Index n = fe.size();
 #  ifndef NDEBUG
     if ( n != (Index) loc.size() ) {
-        OOFEM_ERROR("dimensions of 'fe' (%d) and 'loc' (%d) mismatch", fe.giveSize(), loc.giveSize() );
+        OOFEM_ERROR("dimensions of 'fe' (%d) and 'loc' (%d) mismatch", (int)fe.giveSize(), (int)loc.giveSize() );
     }
 
 #  endif
