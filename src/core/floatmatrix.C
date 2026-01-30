@@ -292,6 +292,7 @@ void FloatMatrix :: beTranspositionOf(const FloatMatrix &src) { *this=src.transp
 void FloatMatrix :: beProductOf(const FloatMatrix &aMatrix, const FloatMatrix &bMatrix){ *this=aMatrix*bMatrix; }
 void FloatMatrix :: beTProductOf(const FloatMatrix &aMatrix, const FloatMatrix &bMatrix){ *this=aMatrix.transpose()*bMatrix; }
 void FloatMatrix :: beProductTOf(const FloatMatrix &aMatrix, const FloatMatrix &bMatrix){ *this=aMatrix*bMatrix.transpose(); }
+void FloatMatrix :: beTProductTOf(const FloatMatrix &aMatrix, const FloatMatrix &bMatrix){ *this=aMatrix.transpose()*bMatrix.transpose(); }
 void FloatMatrix :: addProductOf(const FloatMatrix &aMatrix, const FloatMatrix &bMatrix){ *this+=aMatrix*bMatrix; }
 void FloatMatrix :: addTProductOf(const FloatMatrix &aMatrix, const FloatMatrix &bMatrix){ *this+=aMatrix.transpose()*bMatrix; }
 void FloatMatrix :: beDyadicProductOf(const FloatArray &vec1, const FloatArray &vec2){ *this=vec1*vec2.transpose(); }
@@ -459,6 +460,42 @@ void FloatMatrix :: beProductTOf(const FloatMatrix &aMatrix, const FloatMatrix &
     }
 #  endif
 }
+
+void FloatMatrix :: beTProductTOf(const FloatMatrix &aMatrix, const FloatMatrix &bMatrix)
+// Receiver = aMatrix * bMatrix^T
+{
+#  ifndef NDEBUG
+    if ( aMatrix.rows() != bMatrix.cols() ) {
+        OOFEM_ERROR("error in product A*B : dimensions do not match");
+    }
+#  endif
+    _resize_internal(aMatrix.cols(), bMatrix.rows());
+#  ifdef __LAPACK_MODULE
+    const int this_nColumns=cols(), this_nRows=rows();
+    const int aMatrix_nColumns=aMatrix.cols(), aMatrix_nRows=aMatrix.rows();
+    const int bMatrix_nColumns=bMatrix.cols(), bMatrix_nRows=bMatrix.rows();
+    double alpha = 1., beta = 0.;
+    dgemm_("t", "t", & this_nRows, & this_nColumns, & aMatrix_nColumns,
+           & alpha, aMatrix.givePointer(), & aMatrix_nRows, bMatrix.givePointer(), & bMatrix_nRows,
+           & beta, this->givePointer(), & this_nRows,
+           aMatrix_nColumns, bMatrix_nColumns, this_nColumns);
+#  else
+    for (Index i = 1; i <= aMatrix.cols(); i++ ) {
+        for (Index j = 1; j <= bMatrix.rows(); j++ ) {
+            double coeff = 0.;
+            for (Index k = 1; k <= aMatrix.rows(); k++ ) {
+                coeff += aMatrix.at(k, i) * bMatrix.at(j, k);
+            }
+
+            this->at(i, j) = coeff;
+        }
+    }
+#  endif
+}
+
+
+
+
 
 
 void FloatMatrix :: addProductOf(const FloatMatrix &aMatrix, const FloatMatrix &bMatrix)

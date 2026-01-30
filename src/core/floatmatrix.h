@@ -181,6 +181,11 @@ public:
      * will be created.
      */
     static FloatMatrix fromArray(const FloatArray &vector, bool transpose = false);
+    static FloatMatrix fromScalar(double scalar){
+        FloatMatrix ret(1,1);
+        ret(0,0)=scalar;
+        return ret;
+    }
 
     template<std::size_t N, std::size_t M>
     FloatMatrix &operator=(const FloatMatrixF<N,M> &mat) {
@@ -335,6 +340,11 @@ public:
      * Grows or shrinks if necessary.
      */
     void beProductTOf(const FloatMatrix &a, const FloatMatrix &b);
+    /**
+     * Assigns to the receiver product of @f$ a^{\mathrm{T}} \cdot b^{\mathrm{T}}@f$ .
+     * Grows or shrinks if necessary.
+     */
+    void beTProductTOf(const FloatMatrix &a, const FloatMatrix &b);
     /**
      * Assigns to the receiver the dyadic product @f$ v_1 \cdot v_2^{\mathrm{T}} @f$ .
      * Grows or shrinks if necessary.
