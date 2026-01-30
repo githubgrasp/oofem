@@ -176,7 +176,12 @@ int FloatArray :: giveIndexMaxElem(){ Eigen::Index ix; this->maxCoeff(&ix); retu
 double FloatArray :: dotProduct(const FloatArray &x) const { return this->dot(x); }
 // double FloatArray :: dotProduct(const FloatArray &x) const {  return std::inner_product(this->begin(), this->end(), x.begin(), 0.); /* */  }
 double FloatArray :: dotProduct(const FloatArray &x, Index size) const { return this->head(size).dot(x.head(size)); }
-double FloatArray :: distance_square(const FloatArray &from) const { return (from-(*this)).squaredNorm(); }
+double FloatArray :: distance_square(const FloatArray &from) const {
+    // oofem routine ignores excess axes, must be handled here as well
+    if(this->size()==from.size()) return (from-(*this)).squaredNorm();
+    Eigen::Index sz=std::min(this->size(),from.size());
+    return (from.head(sz)-this->head(sz)).squaredNorm();
+}
 void FloatArray :: checkSizeTowards(const IntArray &loc){ int sz=loc.maximum(); if(this->size()<sz) this->resize(sz); }
 bool FloatArray :: containsOnlyZeroes() const { return (this->array()==0.).all(); }
 void FloatArray :: zero() { this->array()=0.; }
