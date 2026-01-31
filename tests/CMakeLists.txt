@@ -26,18 +26,19 @@ if (USE_MPI_PARALLEL)
 endif ()
 
 
-function(oofem_regression_ctest dir)
+function(oofem_regression_ctest dir label)
     # discover tests
     file(GLOB gg RELATIVE "${oofem_REGRESSION_TEST_DIR}/${dir}" "${oofem_REGRESSION_TEST_DIR}/${dir}/*.in")
     foreach(case ${gg})
         add_test(NAME "test_${dir}/${case}" WORKING_DIRECTORY "${oofem_REGRESSION_TEST_DIR}/${dir}" COMMAND ${oofem_cmd} "-f" ${case})
+        set_tests_properties("test_${dir}/${case}" PROPERTIES LABELS ${label})
     endforeach(case)
 
     # discover benchmarks
     file(GLOB gg RELATIVE "${oofem_BENCHMARK_DIR}/${dir}" "${oofem_BENCHMARK_DIR}/${dir}/*.in")
     foreach(case ${gg})
         add_test(NAME "benchmark_${dir}/${case}" WORKING_DIRECTORY "${oofem_BENCHMARK_DIR}/${dir}" COMMAND ${oofem_cmd} "-f" ${case})
-        set_tests_properties("benchmark_${dir}/${case}" PROPERTIES LABELS "benchmark")
+        set_tests_properties("benchmark_${dir}/${case}" PROPERTIES LABELS "${label};benchmark")
     endforeach(case)
     
 
@@ -51,10 +52,12 @@ function(oofem_regression_ctest dir)
                 continue()
             endif()
             add_test(NAME "test_xml_${dir}/${case}" WORKING_DIRECTORY "${oofem_REGRESSION_TEST_DIR}/${dir}" COMMAND ${oofem_cmd} "-f" ${case})
+            set_tests_properties("test_xml_${dir}/${case}" PROPERTIES LABELS ${label})
         endforeach(case)
         file(GLOB gg RELATIVE "${oofem_BENCHMARK_DIR}/${dir}" "${oofem_BENCHMARK_DIR}/${dir}/*.xml")
         foreach(case ${gg})
             add_test(NAME "benchmark_xml_${dir}/${case}" WORKING_DIRECTORY "${oofem_BENCHMARK_DIR}/${dir}" COMMAND ${oofem_cmd} "-f" ${case})
+            set_tests_properties("benchmark_xml_${dir}/${case}" PROPERTIES LABELS "${label};benchmark")
         endforeach(case)
     endif()
 endfunction()
@@ -65,58 +68,59 @@ endfunction()
 
 # Sequential test cases
 if (USE_SM)
-    oofem_regression_ctest(sm)
-    oofem_regression_ctest(sm/NAFEMS)
+    oofem_regression_ctest(sm "sm")
+    oofem_regression_ctest(sm/NAFEMS "sm")
 
     file (GLOB sm_tests RELATIVE "${oofem_REGRESSION_TEST_DIR}/sm" "${oofem_REGRESSION_TEST_DIR}/sm/*.sh")
     foreach (case ${sm_tests})
         add_test (NAME "test_sm_${case}" WORKING_DIRECTORY ${oofem_REGRESSION_TEST_DIR}/sm COMMAND bash ${case} ${oofem_cmd})
+        set_tests_properties("test_sm_${case}" PROPERTIES LABELS "workflow")
     endforeach (case)
 endif ()
 
 
 if (USE_FM)
-    oofem_regression_ctest(fm)
+    oofem_regression_ctest(fm "fm")
 endif()
 
 if (USE_TM)
-    oofem_regression_ctest(tm)
+    oofem_regression_ctest(tm "tm")
 endif()
 
 if (USE_AM)
-    oofem_regression_ctest(am)
+    oofem_regression_ctest(am "am")
 endif()
 
 if (USE_TM AND USE_SM)
-    oofem_regression_ctest(tmsm)
+    oofem_regression_ctest(tmsm "tmsm")
 endif()
 
 if (USE_TM AND USE_FM)
-    oofem_regression_ctest(tmfm)
+    oofem_regression_ctest(tmfm "tmfm")
 endif()
 
 if (USE_TM AND USE_CEMHYD)
-    oofem_regression_ctest(tmcemhyd)
+    oofem_regression_ctest(tmcemhyd "tmcemhyd")
 endif()
 
 if (USE_FM AND USE_SM AND USE_PFEM)
-    oofem_regression_ctest(fmpfem)
+    oofem_regression_ctest(fmpfem "fmpfem")
 endif()
 
 if (USE_SM AND USE_MFRONT)
-    oofem_regression_ctest(smmfront)
+    oofem_regression_ctest(smmfront "smmfront")
 endif()
 
 if (USE_SM AND USE_PYTHON_EXTENSION)
-    oofem_regression_ctest(sm/python)
+    oofem_regression_ctest(sm/python "sm/python")
 endif()
 
 if (USE_MPM)
-    oofem_regression_ctest(mpm)
+    oofem_regression_ctest(mpm "mpm")
 endif()
 
 if (USE_TM AND USE_SM AND USE_DSS AND USE_IML)
-    oofem_regression_ctest(tmsmdssiml)
+    oofem_regression_ctest(tmsmdssiml "tmsmdssiml")
 endif()
 
 
