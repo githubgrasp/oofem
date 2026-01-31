@@ -58,12 +58,11 @@ namespace oofem {
 class SymbolicTerm : public GenericCellTerm {
     protected:
         std::string expression;
-        mutable int pool_size;
+        mutable int pool_ptr=0;
         mutable std::vector<Instruction> program;
         mutable std::map<std::string, int> symbols;
-        mutable std::vector<std::pair<int, FloatMatrix>> constants;
-        mutable std::vector<Provider> providers;
-    
+        mutable std::map<int, VarData> constants;
+ 
         struct TestField {
             FloatMatrix values; // Nodal values (e.g., Temperature at 3 nodes)
             TestField(double start_val) { 
@@ -82,27 +81,10 @@ class SymbolicTerm : public GenericCellTerm {
         MPMCompiler compiler;
 
         // Register variables (classes)
-        compiler.add_variable("u");
-        compiler.add_variable("v");
-        // register functors
-        compiler.add_function("GetNodal", 0);
-        auto Nodal_provider = [](ObjectRegistry& reg, const auto& args, auto& out) {
-            if (args[0]->type != VarType::OBJECT) throw std::runtime_error("Arg 0 must be an Object");
-            // 1. Recover the Symbolic IDs from the 1x1 matrices in args
-            int id_field = (int)args[0]->data(0,0);    
-            // 2. Resolve to C++ Pointers
-            TestField* f = static_cast<TestField*>(reg[id_field]);
-            if(!f) throw std::runtime_error("Dynamic resolution failed!");
+        compiler.register_function("B"); 
 
-            out.data = f->values; 
-            out.type = VarType::MATRIX;
-        };
-        providers.push_back(Nodal_provider);
-
-        //std::string expr = "(GetNodal(u) + GetNodal(v))* 1.5e2";
-        
         try {
-            compiler.compile(expression, program, symbols, constants, pool_size);
+            compiler.compile(expression, program, symbols, constants, pool_ptr);
         } catch (const std::exception& e) {
             std::string msg = "SymbolicTerm: Compilation error in expression '" + expression + "': " + e.what();
             OOFEM_LOG_ERROR("%s", msg.c_str());
@@ -110,21 +92,27 @@ class SymbolicTerm : public GenericCellTerm {
      }
     void evaluate_lin (FloatMatrix& answer, MPElement& cell, GaussPoint* gp, TimeStep* tStep) const override {
         try {   
-           MPMEvaluator vm(program, pool_size, constants, providers);
-            TestField fu(10.0); // Example nodal values
-            TestField fv(100.0);
-
-            vm.bind_object(this->symbols["u"], &fu);
-            vm.bind_object(this->symbols["v"], &fv);
-            
-            vm.execute();
-            std::cout << "Success! Calculated Scalar Result:\n" << vm.result() << std::endl;
-            answer= vm.result();
+            MPMEvaluator vm(pool_ptr, symbols);
+            for(auto const& [i, d] : constants) {
+                vm.init_constant(i, d, std::holds_alternative<double>(d) ? VarType::SCALAR : VarType::MATRIX);
+            }
+ 
+            vm.set_variable("u", 1.0, VarType::SCALAR);
+            //vm.set_variable("v", 1.0, VarType::SCALAR);
+            vm.register_functor("B", [](const auto& a, auto& out){
+                FloatMatrix m = FloatMatrix::fromIniList({{1.}, {-1.}});
+                std::cout << "B called\n" << m << "\n";
+                out.value = m; out.type = VarType::MATRIX;
+            });
+        vm.execute(program);
+        if (vm.get_result().type == VarType::MATRIX) {
+            FloatMatrix m = std::get<FloatMatrix>(vm.get_result().value);
+            std::cout << "Result:\n" << m << "\n";
+        }
 
         } catch (const std::exception& e) {
             std::cerr << "VM ERROR: " << e.what() << std::endl;
         }
-
     }
     void evaluate (FloatArray&, MPElement& cell, GaussPoint* gp, TimeStep* tStep) const override{}
     void getDimensions(Element& cell) const override {}
