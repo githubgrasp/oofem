@@ -84,7 +84,7 @@ class SymbolicTerm : public GenericCellTerm {
         compiler.register_function("B"); 
 
         try {
-            compiler.compile(expression, program, symbols, constants, pool_ptr);
+            compiler.compile_script(expression, program, symbols, constants, pool_ptr);
         } catch (const std::exception& e) {
             std::string msg = "SymbolicTerm: Compilation error in expression '" + expression + "': " + e.what();
             OOFEM_LOG_ERROR("%s", msg.c_str());
@@ -93,19 +93,18 @@ class SymbolicTerm : public GenericCellTerm {
     void evaluate_lin (FloatMatrix& answer, MPElement& cell, GaussPoint* gp, TimeStep* tStep) const override {
         try {   
             MPMEvaluator vm(pool_ptr, symbols);
-            for(auto const& [i, d] : constants) {
-                vm.init_constant(i, d, std::holds_alternative<double>(d) ? VarType::SCALAR : VarType::MATRIX);
-            }
+            for(auto const& [idx, val] : constants) vm.init_slot(idx, val);
+
  
-            vm.set_variable("u", 1.0, VarType::SCALAR);
+            vm.set_variable("u", 1.0);
             //vm.set_variable("v", 1.0, VarType::SCALAR);
             vm.register_functor("B", [](const auto& a, auto& out){
                 FloatMatrix m = FloatMatrix::fromIniList({{1.}, {-1.}});
                 std::cout << "B called\n" << m << "\n";
-                out.value = m; out.type = VarType::MATRIX;
+                out.value = m; out.type = VarSlot::Type::MATRIX;
             });
         vm.execute(program);
-        if (vm.get_result().type == VarType::MATRIX) {
+        if (vm.get_result().type == VarSlot::Type::MATRIX) {
             FloatMatrix m = std::get<FloatMatrix>(vm.get_result().value);
             std::cout << "Result:\n" << m << "\n";
         }
