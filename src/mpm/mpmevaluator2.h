@@ -52,56 +52,50 @@ namespace oofem {
 The FEA Virtual Machine is a specialized execution engine designed to bridge the gap between high-level mathematical notation and high-performance C++ execution. 
 Below is a summary of its core features.
 
-### 1. Advanced Matrix Algebra Syntax
+1. Advanced Matrix Algebra Syntax
 
-The system prioritizes engineering-standard notation to ensure that expressions remain readable and maintainable.
+    The system prioritizes engineering-standard notation to ensure that expressions remain readable and maintainable.
 
-* **Modern Transpose (`.T`):** Uses the Python/NumPy convention for transposes, preventing conflicts with potential exponentiation (`^`) operators.
-* **Postfix Slicing:** Supports MATLAB-style slicing (e.g., `K[0, :]` or `M[:, 1]`), allowing for efficient extraction of specific degrees of freedom or sub-matrices.
-* **Shape Promotion:** Automatically converts  matrix results into scalars, enabling seamless use in logical and conditional expressions.
+    * Modern Transpose (`.T`): Uses the Python/NumPy convention for transposes, preventing conflicts with potential exponentiation (`^`) operators.
+    * Postfix Slicing: Supports MATLAB-style slicing (e.g., `K[0, :]` or `M[:, 1]`), allowing for efficient extraction of specific degrees of freedom or sub-matrices.
+    * Shape Promotion: Automatically converts  matrix results into scalars, enabling seamless use in logical and conditional expressions.
 
----
+2. High-Performance Runtime Architecture
 
-### 2. High-Performance Runtime Architecture
+    Designed for the iterative nature of Finite Element Analysis, the runtime minimizes overhead during evaluation.
 
-Designed for the iterative nature of Finite Element Analysis, the runtime minimizes overhead during evaluation.
+    * Static Memory Pooling: All intermediate calculation results are assigned fixed slots in a pre-allocated memory pool during compilation. This eliminates expensive heap allocations during the execution loop.
+    * Broadcasting Logic: Automatically handles operations between mismatched ranks (e.g., adding a scalar to every element of a matrix) without requiring manual loops from the user.
 
-* **Static Memory Pooling:** All intermediate calculation results are assigned fixed slots in a pre-allocated memory pool during compilation. This eliminates expensive heap allocations during the execution loop.
-* **Broadcasting Logic:** Automatically handles operations between mismatched ranks (e.g., adding a scalar to every element of a matrix) without requiring manual loops from the user.
+3. Comprehensive Operator Suite
 
----
+    The VM supports a full range of operators necessary for non-linear and conditional physics:
 
-### 3. Comprehensive Operator Suite
+    * Arithmetic: Unary plus/minus, addition, subtraction, and matrix multiplication.
+    * Relational: Comparison operators (`==`, `>`, `<`) used for identifying material state changes or boundary conditions.
+    * Logical: Boolean operators (`&&`, `||`) to construct complex multi-condition branching.
 
-The VM supports a full range of operators necessary for non-linear and conditional physics:
 
-* **Arithmetic:** Unary plus/minus, addition, subtraction, and matrix multiplication.
-* **Relational:** Comparison operators (`==`, `>`, `<`) used for identifying material state changes or boundary conditions.
-* **Logical:** Boolean operators (`&&`, `||`) to construct complex multi-condition branching.
 
----
+4. Extensible Functor System
 
-### 4. Extensible Functor System
+    The engine is not limited to its built-in operators.
 
-The engine is not limited to its built-in operators.
+    * Host-Registered Functors: Developers can register custom C++ functions (like `if()`, `sin()`, or specific element stiffness kernels) that the VM can call directly using arguments from the memory pool.
+    * Multivariate Support: The compiler handles functions with a dynamic number of arguments, enabling complex branching and multi-parameter material laws.
 
-* **Host-Registered Functors:** Developers can register custom C++ functions (like `if()`, `sin()`, or specific element stiffness kernels) that the VM can call directly using arguments from the memory pool.
-* **Multivariate Support:** The compiler handles functions with a dynamic number of arguments, enabling complex branching and multi-parameter material laws.
+5. Automated Compilation Pipeline
 
----
+    The transformation from string to machine code is fully handled by a robust two-stage parser:
 
-### 5. Automated Compilation Pipeline
+    * Shunting-Yard Parser: Resolves operator precedence and associativity to ensure mathematical correctness (e.g., transposes bind tighter than multiplications).
+    * Bytecode Generator: Produces a linear stream of `Instruction` objects, making the execution phase a simple, high-speed dispatch loop.
 
-The transformation from string to machine code is fully handled by a robust two-stage parser:
-
-* **Shunting-Yard Parser:** Resolves operator precedence and associativity to ensure mathematical correctness (e.g., transposes bind tighter than multiplications).
-* **Bytecode Generator:** Produces a linear stream of `Instruction` objects, making the execution phase a simple, high-speed dispatch loop.
-
-**Would you like me to provide a code snippet showing how to register a custom "Stress-Strain" functor to be used within these expressions?**
 */
 
 
-/** * --- FEA VM CORE TYPES ---
+/** 
+ * --- FEA VM CORE TYPES ---
  * Dynamic typing allows matrices to change shape during runtime, 
  * which is essential for element-specific calculations.
  */
