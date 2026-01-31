@@ -37,7 +37,9 @@ function(oofem_regression_ctest dir)
     file(GLOB gg RELATIVE "${oofem_BENCHMARK_DIR}/${dir}" "${oofem_BENCHMARK_DIR}/${dir}/*.in")
     foreach(case ${gg})
         add_test(NAME "benchmark_${dir}/${case}" WORKING_DIRECTORY "${oofem_BENCHMARK_DIR}/${dir}" COMMAND ${oofem_cmd} "-f" ${case})
+        set_tests_properties("benchmark_${dir}/${case}" PROPERTIES LABELS "benchmark")
     endforeach(case)
+    
 
     # repeat inside xml/ for both tests and benchmarks, if XML is enabled
     if(USE_XML)
@@ -117,6 +119,10 @@ if (USE_TM AND USE_SM AND USE_DSS AND USE_IML)
     oofem_regression_ctest(tmsmdssiml)
 endif()
 
+
+# add unit tests from tests/unit
+
+add_subdirectory(unit)
 
 # Custom targets for test and benchmarks (which can conveniently be accessed from IDEs)
 

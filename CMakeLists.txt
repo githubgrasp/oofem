@@ -961,7 +961,9 @@ add_custom_target (
 #######################################################################
 include (CTest)
 
+
 if (BUILD_TESTING)
+    add_subdirectory(${oofem_SOURCE_DIR}/extern/catch2) 
     add_subdirectory (${oofem_SOURCE_DIR}/tests)
 endif ()
 
