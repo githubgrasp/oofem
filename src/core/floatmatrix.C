@@ -1079,6 +1079,22 @@ void FloatMatrix :: subtract(const FloatMatrix &aMatrix)
 #endif
 }
 
+FloatMatrix FloatMatrix :: fromMatrix(const FloatMatrix &matrix, bool transposed)
+//
+// constructor : creates (vector->giveSize(),1) FloatMatrix
+// if transpose = 1 creates (1,vector->giveSize()) FloatMatrix
+//
+{
+    FloatMatrix ret;
+    if ( transposed ) {
+        ret.resize(matrix.cols(), matrix.rows());
+        for (int r = 0; r < ret.rows(); r++)
+            for(int c=0; c<ret.cols(); c++) ret(r,c)=matrix(c,r);
+    } else {
+        ret = matrix;
+    }
+    return ret;
+}
 
 FloatMatrix FloatMatrix :: fromArray(const FloatArray &vector, bool transposed)
 //
