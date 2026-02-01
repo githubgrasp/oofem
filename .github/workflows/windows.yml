@@ -22,10 +22,6 @@ jobs:
           # -DCMAKE_BUILD_TYPE=Release would be ignored with multi-configuration generator (MSVC is one of those)
           cmake -B ./build -S.
           cmake --build ./build --config Release --parallel
-    - name: Debug DLL locations 
-      run: |
-          echo "=== DLLs found ==="
-          dir D:\a\oofem\oofem\build /s /b | findstr /i oofem.dll
     - name: CTest
       shell: bash
       # FIXME: benchmark_fm_bdam7.oofem.in currently fails under windows
