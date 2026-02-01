@@ -22,6 +22,19 @@ jobs:
           # -DCMAKE_BUILD_TYPE=Release would be ignored with multi-configuration generator (MSVC is one of those)
           cmake -B ./build -S.
           cmake --build ./build --config Release --parallel
+    - name: Debug Missing DLLs on Failure
+      if: failure()
+      shell: pwsh
+      run: |
+          # Find the test executable
+          $testExe = "D:/a/oofem/oofem/build/tests/unit/Release/test_mpmevaluator.exe"
+          if (Test-Path $testExe) {
+              Write-Host "Analyzing $testExe"
+              # Use dumpbin if available in the path
+              & dumpbin /DEPENDENTS $testExe
+          } else {
+              Write-Host "Test executable was not even created."
+          }
     - name: CTest
       shell: bash
       # FIXME: benchmark_fm_bdam7.oofem.in currently fails under windows

@@ -7,6 +7,7 @@ include(Catch)
 
 #set(CATCH_DISCOVER_TESTS_ENVIRONMENT "PATH=${LIB_PATHS};$ENV{PATH}" )
 if (USE_MPM)
+    message (STATUS "Building unit test for MPM evaluator")
     add_executable(test_mpmevaluator test_mpmevaluator.C)
     target_link_libraries(test_mpmevaluator PRIVATE Catch2::Catch2WithMain liboofem)
 
