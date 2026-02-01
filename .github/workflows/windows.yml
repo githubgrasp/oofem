@@ -16,23 +16,12 @@ jobs:
     #    scoop update
     #    scoop bucket add extras
     #    scoop install nsis
-    - name: Set up MSVC environment
-        uses: ilammy/msvc-dev-cmd@v1
     - name: CMake
       shell: bash
       run: |
           # -DCMAKE_BUILD_TYPE=Release would be ignored with multi-configuration generator (MSVC is one of those)
           cmake -B ./build -S.
           cmake --build ./build --config Release --parallel
-  - name: Debug Missing DLLs on Failure
-      if: failure()
-      shell: pwsh
-      run: |
-          $testExe = "D:/a/oofem/oofem/build/tests/unit/Release/test_mpmevaluator.exe"
-          if (Test-Path $testExe) {
-            # Now dumpbin will be recognized
-            dumpbin /DEPENDENTS $testExe
-          }
     - name: CTest
       shell: bash
       # FIXME: benchmark_fm_bdam7.oofem.in currently fails under windows
