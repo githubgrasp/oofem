@@ -2,6 +2,9 @@
 #include "floatmatrix.h"
 #include <catch2/catch_test_macros.hpp>
 #include <iostream>
+#include <map>
+#include <vector>
+#include <variant>
 #include <cmath>
 using namespace oofem;
 
@@ -199,6 +202,56 @@ TEST_CASE( "Testing mpm evaluator", "[MPMCompiler, MPMEvaluator]" ) {
         VarSlot res = vm.get_result();
         double val = std::get<double>(res.value);
         REQUIRE( std::abs(val - 1.0) < 1e-9 ); // true
+    }
+    SECTION ("Custom Functor with user defined class") {
+        // 1. Define custom C++ application class
+        struct ElementData {
+            int id;
+            double youngs_modulus;
+            double poisson_ratio;
+        };
+        compiler.register_function("CalcStiffness");
+        compiler.compile_script("K = CalcStiffness(elem);", prog, syms, consts, ptr);
+        MPMEvaluator vm(ptr, syms);
+        for(auto const& [idx, val] : consts) vm.init_slot(idx, val);
+        // Setup variable 'elem' as a pointer to ElementData
+        // 2. Define functor that operates on ElementData pointer
+        vm.register_functor("CalcStiffness", [](const std::vector<const VarSlot*>& args, VarSlot& out) {
+            // 1. Retrieve the generic pointer
+            void* raw_ptr = std::get<void*>(args[0]->value);
+            
+            // 2. Cast back to your specific application type
+            //    (Safety: We assume the script user passed the correct variable type)
+            const ElementData* e = static_cast<const ElementData*>(raw_ptr);
+
+            // 3. Use C++ data to perform complex logic
+            double E = e->youngs_modulus;
+            double nu = e->poisson_ratio;
+            double factor = E / (1.0 - nu*nu);
+
+            // 4. Return result to VM (e.g., a 2x2 Plane Stress Matrix)
+            FloatMatrix K({{factor, factor*nu}, {factor*nu, factor}});
+            out.value = K;
+            out.type = VarSlot::Type::MATRIX;
+            
+            std::cout << "    [C++ Callback] Accessed Element ID: " << e->id << std::endl;
+        });
+        ElementData my_element { 101, 200000.0, 0.3 }; // ID, E, nu
+        // Pass the address of the object as a void*
+        vm.set_variable("elem", (void*)&my_element);
+
+        // E. Execute
+        vm.execute(prog);
+
+        // F. Validate Result
+        // Expected K[0,0] = E / (1 - 0.09) = 200000 / 0.91 = ~219780.2
+        auto res = vm.get_result();
+        if (std::holds_alternative<FloatMatrix>(res.value)) {
+            double val = std::get<FloatMatrix>(res.value)(0,0);
+            std::cout << "    Result K[0,0]: " << val << (std::abs(val - 219780.219) < 1e-3 ? " [PASS]" : " [FAIL]") << std::endl;
+        } else {
+            std::cout << "    [FAIL] Result was not a Matrix" << std::endl;
+        }
     }
 }
 
