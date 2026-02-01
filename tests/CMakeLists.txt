@@ -71,11 +71,14 @@ if (USE_SM)
     oofem_regression_ctest(sm "sm")
     oofem_regression_ctest(sm/NAFEMS "sm")
 
-    file (GLOB sm_tests RELATIVE "${oofem_REGRESSION_TEST_DIR}/sm" "${oofem_REGRESSION_TEST_DIR}/sm/*.sh")
-    foreach (case ${sm_tests})
-        add_test (NAME "test_sm_${case}" WORKING_DIRECTORY ${oofem_REGRESSION_TEST_DIR}/sm COMMAND bash ${case} ${oofem_cmd})
-        set_tests_properties("test_sm_${case}" PROPERTIES LABELS "workflow")
-    endforeach (case)
+
+    if (!WIN32)
+        file (GLOB sm_tests RELATIVE "${oofem_REGRESSION_TEST_DIR}/sm" "${oofem_REGRESSION_TEST_DIR}/sm/*.sh")
+        foreach (case ${sm_tests})
+            add_test (NAME "test_sm_${case}" WORKING_DIRECTORY ${oofem_REGRESSION_TEST_DIR}/sm COMMAND bash ${case} ${oofem_cmd})
+            set_tests_properties("test_sm_${case}" PROPERTIES LABELS "workflow")
+        endforeach (case)
+    endif()
 endif ()
 
 
