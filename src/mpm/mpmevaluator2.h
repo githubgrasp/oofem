@@ -126,14 +126,14 @@ namespace oofem {
  * @enum VarType
  * @brief Supported data types within the VM pool.
  */
-using VarData = std::variant<double, FloatMatrix>;
+using VarData = std::variant<double, FloatMatrix, void*>;
 
 /**
  * @struct VarSlot
  * @brief Atomic memory unit in the VM's pre-allocated pool.
  */
 struct VarSlot {
-    enum class Type { SCALAR, MATRIX } type = Type::SCALAR;
+    enum class Type { SCALAR, MATRIX, USER_PTR } type = Type::SCALAR;
     VarData value = 0.0;
 };
 
@@ -438,7 +438,8 @@ class MPMEvaluator {
         int last_output_idx = 0; 
 
     bool to_bool(const VarSlot& s) {
-        if (s.type == VarSlot::Type::MATRIX) return false; 
+        //if (s.type == VarSlot::Type::MATRIX) return false; 
+        if (s.type == VarSlot::Type::MATRIX || s.type == VarSlot::Type::USER_PTR) return false;
         return std::abs(std::get<double>(s.value)) > 1e-12;
     }
 
@@ -446,6 +447,13 @@ class MPMEvaluator {
     void check_init(int idx) const {
         if (idx < 0 || idx >= (int)is_set.size()) throw std::runtime_error("VM Error: Index out of bounds");
         if (!is_set[idx]) throw std::runtime_error("Runtime Error: Use of uninitialized variable at index " + std::to_string(idx));
+    }
+
+    // ADDED: Prevents accidental math on raw pointers (e.g., ptr + 5)
+    void check_math_type(const VarSlot& s) const {
+        if (s.type == VarSlot::Type::USER_PTR) {
+            throw std::runtime_error("Runtime Error: Cannot perform arithmetic on generic void* pointer.");
+        }
     }
 
 public:
@@ -465,7 +473,10 @@ public:
     // Internal Initialization (Sets flag to true)
     void init_slot(int idx, VarData val) {
         pool[idx].value = val;
-        pool[idx].type = std::holds_alternative<double>(val) ? VarSlot::Type::SCALAR : VarSlot::Type::MATRIX;
+        //pool[idx].type = std::holds_alternative<double>(val) ? VarSlot::Type::SCALAR : VarSlot::Type::MATRIX;
+        if (std::holds_alternative<double>(val)) pool[idx].type = VarSlot::Type::SCALAR;
+        else if (std::holds_alternative<FloatMatrix>(val)) pool[idx].type = VarSlot::Type::MATRIX;
+        else pool[idx].type = VarSlot::Type::USER_PTR; // Handle void*
         is_set[idx] = true;
     }
 
@@ -506,6 +517,7 @@ public:
                 case OpCode::MAT_NEG: {
                     check_init(instr.rhs_idx);
                     const auto& src = pool[instr.rhs_idx];
+                    check_math_type(src); // Safety check
                     if (src.type == VarSlot::Type::MATRIX) { O.value = FloatMatrix(std::get<FloatMatrix>(src.value)); std::get<FloatMatrix>(O.value).negated();O.type = VarSlot::Type::MATRIX; } 
                     else { O.value = -std::get<double>(src.value); O.type = VarSlot::Type::SCALAR; }
                     break;
@@ -513,6 +525,7 @@ public:
                 case OpCode::MAT_TRANS: { 
                     check_init(instr.rhs_idx);
                     const auto& src = pool[instr.rhs_idx];
+                    check_math_type(src); // Safety check
                     if (src.type == VarSlot::Type::MATRIX) { O.value=FloatMatrix::fromMatrix(std::get<FloatMatrix>(src.value), true); O.type = VarSlot::Type::MATRIX; }
                     else O = src;
                     break; 
@@ -520,6 +533,8 @@ public:
                 case OpCode::MAT_MUL: {
                     check_init(instr.lhs_idx); check_init(instr.rhs_idx);
                     const VarSlot &L = pool[instr.lhs_idx], &R = pool[instr.rhs_idx];
+                    check_math_type(L); // Safety check
+                    check_math_type(R); // Safety check
                     if (L.type == VarSlot::Type::SCALAR && R.type == VarSlot::Type::MATRIX) {
                         O.value = FloatMatrix(std::get<double>(L.value) * std::get<FloatMatrix>(R.value)); O.type = VarSlot::Type::MATRIX;
                     } else if (L.type == VarSlot::Type::MATRIX && R.type == VarSlot::Type::MATRIX) {
@@ -537,6 +552,8 @@ public:
                 case OpCode::MAT_SUB: {
                     check_init(instr.lhs_idx); check_init(instr.rhs_idx);
                     const VarSlot &L = pool[instr.lhs_idx], &R = pool[instr.rhs_idx];
+                    check_math_type(L); // Safety check
+                    check_math_type(R); // Safety check
                     bool is_add = (instr.op == OpCode::MAT_ADD);
                     if (L.type == VarSlot::Type::MATRIX && R.type == VarSlot::Type::MATRIX) {
                         const auto &m1 = std::get<FloatMatrix>(L.value), &m2 = std::get<FloatMatrix>(R.value);
@@ -561,6 +578,7 @@ public:
                 }
                 case OpCode::MAT_SLICE: {
                     check_init(instr.inputs[0]); check_init(instr.inputs[1]); check_init(instr.inputs[2]);
+                    check_math_type(pool[instr.inputs[0]]); // Safety check
                     const auto& m = std::get<FloatMatrix>(pool[instr.inputs[0]].value);
                     int r = (int)std::get<double>(pool[instr.inputs[1]].value);
                     int c = (int)std::get<double>(pool[instr.inputs[2]].value);
