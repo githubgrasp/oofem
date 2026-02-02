@@ -100,6 +100,7 @@ private:
     bool need_resize = true;
 
     static void handle_resize(int) ;
+    static void handle_crash(int) ;
 
     void get_size_unix(int& rows, int& cols) ;
 
