@@ -744,6 +744,11 @@ void FloatMatrix :: plusDyadUnsym(const FloatArray &a, const FloatArray &b, doub
 
 void FloatMatrix :: plus_Nt_a_otimes_b_B(const FloatMatrix &N, const FloatArray &a, const FloatArray &b, const FloatMatrix &B, double dV)
 {
+    #ifndef NDEBUG
+        if (a.giveSize() != N.nRows || b.giveSize() != B.nRows ) {
+            OOFEM_ERROR("Size mismatch in FloatMatrix :: plus_Nt_a_otimes_b_B");
+        }
+    #endif
     if ( !this->isNotEmpty() ) {
       this->nRows = N.nColumns;
       this->nColumns = B.nColumns;
