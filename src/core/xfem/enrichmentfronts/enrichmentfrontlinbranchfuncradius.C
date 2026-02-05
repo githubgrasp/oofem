@@ -69,9 +69,8 @@ void EnrFrontLinearBranchFuncRadius :: MarkNodesAsFront(std :: unordered_map< in
 
     for ( int i = 1; i <= nNodes; i++ ) {
         DofManager *dMan = d->giveDofManager(i);
-        const auto &nodePos = dMan->giveCoordinates();
 
-        double radius2 = distance_square(iTipInfo.mGlobalCoord, nodePos);
+        double radius2 = distance_square(iTipInfo.mGlobalCoord, Vec3(dMan->giveCoordinate(1), dMan->giveCoordinate(2), dMan->giveCoordinate(3)));
 
         if ( radius2 < mEnrichmentRadius * mEnrichmentRadius ) {
             if ( ( ioNodeEnrMarkerMap [ i ] == NodeEnr_START_TIP && iTipInfo.mTipIndex == 1 ) ||
@@ -97,12 +96,12 @@ int EnrFrontLinearBranchFuncRadius :: giveNumEnrichments(const DofManager &iDMan
 
 void EnrFrontLinearBranchFuncRadius :: evaluateEnrFuncAt(std :: vector< double > &oEnrFunc, const EfInput &iEfInput) const
 {
-    FloatArray xTip = Vec2(
-        mTipInfo.mGlobalCoord.at(1), mTipInfo.mGlobalCoord.at(2)
+    FloatArray xTip = Vec3(
+        mTipInfo.mGlobalCoord.at(1), mTipInfo.mGlobalCoord.at(2), mTipInfo.mGlobalCoord.giveSize() > 2 ? mTipInfo.mGlobalCoord.at(3) : 0.0
     );
 
-    FloatArray pos = Vec2(
-        iEfInput.mPos.at(1), iEfInput.mPos.at(2)
+    FloatArray pos = Vec3(
+        iEfInput.mPos.at(1), iEfInput.mPos.at(2), iEfInput.mPos.giveSize() > 2 ? iEfInput.mPos.at(3) : 0.0
     );
 
     // Crack tangent and normal
@@ -133,17 +132,17 @@ void EnrFrontLinearBranchFuncRadius :: evaluateEnrFuncDerivAt(std :: vector< Flo
     mpBranchFunc.evaluateEnrFuncDerivAt(oEnrFuncDeriv, r, theta);
 
     /**
-     * Transform to global coordinates.
+     * Transform to global coordinates. 2D
      */
     FloatMatrix E;
     E.resize(2, 2);
-    E.setColumn(t, 1);
-    E.setColumn(n, 2);
+    E.setColumn(Vec2(t[0], t[1]), 1);
+    E.setColumn(Vec2(n[0], n[1]), 2);
 
 
     for ( size_t j = sizeStart; j < oEnrFuncDeriv.size(); j++ ) {
         FloatArray enrFuncDerivGlob;
-        enrFuncDerivGlob.beProductOf(E, oEnrFuncDeriv [ j ]);
+        enrFuncDerivGlob.beProductOf(E, Vec2(oEnrFuncDeriv [ j ][0], oEnrFuncDeriv [ j ][1]));
         oEnrFuncDeriv [ j ] = enrFuncDerivGlob;
     }
 }

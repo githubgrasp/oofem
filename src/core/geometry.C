@@ -359,6 +359,8 @@ void Line :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
     mVertices.resize(2);
     IR_GIVE_FIELD(ir, mVertices [ 0 ], _IFT_Line_start);
     IR_GIVE_FIELD(ir, mVertices [ 1 ], _IFT_Line_end);
+    mVertices [ 0 ].resizeWithValues(3);
+    mVertices [ 1 ].resizeWithValues(3);
 }
 
 bool Line :: isPointInside(FloatArray *point)
@@ -444,8 +446,8 @@ void Triangle :: computeCenterOfCircumCircle(FloatArray &answer) const
     this->computeBarycentrCoor(bar);
     double sum = bar.at(1) + bar.at(2) + bar.at(3);
     // center of the circumcircle
-    answer.resize(2);
-    for ( int i = 1; i <= answer.giveSize(); i++ ) {
+    answer.resize(3); answer.zero();
+    for ( int i = 1; i <= mVertices [ 0 ].giveSize(); i++ ) {
         answer.at(i) = ( bar.at(1) * mVertices [ 0 ].at(i) + bar.at(2) * mVertices [ 1 ].at(i) + bar.at(3) * mVertices [ 2 ].at(i) ) / sum;
     }
 }
@@ -666,14 +668,14 @@ void Circle :: giveGlobalCoordinates(FloatArray &oGlobalCoord, const double &iAr
 {
     double angle = 2.0*M_PI*iArcPos;
 
-    oGlobalCoord.resize(2);
-    oGlobalCoord = Vec2( mVertices[0][0] + radius*cos(angle), mVertices[0][1] + radius*sin(angle) );
+    oGlobalCoord = Vec3( mVertices[0][0] + radius*cos(angle), mVertices[0][1] + radius*sin(angle),0 );
 }
 
 void Circle :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     mVertices.resize(1);
     IR_GIVE_FIELD(ir, mVertices [ 0 ], _IFT_Circle_center);
+    mVertices [ 0 ].resizeWithValues(3);
     IR_GIVE_FIELD(ir, radius, _IFT_Circle_radius);
 }
 
@@ -852,7 +854,7 @@ PolygonLine :: PolygonLine() : BasicGeometry()
 
 void PolygonLine :: computeNormalSignDist(double &oDist, const FloatArray &iPoint) const
 {
-    FloatArray point = Vec2(iPoint[0], iPoint[1]);
+    FloatArray point = Vec3(iPoint[0], iPoint[1], iPoint.giveSize() > 2 ? iPoint[2] : 0.0);
 
     oDist = std :: numeric_limits< double > :: max();
     int numSeg = this->giveNrVertices() - 1;
@@ -1233,7 +1235,7 @@ void PolygonLine :: giveTangent(FloatArray &oTangent, const double &iArcPosition
             const FloatArray &p1 = mVertices [ i ];
             const FloatArray &p2 = mVertices [ i+1 ];
 
-            oTangent = Vec2(p2(0) - p1(0), p2(1) - p1(1));
+            oTangent = Vec3(p2(0) - p1(0), p2(1) - p1(1), p2(2)-p1(2));
 
             oTangent.normalize();
 
@@ -1253,7 +1255,7 @@ void PolygonLine :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
     int numPoints = points.giveSize() / 2;
 
     for ( int i = 1; i <= numPoints; i++ ) {
-        mVertices.push_back(Vec2(points.at(2 * ( i - 1 ) + 1), points.at( 2 * ( i   ) )));
+        mVertices.push_back(Vec3(points.at(2 * ( i - 1 ) + 1), points.at( 2 * ( i   ) ),0.0));
     }
 
 #ifdef __BOOST_MODULE
@@ -1750,8 +1752,8 @@ bool PolygonLine :: giveTips(TipInfo &oStartTipInfo, TipInfo &oEndTipInfo) const
 void PolygonLine :: giveBoundingSphere(FloatArray &oCenter, double &oRadius)
 {
     int nVert = giveNrVertices();
-    oCenter = Vec2(
-        0.0, 0.0
+    oCenter = Vec3(
+        0.0, 0.0, 0.0
     );
     oRadius = 0.0;
 

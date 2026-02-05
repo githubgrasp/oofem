@@ -44,6 +44,8 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include <signal.h>
+#include <termios.h>
+// struct termios termios_attrs;
 #endif
 
 namespace oofem {
@@ -76,7 +78,12 @@ void ProgressBar::initialize() {
     }
 #else
     active_instance = this;
+    // tcgetattr(STDIN_FILENO,&termios_attrs);
     signal(SIGWINCH, handle_resize);
+    signal(SIGABRT,handle_crash);
+    signal(SIGQUIT,handle_crash);
+    signal(SIGTERM,handle_crash);
+    signal(SIGINT,handle_crash);
     setup_scroll_region_unix();
     hide_cursor();
 #endif
@@ -141,6 +148,9 @@ void ProgressBar::finish() {
         std::cout.flush();
     }
 #else
+    // this would be the proper way:
+    // tcsetattr(STDIN_FILENO,TCSANOW,&termios_attrs);
+
     // restore scroll region
     std::cout << "\033[r";
     // clear last line
@@ -230,6 +240,14 @@ void ProgressBar::finish() {
     void ProgressBar::handle_resize(int) {
         if (active_instance)
             active_instance->need_resize = true;
+    }
+    void ProgressBar::handle_crash(int sig) {
+        if(sig!=SIGQUIT && sig!=SIGTERM && sig!=SIGINT && sig!=SIGABRT) return;
+        // reset handler in case finish() crashes again for some reason
+        signal(sig,SIG_DFL);
+        active_instance->finish();
+        // resend the signal
+        raise(sig);
     }
 
     void ProgressBar::get_size_unix(int& rows, int& cols) {

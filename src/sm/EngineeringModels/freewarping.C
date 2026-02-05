@@ -163,11 +163,12 @@ FreeWarping :: computeResultAtCenterOfGravity(TimeStep *tStep)
     sp->init();
     lcoords.resize(2);
     closest.resize(2);
-    lcg.resize(2);
+    lcg.resize(3);
 
     for ( int j = 1; j <= noCS; ++j ) {
         lcg.at(1) = CG.at(j, 1);
         lcg.at(2) = CG.at(j, 2);
+        lcg.at(3) = 0.;
         closestElement = sp->giveElementClosestToPoint(lcoords, closest, lcg, 0);
 
         StructuralElement *sE = dynamic_cast< StructuralElement * >(closestElement);

@@ -119,9 +119,11 @@ FEI2dQuadLin :: local2global(FloatArray &answer, const FloatArray &lcoords, cons
     const auto &p3 = cellgeo.giveVertexCoordinates(3);
     const auto &p4 = cellgeo.giveVertexCoordinates(4);
 
-    answer = Vec2(n1 * p1.at(xind) + n2 * p2.at(xind) +
-              n3 * p3.at(xind) + n4 * p4.at(xind),
-              n1 * p1.at(yind) + n2 * p2.at(yind) +
+    answer.resize(3);
+    answer.zero();
+    answer.at(xind) = (n1 * p1.at(xind) + n2 * p2.at(xind) +
+              n3 * p3.at(xind) + n4 * p4.at(xind));
+    answer.at(yind) = (n1 * p1.at(yind) + n2 * p2.at(yind) +
               n3 * p3.at(yind) + n4 * p4.at(yind));
 }
 
@@ -291,11 +293,12 @@ FEI2dQuadLin :: edgeLocal2global(FloatArray &answer, int iedge,
     const auto &edgeNodes = this->computeLocalEdgeMapping(iedge);
     this->edgeEvalN(n, iedge, lcoords, cellgeo);
 
-    answer.resize(2);
-    answer.at(1) = n.at(1) * cellgeo.giveVertexCoordinates( edgeNodes.at(1) ).at(xind) +
+    answer.resize(3);
+    answer.zero();
+    answer.at(xind) = n.at(1) * cellgeo.giveVertexCoordinates( edgeNodes.at(1) ).at(xind) +
                    n.at(2) * cellgeo.giveVertexCoordinates( edgeNodes.at(2) ).at(xind);
-    answer.at(2) = n.at(1) * cellgeo.giveVertexCoordinates( edgeNodes.at(1) ).at(yind) +
-                   n.at(2) * cellgeo.giveVertexCoordinates( edgeNodes.at(2) ).at(yind);
+    answer.at(yind) = n.at(1) * cellgeo.giveVertexCoordinates( edgeNodes.at(1) ).at(yind) +
+                n.at(2) * cellgeo.giveVertexCoordinates( edgeNodes.at(2) ).at(yind);
 }
 
 IntArray

@@ -116,8 +116,8 @@ void XfemElementInterface :: ComputeBOrBHMatrix(FloatMatrix &oAnswer, GaussPoint
     const IntArray &elNodes = iEl.giveDofManArray();
 
     // Compute global coordinates of Gauss point
-    FloatArray globalCoord = Vec2(
-        0.0, 0.0
+    FloatArray globalCoord = Vec3(
+        0.0, 0.0, 0.0
     );
 
     for ( int i = 1; i <= nDofMan; i++ ) {
@@ -125,6 +125,8 @@ void XfemElementInterface :: ComputeBOrBHMatrix(FloatMatrix &oAnswer, GaussPoint
         const auto &nodeCoord = node->giveCoordinates();
         globalCoord.at(1) += N.at(i) * nodeCoord [ 0 ];
         globalCoord.at(2) += N.at(i) * nodeCoord [ 1 ];
+        if ( nodeCoord.giveSize() > 2 )
+            globalCoord.at(3) += N.at(i) * nodeCoord [ 2 ];
     }
 
 
@@ -272,13 +274,14 @@ void XfemElementInterface :: XfemElementInterface_createEnrNmatrixAt(FloatMatrix
     const IntArray &elNodes = iEl.giveDofManArray();
 
     // Compute global coordinates of Gauss point
-    FloatArray globalCoord(2);
+    FloatArray globalCoord(3);
     globalCoord.zero();
 
     for ( int i = 1; i <= nDofMan; i++ ) {
         DofManager *dMan = iEl.giveDofManager(i);
         globalCoord.at(1) += Nc.at(i) * dMan->giveCoordinate(1);
         globalCoord.at(2) += Nc.at(i) * dMan->giveCoordinate(2);
+        globalCoord.at(3) += Nc.at(i) * dMan->giveCoordinate(3);
     }
 
 
@@ -495,6 +498,7 @@ void XfemElementInterface :: XfemElementInterface_prepareNodesForDelaunay(std ::
         elCenter.add( element->giveDofManager(i)->giveCoordinates() );
     }
     elCenter.times( 1.0 / double( element->giveNumberOfDofManagers() ) );
+    elCenter.resizeWithValues(3);
 
     XfemManager *xMan = this->element->giveDomain()->giveXfemManager();
     GeometryBasedEI *ei = dynamic_cast< GeometryBasedEI * >( xMan->giveEnrichmentItem(iEnrItemIndex) );
@@ -716,6 +720,7 @@ void XfemElementInterface :: XfemElementInterface_prepareNodesForDelaunay(std ::
         elCenter.add( iTri.giveVertex(i) );
     }
     elCenter.times(1.0 / 3.0);
+    elCenter.resizeWithValues(3);
 
 
     XfemManager *xMan = this->element->giveDomain()->giveXfemManager();

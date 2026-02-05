@@ -367,7 +367,7 @@ void GeometryBasedEI :: updateLevelSets(XfemManager &ixFemMan)
 
         // Extract node coord
         FloatArray pos( node->giveCoordinates() );
-        pos.resizeWithValues(2);
+        pos.resizeWithValues(3);
 
         // Calc normal sign dist
         double phi = 0.0;

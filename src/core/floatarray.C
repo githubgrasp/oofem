@@ -176,12 +176,7 @@ int FloatArray :: giveIndexMaxElem(){ Eigen::Index ix; this->maxCoeff(&ix); retu
 double FloatArray :: dotProduct(const FloatArray &x) const { return this->dot(x); }
 // double FloatArray :: dotProduct(const FloatArray &x) const {  return std::inner_product(this->begin(), this->end(), x.begin(), 0.); /* */  }
 double FloatArray :: dotProduct(const FloatArray &x, Index size) const { return this->head(size).dot(x.head(size)); }
-double FloatArray :: distance_square(const FloatArray &from) const {
-    // oofem routine ignores excess axes, must be handled here as well
-    if(this->size()==from.size()) return (from-(*this)).squaredNorm();
-    Eigen::Index sz=std::min(this->size(),from.size());
-    return (from.head(sz)-this->head(sz)).squaredNorm();
-}
+double FloatArray :: distance_square(const FloatArray &from) const { return (from-(*this)).squaredNorm(); }
 void FloatArray :: checkSizeTowards(const IntArray &loc){ int sz=loc.maximum(); if(this->size()<sz) this->resize(sz); }
 bool FloatArray :: containsOnlyZeroes() const { return (this->array()==0.).all(); }
 void FloatArray :: zero() { this->array()=0.; }
@@ -304,6 +299,9 @@ void FloatArray :: plusProduct(const FloatMatrix &b, const FloatArray &s, double
 #  ifndef NDEBUG
     if ( this->giveSize() != b.giveNumberOfColumns() ) {
         OOFEM_ERROR( "dimension mismatch in a[%d] and b[%d, *]", this->giveSize(), b.giveNumberOfColumns() );
+    }
+    if (b.rows() != s.giveSize()) {
+        OOFEM_ERROR( "dimension mismatch in b[*,%d] and s[%d]", b.giveNumberOfRows(), s.giveSize() );
     }
 #  endif
 
@@ -606,6 +604,11 @@ double FloatArray :: distance_square(const FloatArray &from) const
 // returns distance between receiver and from from
 // computed using generalized pythagorean formulae
 {
+#ifndef NDEBUG
+    if ( this->giveSize() != from.giveSize() ) {
+        OOFEM_ERROR("dimension mismatch in distance_square(x[%d], y[%d])", this->giveSize(), from.giveSize());
+    }
+#endif
     double dist = 0.;
     Index s = min(this->size(), from.size());
     for (Index i = 1; i <= s; ++i ) {

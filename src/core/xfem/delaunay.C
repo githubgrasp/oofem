@@ -69,7 +69,8 @@ bool Delaunay :: isInsideCC(const FloatArray &iP, const FloatArray &iP1, const F
     double r = tr.getRadiusOfCircumCircle();
     FloatArray circumCenter;
     tr.computeCenterOfCircumCircle(circumCenter);
-    double dist = distance(circumCenter, iP);
+    //double dist = distance(circumCenter, iP);
+    double dist = sqrt( distance_square(Vec2(circumCenter.at(1), circumCenter.at(2)), Vec2(iP.at(1), iP.at(2))) );
     if ( dist < r ) {
         return true;
     } else {
