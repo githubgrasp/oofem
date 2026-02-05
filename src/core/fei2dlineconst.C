@@ -60,7 +60,7 @@ void FEI2dLineConst :: local2global(FloatArray &answer, const FloatArray &lcoord
     double xi = lcoords(0);
     n.at(1) = ( 1. - xi ) * 0.5;
     n.at(2) = ( 1. + xi ) * 0.5;
-    answer.resize( max(xind, yind) );
+    answer.resize(3);
     answer.zero();
     answer.at(xind) = n(0) * cellgeo.giveVertexCoordinates(1).at(xind) +
                       n(1) * cellgeo.giveVertexCoordinates(2).at(xind);

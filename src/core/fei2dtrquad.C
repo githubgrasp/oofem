@@ -206,11 +206,11 @@ FEI2dTrQuad :: local2global(FloatArray &answer, const FloatArray &lcoords, const
     FloatArray n;
     this->evalN(n, lcoords, cellgeo);
 
-    answer.resize(2);
+    answer.resize(3);
     answer.zero();
     for ( int i = 1; i <= 6; i++ ) {
-        answer.at(1) += n.at(i) * cellgeo.giveVertexCoordinates(i).at(xind);
-        answer.at(2) += n.at(i) * cellgeo.giveVertexCoordinates(i).at(yind);
+        answer.at(xind) += n.at(i) * cellgeo.giveVertexCoordinates(i).at(xind);
+        answer.at(yind) += n.at(i) * cellgeo.giveVertexCoordinates(i).at(yind);
     }
 }
 
@@ -291,11 +291,12 @@ FEI2dTrQuad :: edgeLocal2global(FloatArray &answer, int iedge,
     const auto &edgeNodes = this->computeLocalEdgeMapping(iedge);
     this->edgeEvalN(n, iedge, lcoords, cellgeo);
 
-    answer.resize(2);
-    answer.at(1) = n.at(1) * cellgeo.giveVertexCoordinates( edgeNodes.at(1) ).at(xind) +
+    answer.resize(3);
+    answer.zero();
+    answer.at(xind) = n.at(1) * cellgeo.giveVertexCoordinates( edgeNodes.at(1) ).at(xind) +
                    n.at(2) * cellgeo.giveVertexCoordinates( edgeNodes.at(2) ).at(xind) +
                    n.at(3) * cellgeo.giveVertexCoordinates( edgeNodes.at(3) ).at(xind);
-    answer.at(2) = n.at(1) * cellgeo.giveVertexCoordinates( edgeNodes.at(1) ).at(yind) +
+    answer.at(yind) = n.at(1) * cellgeo.giveVertexCoordinates( edgeNodes.at(1) ).at(yind) +
                    n.at(2) * cellgeo.giveVertexCoordinates( edgeNodes.at(2) ).at(yind) +
                    n.at(3) * cellgeo.giveVertexCoordinates( edgeNodes.at(3) ).at(yind);
 }

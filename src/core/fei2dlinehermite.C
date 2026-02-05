@@ -78,7 +78,7 @@ void FEI2dLineHermite :: local2global(FloatArray &answer, const FloatArray &lcoo
 {
     FloatArray n;
     this->evalN(n, lcoords, cellgeo);
-    answer.resize( max(xind, yind) );
+    answer.resize( 3 );
     answer.zero();
     answer.at(xind) = n.at(1) * cellgeo.giveVertexCoordinates(1).at(xind) +
                       n.at(2) * cellgeo.giveVertexCoordinates(2).at(xind);

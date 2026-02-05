@@ -576,7 +576,7 @@ void NURBSInterpolation :: local2global(FloatArray &answer, const FloatArray &lc
         this->basisFuns(N [ i ], span[i], lcoords[i], degree [ i ], knotVector [ i ]);
     }
 
-    answer.resize(nsd);
+    answer.resize(3);
     answer.zero();
 
     if ( nsd == 1 ) {

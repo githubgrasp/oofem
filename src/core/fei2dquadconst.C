@@ -59,7 +59,7 @@ FEI2dQuadConst :: evaldNdx(FloatMatrix &answer, const FloatArray &lcoords, const
 void
 FEI2dQuadConst :: local2global(FloatArray &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
 {
-    answer.resize(2);
+    answer.resize(3);
 
     answer.at(1) = 0.25 * ( cellgeo.giveVertexCoordinates(1).at(xind) +
                             cellgeo.giveVertexCoordinates(2).at(xind) +
@@ -69,6 +69,7 @@ FEI2dQuadConst :: local2global(FloatArray &answer, const FloatArray &lcoords, co
                             cellgeo.giveVertexCoordinates(2).at(yind) +
                             cellgeo.giveVertexCoordinates(3).at(yind) +
                             cellgeo.giveVertexCoordinates(4).at(yind) );
+    answer.at(3) = 0.0; 
 }
 
 
