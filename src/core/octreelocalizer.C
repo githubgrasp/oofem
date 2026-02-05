@@ -1467,9 +1467,9 @@ OctreeSpatialLocalizer :: giveNodesWithinBox(nodeContainerType &nodeList, Octant
         if ( !cellNodes.empty() ) {
             for ( int inod: cellNodes ) {
                 // loop over cell nodes and check if they meet the criteria
-                const auto &nodeCoords = domain->giveNode(inod)->giveCoordinates();
+                DofManager *node = domain->giveNode(inod); 
                 // is node within bbox
-                if ( distance(nodeCoords, coords) <= radius ) {
+                if ( distance(Vec3(node->giveCoordinate(1), node->giveCoordinate(2), node->giveCoordinate(3)), coords) <= radius ) {
                     // if yes, append them into set
                     nodeList.push_back(inod);
                 }

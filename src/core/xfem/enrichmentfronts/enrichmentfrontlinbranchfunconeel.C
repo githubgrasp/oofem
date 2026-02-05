@@ -65,12 +65,12 @@ int EnrFrontLinearBranchFuncOneEl :: giveNumEnrichments(const DofManager &iDMan)
 
 void EnrFrontLinearBranchFuncOneEl :: evaluateEnrFuncAt(std :: vector< double > &oEnrFunc, const EfInput &iEfInput) const
 {
-    FloatArray xTip = Vec2(
-        mTipInfo.mGlobalCoord.at(1), mTipInfo.mGlobalCoord.at(2)
+    FloatArray xTip = Vec3(
+        mTipInfo.mGlobalCoord.at(1), mTipInfo.mGlobalCoord.at(2), mTipInfo.mGlobalCoord.giveSize() > 2 ? mTipInfo.mGlobalCoord.at(3) : 0.0
     );
 
-    FloatArray pos = Vec2(
-        iEfInput.mPos.at(1), iEfInput.mPos.at(2)
+    FloatArray pos = Vec3(
+        iEfInput.mPos.at(1), iEfInput.mPos.at(2), iEfInput.mPos.giveSize() > 2 ? iEfInput.mPos.at(3) : 0.0
     );
 
     // Crack tangent and normal
