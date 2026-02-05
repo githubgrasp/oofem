@@ -72,7 +72,7 @@ void FEI2dLineLin :: local2global(FloatArray &answer, const FloatArray &lcoords,
 {
     FloatArray n;
     this->evalN(n, lcoords, cellgeo);
-    answer.resize( max(xind, yind) );
+    answer.resize( 3 );
     answer.zero();
     answer.at(xind) = n(0) * cellgeo.giveVertexCoordinates(1).at(xind) +
                       n(1) * cellgeo.giveVertexCoordinates(2).at(xind);

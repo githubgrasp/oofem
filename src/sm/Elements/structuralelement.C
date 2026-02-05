@@ -749,6 +749,7 @@ StructuralElement :: giveInternalForcesVector(FloatArray &answer,
         this->computeBmatrixAt(gp, b);
 
         if ( useUpdatedGpRecord == 1 ) {
+            /* TODO: consider unification, reduce dynamic_cast usage */
             auto status = gp->giveMaterialStatus();
             StructuralMaterialStatus *matStat = dynamic_cast< StructuralMaterialStatus * >( status );
             if ( matStat ) {
@@ -759,7 +760,7 @@ StructuralElement :: giveInternalForcesVector(FloatArray &answer,
                     stress = lmatStat->giveLatticeStress();
                 } else   {
                     StructuralInterfaceMaterialStatus *ms = static_cast< StructuralInterfaceMaterialStatus * >( status );
-                    stress = ms->giveTraction();
+                    stress = ms->jumpTractionReduced(ms->giveTraction(), gp);
                 }
             }
         } else {

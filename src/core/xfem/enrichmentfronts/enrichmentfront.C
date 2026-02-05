@@ -78,8 +78,9 @@ void EnrichmentFront :: computeCrackTangent(FloatArray &oTangent, FloatArray &oN
         oFlipTangent = false;
     }
 
-    oNormal = Vec2(
-        -oTangent.at(2), oTangent.at(1)
+    // 2d case
+    oNormal = Vec3(
+        -oTangent.at(2), oTangent.at(1), 0.0
     );
 }
 } // end namespace oofem

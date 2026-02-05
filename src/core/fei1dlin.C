@@ -84,11 +84,12 @@ void
 FEI1dLin :: local2global(FloatArray &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
 {
     FloatArray n;
-    answer.resize(1);
+    answer.resize(3);
 
     this->evalN(n, lcoords, cellgeo);
     answer.at(1) = n.at(1) * cellgeo.giveVertexCoordinates(1).at(cindx) +
                    n.at(2) * cellgeo.giveVertexCoordinates(2).at(cindx);
+    answer.at(2)=answer.at(3)=0.0;
 }
 
 int

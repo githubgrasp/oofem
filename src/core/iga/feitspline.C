@@ -312,7 +312,7 @@ void TSplineInterpolation :: local2global(FloatArray &answer, const FloatArray &
     giveKnotSpanBasisFuncMask(span, mask);
     count = mask.giveSize();
 
-    answer.resize(nsd);
+    answer.resize(3);
     answer.zero();
 
     if ( nsd == 2 ) {

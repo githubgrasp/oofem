@@ -300,6 +300,9 @@ void FloatArray :: plusProduct(const FloatMatrix &b, const FloatArray &s, double
     if ( this->giveSize() != b.giveNumberOfColumns() ) {
         OOFEM_ERROR( "dimension mismatch in a[%d] and b[%d, *]", this->giveSize(), b.giveNumberOfColumns() );
     }
+    if (b.rows() != s.giveSize()) {
+        OOFEM_ERROR( "dimension mismatch in b[*,%d] and s[%d]", b.giveNumberOfRows(), s.giveSize() );
+    }
 #  endif
 
 #ifdef __LAPACK_MODULE
@@ -601,6 +604,11 @@ double FloatArray :: distance_square(const FloatArray &from) const
 // returns distance between receiver and from from
 // computed using generalized pythagorean formulae
 {
+#ifndef NDEBUG
+    if ( this->giveSize() != from.giveSize() ) {
+        OOFEM_ERROR("dimension mismatch in distance_square(x[%d], y[%d])", this->giveSize(), from.giveSize());
+    }
+#endif
     double dist = 0.;
     Index s = min(this->size(), from.size());
     for (Index i = 1; i <= s; ++i ) {

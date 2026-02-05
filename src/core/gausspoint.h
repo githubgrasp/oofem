@@ -192,7 +192,9 @@ public:
     void setMaterialMode(MaterialMode newMode) { this->materialMode = newMode; }
     ///@todo giveMaterial routine most be removed from gauss-points, it doesn't fit with different types of cross-sections.
 
-    /// Returns reference to material associated to related element of receiver.
+    /** Returns reference to material associated to related element of receiver.
+     *  Deprecated, always use cross-section giveMaterial(gp) method instead
+     */
     Material *giveMaterial() { return giveElement()->giveMaterial(); }
 
     /// Returns reference to cross section associated to related element of receiver.

@@ -659,7 +659,10 @@ public:
      */
     virtual const FEInterpolation *getGeometryInterpolation() const { return giveInterpolation(); }
 
-    /// @return Reference to the associated material of element.
+    /** 
+     * Returns reference to the associated material of element.
+     *  Deprecated, always use cross-section giveMaterial(gp) method instead
+     */
     virtual Material *giveMaterial();
     /// @return Material number.
     int giveMaterialNumber() const {return material;}

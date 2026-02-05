@@ -253,7 +253,7 @@ public:
     }
     /**
      * Evaluates global coordinates from given local ones.
-     * @param answer Contains resulting global coordinates.
+     * @param answer Contains resulting global coordinates with size=3.
      * @param lcoords Array containing (local) coordinates.
      * @param cellgeo Underlying cell geometry.
      */

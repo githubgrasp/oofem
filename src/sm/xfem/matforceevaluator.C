@@ -93,7 +93,7 @@ void MaterialForceEvaluator::computeMaterialForce(FloatArray &oMatForce, Domain 
         for ( int nodeInd : elNodes ) {
             DofManager *dMan = iDomain.giveDofManager(nodeInd);
 
-            weightInNodes[nodeInd] = computeWeightFunctionInPoint( dMan->giveCoordinates(), iTipInfo.mGlobalCoord, iRadius);
+            weightInNodes[nodeInd] = computeWeightFunctionInPoint( Vec3(dMan->giveCoordinate(1), dMan->giveCoordinate(2), dMan->giveCoordinate(3)), iTipInfo.mGlobalCoord, iRadius);
         }
 
     }
