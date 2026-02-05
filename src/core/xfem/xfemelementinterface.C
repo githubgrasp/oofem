@@ -720,6 +720,7 @@ void XfemElementInterface :: XfemElementInterface_prepareNodesForDelaunay(std ::
         elCenter.add( iTri.giveVertex(i) );
     }
     elCenter.times(1.0 / 3.0);
+    elCenter.resizeWithValues(3);
 
 
     XfemManager *xMan = this->element->giveDomain()->giveXfemManager();

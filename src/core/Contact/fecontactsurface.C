@@ -255,7 +255,7 @@ FEContactSurface :: computeContactPointLocalCoordinates_2d(ContactPoint *cp, Con
   do {
     t1 = interpolation->surfaceEvalBaseVectorsAt(1, contactPointLocalCoords, cellgeo);
     interpolation->local2global(ro, contactPointLocalCoords, cellgeo);
-    gapVector = FloatArrayF<2>(r-ro);
+    gapVector = FloatArrayF<2>(r[0]-ro[0], r[1]-ro[1]);
     //dFdXi = - dRodXi * (r - ro)
     dFdXi = -dot(t1, gapVector);
     error = fabs(dFdXi);

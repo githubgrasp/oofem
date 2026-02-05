@@ -127,8 +127,10 @@ void WeakPeriodicBoundaryCondition :: postInitialize()
 {
     ActiveBoundaryCondition :: postInitialize();
     if (g.isEmpty()) {
-        g.resize(this->domain->giveNumberOfSpatialDimensions());
+        g.resize(3);
         g.zero();
+    } else {
+        g.resizeWithValues(3);
     }
     
     if ( this->domain->giveNumberOfSpatialDimensions() == 2 ) {

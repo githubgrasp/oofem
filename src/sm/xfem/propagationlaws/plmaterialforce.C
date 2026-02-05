@@ -103,6 +103,7 @@ bool PLMaterialForce :: propagateInterface(Domain &iDomain, EnrichmentFront &iEn
 
     FloatArray dir(matForce);
     dir.times(1.0/forceNorm);
+    dir.resizeWithValues(3);
 //    printf("dir: "); dir.printYourself();
 
     const double cosAngTol = 1.0/sqrt(2.0);
@@ -126,7 +127,7 @@ bool PLMaterialForce :: propagateInterface(Domain &iDomain, EnrichmentFront &iEn
 //        printf("tipInfo.mTangDir: "); tipInfo.mTangDir.printYourself();
 //        printf("dir: "); dir.printYourself();
     }
-
+    dir.resizeWithValues(3);
     // Fill up struct
     oTipProp.mTipIndex = tipInfo.mTipIndex;
     oTipProp.mPropagationDir = dir;

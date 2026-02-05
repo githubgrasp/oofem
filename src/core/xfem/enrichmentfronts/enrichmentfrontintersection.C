@@ -74,19 +74,18 @@ void EnrFrontIntersection :: evaluateEnrFuncAt(std :: vector< double > &oEnrFunc
     const FloatArray &t = mTangent;
     const FloatArray &n = mTipInfo.mNormalDir;
 
-    FloatArray tipToPos = Vec2(
-        iEfInput.mPos(0) - xTip(0), iEfInput.mPos(1) - xTip(1)
-    );
+    FloatArray tipToPos = Vec3(
+        iEfInput.mPos.at(1) - xTip.at(1), iEfInput.mPos.at(2) - xTip.at(2), iEfInput.mPos.giveSize() > 2 ? iEfInput.mPos.at(3) - xTip.at(3) : 0.0);
 
     // Heaviside in normal direction
     double Hn = 0.0;
-    if ( tipToPos.dotProduct(n) > 0.0 ) {
+    if ( tipToPos.dotProduct(Vec3(n.at(1), n.at(2), n.giveSize() > 2 ? n.at(3) : 0.0)) > 0.0 ) {
         Hn = 1.0;
     }
 
     // Heaviside in tangential direction
     double Ht = 0.0;
-    if ( tipToPos.dotProduct(t) < 0.0 ) {
+    if ( tipToPos.dotProduct(Vec3(t.at(1), t.at(2), t.giveSize() > 2 ? t.at(3) : 0.0)) < 0.0 ) {
         Ht = 1.0;
     }
 

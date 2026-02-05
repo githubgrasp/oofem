@@ -88,7 +88,7 @@ int FEInterpolation2d :: global2local(FloatArray &answer, const FloatArray &gcoo
     for ( int nite = 0; nite < 10; nite++ ) {
         // compute the residual
         this->local2global(guess, lcoords_guess, cellgeo);
-        res = Vec2(gcoords(xind) - guess(0), gcoords(yind) - guess(1));
+        res = Vec2(gcoords.at(xind) - guess(0), gcoords.at(yind) - guess(1));
 
         // check for convergence
         error = res.computeNorm();
