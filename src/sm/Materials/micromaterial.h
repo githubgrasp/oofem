@@ -120,7 +120,7 @@ public:
     int giveRequiredNumberOfDomainEquation() const override;
     //friend class EngngModel;-not here but define in EngngModel class
     /// Array containing coordinates of 8 master nodes of microproblem.
-    std::vector< FloatArray >microMasterCoords;
+    std::vector< Coordinates >microMasterCoords;
     /// Array containing equation numbers for boundary nodes [DofManagerNumber][DOF].
     std::vector<IntArray> microBoundaryDofs;
     /// Array of equation numbers associated to boundary nodes.

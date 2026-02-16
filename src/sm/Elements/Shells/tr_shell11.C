@@ -494,7 +494,7 @@ TR_SHELL11 :: computeVolumeAround(GaussPoint *gp)
 
     FloatArray x, y;
     this->giveNodeCoordinates(x, y);
-    std :: vector< FloatArray > lc = {Vec2(x[0], y[0]), Vec2(x[1], y[1]), Vec2(x[2], y[2])};
+    std :: vector< Coordinates > lc = {Coordinates(x[0], y[0],0.0), Coordinates(x[1], y[1],0.0), Coordinates(x[2], y[2],0.0)};
 
     weight = gp->giveWeight();
     detJ = fabs( this->interp_lin.giveTransformationJacobian( gp->giveNaturalCoordinates(), FEIVertexListGeometryWrapper(lc, this->giveGeometryType()) ) );

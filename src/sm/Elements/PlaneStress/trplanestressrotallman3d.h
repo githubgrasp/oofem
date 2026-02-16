@@ -78,7 +78,7 @@ public:
     }
 
 protected:
-    void computeLocalNodalCoordinates(std::vector< FloatArray > &lxy) override;
+    void computeLocalNodalCoordinates(std::vector< Coordinates > &lxy) override;
 
     double computeVolumeAround(GaussPoint *gp) override;
     void giveCharacteristicTensor(FloatMatrix &answer, CharTensor type, GaussPoint *gp, TimeStep *tStep);

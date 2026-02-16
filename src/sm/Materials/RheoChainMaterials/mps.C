@@ -1447,7 +1447,7 @@ MPSMaterial::giveHumidity(GaussPoint *gp, TimeStep *tStep, int option) const
 
         FieldPtr tf;
         int err, wflag = 0;
-        FloatArray gcoords;
+        Coordinates gcoords;
         FloatArray et2, ei2; // total and incremental values of water mass
 
         if ( ( tf = fm->giveField(FT_HumidityConcentration) ) ) {
@@ -1561,7 +1561,7 @@ MPSMaterial::giveTemperature(GaussPoint *gp, TimeStep *tStep, int option) const
 
         FieldPtr tf;
         int err, tflag = 0;
-        FloatArray gcoords;
+        Coordinates gcoords;
         FloatArray et1, ei1; // total and incremental values of temperature
 
         if ( ( tf = fm->giveField(FT_Temperature) ) ) {

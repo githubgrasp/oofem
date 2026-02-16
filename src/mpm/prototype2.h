@@ -52,10 +52,10 @@ namespace oofem {
         double evaldNdx(FloatMatrix &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override {
             return this->getCellInterpolation(cellgeo.giveGeometryType())->evaldNdx(answer, lcoords, cellgeo);
         }
-        void local2global(FloatArray &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override {
+        void local2global(Coordinates &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override {
             return this->getCellInterpolation(cellgeo.giveGeometryType())->local2global(answer, lcoords, cellgeo);
         }
-        virtual int global2local(FloatArray &answer, const FloatArray &gcoords, const FEICellGeometry &cellgeo) const override {
+        virtual int global2local(FloatArray &answer, const Coordinates &gcoords, const FEICellGeometry &cellgeo) const override {
             return this->getCellInterpolation(cellgeo.giveGeometryType())->global2local(answer, gcoords, cellgeo);
         }
         double giveTransformationJacobian(const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override {
@@ -76,7 +76,7 @@ namespace oofem {
         double boundaryEdgeGiveTransformationJacobian(int boundary, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override {
             return this->getCellInterpolation(cellgeo.giveGeometryType())->boundaryEdgeGiveTransformationJacobian(boundary, lcoords, cellgeo);
         }
-        void boundaryEdgeLocal2Global(FloatArray &answer, int boundary, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override {
+        void boundaryEdgeLocal2Global(Coordinates &answer, int boundary, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override {
             return this->getCellInterpolation(cellgeo.giveGeometryType())->boundaryEdgeLocal2Global(answer, boundary, lcoords, cellgeo);
         }
         integrationDomain giveBoundaryEdgeIntegrationDomain(int boundary, Element_Geometry_Type egt) const override {
@@ -99,7 +99,7 @@ namespace oofem {
             return this->getCellInterpolation(cellgeo.giveGeometryType())->boundarySurfaceEvalNormal(answer, isurf, lcoords, cellgeo);
         }
 
-        void boundarySurfaceLocal2global(FloatArray &answer, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override {
+        void boundarySurfaceLocal2global(Coordinates &answer, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override {
             return this->getCellInterpolation(cellgeo.giveGeometryType())->boundarySurfaceLocal2global(answer, isurf, lcoords, cellgeo);
         }
         double boundarySurfaceGiveTransformationJacobian(int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override {
@@ -127,7 +127,7 @@ namespace oofem {
         double boundaryGiveTransformationJacobian(int boundary, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override {
             return this->getCellInterpolation(cellgeo.giveGeometryType())->boundaryGiveTransformationJacobian(boundary, lcoords, cellgeo);
         }
-        void boundaryLocal2Global(FloatArray &answer, int boundary, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override {
+        void boundaryLocal2Global(Coordinates &answer, int boundary, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override {
             return this->getCellInterpolation(cellgeo.giveGeometryType())->boundaryLocal2Global(answer, boundary, lcoords, cellgeo);
         }
         integrationDomain giveBoundaryIntegrationDomain(int boundary, Element_Geometry_Type egt) const override {

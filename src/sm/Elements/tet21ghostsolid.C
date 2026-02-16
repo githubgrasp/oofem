@@ -1408,7 +1408,8 @@ tet21ghostsolid::computeBoundarySurfaceLoadVector(FloatArray &answer, BoundaryLo
         if ( load->giveFormulationType() == Load::FT_Entity ) {
             load->computeValueAt(force, tStep, lcoords, mode);
         } else {
-            FloatArray gcoords, elcoords;
+            Coordinates gcoords;
+            FloatArray elcoords;
             this->interpolation.surfaceLocal2global(gcoords, boundary, lcoords, FEIElementGeometryWrapper(this) );
             this->interpolation.global2local(elcoords, gcoords, FEIElementGeometryWrapper(this) );
             NeumannMomentLoad *thisLoad = dynamic_cast< NeumannMomentLoad * >( load );

@@ -148,7 +148,7 @@ void GnuplotExportModule::doOutput(TimeStep *tStep, bool forcedOutput)
 
             int numEI = xMan->giveNumberOfEnrichmentItems();
 
-            std::vector< std::vector<FloatArray> > points;
+            std::vector< std::vector<Coordinates> > points;
 
             for(int i = 1; i <= numEI; i++) {
                 EnrichmentItem *ei = xMan->giveEnrichmentItem(i);
@@ -156,7 +156,7 @@ void GnuplotExportModule::doOutput(TimeStep *tStep, bool forcedOutput)
 
                 GeometryBasedEI *geoEI = dynamic_cast<GeometryBasedEI*>(ei);
                 if(geoEI != NULL) {
-                    std::vector<FloatArray> eiPoints;
+                    std::vector<Coordinates> eiPoints;
                     geoEI->giveSubPolygon(eiPoints, 0.0, 1.0);
                     points.push_back(eiPoints);
                 }
@@ -515,7 +515,7 @@ void GnuplotExportModule::outputXFEM(Crack &iCrack, TimeStep *tStep)
     }
 }
 
-void GnuplotExportModule::outputXFEMGeometry(const std::vector< std::vector<FloatArray> > &iEnrItemPoints)
+void GnuplotExportModule::outputXFEMGeometry(const std::vector< std::vector<Coordinates> > &iEnrItemPoints)
 {
     double time = 0.0;
 
@@ -527,7 +527,7 @@ void GnuplotExportModule::outputXFEMGeometry(const std::vector< std::vector<Floa
     std :: stringstream strCracks;
     strCracks << "CracksTime" << time << ".dat";
     std :: string nameCracks = strCracks.str();
-    WritePointsToGnuplot(nameCracks, iEnrItemPoints);
+    WriteCoordsToGnuplot(nameCracks, iEnrItemPoints);
 }
 
 void GnuplotExportModule :: outputBoundaryCondition(PrescribedGradient &iBC, TimeStep *tStep)
@@ -1065,6 +1065,34 @@ void GnuplotExportModule :: WritePointsToGnuplot(const std :: string &iName, con
     file.close();
 
 }
+
+void GnuplotExportModule :: WriteCoordsToGnuplot(const std :: string &iName, const std :: vector< std::vector<Coordinates> > &iPoints)
+{
+    std :: ofstream file;
+    file.open( iName.data() );
+
+    // Set some output options
+    file << std :: scientific;
+
+    file << "# x y\n";
+
+    for(auto posVec: iPoints) {
+        for(auto pos: posVec) {
+
+            for(int i = 0; i < pos.giveSize(); i++) {
+                file << pos[i] << " ";
+            }
+            file << "\n";
+
+//            file << pos[0] << " " << pos[1] << "\n";
+        }
+        file << "\n";
+    }
+
+    file.close();
+
+}
+
 
 
 } // end namespace oofem

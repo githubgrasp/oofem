@@ -108,7 +108,7 @@ DofManValueField::addElement(int i, const char *name, const IntArray &nodes) {
 
 
 int
-DofManValueField::evaluateAt(FloatArray &answer, const FloatArray &coords, ValueModeType mode, TimeStep *tStep)
+DofManValueField::evaluateAt(FloatArray &answer, const Coordinates &coords, ValueModeType mode, TimeStep *tStep)
 {
     int result = 0; // assume ok
     FloatArray lc, n;
@@ -154,7 +154,7 @@ DofManValueField::setDofManValue(int dofMan, FloatArray value)
     this->dmanvallist [ dofMan - 1 ] = std::move(value);
 }
 
-const FloatArray &DofManValueField::getNodeCoordinates(int i)
+const Coordinates &DofManValueField::getNodeCoordinates(int i)
 {
     return this->domain->dofManagerList [ i - 1 ]->giveCoordinates();
 }

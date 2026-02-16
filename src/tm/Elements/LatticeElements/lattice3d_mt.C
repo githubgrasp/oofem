@@ -260,7 +260,7 @@ Lattice3d_mt :: computeGeometryProperties()
     }
 
     // Compute midpoint
-    this->midPoint.resize(3);
+    // this->midPoint.resize(3);
     for ( int i = 0; i < 3; i++ ) {
         this->midPoint.at(i + 1) = 0.5 * ( coordsB.at(i + 1) + coordsA.at(i + 1) );
     }
@@ -460,7 +460,8 @@ Lattice3d_mt :: computeCrossSectionProperties() {
     }
 
     //Calculate centroids
-    centroid.resize(3);
+    //centroid.resize(3);
+    centroid.zero();
     for ( int k = 0; k < numberOfPolygonVertices; k++ ) {
         if ( k < numberOfPolygonVertices - 1 ) {
             centroid.at(2) += ( lpc(3 * k + 1) + lpc(3 * ( k + 1 ) + 1) ) * ( lpc(3 * k + 1) * lpc(3 * ( k + 1 ) + 2) - lpc(3 * ( k + 1 ) + 1) * lpc(3 * k + 2) );
@@ -471,14 +472,14 @@ Lattice3d_mt :: computeCrossSectionProperties() {
         }
     }
 
-    centroid.times(1. / ( 6. * this->area ) );
+    centroid*=(1. / ( 6. * this->area ) );
 
     centroid.at(1) = lpc.at(1); //The first component of all lpcs should be the same
 
     //Shift coordinates to centroi
     for ( int k = 0; k < numberOfPolygonVertices; k++ ) {
         for ( int l = 0; l < 3; l++ ) {
-            lpc(3 * k + l) -= centroid(l);
+            lpc(3 * k + l) -= centroid[l];
         }
     }
 
@@ -571,7 +572,7 @@ Lattice3d_mt :: computeCrossSectionProperties() {
         }
     }
 
-    centroid.times(1. / ( 6. * area ) );
+    centroid*=(1. / ( 6. * area ) );
 
     centroid.at(1) = lpc.at(1); //The first component of all lpcs should be the same
 
@@ -588,7 +589,7 @@ Lattice3d_mt :: computeCrossSectionProperties() {
     FloatMatrix transposeLCS;
     transposeLCS.beTranspositionOf(this->localCoordinateSystem);
 
-    globalCentroid.beProductOf(transposeLCS, centroid);
+    globalCentroid = transposeLCS * centroid;
 
     crackLengths.resize(numberOfPolygonVertices);
     double crackPointOne, crackPointTwo;
@@ -710,20 +711,20 @@ Lattice3d_mt :: computeInternalSourceRhsVectorAt(FloatArray &answer, TimeStep *a
 }
 
 int
-Lattice3d_mt :: computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords)
+Lattice3d_mt :: computeGlobalCoordinates(Coordinates &answer, const FloatArray &lcoords)
 {
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
     }
 
-    answer.resize(3);
+    //answer.resize(3);
     answer = midPoint;
 
     return 1;
 }
 
 bool
-Lattice3d_mt :: computeLocalCoordinates(FloatArray &answer, const FloatArray &coords)
+Lattice3d_mt :: computeLocalCoordinates(FloatArray &answer, const Coordinates &coords)
 {
     answer.resize(1);
     answer.at(1) = 0.;

@@ -65,20 +65,21 @@ FEI2dLineQuad :: evaldNdxi(FloatMatrix &answer, const FloatArray &lcoords, const
     answer.at(3, 1) = -2.0 * xi;
 }
 
-void FEI2dLineQuad :: local2global(FloatArray &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
+void FEI2dLineQuad :: local2global(Coordinates &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
 {
     FloatArray n;
     this->evalN(n, lcoords, cellgeo);
-    answer.resize(2);
+    //answer.resize(2);
     answer.at(1) = n(0) * cellgeo.giveVertexCoordinates(1).at(xind) +
                    n(1) * cellgeo.giveVertexCoordinates(2).at(xind) +
                    n(2) * cellgeo.giveVertexCoordinates(3).at(xind);
     answer.at(2) = n(0) * cellgeo.giveVertexCoordinates(1).at(yind) +
                    n(1) * cellgeo.giveVertexCoordinates(2).at(yind) +
                    n(2) * cellgeo.giveVertexCoordinates(3).at(yind);
+    answer.at(3) = 0.0;
 }
 
-int FEI2dLineQuad :: global2local(FloatArray &answer, const FloatArray &gcoords, const FEICellGeometry &cellgeo) const
+int FEI2dLineQuad :: global2local(FloatArray &answer, const Coordinates &gcoords, const FEICellGeometry &cellgeo) const
 {
     double x1_x2, y1_y2, px_x3, py_y3, x3_x2_x1, y3_y2_y1;
     double b0, b1, b2, b3;
@@ -116,7 +117,7 @@ int FEI2dLineQuad :: global2local(FloatArray &answer, const FloatArray &gcoords,
     }
 
     double min_distance2 = 0.0, min_xi = 0;
-    FloatArray f(2);
+    Coordinates f;
     answer.resize(1);
 
     for ( int i = 0; i < points; i++ ) {
@@ -187,7 +188,7 @@ double FEI2dLineQuad :: edgeEvalNormal(FloatArray &normal, int iedge, const Floa
     return normal.normalize_giveNorm();
 }
 
-void FEI2dLineQuad :: edgeLocal2global(FloatArray &answer, int iedge,
+void FEI2dLineQuad :: edgeLocal2global(Coordinates &answer, int iedge,
                                        const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
 {
     this->local2global(answer, lcoords, cellgeo);

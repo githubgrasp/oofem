@@ -338,7 +338,8 @@ B3Material :: computeShrinkageStrainVector(FloatArray &answer, GaussPoint *gp, T
     /* ask for humidity and temperature from external sources, if provided */
     FieldManager *fm = domain->giveEngngModel()->giveContext()->giveFieldManager();
     FieldPtr tf;
-    FloatArray gcoords, et2, ei2, stressVector, fullStressVector;
+    FloatArray et2, ei2, stressVector, fullStressVector;
+    Coordinates gcoords;
 
     if ( ( tf = fm->giveField(FT_Temperature) ) ) {
         // temperature field registered

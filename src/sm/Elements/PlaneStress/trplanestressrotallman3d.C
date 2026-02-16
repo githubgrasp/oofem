@@ -54,7 +54,7 @@ TrPlanestressRotAllman3d :: TrPlanestressRotAllman3d(int n, Domain *aDomain) : T
 
 
 void
-TrPlanestressRotAllman3d :: computeLocalNodalCoordinates(std :: vector< FloatArray > &lxy)
+TrPlanestressRotAllman3d :: computeLocalNodalCoordinates(std :: vector< Coordinates > &lxy)
 // Returns global coordinates given in global vector
 // transformed into local coordinate system of the
 // receiver
@@ -68,16 +68,17 @@ TrPlanestressRotAllman3d :: computeLocalNodalCoordinates(std :: vector< FloatArr
     lxy.resize(6);
     for ( int i = 0; i < 3; i++ ) {
         const auto &nc = this->giveNode(i + 1)->giveCoordinates();
-        lxy [ i ].beProductOf(* GtoLRotationMatrix, nc);
+        lxy [ i ] = (* GtoLRotationMatrix) * nc;//.beProductOf(* GtoLRotationMatrix, nc);
     }
-    lxy [ 3 ].resize(3);
-    lxy [ 4 ].resize(3);
-    lxy [ 5 ].resize(3);
+    //lxy [ 3 ].resize(3);
+    //lxy [ 4 ].resize(3);
+    //lxy [ 5 ].resize(3);
     for ( int i = 1; i <= 3; i++ ) {
         lxy [ 3 ].at(i) = 0.5 * ( lxy [ 0 ].at(i) + lxy [ 1 ].at(i) );
         lxy [ 4 ].at(i) = 0.5 * ( lxy [ 1 ].at(i) + lxy [ 2 ].at(i) );
         lxy [ 5 ].at(i) = 0.5 * ( lxy [ 2 ].at(i) + lxy [ 0 ].at(i) );
     }
+    lxy[3][2] = lxy[4][2] = lxy[5][2] = 0.0;
 }
 
 
@@ -86,7 +87,7 @@ TrPlanestressRotAllman3d :: computeVolumeAround(GaussPoint *gp)
 {
     double detJ, weight;
 
-    std :: vector< FloatArray >lc;
+    std :: vector< Coordinates >lc;
     this->computeLocalNodalCoordinates(lc);
 
     weight = gp->giveWeight();

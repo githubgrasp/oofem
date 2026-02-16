@@ -8,6 +8,7 @@
 #ifndef TIPINFO_H_
 #define TIPINFO_H_
 
+#include "oofemcfg.h"
 #include "floatarray.h"
 #include "intarray.h"
 
@@ -27,7 +28,7 @@ public:
     TipInfo() { }
     ~TipInfo() { }
 
-    FloatArray mGlobalCoord;
+    Coordinates mGlobalCoord;
     double mArcPos;
     FloatArray mTangDir;
     FloatArray mNormalDir;

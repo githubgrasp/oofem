@@ -292,7 +292,7 @@ class BoundaryFluxFunctor: public NTfFunctor {
         if ( load->giveFormulationType() == Load :: FT_Entity ) {
             load->computeValues(answer, tStep, lcoords, dofIDs, mode);
         } else {
-            FloatArray globalIPcoords;
+            Coordinates globalIPcoords;
             testField->interpolation->local2global(globalIPcoords, lcoords, FEIElementGeometryWrapper(&cell) );
             load->computeValues(answer, tStep, globalIPcoords, dofIDs, mode);
         }
@@ -325,7 +325,7 @@ class BodyFluxFunctor: public NTfFunctor {
         if ( load->giveFormulationType() == Load :: FT_Entity ) {
             load->computeValues(answer, tStep, lcoords, dofIDs, mode);
         } else {
-            FloatArray globalIPcoords;
+            Coordinates globalIPcoords;
             testField->interpolation->local2global(globalIPcoords, lcoords, FEIElementGeometryWrapper(&cell) );
             load->computeValues(answer, tStep, globalIPcoords, dofIDs, mode);
         }

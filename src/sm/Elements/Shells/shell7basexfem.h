@@ -144,10 +144,10 @@ protected:
     std :: vector < std :: vector< Triangle > > crackSubdivisions;
     IntArray numSubDivisionsArray;
 
-    std::vector<FloatArray> giveFictiousNodeCoordsForExport(int layer, int subCell);
-    std::vector<FloatArray> giveFictiousCZNodeCoordsForExport(int layer, int subCell);
-    std::vector<FloatArray> giveFictiousUpdatedNodeCoordsForExport(int layer, TimeStep *tStep, int subCell);
-    std::vector<FloatArray> giveFictiousUpdatedCZNodeCoordsForExport(int layer, TimeStep *tStep, int subCell);
+    std::vector<Coordinates> giveFictiousNodeCoordsForExport(int layer, int subCell);
+    std::vector<Coordinates> giveFictiousCZNodeCoordsForExport(int layer, int subCell);
+    std::vector<Coordinates> giveFictiousUpdatedNodeCoordsForExport(int layer, TimeStep *tStep, int subCell);
+    std::vector<Coordinates> giveFictiousUpdatedCZNodeCoordsForExport(int layer, TimeStep *tStep, int subCell);
     void giveLocalNodeCoordsForExport(FloatArray &nodeLocalXi1Coords, FloatArray &nodeLocalXi2Coords, FloatArray &nodeLocalXi3Coords, int subCell, int layer, FloatMatrix &localNodeCoords);
     void giveLocalCZNodeCoordsForExport(FloatArray &nodeLocalXi1Coords, FloatArray &nodeLocalXi2Coords, FloatArray &nodeLocalXi3Coords, int subCell, FloatMatrix &localNodeCoords);
     void mapXi3FromLocalToShell(FloatArray &answer, FloatArray &local, int layer);

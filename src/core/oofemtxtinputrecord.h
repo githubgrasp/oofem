@@ -92,6 +92,7 @@ public:
     void giveField(bool &answer, InputFieldType id) override;
     void giveField(std :: string &answer, InputFieldType id) override;
     void giveField(FloatArray &answer, InputFieldType id) override;
+    void giveField(Coordinates &answer, InputFieldType id) override;
     void giveField(IntArray &answer, InputFieldType id) override;
     void giveField(FloatMatrix &answer, InputFieldType id) override;
     void giveField(std :: vector< std :: string > &answer, InputFieldType id) override;

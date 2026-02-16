@@ -124,11 +124,11 @@ FEI3dTrQuad :: giveLocalNodeCoords(FloatMatrix &answer,const Element_Geometry_Ty
 
 
 void
-FEI3dTrQuad :: local2global(FloatArray &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
+FEI3dTrQuad :: local2global(Coordinates &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
 {
     FloatArray n;
     this->evalN(n, lcoords, cellgeo);
-    answer.clear();
+    answer.zero();
     for ( int i = 1; i <= 6; ++i ) {
         answer.add( n.at(i), cellgeo.giveVertexCoordinates(i) );
     }
@@ -136,7 +136,7 @@ FEI3dTrQuad :: local2global(FloatArray &answer, const FloatArray &lcoords, const
 
 #define POINT_TOL 1.e-3
 int
-FEI3dTrQuad :: global2local(FloatArray &answer, const FloatArray &gcoords, const FEICellGeometry &cellgeo) const
+FEI3dTrQuad :: global2local(FloatArray &answer, const Coordinates &gcoords, const FEICellGeometry &cellgeo) const
 {
     //OOFEM_ERROR("FEI3dTrQuad :: global2local - Not supported");
     //return -1;
@@ -214,14 +214,14 @@ FEI3dTrQuad :: edgeEvaldNdxi(FloatArray &answer, int iedge, const FloatArray &lc
 }
 
 void
-FEI3dTrQuad :: edgeLocal2global(FloatArray &answer, int iedge,
+FEI3dTrQuad :: edgeLocal2global(Coordinates &answer, int iedge,
                                 const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
 {
     FloatArray N;
     const auto &edgeNodes = this->computeLocalEdgeMapping(iedge);
     this->edgeEvalN(N, iedge, lcoords, cellgeo);
 
-    answer.clear();
+    answer.zero();
     for ( int i = 0; i < N.giveSize(); ++i ) {
         answer.add( N[i], cellgeo.giveVertexCoordinates( edgeNodes[i] ) );
     }
@@ -299,14 +299,14 @@ FEI3dTrQuad :: surfaceEvaldNdxi(FloatMatrix &answer, const FloatArray &lcoords) 
 
 
 void
-FEI3dTrQuad :: surfaceLocal2global(FloatArray &answer, int isurf,
+FEI3dTrQuad :: surfaceLocal2global(Coordinates &answer, int isurf,
                                    const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
 {
     //Note: This gives the coordinate in the reference system
     FloatArray N;
     this->surfaceEvalN(N, isurf, lcoords, cellgeo);
 
-    answer.clear();
+    answer.zero();
     for ( int i = 1; i <= N.giveSize(); ++i ) {
         answer.add( N.at(i), cellgeo.giveVertexCoordinates(i) );
     }

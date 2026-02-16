@@ -254,7 +254,7 @@ InterfaceElem1d :: computeGaussPoints()
 
 
 int
-InterfaceElem1d :: computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords)
+InterfaceElem1d :: computeGlobalCoordinates(Coordinates &answer, const FloatArray &lcoords)
 {
     answer = this->giveNode(1)->giveCoordinates();
 
@@ -263,7 +263,7 @@ InterfaceElem1d :: computeGlobalCoordinates(FloatArray &answer, const FloatArray
 
 
 bool
-InterfaceElem1d :: computeLocalCoordinates(FloatArray &answer, const FloatArray &gcoords)
+InterfaceElem1d :: computeLocalCoordinates(FloatArray &answer, const Coordinates &gcoords)
 {
     OOFEM_ERROR("Not implemented");
     //return false;

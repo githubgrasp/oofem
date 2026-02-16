@@ -265,20 +265,20 @@ MITC4Shell::computeConstitutiveMatrixAt(FloatMatrix &answer, MatResponseMode rMo
 }
 
 
-std::array< FloatArrayF< 3 >, 4 >
+std::array< Coordinates, 4 >
 MITC4Shell::giveNodeCoordinates()
 {
-    std::array< FloatArrayF< 3 >, 4 >c;
+    std::array< Coordinates, 4 >c;
     for ( int i = 0; i < 4; ++i ) {
         c [ i ] = this->giveLocalCoordinates( this->giveNode(i + 1)->giveCoordinates() );
     }
     return c;
 }
 
-FloatArrayF< 3 >
-MITC4Shell::giveLocalCoordinates(const FloatArrayF< 3 > &global)
+Coordinates
+MITC4Shell::giveLocalCoordinates(const Coordinates &global)
 {
-    auto offset = global - FloatArrayF< 3 >( this->giveNode(1)->giveCoordinates() );
+    auto offset = global - this->giveNode(1)->giveCoordinates();
     return dot(GtoLRotationMatrix, offset);
 }
 
@@ -918,7 +918,7 @@ MITC4Shell::giveIPValue(FloatArray &answer, GaussPoint *gp, InternalStateType ty
 
 
 bool
-MITC4Shell::computeLocalCoordinates(FloatArray &answer, const FloatArray &coords)
+MITC4Shell::computeLocalCoordinates(FloatArray &answer, const Coordinates &coords)
 //converts global coordinates to local planar area coordinates,
 //does not return a coordinate in the thickness direction, but
 //does check that the point is in the element thickness
@@ -926,7 +926,7 @@ MITC4Shell::computeLocalCoordinates(FloatArray &answer, const FloatArray &coords
     // rotate the input point Coordinate System into the element CS
     FloatArray llc;
     auto inputCoords_ElCS = this->giveLocalCoordinates(coords);
-    std::vector< FloatArray >lc(3);
+    std::vector< Coordinates >lc(3);
     for ( int _i = 0; _i < 4; _i++ ) {
         lc [ _i ] = this->giveLocalCoordinates( this->giveNode(_i + 1)->giveCoordinates() );
     }
@@ -944,12 +944,12 @@ MITC4Shell::computeLocalCoordinates(FloatArray &answer, const FloatArray &coords
 
 
 int
-MITC4Shell::computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords)
+MITC4Shell::computeGlobalCoordinates(Coordinates &answer, const FloatArray &lcoords)
 {
     FloatMatrix N;
     computeNmatrixAt(lcoords, N);
 
-    answer.resize(3);
+    //answer.resize(3);
     for ( int _i = 1; _i <= 3; _i++ ) {
         answer.at(_i) = N.at(_i, _i) * this->giveNode(1)->giveCoordinate(_i) + N.at(_i, _i + 6) * this->giveNode(2)->giveCoordinate(_i) + N.at(_i, _i + 12) * this->giveNode(3)->giveCoordinate(_i) + N.at(_i, _i + 18) * this->giveNode(4)->giveCoordinate(_i);
     }
@@ -1076,7 +1076,7 @@ double
 MITC4Shell::computeEdgeVolumeAround(GaussPoint *gp, int iEdge)
 {
     auto lcF = this->giveNodeCoordinates();
-    std::vector< FloatArray > lc(4);
+    std::vector< Coordinates > lc(4);
     lc [ 0 ] = lcF [ 0 ];
     lc [ 1 ] = lcF [ 1 ];
     lc [ 2 ] = lcF [ 2 ];

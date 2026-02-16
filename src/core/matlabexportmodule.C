@@ -736,7 +736,7 @@ MatlabExportModule :: doOutputIntegrationPointFields(TimeStep *tStep,    FILE *F
                 fprintf( FID, "\tIntegrationPointFields.Elements{%i}.integrationRule{%i}.ip{%i}.coords = [",
                          ielem, i, ip->giveNumber());
 
-                FloatArray coords;
+                Coordinates coords;
                 el->computeGlobalCoordinates( coords, ip->giveNaturalCoordinates() );
                 for ( int ic = 1; ic <= coords.giveSize(); ic++ ) {
                     fprintf( FID, "%e ", coords.at(ic) );

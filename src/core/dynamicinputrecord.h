@@ -68,6 +68,7 @@ protected:
     std :: map< std :: string, bool >boolRecord;
     std :: map< std :: string, std :: string >stringRecord;
     std :: map< std :: string, FloatArray >floatArrayRecord;
+    std :: map< std :: string, Coordinates >coordinatesRecord;
     std :: map< std :: string, IntArray >intArrayRecord;
     std :: map< std :: string, FloatMatrix >matrixRecord;
     std :: map< std :: string, std :: vector< std :: string > >stringListRecord;
@@ -101,6 +102,7 @@ public:
     void giveField(bool &answer, InputFieldType id) override;
     void giveField(std :: string &answer, InputFieldType id) override;
     void giveField(FloatArray &answer, InputFieldType id) override;
+    void giveField(Coordinates &answer, InputFieldType id) override;
     void giveField(IntArray &answer, InputFieldType id) override;
     void giveField(FloatMatrix &answer, InputFieldType id) override;
     void giveField(std :: vector< std :: string > &answer, InputFieldType id) override;
@@ -122,6 +124,7 @@ public:
     void setField(bool item, InputFieldType id);
     void setField(std :: string item, InputFieldType id);
     void setField(FloatArray item, InputFieldType id);
+    void setField(Coordinates item, InputFieldType id);
     void setField(IntArray item, InputFieldType id);
     void setField(FloatMatrix item, InputFieldType id);
     void setField(std :: vector< std :: string > item, InputFieldType id);

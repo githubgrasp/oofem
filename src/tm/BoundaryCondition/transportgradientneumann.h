@@ -35,6 +35,7 @@
 #pragma once
 
 //#include "prescribedgradienthomogenization.h"
+#include "oofemcfg.h"
 #include "activebc.h"
 #include "floatarray.h"
 
@@ -99,7 +100,7 @@ protected:
     std :: unique_ptr< Node > mpFluxHom;
     IntArray mFluxIds;
     FloatArray mGradient;
-    FloatArray mCenterCoord;
+    Coordinates mCenterCoord;
     bool dispControl;
 
     IntArray surfSets;

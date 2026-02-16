@@ -97,7 +97,7 @@ public:
      */
     void addElement(int i, const char *name, const IntArray &nodes);
 
-    int evaluateAt(FloatArray &answer, const FloatArray &coords, ValueModeType mode, TimeStep *tStep) override;
+    int evaluateAt(FloatArray &answer, const Coordinates &coords, ValueModeType mode, TimeStep *tStep) override;
 
     /**
      * Evaluates the field at given DofManager. This potentially can be resolved quickly, as
@@ -123,7 +123,7 @@ public:
     /**
      * Obtain coordinates of a node
      */
-    const FloatArray &getNodeCoordinates(int i);
+    const Coordinates &getNodeCoordinates(int i);
 
     void saveContext(DataStream &stream) override;
     void restoreContext(DataStream &stream) override;

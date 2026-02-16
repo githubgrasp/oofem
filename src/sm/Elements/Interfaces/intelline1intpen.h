@@ -54,7 +54,7 @@ public:
     const char *giveInputRecordName() const override { return _IFT_IntElLine1IntPen_Name; }
     const char *giveClassName() const override { return "IntElLine1IntPen"; }
 
-    int computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords) override;
+    int computeGlobalCoordinates(Coordinates &answer, const FloatArray &lcoords) override;
 
 
     FloatArrayF<2> computeCovarBaseVectorAt(GaussPoint *gp) const override;

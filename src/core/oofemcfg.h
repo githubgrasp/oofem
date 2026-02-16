@@ -1,6 +1,9 @@
 #ifndef oofemcfg_h
 #define oofemcfg_h
 
+#include <cstddef>
+#include "floatarrayf.h"
+
 #ifdef _USE_SHARED
     #include "oofem_export.h"
 #else
@@ -20,4 +23,13 @@ OOFEM_EXPORT extern const char* MODULE_LIST;
 OOFEM_EXPORT extern const char* OOFEM_GIT_HASH;
 OOFEM_EXPORT extern const char* OOFEM_GIT_REPOURL;
 OOFEM_EXPORT extern const char* OOFEM_GIT_BRANCH;
+
+
+
+namespace oofem {
+template <std::size_t N> class FloatArrayF;
+/** Define a type alias for 3D coordinates */
+using Coordinates = FloatArrayF<3>;
+} // end namespace oofem
+
 #endif /* oofemcfg.h */

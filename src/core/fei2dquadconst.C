@@ -57,9 +57,9 @@ FEI2dQuadConst :: evaldNdx(FloatMatrix &answer, const FloatArray &lcoords, const
 }
 
 void
-FEI2dQuadConst :: local2global(FloatArray &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
+FEI2dQuadConst :: local2global(Coordinates &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
 {
-    answer.resize(3);
+    //answer.resize(3);
 
     answer.at(1) = 0.25 * ( cellgeo.giveVertexCoordinates(1).at(xind) +
                             cellgeo.giveVertexCoordinates(2).at(xind) +
@@ -110,7 +110,7 @@ FEI2dQuadConst :: edgeEvaldNds(FloatArray &answer, int iedge,
 }
 
 void
-FEI2dQuadConst :: edgeLocal2global(FloatArray &answer, int iedge,
+FEI2dQuadConst :: edgeLocal2global(Coordinates &answer, int iedge,
                                    const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
 {
     OOFEM_ERROR("not implemented");

@@ -36,6 +36,7 @@
 #define spatiallocalizer_h
 
 #include "oofemenv.h"
+#include "oofemcfg.h"
 #include "interface.h"
 #include "logger.h"
 #include "error.h"
@@ -74,19 +75,19 @@ public:
      * @param coords Global coordinate.
      * @return Nonzero if given element contains given point.
      */
-    virtual int SpatialLocalizerI_containsPoint(const FloatArray &coords);
+    virtual int SpatialLocalizerI_containsPoint(const Coordinates &coords);
     /**
      * Creates a bounding box of the nodes and checks if it includes the given coordinate.
      * @param coords Global coordinate.
      * @return Nonzero if given element bounding box contains given point.
      */
-    int SpatialLocalizerI_BBoxContainsPoint(const FloatArray &coords);
+    int SpatialLocalizerI_BBoxContainsPoint(const Coordinates &coords);
     /**
      * Creates a bounding box of the nodes and checks if it includes the given coordinate.
      * @param bb0 Lower bounding box.
      * @param bb1 Upper bounding box.
      */
-    virtual void SpatialLocalizerI_giveBBox(FloatArray &bb0, FloatArray &bb1);
+    virtual void SpatialLocalizerI_giveBBox(Coordinates &bb0, Coordinates &bb1);
 
     /**
      * Gives the closest point on the element.
@@ -96,7 +97,7 @@ public:
      * @param gcoords Global coordinates.
      * @return Distance between answer and gcoords. Zero if gcoords is within the element, negative if point could not be found.
      */
-    virtual double SpatialLocalizerI_giveClosestPoint(FloatArray &lcoords, FloatArray &closest, const FloatArray &gcoords);
+    virtual double SpatialLocalizerI_giveClosestPoint(FloatArray &lcoords, Coordinates &closest, const Coordinates &gcoords);
     //@}
 };
 
@@ -133,14 +134,14 @@ public:
      * @param regionList Only elements within given regions are considered, if NULL all regions are considered.
      * @return The element belonging to associated domain, containing given point, NULL otherwise.
      */
-    virtual Element *giveElementContainingPoint(const FloatArray &coords, const IntArray *regionList=nullptr) = 0;
+    virtual Element *giveElementContainingPoint(const Coordinates &coords, const IntArray *regionList=nullptr) = 0;
     /**
      * Returns the element, containing given point and belonging to one of the region in region list.
      * @param coords Global problem coordinates of point of interest.
      * @param element set Only elements within given set are considered.
      * @return The element belonging to associated domain, containing given point, NULL otherwise.
      */
-    virtual Element *giveElementContainingPoint(const FloatArray &coords, const Set &eset) = 0;
+    virtual Element *giveElementContainingPoint(const Coordinates &coords, const Set &eset) = 0;
     /**
      * Returns the element closest to a given point.
      * @param[out] lcoords Local coordinates in element found.
@@ -149,8 +150,8 @@ public:
      * @param region Only elements within given region are considered, if 0 all regions are considered.
      * @return The element belonging to associated domain, close to given point, NULL otherwise.
      */
-    virtual Element *giveElementClosestToPoint(FloatArray &lcoords, FloatArray &closest,
-                                               const FloatArray &coords, int region = 0) = 0;
+    virtual Element *giveElementClosestToPoint(FloatArray &lcoords, Coordinates &closest,
+                                               const Coordinates &coords, int region = 0) = 0;
     /**
      * Returns the integration point in associated domain, which is closest
      * to given point. Since IP holds the information about its element,
@@ -163,7 +164,7 @@ public:
      * are taken into account), NULL otherwise
      * @note: regions are deprecated, use sets instaed
      */
-    virtual GaussPoint *giveClosestIP(const FloatArray &coords, int region, bool iCohesiveZoneGP = false) = 0;
+    virtual GaussPoint *giveClosestIP(const Coordinates &coords, int region, bool iCohesiveZoneGP = false) = 0;
     /**
      * Returns the integration point in associated domain, which is closest
      * to given point. Since IP holds the information about its element,
@@ -174,7 +175,7 @@ public:
      * @return The IP belonging to associated domain (only those provided by elements in default integration rule
      * are taken into account), NULL otherwise
      */
-    virtual GaussPoint *giveClosestIP(const FloatArray &coords, Set &elemSet, bool iCohesiveZoneGP = false) = 0;
+    virtual GaussPoint *giveClosestIP(const Coordinates &coords, Set &elemSet, bool iCohesiveZoneGP = false) = 0;
 
     /**
      * Returns container (set) of all domain elements having integration point within given box.
@@ -182,7 +183,7 @@ public:
      * @param coords Center of box of interest.
      * @param radius Radius of bounding sphere.
      */
-    virtual void giveAllElementsWithIpWithinBox(elementContainerType &elemSet, const FloatArray &coords,
+    virtual void giveAllElementsWithIpWithinBox(elementContainerType &elemSet, const Coordinates &coords,
                                                  const double radius) = 0;
  
     /**
@@ -191,7 +192,7 @@ public:
      * @param coords Center of box of interest.
      * @param radius Radius of bounding sphere.
      */
-    virtual void giveAllElementsWithIpWithinBox_EvenIfEmpty(elementContainerType &elemSet, const FloatArray &coords,
+    virtual void giveAllElementsWithIpWithinBox_EvenIfEmpty(elementContainerType &elemSet, const Coordinates &coords,
                                                  const double radius) = 0;
     /**
      * Returns container (set) of all domain elements having node within given box.
@@ -199,7 +200,7 @@ public:
      * @param coords Center of box of interest.
      * @param radius Radius of bounding sphere.
      */
-    virtual void giveAllElementsWithNodesWithinBox(elementContainerType &elemSet, const FloatArray &coords,
+    virtual void giveAllElementsWithNodesWithinBox(elementContainerType &elemSet, const Coordinates &coords,
                                                    const double radius);
 
     /**
@@ -208,14 +209,14 @@ public:
      * @param coords Center of box of interest.
      * @param radius Radius of bounding sphere.
      */
-    virtual void giveAllNodesWithinBox(nodeContainerType &nodeList, const FloatArray &coords, const double radius) = 0;
+    virtual void giveAllNodesWithinBox(nodeContainerType &nodeList, const Coordinates &coords, const double radius) = 0;
 
     /**
      * Returns the node closest to the given coordinate.
      * @param coords Global coordinate.
      * @return Closest node, or NULL or none exists.
      */
-    virtual Node *giveNodeClosestToPoint(const FloatArray &coords, double maxDist) = 0;
+    virtual Node *giveNodeClosestToPoint(const Coordinates &coords, double maxDist) = 0;
 
     /**
      * Initialize receiver data structure if not done previously

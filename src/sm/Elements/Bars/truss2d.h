@@ -76,7 +76,7 @@ public:
     { computeLumpedMassMatrix(answer, tStep); }
     int giveLocalCoordinateSystem(FloatMatrix &answer) override;
 
-    int computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords) override;
+    int computeGlobalCoordinates(Coordinates &answer, const FloatArray &lcoords) override;
 
     int computeNumberOfDofs() override { return 4; }
     void giveDofManDofIDMask(int inode, IntArray &answer) const override;

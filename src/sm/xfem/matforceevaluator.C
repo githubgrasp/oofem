@@ -68,7 +68,8 @@ void MaterialForceEvaluator::computeMaterialForce(FloatArray &oMatForce, Domain 
     localizer->giveAllElementsWithNodesWithinBox(elList, iTipInfo.mGlobalCoord, iRadius);
 
     if ( elList.isEmpty() ) {
-        FloatArray lcoords, closest;
+        FloatArray lcoords;
+        Coordinates closest;
         Element *closestEl = localizer->giveElementClosestToPoint(lcoords, closest, iTipInfo.mGlobalCoord);
 
         if ( closestEl != nullptr ) {

@@ -130,7 +130,7 @@ std::vector<std::unique_ptr<EnrichmentItem>> NCPrincipalStrain::nucleateEnrichme
 
 
 								// Create geometry
-								FloatArray pc = Vec2(gp->giveGlobalCoordinates()(0), gp->giveGlobalCoordinates()(1));
+								FloatArray pc = Vec2(gp->giveGlobalCoordinates()[0], gp->giveGlobalCoordinates()[1]);
 		//						printf("Global coord: "); pc.printYourself();
 
 

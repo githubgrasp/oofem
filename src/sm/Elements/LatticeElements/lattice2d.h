@@ -79,7 +79,7 @@ public:
      * function as it returns the global coordinates of the gausspoint
      * independent to the value of the lcoords.
      */
-    int computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords) override;
+    int computeGlobalCoordinates(Coordinates &answer, const FloatArray &lcoords) override;
 
     double giveLength() override;
 

@@ -141,7 +141,7 @@ bool Tr2Shell7XFEM :: updateIntegrationRuleMultiCrack()
     int numPointsThickness = this->layeredCS->giveNumIntegrationPointsInLayer();
     double totalThickness  = this->layeredCS->computeIntegralThick();
     int numEI = this->xMan->giveNumberOfEnrichmentItems();
-    std :: vector< std :: vector< FloatArray > >pointPartitions;
+    std :: vector< std :: vector< Coordinates > >pointPartitions;
 
     integrationRulesArray.resize(numberOfLayers);
     this->crackSubdivisions.resize(numberOfLayers);     // Store the subdivisions for each layer (empty otherwise)

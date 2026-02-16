@@ -281,7 +281,7 @@ BondLink3dBoundary :: computeGeometryProperties()
     this->rigid.beProductOf(localCoordinateSystem, rigidGlobal);
 
 
-    this->globalCentroid.resize(3);
+    //this->globalCentroid.resize(3);
     for ( int i = 1; i <= 3; i++ ) {
         this->globalCentroid.at(i) = nodeB->giveCoordinate(i);
         ;

@@ -109,12 +109,13 @@ EIPrimaryUnknownMapper :: mapAndUpdate(FloatArray &answer, ValueModeType mode,
 
 int
 EIPrimaryUnknownMapper :: evaluateAt(FloatArray &answer, IntArray &dofMask, ValueModeType mode,
-                                     Domain *oldd, const FloatArray &coords, IntArray &regList, TimeStep *tStep)
+                                     Domain *oldd, const Coordinates &coords, IntArray &regList, TimeStep *tStep)
 {
     Element *oelem;
     SpatialLocalizer *sl = oldd->giveSpatialLocalizer();
 
-    FloatArray lcoords, closest;
+    FloatArray lcoords;
+    Coordinates closest;
     if ( regList.isEmpty() ) {
         oelem = sl->giveElementClosestToPoint(lcoords, closest, coords, 0);
     } else {

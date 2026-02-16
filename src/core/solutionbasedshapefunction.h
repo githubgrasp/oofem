@@ -35,6 +35,7 @@
 #ifndef SOLUTIONBASEDSHAPEFUNCTION_H_
 #define SOLUTIONBASEDSHAPEFUNCTION_H_
 
+#include "oofemcfg.h"
 #include "activebc.h"
 #include "dofiditem.h"
 #include "floatarray.h"
@@ -127,14 +128,13 @@ private:
      * @param dofID         Specifies DofIDs to evaluate
      * @param myEngngModel  EngngModel
      */
-    void giveValueAtPoint(FloatArray &answer, const FloatArray &coords, IntArray &dofID, EngngModel &myEngngModel);
+    void giveValueAtPoint(FloatArray &answer, const Coordinates &coords, IntArray &dofID, EngngModel &myEngngModel);
 
-    void giveCorrectedValueAtPoint(FloatArray &answer, const FloatArray &coords, IntArray &dofID, EngngModel &myEngngModel);
+    void giveCorrectedValueAtPoint(FloatArray &answer, const Coordinates &coords, IntArray &dofID, EngngModel &myEngngModel);
 
     void splitBoundaryNodeIDs(modeStruct &mode, Element &e, IntArray &boundary, IntArray &pList, IntArray &mList, IntArray &zList, FloatMatrix &nodeValues);
 
-    void computeBaseFunctionValueAt(FloatArray &answer, const FloatArray &coords, IntArray &dofIDs, EngngModel &myEngngModel);
-
+    void computeBaseFunctionValueAt(FloatArray &answer, const Coordinates &coords, IntArray &dofIDs, EngngModel &myEngngModel);
     void initializeSurfaceData(modeStruct &mode);
 
     void copyDofManagersToSurfaceData(modeStruct &mode, IntArray nodeList, bool isPlus, bool isMinus, bool isZero);

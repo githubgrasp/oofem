@@ -39,6 +39,7 @@
 #include <cstdlib>
 
 #include "oofemenv.h"
+#include "oofemcfg.h"
 #include "floatarray.h"
 
 #ifdef __OOFEG
@@ -60,14 +61,16 @@ namespace oofem {
 class OOFEM_EXPORT Vertex
 {
 public:
-    FloatArray coords;
-    Vertex(double x = 0, double y = 0) : coords(2) {
-        coords(0) = x;
-        coords(1) = y;
+    Coordinates coords;
+    Vertex(double x = 0, double y = 0)  {
+        coords[0] = x;
+        coords[1] = y;
+        coords[2] = 0;
     }
     Vertex(double c [ 2 ]) : coords(2) {
-        coords(0) = c [ 0 ];
-        coords(1) = c [ 1 ];
+        coords[0] = c [ 0 ];
+        coords[1] = c [ 1 ];
+        coords[2] = 0;
     }
     Vertex(const Vertex & src) : coords(src.coords) { }
     Vertex &operator = ( const Vertex & src ) {
@@ -75,10 +78,11 @@ public:
         return * this;
     }
     void setCoords(double x, double y) {
-        coords(0) = x;
-        coords(1) = y;
+        coords[0] = x;
+        coords[1] = y;
+        coords[2] = 0;
     }
-    const FloatArray *getCoords() const { return & coords; }
+    const Coordinates*getCoords() const { return & coords; }
 };
 
 

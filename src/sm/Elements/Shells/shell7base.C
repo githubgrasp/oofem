@@ -156,7 +156,7 @@ Shell7Base :: giveNumberOfDofs()
 
 
 int
-Shell7Base :: computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords)
+Shell7Base :: computeGlobalCoordinates(Coordinates &answer, const FloatArray &lcoords)
 {
     // should it return coord in reference or updated config? -- Let it be initial so small def code remains the same
     //@todo move VTK method into this
@@ -168,7 +168,7 @@ Shell7Base :: computeGlobalCoordinates(FloatArray &answer, const FloatArray &lco
     FloatArray N;
     this->fei->evalN( N, lcoords, FEIElementGeometryWrapper(this) );
 
-    answer.clear();
+    answer.zero();
     for ( int i = 1; i <= this->giveNumberOfDofManagers(); i++ ) {
         const auto &xbar = this->giveNode(i)->giveCoordinates();
         const auto &M = this->giveInitialNodeDirector(i);
@@ -180,7 +180,7 @@ Shell7Base :: computeGlobalCoordinates(FloatArray &answer, const FloatArray &lco
 
 
 int
-Shell7Base :: computeGlobalCoordinatesOnEdge(FloatArray &answer, const FloatArray &lcoords, const int iEdge)
+Shell7Base :: computeGlobalCoordinatesOnEdge(Coordinates &answer, const FloatArray &lcoords, const int iEdge)
 {
     // should it return coord in reference or updated config? -- Let it be initial so small def code remains the same
 //     double zeta = giveGlobalZcoordInLayer(lcoords.at(3), layer);
@@ -3062,14 +3062,14 @@ Shell7Base :: computeBmatrixForStressRecAt(FloatArray &lcoords, FloatMatrix &ans
 
 
 
-std::vector<FloatArray> 
+std::vector<Coordinates> 
 Shell7Base :: giveFictiousNodeCoordsForExport(int layer)
 {
     // compute fictious node coords
     FloatMatrix localNodeCoords;
     this->interpolationForExport.giveLocalNodeCoords(localNodeCoords, EGT_wedge_2);
     
-    std::vector<FloatArray> nodes(localNodeCoords.giveNumberOfColumns());
+    std::vector<Coordinates> nodes(localNodeCoords.giveNumberOfColumns());
     for ( int i = 1; i <= localNodeCoords.giveNumberOfColumns(); i++ ){
         FloatArray localCoords(3);
         localCoords.beColumnOf(localNodeCoords,i);
@@ -3080,14 +3080,14 @@ Shell7Base :: giveFictiousNodeCoordsForExport(int layer)
 }
 
 
-std::vector<FloatArray>
+std::vector<Coordinates>
 Shell7Base :: giveFictiousCZNodeCoordsForExport(int interface)
 {
     // compute fictious node coords
     FloatMatrix localNodeCoords;
     this->interpolationForCZExport.giveLocalNodeCoords(localNodeCoords, EGT_triangle_2);
     
-    std::vector<FloatArray> nodes(localNodeCoords.giveNumberOfColumns());
+    std::vector<Coordinates> nodes(localNodeCoords.giveNumberOfColumns());
     for ( int i = 1; i <= localNodeCoords.giveNumberOfColumns(); i++ ){
         FloatArray localCoords(3);
         localCoords.beColumnOf(localNodeCoords,i);
@@ -3098,14 +3098,14 @@ Shell7Base :: giveFictiousCZNodeCoordsForExport(int interface)
     return nodes;
 }
 
-std::vector<FloatArray>
+std::vector<Coordinates>
 Shell7Base :: giveFictiousUpdatedNodeCoordsForExport(int layer, TimeStep *tStep)
 {
     // compute fictious node coords
 
     FloatMatrix localNodeCoords;
     this->interpolationForExport.giveLocalNodeCoords(localNodeCoords, EGT_wedge_2);
-    std::vector<FloatArray> nodes(localNodeCoords.giveNumberOfColumns());
+    std::vector<Coordinates> nodes(localNodeCoords.giveNumberOfColumns());
     for ( int i = 1; i <= localNodeCoords.giveNumberOfColumns(); i++ ){
         FloatArray localCoords(3);
         localCoords.beColumnOf(localNodeCoords,i);

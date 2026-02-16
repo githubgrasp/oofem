@@ -59,7 +59,7 @@ double FEInterpolation3d :: boundaryEdgeGiveTransformationJacobian(int boundary,
     return this->edgeGiveTransformationJacobian(boundary, lcoords, cellgeo);
 }
 
-void FEInterpolation3d :: boundaryEdgeLocal2Global(FloatArray &answer, int boundary, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const 
+void FEInterpolation3d :: boundaryEdgeLocal2Global(Coordinates &answer, int boundary, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const 
 {
     this->edgeLocal2global(answer, boundary, lcoords, cellgeo);
 }
@@ -84,7 +84,7 @@ double FEInterpolation3d :: boundaryGiveTransformationJacobian(int boundary, con
     return this->surfaceGiveTransformationJacobian(boundary, lcoords, cellgeo);
 }
 
-void FEInterpolation3d :: boundaryLocal2Global(FloatArray &answer, int boundary, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const 
+void FEInterpolation3d :: boundaryLocal2Global(Coordinates &answer, int boundary, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const 
 {
     return this->surfaceLocal2global(answer, boundary, lcoords, cellgeo);
 }

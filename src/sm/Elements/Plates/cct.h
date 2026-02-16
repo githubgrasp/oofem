@@ -122,7 +122,7 @@ public:
 
     Interface *giveInterface(InterfaceType it) override;
 
-    bool computeLocalCoordinates(FloatArray &answer, const FloatArray &gcoords) override;
+    bool computeLocalCoordinates(FloatArray &answer, const Coordinates &gcoords) override;
     int giveIPValue(FloatArray &answer, GaussPoint *gp, InternalStateType type, TimeStep *tStep) override;
 
     void NodalAveragingRecoveryMI_computeNodalValue(FloatArray &answer, int node,

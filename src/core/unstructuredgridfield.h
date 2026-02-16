@@ -112,7 +112,7 @@ public:
                 return this->cell->giveNumberOfVertices();
             }
 
-            const FloatArray giveVertexCoordinates(int i) const override
+            const Coordinates giveVertexCoordinates(int i) const override
             {
                 return ( ( cell->getVertex(i) )->getCoordinates() );
             }
@@ -170,7 +170,7 @@ public:
             bb.init(bb0, size, mask);
         }
 
-        double giveClosestPoint(FloatArray &lcoords, FloatArray &closest, const FloatArray &gcoords) {
+        double giveClosestPoint(FloatArray &lcoords, Coordinates &closest, const Coordinates &gcoords) {
             FEInterpolation *interp = this->getInterpolation();
 
             if ( !interp->global2local(lcoords, gcoords, FEICellGeometryWrapper(this) ) ) { // Outside element
@@ -349,7 +349,7 @@ public:
         this->timeStamp++;
     }
 
-    int evaluateAt(FloatArray &answer, const FloatArray &coords,
+    int evaluateAt(FloatArray &answer, const Coordinates &coords,
                    ValueModeType mode, TimeStep *tStep) override {
         std::list< Cell >elist;
         if ( ( mode == VM_Total ) || ( mode == VM_TotalIntrinsic ) ) {

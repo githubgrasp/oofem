@@ -164,7 +164,7 @@ ContactSearchAlgorithm_Surface2FESurface_2d :: updateContactPairs(TimeStep *tSte
 	     } else {*/         
 	auto [inElement,localCoords, newGap,normal, t1] = this->masterContactSurface->findContactPointInElement_2d(slavePoint, masterContactElement, tStep);
 	if(inElement) {
-	  FloatArray globalCoords, nodeCoords;
+	  Coordinates globalCoords;//, nodeCoords;
 	  //
 	  masterContactElement->giveInterpolation()->local2global( globalCoords, localCoords, FEIElementDeformedGeometryWrapper(masterContactElement, tStep) );
 	  //contact when gap is negative!!!

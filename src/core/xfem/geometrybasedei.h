@@ -74,27 +74,26 @@ public:
 
     void evaluateEnrFuncInNode(std :: vector< double > &oEnrFunc, const Node &iNode) const override;
 
-    void evaluateEnrFuncAt(std :: vector< double > &oEnrFunc, const FloatArray &iGlobalCoord, const FloatArray &iLocalCoord, int iNodeInd, const Element &iEl) const override;
-    void evaluateEnrFuncAt(std :: vector< double > &oEnrFunc, const FloatArray &iGlobalCoord, const FloatArray &iLocalCoord, int iNodeInd, const Element &iEl, const FloatArray &iN, const IntArray &iElNodes) const override;
+    void evaluateEnrFuncAt(std :: vector< double > &oEnrFunc, const Coordinates &iGlobalCoord, const FloatArray &iLocalCoord, int iNodeInd, const Element &iEl) const override;
+    void evaluateEnrFuncAt(std :: vector< double > &oEnrFunc, const Coordinates &iGlobalCoord, const FloatArray &iLocalCoord, int iNodeInd, const Element &iEl, const FloatArray &iN, const IntArray &iElNodes) const override;
 
-    void evaluateEnrFuncDerivAt(std :: vector< FloatArray > &oEnrFuncDeriv, const FloatArray &iGlobalCoord, const FloatArray &iLocalCoord, int iNodeInd, const Element &iEl) const override;
-    void evaluateEnrFuncDerivAt(std :: vector< FloatArray > &oEnrFuncDeriv, const FloatArray &iGlobalCoord, const FloatArray &iLocalCoord, int iNodeInd, const Element &iEl, const FloatArray &iN, const FloatMatrix &idNdX, const IntArray &iElNodes) const override;
-
+    void evaluateEnrFuncDerivAt(std :: vector< FloatArray > &oEnrFuncDeriv, const Coordinates &iGlobalCoord, const FloatArray &iLocalCoord, int iNodeInd, const Element &iEl) const override;
+    void evaluateEnrFuncDerivAt(std :: vector< FloatArray > &oEnrFuncDeriv, const Coordinates &iGlobalCoord, const FloatArray &iLocalCoord, int iNodeInd, const Element &iEl, const FloatArray &iN, const FloatMatrix &idNdX, const IntArray &iElNodes) const override;
     // TODO: Consider moving this function to a separate Cohesive Zone Interface /ES
     void evaluateEnrFuncJumps(std :: vector< double > &oEnrFuncJumps, int iNodeInd, GaussPoint &iGP, bool iGPLivesOnCurrentCrack) const;
 
 
-    virtual void computeIntersectionPoints(std :: vector< FloatArray > &oIntersectionPoints, std :: vector< int > &oIntersectedEdgeInd, Element *element, std :: vector< double > &oMinDistArcPos) const;
-    virtual void computeIntersectionPoints(std :: vector< FloatArray > &oIntersectionPoints, std :: vector< int > &oIntersectedEdgeInd, Element *element, const Triangle &iTri, std :: vector< double > &oMinDistArcPos) const;
+    virtual void computeIntersectionPoints(std :: vector< Coordinates > &oIntersectionPoints, std :: vector< int > &oIntersectedEdgeInd, Element *element, std :: vector< double > &oMinDistArcPos) const;
+    virtual void computeIntersectionPoints(std :: vector< Coordinates > &oIntersectionPoints, std :: vector< int > &oIntersectedEdgeInd, Element *element, const Triangle &iTri, std :: vector< double > &oMinDistArcPos) const;
 
     void writeVtkDebug() const override;
 
-    void giveSubPolygon(std :: vector< FloatArray > &oPoints, const double &iXiStart, const double &iXiEnd) const;
+    void giveSubPolygon(std :: vector< Coordinates > &oPoints, const double &iXiStart, const double &iXiEnd) const;
 
     void propagateFronts(bool &oFrontsHavePropagated) override;
     bool giveElementTipCoord(FloatArray &oCoord, double &oArcPos, Element &iEl, const FloatArray &iElCenter) const override;
 
-    void giveBoundingSphere(FloatArray &oCenter, double &oRadius) override;
+    void giveBoundingSphere(Coordinates &oCenter, double &oRadius) override;
 
     BasicGeometry *giveGeometry() { return mpBasicGeometry.get(); }
     void setGeometry(std :: unique_ptr< BasicGeometry > &&ipBasicGeometry) {mpBasicGeometry = std::move(ipBasicGeometry);}

@@ -153,7 +153,7 @@ void qcNode :: postInitializeAsHangingNode()
 
     // First check element and interpolation
     if ( masterElement == -1 ) { // Then we find it by taking the closest (probably containing element)
-        FloatArray closest;
+        Coordinates closest;
         SpatialLocalizer *sp = this->domain->giveSpatialLocalizer();
         sp->init();
         // Closest point or containing point? It should be contained, but with numerical errors it might be slightly outside

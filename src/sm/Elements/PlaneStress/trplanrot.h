@@ -72,7 +72,7 @@ protected:
     void computeStressVector(FloatArray &answer, const FloatArray &strain, GaussPoint *gp, TimeStep *tStep) override;
 
     double giveArea() override;
-    virtual void giveNodeCoordinates(FloatArray &x, FloatArray &y);
+    virtual void giveNodeCoordinates(Coordinates &x, Coordinates &y);
 
     void computeBodyLoadVectorAt(FloatArray &answer, Load *forLoad, TimeStep *tStep, ValueModeType mode) override;
 

@@ -298,13 +298,13 @@ LatticeLink3d :: postInitialize()
 }
 
 int
-LatticeLink3d :: computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords)
+LatticeLink3d :: computeGlobalCoordinates(Coordinates &answer, const FloatArray &lcoords)
 {
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
     }
 
-    answer.resize(3);
+    //answer.resize(3);
     answer = this->globalCentroid;
 
     return 1;

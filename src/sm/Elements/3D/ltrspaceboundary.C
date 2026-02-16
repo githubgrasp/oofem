@@ -99,7 +99,7 @@ LTRSpaceBoundary :: giveInterpolation() const
 }
 
 int
-LTRSpaceBoundary :: computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords)
+LTRSpaceBoundary :: computeGlobalCoordinates(Coordinates &answer, const FloatArray &lcoords)
 {
     FEInterpolation *fei = this->giveInterpolation();
     FloatArray n;
@@ -107,7 +107,7 @@ LTRSpaceBoundary :: computeGlobalCoordinates(FloatArray &answer, const FloatArra
 
     fei->evalN(n, lcoords, cellgeo); //this interpolation doesn't use cell geometry to compute shape functions, so it's ok to have it here
 
-    answer.clear();
+    answer.zero();
     for ( int i = 1; i <= 4; i++ ) {
         if ( location.at(i) != 0 ) { //recalculate vertex coordinates
             IntArray switches;

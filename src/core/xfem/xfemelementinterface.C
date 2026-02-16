@@ -384,7 +384,7 @@ int XfemElementInterface :: XfemElementInterface_giveNumDofManEnrichments(const 
     return numEnrNode;
 }
 
-void XfemElementInterface :: XfemElementInterface_partitionElement(std :: vector< Triangle > &oTriangles, const std :: vector< FloatArray > &iPoints)
+void XfemElementInterface :: XfemElementInterface_partitionElement(std :: vector< Triangle > &oTriangles, const std :: vector< Coordinates > &iPoints)
 {
     Delaunay dl;
     dl.triangulate(iPoints, oTriangles);
@@ -402,7 +402,7 @@ bool XfemElementInterface :: XfemElementInterface_updateIntegrationRule()
 
         bool firstIntersection = true;
 
-        std :: vector< std :: vector< FloatArray > >pointPartitions;
+        std :: vector< std :: vector< Coordinates > >pointPartitions;
         std :: vector< Triangle >allTri;
 
         std :: vector< int >enrichingEIs;
@@ -436,7 +436,7 @@ bool XfemElementInterface :: XfemElementInterface_updateIntegrationRule()
                 std :: vector< Triangle >allTriCopy;
                 for ( size_t triIndex = 0; triIndex < allTri.size(); triIndex++ ) {
                     // Call alternative version of XfemElementInterface_prepareNodesForDelaunay
-                    std :: vector< std :: vector< FloatArray > >pointPartitionsTri;
+                    std :: vector< std :: vector< Coordinates > >pointPartitionsTri;
                     double startXi, endXi;
                     bool intersection = false;
                     XfemElementInterface_prepareNodesForDelaunay(pointPartitionsTri, startXi, endXi, allTri [ triIndex ], eiIndex, intersection);
@@ -486,19 +486,19 @@ bool XfemElementInterface :: XfemElementInterface_updateIntegrationRule()
     return partitionSucceeded;
 }
 
-void XfemElementInterface :: XfemElementInterface_prepareNodesForDelaunay(std :: vector< std :: vector< FloatArray > > &oPointPartitions, double &oCrackStartXi, double &oCrackEndXi, int iEnrItemIndex, bool &oIntersection)
+void XfemElementInterface :: XfemElementInterface_prepareNodesForDelaunay(std :: vector< std :: vector< Coordinates > > &oPointPartitions, double &oCrackStartXi, double &oCrackEndXi, int iEnrItemIndex, bool &oIntersection)
 {
     int dim = element->giveDofManager(1)->giveCoordinates().giveSize();
 
-    FloatArray elCenter( element->giveDofManager(1)->giveCoordinates().giveSize() );
+    Coordinates elCenter;
     elCenter.zero();
-    std :: vector< const FloatArray * >nodeCoord;
+    std :: vector< const Coordinates * >nodeCoord;
     for ( int i = 1; i <= this->element->giveNumberOfDofManagers(); i++ ) {
         nodeCoord.push_back( &element->giveDofManager(i)->giveCoordinates() );
-        elCenter.add( element->giveDofManager(i)->giveCoordinates() );
+        elCenter += element->giveDofManager(i)->giveCoordinates();
     }
-    elCenter.times( 1.0 / double( element->giveNumberOfDofManagers() ) );
-    elCenter.resizeWithValues(3);
+    elCenter *= ( 1.0 / double( element->giveNumberOfDofManagers() ) );
+    //elCenter.resizeWithValues(3);
 
     XfemManager *xMan = this->element->giveDomain()->giveXfemManager();
     GeometryBasedEI *ei = dynamic_cast< GeometryBasedEI * >( xMan->giveEnrichmentItem(iEnrItemIndex) );
@@ -508,15 +508,15 @@ void XfemElementInterface :: XfemElementInterface_prepareNodesForDelaunay(std ::
         return;
     }
 
-    std :: vector< FloatArray >intersecPoints;
+    std :: vector< Coordinates >intersecPoints;
     std :: vector< int >intersecEdgeInd;
 
     std :: vector< double >minDistArcPos;
     ei->computeIntersectionPoints(intersecPoints, intersecEdgeInd, element, minDistArcPos);
 
-    for ( size_t i = 0; i < intersecPoints.size(); i++ ) {
-        intersecPoints [ i ].resizeWithValues(dim);
-    }
+    //for ( size_t i = 0; i < intersecPoints.size(); i++ ) {
+    //    intersecPoints [ i ].resizeWithValues(dim);
+    //}
 
 
     if ( intersecPoints.size() == 2 ) {
@@ -565,19 +565,19 @@ void XfemElementInterface :: XfemElementInterface_prepareNodesForDelaunay(std ::
 					const auto &coordE = element->giveDofManager(neLoc)->giveCoordinates();
 
 					if ( i == intersecEdgeInd [ 0 ] ) {
-						oPointPartitions.push_back( std :: vector< FloatArray >() );
+						oPointPartitions.push_back( std :: vector< Coordinates >() );
 						oPointPartitions [ triPassed ].push_back(tipCoord);
 						oPointPartitions [ triPassed ].push_back(intersecPoints [ 0 ]);
 						oPointPartitions [ triPassed ].push_back(coordE);
 						triPassed++;
 
-						oPointPartitions.push_back( std :: vector< FloatArray >() );
+						oPointPartitions.push_back( std :: vector< Coordinates >() );
 						oPointPartitions [ triPassed ].push_back(tipCoord);
 						oPointPartitions [ triPassed ].push_back(coordS);
 						oPointPartitions [ triPassed ].push_back(intersecPoints [ 0 ]);
 						triPassed++;
 					} else {
-						oPointPartitions.push_back( std :: vector< FloatArray >() );
+						oPointPartitions.push_back( std :: vector< Coordinates >() );
 						oPointPartitions [ triPassed ].push_back(tipCoord);
 						oPointPartitions [ triPassed ].push_back(coordS);
 						oPointPartitions [ triPassed ].push_back(coordE);
@@ -603,19 +603,19 @@ void XfemElementInterface :: XfemElementInterface_prepareNodesForDelaunay(std ::
                         double dist_C_2 = distance_square(coordC, coordS);
 
 						if( dist_S_2 < dist_C_2 ) {
-							oPointPartitions.push_back( std :: vector< FloatArray >() );
+							oPointPartitions.push_back( std :: vector< Coordinates >() );
 							oPointPartitions [ triPassed ].push_back(intersecPoints [ 0 ]);
 							oPointPartitions [ triPassed ].push_back(tipCoord);
 							oPointPartitions [ triPassed ].push_back(coordS);
 							triPassed++;
 
-							oPointPartitions.push_back( std :: vector< FloatArray >() );
+							oPointPartitions.push_back( std :: vector< Coordinates >() );
 							oPointPartitions [ triPassed ].push_back(coordC);
 							oPointPartitions [ triPassed ].push_back(tipCoord);
 							oPointPartitions [ triPassed ].push_back(intersecPoints [ 0 ]);
 							triPassed++;
 
-							oPointPartitions.push_back( std :: vector< FloatArray >() );
+							oPointPartitions.push_back( std :: vector< Coordinates >() );
 							oPointPartitions [ triPassed ].push_back(coordE);
 							oPointPartitions [ triPassed ].push_back(tipCoord);
 							oPointPartitions [ triPassed ].push_back(coordC);
@@ -623,20 +623,20 @@ void XfemElementInterface :: XfemElementInterface_prepareNodesForDelaunay(std ::
 
 						} else {
 
-							oPointPartitions.push_back( std :: vector< FloatArray >() );
+							oPointPartitions.push_back( std :: vector< Coordinates >() );
 							oPointPartitions [ triPassed ].push_back(coordC);
 							oPointPartitions [ triPassed ].push_back(tipCoord);
 							oPointPartitions [ triPassed ].push_back(coordS);
 							triPassed++;
 
 
-							oPointPartitions.push_back( std :: vector< FloatArray >() );
+							oPointPartitions.push_back( std :: vector< Coordinates >() );
 							oPointPartitions [ triPassed ].push_back(intersecPoints [ 0 ]);
 							oPointPartitions [ triPassed ].push_back(tipCoord);
 							oPointPartitions [ triPassed ].push_back(coordC);
 							triPassed++;
 
-							oPointPartitions.push_back( std :: vector< FloatArray >() );
+							oPointPartitions.push_back( std :: vector< Coordinates >() );
 							oPointPartitions [ triPassed ].push_back(coordE);
 							oPointPartitions [ triPassed ].push_back(tipCoord);
 							oPointPartitions [ triPassed ].push_back(coordC);
@@ -646,13 +646,13 @@ void XfemElementInterface :: XfemElementInterface_prepareNodesForDelaunay(std ::
 
 
 					} else {
-						oPointPartitions.push_back( std :: vector< FloatArray >() );
+						oPointPartitions.push_back( std :: vector< Coordinates >() );
 						oPointPartitions [ triPassed ].push_back(tipCoord);
 						oPointPartitions [ triPassed ].push_back(coordS);
 						oPointPartitions [ triPassed ].push_back(coordC);
 						triPassed++;
 
-						oPointPartitions.push_back( std :: vector< FloatArray >() );
+						oPointPartitions.push_back( std :: vector< Coordinates >() );
 						oPointPartitions [ triPassed ].push_back(tipCoord);
 						oPointPartitions [ triPassed ].push_back(coordC);
 						oPointPartitions [ triPassed ].push_back(coordE);
@@ -708,19 +708,19 @@ void XfemElementInterface :: XfemElementInterface_prepareNodesForDelaunay(std ::
     oIntersection = false;
 }
 
-void XfemElementInterface :: XfemElementInterface_prepareNodesForDelaunay(std :: vector< std :: vector< FloatArray > > &oPointPartitions, double &oCrackStartXi, double &oCrackEndXi, const Triangle &iTri, int iEnrItemIndex, bool &oIntersection)
+void XfemElementInterface :: XfemElementInterface_prepareNodesForDelaunay(std :: vector< std :: vector< Coordinates > > &oPointPartitions, double &oCrackStartXi, double &oCrackEndXi, const Triangle &iTri, int iEnrItemIndex, bool &oIntersection)
 {
-    int dim = element->giveDofManager(1)->giveCoordinates().giveSize();
+    //int dim = element->giveDofManager(1)->giveCoordinates().giveSize();
 
-    FloatArray elCenter( iTri.giveVertex(1).giveSize() );
+    Coordinates elCenter;
     elCenter.zero();
-    std :: vector< const FloatArray * >nodeCoord;
+    std :: vector< const Coordinates * >nodeCoord;
     for ( int i = 1; i <= 3; i++ ) {
         nodeCoord.push_back( & iTri.giveVertex(i) );
-        elCenter.add( iTri.giveVertex(i) );
+        elCenter += iTri.giveVertex(i);
     }
-    elCenter.times(1.0 / 3.0);
-    elCenter.resizeWithValues(3);
+    elCenter *= (1.0 / 3.0);
+    //  elCenter.resizeWithValues(3);
 
 
     XfemManager *xMan = this->element->giveDomain()->giveXfemManager();
@@ -731,14 +731,14 @@ void XfemElementInterface :: XfemElementInterface_prepareNodesForDelaunay(std ::
         return;
     }
 
-    std :: vector< FloatArray >intersecPoints;
+    std :: vector< Coordinates >intersecPoints;
     std :: vector< int >intersecEdgeInd;
 
     std :: vector< double >minDistArcPos;
     ei->computeIntersectionPoints(intersecPoints, intersecEdgeInd, element, iTri, minDistArcPos);
-    for ( size_t i = 0; i < intersecPoints.size(); i++ ) {
-        intersecPoints [ i ].resizeWithValues(dim);
-    }
+    //for ( size_t i = 0; i < intersecPoints.size(); i++ ) {
+    //    intersecPoints [ i ].resizeWithValues(dim);
+    //}
 
     if ( intersecPoints.size() == 2 ) {
         // The element is completely cut in two.
@@ -830,9 +830,9 @@ void XfemElementInterface :: XfemElementInterface_prepareNodesForDelaunay(std ::
     oIntersection = false;
 }
 
-void XfemElementInterface :: putPointsInCorrectPartition(std :: vector< std :: vector< FloatArray > > &oPointPartitions,
-                                                         const std :: vector< FloatArray > &iIntersecPoints,
-                                                         const std :: vector< const FloatArray * > &iNodeCoord) const
+void XfemElementInterface :: putPointsInCorrectPartition(std :: vector< std :: vector< Coordinates > > &oPointPartitions,
+                                                         const std :: vector< Coordinates > &iIntersecPoints,
+                                                         const std :: vector< const Coordinates * > &iNodeCoord) const
 {
     for ( size_t i = 0; i < iIntersecPoints.size(); i++ ) {
         oPointPartitions [ 0 ].push_back(iIntersecPoints [ i ]);
@@ -858,7 +858,7 @@ void XfemElementInterface :: putPointsInCorrectPartition(std :: vector< std :: v
     }
 }
 
-void XfemElementInterface :: partitionEdgeSegment(int iBndIndex, std :: vector< Line > &oSegments, std :: vector< FloatArray > &oIntersectionPoints, const double &iTangDistPadding)
+void XfemElementInterface :: partitionEdgeSegment(int iBndIndex, std :: vector< Line > &oSegments, std :: vector< Coordinates > &oIntersectionPoints, const double &iTangDistPadding)
 {
     const double levelSetTol2 = 1.0e-12;
     //    const double gammaPadding = 0.001;

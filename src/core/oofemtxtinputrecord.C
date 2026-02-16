@@ -299,6 +299,23 @@ OOFEMTXTInputRecord :: giveField(FloatArray &answer, InputFieldType id)
 }
 
 void
+OOFEMTXTInputRecord :: giveField(Coordinates &answer, InputFieldType id)
+{
+    FloatArray arr(3);
+    this->giveField(arr, id);
+    int size = arr.size();
+    if (size > 3) {
+        throw BadFormatInputException(shared_from_this(), id, lineNumber);
+    } else {
+        answer[0] = size>0? arr[0] : 0.0;
+        answer[1] = size>1? arr[1] : 0.0;
+        answer[2] = size>2? arr[2] : 0.0;
+    }
+
+}
+
+
+void
 OOFEMTXTInputRecord :: giveField(FloatMatrix &answer, InputFieldType id)
 {
     traceField(id,"FloatMatrix");

@@ -103,13 +103,13 @@ InterfaceElement3dTrLin :: computeGaussPoints()
 
 
 int
-InterfaceElement3dTrLin :: computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords)
+InterfaceElement3dTrLin :: computeGlobalCoordinates(Coordinates &answer, const FloatArray &lcoords)
 {
     FloatArray n;
 
     this->interpolation.evalN( n, lcoords, FEIElementGeometryWrapper(this) );
 
-    answer.resize(3);
+    //answer.resize(3);
     answer.zero();
     for ( int i = 1; i <= 3; i++ ) {
         answer.at(1) += n.at(i) * this->giveNode(i)->giveCoordinate(1);
@@ -122,7 +122,7 @@ InterfaceElement3dTrLin :: computeGlobalCoordinates(FloatArray &answer, const Fl
 
 
 bool
-InterfaceElement3dTrLin :: computeLocalCoordinates(FloatArray &answer, const FloatArray &gcoords)
+InterfaceElement3dTrLin :: computeLocalCoordinates(FloatArray &answer, const Coordinates &gcoords)
 {
     OOFEM_ERROR("Not implemented");
     //return false;
@@ -136,11 +136,11 @@ InterfaceElement3dTrLin :: computeVolumeAround(GaussPoint *gp)
 {
     double determinant, weight, thickness, volume;
     // first compute local nodal coordinates in element plane
-    std::vector< FloatArray > lncp(3);
+    std::vector< Coordinates > lncp(3);
     FloatMatrix lcs(3, 3);
     this->computeLCS(lcs);
     for ( int i = 1; i <= 3; i++ ) {
-        lncp[ i - 1 ].beProductOf(lcs, this->giveNode(i)->giveCoordinates());
+        lncp[ i - 1 ] = lcs * this->giveNode(i)->giveCoordinates(); //.beProductOf(lcs, this->giveNode(i)->giveCoordinates());
     }
 
     determinant = fabs( this->interpolation.giveTransformationJacobian( gp->giveNaturalCoordinates(), FEIVertexListGeometryWrapper(lncp, this->giveGeometryType()) ) );

@@ -88,7 +88,7 @@ TrPlaneStrRot :: computeBmatrixAt(GaussPoint *gp, FloatMatrix &answer, int li, i
     // integration of the fourth strain component.
     
     // get node coordinates
-    FloatArray x(3), y(3);
+    Coordinates x, y;
     this->giveNodeCoordinates(x, y);
 
     FloatArray b(3), c(3);
@@ -246,7 +246,7 @@ TrPlaneStrRot :: computeNmatrixAt(const FloatArray &iLocCoord, FloatMatrix &answ
 // evaluated at gp.
 {
     // get node coordinates
-    FloatArray x(3), y(3);
+    Coordinates x, y;
     this->giveNodeCoordinates(x, y);
 
     //
@@ -312,7 +312,7 @@ TrPlaneStrRot :: giveArea()
     }
 
     // get node coordinates
-    FloatArray x(3), y(3);
+    Coordinates x, y;
     this->giveNodeCoordinates(x, y);
 
     //
@@ -331,7 +331,7 @@ TrPlaneStrRot :: giveArea()
 
 
 void
-TrPlaneStrRot :: giveNodeCoordinates(FloatArray &x, FloatArray &y)
+TrPlaneStrRot :: giveNodeCoordinates(Coordinates &x, Coordinates &y)
 {
     const auto &nc1 = this->giveNode(1)->giveCoordinates();
     const auto &nc2 = this->giveNode(2)->giveCoordinates();
@@ -358,7 +358,7 @@ TrPlaneStrRot :: GivePitch()
 // Returns angles between each side and global x-axis
 {
     // get node coordinates
-    FloatArray x(3), y(3);
+    Coordinates x, y;
     this->giveNodeCoordinates(x, y);
 
     //
@@ -367,27 +367,27 @@ TrPlaneStrRot :: GivePitch()
     for ( int i = 0; i < 3; i++ ) {
         int j = i + 1 - i / 2 * 3;
         int k = j + 1 - j / 2 * 3;
-        if ( x(k) == x(j) ) {
-            if ( y(k) > y(j) ) {
+        if ( x[k] == x[j] ) {
+            if ( y[k] > y[j] ) {
                 angles.at(i + 1) = M_PI / 2.;
             } else {
                 angles.at(i + 1) = M_PI * 3. / 2.;
             }
         }
 
-        if ( x(k) > x(j) ) {
-            if ( y(k) >= y(j) ) {
-                angles.at(i + 1) = atan( ( y(k) - y(j) ) / ( x(k) - x(j) ) );
+        if ( x[k] > x[j] ) {
+            if ( y[k] >= y[j] ) {
+                angles.at(i + 1) = atan( ( y[k] - y[j] ) / ( x[k] - x[j] ) );
             } else {
-                angles.at(i + 1) = 2. * M_PI - atan( ( y(j) - y(k) ) / ( x(k) - x(j) ) );
+                angles.at(i + 1) = 2. * M_PI - atan( ( y[j] - y[k] ) / ( x[k] - x[j] ) );
             }
         }
 
-        if ( x(k) < x(j) ) {
-            if ( y(k) >= y(j) ) {
-                angles.at(i + 1) = M_PI - atan( ( y(k) - y(j) ) / ( x(j) - x(k) ) );
+        if ( x[k] < x[j] ) {
+            if ( y[k] >= y[j] ) {
+                angles.at(i + 1) = M_PI - atan( ( y[k] - y[j] ) / ( x[j] - x[k] ) );
             } else {
-                angles.at(i + 1) = M_PI + atan( ( y(j) - y(k) ) / ( x(j) - x(k) ) );
+                angles.at(i + 1) = M_PI + atan( ( y[j] - y[k] ) / ( x[j] - x[k] ) );
             }
         }
     }
@@ -400,7 +400,7 @@ FloatArray
 TrPlaneStrRot :: GiveDerivativeUX(const FloatArray &lCoords)
 {
     // get node coordinates
-    FloatArray x(3), y(3);
+    Coordinates x, y;
     this->giveNodeCoordinates(x, y);
 
     //
@@ -441,7 +441,7 @@ FloatArray
 TrPlaneStrRot :: GiveDerivativeVX(const FloatArray &lCoords)
 {
     // get node coordinates
-    FloatArray x(3), y(3);
+    Coordinates x, y;
     this->giveNodeCoordinates(x, y);
 
     //
@@ -482,7 +482,7 @@ FloatArray
 TrPlaneStrRot :: GiveDerivativeUY(const FloatArray &lCoords)
 {
     // get node coordinates
-    FloatArray x(3), y(3);
+    Coordinates x, y;
     this->giveNodeCoordinates(x, y);
 
     //
@@ -523,7 +523,7 @@ FloatArray
 TrPlaneStrRot :: GiveDerivativeVY(const FloatArray &lCoords)
 {
     // get node coordinates
-    FloatArray x(3), y(3);
+    Coordinates x, y;
     this->giveNodeCoordinates(x, y);
 
     //

@@ -229,10 +229,10 @@ IDNLMaterial :: computeStressBasedWeight(double cl, double &nx, double &ny, doub
         return weight;
     }
     //Compute distance between source and receiver point
-    FloatArray gpCoords, distance;
+    Coordinates gpCoords, distance;
     gp->giveElement()->computeGlobalCoordinates( gpCoords, gp->giveNaturalCoordinates() );
     jGp->giveElement()->computeGlobalCoordinates( distance, jGp->giveNaturalCoordinates() );
-    distance.subtract(gpCoords); // Vector connecting the two Gauss points
+    distance -= gpCoords; // Vector connecting the two Gauss points
 
     //Compute modified distance
     double x1 = nx * distance.at(1) + ny *distance.at(2);
@@ -254,14 +254,14 @@ double
 IDNLMaterial :: computeStressBasedWeightForPeriodicCell(double cl, double &nx, double &ny, double &ratio, GaussPoint *gp, GaussPoint *jGp) const
 {
     double updatedWeight = 0.;
-    FloatArray gpCoords, distance;
+    Coordinates gpCoords, distance;
     gp->giveElement()->computeGlobalCoordinates( gpCoords, gp->giveNaturalCoordinates() );
     int ix, nper = 1; // could be increased in the future, if needed
 
     for ( ix = -nper; ix <= nper; ix++ ) { // loop over periodic images shifted in x-direction
         jGp->giveElement()->computeGlobalCoordinates( distance, jGp->giveNaturalCoordinates() );
         distance.at(1) += ix * px; // shift the x-coordinate
-        distance.subtract(gpCoords); // Vector connecting the two Gauss points
+        distance -= gpCoords; // Vector connecting the two Gauss points
 
         //Compute modified distance
         double x1 = nx * distance.at(1) + ny *distance.at(2);

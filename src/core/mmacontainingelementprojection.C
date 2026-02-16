@@ -45,10 +45,10 @@ MMAContainingElementProjection :: MMAContainingElementProjection() : MaterialMap
 { }
 
 void
-MMAContainingElementProjection :: __init(Domain *dold, IntArray &type, const FloatArray &coords, Set &elemSet, TimeStep *tStep, bool iCohesiveZoneGP)
+MMAContainingElementProjection :: __init(Domain *dold, IntArray &type, const Coordinates&coords, Set &elemSet, TimeStep *tStep, bool iCohesiveZoneGP)
 {
     SpatialLocalizer *sl = dold->giveSpatialLocalizer();
-    FloatArray jGpCoords;
+    Coordinates jGpCoords;
     double minDist = 1.e6;
     Element *srcElem;
 
@@ -73,7 +73,7 @@ MMAContainingElementProjection :: __init(Domain *dold, IntArray &type, const Flo
 }
 
 int
-MMAContainingElementProjection :: __mapVariable(FloatArray &answer, const FloatArray &coords,
+MMAContainingElementProjection :: __mapVariable(FloatArray &answer, const Coordinates &coords,
                                                 InternalStateType type, TimeStep *tStep)
 {
     if ( source ) {

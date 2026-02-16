@@ -68,8 +68,8 @@ public:
     const std :: vector< GaussPoint * > &giveCohesiveZoneGaussPoints() const { return mCohesiveZoneGaussPoints; }
     const std :: vector< double > &giveCohesiveZoneArcPositions() const { return mCohesiveZoneArcPositions; }
 
-    void computeCrackIntersectionPoints(Crack &iCrack, std :: vector< FloatArray > &oIntersectionPoints, std :: vector< double > &oArcPositions);
-    void computeArcPoints(const std :: vector< FloatArray > &iIntersectionPoints, std :: vector< double > &oArcPositions);
+    void computeCrackIntersectionPoints(Crack &iCrack, std :: vector< Coordinates > &oIntersectionPoints, std :: vector< double > &oArcPositions);
+    void computeArcPoints(const std :: vector< Coordinates > &iIntersectionPoints, std :: vector< double > &oArcPositions);
     double computeLength();
     int giveDofPoolSize() const override;
 

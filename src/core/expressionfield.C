@@ -55,7 +55,7 @@ void ExpressionField :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 }
 
 
-int ExpressionField :: evaluateAt(FloatArray &answer, const FloatArray &coords, ValueModeType mode, TimeStep *tStep)
+int ExpressionField :: evaluateAt(FloatArray &answer, const Coordinates &coords, ValueModeType mode, TimeStep *tStep)
 {
     if (mode == VM_Total) {
         Parser p;

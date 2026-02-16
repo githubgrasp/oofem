@@ -122,13 +122,13 @@ public:
     void ZZErrorEstimatorI_computeLocalStress(FloatArray &answer, FloatArray &sig) override;
 
     // SpatialLocalizerI
-    void SpatialLocalizerI_giveBBox(FloatArray &bb0, FloatArray &bb1) override;
+    void SpatialLocalizerI_giveBBox(Coordinates &bb0, Coordinates &bb1) override;
 
-    int computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords) override {
+    int computeGlobalCoordinates(Coordinates &answer, const FloatArray &lcoords) override {
         return this->plate->computeGlobalCoordinates(answer, lcoords);
     }
 
-    bool computeLocalCoordinates(FloatArray &answer, const FloatArray &gcoords) override {
+    bool computeLocalCoordinates(FloatArray &answer, const Coordinates &gcoords) override {
         return this->plate->computeLocalCoordinates(answer, gcoords);
     }
 

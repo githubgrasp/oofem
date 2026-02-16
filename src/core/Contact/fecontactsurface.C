@@ -123,7 +123,7 @@ FEContactSurface :: computeContactPointLocalCoordinates_3d(ContactPoint *cp, Con
   }
   //now apply the Newton-Raphson closest point projection
   FEIElementDeformedGeometryWrapper cellgeo(contactElement, tStep);
-  FloatArray r, ro;
+  Coordinates r, ro;
   FloatArrayF<3> gapVector;
   FloatArrayF<2> contactPointLocalCoords, dKsi, dFdXi;
   FloatArrayF<3> t1, t2, unitNormal;
@@ -236,7 +236,7 @@ FEContactSurface :: computeContactPointLocalCoordinates_2d(ContactPoint *cp, Con
   }
   //now apply the Newton-Raphson closest point projection
   FEIElementDeformedGeometryWrapper cellgeo(contactElement, tStep);
-  FloatArray r, ro;
+  Coordinates r, ro;
   FloatArrayF<2> gapVector;
   double dFdXi;
   FloatArrayF<1> contactPointLocalCoords;
@@ -274,7 +274,7 @@ FEContactSurface :: computeContactPointLocalCoordinates_2d(ContactPoint *cp, Con
     
     FloatArray dRodXidXi;
     for (int i = 1; i <= contactElement->giveNumberOfNodes(); ++i) {
-      dRodXidXi.add(d2Ndxi2.at(i, 1), cellgeo.giveVertexCoordinates(i));
+      dRodXidXi.add(d2Ndxi2.at(i, 1), FloatArrayF<2>(cellgeo.giveVertexCoordinates(i).at(1), cellgeo.giveVertexCoordinates(i).at(2)));
     }
     auto G = dot(t1,t1) - dot(gapVector, normal) * dRodXidXi.dotProduct(normal);
     //@todo: the factor 2 here is because the element goes from -1 to 1 so the length is 2 - we have to somehow introduce it into the interpolation or change somethig as it shouldn't be there for element parametrized on the interval 0,1

@@ -210,9 +210,11 @@ VariableCrossSection :: give(CrossSectionProperty aProperty, const FloatArray &c
         } else { // global coordinates needed
             if ( local ) {
                 // convert given coords into global cs
-                if ( !elem->computeGlobalCoordinates(c, coords) ) {
+                Coordinates cg;
+                if ( !elem->computeGlobalCoordinates(cg, coords) ) {
                     OOFEM_ERROR( "computeGlobalCoordinates failed (element %d)", elem->giveNumber() );
                 }
+                c = cg;
             } else {
                 c = coords;
             }
