@@ -30,7 +30,7 @@
       <Set id="3" nodes="2"/>
     </Sets>
   </Domain>
-  <xi:include href="spring01-exportmodules.xml" />
+  <xi:include href="spring01-exportmodules.ixml" />
   <!--
     this is what is indirectly included (as xi:include test)
     <ExportModules>
