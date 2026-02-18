@@ -186,10 +186,12 @@ void test (oofem::Element& e) {
         nanobind::ndarray<int,nanobind::shape<-1>> floatarray2numpy(const FloatArray&& a){ size_t shape[1]={(size_t)a.giveSize()}; return nanobind::ndarray<int,nanobind::shape<-1>>(a.givePointer(),/*ndim*/1,/*shape*/shape,/*owner*/nanobind::none()); }
         nanobind::ndarray<double,nanobind::shape<-1>> intarray2numpy(IntArray&& a){ size_t shape[1]={(size_t)a.giveSize()}; return nanobind::ndarray<double,nanobind::shape<-1>>(a.givePointer(),/*ndim*/1,/*shape*/shape,/*owner*/nanobind::none()); }
         nanobind::ndarray<double,nanobind::shape<-1,-1>> floatmatrix2numpy(FloatMatrix&& m){ size_t shape[2]={sizeof(double), sizeof(double)*s.giveNumberOfRows()}; return nanobind::ndarray<double,nanobind::shape<-1,-1>>(a.givePointer(),/*ndim*/2,/*shape*/shape,/*owner*/nanobind::none()); }
+        nanobind::ndarray<int,nanobind::shape<-1>> floatarrayF32numpy(const FloatArrayF<3>&& a){ size_t shape[1]={(size_t)a.size()}; return nanobind::ndarray<int,nanobind::shape<-1>>(a.data(),/*ndim*/1,/*shape*/shape,/*owner*/nanobind::none()); }
     #endif
     #define floatarray2numpy(a) a
     #define intarray2numpy(a) a
     #define floatmatrix2numpy(a) a
+    #define floatarrayF32numpy(a) a
 #else
     #if 1
       // the py::cast(s) uses the parent object for determining array lifetime: https://github.com/pybind/pybind11/issues/2271#issuecomment-650565098
@@ -204,10 +206,12 @@ void test (oofem::Element& e) {
         // std::cerr<<std::endl;
         return ret;
       }
+      py::array_t<double> floatarrayF32numpy(const FloatArrayF<3>& s){ return py::array_t<double> (s.size(), s.data(), py::cast(s)); }
     #else
       #define floatarray2numpy(a) a
       #define intarray2numpy(a) a
       #define floatmatrix2numpy(a) a
+      #define floatarrayF32numpy(a) a
     #endif
 #endif
 
@@ -560,7 +564,7 @@ template <class ElementBase = oofem::Element> struct PyElement : public PyFemCom
         NB_TRAMPOLINE(oofem::Field,20);
         PY_USING(oofem::Field::Field);
         // trampoline (need one for each virtual method
-        int evaluateAt(oofem::FloatArray &answer, const oofem::FloatArray &coords,
+        int evaluateAt(oofem::FloatArray &answer, const oofem::Coordinates &coords,
         oofem::ValueModeType mode, oofem::TimeStep *tStep) override  {
             PYBIND11_OVERLOAD_PURE(int, oofem::Field, evaluateAt, std::ref(answer), coords, mode, tStep);
         }
@@ -1024,6 +1028,91 @@ PYBIND11_MODULE(oofempy, m) {
 
     ;
     py::implicitly_convertible<py::sequence, oofem::IntArray>();
+
+    py::class_<oofem::FloatArrayF<3>>(m, "FloatArrayF<3>")
+        .def(py::init<int>(), py::arg("n")=0)
+        #ifdef _USE_NANOBIND
+        .def("__init__", ([](oofem::FloatArrayF<3>* ans, py::sequence s){ new (ans) oofem::FloatArrayF<3>();
+        #else
+        .def(py::init([](py::sequence s){
+            oofem::FloatArrayF<3>* ans = new oofem::FloatArrayF<3>();
+        #endif
+            if (py::len(s) > 3) throw py::value_error("FloatArrayF<3> can only be initialized with 3 (or less)elements");
+            for (unsigned int i=0; i<py::len(s); i++) {
+                (*ans)[i]=PY_CAST(double,s[i]);
+            }
+            return ans;
+        }
+        ))
+        #ifdef _USE_NANOBIND
+        .def("__init__", ([](oofem::FloatArrayF<3>* ans, py::array_t<double> s){ new (ans) oofem::FloatArrayF<3>();
+        #else
+        .def(py::init([](py::array_t<double> s){
+            oofem::FloatArrayF<3>* ans = new oofem::FloatArrayF<3>();
+        #endif
+            if (s.size() > 3) throw py::value_error("FloatArrayF<3> can only be initialized with 3 (or less)elements");
+            for (unsigned int i=0; i<s.size(); i++) {
+                (*ans)[i]=s.data()[i];
+            }
+            return ans;
+        }
+        ))
+        .def("printYourself", (void (oofem::FloatArrayF<3>::*)() const) &oofem::FloatArrayF<3>::printYourself, "Prints receiver")
+        .def("printYourself", (void (oofem::FloatArrayF<3>::*)(const std::string &) const) &oofem::FloatArrayF<3>::printYourself, "Prints receiver")
+        .def("__setitem__", [](oofem::FloatArrayF<3> &s, size_t i, double v) {
+            s[i] = v;
+        })
+        .def("__getitem__", [](const oofem::FloatArrayF<3> &s, size_t i) {
+            if (i >= (size_t) s.giveSize()) throw py::index_error();
+            return s[i];
+        })
+        .def("__repr__",
+            [](const oofem::FloatArrayF<3> &s) {
+                std::ostringstream streamObj;
+                std::string strObj;
+                std::string a = "<oofempy.FloatArrayF<3>: {";
+                for ( int i = 0; i < s.giveSize(); ++i ) {
+                    if ( i > 40 ) {
+                        a.append("...");
+                        break;
+                    } else {
+                        streamObj.str("");
+                        streamObj.clear();
+                        streamObj << s[i];//convert to scientific notation if necessary
+                        strObj = streamObj.str();
+                        a.append(strObj);
+                        //a.append(std::to_string(s[i]));
+                        a.append(", ");
+                    }
+                }
+                a.append("}>");
+                return a;
+        })
+        .def("zero", &oofem::FloatArrayF<3>::zero)
+        .def("add", &oofem::FloatArrayF<3>::add)
+        // enable conversion to numpy representation
+        .def("asNumpyArray", [](const oofem::FloatArrayF<3> &s) { return floatarray2numpy(s); })
+        // expose FloatArray operators
+        #ifdef _USE_EIGEN
+            .def("__add__",[](const FloatArrayF<3>& a, const FloatArrayF<3>& b)->FloatArrayF<3>{ return a+b; },py::is_operator())
+            .def("__sub__",[](const FloatArrayF<3>& a, const FloatArrayF<3>& b)->FloatArrayF<3>{ return a-b; },py::is_operator())
+            .def("__mul__",[](const FloatArrayF<3>& a, const double& b)->FloatArrayF<3>{ return a*b; },py::is_operator())
+            .def("__rmul__",[](const FloatArrayF<3>& a, const double& b)->FloatArrayF<3>{ return a*b; },py::is_operator())
+            .def("__iadd__",[](FloatArrayF<3>& a, const FloatArrayF<3>& b)->FloatArrayF<3>{ a+=b; return a; },py::is_operator())
+            .def("__isub__",[](FloatArrayF<3>& a, const FloatArrayF<3>& b)->FloatArrayF<3>{ a=(a-b).eval(); return a; },py::is_operator())
+            .def("__imul__",[](FloatArrayF<3>& a, const double& b)->FloatArrayF<3>{ a.array()*=b; return a; },py::is_operator())
+        #else
+            .def(py::self + py::self)
+            .def(py::self - py::self)
+            .def(py::self * float())
+            .def(float() * py::self)
+            .def(py::self += py::self)
+            .def(py::self -= py::self)
+            .def(py::self *= float())
+        #endif
+        ;
+     py::implicitly_convertible<py::sequence, oofem::FloatArrayF<3>>();
+
     #endif
 
     py::class_<oofem::DataReader,std::shared_ptr<DataReader>>(m, "DataReader")
@@ -1307,7 +1396,7 @@ PYBIND11_MODULE(oofempy, m) {
 
     py::class_<oofem::SpatialLocalizer>(m, "SpatialLocalizer")
         //.def("giveDomain", &oofem::SpatialLocalizer::giveDomain, py::return_value_policy::reference)        
-        .def("giveClosestIP", (oofem::GaussPoint * (oofem::SpatialLocalizer::*)(const FloatArray &, Set &, bool)) &oofem::SpatialLocalizer::giveClosestIP)
+        .def("giveClosestIP", (oofem::GaussPoint * (oofem::SpatialLocalizer::*)(const Coordinates &, Set &, bool)) &oofem::SpatialLocalizer::giveClosestIP)
     ;
     
     
@@ -2036,7 +2125,7 @@ PYBIND11_MODULE(oofempy, m) {
 
     py::class_<oofem::Field, PyField SHARED_PTR_HOLDER(oofem::Field)>(m, "Field")
         .def(py::init<oofem::FieldType>())  
-        .def("evaluateAt", (int (oofem::Field::*)(oofem::FloatArray &answer, const oofem::FloatArray &coords, oofem::ValueModeType mode, oofem::TimeStep *tStep)) &oofem::Field::evaluateAt)      
+        .def("evaluateAt", (int (oofem::Field::*)(oofem::FloatArray &answer, const oofem::Coordinates &coords, oofem::ValueModeType mode, oofem::TimeStep *tStep)) &oofem::Field::evaluateAt)      
         .def("evaluateAt", (int (oofem::Field::*)(oofem::FloatArray &answer, DofManager *dman, oofem::ValueModeType mode, oofem::TimeStep *tStep)) &oofem::Field::evaluateAt)      
         .def("giveType", &oofem::Field::giveType)
         .def("setType", &oofem::Field::setType)
