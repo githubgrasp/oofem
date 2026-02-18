@@ -75,7 +75,7 @@ public:
     void setFunctionName(std::string functionName);
     void setModuleName(std::string moduleName);
     
-    int evaluateAt(FloatArray &answer, const FloatArray &coords,
+    int evaluateAt(FloatArray &answer, const Coordinates &coords,
                            ValueModeType mode, TimeStep *tStep) override;
                            
                            
