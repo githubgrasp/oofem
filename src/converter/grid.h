@@ -10,6 +10,8 @@
 #include "convertererror.h"
 #include "intarray.h"
 
+#include <unordered_map>
+
 #ifndef __MAKEDEPEND
  #include <stdio.h>
  #include <time.h>
@@ -69,6 +71,36 @@ class Fibre;
 class BoundarySphere;
 class BoundaryCylinder;
 
+
+
+  
+struct Node {
+    int id;
+    double x, y, z;
+};
+
+struct Tri {
+    int id;
+    int n1, n2, n3;   // node ids
+};
+
+struct Tet {
+    int id;
+    int n1, n2, n3, n4;
+};
+
+  
+  struct Edge {
+    int n1, n2;     // node ids (sorted)
+    int tri1 = -1;  // adjacent triangle index
+    int tri2 = -1;
+    int tet1 = -1;  // adjacent tetra index
+    int tet2 = -1;
+  };
+
+
+
+
 /**
  * Description of class grid
  */
@@ -82,6 +114,8 @@ private:
 
     GridType gridType;
 
+  std::string controlFileName;
+  
     /// Grid number
     int number;
 
@@ -125,6 +159,9 @@ private:
 
     int periodicNodeCounter;
 
+  //for t3d shells
+  double shellThickness = 1.0;
+  
     std::vector< Vertex * >delaunayVertexList;
 
     std::vector< Vertex * >voronoiVertexList;
@@ -157,6 +194,19 @@ private:
 
     typedef std::list< int >nodeContainerType;
 
+  std::vector<Node> nodes;
+  
+  std::vector<Tri>  tris;
+  
+  std::vector<Tet>  tets;
+
+  std::vector<Edge> edges;
+
+  std::unordered_map<int,int> nodeIndex;
+
+  std::vector<double> edgeWidth;
+
+  
 public:
 
     GridLocalizer *delaunayLocalizer;
@@ -169,6 +219,19 @@ public:
     ///  Destructor
     ~Grid();
 
+
+  oofem::FloatArray getX(int nid) const;
+  
+  oofem::FloatArray triNormal(int triIndex) const;
+
+  void computeEdgeWidths(double thickness);
+  
+  double edgeLength(const Edge &e) const;
+  
+  double triArea(int triIndex) const;
+
+  void checkAreaConservation() const;
+  
 
     int giveNumber() { return this->number; }
 
@@ -254,6 +317,24 @@ public:
 
     int instanciateYourself(ConverterDataReader *dr, const char nodeFileName[], const char delaunayFileName[], const char voronoiFileName[]);
 
+
+bool readT3d(const std::string &fn,
+                   std::vector<Node> &nodes,
+	     std::vector<Tri> &tris,
+	     std::vector<Tet> &tets);
+  
+void buildEdges(const std::vector<Tri> &tris,
+		const std::vector<Tet> &tets,
+		std::vector<Edge> &edges);
+
+
+  void writeT3dNodesOofem(std::ostream &out);
+
+  void writeT3dElemsOofem(std::ostream &out);
+
+  
+  int instanciateYourselfFromT3d(const std::string &t3dFileName, const std::string &controlFileName);
+
     double ran1(long *idum);
 
     /// Returns number of dof managers in grid.
@@ -335,6 +416,7 @@ public:
     const char *giveClassName() const { return "Grid"; }
 
     void giveOutput(const std::string &fileName);
+    void giveOutputT3d(const std::string &fileName);
 
     void giveOofemOutput(const std::string &fileName);
 
