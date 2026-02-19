@@ -8,7 +8,7 @@
 #include <cmath>
 using namespace oofem;
 
-TEST_CASE( "Testing mpm evaluator", "[MPMCompiler, MPMEvaluator]" ) {
+TEST_CASE( "tests/unit/mpmevaluator", "[MPMCompiler, MPMEvaluator]" ) {
     // This setup will be done 4 times in total, once for each section
     MPMCompiler compiler;
     std::vector<Instruction> prog;
