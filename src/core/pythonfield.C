@@ -42,10 +42,10 @@
     namespace py = pybind11;
 #endif
 
-
-#include "field.h"
+#include "oofemcfg.h"
 #include "pythonfield.h"
 #include "floatarray.h"
+#include "floatarrayf.h"
 #include "timestep.h"
 
 
