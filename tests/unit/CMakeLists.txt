@@ -27,7 +27,13 @@ if (USE_MPM)
 
     # 3. Discover tests
     catch_discover_tests(test_mpmevaluator
+        TEST_LIST unit_tests
         PROPERTIES
             ENVIRONMENT "PATH=$<TARGET_FILE_DIR:liboofem>;$ENV{PATH}"
+            LABELS "unit"
     )
+
+    message (STATUS "Identified unit tests for ${test_mpmevaluator}: ${unit_tests}")
+    # Now apply labels explicitly to all discovered tests 
+    set_tests_properties(${unit_tests} PROPERTIES LABELS "unit" )
 endif()

@@ -475,59 +475,9 @@ if (USE_ONEAPI)
     endif()
 
     message(STATUS "Seeking OneAPI libraries...")
-    if (WIN32)
-        # Windows machine must use Intel OpenMP (libiomp5) for OneAPI
-        list(APPEND MKL_LIBS "mkl_core" "mkl_intel_lp64" "mkl_intel_thread" "libiomp5md")
-    else()
-        list(APPEND MKL_LIBS "mkl_core" "mkl_intel_lp64" "mkl_intel_thread" "pthread")
+    find_package(MKL CONFIG REQUIRED PATHS $ENV{MKLROOT})
+    list (APPEND MODULE_LIST "oneMKL_PARDISO")
     endif ()
-    foreach (f ${MKL_LIBS})
-        # OneAPI installation directory
-        if (INTEL_ONEAPI_DIR)
-            # user provided OneAPI directory
-            message(STATUS "User has provided OneAPI installation directory...")
-            set(oneapiDir ${INTEL_ONEAPI_DIR})
-        elseif (WIN32)
-            # Windows
-            set(oneapiDir "C:/Program Files (x86)/Intel/oneAPI")
-        else()
-            # MacOS or Linux
-            set(oneapiDir "/opt/intel/oneapi")
-        endif()
-
-        # library directory
-        # an alternative could be obtaining from OneAPI's Environment variables
-        if (WIN32)
-            # Windows
-            set(oneapiMklDir "${oneapiDir}/mkl/latest")
-            set(oneapiMklLibDir "${oneapiMklDir}/lib/intel64")
-            set(oneapiLibDir
-                    "${oneapiDir}/compiler/latest/windows/compiler/lib/intel64")
-        elseif(APPLE)
-            # MacOS
-            set(oneapiMklDir "${oneapiDir}/mkl/latest")
-            set(oneapiMklLibDir "${oneapiMklDir}/lib")
-            set(oneapiLibDir "")
-        elseif(UNIX)
-            # Linux (not tested)
-            set(oneapiMklDir "${oneapiDir}/mkl/latest")
-            set(oneapiMklLibDir "${oneapiMklDir}/lib/intel64_lin")
-            set(oneapiLibDir "")
-        endif()
-
-        message(STATUS "    Seeking for ${f} in: ${oneapiMklLibDir};${oneapiLibDir}...")
-        find_library (${f}_LIB ${f} HINTS "${oneapiMklLibDir}" "${oneapiLibDir}" DOC "MKLPARDISO (library)")
-        include_directories ("${oneapiMklDir}/include")
-
-        if (${${f}_LIB} STREQUAL "${f}_LIB-NOTFOUND")
-            message (FATAL_ERROR "OneAPI ${f} library not found")
-        else()
-            message (STATUS "    OK: ${f} library successfully found at ${${f}_LIB}")
-        endif ()
-        list (APPEND EXT_LIBS ${${f}_LIB})
-    endforeach ()
-    list (APPEND MODULE_LIST "MKLPARDISO")
-endif ()
 
 
 if (USE_SLEPC)
@@ -718,6 +668,11 @@ if(USE_PYTHON_EXTENSION)
     link_libraries(Python::Python) # embedded python
 endif()
 
+if (USE_ONEAPI)
+    include_directories("${MKL_INCLUDE}")
+	message (STATUS "MKL include dir set to ${MKL_INCLUDE}")
+endif()
+
 #######################################################################
 ######################## Configuration ################################
 #######################################################################
@@ -831,6 +786,10 @@ if (USE_SHARED_LIB)
             set_target_properties (mpm PROPERTIES COMPILE_FLAGS ${LIBOOFEM_EXPORT_CFLAGS})
         endif ()
     endif()
+    if (USE_ONEAPI)
+        target_link_libraries(liboofem PUBLIC MKL::MKL)
+    endif()
+
 
     generate_export_header (liboofem
         BASE_NAME OOFEM
@@ -852,6 +811,9 @@ if (USE_OOFEM_EXE)
         find_package (MFrontGenericInterface REQUIRED)
         target_link_libraries(oofem mgis::MFrontGenericInterface)
     endif ()
+    if (USE_ONEAPI)
+        target_link_libraries(oofem PUBLIC MKL::MKL)
+    endif()
 endif()
 
 if (USE_OOFEG)
