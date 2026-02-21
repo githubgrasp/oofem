@@ -35,6 +35,7 @@
 #ifndef dynamicinputrecord_h
 #define dynamicinputrecord_h
 
+#include "oofemcfg.h"
 #include "inputrecord.h"
 
 #include <map>

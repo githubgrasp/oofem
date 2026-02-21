@@ -229,7 +229,7 @@ namespace oofem {
         return oss.str();
     }
     std::string XMLInputRecord::giveRecordInTXTFormat() const {
-        OOFEM_ERROR("%s: not (yet?) implemented.",__PRETTY_FUNCTION__);
+        OOFEM_ERROR("%s: not (yet?) implemented.",__FUNCTION__);
     }
 
     void XMLInputRecord::giveField(std::string& answer, InputFieldType id){

@@ -44,7 +44,11 @@
 #include <iostream>
 #include <set>
 
+#ifdef __GNUC__
 #define _XML_NI std::cerr<<__PRETTY_FUNCTION__<<": not yet implemented."<<std::endl; abort();
+#else
+#define _XML_NI std::cerr<<__FUNCTION__<<": not yet implemented."<<std::endl; abort();
+#endif
 
 namespace oofem {
 class XMLDataReader;
