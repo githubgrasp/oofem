@@ -61,6 +61,7 @@
     #define PY_USING(a)
     #include "oofemarray-nanobind.h"
 #else
+    #include <Python.h>
     #include <pybind11/pybind11.h>
     #include <pybind11/stl.h> //Conversion for lists
     #include <pybind11/operators.h>
@@ -1115,19 +1116,19 @@ PYBIND11_MODULE(oofempy, m) {
 
     #endif
 
-    py::class_<oofem::DataReader,std::shared_ptr<DataReader>>(m, "DataReader")
+    py::class_<oofem::DataReader  SHARED_PTR_HOLDER(DataReader)>(m, "DataReader")
     ;
 
-    py::class_<oofem::OOFEMTXTDataReader, oofem::DataReader, std::shared_ptr<oofem::OOFEMTXTDataReader>>(m, "OOFEMTXTDataReader")
+    py::class_<oofem::OOFEMTXTDataReader, oofem::DataReader  SHARED_PTR_HOLDER(oofem::OOFEMTXTDataReader)>(m, "OOFEMTXTDataReader")
         .def(py::init<std::string>())
     ;
 
 
-    py::class_<oofem::InputRecord,std::shared_ptr<InputRecord>>(m, "InputRecord")
+    py::class_<oofem::InputRecord  SHARED_PTR_HOLDER(InputRecord)>(m, "InputRecord")
     ;
 
     typedef const char *InputFieldType;
-    py::class_<oofem::DynamicInputRecord, oofem::InputRecord, std::shared_ptr<DynamicInputRecord>>(m, "DynamicInputRecord")
+    py::class_<oofem::DynamicInputRecord, oofem::InputRecord  SHARED_PTR_HOLDER(DynamicInputRecord)>(m, "DynamicInputRecord")
         .def(py::init<std::string, int>(), py::arg("answer") = "", py::arg("value")=0)
         .def("finish", &oofem::DynamicInputRecord::finish, py::arg("wrn")=true)
         .def("setRecordKeywordField", &oofem::DynamicInputRecord::setRecordKeywordField)
@@ -1144,7 +1145,7 @@ PYBIND11_MODULE(oofempy, m) {
         .def("setField", (void (oofem::DynamicInputRecord::*)(InputFieldType)) &oofem::DynamicInputRecord::setField)
     ;
 
-    py::class_<oofem::OOFEMTXTInputRecord, oofem::InputRecord, std::shared_ptr<OOFEMTXTInputRecord>>(m, "OOFEMTXTInputRecord")
+    py::class_<oofem::OOFEMTXTInputRecord, oofem::InputRecord  SHARED_PTR_HOLDER(OOFEMTXTInputRecord)>(m, "OOFEMTXTInputRecord")
         .def(py::init<>())
         .def(py::init<int, std::string>())
         .def("finish", &oofem::OOFEMTXTInputRecord::finish, py::arg("wrn")=true)
