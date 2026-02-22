@@ -62,7 +62,7 @@ namespace oofem {
             xml=parentXml.parent_path()/xml;
             _XML_DEBUG("Relative path "<<xml_<<" resolved to "<<xml<<" (parent is "<<parentXml<<")");
         }
-        auto doc=std::make_shared<xmlutil::XmlDoc>(xml);
+        auto doc=std::make_shared<xmlutil::XmlDoc>(xml.string());
         const pugi::xml_node root=doc->root();
         docs[root]=doc;
         if(parent) docs[parent]=doc;
