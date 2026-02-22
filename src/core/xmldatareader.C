@@ -43,7 +43,6 @@
 #include <cstring>
 #include <filesystem>
 #include <pugixml.hpp>
-#include <bits/stdc++.h>
 #include <string.h>
 
 #ifdef _MSC_VER
