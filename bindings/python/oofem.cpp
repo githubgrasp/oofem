@@ -206,7 +206,7 @@ void test (oofem::Element& e) {
         // std::cerr<<std::endl;
         return ret;
       }
-      py::array_t<double> floatarrayF32numpy(const FloatArrayF<3>& s){ return py::array_t<double> (s.size(), s.data(), py::cast(s)); }
+      py::array_t<double> floatarrayF32numpy(const FloatArrayF<3>& s){ return py::array_t<double> (3, s.data(), py::cast(s)); }
     #else
       #define floatarray2numpy(a) a
       #define intarray2numpy(a) a
