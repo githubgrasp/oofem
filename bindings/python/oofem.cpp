@@ -782,337 +782,336 @@ PYBIND11_MODULE(oofempy, m) {
     m.def("init", &init, py::arg("logLevel")=2, py::arg("numberOfThreads")=0, "Initializes some global oofem options (typically controlled from command-line)");
 
     #ifndef _USE_NANOBIND
-    py::class_<oofem::FloatArray>(m, "FloatArray")
-        .def(py::init<int>(), py::arg("n")=0)
-        #ifdef _USE_NANOBIND
-        .def("__init__", ([](oofem::FloatArray* ans, py::sequence s){ new (ans) oofem::FloatArray((int) py::len(s));
-        #else
-        .def(py::init([](py::sequence s){
-            oofem::FloatArray* ans = new oofem::FloatArray((int) py::len(s));
-        #endif
-            for (unsigned int i=0; i<py::len(s); i++) {
-                (*ans)[i]=PY_CAST(double,s[i]);
-            }
-            return ans;
-        }
-        ))
-        #ifdef _USE_NANOBIND
-        .def("__init__", ([](oofem::FloatArray* ans, py::array_t<double> s){ new (ans) oofem::FloatArray((int) s.size());
-        #else
-        .def(py::init([](py::array_t<double> s){
-            oofem::FloatArray* ans = new oofem::FloatArray((int) s.size());
-        #endif
-            for (unsigned int i=0; i<s.size(); i++) {
-                (*ans)[i]=s.data()[i];
-            }
-            return ans;
-        }
-        ))
-        .def("printYourself", (void (oofem::FloatArray::*)() const) &oofem::FloatArray::printYourself, "Prints receiver")
-        .def("printYourself", (void (oofem::FloatArray::*)(const std::string &) const) &oofem::FloatArray::printYourself, "Prints receiver")
-        .def("pY", &oofem::FloatArray::pY)
-        .def("__setitem__", [](oofem::FloatArray &s, size_t i, double v) {
-            s[i] = v;
-        })
-        .def("__getitem__", [](const oofem::FloatArray &s, size_t i) {
-            if (i >= (size_t) s.giveSize()) throw py::index_error();
-            return s[i];
-        })
-        .def("__repr__",
-            [](const oofem::FloatArray &s) {
-                std::ostringstream streamObj;
-                std::string strObj;
-                std::string a = "<oofempy.FloatArray: {";
-                for ( int i = 0; i < s.giveSize(); ++i ) {
-                    if ( i > 40 ) {
-                        a.append("...");
-                        break;
-                    } else {
-                        streamObj.str("");
-                        streamObj.clear();
-                        streamObj << s[i];//convert to scientific notation if necessary
-                        strObj = streamObj.str();
-                        a.append(strObj);
-                        //a.append(std::to_string(s[i]));
-                        a.append(", ");
-                    }
+        py::class_<oofem::FloatArray>(m, "FloatArray")
+            .def(py::init<int>(), py::arg("n")=0)
+            #ifdef _USE_NANOBIND
+            .def("__init__", ([](oofem::FloatArray* ans, py::sequence s){ new (ans) oofem::FloatArray((int) py::len(s));
+            #else
+            .def(py::init([](py::sequence s){
+                oofem::FloatArray* ans = new oofem::FloatArray((int) py::len(s));
+            #endif
+                for (unsigned int i=0; i<py::len(s); i++) {
+                    (*ans)[i]=PY_CAST(double,s[i]);
                 }
-                a.append("}>");
-                return a;
-        })
-        .def("resize", &oofem::FloatArray::resize)
-        .def("assemble", &oofem::FloatArray::assemble)
-        .def("distance", (double (oofem::FloatArray::*)(const oofem::FloatArray &) const) &oofem::FloatArray::distance)
-        .def("normalize", &oofem::FloatArray::normalize)
-        .def("normalize_giveNorm", &oofem::FloatArray::normalize_giveNorm)
-        .def("computeNorm", &oofem::FloatArray::computeNorm)
-        .def("product", &oofem::FloatArray::product)
-        .def("zero", &oofem::FloatArray::zero)
-        .def("beProductOf", &oofem::FloatArray::beProductOf)
-        // enable conversion to numpy representation
-        .def("asNumpyArray", [](const oofem::FloatArray &s) { return floatarray2numpy(s); })
-        // expose FloatArray operators
-        #ifdef _USE_EIGEN
-            .def("__add__",[](const FloatArray& a, const FloatArray& b)->FloatArray{ return a+b; },py::is_operator())
-            .def("__sub__",[](const FloatArray& a, const FloatArray& b)->FloatArray{ return a-b; },py::is_operator())
-            .def("__mul__",[](const FloatArray& a, const double& b)->FloatArray{ return a*b; },py::is_operator())
-            .def("__rmul__",[](const FloatArray& a, const double& b)->FloatArray{ return a*b; },py::is_operator())
-            .def("__iadd__",[](FloatArray& a, const FloatArray& b)->FloatArray{ a+=b; return a; },py::is_operator())
-            .def("__isub__",[](FloatArray& a, const FloatArray& b)->FloatArray{ a=(a-b).eval(); return a; },py::is_operator())
-            .def("__imul__",[](FloatArray& a, const double& b)->FloatArray{ a.array()*=b; return a; },py::is_operator())
-        #else
-            .def(py::self + py::self)
-            .def(py::self - py::self)
-            .def(py::self * float())
-            .def(float() * py::self)
-            .def(py::self += py::self)
-            .def(py::self -= py::self)
-            .def(py::self *= float())
-        #endif
-        ;
-     py::implicitly_convertible<py::sequence, oofem::FloatArray>();
-
-     py::class_<oofem::FloatMatrix>(m, "FloatMatrix")
-        .def(py::init<>())
-        .def(py::init<int,int>())
-        #ifdef _USE_NANOBIND
-        .def("__init__", ([](oofem::FloatArray* ans, py::array_t<double> s){ new (ans) oofem::FloatMatrix((int) s.shape(0), (int) s.shape(1));
-        #else
-        .def(py::init([](py::array_t<double> s){
-            oofem::FloatMatrix* ans = new oofem::FloatMatrix((int) s.shape(0), (int) s.shape(1));
-        #endif
-            for (unsigned int i=0; i<s.shape(0); i++) {
-                for (unsigned int j=0; j<s.shape(1); j++) {
-                    (*ans)(i,j)=s.data()[i*s.shape(1)+j];
-                }
+                return ans;
             }
-            return ans;
-        }
-        ))
-        .def("printYourself", (void (oofem::FloatMatrix::*)() const) &oofem::FloatMatrix::printYourself, "Prints receiver")
-        .def("printYourself", (void (oofem::FloatMatrix::*)(const std::string &) const) &oofem::FloatMatrix::printYourself, "Prints receiver")
-        .def("pY", &oofem::FloatMatrix::pY)
-        .def("__setitem__", [](oofem::FloatMatrix &s, py::tuple indx, double v) {
-            s(PY_CAST(int,py::handle(indx[0])),PY_CAST(int,py::handle(indx[1]))) = v;
-        })
-        .def("__getitem__", [](const oofem::FloatMatrix &s, py::tuple indx) {
-            int r=PY_CAST(int,py::handle(indx[0]));
-            int c=PY_CAST(int,py::handle(indx[1]));
-            if (r >= s.giveNumberOfRows()) throw py::index_error();
-            if (c >= s.giveNumberOfColumns()) throw py::index_error();
-            return s(r,c);
-        })
-        .def("__repr__",
-            [](const oofem::FloatMatrix &s) {
-                std::string a = "<oofempy.FloatMatrix: {";
-                int count=0;
-                for ( int i = 0; i < s.giveNumberOfRows(); ++i ) {
-                    for (int j=0; j< s.giveNumberOfColumns(); ++j) {
-                        count++;
-                        if ( count > 40 ) {
+            ))
+            #ifdef _USE_NANOBIND
+            .def("__init__", ([](oofem::FloatArray* ans, py::array_t<double> s){ new (ans) oofem::FloatArray((int) s.size());
+            #else
+            .def(py::init([](py::array_t<double> s){
+                oofem::FloatArray* ans = new oofem::FloatArray((int) s.size());
+            #endif
+                for (unsigned int i=0; i<s.size(); i++) {
+                    (*ans)[i]=s.data()[i];
+                }
+                return ans;
+            }
+            ))
+            .def("printYourself", (void (oofem::FloatArray::*)() const) &oofem::FloatArray::printYourself, "Prints receiver")
+            .def("printYourself", (void (oofem::FloatArray::*)(const std::string &) const) &oofem::FloatArray::printYourself, "Prints receiver")
+            .def("pY", &oofem::FloatArray::pY)
+            .def("__setitem__", [](oofem::FloatArray &s, size_t i, double v) {
+                s[i] = v;
+            })
+            .def("__getitem__", [](const oofem::FloatArray &s, size_t i) {
+                if (i >= (size_t) s.giveSize()) throw py::index_error();
+                return s[i];
+            })
+            .def("__repr__",
+                [](const oofem::FloatArray &s) {
+                    std::ostringstream streamObj;
+                    std::string strObj;
+                    std::string a = "<oofempy.FloatArray: {";
+                    for ( int i = 0; i < s.giveSize(); ++i ) {
+                        if ( i > 40 ) {
                             a.append("...");
                             break;
                         } else {
-                            a.append(std::to_string(s(i,j)));
-                            a.append(" ");
+                            streamObj.str("");
+                            streamObj.clear();
+                            streamObj << s[i];//convert to scientific notation if necessary
+                            strObj = streamObj.str();
+                            a.append(strObj);
+                            //a.append(std::to_string(s[i]));
+                            a.append(", ");
                         }
                     }
-                    a.append("; ");
-                }
-                a.append("}>");
-                return a;
+                    a.append("}>");
+                    return a;
             })
-        .def("resize",
+            .def("resize", &oofem::FloatArray::resize)
+            .def("assemble", &oofem::FloatArray::assemble)
+            .def("distance", (double (oofem::FloatArray::*)(const oofem::FloatArray &) const) &oofem::FloatArray::distance)
+            .def("normalize", &oofem::FloatArray::normalize)
+            .def("normalize_giveNorm", &oofem::FloatArray::normalize_giveNorm)
+            .def("computeNorm", &oofem::FloatArray::computeNorm)
+            .def("product", &oofem::FloatArray::product)
+            .def("zero", &oofem::FloatArray::zero)
+            .def("beProductOf", &oofem::FloatArray::beProductOf)
+            // enable conversion to numpy representation
+            .def("asNumpyArray", [](const oofem::FloatArray &s) { return floatarray2numpy(s); })
+            // expose FloatArray operators
             #ifdef _USE_EIGEN
-                [](oofem::FloatMatrix& m, size_t r, size_t c){ m.resize(r,c); }
+                .def("__add__",[](const FloatArray& a, const FloatArray& b)->FloatArray{ return a+b; },py::is_operator())
+                .def("__sub__",[](const FloatArray& a, const FloatArray& b)->FloatArray{ return a-b; },py::is_operator())
+                .def("__mul__",[](const FloatArray& a, const double& b)->FloatArray{ return a*b; },py::is_operator())
+                .def("__rmul__",[](const FloatArray& a, const double& b)->FloatArray{ return a*b; },py::is_operator())
+                .def("__iadd__",[](FloatArray& a, const FloatArray& b)->FloatArray{ a+=b; return a; },py::is_operator())
+                .def("__isub__",[](FloatArray& a, const FloatArray& b)->FloatArray{ a=(a-b).eval(); return a; },py::is_operator())
+                .def("__imul__",[](FloatArray& a, const double& b)->FloatArray{ a.array()*=b; return a; },py::is_operator())
             #else
-                &oofem::FloatMatrix::resize
+                .def(py::self + py::self)
+                .def(py::self - py::self)
+                .def(py::self * float())
+                .def(float() * py::self)
+                .def(py::self += py::self)
+                .def(py::self -= py::self)
+                .def(py::self *= float())
             #endif
-        )
-        .def("isSquare", &oofem::FloatMatrix::isSquare)
-        .def("assemble", (void (oofem::FloatMatrix::*)(const FloatMatrix &, const IntArray &)) &oofem::FloatMatrix::assemble, "Assembles the contribution to the receiver")
-        .def("assemble", (void (oofem::FloatMatrix::*)(const FloatMatrix &, const IntArray &, const IntArray&)) &oofem::FloatMatrix::assemble, "Assembles the contribution to the receiver")
-        .def("computeFrobeniusNorm", &oofem::FloatMatrix::computeFrobeniusNorm)
-        .def("computeNorm", &oofem::FloatMatrix::computeNorm)
-        .def("beDiagonal", &oofem::FloatMatrix::beDiagonal)
-        .def("giveTrace", &oofem::FloatMatrix::giveTrace)
-        .def("giveDeterminant", &oofem::FloatMatrix::giveDeterminant)
-        .def("zero", &oofem::FloatMatrix::zero)
-        .def("beUnitMatrix", &oofem::FloatMatrix::beUnitMatrix)
-        .def("beTranspositionOf", &oofem::FloatMatrix::beTranspositionOf)
-        .def("beProductOf", &oofem::FloatMatrix::beProductOf)
-        .def("addProductOf", &oofem::FloatMatrix::addProductOf)
-        .def("addTProductOf", &oofem::FloatMatrix::addTProductOf)
-        .def("beTProductOf", &oofem::FloatMatrix::beTProductOf)
-        .def("beProductTOf", &oofem::FloatMatrix::beProductTOf)
-        .def("beDyadicProductOf", &oofem::FloatMatrix::beDyadicProductOf)
-        .def("beInverseOf", &oofem::FloatMatrix::beInverseOf)
-        .def("solveForRhs", (bool (oofem::FloatMatrix::*)(const FloatArray &, FloatArray &, bool)) &oofem::FloatMatrix::solveForRhs)
-        .def("solveForRhs", (bool (oofem::FloatMatrix::*)(const FloatMatrix &, FloatMatrix &, bool)) &oofem::FloatMatrix::solveForRhs)
-        .def("plusProductSymmUpper", &oofem::FloatMatrix::plusProductSymmUpper)
-        .def("plusDyadSymmUpper", &oofem::FloatMatrix::plusDyadSymmUpper)
-        .def("plusProductUnsym", &oofem::FloatMatrix::plusProductUnsym)
-        .def("plusDyadUnsym", &oofem::FloatMatrix::plusDyadUnsym)
-        // enable conversion to numpy representation
-        .def("asNumpyArray", [](oofem::FloatMatrix &s) { return floatmatrix2numpy(s,/*reference*/true); })
-        // expose FloatArray operators
-        #ifdef _USE_EIGEN
-            .def("__add__",[](const FloatMatrix& a, const FloatMatrix& b)->FloatMatrix{ return a+b; },py::is_operator())
-            .def("__sub__",[](const FloatMatrix& a, const FloatMatrix& b)->FloatMatrix{ return a-b; },py::is_operator())
-            .def("__mul__",[](const FloatMatrix& a, const FloatMatrix& b)->FloatMatrix{ return a*b; },py::is_operator())
-            .def("__mul__",[](const FloatMatrix& a, const FloatArray& b)->FloatArray{ return a*b; },py::is_operator())
-            .def("__iadd__",[](FloatMatrix& a, const FloatMatrix& b)->FloatMatrix{ a+=b; return a; },py::is_operator())
-            .def("__isub__",[](FloatMatrix& a, const FloatMatrix& b)->FloatMatrix{ a-=b; return a; },py::is_operator())
-        #else
-            .def(py::self + py::self)
-            .def(py::self - py::self)
-            .def(py::self * py::self)
-            .def(py::self * FloatArray())
-            .def(py::self += py::self)
-            .def(py::self -= py::self)
-        #endif
         ;
+        py::implicitly_convertible<py::sequence, oofem::FloatArray>();
 
-    py::class_<oofem::IntArray>(m, "IntArray")
-
-        .def(py::init<int>(), py::arg("n")=0)
-        .def(py::init<const oofem::IntArray&>())
-        #ifdef _USE_NANOBIND
-        .def("__init__", ([](oofem::FloatArray* ans /*, py::array_t<double> s*/){ /*FIXME: new (ans) oofem::IntArray((int) py::len(s)); */
-        #else
-        .def(py::init([](py::sequence s){
-            oofem::IntArray* ans = new oofem::IntArray((int) py::len(s));
-        #endif
-            for (unsigned int i=0; i<py::len(s); i++) {
-                (*ans)[i]=PY_CAST(int,s[i]);
-            }
-            return ans;
-        }
-        ))
-        .def("resize", &oofem::IntArray::resize)
-        .def("clear", &oofem::IntArray::clear)
-        .def("preallocate", &oofem::IntArray::preallocate)
-        .def("followedBy", (void (oofem::IntArray::*)(int , int)) &oofem::IntArray::followedBy, "Appends number to receiver")
-        .def("followedBy", (void (oofem::IntArray::*)(const oofem::IntArray& , int)) &oofem::IntArray::followedBy, "Appends array to receiver")
-        .def("isEmpty", &oofem::IntArray::isEmpty)
-        .def("containsOnlyZeroes", &oofem::IntArray::containsOnlyZeroes)
-        .def("containsSorted", &oofem::IntArray::containsSorted)
-        .def("insertSorted", &oofem::IntArray::insertSorted)
-        .def("eraseSorted", &oofem::IntArray::eraseSorted)
-        .def("findFirstIndexOf", &oofem::IntArray::findFirstIndexOf, "Finds index of first occurrence of given value in array")
-        .def("contains", &oofem::IntArray::contains)
-        .def("sort", &oofem::IntArray::sort)
-        .def("zero", &oofem::IntArray::zero)
-        .def("pY", &oofem::IntArray::pY)
-        .def("__repr__",
-            [](const oofem::IntArray &s) {
-                std::string a = "<oofempy.IntArray: {";
-                for ( int i = 0; i < s.giveSize(); ++i ) {
-                    if ( i > 40 ) {
-                        a.append("...");
-                        break;
-                    } else {
-                        a.append(std::to_string(s[i]));
-                        a.append(", ");
+        py::class_<oofem::FloatMatrix>(m, "FloatMatrix")
+            .def(py::init<>())
+            .def(py::init<int,int>())
+            #ifdef _USE_NANOBIND
+            .def("__init__", ([](oofem::FloatArray* ans, py::array_t<double> s){ new (ans) oofem::FloatMatrix((int) s.shape(0), (int) s.shape(1));
+            #else
+            .def(py::init([](py::array_t<double> s){
+                oofem::FloatMatrix* ans = new oofem::FloatMatrix((int) s.shape(0), (int) s.shape(1));
+            #endif
+                for (unsigned int i=0; i<s.shape(0); i++) {
+                    for (unsigned int j=0; j<s.shape(1); j++) {
+                        (*ans)(i,j)=s.data()[i*s.shape(1)+j];
                     }
                 }
-                a.append("}>");
-                return a;
+                return ans;
+            }
+            ))
+            .def("printYourself", (void (oofem::FloatMatrix::*)() const) &oofem::FloatMatrix::printYourself, "Prints receiver")
+            .def("printYourself", (void (oofem::FloatMatrix::*)(const std::string &) const) &oofem::FloatMatrix::printYourself, "Prints receiver")
+            .def("pY", &oofem::FloatMatrix::pY)
+            .def("__setitem__", [](oofem::FloatMatrix &s, py::tuple indx, double v) {
+                s(PY_CAST(int,py::handle(indx[0])),PY_CAST(int,py::handle(indx[1]))) = v;
             })
-        .def("__setitem__", [](oofem::IntArray &s, size_t i, int v) {
-            s[i] = v;
-        })
-        .def("__getitem__", [](const oofem::IntArray &s, size_t i) {
-            if (i >= (size_t) s.giveSize()) throw py::index_error();
-            return s[i];
-        })
-
-    ;
-    py::implicitly_convertible<py::sequence, oofem::IntArray>();
-
-    py::class_<oofem::FloatArrayF<3>>(m, "FloatArrayF<3>")
-        .def(py::init<int>(), py::arg("n")=0)
-        #ifdef _USE_NANOBIND
-        .def("__init__", ([](oofem::FloatArrayF<3>* ans, py::sequence s){ new (ans) oofem::FloatArrayF<3>();
-        #else
-        .def(py::init([](py::sequence s){
-            oofem::FloatArrayF<3>* ans = new oofem::FloatArrayF<3>();
-        #endif
-            if (py::len(s) > 3) throw py::value_error("FloatArrayF<3> can only be initialized with 3 (or less)elements");
-            for (unsigned int i=0; i<py::len(s); i++) {
-                (*ans)[i]=PY_CAST(double,s[i]);
-            }
-            return ans;
-        }
-        ))
-        #ifdef _USE_NANOBIND
-        .def("__init__", ([](oofem::FloatArrayF<3>* ans, py::array_t<double> s){ new (ans) oofem::FloatArrayF<3>();
-        #else
-        .def(py::init([](py::array_t<double> s){
-            oofem::FloatArrayF<3>* ans = new oofem::FloatArrayF<3>();
-        #endif
-            if (s.size() > 3) throw py::value_error("FloatArrayF<3> can only be initialized with 3 (or less)elements");
-            for (unsigned int i=0; i<s.size(); i++) {
-                (*ans)[i]=s.data()[i];
-            }
-            return ans;
-        }
-        ))
-        .def("printYourself", (void (oofem::FloatArrayF<3>::*)() const) &oofem::FloatArrayF<3>::printYourself, "Prints receiver")
-        .def("printYourself", (void (oofem::FloatArrayF<3>::*)(const std::string &) const) &oofem::FloatArrayF<3>::printYourself, "Prints receiver")
-        .def("__setitem__", [](oofem::FloatArrayF<3> &s, size_t i, double v) {
-            s[i] = v;
-        })
-        .def("__getitem__", [](const oofem::FloatArrayF<3> &s, size_t i) {
-            if (i >= (size_t) s.giveSize()) throw py::index_error();
-            return s[i];
-        })
-        .def("__repr__",
-            [](const oofem::FloatArrayF<3> &s) {
-                std::ostringstream streamObj;
-                std::string strObj;
-                std::string a = "<oofempy.FloatArrayF<3>: {";
-                for ( int i = 0; i < s.giveSize(); ++i ) {
-                    if ( i > 40 ) {
-                        a.append("...");
-                        break;
-                    } else {
-                        streamObj.str("");
-                        streamObj.clear();
-                        streamObj << s[i];//convert to scientific notation if necessary
-                        strObj = streamObj.str();
-                        a.append(strObj);
-                        //a.append(std::to_string(s[i]));
-                        a.append(", ");
+            .def("__getitem__", [](const oofem::FloatMatrix &s, py::tuple indx) {
+                int r=PY_CAST(int,py::handle(indx[0]));
+                int c=PY_CAST(int,py::handle(indx[1]));
+                if (r >= s.giveNumberOfRows()) throw py::index_error();
+                if (c >= s.giveNumberOfColumns()) throw py::index_error();
+                return s(r,c);
+            })
+            .def("__repr__",
+                [](const oofem::FloatMatrix &s) {
+                    std::string a = "<oofempy.FloatMatrix: {";
+                    int count=0;
+                    for ( int i = 0; i < s.giveNumberOfRows(); ++i ) {
+                        for (int j=0; j< s.giveNumberOfColumns(); ++j) {
+                            count++;
+                            if ( count > 40 ) {
+                                a.append("...");
+                                break;
+                            } else {
+                                a.append(std::to_string(s(i,j)));
+                                a.append(" ");
+                            }
+                        }
+                        a.append("; ");
                     }
-                }
-                a.append("}>");
-                return a;
-        })
-        .def("zero", &oofem::FloatArrayF<3>::zero)
-        .def("add", &oofem::FloatArrayF<3>::add)
-        // enable conversion to numpy representation
-        .def("asNumpyArray", [](const oofem::FloatArrayF<3> &s) { return floatarray2numpy(s); })
-        // expose FloatArray operators
-        #ifdef _USE_EIGEN
-            .def("__add__",[](const FloatArrayF<3>& a, const FloatArrayF<3>& b)->FloatArrayF<3>{ return a+b; },py::is_operator())
-            .def("__sub__",[](const FloatArrayF<3>& a, const FloatArrayF<3>& b)->FloatArrayF<3>{ return a-b; },py::is_operator())
-            .def("__mul__",[](const FloatArrayF<3>& a, const double& b)->FloatArrayF<3>{ return a*b; },py::is_operator())
-            .def("__rmul__",[](const FloatArrayF<3>& a, const double& b)->FloatArrayF<3>{ return a*b; },py::is_operator())
-            .def("__iadd__",[](FloatArrayF<3>& a, const FloatArrayF<3>& b)->FloatArrayF<3>{ a+=b; return a; },py::is_operator())
-            .def("__isub__",[](FloatArrayF<3>& a, const FloatArrayF<3>& b)->FloatArrayF<3>{ a=(a-b).eval(); return a; },py::is_operator())
-            .def("__imul__",[](FloatArrayF<3>& a, const double& b)->FloatArrayF<3>{ a.array()*=b; return a; },py::is_operator())
-        #else
-            .def(py::self + py::self)
-            .def(py::self - py::self)
-            .def(py::self * float())
-            .def(float() * py::self)
-            .def(py::self += py::self)
-            .def(py::self -= py::self)
-            .def(py::self *= float())
-        #endif
+                    a.append("}>");
+                    return a;
+                })
+            .def("resize",
+                #ifdef _USE_EIGEN
+                    [](oofem::FloatMatrix& m, size_t r, size_t c){ m.resize(r,c); }
+                #else
+                    &oofem::FloatMatrix::resize
+                #endif
+            )
+            .def("isSquare", &oofem::FloatMatrix::isSquare)
+            .def("assemble", (void (oofem::FloatMatrix::*)(const FloatMatrix &, const IntArray &)) &oofem::FloatMatrix::assemble, "Assembles the contribution to the receiver")
+            .def("assemble", (void (oofem::FloatMatrix::*)(const FloatMatrix &, const IntArray &, const IntArray&)) &oofem::FloatMatrix::assemble, "Assembles the contribution to the receiver")
+            .def("computeFrobeniusNorm", &oofem::FloatMatrix::computeFrobeniusNorm)
+            .def("computeNorm", &oofem::FloatMatrix::computeNorm)
+            .def("beDiagonal", &oofem::FloatMatrix::beDiagonal)
+            .def("giveTrace", &oofem::FloatMatrix::giveTrace)
+            .def("giveDeterminant", &oofem::FloatMatrix::giveDeterminant)
+            .def("zero", &oofem::FloatMatrix::zero)
+            .def("beUnitMatrix", &oofem::FloatMatrix::beUnitMatrix)
+            .def("beTranspositionOf", &oofem::FloatMatrix::beTranspositionOf)
+            .def("beProductOf", &oofem::FloatMatrix::beProductOf)
+            .def("addProductOf", &oofem::FloatMatrix::addProductOf)
+            .def("addTProductOf", &oofem::FloatMatrix::addTProductOf)
+            .def("beTProductOf", &oofem::FloatMatrix::beTProductOf)
+            .def("beProductTOf", &oofem::FloatMatrix::beProductTOf)
+            .def("beDyadicProductOf", &oofem::FloatMatrix::beDyadicProductOf)
+            .def("beInverseOf", &oofem::FloatMatrix::beInverseOf)
+            .def("solveForRhs", (bool (oofem::FloatMatrix::*)(const FloatArray &, FloatArray &, bool)) &oofem::FloatMatrix::solveForRhs)
+            .def("solveForRhs", (bool (oofem::FloatMatrix::*)(const FloatMatrix &, FloatMatrix &, bool)) &oofem::FloatMatrix::solveForRhs)
+            .def("plusProductSymmUpper", &oofem::FloatMatrix::plusProductSymmUpper)
+            .def("plusDyadSymmUpper", &oofem::FloatMatrix::plusDyadSymmUpper)
+            .def("plusProductUnsym", &oofem::FloatMatrix::plusProductUnsym)
+            .def("plusDyadUnsym", &oofem::FloatMatrix::plusDyadUnsym)
+            // enable conversion to numpy representation
+            .def("asNumpyArray", [](oofem::FloatMatrix &s) { return floatmatrix2numpy(s,/*reference*/true); })
+            // expose FloatArray operators
+            #ifdef _USE_EIGEN
+                .def("__add__",[](const FloatMatrix& a, const FloatMatrix& b)->FloatMatrix{ return a+b; },py::is_operator())
+                .def("__sub__",[](const FloatMatrix& a, const FloatMatrix& b)->FloatMatrix{ return a-b; },py::is_operator())
+                .def("__mul__",[](const FloatMatrix& a, const FloatMatrix& b)->FloatMatrix{ return a*b; },py::is_operator())
+                .def("__mul__",[](const FloatMatrix& a, const FloatArray& b)->FloatArray{ return a*b; },py::is_operator())
+                .def("__iadd__",[](FloatMatrix& a, const FloatMatrix& b)->FloatMatrix{ a+=b; return a; },py::is_operator())
+                .def("__isub__",[](FloatMatrix& a, const FloatMatrix& b)->FloatMatrix{ a-=b; return a; },py::is_operator())
+            #else
+                .def(py::self + py::self)
+                .def(py::self - py::self)
+                .def(py::self * py::self)
+                .def(py::self * FloatArray())
+                .def(py::self += py::self)
+                .def(py::self -= py::self)
+            #endif
         ;
-     py::implicitly_convertible<py::sequence, oofem::FloatArrayF<3>>();
+
+        py::class_<oofem::IntArray>(m, "IntArray")
+            .def(py::init<int>(), py::arg("n")=0)
+            .def(py::init<const oofem::IntArray&>())
+            #ifdef _USE_NANOBIND
+            .def("__init__", ([](oofem::FloatArray* ans /*, py::array_t<double> s*/){ /*FIXME: new (ans) oofem::IntArray((int) py::len(s)); */
+            #else
+            .def(py::init([](py::sequence s){
+                oofem::IntArray* ans = new oofem::IntArray((int) py::len(s));
+            #endif
+                for (unsigned int i=0; i<py::len(s); i++) {
+                    (*ans)[i]=PY_CAST(int,s[i]);
+                }
+                return ans;
+            }
+            ))
+            .def("resize", &oofem::IntArray::resize)
+            .def("clear", &oofem::IntArray::clear)
+            .def("preallocate", &oofem::IntArray::preallocate)
+            .def("followedBy", (void (oofem::IntArray::*)(int , int)) &oofem::IntArray::followedBy, "Appends number to receiver")
+            .def("followedBy", (void (oofem::IntArray::*)(const oofem::IntArray& , int)) &oofem::IntArray::followedBy, "Appends array to receiver")
+            .def("isEmpty", &oofem::IntArray::isEmpty)
+            .def("containsOnlyZeroes", &oofem::IntArray::containsOnlyZeroes)
+            .def("containsSorted", &oofem::IntArray::containsSorted)
+            .def("insertSorted", &oofem::IntArray::insertSorted)
+            .def("eraseSorted", &oofem::IntArray::eraseSorted)
+            .def("findFirstIndexOf", &oofem::IntArray::findFirstIndexOf, "Finds index of first occurrence of given value in array")
+            .def("contains", &oofem::IntArray::contains)
+            .def("sort", &oofem::IntArray::sort)
+            .def("zero", &oofem::IntArray::zero)
+            .def("pY", &oofem::IntArray::pY)
+            .def("__repr__",
+                [](const oofem::IntArray &s) {
+                    std::string a = "<oofempy.IntArray: {";
+                    for ( int i = 0; i < s.giveSize(); ++i ) {
+                        if ( i > 40 ) {
+                            a.append("...");
+                            break;
+                        } else {
+                            a.append(std::to_string(s[i]));
+                            a.append(", ");
+                        }
+                    }
+                    a.append("}>");
+                    return a;
+                })
+            .def("__setitem__", [](oofem::IntArray &s, size_t i, int v) {
+                s[i] = v;
+            })
+            .def("__getitem__", [](const oofem::IntArray &s, size_t i) {
+                if (i >= (size_t) s.giveSize()) throw py::index_error();
+                return s[i];
+            })
+
+        ;
+        py::implicitly_convertible<py::sequence, oofem::IntArray>();
+
+        py::class_<oofem::FloatArrayF<3>>(m, "FloatArrayF<3>")
+            .def(py::init<int>(), py::arg("n")=0)
+            #ifdef _USE_NANOBIND
+            .def("__init__", ([](oofem::FloatArrayF<3>* ans, py::sequence s){ new (ans) oofem::FloatArrayF<3>();
+            #else
+            .def(py::init([](py::sequence s){
+                oofem::FloatArrayF<3>* ans = new oofem::FloatArrayF<3>();
+            #endif
+                if (py::len(s) > 3) throw py::value_error("FloatArrayF<3> can only be initialized with 3 (or less)elements");
+                for (unsigned int i=0; i<py::len(s); i++) {
+                    (*ans)[i]=PY_CAST(double,s[i]);
+                }
+                return ans;
+            }
+            ))
+            #ifdef _USE_NANOBIND
+            .def("__init__", ([](oofem::FloatArrayF<3>* ans, py::array_t<double> s){ new (ans) oofem::FloatArrayF<3>();
+            #else
+            .def(py::init([](py::array_t<double> s){
+                oofem::FloatArrayF<3>* ans = new oofem::FloatArrayF<3>();
+            #endif
+                if (s.size() > 3) throw py::value_error("FloatArrayF<3> can only be initialized with 3 (or less)elements");
+                for (unsigned int i=0; i<s.size(); i++) {
+                    (*ans)[i]=s.data()[i];
+                }
+                return ans;
+            }
+            ))
+            .def("printYourself", (void (oofem::FloatArrayF<3>::*)() const) &oofem::FloatArrayF<3>::printYourself, "Prints receiver")
+            .def("printYourself", (void (oofem::FloatArrayF<3>::*)(const std::string &) const) &oofem::FloatArrayF<3>::printYourself, "Prints receiver")
+            .def("__setitem__", [](oofem::FloatArrayF<3> &s, size_t i, double v) {
+                s[i] = v;
+            })
+            .def("__getitem__", [](const oofem::FloatArrayF<3> &s, size_t i) {
+                if (i >= (size_t) s.giveSize()) throw py::index_error();
+                return s[i];
+            })
+            .def("__repr__",
+                [](const oofem::FloatArrayF<3> &s) {
+                    std::ostringstream streamObj;
+                    std::string strObj;
+                    std::string a = "<oofempy.FloatArrayF<3>: {";
+                    for ( int i = 0; i < s.giveSize(); ++i ) {
+                        if ( i > 40 ) {
+                            a.append("...");
+                            break;
+                        } else {
+                            streamObj.str("");
+                            streamObj.clear();
+                            streamObj << s[i];//convert to scientific notation if necessary
+                            strObj = streamObj.str();
+                            a.append(strObj);
+                            //a.append(std::to_string(s[i]));
+                            a.append(", ");
+                        }
+                    }
+                    a.append("}>");
+                    return a;
+            })
+            .def("zero", &oofem::FloatArrayF<3>::zero)
+            .def("add", &oofem::FloatArrayF<3>::add)
+            // enable conversion to numpy representation
+            .def("asNumpyArray", [](const oofem::FloatArrayF<3> &s) { return floatarray2numpy(s); })
+            // expose FloatArray operators
+            #ifdef _USE_EIGEN
+                .def("__add__",[](const FloatArrayF<3>& a, const FloatArrayF<3>& b)->FloatArrayF<3>{ return a+b; },py::is_operator())
+                .def("__sub__",[](const FloatArrayF<3>& a, const FloatArrayF<3>& b)->FloatArrayF<3>{ return a-b; },py::is_operator())
+                .def("__mul__",[](const FloatArrayF<3>& a, const double& b)->FloatArrayF<3>{ return a*b; },py::is_operator())
+                .def("__rmul__",[](const FloatArrayF<3>& a, const double& b)->FloatArrayF<3>{ return a*b; },py::is_operator())
+                .def("__iadd__",[](FloatArrayF<3>& a, const FloatArrayF<3>& b)->FloatArrayF<3>{ a+=b; return a; },py::is_operator())
+                .def("__isub__",[](FloatArrayF<3>& a, const FloatArrayF<3>& b)->FloatArrayF<3>{ a=(a-b).eval(); return a; },py::is_operator())
+                .def("__imul__",[](FloatArrayF<3>& a, const double& b)->FloatArrayF<3>{ a.array()*=b; return a; },py::is_operator())
+            #else
+                .def(py::self + py::self)
+                .def(py::self - py::self)
+                .def(py::self * float())
+                .def(float() * py::self)
+                .def(py::self += py::self)
+                .def(py::self -= py::self)
+                .def(py::self *= float())
+            #endif
+        ;
+        py::implicitly_convertible<py::sequence, oofem::FloatArrayF<3>>();
 
     #endif
 
