@@ -86,7 +86,7 @@ class EngngModel;
 #include "enum-impl.h"
 
 
-class Variable {
+class OOFEM_EXPORT Variable {
     public:
     typedef oofem::VariableType VariableType;
     typedef oofem::VariableQuantity VariableQuantity;
@@ -131,7 +131,7 @@ class Variable {
  * - evaluate_lin to evaluate the consistent linearization of the term, so if Term is T(u), depending on unknown u,
  *   this term evaluates dT/du, which typically contributes to the LHS. 
  */
-class Term {
+class OOFEM_EXPORT Term {
     public:
     const Variable* field;
     const Variable* testField;
@@ -159,7 +159,7 @@ class Term {
  * The symbolic terms are assumed to be evaluated on generic cells (and not on problem-specific elements).
  * Therefore the need to ensure that proper DOFs and integration rules are set-up.
  */
-class GenericCellTerm : public Term {
+class OOFEM_EXPORT GenericCellTerm : public Term {
     protected:
     int nip=0; // assumed order of interpolation for the term
     public:
@@ -281,7 +281,7 @@ class GenericCellTerm : public Term {
  * @brief Base class for elements based on mp (multi-physics) concept
  * 
  */
-class MPElement : public Element {
+class OOFEM_EXPORT MPElement : public Element {
    public:
 
     MPElement (int n, Domain * aDomain) : 
