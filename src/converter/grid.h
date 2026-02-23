@@ -8,15 +8,18 @@
 #include "converterlistutils.h"
 #include "converterdatareader.h"
 #include "convertererror.h"
+#include "floatarray.h"
 #include "intarray.h"
 
 #include <unordered_map>
+#include <unordered_set>
 
 #ifndef __MAKEDEPEND
  #include <stdio.h>
  #include <time.h>
  #include <map>
  #include <list>
+#include <set>
 #endif
 #define _IFT_Grid_type "grid"
 #define _IFT_Grid_macrotype "macrotype"
@@ -72,16 +75,26 @@ class BoundarySphere;
 class BoundaryCylinder;
 
 
-
-  
 struct Node {
     int id;
     double x, y, z;
+
+    int entType = 0;   // T3D geometric entity type
+    int entID   = 0;   // T3D geometric entity ID
 };
 
 struct Tri {
     int id;
-    int n1, n2, n3;   // node ids
+    int n1, n2, n3;
+    int entType = 0;  // 3,5,6
+    int entID   = 0;
+  int entProp = 0;   // <-- add this
+  
+  
+    // only meaningful when (outType & 8)
+    int bndCurveId[3]   = {0,0,0};   // edge (n1-n2), (n2-n3), (n3-n1)
+    int bndCurveProp[3] = {0,0,0};
+
 };
 
 struct Tet {
@@ -99,6 +112,10 @@ struct Tet {
   };
 
 
+struct CurveSeg {
+    int n1, n2;     // sorted node ids
+    int curveID;
+};
 
 
 /**
@@ -115,6 +132,34 @@ private:
     GridType gridType;
 
   std::string controlFileName;
+
+  std::map<int, std::map<int, std::vector<int>>> entityNodes;
+
+  std::map<int, std::map<int, std::vector<int>>> entityTris;
+
+std::vector<CurveSeg> curveSegs;
+std::unordered_map<int, std::vector<int>> curveToSegIdx;
+
+  
+  struct BCRequest {
+    int entType;               // 1=vertex, 2=curve, 5=patch
+    int entID;
+    std::vector<int> extraVertices;  // endpoints for curves
+    
+    std::vector<int> dofs;
+    std::vector<double> values;
+    int setID = -1; // NEW
+  };
+  
+  std::vector<BCRequest> bcRequests;
+
+  struct SetDef {
+    int setID;
+    std::vector<int> nodeIDs; // sorted
+  };
+
+  std::vector<SetDef> generatedNodeSets;
+
   
     /// Grid number
     int number;
@@ -125,8 +170,16 @@ private:
     const char *boundElemName;
     const char *boundBeamElemName;
 
-    double diameter, density;
+  double diameter, density;
+  
+  double liveLoad_q = 0.0;     // N/m^2
+ 
+  bool liveLoadEnabled = false;
 
+  oofem::FloatArray liveDir;   // size 3
+
+  int t3dOutType = 0;
+  
     int dimension;
 
     double TOL;
@@ -225,16 +278,55 @@ public:
   oofem::FloatArray triNormal(int triIndex) const;
 
   void computeEdgeWidths(double thickness);
-  
+
+  void buildCurveSegsFromTris();
+
+  double segLength(int n1, int n2) const;
+
+  void computeNodalLengthsOnCurve(int curveID, std::vector<double> &L) const;
+
+  void readBCRequests();
+
+  std::set<int> collectBCNodes(const BCRequest &bc) const;
+
   double edgeLength(const Edge &e) const;
   
   double triArea(int triIndex) const;
 
-  void checkAreaConservation() const;
+  int countNodalLoads() const;
   
 
+bool isConverterDirective(const std::string &t) const
+{
+    return t.rfind("#@", 0) == 0;
+}
+  
+  void checkAreaConservation() const;
+
+
+  struct LoadRequest {
+    int entType = -1;   // 1 vertex, 2 curve, 3 surface, 5 patch, 6 shell
+    int entID   = -1;
+    double q    = 0.0;  // N/m^2 for tri-entities, N/m for curves, N for vertex
+  };
+  std::vector<LoadRequest> loadRequests;
+  
+  int entityTypeFromString(const std::string &s) const;
+
+
+  void computeNodalAreasOnTriEntity(int entType, int entID, std::vector<double> &A) const;
+  //  void computeNodalAreas(std::vector<double> &A) const;
+  
     int giveNumber() { return this->number; }
 
+  void writeLiveLoads(std::ostream &out, int &bcID);
+
+  void prepareBCSets();
+
+  void writeBCRecords(std::ostream &out, int &bcID) const;
+
+  void writeGeneratedSets(std::ostream &out) const;
+  
     double giveTol() { return this->TOL; }
 
     void setNumber(int nn) { this->number = nn; }
@@ -335,7 +427,7 @@ void buildEdges(const std::vector<Tri> &tris,
   
   int instanciateYourselfFromT3d(const std::string &t3dFileName, const std::string &controlFileName);
 
-    double ran1(long *idum);
+  double ran1(long *idum);
 
     /// Returns number of dof managers in grid.
     int                giveNumberOfVertices() { return converter::size1(vertexList); }

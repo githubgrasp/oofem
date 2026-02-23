@@ -55,6 +55,11 @@ Grid::Grid(int i)
     delaunayLocalizer      = NULL;
     voronoiLocalizer       = NULL;
     reinforcementLocalizer = NULL;
+    
+    liveDir.resize(3);
+    liveDir.at(1) = 0.0;
+    liveDir.at(2) = 0.0;
+    liveDir.at(3) = -1.0;    
 }
 
 Grid::~Grid()
@@ -237,12 +242,15 @@ bool Grid::readT3d(const std::string &fn,
                    std::vector<Tri> &tris,
 		   std::vector<Tet> &tets)
 {
+  
     std::ifstream in(fn);
     if (!in) return false;
 
     int meshType, deg, renum, outType;
     in >> meshType >> deg >> renum >> outType;
 
+    this->t3dOutType = outType;
+    
     int nNodes=0, nEdges=0, nTris=0, nQuads=0, nTets=0, nPyr=0, nWed=0, nHex=0;
 
     if (meshType == 7) {
@@ -262,25 +270,239 @@ bool Grid::readT3d(const std::string &fn,
     nodes.clear(); nodes.reserve(nNodes);
     for (int i=0;i<nNodes;i++) {
         Node n;
-        int entType, entId, entProp;
-        in >> n.id >> n.x >> n.y >> n.z >> entType >> entId >> entProp;
-        nodes.push_back(n);
+        int entProp;
+	in >> n.id >> n.x >> n.y >> n.z >> n.entType >> n.entID >> entProp;
+	nodes.push_back(n);
+	entityNodes[n.entType][n.entID].push_back(n.id);
     }
 
-    // Your file: no edge block present (nEdges==0), so triangles follow directly.
-    tris.clear(); tris.reserve(nTris);
-    for (int i=0;i<nTris;i++) {
-        Tri t;
-        int entType, entId, entProp;
-        in >> t.id >> t.n1 >> t.n2 >> t.n3 >> entType >> entId >> entProp;
-        tris.push_back(t);
+    //Debug
+    printf("First few node classifications:\n");
+    for (size_t i=0; i<std::min((size_t)5, nodes.size()); ++i) {
+      printf("node %d → type %d id %d\n",
+	     nodes[i].id,
+	     nodes[i].entType,
+	     nodes[i].entID);
     }
 
+    //Debug
+    printf("\nEntity classification summary:\n");
+
+    for (const auto &typePair : entityNodes) {
+      int type = typePair.first;
+      printf("Type %d:\n", type);
+      
+      for (const auto &idPair : typePair.second) {
+        printf("  ID %d → %zu nodes\n",
+               idPair.first,
+               idPair.second.size());
+      }
+    }
+    
+    
+
+
+tris.clear();
+tris.reserve(nTris);
+
+for (int i = 0; i < nTris; i++) {
+    Tri t{};
+    in >> t.id >> t.n1 >> t.n2 >> t.n3 >> t.entType >> t.entID >> t.entProp;
+
+    // --- optional triangle fields (order matters) ---
+
+    // iso type (bit 64)
+    if (t3dOutType & 64) {
+        int iso;
+        in >> iso;
+    }
+
+    // neighbour element IDs (bit 32)
+    if (t3dOutType & 32) {
+        int ng1, ng2, ng3;
+        in >> ng1 >> ng2 >> ng3;
+    }
+
+    // boundary curve IDs + props (bit 8)
+    if (t3dOutType & 8) {
+        in >> t.bndCurveId[0] >> t.bndCurveId[1] >> t.bndCurveId[2]
+           >> t.bndCurveProp[0] >> t.bndCurveProp[1] >> t.bndCurveProp[2];
+    }
+
+    tris.push_back(t);
+}
+
+    entityTris.clear();
+    for (size_t i = 0; i < tris.size(); ++i) {
+      entityTris[tris[i].entType][tris[i].entID].push_back((int)i);
+    }
+
+
+
+    int cnt = 0;
+    for (const auto &t : tris)
+      if (t.bndCurveId[0] || t.bndCurveId[1] || t.bndCurveId[2])
+        cnt++;
+    
+    printf("Triangles touching curves: %d / %d\n", cnt, nTris);
+
+    
     // Todo: Later read also tets.
     tets.clear();
     
     return true;
 }
+
+
+int Grid::entityTypeFromString(const std::string &s) const {
+    if (s == "vertex")  return 1;
+    if (s == "curve")   return 2;
+    if (s == "surface") return 3;
+    if (s == "patch")   return 5;
+    if (s == "shell")   return 6;
+    return -1;
+}
+
+
+void Grid::buildCurveSegsFromTris()
+{
+    curveSegs.clear();
+    curveToSegIdx.clear();
+
+    std::unordered_set<long long> seen;
+    seen.reserve(tris.size() * 2);
+
+    auto makeKey = [](int cid, int a, int b) -> long long {
+        if (a > b) std::swap(a, b);
+        return ((long long)cid << 42) ^ ((long long)a << 21) ^ (long long)b;
+    };
+
+    for (const Tri &t : tris) {
+        const int n[3] = { t.n1, t.n2, t.n3 };
+        const int ea[3][2] = { {0,1}, {1,2}, {2,0} }; // (n1-n2),(n2-n3),(n3-n1)
+
+        for (int e = 0; e < 3; ++e) {
+            const int cid = t.bndCurveId[e];
+            if (cid <= 0) continue;
+
+            int a = n[ea[e][0]];
+            int b = n[ea[e][1]];
+            if (a > b) std::swap(a, b);
+
+            long long key = makeKey(cid, a, b);
+            if (seen.find(key) != seen.end()) continue;
+            seen.insert(key);
+
+            int idx = (int)curveSegs.size();
+            curveSegs.push_back({a, b, cid});
+            curveToSegIdx[cid].push_back(idx);
+        }
+    }
+
+ printf("Curve segments built: %zu\n", curveSegs.size());
+}
+
+
+
+void Grid::readBCRequests()
+{
+    std::ifstream in(controlFileName);
+    if (!in) converter::error("Cannot open control file");
+
+    std::string line;
+
+    while (std::getline(in, line)) {
+        std::istringstream iss(line);
+
+        std::string tag;
+        if (!(iss >> tag)) continue;
+
+        // -----------------------
+        // #@BC
+        // -----------------------
+        if (tag == "#@BC") {
+            BCRequest bc;
+
+            std::string typeStr;
+            iss >> typeStr >> bc.entID;
+
+            bc.entType = entityTypeFromString(typeStr);
+            if (bc.entType < 0)
+                converter::error("Unknown BC entity type");
+
+            std::string token;
+            while (iss >> token) {
+
+                if (token == "vertices") {
+                    // read integers until next token is not an int
+                    while (true) {
+                        int v;
+                        std::streampos p = iss.tellg();
+                        if (iss >> v) {
+                            bc.extraVertices.push_back(v);
+                        } else {
+                            iss.clear();
+                            iss.seekg(p);
+                            break;
+                        }
+                    }
+                }
+                else if (token == "dofs") {
+                    int n; iss >> n;
+                    bc.dofs.resize(n);
+                    for (int i=0; i<n; ++i) iss >> bc.dofs[i];
+                }
+                else if (token == "values") {
+                    int n; iss >> n;
+                    bc.values.resize(n);
+                    for (int i=0; i<n; ++i) iss >> bc.values[i];
+                }
+            }
+
+            // validate
+            if (bc.dofs.empty() || bc.values.empty() || bc.dofs.size() != bc.values.size()) {
+                converter::error("Invalid #@BC: dofs/values missing or size mismatch");
+            }
+
+            bcRequests.push_back(std::move(bc));
+            continue;
+        }
+
+        // -----------------------
+        // #@LOAD
+        // -----------------------
+        if (tag == "#@LOAD") {
+            LoadRequest lr;
+
+            std::string typeStr;
+            iss >> typeStr >> lr.entID;            // e.g. "patch 1"
+            lr.entType = entityTypeFromString(typeStr);
+            if (lr.entType < 0)
+                converter::error("Unknown LOAD entity type");
+
+            std::string qLabel;
+            iss >> qLabel >> lr.q;                 // expects "q 3000"
+            if (qLabel != "q")
+                converter::error("Invalid #@LOAD: expected 'q <value>'");
+
+            loadRequests.push_back(std::move(lr));
+            continue;
+        }
+
+	// ---- load direction ----
+        if (tag == "#@DIR") {
+            liveDir.resize(3);
+            iss >> liveDir.at(1) >> liveDir.at(2) >> liveDir.at(3);
+            liveDir.normalize();
+            continue;
+        }	
+    }
+
+    // optional debug
+    // printf("Parsed %zu BC requests, %zu load requests\n", bcRequests.size(), loadRequests.size());
+}
+
+
 
 
 double Grid::triArea(int triIndex) const
@@ -417,6 +639,135 @@ void Grid::buildEdges(const std::vector<Tri> &tris,
 }
 
 
+void Grid::writeLiveLoads(std::ostream &out, int &bcID)
+{
+    if (loadRequests.empty()) return;
+
+    const size_t n = nodes.size();
+
+    // default direction if #@DIR missing
+    if (liveDir.giveSize() != 3) {
+        liveDir.resize(3);
+        liveDir.at(1) = 0.0;
+        liveDir.at(2) = 0.0;
+        liveDir.at(3) = -1.0;
+        liveDir.normalize();
+    }
+
+    std::vector<double> Fx(n, 0.0), Fy(n, 0.0), Fz(n, 0.0);
+
+    auto anyPositive = [](const std::vector<double> &w) -> bool {
+        for (double a : w) if (a > 0.0) return true;
+        return false;
+    };
+
+    for (const auto &req : loadRequests) {
+
+        std::vector<double> w(n, 0.0);
+
+        if (req.entType == 1) {
+            // vertex: point load
+            for (size_t i = 0; i < n; ++i) {
+                if (nodes[i].entType == 1 && nodes[i].entID == req.entID) {
+                    w[i] = 1.0;
+                }
+            }
+        }
+        else if (req.entType == 2) {
+            // curve: line load
+            computeNodalLengthsOnCurve(req.entID, w);
+        }
+        else if (req.entType == 3 || req.entType == 5 || req.entType == 6) {
+            // surface/patch/shell: area load
+            computeNodalAreasOnTriEntity(req.entType, req.entID, w);
+        }
+        else {
+            converter::error("Unsupported #@LOAD entity type in writeLiveLoads()");
+        }
+
+        // safeguard: don't silently do nothing
+        if (!anyPositive(w)) {
+            char msg[256];
+            std::snprintf(msg, sizeof(msg),
+                          "writeLiveLoads: zero tributary measure (entType=%d entID=%d). "
+                          "Check IDs and T3D -p options.",
+                          req.entType, req.entID);
+            converter::error(msg);
+        }
+
+        // accumulate nodal forces
+        for (size_t i = 0; i < n; ++i) {
+            if (w[i] <= 0.0) continue;
+
+            const double Fi = req.q * w[i];
+
+            Fx[i] += Fi * liveDir.at(1);
+            Fy[i] += Fi * liveDir.at(2);
+            Fz[i] += Fi * liveDir.at(3);
+        }
+    }
+
+    // emit one NodalLoad per node
+    for (size_t i = 0; i < n; ++i) {
+        if (Fx[i] == 0.0 && Fy[i] == 0.0 && Fz[i] == 0.0) continue;
+
+        out << "NodalLoad " << bcID++
+            << " loadTimeFunction 1"
+            << " dofs 3 1 2 3"
+            << " values 3 "
+            << std::scientific
+            << Fx[i] << " " << Fy[i] << " " << Fz[i]
+            << " dofman " << nodes[i].id
+            << "\n";
+    }
+
+    double sumFx=0, sumFy=0, sumFz=0;
+    for (size_t i=0;i<n;++i) { sumFx += Fx[i]; sumFy += Fy[i]; sumFz += Fz[i]; }
+    printf("Total applied force: (%g,%g,%g)\n", sumFx, sumFy, sumFz);
+
+}
+
+
+/* void Grid::computeNodalAreas(std::vector<double> &A) const */
+/* { */
+/*     A.assign(nodes.size(), 0.0); */
+
+/*     for (size_t i = 0; i < tris.size(); ++i) { */
+/*         double At = triArea((int)i); */
+
+/*         const Tri &t = tris[i]; */
+
+/*         A[nodeIndex.at(t.n1)] += At / 3.0; */
+/*         A[nodeIndex.at(t.n2)] += At / 3.0; */
+/*         A[nodeIndex.at(t.n3)] += At / 3.0; */
+/*     } */
+/* } */
+
+
+
+void Grid::computeNodalAreasOnTriEntity(int entType, int entID, std::vector<double> &A) const
+{
+    A.assign(nodes.size(), 0.0);
+
+    auto itT = entityTris.find(entType);
+    if (itT == entityTris.end()) return;
+
+    auto itID = itT->second.find(entID);
+    if (itID == itT->second.end()) return;
+
+    for (int ti : itID->second) {
+        const Tri &tr = tris[ti];
+        double At = triArea(ti);
+
+        A[nodeIndex.at(tr.n1)] += At / 3.0;
+        A[nodeIndex.at(tr.n2)] += At / 3.0;
+        A[nodeIndex.at(tr.n3)] += At / 3.0;
+    }
+}
+
+
+
+
 int Grid::instanciateYourselfFromT3d(const std::string &t3d, const std::string &control)
 {
     this->controlFileName = control;
@@ -427,6 +778,25 @@ int Grid::instanciateYourselfFromT3d(const std::string &t3d, const std::string &
         converter::error("Failed to read T3d file");
     }
 
+    nodeIndex.clear();
+    nodeIndex.reserve(nodes.size());
+    
+    for (size_t i = 0; i < nodes.size(); ++i) {
+      nodeIndex[nodes[i].id] = (int)i;
+    }   
+    buildCurveSegsFromTris();
+
+    //Debug
+    for (auto &kv : curveToSegIdx) {
+      double Lsum = 0.0;
+      for (int si : kv.second) {
+        const auto &s = curveSegs[si];
+        Lsum += segLength(s.n1, s.n2);
+      }
+      printf("curve %d: segs=%zu, total length=%g\n", kv.first, kv.second.size(), Lsum);
+    }
+    
+    
     nodeIndex.clear();
     nodeIndex.reserve(nodes.size());
     for (int i = 0; i < (int)nodes.size(); ++i) {
@@ -455,11 +825,74 @@ int Grid::instanciateYourselfFromT3d(const std::string &t3d, const std::string &
     for (auto &e: edges) (e.tri2<0 ? bnd : interior)++;
     printf("edges: boundary=%d interior=%d total=%zu\n", bnd, interior, edges.size());
 
+    //readLiveLoadSpec();
 
+    readBCRequests();
     
     printf("finished initializing\n");
     return 1;
 }
+
+
+void Grid::computeNodalLengthsOnCurve(int curveID, std::vector<double> &L) const
+{
+    L.assign(nodes.size(), 0.0);
+
+    auto it = curveToSegIdx.find(curveID);
+    if (it == curveToSegIdx.end()) return;
+
+    for (int si : it->second) {
+        const CurveSeg &s = curveSegs[si];
+        const double len = segLength(s.n1, s.n2);
+
+        auto it1 = nodeIndex.find(s.n1);
+        auto it2 = nodeIndex.find(s.n2);
+        if (it1 == nodeIndex.end() || it2 == nodeIndex.end()) {
+            printf("Missing nodeIndex for segment (%d,%d) on curve %d\n",
+                   s.n1, s.n2, curveID);
+            converter::error("nodeIndex missing key (check nodeIndex build)");
+        }
+
+        L[it1->second] += 0.5 * len;
+        L[it2->second] += 0.5 * len;
+    }
+}
+
+
+std::set<int> Grid::collectBCNodes(const BCRequest &bc) const
+{
+    std::set<int> result;
+
+    // interior nodes
+    auto tIt = entityNodes.find(bc.entType);
+    if (tIt != entityNodes.end()) {
+        auto idIt = tIt->second.find(bc.entID);
+        if (idIt != tIt->second.end())
+            result.insert(idIt->second.begin(), idIt->second.end());
+    }
+
+    // add endpoint vertices if curve
+    for (int vid : bc.extraVertices) {
+        auto vIt = entityNodes.find(1);
+        if (vIt != entityNodes.end()) {
+            auto idIt = vIt->second.find(vid);
+            if (idIt != vIt->second.end())
+                result.insert(idIt->second.begin(), idIt->second.end());
+        }
+    }
+
+    return result;
+}
+
+double Grid::segLength(int n1, int n2) const
+{
+    const Node &a = nodes.at(nodeIndex.at(n1));
+    const Node &b = nodes.at(nodeIndex.at(n2));
+    const double dx = b.x - a.x, dy = b.y - a.y, dz = b.z - a.z;
+    return std::sqrt(dx*dx + dy*dy + dz*dz);
+}
+
+
 
 
 oofem::FloatArray Grid::getX(int nid) const
@@ -1659,7 +2092,16 @@ void Grid::giveOofemOutput(const std::string &fileName)
 
 void Grid::giveOutputT3d(const std::string &fileName)
 {
-    //Start with output
+  int bcID = 1;
+
+  //Prepare BC and sets
+  prepareBCSets();
+
+  int nLoads = countNodalLoads();
+  int nBCs   = bcRequests.size();
+  int totalNBC = nLoads + nBCs;
+
+  //Start with output
     printf("starting giving output... \n");
 
     printf("READING controlFileName = %s\n", controlFileName.c_str());
@@ -1676,28 +2118,152 @@ void Grid::giveOutputT3d(const std::string &fileName)
     const int nNodes = (int)nodes.size();
     const int nElems   = (int)edges.size();
 
-    while (std::getline(ctrl, line)) {
-        std::string t = line;
-        t.erase(0, t.find_first_not_of(" \t")); // trim left
 
-        if (!injected && t.rfind("ncrosssect", 0) == 0) {
+while (std::getline(ctrl, line)) {
+    std::string t = line;
+    size_t pos = t.find_first_not_of(" \t");
+    if (pos != std::string::npos) t.erase(0, pos);
+    else t.clear(); // blank line
 
-            out << "ndofman " << nNodes
-                << " nelem " << nElems
-                << " " << t << "\n";
+if (!injected && t.rfind("ncrosssect", 0) == 0) {
 
-            writeT3dNodesOofem(out);
-	    writeT3dElemsOofem(out);
+    std::istringstream iss(t);
+    std::string token;
 
-            injected = true;
-        } else {
-            out << line << "\n";
+    out << "ndofman " << nNodes
+        << " nelem " << nElems << " ";
+
+    while (iss >> token) {
+
+        if (token == "nbc") {
+            out << "nbc " << totalNBC << " ";
+            iss >> token; // skip old value
+        }
+        else {
+            out << token << " ";
         }
     }
+
+    out << "\n";
+
+    writeT3dNodesOofem(out);
+    writeT3dElemsOofem(out);
+
+    injected = true;
+    continue;
+}
+
+    if (t.rfind("#@INSERT_LIVELOADS", 0) == 0) {
+      printf("writeLiveLoads: nLoadReq=%zu dir=(%g,%g,%g)\n",
+	     loadRequests.size(),
+	     liveDir.giveSize()>=3 ? liveDir.at(1) : 0.0,
+	     liveDir.giveSize()>=3 ? liveDir.at(2) : 0.0,
+	     liveDir.giveSize()>=3 ? liveDir.at(3) : 0.0);
+      
+      for (const auto &r : loadRequests) {
+	printf("  LOAD entType=%d entID=%d q=%g\n", r.entType, r.entID, r.q);
+      }
+      
+      writeLiveLoads(out,bcID);
+      writeBCRecords(out,bcID);
+      continue; // don't print the marker
+    }
+
+    if (t.rfind("#@INSERT_SETS", 0) == 0) {
+      writeGeneratedSets(out);
+      continue;
+    }
+
+    if (!isConverterDirective(t))
+      out << line << "\n";    
+    
+}
 
     return;
 };
 
+
+int Grid::countNodalLoads() const
+{
+    if (loadRequests.empty()) return 0;
+
+    const size_t n = nodes.size();
+    std::vector<double> F(n, 0.0);
+
+    auto anyPositive = [](const std::vector<double> &w) -> bool {
+        for (double a : w) if (a > 0.0) return true;
+        return false;
+    };
+
+    for (const auto &req : loadRequests) {
+
+        std::vector<double> w(n, 0.0);
+
+        if (req.entType == 1) {
+            // vertex: point load
+            for (size_t i = 0; i < n; ++i) {
+                if (nodes[i].entType == 1 && nodes[i].entID == req.entID) {
+                    w[i] = 1.0;
+                }
+            }
+        }
+        else if (req.entType == 2) {
+            // curve: line load
+            computeNodalLengthsOnCurve(req.entID, w);
+        }
+        else if (req.entType == 3 || req.entType == 5 || req.entType == 6) {
+            // surface/patch/shell: area load
+            computeNodalAreasOnTriEntity(req.entType, req.entID, w);
+        }
+        else {
+            converter::error("Unsupported #@LOAD entity type in countNodalLoads()");
+        }
+
+        // safeguard (same reason as in writeLiveLoads)
+        if (!anyPositive(w)) {
+            // don't silently ignore; this would make nbc wrong
+            char msg[256];
+            std::snprintf(msg, sizeof(msg),
+                          "countNodalLoads: zero tributary measure (entType=%d entID=%d). "
+                          "Check IDs and T3D -p options.",
+                          req.entType, req.entID);
+            converter::error(msg);
+        }
+
+        for (size_t i = 0; i < n; ++i) {
+            if (w[i] <= 0.0) continue;
+            F[i] += req.q * w[i]; // magnitude only; direction not needed for counting
+        }
+    }
+
+    int count = 0;
+    for (double f : F) {
+        if (std::abs(f) > 1e-15) ++count;
+    }
+    return count;
+}
+
+
+void Grid::prepareBCSets()
+{
+    generatedNodeSets.clear();
+
+    int setID = 1;
+
+    for (size_t i = 0; i < bcRequests.size(); ++i) {
+
+        std::set<int> ns = collectBCNodes(bcRequests[i]);
+        if (ns.empty()) continue;
+
+        SetDef sd;
+        sd.setID = setID++;
+        sd.nodeIDs.assign(ns.begin(), ns.end());
+
+        generatedNodeSets.push_back(sd);
+
+        bcRequests[i].setID = sd.setID;
+    }
+}
 
 void Grid::writeT3dNodesOofem(std::ostream &out)
 {
@@ -1820,6 +2386,35 @@ void Grid::checkAreaConservation() const
         printf("Result: Very good (floating point)\n\n");
     else
         printf("Result: WARNING — something is wrong\n\n");
+}
+
+
+void Grid::writeBCRecords(std::ostream &out, int &bcID) const
+{
+
+    for (const auto &bc : bcRequests) {
+        if (bc.setID < 0) continue;
+
+        out << "BoundaryCondition " << bcID++
+            << " loadTimeFunction 1"
+            << " dofs " << bc.dofs.size();
+        for (int d : bc.dofs) out << " " << d;
+
+        out << " values " << bc.values.size();
+        for (double v : bc.values) out << " " << std::scientific << v;
+
+        out << " set " << bc.setID << "\n";
+    }
+}
+
+
+void Grid::writeGeneratedSets(std::ostream &out) const
+{
+    for (const auto &sd : generatedNodeSets) {
+        out << "set " << sd.setID << " nodes { ";
+        for (int nid : sd.nodeIDs) out << nid << " ";
+        out << "}\n";
+    }
 }
 
 
