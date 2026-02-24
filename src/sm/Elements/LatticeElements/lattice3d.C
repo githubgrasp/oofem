@@ -502,9 +502,11 @@ Lattice3d :: computeGeometryProperties()
  
 void
   Lattice3d :: computeCrossSectionProperties() {
-   //@Todo: Extend this function so that it can deal with beams and shells.
+   //@Todo: Extend this function so that it can deal with beams and shells/3D.
    //Currently, polygon vertices are read in which are then used to compute cross-sectional properties.
-   //What we now want is to distinguish three cases: 1) Frame element. No polygon vertices are provided. All properties are read from cross-section, 2) Shell element. Two polygon vertices are provided in one direction is read from two nodes. Thickness is provided by cross-section, 3) Full 3D. Three or more polygon vertices are provided. 
+   //What we now want is to distinguish two cases
+  //1) Full 3D. Three or more polygon vertices are provided.
+  //2) Frame element. No polygon vertices are provided. All properties are read from cross-section
   if ( this->numberOfPolygonVertices > 0 ) { //Either Full 3D or shell
      
      if(this->numberOfPolygonVertices == 1){

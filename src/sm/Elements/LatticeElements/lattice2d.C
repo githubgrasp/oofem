@@ -176,21 +176,22 @@ Lattice2d :: computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode,
 // Computes numerically the stiffness matrix of the receiver.
 {
     double dV;
-    FloatMatrix d, bj, dbj;
+    FloatMatrix d, b, db, bt;
     answer.resize(6, 6);
     answer.zero();
-    this->computeBmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), bj);
+    this->computeBmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), b);
     this->computeConstitutiveMatrixAt(d, rMode, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
-    dV = this->computeVolumeAround(integrationRulesArray [ 0 ]->getIntegrationPoint(0) );
-    dbj.beProductOf(d, bj);
-    answer.plusProductUnsym(bj, dbj, dV);
+    db.beProductOf(d, b);
+    bt.beTranspositionOf(b);
+    answer.beProductOf(bt,db);
+    answer.times(1./length);
 }
 
 void
 Lattice2d :: giveInternalForcesVector(FloatArray &answer,
 				      TimeStep *tStep, int useUpdatedGpRecord)
 {
-    FloatMatrix b;
+  FloatMatrix b,bt;
     FloatArray u, stress(3), strain;
 
     this->computeVectorOf(VM_Total, tStep, u);
@@ -225,11 +226,9 @@ Lattice2d :: giveInternalForcesVector(FloatArray &answer,
         if ( stress.giveSize() == 0 ) {
             break;
         }
-
-        // compute nodal representation of internal forces using f = B^T*Sigma dV
-        double dV = this->computeVolumeAround(gp);
-        answer.plusProduct(b, stress, dV);
-
+	
+        bt.beTranspositionOf(b);
+        answer.beProductOf(bt, stress);
     }
 
     // if inactive update state, but no contribution to global system

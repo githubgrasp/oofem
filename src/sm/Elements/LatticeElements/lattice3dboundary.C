@@ -133,14 +133,16 @@ Lattice3dBoundary :: computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answ
     answer.at(4, 1) = 0.;
     answer.at(4, 2) = 0;
     answer.at(4, 3) = 0.;
-    answer.at(4, 4) = -sqrt(Ip / this->area);
+    answer.at(4, 4) = -1.;
+    //answer.at(4, 4) = -sqrt(Ip / this->area);
     answer.at(4, 5) = 0.;
     answer.at(4, 6) = 0.;
     //Second node
     answer.at(4, 7) = 0.;
     answer.at(4, 8) = 0.;
     answer.at(4, 9) = 0.;
-    answer.at(4, 10) = sqrt(Ip / this->area);
+    answer.at(4, 10) = 1.;
+    //answer.at(4, 10) = sqrt(Ip / this->area);
     answer.at(4, 11) = 0.;
     answer.at(4, 12) = 0.;
 
@@ -150,14 +152,16 @@ Lattice3dBoundary :: computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answ
     answer.at(5, 2) = 0.;
     answer.at(5, 3) = 0.;
     answer.at(5, 4) = 0.;
-    answer.at(5, 5) = -sqrt(I1 / this->area);
+    answer.at(5, 5) = -1.;
+    //    answer.at(5, 5) = -sqrt(I1 / this->area);
     answer.at(5, 6) = 0.;
     //Second node
     answer.at(5, 7) = 0.;
     answer.at(5, 8) = 0.;
     answer.at(5, 9) =  0.;
     answer.at(5, 10) = 0.;
-    answer.at(5, 11) = sqrt(I1 / this->area);
+    answer.at(5, 11) = 1.;
+    //    answer.at(5, 11) = sqrt(I1 / this->area);
     answer.at(5, 12) = 0.;
 
     //Rotation around z-axis
@@ -167,16 +171,18 @@ Lattice3dBoundary :: computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answ
     answer.at(6, 3) = 0.;
     answer.at(6, 4) = 0.;
     answer.at(6, 5) = 0.;
-    answer.at(6, 6) = -sqrt(I2 / this->area);
+    answer.at(6, 6) = -1.;
+    //    answer.at(6, 6) = -sqrt(I2 / this->area);
     //Second node
     answer.at(6, 7) = 0.;
     answer.at(6, 8) = 0.;
     answer.at(6, 9) =  0.;
     answer.at(6, 10) = 0.;
     answer.at(6, 11) = 0.;
-    answer.at(6, 12) = sqrt(I2 / this->area);
+    answer.at(6, 12) = 1.;
+    //    answer.at(6, 12) = sqrt(I2 / this->area);
 
-    answer.times(1. / this->length);
+    //    answer.times(1. / this->length);
 
     return;
 }
@@ -186,33 +192,33 @@ Lattice3dBoundary :: computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode
                                             TimeStep *tStep)
 // Computes numerically the stiffness matrix of the receiver.
 {
-    //    double dV;
-    FloatMatrix d, bi, bj, dbj, dij, bjt;
+    FloatMatrix d, b, db, bt;
     FloatMatrix t(12, 18), tt;
     FloatMatrix answerTemp(12, 12), answerHelp, ttk(18, 12);
     bool matStiffSymmFlag = this->giveCrossSection()->isCharacteristicMtrxSymmetric(rMode);
     answerTemp.zero();
     answerHelp.zero();
     t.zero();
-
+    double length = this->giveLength();
 
 
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
     }
 
-    double volume = this->computeVolumeAround(integrationRulesArray [ 0 ]->getIntegrationPoint(0) );
+    //    double volume = this->computeVolumeAround(integrationRulesArray [ 0 ]->getIntegrationPoint(0) );
 
-    this->computeBmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), bj);
+    this->computeBmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), b);
     this->computeConstitutiveMatrixAt(d, rMode, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
-    for ( int i = 1; i <= 6; i++ ) {
-        d.at(i, i) *= volume;
-    }
+    /* for ( int i = 1; i <= 6; i++ ) { */
+    /*     d.at(i, i) *= volume; */
+    /* } */
 
-    dbj.beProductOf(d, bj);
-    bjt.beTranspositionOf(bj);
-    answerTemp.beProductOf(bjt, dbj);
-
+    db.beProductOf(d, b);
+    bt.beTranspositionOf(b);
+    answerTemp.beProductOf(bt, db);
+    answerTemp.times(1./length);
+    
     answer.resize(computeNumberOfDofs(), computeNumberOfDofs() );
     answer.zero();
 
@@ -291,15 +297,15 @@ Lattice3dBoundary :: computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode
 
 
 
-double
-Lattice3dBoundary :: computeVolumeAround(GaussPoint *aGaussPoint)
-{
-    if ( geometryFlag == 0 ) {
-        computeGeometryProperties();
-    }
+/* double */
+/* Lattice3dBoundary :: computeVolumeAround(GaussPoint *aGaussPoint) */
+/* { */
+/*     if ( geometryFlag == 0 ) { */
+/*         computeGeometryProperties(); */
+/*     } */
 
-    return this->area * this->length;
-}
+/*     return this->area * this->length; */
+/* } */
 
 void
 Lattice3dBoundary :: recalculateCoordinates(int nodeNumber, FloatArray &coords) {
@@ -343,7 +349,7 @@ Lattice3dBoundary :: computeStrainVector(FloatArray &answer, GaussPoint *gp, Tim
 {
     FloatMatrix b;
     FloatArray u;
-
+    double length = this->giveLength();
 
     //Compute strain vector
     //Get the 18 components of the displacement vector of this element
@@ -396,6 +402,7 @@ Lattice3dBoundary :: computeStrainVector(FloatArray &answer, GaussPoint *gp, Tim
     }
 
     answer.beProductOf(b, uTemp);
+    answer.times(1./length);
 }
 
 bool
@@ -495,9 +502,9 @@ Lattice3dBoundary :: giveInternalForcesVector(FloatArray &answer, TimeStep *tSte
 
     this->computeStressVector(TotalStressVector, strain, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
 
-    dV  = this->computeVolumeAround(integrationRulesArray [ 0 ]->getIntegrationPoint(0) );
+    //    dV  = this->computeVolumeAround(integrationRulesArray [ 0 ]->getIntegrationPoint(0) );
     bs.beProductOf(bt, TotalStressVector);
-    bs.times(dV);
+    //    bs.times(dV);
 
     for ( int m = 1; m <= 12; m++ ) {
         answer.at(m) = bs.at(m);

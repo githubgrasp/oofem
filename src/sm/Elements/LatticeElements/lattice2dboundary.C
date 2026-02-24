@@ -125,14 +125,16 @@ Lattice2dBoundary :: computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answ
 
     answer.at(3, 1) = 0.;
     answer.at(3, 2) = 0.;
-    answer.at(3, 3) = -this->width / sqrt(12.);
+    //    answer.at(3, 3) = -this->width / sqrt(12.);
+    answer.at(3, 3) = -1.;
 
     answer.at(3, 4) = 0.;
     answer.at(3, 5) = 0.;
-    answer.at(3, 6) = this->width / sqrt(12.);
+    answer.at(3, 6) = 1.;
+    //    answer.at(3, 6) = this->width / sqrt(12.);
 
 
-    answer.times(1. / length);
+    //    answer.times(1. / length);
 
     return;
 }
@@ -196,19 +198,23 @@ void
 Lattice2dBoundary :: computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode,                                      TimeStep *tStep)
 // Computes numerically the stiffness matrix of the receiver.
 {
-    double dV;
-    FloatMatrix d, bi, bj, dbj, dij;
+  double length = this->giveLength();
+  double dV;
+    FloatMatrix d, b, db, bt;
 
     FloatMatrix answerTemp(6, 6);
     answerTemp.zero();
 
 
-    this->computeBmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), bj);
+    this->computeBmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), b);
     this->computeConstitutiveMatrixAt(d, rMode, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
-    dV = this->computeVolumeAround(integrationRulesArray [ 0 ]->getIntegrationPoint(0) );
-    dbj.beProductOf(d, bj);
-    answerTemp.plusProductUnsym(bj, dbj, dV);
 
+
+    db.beProductOf(d, b);
+    bt.beTranspositionOf(b);    
+    answerTemp.beProductOf(bt, db);
+    answerTemp.times(1./length);
+    
     answer.resize(computeNumberOfDofs(), computeNumberOfDofs() );
     answer.zero();
 
@@ -297,7 +303,8 @@ Lattice2dBoundary :: computeStrainVector(FloatArray &answer, GaussPoint *gp, Tim
 {
     FloatMatrix b;
     FloatArray u;
-
+    double length = this->giveLength();
+    
     //Compute strain vector
     //Get the 9 components of the displacement vector of this element
     this->computeVectorOf(VM_Total, stepN, u);
@@ -331,6 +338,7 @@ Lattice2dBoundary :: computeStrainVector(FloatArray &answer, GaussPoint *gp, Tim
     }
 
     answer.beProductOf(b, uTemp);
+    answer.times(1./length);
 }
 
 
@@ -486,9 +494,9 @@ Lattice2dBoundary :: giveInternalForcesVector(FloatArray &answer, TimeStep *tSte
     //
     // compute nodal representation of internal forces using f = B^T*Sigma dV
     //
-    dV  = this->computeVolumeAround(integrationRulesArray [ 0 ]->getIntegrationPoint(0) );
+    //    dV  = this->computeVolumeAround(integrationRulesArray [ 0 ]->getIntegrationPoint(0) );
     bs.beProductOf(bt, TotalStressVector);
-    bs.times(dV);
+    //    bs.times(dV);
 
     for ( int m = 1; m <= 6; m++ ) {
         answer.at(m) = bs.at(m);
