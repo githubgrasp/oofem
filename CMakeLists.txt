@@ -604,12 +604,30 @@ endif()
 
 if (USE_PYBIND_BINDINGS)
     add_definitions(-D_PYBIND_BINDINGS)
+    #find_package(Python COMPONENTS Interpreter Development)
+    #message (STATUS "Python libs: ${Python_LIBRARIES}, lib dirs: ${Python_LIBRARY_DIRS}")
+    #link_libraries(${Python_LIBRARIES})
     # workaround for emscripten: https://github.com/pyodide/pyodide/issues/5054
-    set(PYBIND11_FINDPYTHON ON)
-    find_package(Python COMPONENTS Interpreter Development)
-    message (STATUS "Python libs: ${Python_LIBRARIES}, lib dirs: ${Python_LIBRARY_DIRS}")
-    link_libraries(${Python_LIBRARIES})
-    #link_libraries(Python::Python)
+    set(Python3_USE_STATIC_LIBS OFF)
+    #add_compile_definitions(Py_GIL_DISABLED=0)
+    find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
+    # --- Workaround for CMake 4.x + Python 3.12 on Windows ---
+    if (WIN32 AND Python3_FOUND)
+        # Python3_LIBRARIES looks like:
+        #   optimized;<release_lib>;debug;<debug_lib>
+        list(GET Python3_LIBRARIES 1 Python3_LIBRARY_RELEASE)
+        list(GET Python3_LIBRARIES 3 Python3_LIBRARY_DEBUG)
+
+        # Patch the existing imported target instead of creating a new one
+        #set_target_properties(Python3::Python PROPERTIES
+        #    IMPORTED_IMPLIB "${Python3_LIBRARY_RELEASE}"
+        #    IMPORTED_LOCATION "${Python3_LIBRARY_RELEASE}"
+        #    IMPORTED_IMPLIB_DEBUG "${Python3_LIBRARY_DEBUG}"
+        #    IMPORTED_LOCATION_DEBUG "${Python3_LIBRARY_DEBUG}"
+        #    INTERFACE_INCLUDE_DIRECTORIES "${Python3_INCLUDE_DIRS}"
+        #)
+    endif()
+    #set(PYBIND11_FINDPYTHON ON)  # Explicitly choose NEW mode        
     if(USE_NANOBIND)
         if(0)
             add_subdirectory(extern/nanobind)
@@ -634,10 +652,20 @@ if (USE_PYBIND_BINDINGS)
         else()
             add_git_submodule(extern/pybind11)
         endif ()
+        
         # use python include paths and libs for all future targets (liboofem and oofem binary)
+        message(STATUS "Python3_LIBRARY = ${Python3_LIBRARY}") 
+        message(STATUS "Python3_LIBRARIES = ${Python3_LIBRARIES}") 
+        message(STATUS "Python3_LIBRARY_DIRS = ${Python3_LIBRARY_DIRS}") 
+        get_target_property(PYTHON_IMPLIB Python3::Python IMPORTED_IMPLIB) 
+        get_target_property(PYTHON_LOCATION Python3::Python IMPORTED_LOCATION) 
+        message(STATUS "IMPORTED_IMPLIB = ${PYTHON_IMPLIB}") 
+        message(STATUS "IMPORTED_LOCATION = ${PYTHON_LOCATION}")
         link_libraries(pybind11::embed)
-        pybind11_add_module(oofempy THIN_LTO ${oofem_SOURCE_DIR}/bindings/python/oofem.cpp)
-    endif()
+        link_libraries(Python3::Python)
+        link_directories(${Python_LIBRARY_DIRS})
+        pybind11_add_module(oofempy THIN_LTO ${oofem_SOURCE_DIR}/bindings/python/oofem.cpp) #shopuld append python libs
+    endif() 
     if(USE_SHARED_LIB)
         if(EMSCRIPTEN)
             MESSAGE(FATAL_ERROR "USE_SHARED_LIB=1 is incompatible with Emscripten (some unresolved symbols at runtime).")
@@ -657,18 +685,18 @@ if (USE_PYBIND_BINDINGS)
     if(NOT PYTEST_FOUND)
         execute_process(COMMAND ${Python_EXECUTABLE} -c "import pytest; print(pytest.__version__)"
                         RESULT_VARIABLE pytest_not_found OUTPUT_VARIABLE pytest_version ERROR_QUIET)
-        if(pytest_not_found)
-            message(FATAL_ERROR "Running the tests requires pytest. Please install it manually"
-                    " (try: ${Python_EXECUTABLE} -m pip install pytest)")
-        endif()
-        set(PYBIND11_PYTEST_FOUND TRUE CACHE INTERNAL "")
+        #if(pytest_not_found)
+        #    message(FATAL_ERROR "Running the tests requires pytest. Please install it manually"
+        #            " (try: ${Python_EXECUTABLE} -m pip install pytest)")
+        #endif()
+        #set(PYBIND11_PYTEST_FOUND TRUE CACHE INTERNAL "")
     endif()
 endif()
 
 if(USE_PYTHON_EXTENSION)
-    find_package(Python COMPONENTS Interpreter Development.Module Development.Embed)
-    add_definitions(-D_PYTHON_EXTENSION)
-    link_libraries(Python::Python) # embedded python
+    #find_package(Python COMPONENTS Interpreter Development.Module Development.Embed)
+    #add_definitions(-D_PYTHON_EXTENSION)
+    #link_libraries(Python::Python) # embedded python
 endif()
 
 if (USE_ONEAPI)
@@ -793,9 +821,10 @@ if (USE_SHARED_LIB)
         target_link_libraries(liboofem PUBLIC MKL::MKL)
     endif()
     if (USE_PYBIND_BINDINGS)
-        target_link_libraries(liboofem PUBLIC Python::Python)
+        #target_link_libraries(liboofem PUBLIC Python::Python) 
         target_link_directories(liboofem PUBLIC ${Python_LIBRARY_DIRS})
     endif()
+    
 
 
     generate_export_header (liboofem
