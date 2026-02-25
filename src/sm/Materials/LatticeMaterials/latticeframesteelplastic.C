@@ -108,6 +108,10 @@ namespace oofem {
         } else {
             throw ValueInputException(ir, _IFT_LatticeFrameSteelPlastic_htype, "Unknown htype. Should be either 0 or 1.\n");
         }
+
+	capacityMode = 0;
+        IR_GIVE_OPTIONAL_FIELD(ir, capacityMode, _IFT_LatticeFrameSteelPlastic_capmode); //hardening type	
+
     }
 
     MaterialStatus *
@@ -661,6 +665,15 @@ namespace oofem {
 
         this->initTempStatus(gp);
 
+	double b = 1.0;
+	if (this->capacityMode == 1) { // perWidth input
+	  b = static_cast < LatticeStructuralElement * > ( gp->giveElement() )->giveTributaryWidth(gp);
+	  if (b <= 0.0) {
+	    OOFEM_ERROR("Non-positive tributary width.");
+	  }
+	}
+
+	
         auto reducedStrain = originalStrain;
         auto thermalStrain = this->computeStressIndependentStrainVector(gp, tStep, VM_Total);
         if ( thermalStrain.giveSize() ) {

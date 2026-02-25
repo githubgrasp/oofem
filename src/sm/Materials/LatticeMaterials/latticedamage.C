@@ -271,15 +271,18 @@ LatticeDamage :: giveLatticeStress3d(const FloatArrayF< 6 > &strain, GaussPoint 
         static_cast< LatticeStructuralElement * >( gp->giveElement() )->givePressures(pressures);
     }
 
+    //Need to multiply stress with area
+    const double area = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveArea();
+    
     double waterPressure = 0.;
     for ( int i = 0; i < pressures.giveSize(); i++ ) {
         waterPressure += 1. / pressures.giveSize() * pressures [ i ];
     }
-    answer.at(1) += waterPressure;
+    answer.at(1) += area*waterPressure;
 
     double tempDeltaDissipation = computeDeltaDissipation3d(omega, reducedStrain, gp, tStep);
     double tempDissipation = status->giveDissipation() + tempDeltaDissipation;
-
+    
     //Set all temp values
     status->setTempDissipation(tempDissipation);
     status->setTempDeltaDissipation(tempDeltaDissipation);

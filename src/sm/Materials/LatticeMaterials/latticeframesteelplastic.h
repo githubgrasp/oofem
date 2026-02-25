@@ -61,6 +61,7 @@
 #define _IFT_LatticeFrameSteelPlastic_htype "htype"
 #define _IFT_LatticeFrameSteelPlastic_h_eps "h_eps"
 #define _IFT_LatticeFrameSteelPlastic_h_function_eps "h(eps)"
+#define _IFT_LatticeFrameSteelPlastic_capmode "capmode"
 
 //@}
 
@@ -125,6 +126,7 @@ class LatticeFrameSteelPlastic : public LatticeFrameElastic
 {
 protected:
 
+    int capacityMode = 0;
 
     ///maximum axial force in x-axis x-axis nx0
     double nx0;

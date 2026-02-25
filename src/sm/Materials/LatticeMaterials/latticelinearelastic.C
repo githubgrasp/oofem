@@ -141,20 +141,26 @@ LatticeLinearElastic :: giveLatticeStress3d(const FloatArrayF< 6 > &strain,
     }
 
     auto stiffnessMatrix = LatticeLinearElastic :: give3dLatticeStiffnessMatrix(ElasticStiffness, gp, tStep);
+    //stress are sectional forces
     auto stress = dot(stiffnessMatrix, reducedStrain);
 
     //Read in fluid pressures from structural element if this is not a slave problem
+
+    //Need to multiply stress with area
+    const double area = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveArea();
+
     FloatArray pressures;
     if ( !domain->giveEngngModel()->giveMasterEngngModel() ) {
         static_cast< LatticeStructuralElement * >( gp->giveElement() )->givePressures(pressures);
     }
-
+    
+    //Calculate average
     double waterPressure = 0.;
     for ( int i = 0; i < pressures.giveSize(); i++ ) {
         waterPressure += 1. / pressures.giveSize() * pressures [ i ];
     }
 
-    stress.at(1) += waterPressure;
+    stress.at(1) += area*waterPressure;
 
     //Set all temp values
     status->letTempLatticeStrainBe(strain);

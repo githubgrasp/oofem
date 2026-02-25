@@ -82,6 +82,8 @@ public:
 
     double giveArea() override { return this->width * this->thickness; }
 
+  double giveIz() override { return pow(this->width,3.)*this->thickness/12; }
+  
     int computeNumberOfDofs() override { return 6; }
     void giveDofManDofIDMask(int inode, IntArray &) const override;
     double computeVolumeAround(GaussPoint *gp) override;

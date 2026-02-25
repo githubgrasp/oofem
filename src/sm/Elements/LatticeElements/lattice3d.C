@@ -502,126 +502,11 @@ Lattice3d :: computeGeometryProperties()
  
 void
   Lattice3d :: computeCrossSectionProperties() {
-   //@Todo: Extend this function so that it can deal with beams and shells/3D.
-   //Currently, polygon vertices are read in which are then used to compute cross-sectional properties.
-   //What we now want is to distinguish two cases
-  //1) Full 3D. Three or more polygon vertices are provided.
-  //2) Frame element. No polygon vertices are provided. All properties are read from cross-section
-  if ( this->numberOfPolygonVertices > 0 ) { //Either Full 3D or shell
-     
-     if(this->numberOfPolygonVertices == 1){
-       OOFEM_ERROR("Only one cross-section is provided. Check meshing approach.\n");
-     }
-     else if (this->numberOfPolygonVertices == 2){ //Shell case. Exactly two vertices and thickness are provided.
-      FloatArray th(1);
-      this->giveCrossSection()->give(CS_Thickness, th, this);
-      double t = th.at(1);      
-      if(t <= 0.){
-	OOFEM_ERROR("Two cross-section vertices are provided but no valid shell thickness\n");
-      }
-      
-      // Preserve the two given mid-line points (global coords) BEFORE resize
-      FloatArray m1(3), m2(3);
-      m1.at(1) = polygonCoords.at(1);
-      m1.at(2) = polygonCoords.at(2);
-      m1.at(3) = polygonCoords.at(3);
-      m2.at(1) = polygonCoords.at(4);
-      m2.at(2) = polygonCoords.at(5);
-      m2.at(3) = polygonCoords.at(6);
-
-      // e = element axis (assumed normal to cross-section), already normalized
-      //      const FloatArray &e = this->normal;
-
-    // w = direction along the provided mid-line, projected to be perpendicular to e
-      FloatArray w = m2; w.subtract(m1);
-      double we = w.dotProduct(this->normal);
-      FloatArray proj = this->normal;
-      proj.times(we);
-      w.subtract(proj);
-
-    if ( w.computeNorm() < 1e-12 ) {
-      OOFEM_ERROR("Shell cross-section mid-line is (nearly) parallel to element axis; width direction cannot be formed.\n");
-    }
-    w.normalize();
-
-    // n = thickness direction in the cross-section plane
-    FloatArray n(3);
-    n.beVectorProductOf(this->normal, w);
-    if ( n.computeNorm() < 1e-12 ) {
-        OOFEM_ERROR("Thickness direction cannot be formed (degenerate cross product).\n");
-    }
-    n.normalize();
-
-    // Build 4 corners: (m1±t/2 n, m2±t/2 n)
-    const double h = 0.5 * t;
-    FloatArray off = n; off.times(h);
-
-    FloatArray c1 = m1;
-    c1.add(off);
-    FloatArray c2 = m2;
-    c2.add(off);
-    FloatArray c3 = m2;
-    c3.subtract(off);
-    FloatArray c4 = m1;
-    c4.subtract(off);
-
-    // Overwrite polygonCoordinates with 4 vertices (global coords)
-    this->numberOfPolygonVertices = 4;
-    this->polygonCoords.resize(12);
-
-    //C1
-    for(int i = 1;i<=3;i++){
-      this->polygonCoords.at(i) = c1.at(i);
-    }
-
-    //C2
-    for(int i = 1;i<=3;i++){
-      this->polygonCoords.at(3+i) = c2.at(i);
-    }
-    
-    //C3
-    for(int i = 1;i<=3;i++){
-      this->polygonCoords.at(6+i) = c3.at(i);
-    }
-
-    //C4
-    for(int i = 1;i<=3;i++){
-      this->polygonCoords.at(9+i) = c4.at(i);
-    }
-        
-     }
-
-     //      Debug
-    
-     // --- Compute section reference point x0 on the element axis from polygonCoords ---
-     // coordsA must exist here; if not, rebuild it from nodeA as you do elsewhere.
-     Node *nodeA = this->giveNode(1);
-     FloatArray coordsA(3);
-     for ( int i = 0; i < 3; ++i ) {
-       coordsA.at(i+1) = nodeA->giveCoordinate(i+1);
-     }
-
-     FloatArray x0 = coordsA;
-     double alphaMean = 0.0;
-
-     for ( int k = 0; k < this->numberOfPolygonVertices; ++k ) {
-       FloatArray v(3);
-       v.at(1) = this->polygonCoords.at(3*k + 1);
-       v.at(2) = this->polygonCoords.at(3*k + 2);
-       v.at(3) = this->polygonCoords.at(3*k + 3);
-       
-       v.subtract(coordsA);
-       alphaMean += v.dotProduct(this->normal);
-     }
-     alphaMean /= double(this->numberOfPolygonVertices);
-
-     FloatArray tmp = this->normal;
-     tmp.times(alphaMean);
-     x0.add(tmp);
-// --- end x0 ---
-    
-    // Compute the cross-section properties from the geometry provided by the vertices.
-
+  
+  if(this->numberOfPolygonVertices < 3){
+    OOFEM_ERROR("Too small number of polygon vertices. Check meshing approach.\n");
+  }
+  
     //Construct two perpendicular axis so that n is normal to the plane which they create
     //Check, if one of the components of the normal-direction is zero
     FloatArray s(3), t(3);
@@ -656,30 +541,24 @@ void
 
     //Calculate the local coordinates of the polygon vertices
     FloatArray help(3), test(3);
-    FloatArray lpc(3 * this->numberOfPolygonVertices);
-    for ( int k = 0; k < this->numberOfPolygonVertices; k++ ) {
-        for ( int n = 0; n < 3; n++ ) {
-            help(n) = this->polygonCoords(3 * k + n);
+    FloatArray lpc(3 * numberOfPolygonVertices);
+    for ( int k = 1; k <= numberOfPolygonVertices; k++ ) {
+        for ( int n = 1; n <= 3; n++ ) {
+	  help.at(n) = polygonCoords.at(3 * (k - 1) + n);
         }
 
-
-	FloatArray rel = help;
-	rel.subtract(x0);
-	test.beProductOf(lcs, rel);
- 
-	//        test.beProductOf(lcs, help);
-        for ( int n = 0; n < 3; n++ ) {
-            lpc(3 * k + n) = test(n);
+        test.beProductOf(lcs, help);
+        for ( int n = 1; n <= 3; n++ ) {
+	  lpc.at(3 * (k - 1) + n) = test.at(n);
         }
     }
 
     this->area = 0.;
-
-    for ( int k = 0; k < numberOfPolygonVertices; k++ ) {
-        if ( k < numberOfPolygonVertices - 1 ) {
-            this->area += lpc(3 * k + 1) * lpc(3 * ( k + 1 ) + 2) - lpc(3 * ( k + 1 ) + 1) * lpc(3 * k + 2);
+    for ( int k = 1; k <= numberOfPolygonVertices; k++ ) {
+        if ( k < numberOfPolygonVertices ) {
+	  this->area += lpc.at(3 * (k - 1) + 2) * lpc.at(3 * ( k ) + 3) - lpc.at(3 * ( k ) + 2) * lpc.at(3 * (k - 1) + 3);
         } else {   //Back to zero for n+1
-            this->area += lpc(3 * k + 1) * lpc(2) - lpc(1) * lpc(3 * k + 2);
+	  this->area += lpc.at(3 * (k-1) + 2) * lpc.at(3) - lpc.at(2) * lpc.at(3 * (k-1) + 3);
         }
     }
 
@@ -691,25 +570,21 @@ void
 
         for ( int k = 0; k < numberOfPolygonVertices; k++ ) {
             for ( int m = 0; m < 3; m++ ) {
-                tempCoords.at(3 * k + m + 1) = this->polygonCoords.at(3 * ( numberOfPolygonVertices - k - 1 ) + m + 1);
+                tempCoords.at(3 * k + m + 1) = polygonCoords.at(3 * ( numberOfPolygonVertices - k - 1 ) + m + 1);
             }
         }
 
-        this->polygonCoords = tempCoords;
+        polygonCoords = tempCoords;
 
         // Calculate again local co-ordinate system for different order
-        for ( int k = 0; k < this->numberOfPolygonVertices; k++ ) {
-            for ( int n = 0; n < 3; n++ ) {
-                help(n) = this->polygonCoords(3 * k + n);
+        for ( int k = 1; k <= numberOfPolygonVertices; k++ ) {
+            for ( int n = 1; n <= 3; n++ ) {
+	      help.at(n) = polygonCoords.at(3 * (k-1) + n );
             }
 
-	    FloatArray rel = help;
-	    rel.subtract(x0);
-	    test.beProductOf(lcs, rel);
-	    
-	    //            test.beProductOf(lcs, help);
-	    for ( int n = 0; n < 3; n++ ) {
-                lpc(3 * k + n) = test(n);
+            test.beProductOf(lcs, help);
+            for ( int n = 1; n <= 3; n++ ) {
+	      lpc.at(3 * (k-1) + n) = test.at(n);
             }
         }
     }
@@ -720,25 +595,25 @@ void
 
     //Calculate centroids
     centroid.resize(3);
-    for ( int k = 0; k < this->numberOfPolygonVertices; k++ ) {
-        if ( k < this->numberOfPolygonVertices - 1 ) {
-            centroid.at(2) += ( lpc(3 * k + 1) + lpc(3 * ( k + 1 ) + 1) ) * ( lpc(3 * k + 1) * lpc(3 * ( k + 1 ) + 2) - lpc(3 * ( k + 1 ) + 1) * lpc(3 * k + 2) );
-            centroid.at(3) += ( lpc(3 * k + 2) + lpc(3 * ( k + 1 ) + 2) ) * ( lpc(3 * k + 1) * lpc(3 * ( k + 1 ) + 2) - lpc(3 * ( k + 1 ) + 1) * lpc(3 * k + 2) );
+    centroid.zero();
+    for ( int k = 1; k <= numberOfPolygonVertices; k++ ) {
+        if ( k < numberOfPolygonVertices ) {
+	  centroid.at(2) += ( lpc.at(3 * (k-1) + 2) + lpc.at(3 * ( k ) + 2) ) * ( lpc.at(3 * (k-1) + 2) * lpc.at(3 * ( k ) + 3) - lpc.at(3 * ( k ) + 2) * lpc.at(3 * (k-1) + 3) );	 
+	  centroid.at(3) += ( lpc.at(3 * (k-1) + 3) + lpc.at(3 * ( k ) + 3) ) * ( lpc.at(3 * (k-1) +2) * lpc.at(3 * ( k ) + 3) - lpc.at(3 * ( k ) + 2) * lpc.at(3 * (k-1) + 3) );
         } else { //Back to zero for n+1
-            centroid.at(2) += ( lpc(3 * k + 1) + lpc(1) ) * ( lpc(3 * k + 1) * lpc(2) - lpc(1) * lpc(3 * k + 2) );
-            centroid.at(3) += ( lpc(3 * k + 2) + lpc(2) ) * ( lpc(3 * k + 1) * lpc(2) - lpc(1) * lpc(3 * k + 2) );
+	  centroid.at(2) += ( lpc.at(3 * (k-1) + 2) + lpc.at(2) ) * ( lpc.at(3 * (k-1) + 2) * lpc.at(3) - lpc.at(2) * lpc.at(3 * (k-1) + 3) );
+	  centroid.at(3) += ( lpc.at(3 * (k-1) + 3) + lpc.at(3) ) * ( lpc.at(3 * (k-1) + 2) * lpc.at(3) - lpc.at(2) * lpc.at(3 * (k-1) + 3) );
         }
     }
 
     centroid.times(1. / ( 6. * this->area ) );
 
-    //    centroid.at(1) = lpc.at(1); //The first component of all lpcs should be the same
-    centroid.at(1) = 0.0;
-    
+    centroid.at(1) = lpc.at(1); //The first component of all lpcs should be the same
+
     //Shift coordinates to centroid
-    for ( int k = 0; k < this->numberOfPolygonVertices; k++ ) {
-        for ( int l = 0; l < 3; l++ ) {
-            lpc(3 * k + l) -= centroid(l);
+    for ( int k = 1; k <= numberOfPolygonVertices; k++ ) {
+        for ( int l = 1; l <= 3; l++ ) {
+	  lpc.at(3 * (k-1) + l) -= centroid.at(l);
         }
     }
 
@@ -749,44 +624,39 @@ void
     double Ixy = 0.;
     double a;
 
-    for ( int k = 0; k < this->numberOfPolygonVertices; k++ ) {
-        if ( k < this->numberOfPolygonVertices - 1 ) {
-            a = lpc(3 * k + 1) * lpc(3 * ( k + 1 ) + 2) - lpc(3 * ( k + 1 ) + 1) * lpc(3 * k + 2);
+    for ( int k = 1; k <= numberOfPolygonVertices; k++ ) {
+        if ( k < numberOfPolygonVertices ) {
+	  a = lpc.at(3 * (k-1) + 2) * lpc.at(3 * ( k ) + 3) - lpc.at(3 * ( k ) + 2) * lpc.at(3 * (k-1) + 3);
 
-            Ixx += ( ( pow(lpc(3 * k + 2), 2.) + lpc(3 * k + 2) * lpc(3 * ( k + 1 ) + 2) + pow(lpc(3 * ( k + 1 ) + 2), 2.) ) * a ) / 12.;
+	  Ixx += ( ( pow(lpc.at(3 * (k-1) + 3), 2.) + lpc.at(3 * (k-1) + 3) * lpc.at(3 * ( k ) + 3) + pow(lpc.at(3 * ( k ) + 3), 2.) ) * a ) / 12.;
 
-            Iyy += ( ( pow(lpc(3 * k + 1), 2.) + lpc(3 * k + 1) * lpc(3 * ( k + 1 ) + 1) + pow(lpc(3 * ( k + 1 ) + 1), 2.) ) * a ) / 12.;
+	  Iyy += ( ( pow(lpc.at(3 * (k-1) + 2), 2.) + lpc.at(3 * (k-1) + 2) * lpc.at(3 * ( k ) + 2) + pow(lpc.at(3 * ( k ) + 2), 2.) ) * a ) / 12.;
 
-            Ixy += ( ( lpc(3 * k + 1) * lpc(3 * ( k + 1 ) + 2) + 2. * lpc(3 * k + 1) * lpc(3 * k + 2) +
-                       2 * lpc(3 * ( k + 1 ) + 1) * lpc(3 * ( k + 1 ) + 2) + lpc(3 * ( k + 1 ) + 1) * lpc(3 * k + 2) ) * a ) / 24.;
+	  Ixy += ( ( lpc.at(3 * (k-1) + 2) * lpc.at(3 * ( k ) + 3) + 2. * lpc.at(3 * (k-1) + 2) * lpc.at(3 * (k-1) + 3) +
+		     2 * lpc.at(3 * ( k ) + 2) * lpc.at(3 * ( k ) + 3) + lpc.at(3 * ( k ) + 2) * lpc.at(3 * (k-1) + 3) ) * a ) / 24.;
         } else {   //Back to zero for n+1
-            a = lpc(3 * k + 1) * lpc(2) - lpc(1) * lpc(3 * k + 2);
+	  a = lpc.at(3 * (k-1) + 2) * lpc.at(3) - lpc.at(2) * lpc.at(3 * (k-1) + 3);
 
-            Ixx += ( ( pow(lpc(3 * k + 2), 2.) + lpc(3 * k + 2) * lpc(2) + pow(lpc(2), 2.) ) * a ) / 12.;
+	  Ixx += ( ( pow(lpc.at(3 * (k-1) + 3), 2.) + lpc.at(3 * (k-1) + 3) * lpc.at(3) + pow(lpc.at(3), 2.) ) * a ) / 12.;
 
-            Iyy += ( ( pow(lpc(3 * k + 1), 2.) + lpc(3 * k + 1) * lpc(1) + pow(lpc(1), 2.) ) * a ) / 12.;
+	  Iyy += ( ( pow(lpc.at(3 * (k-1) + 2), 2.) + lpc.at(3 * (k-1) + 2) * lpc.at(2) + pow(lpc.at(2), 2.) ) * a ) / 12.;
 
-            Ixy += ( ( lpc(3 * k + 1) * lpc(2) + 2. * lpc(3 * k + 1) * lpc(3 * k + 2) +
-                       2 * lpc(1) * lpc(2) + lpc(1) * lpc(3 * k + 2) ) * a ) / 24.;
+	  Ixy += ( ( lpc.at(3 * (k-1) + 2) * lpc.at(3) + 2. * lpc.at(3 * (k-1) + 2) * lpc.at(3 * (k-1) + 3) +
+		     2 * lpc.at(2) * lpc.at(3) + lpc.at(2) * lpc.at(3 * (k-1) + 3) ) * a ) / 24.;
         }
     }
 
     //Compute main axis of the cross-section
     double angleChange = 0.;
-    double sum = fabs(Ixx + Iyy);
-    double pi = 3.14159265;
-    if ( ( fabs(Ixx - Iyy) / sum > 1.e-6 ) && fabs(Ixy) / sum > 1.e-6 ) {
-        angleChange = 0.5 * atan(-2 * Ixy / ( Ixx - Iyy ) );
-    } else if ( ( fabs(Ixx - Iyy) / sum < 1.e-6 ) && fabs(Ixy) / sum > 1.e-6 ) {
-        angleChange = pi / 4.;
-    }
+    double tol = 1e-12 * (fabs(Ixx) + fabs(Iyy));
 
-    if ( Iyy > Ixx ) {
-        angleChange = angleChange + pi / 2.;
+    if ( fabs(Ixx - Iyy) < tol && fabs(Ixy) < tol ) {
+      angleChange = 0.0;  // orientation arbitrary
+    } else {
+      angleChange = 0.5 * atan2(-2.0 * Ixy, (Ixx - Iyy));
     }
 
     //Moment of inertias saved in the element
-
     this->I1 = ( Ixx + Iyy ) / 2. + sqrt(pow( ( Ixx - Iyy ) / 2., 2. ) + pow(Ixy, 2.) );
     this->I2 = ( Ixx + Iyy ) / 2. - sqrt(pow( ( Ixx - Iyy ) / 2., 2. ) + pow(Ixy, 2.) );
 
@@ -807,78 +677,45 @@ void
     this->localCoordinateSystem.beProductOf(rotationChange, lcs);
 
     //Calculate the polygon vertices in the new coordinate system
-    for ( int k = 0; k < this->numberOfPolygonVertices; k++ ) {
-        for ( int n = 0; n < 3; n++ ) {
-            help(n) = this->polygonCoords(3 * k + n);
+    for ( int k = 1; k <= numberOfPolygonVertices; k++ ) {
+        for ( int n = 1; n <= 3; n++ ) {
+	  help.at(n) = polygonCoords.at(3 * (k-1) + n);
         }
 
-
-	FloatArray rel = help;
-	rel.subtract(x0);
-	test.beProductOf(this->localCoordinateSystem, rel);
-	//        test.beProductOf(this->localCoordinateSystem, help);
-        for ( int n = 0; n < 3; n++ ) {
-            lpc(3 * k + n) = test(n);
+        test.beProductOf(this->localCoordinateSystem, help);
+        for ( int n = 1; n <= 3; n++ ) {
+	  lpc.at(3 * (k-1) + n) = test.at(n);
         }
     }
 
     //Calculate centroid again in local coordinate system
     centroid.zero();
-    for ( int k = 0; k < this->numberOfPolygonVertices; k++ ) {
-        if ( k < this->numberOfPolygonVertices - 1 ) {
-            centroid.at(2) += ( lpc(3 * k + 1) + lpc(3 * ( k + 1 ) + 1) ) * ( lpc(3 * k + 1) * lpc(3 * ( k + 1 ) + 2) - lpc(3 * ( k + 1 ) + 1) * lpc(3 * k + 2) );
-            centroid.at(3) += ( lpc(3 * k + 2) + lpc(3 * ( k + 1 ) + 2) ) * ( lpc(3 * k + 1) * lpc(3 * ( k + 1 ) + 2) - lpc(3 * ( k + 1 ) + 1) * lpc(3 * k + 2) );
+    for ( int k = 1; k <= numberOfPolygonVertices; k++ ) {
+        if ( k < numberOfPolygonVertices ) {
+	  centroid.at(2) += ( lpc.at(3 * (k-1) + 2) + lpc.at(3 * ( k ) + 2) ) * ( lpc.at(3 * (k-1) + 2) * lpc.at(3 * ( k ) + 3) - lpc.at(3 * ( k ) + 2) * lpc.at(3 * (k-1) + 3) );
+	  centroid.at(3) += ( lpc.at(3 * (k-1) + 3) + lpc.at(3 * ( k ) + 3) ) * ( lpc.at(3 * (k-1) + 2) * lpc.at(3 * ( k ) + 3) - lpc.at(3 * ( k ) + 2) * lpc.at(3 * (k-1) + 3) );
         } else {   //Back to zero for n+1
-            centroid.at(2) += ( lpc(3 * k + 1) + lpc(1) ) * ( lpc(3 * k + 1) * lpc(2) - lpc(1) * lpc(3 * k + 2) );
-            centroid.at(3) += ( lpc(3 * k + 2) + lpc(2) ) * ( lpc(3 * k + 1) * lpc(2) - lpc(1) * lpc(3 * k + 2) );
+	  centroid.at(2) += ( lpc.at(3 * (k-1) + 2) + lpc.at(2) ) * ( lpc.at(3 * (k-1) + 2) * lpc.at(3) - lpc.at(2) * lpc.at(3 * (k-1) + 3) );
+          centroid.at(3) += ( lpc.at(3 * (k-1) + 3) + lpc.at(3) ) * ( lpc.at(3 * (k-1) + 2) * lpc.at(3) - lpc.at(2) * lpc.at(3 * (k-1) + 3) );
         }
     }
 
     centroid.times(1. / ( 6. * this->area ) );
 
-    //    centroid.at(1) = lpc.at(1); //The first component of all lpcs should be the same
-    centroid.at(1) = 0.0;
+    centroid.at(1) = lpc.at(1); //The first component of all lpcs should be the same
 
+    FloatArray midPointLocal(3);
+    midPointLocal.beProductOf(this->localCoordinateSystem, midPoint);
 
-    this->eccS = centroid.at(2);
-    this->eccT = centroid.at(3);
-    
-    /* FloatArray midPointLocal(3); */
-    /* midPointLocal.beProductOf(this->localCoordinateSystem, midPoint); */
-
-    /* //eccentricities stored in the element */
-    /* this->eccS = centroid.at(2) - midPointLocal.at(2); */
-    /* this->eccT = centroid.at(3) - midPointLocal.at(3); */
+    //eccentricities stored in the element
+    this->eccS = centroid.at(2) - midPointLocal.at(2);
+    this->eccT = centroid.at(3) - midPointLocal.at(3);
 
     FloatMatrix transposeLCS;
     transposeLCS.beTranspositionOf(this->localCoordinateSystem);
 
     this->globalCentroid.beProductOf(transposeLCS, centroid);
-    this->globalCentroid.add(x0);
-  } //end of Full 3D case
-  else{ //Frame case. No vertices. Check for degenerated meshes (1 vertex).
-    if(this->numberOfPolygonVertices == 1){
-      OOFEM_ERROR("Too small number of polygon vertices for 3D and shell. Too many for frame element. Check mesh.\n");
-      return;
-    }
-    //Read properties from cross-section
-    FloatArray lc(1);
-
-    this->giveCrossSection()->give(CS_Area, lc, this);
-    this->area = lc.at(1);
-    
-    this->giveCrossSection()->give(CS_InertiaMomentY, lc, this);
-    this->I1 = lc.at(1);
-    
-    this->giveCrossSection()->give(CS_InertiaMomentZ, lc, this);
-    this->I2 = lc.at(1);
-
-    this->giveCrossSection()->give(CS_TorsionConstantX, lc, this);
-    this->Ip = lc.at(1);
-
-    //@TODO. Need to add more. We will need to proide Poisson's ratio if we want to give properties for shear.
-    //But this has to come from the material.
-  }
+     
   return;
 }
 

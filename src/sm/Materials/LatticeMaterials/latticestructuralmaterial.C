@@ -129,7 +129,7 @@ namespace oofem {
 	}
     }
 
-
+    
 void
 LatticeStructuralMaterial::initializeFrom(InputRecord &ir)
 {
