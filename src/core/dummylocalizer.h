@@ -62,12 +62,12 @@ public:
 
     int init(bool force = false) override;
 
-    Element *giveElementContainingPoint(const FloatArray &coords, const IntArray *regionList = nullptr) override;
-    Element *giveElementClosestToPoint(FloatArray &lcoords, FloatArray &closest, const FloatArray &coords, int region = 0) override;
-    GaussPoint *giveClosestIP(const FloatArray &coords, int region, bool iCohesiveZoneGP = false) override;
-    void giveAllElementsWithIpWithinBox(elementContainerType &elemSet, const FloatArray &coords, const double radius) override;
-    void giveAllNodesWithinBox(nodeContainerType &nodeList, const FloatArray &coords, const double radius) override;
-    Node *giveNodeClosestToPoint(const FloatArray &coords, double maxDist) override;
+    Element *giveElementContainingPoint(const Coordinates &coords, const IntArray *regionList = nullptr) override;
+    Element *giveElementClosestToPoint(FloatArray &lcoords, Coordinates &closest, const Coordinates &coords, int region = 0) override;
+    GaussPoint *giveClosestIP(const Coordinates &coords, int region, bool iCohesiveZoneGP = false) override;
+    void giveAllElementsWithIpWithinBox(elementContainerType &elemSet, const Coordinates &coords, const double radius) override;
+    void giveAllNodesWithinBox(nodeContainerType &nodeList, const Coordinates &coords, const double radius) override;
+    Node *giveNodeClosestToPoint(const Coordinates &coords, double maxDist) override;
 
     const char *giveClassName() const override { return "DummySpatialLocalizer"; }
 };

@@ -84,17 +84,21 @@ FEI3dLineLin :: evald2Ndx2(FloatMatrix &answer, const FloatArray &lcoords, const
 }
 
 void
-FEI3dLineLin :: local2global(FloatArray &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
+FEI3dLineLin :: local2global(Coordinates &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
 {
     double ksi = lcoords.at(1);
 
-    answer.beScaled( ( 1. - ksi ) * 0.5, cellgeo.giveVertexCoordinates(1) );
-    answer.add( ( 1. + ksi ) * 0.5, cellgeo.giveVertexCoordinates(2) );
+    //answer.beScaled( ( 1. - ksi ) * 0.5, cellgeo.giveVertexCoordinates(1) );
+    //answer.add( ( 1. + ksi ) * 0.5, cellgeo.giveVertexCoordinates(2) );
+    for (int i = 1; i <= 3; i++) {
+        answer.at(i) = ( 1. - ksi ) * 0.5 * cellgeo.giveVertexCoordinates(1).at(i) +
+                       ( 1. + ksi ) * 0.5 * cellgeo.giveVertexCoordinates(2).at(i);
+    }   
 }
 
 
 int
-FEI3dLineLin :: global2local(FloatArray &answer, const FloatArray &coords, const FEICellGeometry &cellgeo) const
+FEI3dLineLin :: global2local(FloatArray &answer, const Coordinates &coords, const FEICellGeometry &cellgeo) const
 {
     FloatArray vec, x;
     vec.beDifferenceOf( cellgeo.giveVertexCoordinates(2), cellgeo.giveVertexCoordinates(1) );
@@ -133,7 +137,7 @@ FEI3dLineLin :: edgeEvaldNdx(FloatMatrix &answer, int iedge,
 }
 
 void
-FEI3dLineLin :: edgeLocal2global(FloatArray &answer, int iedge,
+FEI3dLineLin :: edgeLocal2global(Coordinates &answer, int iedge,
                                  const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
 {
     return this->local2global(answer, lcoords, cellgeo);
@@ -170,7 +174,7 @@ FEI3dLineLin :: surfaceEvalNormal(FloatArray &answer, int isurf, const FloatArra
 }
 
 void
-FEI3dLineLin :: surfaceLocal2global(FloatArray &answer, int iedge,
+FEI3dLineLin :: surfaceLocal2global(Coordinates &answer, int iedge,
                                     const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
 {
     OOFEM_ERROR("no surfaces available");

@@ -64,8 +64,8 @@ public:
 
     void evalN(FloatArray &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override;
     double evaldNdx(FloatMatrix &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override;
-    void local2global(FloatArray &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override;
-    int global2local(FloatArray &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override {
+    void local2global(Coordinates &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override;
+    int global2local(FloatArray &answer, const Coordinates &lcoords, const FEICellGeometry &cellgeo) const override {
         OOFEM_ERROR("Not yet implemented.");
     }
     void giveJacobianMatrixAt(FloatMatrix &jacobianMatrix, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override;

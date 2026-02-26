@@ -108,7 +108,7 @@ public:
    *
    * @return Global position vector.
    */
-  virtual FloatArray giveGlobalCoordinates() = 0;
+  virtual Coordinates giveGlobalCoordinates() = 0;
   /**
    * @brief Builds a location array for assembling quantities related to this contact point.
    *
@@ -175,7 +175,7 @@ public:
    * @param coords Output coordinates.
    * @param tStep  Current time step.
    */
-  virtual void giveUpdatedCoordinates(FloatArray &coords, TimeStep* tStep) = 0;
+  virtual void giveUpdatedCoordinates(Coordinates &coords, TimeStep* tStep) = 0;
   /**
    * @brief Returns the surface dimension associated with this contact point.
    *
@@ -210,12 +210,12 @@ public:
 			 const UnknownNumberingScheme &s) const override;
   //
   void giveUnknownVector(FloatArray &answer, const IntArray &dofMask, ValueModeType mode, TimeStep *tStep, bool padding = false) override;
-  void giveUpdatedCoordinates(FloatArray &coords, TimeStep* tStep) override;   
+  void giveUpdatedCoordinates(Coordinates &coords, TimeStep* tStep) override;   
   ///////////////////////////////////////////////////////////////////////////////////////
   bool inContact() override {return(contactElementId < 0 ? false : true);}
   //
   const FloatArray &giveLocalCoordinates() override = 0;
-  FloatArray giveGlobalCoordinates() override = 0;
+  Coordinates giveGlobalCoordinates() override = 0;
   //
    FEInterpolation* giveInterpolation();
   int giveContactElementId(){return contactElementId;}
@@ -234,7 +234,7 @@ public:
   ~FEContactPoint_Slave(){;}
   //
   const FloatArray &giveLocalCoordinates() override {return slave_point->giveNaturalCoordinates();}
-  FloatArray giveGlobalCoordinates() override {return slave_point->giveGlobalCoordinates();}
+  Coordinates giveGlobalCoordinates() override {return slave_point->giveGlobalCoordinates();}
 };
 
   
@@ -249,7 +249,7 @@ public:
   ~FEContactPoint_Master(){;}
   //
   const FloatArray &giveLocalCoordinates() override {return this->localCoordinates;}
-  FloatArray giveGlobalCoordinates() override;
+  Coordinates giveGlobalCoordinates() override;
 };
 
   

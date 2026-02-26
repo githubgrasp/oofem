@@ -35,6 +35,7 @@
 #ifndef element_h
 #define element_h
 
+#include "oofemcfg.h"
 #include "femcmpnn.h"
 #include "error.h"
 #include "chartype.h"
@@ -54,6 +55,7 @@
 #include "integrationrule.h"
 #include "dofiditem.h"
 #include "floatarray.h"
+#include "floatarrayf.h"
 
 #include <cstdio>
 #include <vector>
@@ -991,7 +993,7 @@ public:
      * @param lcoords Local coordinates.
      * @return Nonzero if successful, zero otherwise.
      */
-    virtual int computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords);
+    virtual int computeGlobalCoordinates(Coordinates &answer, const FloatArray &lcoords);
     /**
      * Computes the element local coordinates from given global coordinates.
      * Should compute local coordinates even if point is outside element (for mapping purposes in adaptivity)
@@ -999,7 +1001,7 @@ public:
      * @param gcoords Global coordinates.
      * @return Nonzero if point is inside element; zero otherwise.
      */
-    virtual bool computeLocalCoordinates(FloatArray &answer, const FloatArray &gcoords);
+    virtual bool computeLocalCoordinates(FloatArray &answer, const Coordinates &gcoords);
     /**
      * Returns local coordinate system of receiver
      * Required by material models with ortho- and anisotrophy.

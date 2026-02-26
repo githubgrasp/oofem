@@ -205,12 +205,12 @@ FEI3dHexaLin :: evaldNdx(FloatMatrix &answer, const FloatArray &lcoords, const F
 }
 
 void
-FEI3dHexaLin :: local2global(FloatArray &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
+FEI3dHexaLin :: local2global(Coordinates &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
 {
     FloatArray n;
     this->evalN(n, lcoords, cellgeo);
 
-    answer.clear();
+    answer.zero();
     for ( int i = 1; i <= 8; i++ ) {
         answer.add( n.at(i), cellgeo.giveVertexCoordinates(i) );
     }
@@ -219,7 +219,7 @@ FEI3dHexaLin :: local2global(FloatArray &answer, const FloatArray &lcoords, cons
 #define POINT_TOL 1.e-3
 
 int
-FEI3dHexaLin :: global2local(FloatArray &answer, const FloatArray &coords, const FEICellGeometry &cellgeo) const
+FEI3dHexaLin :: global2local(FloatArray &answer, const Coordinates &coords, const FEICellGeometry &cellgeo) const
 {
     double x1, x2, x3, x4, x5, x6, x7, x8, a1, a2, a3, a4, a5, a6, a7, a8;
     double y1, y2, y3, y4, y5, y6, y7, y8, b1, b2, b3, b4, b5, b6, b7, b8;
@@ -379,14 +379,14 @@ FEI3dHexaLin :: edgeEvaldNdxi(FloatArray &answer, int iedge, const FloatArray &l
 
 
 void
-FEI3dHexaLin :: edgeLocal2global(FloatArray &answer, int iedge,
+FEI3dHexaLin :: edgeLocal2global(Coordinates &answer, int iedge,
                                  const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
 {
     FloatArray n;
     const auto &edgeNodes = this->computeLocalEdgeMapping(iedge);
     this->edgeEvalN(n, iedge, lcoords, cellgeo);
 
-    answer.resize(3);
+    //answer.resize(3);
     answer.at(1) = n.at(1) * cellgeo.giveVertexCoordinates( edgeNodes.at(1) ).at(1) +
                    n.at(2) * cellgeo.giveVertexCoordinates( edgeNodes.at(2) ).at(1);
     answer.at(2) = n.at(1) * cellgeo.giveVertexCoordinates( edgeNodes.at(1) ).at(2) +
@@ -511,7 +511,7 @@ FEI3dHexaLin :: surfaceEvaldNdx(FloatMatrix &answer, int isurf, const FloatArray
 }
 
 void
-FEI3dHexaLin :: surfaceLocal2global(FloatArray &answer, int iedge,
+FEI3dHexaLin :: surfaceLocal2global(Coordinates &answer, int iedge,
                                     const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
 {
     FloatArray n;
@@ -519,7 +519,7 @@ FEI3dHexaLin :: surfaceLocal2global(FloatArray &answer, int iedge,
     const auto &nodes = this->computeLocalSurfaceMapping(iedge);
     this->surfaceEvalN(n, iedge, lcoords, cellgeo);
 
-    answer.resize(3);
+    //answer.resize(3);
     answer.at(1) = n.at(1) * cellgeo.giveVertexCoordinates( nodes.at(1) ).at(1) + n.at(2) * cellgeo.giveVertexCoordinates( nodes.at(2) ).at(1) +
                    n.at(3) * cellgeo.giveVertexCoordinates( nodes.at(3) ).at(1) + n.at(4) * cellgeo.giveVertexCoordinates( nodes.at(4) ).at(1);
     answer.at(2) = n.at(1) * cellgeo.giveVertexCoordinates( nodes.at(1) ).at(2) + n.at(2) * cellgeo.giveVertexCoordinates( nodes.at(2) ).at(2) +
@@ -635,10 +635,10 @@ FEI3dHexaLin :: evalNXIntegral(int iEdge, const FEICellGeometry &cellgeo) const
     const auto &c4 = cellgeo.giveVertexCoordinates( fNodes.at(4) );
 
     return (
-        c4(2) * ( c1(1) * ( -c2(0) - c3(0) ) + c2(1) * ( c1(0) - c3(0) ) + c3(1) * ( c1(0) + c2(0) ) ) +
-        c3(2) * ( c1(1) * ( -c2(0) + c4(0) ) + c2(1) * ( c1(0) + c4(0) ) +                          c4(1) * ( -c1(0) - c2(0) ) ) +
-        c2(2) * ( c1(1) * ( c3(0) + c4(0) ) +                          c3(1) * ( -c1(0) - c4(0) ) + c4(1) * ( -c1(0) + c3(0) ) ) +
-        c1(2) * ( c2(1) * ( -c3(0) - c4(0) ) + c3(1) * ( c2(0) - c4(0) ) + c4(1) * ( c2(0) + c3(0) ) ) ) * 0.25;
+        c4[2] * ( c1[1] * ( -c2[0] - c3[0] ) + c2[1] * ( c1[0] - c3[0] ) + c3[1] * ( c1[0] + c2[0] ) ) +
+        c3[2] * ( c1[1] * ( -c2[0] + c4[0] ) + c2[1] * ( c1[0] + c4[0] ) +                              c4[1] * ( -c1[0] - c2[0] ) ) +
+        c2[2] * ( c1[1] * (  c3[0] + c4[0] ) +                             c3[1] * ( -c1[0] - c4[0] ) + c4[1] * ( -c1[0] + c3[0] ) ) +
+        c1[2] * ( c2[1] * ( -c3[0] - c4[0] ) + c3[1] * ( c2[0] - c4[0] ) + c4[1] * ( c2[0] + c3[0] ) ) ) * 0.25;
 }
 
 std::unique_ptr<IntegrationRule>

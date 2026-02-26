@@ -334,19 +334,19 @@ Lattice2d_mt :: giveGpCoordinates(FloatArray &answer)
 }
 
 int
-Lattice2d_mt :: computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords)
+Lattice2d_mt :: computeGlobalCoordinates(Coordinates &answer, const FloatArray &lcoords)
 {
-    answer.resize(3);
+    //answer.resize(3);
     answer.at(1) = this->gpCoords.at(1);
     answer.at(2) = this->gpCoords.at(2);
-
+    answer.at(3) = 0.;
     return 1;
 }
 
 #define POINT_TOL 1.e-3
 
 bool
-Lattice2d_mt :: computeLocalCoordinates(FloatArray &answer, const FloatArray &coords)
+Lattice2d_mt :: computeLocalCoordinates(FloatArray &answer, const Coordinates &coords)
 {
     answer.resize(1);
     answer.at(1) = 0.;

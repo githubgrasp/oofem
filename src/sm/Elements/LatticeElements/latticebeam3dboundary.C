@@ -454,13 +454,13 @@ LatticeBeam3dBoundary :: restoreContext(DataStream &stream, ContextMode mode)
 
 
 int
-LatticeBeam3dBoundary :: computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords)
+LatticeBeam3dBoundary :: computeGlobalCoordinates(Coordinates &answer, const FloatArray &lcoords)
 {
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
     }
 
-    answer.resize(3);
+    //answer.resize(3);
     answer = this->globalCentroid;
 
     return 1;

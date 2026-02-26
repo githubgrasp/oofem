@@ -77,7 +77,7 @@ DummySpatialLocalizer :: init(bool force)
 }
 
 Element *
-DummySpatialLocalizer :: giveElementContainingPoint(const FloatArray &coords, const IntArray *regionList)
+DummySpatialLocalizer :: giveElementContainingPoint(const Coordinates &coords, const IntArray *regionList)
 {
     for ( auto &elem : domain->giveElements() ) {
         SpatialLocalizerInterface *interface = static_cast< SpatialLocalizerInterface * >( elem->giveInterface(SpatialLocalizerInterfaceType) );
@@ -101,14 +101,15 @@ DummySpatialLocalizer :: giveElementContainingPoint(const FloatArray &coords, co
 
 
 Element *
-DummySpatialLocalizer :: giveElementClosestToPoint(FloatArray &lcoords, FloatArray &closest, const FloatArray &coords, int region)
+DummySpatialLocalizer :: giveElementClosestToPoint(FloatArray &lcoords, Coordinates &closest, const Coordinates &coords, int region)
 {
     int nelems;
     Element *answer = NULL;
     double dist = 0.0;
-    FloatArray el_coords, el_lcoords;
+    Coordinates el_coords;
+    FloatArray el_lcoords;
     lcoords.clear();
-    closest.clear();
+    //closest.clear();
 
     if ( region > 0 ) {
         IntArray &elems = this->region_elements [ region - 1 ];
@@ -157,11 +158,11 @@ DummySpatialLocalizer :: giveElementClosestToPoint(FloatArray &lcoords, FloatArr
 
 
 GaussPoint *
-DummySpatialLocalizer :: giveClosestIP(const FloatArray &coords, int region, bool iCohesiveZoneGP)
+DummySpatialLocalizer :: giveClosestIP(const Coordinates &coords, int region, bool iCohesiveZoneGP)
 {
     double minDist = 0.0;
     GaussPoint *answer = nullptr;
-    FloatArray jGpCoords;
+    Coordinates jGpCoords;
 
     for ( auto &elem : this->giveDomain()->giveElements() ) {
         if ( ( region < 0 ) || ( region == elem->giveRegionNumber() ) ) {
@@ -182,10 +183,10 @@ DummySpatialLocalizer :: giveClosestIP(const FloatArray &coords, int region, boo
 
 
 void
-DummySpatialLocalizer :: giveAllElementsWithIpWithinBox(elementContainerType &elemSet, const FloatArray &coords, const double radius)
+DummySpatialLocalizer :: giveAllElementsWithIpWithinBox(elementContainerType &elemSet, const Coordinates &coords, const double radius)
 {
     int nelem;
-    FloatArray jGpCoords;
+    Coordinates jGpCoords;
 
     nelem = this->giveDomain()->giveNumberOfElements();
     for ( int i = 1; i <= nelem; i++ ) {
@@ -203,7 +204,7 @@ DummySpatialLocalizer :: giveAllElementsWithIpWithinBox(elementContainerType &el
 
 
 void
-DummySpatialLocalizer :: giveAllNodesWithinBox(nodeContainerType &nodeSet, const FloatArray &coords, const double radius)
+DummySpatialLocalizer :: giveAllNodesWithinBox(nodeContainerType &nodeSet, const Coordinates &coords, const double radius)
 {
     int nnode = this->giveDomain()->giveNumberOfDofManagers();
     for ( int i = 1; i <= nnode; i++ ) {
@@ -219,7 +220,7 @@ DummySpatialLocalizer :: giveAllNodesWithinBox(nodeContainerType &nodeSet, const
 
 
 Node *
-DummySpatialLocalizer :: giveNodeClosestToPoint(const FloatArray &coords, double maxDist)
+DummySpatialLocalizer :: giveNodeClosestToPoint(const Coordinates &coords, double maxDist)
 {
     Node *closest = nullptr;
     double maxdist = 0.;

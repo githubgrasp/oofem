@@ -403,12 +403,13 @@ Lattice2d :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority
 
 
 int
-Lattice2d :: computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords)
+Lattice2d :: computeGlobalCoordinates(Coordinates &answer, const FloatArray &lcoords)
 {
-    answer.resize(3);
+    //answer.resize(3);
     answer.at(1) = this->gpCoords.at(1);
     answer.at(2) = this->gpCoords.at(2);
-
+    answer.at(3) = 0.;
+    
     return 1;
 }
 

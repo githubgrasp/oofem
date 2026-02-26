@@ -52,7 +52,7 @@ CCTPlate3d::CCTPlate3d(int n, Domain *aDomain) : CCTPlate(n, aDomain)
 
 
 void
-CCTPlate3d::giveLocalCoordinates(FloatArray &answer, const FloatArray &global)
+CCTPlate3d::giveLocalCoordinates(Coordinates &answer, const Coordinates &global)
 {
     if ( global.giveSize() != 3 ) {
         OOFEM_ERROR("cannot transform coordinates - size mismatch");
@@ -63,7 +63,7 @@ CCTPlate3d::giveLocalCoordinates(FloatArray &answer, const FloatArray &global)
 
     FloatArray offset;
     offset.beDifferenceOf( global, this->giveNode(1)->giveCoordinates() );
-    answer.beProductOf(GtoLRotationMatrix, offset);
+    answer = GtoLRotationMatrix * offset;
 }
 
 
@@ -72,7 +72,7 @@ CCTPlate3d::giveNodeCoordinates(double &x1, double &x2, double &x3,
                                 double &y1, double &y2, double &y3,
                                 double &z1, double &z2, double &z3)
 {
-    FloatArray nc1(3), nc2(3), nc3(3);
+    Coordinates nc1, nc2, nc3;
 
     this->giveLocalCoordinates(nc1, this->giveNode(1)->giveCoordinates() );
     this->giveLocalCoordinates(nc2, this->giveNode(2)->giveCoordinates() );
@@ -100,14 +100,14 @@ CCTPlate3d::giveDofManDofIDMask(int inode, IntArray &answer) const
 
 
 bool
-CCTPlate3d::computeLocalCoordinates(FloatArray &answer, const FloatArray &coords)
+CCTPlate3d::computeLocalCoordinates(FloatArray &answer, const Coordinates &coords)
 //converts global coordinates to local planar area coordinates,
 //does not return a coordinate in the thickness direction, but
 //does check that the point is in the element thickness
 {
     // rotate the input point Coordinate System into the element CS
-    FloatArray inputCoords_ElCS;
-    std::vector< FloatArray >lc(3);
+    Coordinates inputCoords_ElCS;
+    std::vector< Coordinates >lc(3);
     FloatArray llc;
     this->giveLocalCoordinates(inputCoords_ElCS, coords);
     for ( int _i = 0; _i < 3; _i++ ) {
@@ -127,13 +127,13 @@ CCTPlate3d::computeLocalCoordinates(FloatArray &answer, const FloatArray &coords
 
 
 int
-CCTPlate3d::computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords)
+CCTPlate3d::computeGlobalCoordinates(Coordinates &answer, const FloatArray &lcoords)
 {
     double l1 = lcoords.at(1);
     double l2 = lcoords.at(2);
     double l3 = 1. - l2 - l1;
 
-    answer.resize(3);
+    //answer.resize(3);
     for ( int _i = 1; _i <= 3; _i++ ) {
         answer.at(_i) = l1 * this->giveNode(1)->giveCoordinate(_i) + l2 * this->giveNode(2)->giveCoordinate(_i) + l3 * this->giveNode(3)->giveCoordinate(_i);
     }

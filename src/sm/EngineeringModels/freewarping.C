@@ -158,12 +158,13 @@ FreeWarping :: computeResultAtCenterOfGravity(TimeStep *tStep)
     int noCS = this->giveDomain(1)->giveNumberOfCrossSectionModels(); //number of warping Crosssections
     SolutionAtCG.resize(noCS);
     Element *closestElement;
-    FloatArray lcoords,  closest, lcg;
+    FloatArray lcoords;
+    Coordinates closest, lcg;
     SpatialLocalizer *sp = this->giveDomain(1)->giveSpatialLocalizer();
     sp->init();
     lcoords.resize(2);
-    closest.resize(2);
-    lcg.resize(3);
+    //closest.resize(2);
+    //lcg.resize(3);
 
     for ( int j = 1; j <= noCS; ++j ) {
         lcg.at(1) = CG.at(j, 1);

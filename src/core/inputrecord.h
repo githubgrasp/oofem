@@ -45,10 +45,12 @@
 #include "logger.h" // for missing __func__ in MSC
 #include "oofemenv.h"
 #include "enum.h"
+#include "oofemcfg.h"
 
 namespace oofem {
 class IntArray;
 class FloatArray;
+template <std::size_t N> class FloatArrayF;
 class FloatMatrix;
 class Dictionary;
 class Range;
@@ -129,6 +131,8 @@ public:
     virtual void giveField(std :: string &answer, InputFieldType id) = 0;
     /// Reads the FloatArray field value.
     virtual void giveField(FloatArray &answer, InputFieldType id) = 0;
+    /// Reads the Coordinates field value.
+    virtual void giveField(Coordinates &answer, InputFieldType id) = 0;
     /// Reads the IntArray field value.
     virtual void giveField(IntArray &answer, InputFieldType id) = 0;
     /// Reads the FloatMatrix field value.

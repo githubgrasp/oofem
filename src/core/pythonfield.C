@@ -42,10 +42,10 @@
     namespace py = pybind11;
 #endif
 
-
-#include "field.h"
+#include "oofemcfg.h"
 #include "pythonfield.h"
 #include "floatarray.h"
+#include "floatarrayf.h"
 #include "timestep.h"
 
 
@@ -70,7 +70,7 @@ void PythonField :: setModuleName(std::string moduleName){
     //this->moduleName.resize(this->moduleName.size()); //remove trailing quotes
 }
 
-int PythonField :: evaluateAt(FloatArray &answer, const FloatArray &coords, ValueModeType mode, TimeStep *tStep)
+int PythonField :: evaluateAt(FloatArray &answer, const Coordinates &coords, ValueModeType mode, TimeStep *tStep)
 {
     // Do not use the raw CPython API functions Py_Initialize and Py_Finalize as these do not properly handle the lifetime of pybind11’s internal data.
     // https://pybind11.readthedocs.io/en/stable/advanced/embedding.html

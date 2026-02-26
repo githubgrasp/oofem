@@ -52,17 +52,17 @@ HybridEI :: HybridEI(int n, XfemManager *xm, Domain *aDomain) :
 HybridEI :: ~HybridEI()
 {}
 
-void HybridEI :: evalLevelSetNormal(double &oLevelSet, const FloatArray &iGlobalCoord, const FloatArray &iN, const IntArray &iNodeInd) const
+void HybridEI :: evalLevelSetNormal(double &oLevelSet, const Coordinates &iGlobalCoord, const FloatArray &iN, const IntArray &iNodeInd) const
 {
     interpLevelSet(oLevelSet, iN, iNodeInd);
 }
 
-void HybridEI :: evalLevelSetTangential(double &oLevelSet, const FloatArray &iGlobalCoord, const FloatArray &iN, const IntArray &iNodeInd) const
+void HybridEI :: evalLevelSetTangential(double &oLevelSet, const Coordinates &iGlobalCoord, const FloatArray &iN, const IntArray &iNodeInd) const
 {
     interpLevelSetTangential(oLevelSet, iN, iNodeInd);
 }
 
-void HybridEI :: evalGradLevelSetNormal(FloatArray &oGradLevelSet, const FloatArray &iGlobalCoord, const FloatMatrix &idNdX, const IntArray &iNodeInd) const
+void HybridEI :: evalGradLevelSetNormal(FloatArray &oGradLevelSet, const Coordinates &iGlobalCoord, const FloatMatrix &idNdX, const IntArray &iNodeInd) const
 {
     interpGradLevelSet(oGradLevelSet, idNdX, iNodeInd);
 }

@@ -69,8 +69,8 @@ public:
     void computeLumpedMassMatrix(FloatMatrix &answer, TimeStep *tStep) override;
     void computeMassMatrix(FloatMatrix &answer, TimeStep *tStep) override  { computeLumpedMassMatrix(answer, tStep); }
 
-    int computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords) override;
-    bool computeLocalCoordinates(FloatArray &answer, const FloatArray &gcoords) override;
+    int computeGlobalCoordinates(Coordinates &answer, const FloatArray &lcoords) override;
+    bool computeLocalCoordinates(FloatArray &answer, const Coordinates &gcoords) override;
 
     int computeNumberOfDofs() override;
     void giveDofManDofIDMask(int inode, IntArray &answer) const override;

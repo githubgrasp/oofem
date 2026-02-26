@@ -60,12 +60,12 @@ FEI3dHexaConst :: evaldNdx(FloatMatrix &answer, const FloatArray &lcoords, const
 }
 
 void
-FEI3dHexaConst :: local2global(FloatArray &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
+FEI3dHexaConst :: local2global(Coordinates &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
 {
     FloatArray n;
     this->evalN(n, lcoords, cellgeo);
 
-    answer.clear();
+    answer.zero();
     for ( int i = 1; i <= 8; i++ ) {
         answer.add( n.at(i), cellgeo.giveVertexCoordinates(i) );
     }
@@ -74,7 +74,7 @@ FEI3dHexaConst :: local2global(FloatArray &answer, const FloatArray &lcoords, co
 #define POINT_TOL 1.e-3
 
 int
-FEI3dHexaConst :: global2local(FloatArray &answer, const FloatArray &coords, const FEICellGeometry &cellgeo) const
+FEI3dHexaConst :: global2local(FloatArray &answer, const Coordinates &coords, const FEICellGeometry &cellgeo) const
 {
     double x1, x2, x3, x4, x5, x6, x7, x8, a1, a2, a3, a4, a5, a6, a7, a8;
     double y1, y2, y3, y4, y5, y6, y7, y8, b1, b2, b3, b4, b5, b6, b7, b8;
@@ -226,7 +226,7 @@ FEI3dHexaConst :: edgeEvaldNdxi(FloatArray &answer, int iedge, const FloatArray 
 
 
 void
-FEI3dHexaConst :: edgeLocal2global(FloatArray &answer, int iedge,
+FEI3dHexaConst :: edgeLocal2global(Coordinates &answer, int iedge,
                                  const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
 {
    OOFEM_ERROR("not implemented");
@@ -294,7 +294,7 @@ FEI3dHexaConst :: surfaceEvaldNdx(FloatMatrix &answer, int isurf, const FloatArr
 }
 
 void
-FEI3dHexaConst :: surfaceLocal2global(FloatArray &answer, int iedge,
+FEI3dHexaConst :: surfaceLocal2global(Coordinates &answer, int iedge,
                                     const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
 {
    OOFEM_ERROR("not implemented");

@@ -69,7 +69,7 @@ public:
 //     Constructor.
     ExpressionField(void);
    
-    int evaluateAt(FloatArray &answer, const FloatArray &coords,
+    int evaluateAt(FloatArray &answer, const Coordinates &coords,
                            ValueModeType mode, TimeStep *tStep) override;
                            
                            

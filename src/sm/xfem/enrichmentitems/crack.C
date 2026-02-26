@@ -97,7 +97,7 @@ void Crack :: callGnuplotExportModule(GnuplotExportModule &iExpMod, TimeStep *tS
     iExpMod.outputXFEM(* this, tStep);
 }
 
-void Crack :: computeCrackIntersectionPoints(Crack &iCrack, std :: vector< FloatArray > &oIntersectionPoints, std :: vector< double > &oArcPositions)
+void Crack :: computeCrackIntersectionPoints(Crack &iCrack, std :: vector< Coordinates > &oIntersectionPoints, std :: vector< double > &oArcPositions)
 {
     const double tol = 1.0e-12;
 
@@ -124,7 +124,7 @@ void Crack :: computeCrackIntersectionPoints(Crack &iCrack, std :: vector< Float
     }
 }
 
-void Crack :: computeArcPoints(const std :: vector< FloatArray > &iIntersectionPoints, std :: vector< double > &oArcPositions)
+void Crack :: computeArcPoints(const std :: vector< Coordinates > &iIntersectionPoints, std :: vector< double > &oArcPositions)
 {
     const double tol = 1.0e-12;
 

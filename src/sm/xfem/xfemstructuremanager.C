@@ -166,7 +166,7 @@ void XfemStructureManager :: splitCracks()
                 if ( crack_j ) {
                     // If so, find the arc length positions of the intersections on crack i ...
 
-                    std :: vector< FloatArray >intersectionPoints;
+                    std :: vector< Coordinates >intersectionPoints;
                     std :: vector< double >arcPositions_i, arcPositions_j;
                     crack_i->computeCrackIntersectionPoints(* crack_j, intersectionPoints, arcPositions_i);
                     crack_j->computeArcPoints(intersectionPoints, arcPositions_j);

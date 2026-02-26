@@ -58,7 +58,7 @@ class CohesiveSurface3d : public StructuralElement
 {
 protected:
     double area, length;
-    FloatArray center; ///< Coordinates of the center of the cohesive surface.
+    Coordinates center; ///< Coordinates of the center of the cohesive surface.
     FloatMatrix lcs; ///< Matrix defining the local coordinate system.
 
     ///@name Shift constants of periodic particles (near boundary of periodic cell).
@@ -82,7 +82,7 @@ public:
     void giveDofManDofIDMask(int inode, IntArray &answer) const override;
     double giveLength();
     void computeNmatrixAt(const FloatArray &iLocCoord, FloatMatrix &answer) override { }
-    int computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords) override;
+    int computeGlobalCoordinates(Coordinates &answer, const FloatArray &lcoords) override;
 
     // definition & identification
     const char *giveClassName() const override { return "CohesiveSurface3d"; }

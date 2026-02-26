@@ -634,7 +634,7 @@ Quad1MindlinShell3D::computeLCS()
     }
 
     for ( int i = 1; i <= 4; i++ ) {
-        this->lnodes [ i - 1 ].beProductOf(this->lcsMatrix, this->giveNode(i)->giveCoordinates() );
+        this->lnodes [ i - 1 ] = this->lcsMatrix * this->giveNode(i)->giveCoordinates();//beProductOf(this->lcsMatrix, this->giveNode(i)->giveCoordinates() );
     }
 }
 

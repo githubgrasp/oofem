@@ -61,7 +61,7 @@ double FEInterpolation1d :: boundaryGiveTransformationJacobian(int boundary, con
     return 1.;
 }
 
-void FEInterpolation1d :: boundaryLocal2Global(FloatArray &answer, int boundary, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const 
+void FEInterpolation1d :: boundaryLocal2Global(Coordinates &answer, int boundary, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const 
 {
     answer = cellgeo.giveVertexCoordinates(boundary);
 }

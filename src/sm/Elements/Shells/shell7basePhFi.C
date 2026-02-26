@@ -1282,7 +1282,7 @@ Shell7BasePhFi :: computeBmatrixForStressRecAt(FloatArray &lcoords, FloatMatrix 
 }
 
 
-std::vector<FloatArray>
+std::vector<Coordinates>
 Shell7BasePhFi :: giveFictiousNodeCoordsForExport(int layer)
 {
     // compute fictious node coords

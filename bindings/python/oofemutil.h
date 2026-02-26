@@ -556,8 +556,8 @@ py::object createTermOfType(std::string type, py::args args, py::kwargs kw)
                 return py::cast(t.release());
 
             } else {
-                oofem::FloatArray* flux = PY_CAST(oofem::FloatArray*,args[3]);
-                std::unique_ptr<Term> t = std::make_unique<NTfTerm>(f, tf, m, flux);
+                oofem::FloatArray flux = PY_CAST(oofem::FloatArray,args[3]);
+                std::unique_ptr<Term> t = std::make_unique<NTfTerm>(f, tf, m, &flux);
                 return py::cast(t.release());
             }
         }

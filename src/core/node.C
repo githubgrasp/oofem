@@ -94,7 +94,7 @@ void Node :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority
     //
     if ( flag && domain->giveEngngModel()->giveEquationScalingFlag() ) {
         double lscale = domain->giveEngngModel()->giveVariableScale(VST_Length);
-        this->coordinates.times(1. / lscale);
+        this->coordinates *= (1. / lscale);
     }
     // Read if available local coordinate system in this node
     FloatArray triplets;

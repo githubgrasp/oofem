@@ -44,7 +44,7 @@
 #include <algorithm>
 
 namespace oofem {
-bool Delaunay :: colinear(const FloatArray &iP1, const FloatArray &iP2, const FloatArray &iP3) const
+bool Delaunay :: colinear(const Coordinates &iP1, const Coordinates &iP2, const Coordinates &iP3) const
 {
     double dist = iP1.at(1) * ( iP2.at(2) - iP3.at(2) ) + iP2.at(1) * ( iP3.at(2) - iP1.at(2) ) +
                   iP3.at(1) * ( iP1.at(2) - iP2.at(2) );
@@ -63,11 +63,11 @@ void Delaunay :: printTriangles(std :: vector< Triangle > &triangles)
     }
 }
 
-bool Delaunay :: isInsideCC(const FloatArray &iP, const FloatArray &iP1, const FloatArray &iP2, const FloatArray &iP3) const
+bool Delaunay :: isInsideCC(const Coordinates &iP, const Coordinates &iP1, const Coordinates &iP2, const Coordinates &iP3) const
 {
     Triangle tr(iP1, iP2, iP3);
     double r = tr.getRadiusOfCircumCircle();
-    FloatArray circumCenter;
+    Coordinates circumCenter;
     tr.computeCenterOfCircumCircle(circumCenter);
     //double dist = distance(circumCenter, iP);
     double dist = sqrt( distance_square(Vec2(circumCenter.at(1), circumCenter.at(2)), Vec2(iP.at(1), iP.at(2))) );
@@ -78,7 +78,7 @@ bool Delaunay :: isInsideCC(const FloatArray &iP, const FloatArray &iP1, const F
     }
 }
 
-void Delaunay :: triangulate(const std :: vector< FloatArray > &iVertices, std :: vector< Triangle > &oTriangles) const
+void Delaunay :: triangulate(const std :: vector< Coordinates > &iVertices, std :: vector< Triangle > &oTriangles) const
 {
     // 4th order algorithm - four loops, only for testing purposes
 
@@ -164,7 +164,7 @@ void Delaunay :: triangulate(const std :: vector< FloatArray > &iVertices, std :
     int n = iVertices.size();
 
     // copy of vertices, since they will be shifted
-    std :: vector< FloatArray >vertices(iVertices);
+    std :: vector< Coordinates >vertices(iVertices);
 
     // small shift of vertices
     const double shift = 1.0e-12;

@@ -78,7 +78,7 @@ protected:
 public:
     IntElPoint(int n, Domain *d);
 
-    int computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords) override;
+    int computeGlobalCoordinates(Coordinates &answer, const FloatArray &lcoords) override;
 
     int computeNumberOfDofs() override;
     void giveDofManDofIDMask(int inode, IntArray &answer) const override;

@@ -201,12 +201,12 @@ FEI2dTrQuad :: evald2Ndx2(FloatMatrix &answer, const FloatArray &lcoords, const 
 
 
 void
-FEI2dTrQuad :: local2global(FloatArray &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
+FEI2dTrQuad :: local2global(Coordinates &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
 {
     FloatArray n;
     this->evalN(n, lcoords, cellgeo);
 
-    answer.resize(3);
+    //answer.resize(3);
     answer.zero();
     for ( int i = 1; i <= 6; i++ ) {
         answer.at(xind) += n.at(i) * cellgeo.giveVertexCoordinates(i).at(xind);
@@ -284,14 +284,14 @@ double FEI2dTrQuad :: edgeEvalNormal(FloatArray &normal, int iedge, const FloatA
 }
 
 void
-FEI2dTrQuad :: edgeLocal2global(FloatArray &answer, int iedge,
+FEI2dTrQuad :: edgeLocal2global(Coordinates &answer, int iedge,
                                 const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
 {
     FloatArray n;
     const auto &edgeNodes = this->computeLocalEdgeMapping(iedge);
     this->edgeEvalN(n, iedge, lcoords, cellgeo);
 
-    answer.resize(3);
+    //answer.resize(3);
     answer.zero();
     answer.at(xind) = n.at(1) * cellgeo.giveVertexCoordinates( edgeNodes.at(1) ).at(xind) +
                    n.at(2) * cellgeo.giveVertexCoordinates( edgeNodes.at(2) ).at(xind) +

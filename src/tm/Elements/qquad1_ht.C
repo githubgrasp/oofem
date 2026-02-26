@@ -111,7 +111,7 @@ QQuad1_ht :: computeEdgeVolumeAround(GaussPoint *gp, int iEdge)
 {
     double result = this->interpolation.edgeGiveTransformationJacobian( iEdge, gp->giveNaturalCoordinates(),
                                                                        FEIElementGeometryWrapper(this) );
-    FloatArray gc;
+    Coordinates gc;
     this->interpolation.edgeLocal2global( gc, iEdge, gp->giveNaturalCoordinates(),
                                          FEIElementGeometryWrapper(this) );
     // temporary gauss point on element (not edge) to evaluate thickness

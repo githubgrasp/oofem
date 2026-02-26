@@ -57,7 +57,7 @@ public:
     IntArray boundaryEdgeGiveNodes(int boundary, const Element_Geometry_Type, bool includeHierarchical=false) const override;
     void boundaryEdgeEvalN(FloatArray &answer, int boundary, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override;
     double boundaryEdgeGiveTransformationJacobian(int boundary, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override;
-    void boundaryEdgeLocal2Global(FloatArray &answer, int boundary, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override;
+    void boundaryEdgeLocal2Global(Coordinates &answer, int boundary, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override;
     double boundaryEdgeEvalNormal(FloatArray &answer, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override
     { return edgeEvalNormal(answer, isurf, lcoords, cellgeo); }
 
@@ -67,7 +67,7 @@ public:
     void boundarySurfaceEvaldNdx(FloatMatrix &answer, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override
     { this->surfaceEvaldNdx(answer, isurf, lcoords, cellgeo); }
     double boundarySurfaceEvalNormal(FloatArray &answer, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override;
-    void boundarySurfaceLocal2global(FloatArray &answer, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override
+    void boundarySurfaceLocal2global(Coordinates &answer, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override
     { this->surfaceLocal2global(answer, isurf, lcoords, cellgeo); }
     double boundarySurfaceGiveTransformationJacobian(int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override
     { return this->surfaceGiveTransformationJacobian(isurf, lcoords, cellgeo); }
@@ -78,7 +78,7 @@ public:
     void boundaryEvalN(FloatArray &answer, int boundary, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override;
     double boundaryEvalNormal(FloatArray &answer, int boundary, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override;
     double boundaryGiveTransformationJacobian(int boundary, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override;
-    void boundaryLocal2Global(FloatArray &answer, int boundary, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override;
+    void boundaryLocal2Global(Coordinates &answer, int boundary, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override;
 
     /**@name Edge interpolation services */
     //@{
@@ -126,7 +126,7 @@ public:
      * @param lcoords Array containing (local) coordinates.
      * @param cellgeo Underlying cell geometry.
      */
-    virtual void edgeLocal2global(FloatArray &answer, int iedge, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const = 0;
+    virtual void edgeLocal2global(Coordinates &answer, int iedge, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const = 0;
     /**
      * Evaluates the edge jacobian of transformation between local and global coordinates.
      * @param iedge Determines edge number.
@@ -216,7 +216,7 @@ public:
      * @param lcoords Array containing (local) coordinates.
      * @param cellgeo Underlying cell geometry.
      */
-    virtual void surfaceLocal2global(FloatArray &answer, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const = 0;
+    virtual void surfaceLocal2global(Coordinates &answer, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const = 0;
     /**
      * Evaluates the edge jacobian of transformation between local and global coordinates.
      * @param isurf Determines the surface number.

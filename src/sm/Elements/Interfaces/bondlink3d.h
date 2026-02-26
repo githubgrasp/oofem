@@ -70,7 +70,7 @@ protected:
     int geometryFlag = 0;
     double bondEndLength = 0.;
     FloatArray rigid;
-    FloatArray globalCentroid;
+    Coordinates globalCentroid;
 
     static ParamKey IPK_BondLink3d_length;
     static ParamKey IPK_BondLink3d_diameter;
@@ -93,7 +93,7 @@ public:
      * function as it returns the global coordinates of the gausspoint
      * independent to the value of the lcoords.
      */
-    int computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords) override;
+    int computeGlobalCoordinates(Coordinates &answer, const FloatArray &lcoords) override;
 
     virtual double giveBondLength();
 

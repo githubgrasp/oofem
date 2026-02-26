@@ -72,7 +72,7 @@ public:
     /** Accessor for setting nodal values; checks size of the array for correctness. */
     void setValues(const std::vector< FloatArray > &vv);
 
-    int evaluateAt(FloatArray &answer, const FloatArray &coords,
+    int evaluateAt(FloatArray &answer, const Coordinates &coords,
                            ValueModeType mode, TimeStep *tStep) override;
 
     int evaluateAt(FloatArray &answer, DofManager *dman,

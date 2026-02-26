@@ -71,7 +71,7 @@ public:
 
     virtual int giveLocalCoordinateSystem(FloatMatrix &answer) override;
 
-    virtual int computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords) override;
+    virtual int computeGlobalCoordinates(Coordinates &answer, const FloatArray &lcoords) override;
 
     virtual double giveLength() override;
 

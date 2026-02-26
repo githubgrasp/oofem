@@ -36,6 +36,7 @@
 #define delaunay_h
 
 #include "oofemenv.h"
+#include "oofemcfg.h"
 
 #include <vector>
 
@@ -55,10 +56,10 @@ class OOFEM_EXPORT Delaunay
 public:
     Delaunay() : mTol(1.0e-12) { }
 
-    bool colinear(const FloatArray &iP1, const FloatArray &iP2, const FloatArray &iP3) const;
+    bool colinear(const Coordinates &iP1, const Coordinates &iP2, const Coordinates &iP3) const;
     void printTriangles(std :: vector< Triangle > &triangles);
-    bool isInsideCC(const FloatArray &iP, const FloatArray &iP1, const FloatArray &iP2, const FloatArray &iP3) const;
-    void triangulate(const std :: vector< FloatArray > &iVertices, std :: vector< Triangle > &oTriangles) const;
+    bool isInsideCC(const Coordinates &iP, const Coordinates &iP1, const Coordinates &iP2, const Coordinates &iP3) const;
+    void triangulate(const std :: vector< Coordinates > &iVertices, std :: vector< Triangle > &oTriangles) const;
 
 private:
     const double mTol; /// Tolerance used when checking if points are colinear.

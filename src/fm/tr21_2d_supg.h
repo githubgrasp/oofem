@@ -85,7 +85,7 @@ public:
     double LS_PCS_computeF(LevelSetPCS *ls, TimeStep *tStep) override;
     void LS_PCS_computedN(FloatMatrix &answer) override;
     double LS_PCS_computeVolume() override;
-    void LS_PCS_computeVolume(double &answer,  const FloatArray **coordinates);
+    void LS_PCS_computeVolume(double &answer,  const Coordinates **coordinates);
     double LS_PCS_computeS(LevelSetPCS *ls, TimeStep *tStep) override;
     void LS_PCS_computeVOFFractions(FloatArray &answer, FloatArray &fi) override;
 
@@ -95,8 +95,8 @@ public:
 
     /// @name Helping functions for computing VOFFractions.
     //@{
-    void computeIntersection(int iedge, FloatArray &intcoords, FloatArray &fi);
-    void computeMiddlePointOnParabolicArc(FloatArray &answer, int iedge, FloatArray borderpoints);
+    void computeIntersection(int iedge, Coordinates &intcoords, FloatArray &fi);
+    void computeMiddlePointOnParabolicArc(Coordinates &answer, int iedge, FloatArray borderpoints);
     void computeCenterOf(FloatArray &C, FloatArray c, int dim);
     void computeQuadraticRoots(FloatArray Coeff, double &r1, double &r2);
     void computeCoordsOfEdge(FloatArray &answer, int iedge);

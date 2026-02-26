@@ -32,6 +32,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+#include "oofemcfg.h"
 #include "dynamicinputrecord.h"
 #include "femcmpnn.h"
 #include "intarray.h"
@@ -213,6 +214,15 @@ void DynamicInputRecord :: giveField(FloatArray &answer, InputFieldType id)
     answer = it->second;
 }
 
+void DynamicInputRecord :: giveField(Coordinates &answer, InputFieldType id)
+{
+    std :: map< std :: string, Coordinates > :: iterator it = this->coordinatesRecord.find(id);
+    if ( it == this->coordinatesRecord.end() ) {
+        throw MissingKeywordInputException(shared_from_this(), id, recordNumber);
+    }
+    answer = it->second;
+}
+
 void DynamicInputRecord :: giveField(IntArray &answer, InputFieldType id)
 {
     std :: map< std :: string, IntArray > :: iterator it = this->intArrayRecord.find(id);
@@ -274,6 +284,7 @@ bool DynamicInputRecord :: hasField(InputFieldType id)
            this->doubleRecord.find(id) != this->doubleRecord.end() ||
            this->boolRecord.find(id) != this->boolRecord.end() ||
            this->floatArrayRecord.find(id) != this->floatArrayRecord.end() ||
+           this->coordinatesRecord.find(id) != this->coordinatesRecord.end() ||
            this->intArrayRecord.find(id) != this->intArrayRecord.end() ||
            this->matrixRecord.find(id) != this->matrixRecord.end() ||
            this->stringListRecord.find(id) != this->stringListRecord.end() ||
@@ -322,6 +333,11 @@ void DynamicInputRecord :: setField(std :: string item, InputFieldType id)
 void DynamicInputRecord :: setField(FloatArray item, InputFieldType id)
 {
     this->floatArrayRecord [id] = std :: move(item);
+}
+
+void DynamicInputRecord :: setField(Coordinates item, InputFieldType id)
+{
+    this->coordinatesRecord [id] = std :: move(item);
 }
 
 void DynamicInputRecord :: setField(IntArray item, InputFieldType id)

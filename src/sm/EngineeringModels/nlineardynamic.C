@@ -921,7 +921,7 @@ NonLinearDynamic :: estimateMaxPackSize(IntArray &commMap, DataStream &buff, int
             }
         }
 
-        return ( buff.givePackSizeOfDouble(1) * max(count, pcount) );
+        return ( buff.givePackSizeOfDouble(1) * std::max(count, pcount) );
     } else if ( packUnpackType == 1 ) {
         for ( int map: commMap ) {
             count += domain->giveElement( map )->estimatePackSize(buff);

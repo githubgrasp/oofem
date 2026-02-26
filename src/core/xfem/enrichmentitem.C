@@ -231,7 +231,7 @@ void EnrichmentItem :: givePotentialEIDofIdArray(IntArray &answer) const {
     }
 }
 
-bool EnrichmentItem :: evalLevelSetNormalInNode(double &oLevelSet, int iNodeInd, const FloatArray &iGlobalCoord) const
+bool EnrichmentItem :: evalLevelSetNormalInNode(double &oLevelSet, int iNodeInd, const Coordinates &iGlobalCoord) const
 {
     auto res = mLevelSetNormalDirMap.find(iNodeInd);
     if ( res != mLevelSetNormalDirMap.end() ) {
@@ -243,7 +243,7 @@ bool EnrichmentItem :: evalLevelSetNormalInNode(double &oLevelSet, int iNodeInd,
     }
 }
 
-bool EnrichmentItem :: evalLevelSetTangInNode(double &oLevelSet, int iNodeInd, const FloatArray &iGlobalCoord) const
+bool EnrichmentItem :: evalLevelSetTangInNode(double &oLevelSet, int iNodeInd, const Coordinates &iGlobalCoord) const
 {
     auto res = mLevelSetTangDirMap.find(iNodeInd);
     if ( res != mLevelSetTangDirMap.end() ) {

@@ -56,7 +56,7 @@ MMALeastSquareProjection :: MMALeastSquareProjection() : MaterialMappingAlgorith
 MMALeastSquareProjection :: ~MMALeastSquareProjection() { }
 
 void
-MMALeastSquareProjection :: __init(Domain *dold, IntArray &type, const FloatArray &coords, Set &elemSet, TimeStep *tStep, bool iCohesiveZoneGP)
+MMALeastSquareProjection :: __init(Domain *dold, IntArray &type, const Coordinates &coords, Set &elemSet, TimeStep *tStep, bool iCohesiveZoneGP)
 //(Domain* dold, IntArray& varTypes, GaussPoint* gp, TimeStep* tStep)
 {
     GaussPoint *sourceIp;
@@ -265,13 +265,14 @@ MMALeastSquareProjection :: finish(TimeStep *tStep)
 
 
 int
-MMALeastSquareProjection :: __mapVariable(FloatArray &answer, const FloatArray &targetCoords,
+MMALeastSquareProjection :: __mapVariable(FloatArray &answer, const Coordinates &targetCoords,
                                           InternalStateType type, TimeStep *tStep)
 {
     //int nelem, ielem,
     int neq = this->giveNumberOfUnknownPolynomialCoefficients(this->patchType);
     int nval = 0;
-    FloatArray ipVal, coords, P;
+    FloatArray ipVal, P;
+    Coordinates coords;
     FloatMatrix a, rhs, x;
     Element *element;
     //IntegrationRule* iRule;
@@ -296,7 +297,7 @@ MMALeastSquareProjection :: __mapVariable(FloatArray &answer, const FloatArray &
                 rhs.zero();
             }
             if ( element->computeGlobalCoordinates( coords, srcgp->giveNaturalCoordinates() ) ) {
-                coords.subtract(targetCoords);
+                coords -= targetCoords;
                 // compute ip contribution
                 this->computePolynomialTerms(P, coords, patchType);
                 for ( int j = 1; j <= neq; j++ ) {

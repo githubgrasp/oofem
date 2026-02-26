@@ -304,7 +304,7 @@ CohesiveSurface3d :: evaluateCenter()
 
     switch ( numberOfDofMans ) {
     case 2:
-        center.resize(3);
+        //center.resize(3);
         for ( int i = 1; i <= 3; i++ ) {
             center.at(i) = aux * ( nodeB->giveCoordinate(i) ) + ( 1. - aux ) * ( nodeA->giveCoordinate(i) );
         }
@@ -312,7 +312,7 @@ CohesiveSurface3d :: evaluateCenter()
         break;
 
     case 3:
-        center.resize(3);
+        //center.resize(3);
         center.at(1) = aux * ( nodeB->giveCoordinate(1) + kxa ) + ( 1. - aux ) * ( nodeA->giveCoordinate(1) );
         center.at(2) = aux * ( nodeB->giveCoordinate(2) + kyb ) + ( 1. - aux ) * ( nodeA->giveCoordinate(2) );
         center.at(3) = aux * ( nodeB->giveCoordinate(3) + kzc ) + ( 1. - aux ) * ( nodeA->giveCoordinate(3) );
@@ -427,7 +427,7 @@ CohesiveSurface3d :: postInitialize()
 }
 
 int
-CohesiveSurface3d :: computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords)
+CohesiveSurface3d :: computeGlobalCoordinates(Coordinates &answer, const FloatArray &lcoords)
 {
     answer = center;
     return 1;

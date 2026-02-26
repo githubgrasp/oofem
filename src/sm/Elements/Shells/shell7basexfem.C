@@ -1565,7 +1565,8 @@ Shell7BaseXFEM :: computeEnrTractionForce(FloatArray &answer, const int iEdge, B
     iRule.SetUpPointsOnLine(numberOfGaussPoints, _Unknown); 
 
     FloatMatrix N, Q;
-    FloatArray fT(7), components, lCoords, gCoords, Nf;
+    FloatArray fT(7), components, lCoords, Nf;
+    Coordinates gCoords;
     Load :: CoordSystType coordSystType = edgeLoad->giveCoordSystMode();
 
     answer.resize( Shell7Base :: giveNumberOfDofs()  );
@@ -1753,10 +1754,10 @@ Shell7BaseXFEM :: computeEnrichedBmatrixAt(const FloatArray &lCoords, FloatMatri
 //        ei->evaluateEnrFuncAt(efGP, lCoords2, levelSetGP);
         int ndofman = this->giveNumberOfDofManagers();
 
-        FloatArray gcoords;
+        Coordinates gcoords;
         fei->local2global(gcoords, lCoords, FEIElementGeometryWrapper(this) );
         //computeGlobalCoordinates(gcoords, lCoords);
-        gcoords.resizeWithValues(2);
+        //gcoords.resizeWithValues(2);
 
         for ( int i = 1, j = 0; i <= ndofman; i++, j += 3 ) {
             if ( !ei->isDofManEnriched( *this->giveDofManager(i) ) ){
@@ -1823,8 +1824,8 @@ Shell7BaseXFEM :: EvaluateEnrFuncInDofMan(int dofManNum, EnrichmentItem *ei)
         std :: vector< double >efNode;
         //const FloatArray &nodePos = * ( dMan->giveCoordinates() );
         // evaluateEnrFuncAt requires coords to be size 2
-        FloatArray nodePos = dMan->giveCoordinates();
-        nodePos.resizeWithValues(2);
+        Coordinates nodePos = dMan->giveCoordinates();
+        //nodePos.resizeWithValues(2);
 
         FloatArray localCoord;
         this->computeLocalCoordinates(localCoord, nodePos);
@@ -1865,7 +1866,7 @@ Shell7BaseXFEM :: computeEnrichedNmatrixAt(const FloatArray &lCoords, FloatMatri
 
     if ( ei && dynamic_cast< Crack*>(ei) ) {
         
-        FloatArray gcoords;
+        Coordinates gcoords;
         this->computeGlobalCoordinates(gcoords, lCoords);
 
         for ( int i = 1, j = 0; i <= this->giveNumberOfDofManagers(); i++, j += 3 ) {
@@ -1930,14 +1931,14 @@ Shell7BaseXFEM :: edgeComputeEnrichedNmatrixAt(const FloatArray &lCoords, FloatM
 //        double levelSetGP = this->evaluateLevelSet(lcoords, ei);
 //        ei->evaluateEnrFuncAt(efGP, lcoords, levelSetGP);
 
-        FloatArray gcoords;
+        Coordinates gcoords;
 //        this->computeGlobalCoordinates(gcoords, lCoords);
         fei->edgeLocal2global(gcoords, 1, lCoords, FEIElementGeometryWrapper(this));
 
         FloatArray elLocCoord;
         this->computeLocalCoordinates(elLocCoord, gcoords);
 
-        gcoords.resizeWithValues(2);
+        //gcoords.resizeWithValues(2);
         elLocCoord.resizeWithValues(2);
 
         for ( int i = 1, j = 0; i <= this->giveNumberOfEdgeDofManagers(); i++, j += 3 ) {
@@ -2005,7 +2006,7 @@ Shell7BaseXFEM :: edgeComputeEnrichedBmatrixAt(const FloatArray &lCoords, FloatM
 //        double levelSetGP = this->evaluateLevelSet(lcoords, ei);
 //        ei->evaluateEnrFuncAt(efGP, lcoords, levelSetGP);
 
-        FloatArray gcoords;
+        Coordinates gcoords;
         this->computeGlobalCoordinates(gcoords, lCoords);
 
         int ndofs_xm = this->giveNumberOfEdgeDofs() / 7 * 3;   // numEdgeNodes * 3 dofs
@@ -2162,7 +2163,7 @@ Shell7BaseXFEM :: giveShellExportData(ExportRegion &vtkPiece, IntArray &primaryV
     vtkPiece.setNumberOfCells(numCells);
     vtkPiece.setNumberOfNodes(numTotalNodes);
 
-    std::vector <FloatArray> nodeCoords;
+    std::vector <Coordinates> nodeCoords;
     int val    = 1;
     int offset = 0;
     int currentCell = 1;
@@ -2364,7 +2365,7 @@ Shell7BaseXFEM :: giveShellExportData(ExportRegion &vtkPiece, IntArray &primaryV
 }
 
 
-std::vector<FloatArray>
+std::vector<Coordinates>
 Shell7BaseXFEM :: giveFictiousNodeCoordsForExport(int layer, int subCell)
 {
 
@@ -2376,7 +2377,7 @@ Shell7BaseXFEM :: giveFictiousNodeCoordsForExport(int layer, int subCell)
 
     //this->interpolationForExport.giveLocalNodeCoords(localNodeCoords);
 
-    std::vector<FloatArray> nodes(localNodeCoords.giveNumberOfColumns());
+    std::vector<Coordinates> nodes(localNodeCoords.giveNumberOfColumns());
     for ( int i = 1; i <= localNodeCoords.giveNumberOfColumns(); i++ ){
         FloatArray localCoords(3);
         localCoords.at(1) = nodeLocalXi1Coords.at(i);
@@ -2391,7 +2392,7 @@ Shell7BaseXFEM :: giveFictiousNodeCoordsForExport(int layer, int subCell)
 }
 
 
-std::vector<FloatArray>
+std::vector<Coordinates>
 Shell7BaseXFEM :: giveFictiousCZNodeCoordsForExport(int layer, int subCell)
 {
     // compute fictious node coords
@@ -2400,7 +2401,7 @@ Shell7BaseXFEM :: giveFictiousCZNodeCoordsForExport(int layer, int subCell)
     // need to return local coordinates corresponding to the nodes of the sub triangles
     giveLocalCZNodeCoordsForExport(nodeLocalXi1Coords, nodeLocalXi2Coords, nodeLocalXi3Coords, subCell, localNodeCoords);
 
-    std::vector<FloatArray> nodes(localNodeCoords.giveNumberOfColumns());
+    std::vector<Coordinates> nodes(localNodeCoords.giveNumberOfColumns());
     for ( int i = 1; i <= localNodeCoords.giveNumberOfColumns(); i++ ){
         FloatArray localCoords(3);
         localCoords.beColumnOf(localNodeCoords,i);
@@ -2411,7 +2412,7 @@ Shell7BaseXFEM :: giveFictiousCZNodeCoordsForExport(int layer, int subCell)
 }
 
 
-std::vector<FloatArray>
+std::vector<Coordinates>
 Shell7BaseXFEM :: giveFictiousUpdatedNodeCoordsForExport(int layer, TimeStep *tStep, int subCell)
 {
     // compute fictious node coords
@@ -2426,7 +2427,7 @@ Shell7BaseXFEM :: giveFictiousUpdatedNodeCoordsForExport(int layer, TimeStep *tS
     } else {
         giveLocalNodeCoordsForExport(nodeLocalXi1Coords, nodeLocalXi2Coords, nodeLocalXi3Coords, subCell, layer, localNodeCoords);
     }
-    std::vector<FloatArray> nodes(localNodeCoords.giveNumberOfColumns());
+    std::vector<Coordinates> nodes(localNodeCoords.giveNumberOfColumns());
     for ( int i = 1; i <= localNodeCoords.giveNumberOfColumns(); i++ ){
         FloatArray localCoords(3);
         localCoords.beColumnOf(localNodeCoords, i);
@@ -2445,7 +2446,7 @@ Shell7BaseXFEM :: giveFictiousUpdatedNodeCoordsForExport(int layer, TimeStep *tS
 }
 
 
-std::vector<FloatArray>
+std::vector<Coordinates>
 Shell7BaseXFEM :: giveFictiousUpdatedCZNodeCoordsForExport(int interface, TimeStep *tStep, int subCell)
 {
     // compute fictious node coords
@@ -2460,7 +2461,7 @@ Shell7BaseXFEM :: giveFictiousUpdatedCZNodeCoordsForExport(int interface, TimeSt
     } else {
         giveLocalCZNodeCoordsForExport(nodeLocalXi1Coords, nodeLocalXi2Coords, nodeLocalXi3Coords, subCell, localNodeCoords);
     }
-    std::vector<FloatArray> nodes(localNodeCoords.giveNumberOfColumns());
+    std::vector<Coordinates> nodes(localNodeCoords.giveNumberOfColumns());
     for ( int i = 1; i <= localNodeCoords.giveNumberOfColumns(); i++ ){
         FloatArray localCoords(3);
         localCoords.beColumnOf(localNodeCoords, i);
@@ -2514,7 +2515,7 @@ Shell7BaseXFEM :: giveLocalNodeCoordsForExport(FloatArray &nodeLocalXi1Coords, F
 
     // Move the triangle nodes slightly towards the center to avoid numerical problems - controlled by 'scale' 
     double alpha1 = scale; double alpha2 = (1.0-alpha1)*0.5; double alpha3 = alpha2;
-    g1.resizeWithValues(2); g2.resizeWithValues(2); g3.resizeWithValues(2);
+    //g1.resizeWithValues(2); g2.resizeWithValues(2); g3.resizeWithValues(2);
     auto gs1 = alpha1*g1 + alpha2*g2 + alpha3*g3;
     auto gs2 = alpha2*g1 + alpha1*g2 + alpha3*g3;
     auto gs3 = alpha2*g1 + alpha3*g2 + alpha1*g3;

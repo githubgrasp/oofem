@@ -61,7 +61,7 @@ public:
     bool computeGtoLRotationMatrix(FloatMatrix &answer) override;
     void computeInitialStressMatrix(FloatMatrix &answer, TimeStep *tStep) override;
 
-    int computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords) override;
+    int computeGlobalCoordinates(Coordinates &answer, const FloatArray &lcoords) override;
 
     void computeStressVector(FloatArray &answer, const FloatArray &strain, GaussPoint *gp, TimeStep *tStep) override;
     void computeConstitutiveMatrixAt(FloatMatrix &answer, MatResponseMode rMode, GaussPoint *gp, TimeStep *tStep) override;

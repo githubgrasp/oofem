@@ -248,7 +248,8 @@ void
 POIExportModule :: exportPrimVarAs(UnknownType valID, FILE *stream, TimeStep *tStep)
 {
     Domain *d = emodel->giveDomain(1);
-    FloatArray pv, coords(3), lcoords, closest;
+    FloatArray pv, lcoords;
+    Coordinates coords, closest;
     InternalStateValueType type = ISVT_UNDEFINED;
 
     if ( valID == DisplacementVector ) {

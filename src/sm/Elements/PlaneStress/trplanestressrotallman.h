@@ -69,7 +69,7 @@ protected:
     void computeNmatrixAt(const FloatArray &iLocCoord, FloatMatrix &answer) override;
 
     double giveArea() override;
-    virtual void computeLocalNodalCoordinates(std::vector< FloatArray > &lxy);
+    virtual void computeLocalNodalCoordinates(std::vector< Coordinates > &lxy);
     /**
      * Computes the stiffness matrix stabilization of zero energy mode (equal rotations)
      *

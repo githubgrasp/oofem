@@ -55,13 +55,13 @@ FEI2dTrConst :: evaldNdx(FloatMatrix &answer, const FloatArray &lcoords, const F
 }
 
 void
-FEI2dTrConst :: local2global(FloatArray &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
+FEI2dTrConst :: local2global(Coordinates &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
 {
     double l1 = lcoords.at(1);
     double l2 = lcoords.at(2);
     double l3 = 1.0 - l1 - l2;
 
-    answer.resize(3);
+    //answer.resize(3);
     answer.zero();
     answer.at(xind) = ( l1 * cellgeo.giveVertexCoordinates(1).at(xind) +
                     l2 * cellgeo.giveVertexCoordinates(2).at(xind) +
@@ -74,7 +74,7 @@ FEI2dTrConst :: local2global(FloatArray &answer, const FloatArray &lcoords, cons
 #define POINT_TOL 1.e-3
 
 int
-FEI2dTrConst :: global2local(FloatArray &answer, const FloatArray &coords, const FEICellGeometry &cellgeo) const
+FEI2dTrConst :: global2local(FloatArray &answer, const Coordinates &coords, const FEICellGeometry &cellgeo) const
 {
     double x1 = cellgeo.giveVertexCoordinates(1).at(xind);
     double x2 = cellgeo.giveVertexCoordinates(2).at(xind);
@@ -145,13 +145,13 @@ FEI2dTrConst :: edgeEvaldNds(FloatArray &answer, int iedge,
 }
 
 void
-FEI2dTrConst :: edgeLocal2global(FloatArray &answer, int iedge,
+FEI2dTrConst :: edgeLocal2global(Coordinates &answer, int iedge,
                                  const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
 {
     FloatArray n = Vec2( ( 1 - lcoords(0) ) * 0.5, ( 1 + lcoords(0) ) * 0.5 );
     const auto &edgeNodes = this->computeLocalEdgeMapping(iedge);
 
-    answer.resize(3);
+    //answer.resize(3);
     answer.zero();
     answer.at(xind) = ( n.at(1) * cellgeo.giveVertexCoordinates( edgeNodes.at(1) ).at(xind) +
                     n.at(2) * cellgeo.giveVertexCoordinates( edgeNodes.at(2) ).at(xind) );

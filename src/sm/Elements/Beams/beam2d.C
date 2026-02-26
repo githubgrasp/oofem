@@ -459,7 +459,8 @@ Beam2d :: computeBoundaryEdgeLoadVector(FloatArray &answer, BoundaryLoad *load, 
     }
 
     double l = this->computeLength();
-    FloatArray coords, t;
+    Coordinates coords;
+    FloatArray t;
     FloatMatrix N, T;
 
     answer.clear();

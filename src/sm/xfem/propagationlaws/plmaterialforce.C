@@ -66,7 +66,8 @@ bool PLMaterialForce :: propagateInterface(Domain &iDomain, EnrichmentFront &iEn
 
     // Check if the tip is located in the domain
     SpatialLocalizer *localizer = iDomain.giveSpatialLocalizer();
-    FloatArray lCoords, closest;
+    FloatArray lCoords;
+    Coordinates closest;
 //    printf("tipInfo.mGlobalCoord: \n"); tipInfo.mGlobalCoord.printYourself();
     if ( tipInfo.mGlobalCoord.giveSize() == 0 ) {
         return false;

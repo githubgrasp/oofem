@@ -59,9 +59,9 @@ public:
     const char *giveClassName() const override { return "DirectEI"; }
     const char *giveInputRecordName() const override { return _IFT_DirectEI_Name; }
 
-    void evalLevelSetNormal(double &oLevelSet, const FloatArray &iGlobalCoord, const FloatArray &iN, const IntArray &iNodeInd) const override;
-    void evalLevelSetTangential(double &oLevelSet, const FloatArray &iGlobalCoord, const FloatArray &iN, const IntArray &iNodeInd) const override;
-    void evalGradLevelSetNormal(FloatArray &oGradLevelSet, const FloatArray &iGlobalCoord, const FloatMatrix &idNdX, const IntArray &iNodeInd) const override;
+    void evalLevelSetNormal(double &oLevelSet, const Coordinates &iGlobalCoord, const FloatArray &iN, const IntArray &iNodeInd) const override;
+    void evalLevelSetTangential(double &oLevelSet, const Coordinates &iGlobalCoord, const FloatArray &iN, const IntArray &iNodeInd) const override;
+    void evalGradLevelSetNormal(FloatArray &oGradLevelSet, const Coordinates &iGlobalCoord, const FloatMatrix &idNdX, const IntArray &iNodeInd) const override;
 };
 } /* namespace oofem */
 

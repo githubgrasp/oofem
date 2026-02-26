@@ -131,7 +131,7 @@ public:
 
     Interface *giveInterface(InterfaceType it) override;
 
-    bool computeLocalCoordinates(FloatArray &answer, const FloatArray &gcoords) override;
+    bool computeLocalCoordinates(FloatArray &answer, const Coordinates &gcoords) override;
     int giveIPValue(FloatArray &answer, GaussPoint *gp, InternalStateType type, TimeStep *tStep) override;
 
     void SPRNodalRecoveryMI_giveSPRAssemblyPoints(IntArray &pap) override;

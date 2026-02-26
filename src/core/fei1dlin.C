@@ -81,10 +81,10 @@ FEI1dLin :: evaldNdx(FloatMatrix &answer, const FloatArray &lcoords, const FEICe
 }
 
 void
-FEI1dLin :: local2global(FloatArray &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
+FEI1dLin :: local2global(Coordinates &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
 {
     FloatArray n;
-    answer.resize(3);
+    //answer.resize(3);
 
     this->evalN(n, lcoords, cellgeo);
     answer.at(1) = n.at(1) * cellgeo.giveVertexCoordinates(1).at(cindx) +
@@ -93,7 +93,7 @@ FEI1dLin :: local2global(FloatArray &answer, const FloatArray &lcoords, const FE
 }
 
 int
-FEI1dLin :: global2local(FloatArray &answer, const FloatArray &coords, const FEICellGeometry &cellgeo) const
+FEI1dLin :: global2local(FloatArray &answer, const Coordinates &coords, const FEICellGeometry &cellgeo) const
 {
     double x1 = cellgeo.giveVertexCoordinates(1).at(cindx);
     double x2 = cellgeo.giveVertexCoordinates(2).at(cindx);
@@ -124,7 +124,7 @@ double FEI1dLin :: boundaryEdgeGiveTransformationJacobian(int boundary, const Fl
     return this->giveTransformationJacobian(lcoords, cellgeo);
 }
 
-void FEI1dLin :: boundaryEdgeLocal2Global(FloatArray &answer, int boundary, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
+void FEI1dLin :: boundaryEdgeLocal2Global(Coordinates &answer, int boundary, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
 {
     this->local2global(answer, lcoords, cellgeo);
 }

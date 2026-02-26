@@ -284,7 +284,7 @@ void MacroLSpace :: giveInternalForcesVector(FloatArray &answer, TimeStep *tStep
     //OOFEM_ERROR("STOP");
 }
 
-void MacroLSpace :: evalInterpolation(FloatArray &answer, const std::vector< FloatArray > &coords, const FloatArray &gcoords)
+void MacroLSpace :: evalInterpolation(FloatArray &answer, const std::vector< Coordinates > &coords, const FloatArray &gcoords)
 {
     FloatArray localCoords;
 

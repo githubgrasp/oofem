@@ -231,13 +231,13 @@ FEI2dQuadQuad :: evaldNdx(FloatMatrix &answer, const FloatArray &lcoords, const 
 }
 
 void
-FEI2dQuadQuad :: local2global(FloatArray &answer, const FloatArray &lcoords,  const FEICellGeometry &cellgeo) const
+FEI2dQuadQuad :: local2global(Coordinates &answer, const FloatArray &lcoords,  const FEICellGeometry &cellgeo) const
 {
     FloatArray n;
 
     this->evalN(n, lcoords, cellgeo);
 
-    answer.resize(3);
+    //answer.resize(3);
     answer.zero();
     for ( int i = 1; i <= n.giveSize(); i++ ) {
         answer.at(xind) += n.at(i) * cellgeo.giveVertexCoordinates(i).at(xind);
@@ -288,14 +288,14 @@ FEI2dQuadQuad :: edgeEvaldNds(FloatArray &answer, int iedge,
 }
 
 void
-FEI2dQuadQuad :: edgeLocal2global(FloatArray &answer, int iedge,
+FEI2dQuadQuad :: edgeLocal2global(Coordinates &answer, int iedge,
                                   const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
 {
     FloatArray n;
     const auto &edgeNodes = this->computeLocalEdgeMapping(iedge);
     this->edgeEvalN(n, iedge, lcoords, cellgeo);
 
-    answer.resize(3);
+    //answer.resize(3);
     answer.zero();
     answer.at(xind) = n.at(1) * cellgeo.giveVertexCoordinates( edgeNodes.at(1) ).at(xind) +
                    n.at(2) * cellgeo.giveVertexCoordinates( edgeNodes.at(2) ).at(xind) +

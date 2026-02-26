@@ -681,7 +681,7 @@ void PrescribedDispSlipBCNeumannRC :: integrateTangentStress(FloatMatrix &oTange
         double detJ = interp->boundaryEvalNormal(normal, iBndIndex, lcoords, cellgeo);
 
         // Compute global coordinates of Gauss point
-        FloatArray globalCoord;
+        Coordinates globalCoord;
         interp->boundaryLocal2Global(globalCoord, iBndIndex, lcoords, cellgeo);
 
         // Compute local coordinates on the element
@@ -874,7 +874,7 @@ void PrescribedDispSlipBCNeumannRC::integrateTangentRStressConcrete( FloatMatrix
         double detJ = interp->boundaryEvalNormal(normal, iBndIndex, lcoords, cellgeo);
 
         //Compute global coordinates of Gauss point
-        FloatArray globalCoord;
+        Coordinates globalCoord;
         interp->boundaryLocal2Global(globalCoord, iBndIndex, lcoords, cellgeo);
 
         //Compute local coordinates on the element

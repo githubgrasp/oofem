@@ -43,18 +43,18 @@ DirectEI :: DirectEI(int n, XfemManager *xm, Domain *aDomain) :
 DirectEI :: ~DirectEI()
 {}
 
-void DirectEI :: evalLevelSetNormal(double &oLevelSet, const FloatArray &iGlobalCoord, const FloatArray &iN, const IntArray &iNodeInd) const
+void DirectEI :: evalLevelSetNormal(double &oLevelSet, const Coordinates &iGlobalCoord, const FloatArray &iN, const IntArray &iNodeInd) const
 {
     mpBasicGeometry->computeNormalSignDist(oLevelSet, iGlobalCoord);
 }
 
-void DirectEI :: evalLevelSetTangential(double &oLevelSet, const FloatArray &iGlobalCoord, const FloatArray &iN, const IntArray &iNodeInd) const
+void DirectEI :: evalLevelSetTangential(double &oLevelSet, const Coordinates &iGlobalCoord, const FloatArray &iN, const IntArray &iNodeInd) const
 {
     double arcPos = 0.0;
     mpBasicGeometry->computeTangentialSignDist(oLevelSet, iGlobalCoord, arcPos);
 }
 
-void DirectEI :: evalGradLevelSetNormal(FloatArray &oGradLevelSet, const FloatArray &iGlobalCoord, const FloatMatrix &idNdX, const IntArray &iNodeInd) const
+void DirectEI :: evalGradLevelSetNormal(FloatArray &oGradLevelSet, const Coordinates &iGlobalCoord, const FloatMatrix &idNdX, const IntArray &iNodeInd) const
 {
     double arcPos = 0.0, tangSignDist = 0.0;
     mpBasicGeometry->computeTangentialSignDist(tangSignDist, iGlobalCoord, arcPos);

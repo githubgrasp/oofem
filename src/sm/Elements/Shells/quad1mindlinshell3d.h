@@ -72,7 +72,7 @@ class Quad1MindlinShell3D : public StructuralElement,
 {
 protected:
     /// Cached nodal coordinates in local c.s.,
-    std::vector< FloatArray >lnodes;
+    std::vector< Coordinates >lnodes;
     /// Cached coordinates in local c.s.,
     FloatMatrix lcsMatrix;
     /// Flag controlling reduced (one - point) integration for shear

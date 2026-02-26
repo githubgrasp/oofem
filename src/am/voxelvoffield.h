@@ -51,7 +51,7 @@ class VoxelVOFField : public oofem::Field
     public:
     VoxelVOFField(VoxelGrid *vg = nullptr) : Field (oofem::FieldType::FT_VOF), voxelGrid(vg) {}
     void setGrid(VoxelGrid *vg) { voxelGrid = vg; }
-    int evaluateAt(FloatArray &answer, const FloatArray &coords, ValueModeType mode, TimeStep *tStep) override {
+    int evaluateAt(FloatArray &answer, const Coordinates &coords, ValueModeType mode, TimeStep *tStep) override {
         answer.resize(1);
         auto indices = voxelGrid->get_indices_from_point({coords[0], coords[1], coords[2]});
         int indx = voxelGrid->get_index( std::get<0>(indices),

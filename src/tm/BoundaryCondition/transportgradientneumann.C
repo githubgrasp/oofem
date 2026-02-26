@@ -81,7 +81,7 @@ void TransportGradientNeumann :: initializeFrom(const std::shared_ptr<InputRecor
     IR_GIVE_FIELD(ir, mGradient, _IFT_TransportGradientNeumann_gradient);
 
     IR_GIVE_FIELD(ir, surfSets, _IFT_TransportGradientNeumann_surfSets);
-    this->mCenterCoord.clear();
+    this->mCenterCoord.zero();
     IR_GIVE_OPTIONAL_FIELD(ir, mCenterCoord, _IFT_TransportGradientNeumann_centerCoords)
     
     this->dispControl = ir->hasField(_IFT_TransportGradientNeumann_dispControl);
@@ -450,7 +450,8 @@ void TransportGradientNeumann :: computeEta()
             i_r = 0;
             i_t = 1;
         }
-        FloatArray coords, normal, tmp;
+        FloatArray normal, tmp;
+        Coordinates coords;
         FloatMatrix d;
         Set *setPointer = this->giveDomain()->giveSet(surfSets[i]);
         const IntArray &boundaries = setPointer->giveBoundaryList();
@@ -484,7 +485,7 @@ void TransportGradientNeumann :: computeEta()
                 double detJ = interp->boundaryEvalNormal(normal, boundary, lcoords, cellgeo);
                 double dA = detJ * gp->giveWeight();
                 interp->boundaryLocal2Global(coords, boundary, lcoords, cellgeo);
-                coords.subtract(this->mCenterCoord);
+                coords-= (this->mCenterCoord);
                 double r = coords[i_r], t = coords[i_t];
                 
                 // Compute material property
@@ -526,7 +527,7 @@ void TransportGradientNeumann :: computeEta()
 
                 interp->boundaryEvalNormal(normal, boundary, lcoords, cellgeo);
                 interp->boundaryLocal2Global(coords, boundary, lcoords, cellgeo);
-                coords.subtract(this->mCenterCoord);
+                coords -= this->mCenterCoord;
                 double r = coords[i_r], t = coords[i_t];
                 
                 // Compute material property

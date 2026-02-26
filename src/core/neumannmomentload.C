@@ -79,13 +79,13 @@ NeumannMomentLoad :: computeXbar()
 
         auto iRule = i->giveIntegrationRule(3, thisElement->giveGeometryType() );
 
-        FloatArray coord;
+        Coordinates coord;
         for ( auto &gp: *iRule ) {
             FloatArray lcoords = gp->giveNaturalCoordinates();
             double detJ = i->giveTransformationJacobian(lcoords, FEIElementGeometryWrapper(thisElement));
 
             i->local2global(coord, lcoords, FEIElementGeometryWrapper(thisElement));
-            coord.times(gp->giveWeight()*fabs(detJ));
+            coord *=(gp->giveWeight()*fabs(detJ));
 
             V += gp->giveWeight()*fabs(detJ);
 

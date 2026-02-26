@@ -193,7 +193,7 @@ void Tr1Darcy :: computeEdgeBCSubVectorAt(FloatArray &answer, Load *load, int iE
             if ( boundaryLoad->giveFormulationType() == Load :: FT_Entity ) {                // Edge load in xi-eta system
                 boundaryLoad->computeValueAt(loadValue, tStep, lcoords, mode);
             } else {  // Edge load in x-y system
-                FloatArray gcoords;
+                Coordinates gcoords;
                 this->interpolation_lin.edgeLocal2global( gcoords, iEdge, lcoords, FEIElementGeometryWrapper(this) );
                 boundaryLoad->computeValueAt(loadValue, tStep, gcoords, mode);
             }
