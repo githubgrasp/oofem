@@ -3949,7 +3949,7 @@ Subdivision :: createMesh(TimeStep *tStep, int domainNumber, int domainSerNum, D
       for (int in=1; in<=(*dNew)->giveNumberOfDofManagers(); in++) {
         DynamicInputRecord ir;
         (*dNew)->giveDofManager(in)->giveInputRecord(ir);
-        OOFEM_LOG_INFO("[%d]:[%d]:%s\n", this->giveRank(), (*dNew)->giveDofManager(in)->giveGlobalNumber(), ir->giveRecordAsString().c_str());
+        OOFEM_LOG_INFO("[%d]:[%d]:%s\n", this->giveRank(), (*dNew)->giveDofManager(in)->giveGlobalNumber(), ir.giveRecordAsString().c_str());
       }
       IntArray nodes;
       for (int in=1; in<=(*dNew)->giveNumberOfElements(); in++) {
@@ -3959,8 +3959,8 @@ Subdivision :: createMesh(TimeStep *tStep, int domainNumber, int domainSerNum, D
         // translate local node numbers to globnums
         for (int ii=1; ii<=nodes.giveSize(); ii++)
           nodes.at(ii) = (*dNew)->giveNode(nodes.at(ii))->giveGlobalNumber();
-        ir->setField(nodes, "gnodes");
-        OOFEM_LOG_INFO("[%d]:[%d]:%s\n", this->giveRank(), (*dNew)->giveElement(in)->giveGlobalNumber(), ir->giveRecordAsString().c_str());
+        ir.setField(nodes, "gnodes");
+        OOFEM_LOG_INFO("[%d]:[%d]:%s\n", this->giveRank(), (*dNew)->giveElement(in)->giveGlobalNumber(), ir.giveRecordAsString().c_str());
       }
     }
     nelems = ( * dNew )->giveNumberOfElements();
