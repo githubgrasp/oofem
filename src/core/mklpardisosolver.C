@@ -55,10 +55,10 @@ MKLPardisoSolver :: ~MKLPardisoSolver() { }
 
 ConvergedReason MKLPardisoSolver :: solve(SparseMtrx &A, FloatArray &b, FloatArray &x)
 {
-    int neqs = b.giveSize();
+    MKL_INT neqs = b.giveSize();
     x.resize(neqs);
 
-    int mtype = -2;        // Real symmetric positive definite matrix
+    MKL_INT mtype = -2;        // Real and structurally symmetric matrix
     CompCol *mat = dynamic_cast< SymCompCol * >(&A);
     if ( !mat ) {
         mtype = 11;        // Real unsymmetric matrix
@@ -73,15 +73,15 @@ ConvergedReason MKLPardisoSolver :: solve(SparseMtrx &A, FloatArray &b, FloatArr
         return CR_CONVERGED;
     }
 
-    const int *ia = mat->giveColPtr().givePointer();
-    const int *ja = mat->giveRowIndex().givePointer();
-    const double *a = mat->giveValues().givePointer();
-    
+    MKL_INT *ia = mat->giveColPtr().givePointer();
+    MKL_INT *ja = mat->giveRowIndex().givePointer();
+    double *a = mat->giveValues().givePointer();
+
     Timer timer;
     timer.startTimer();
 
     // RHS and solution vectors.
-    int nrhs = 1;          // Number of right hand sides.
+    MKL_INT nrhs = 1;          // Number of right hand sides.
 
     // Internal solver memory pointer pt,
     // 32-bit: int pt[64]; 64-bit: long int pt[64]
@@ -89,74 +89,83 @@ ConvergedReason MKLPardisoSolver :: solve(SparseMtrx &A, FloatArray &b, FloatArr
     void *pt[64]; 
 
     // Pardiso control parameters.
-    IntArray iparm(64); ///@todo pardisoinit seems to write outside this array
-    int maxfct, mnum, phase, error, msglvl;
+    MKL_INT iparm[64]; ///@todo pardisoinit seems to write outside this array
+    MKL_INT maxfct, mnum, phase, error, msglvl;
 
-    double ddum = 0.;           // Double dummy
-    int idum = 0;              // Integer dummy.
+    double ddum;           // Double dummy
+    MKL_INT idum;         /* Integer dummy. */
     
     // Setup Pardiso control parameters
     /* -------------------------------------------------------------------- */
     error = 0;
-    pardisoinit(pt, &mtype, iparm.givePointer());  // INITIALIZATION!
+    for ( int i = 0; i < 64; i++ )
+    {
+        iparm[i] = 0;
+    }
     // Settings are here:
     // https://software.intel.com/en-us/articles/pardiso-parameter-table#table2
 
-    iparm[0] = 1;
-    ///@todo I might be misunderstanding something, but this iterative solver still does a full factorization. No options for incomplete factorizations.
-    //iparm[4-1] = 32; // 10*L + K. K = 1 implies CGS (instead of LU), K = 2 implies CG. L specifies exponent tolerance.
-    iparm[8-1] = 2;       /* Max numbers of iterative refinement steps. */ ///@todo I have no idea if this is suitable value. Examples use 2. / Mikael
-    iparm[12-1] = 2; // Transpose (we have a CSC matrix representation here instead of the expected CSR)
-    iparm[35-1] = 1; // 1 implies 0-indexing
-    //iparm[27-1] = 1; // Checks the matrix (only in MKL)
+    iparm[0] = 1;         /* No solver default */
+    iparm[1] = 2;         /* Fill-in reordering from METIS */
+    iparm[7] = 2;         /* Max numbers of iterative refinement steps. */ ///@todo I have no idea if this is suitable value. Examples use 2. / Mikael
+    iparm[9] = 13;        /* Perturb the pivot elements with 1E-13 */
+    iparm[10] = 1;        /* Use nonsymmetric permutation and scaling MPS */
+    iparm[17] = -1;       /* Output: Number of nonzeros in the factor LU */
+    iparm[18] = -1;       /* Output: Mflops for LU factorization */ 
+    iparm[34] = 1;        /* C-based zero-based indexing (only in MKL) */
     ///@todo This is not included in the table of options for some reason!
 
     maxfct = 1;         // Maximum number of numerical factorizations.
     mnum   = 1;         // Which factorization to use.
     msglvl = 0;         // Print statistical information
     error  = 0;         // Initialize error flag
-
+    /* -------------------------------------------------------------------- */
+    /* .. Initialize the internal solver memory pointer. This is only */
+    /* necessary for the FIRST call of the PARDISO solver. */
+    /* -------------------------------------------------------------------- */
+    for ( int i = 0; i < 64; i++ )
+    {
+        pt[i] = 0;
+    }
     /* -------------------------------------------------------------------- */
     /* ..  Reordering and Symbolic Factorization.  This step also allocates */
     /*     all memory that is necessary for the factorization.              */
     /* -------------------------------------------------------------------- */
     phase = 11; 
 
-    pardiso(pt, &maxfct, &mnum, &mtype, &phase, &neqs, 
-            (void*)a, (int*)ia, (int*)ja,
-            &idum, &nrhs, iparm.givePointer(), &msglvl, &ddum, &ddum, &error);   // FACTORIZATION!
+    PARDISO(pt, &maxfct, &mnum, &mtype, &phase, 
+            &neqs, a, ia, ja,
+            &idum, &nrhs, iparm, &msglvl, &ddum, &ddum, &error);   // FACTORIZATION!
 
     if ( error != 0 ) {
         OOFEM_WARNING("Error during symbolic factorization: %d", error);
         return CR_FAILED;
     }
-    OOFEM_LOG_DEBUG("Reordering completed: %d nonzero factors, %d factorization MFLOPS\n", iparm[17-1], iparm[18-1]);
-   
     /* -------------------------------------------------------------------- */
     /* ..  Numerical factorization.                                         */
     /* -------------------------------------------------------------------- */    
     phase = 22;
 
-    pardiso(pt, &maxfct, &mnum, &mtype, &phase, &neqs,
+    PARDISO(pt, &maxfct, &mnum, &mtype, &phase, &neqs,
         (void*)a, (int*)ia, (int*)ja,
-        &idum, &nrhs, iparm.givePointer(), &msglvl, &ddum, &ddum, &error);
+        &idum, &nrhs, iparm, &msglvl, &ddum, &ddum, &error);
 
     if ( error != 0 ) {
         OOFEM_WARNING("ERROR during numerical factorization: %d", error);
         return CR_FAILED;
     }
     OOFEM_LOG_DEBUG("Factorization completed ...\n");
+    OOFEM_LOG_DEBUG ("Number of factorization MFLOPS = %d\n", iparm[18]);
 
     /* -------------------------------------------------------------------- */    
     /* ..  Back substitution and iterative refinement.                      */
     /* -------------------------------------------------------------------- */    
     phase = 33;
-
-    pardiso(pt, &maxfct, &mnum, &mtype, &phase, &neqs,
+    
+    PARDISO(pt, &maxfct, &mnum, &mtype, &phase, &neqs,
         (void*)a, (int*)ia, (int*)ja,
-        &idum, &nrhs, iparm.givePointer(), &msglvl, (void*)b.givePointer(), (void*)x.givePointer(), &error);
+        &idum, &nrhs, iparm, &msglvl, (void*)b.givePointer(), (void*)x.givePointer(), &error);
 
-    printf("iparm(20) = %d\n", iparm[20]);
     if ( error != 0 ) {
         OOFEM_WARNING("ERROR during solution: %d, iparm(20) = %d", error, iparm[20-1]);
         return CR_FAILED;
@@ -169,9 +178,9 @@ ConvergedReason MKLPardisoSolver :: solve(SparseMtrx &A, FloatArray &b, FloatArr
     /* -------------------------------------------------------------------- */    
     phase = -1;                 /* Release internal memory. */
 
-    pardiso(pt, &maxfct, &mnum, &mtype, &phase,
+    PARDISO(pt, &maxfct, &mnum, &mtype, &phase,
             &neqs, &ddum, &idum, &idum, &idum, &nrhs,
-            iparm.givePointer(), &msglvl, &ddum, &ddum, &error);
+            iparm, &msglvl, &ddum, &ddum, &error);
 
     timer.stopTimer();
     OOFEM_LOG_INFO( "MKLPardisoSolver:  User time consumed by solution: %.2fs\n", timer.getUtime() );
