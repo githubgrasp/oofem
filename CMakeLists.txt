@@ -477,6 +477,7 @@ if (USE_ONEAPI)
     message(STATUS "Seeking OneAPI libraries...")
     find_package(MKL CONFIG REQUIRED PATHS $ENV{MKLROOT})
     list (APPEND MODULE_LIST "oneMKL_PARDISO")
+    set (MKL_INTERFACE_FULL "intel_lp64")
     endif ()
 
 
