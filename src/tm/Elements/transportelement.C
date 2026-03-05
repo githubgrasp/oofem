@@ -852,7 +852,7 @@ TransportElement :: computeBoundaryEdgeLoadVector(FloatArray &answer, BoundaryLo
                 if ( unknownsPerNode != 1 ) {
                     OOFEM_ERROR("Not implemented for >=2 coupled fields");
                 }
-                a = load->giveProperty('a', tStep, { { "u", field.at(1) } });
+                a = load->giveProperty('a', tStep, { { "u", field.at(1) }, {"t", tStep->giveIntrinsicTime()} } );
             } else {
                 a = load->giveProperty('a', tStep);
             }
@@ -1174,7 +1174,7 @@ TransportElement :: computeBCSubMtrxAt(FloatMatrix &answer, TimeStep *tStep, Val
                             this->giveEdgeDofMapping(mask, id);
                             this->computeBoundaryVectorOf(mask, dofid, VM_TotalIntrinsic, tStep, unknowns);
                             double value = n.dotProduct(unknowns);//unknown in IP
-                            a = edgeLoad->giveProperty('a', tStep, { { "u", value } });
+                            a = edgeLoad->giveProperty('a', tStep, { { "u", value }, {"t", tStep->giveIntrinsicTime()} } );
                         } else {
                             a = edgeLoad->giveProperty('a', tStep);
                         }
@@ -1214,7 +1214,7 @@ TransportElement :: computeBCSubMtrxAt(FloatMatrix &answer, TimeStep *tStep, Val
                             this->giveSurfaceDofMapping(mask, id);
                             this->computeBoundaryVectorOf(mask, dofid, VM_TotalIntrinsic, tStep, unknowns);
                             double value = n.dotProduct(unknowns);//unknown in IP
-                            a = surfLoad->giveProperty('a', tStep, { { "u", value } });
+                            a = surfLoad->giveProperty('a', tStep, { { "u", value }, {"t", tStep->giveIntrinsicTime()} } );
                         } else {
                             a = surfLoad->giveProperty('a', tStep);
                         }
