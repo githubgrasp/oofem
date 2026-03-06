@@ -186,6 +186,9 @@ VTKBaseExportModule::giveNumberOfNodesPerCell(int cellType)
     case 25:
         return 20;
 
+    case 26:
+        return 15;
+
     case 29:
         return 27;
 
