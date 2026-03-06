@@ -72,7 +72,7 @@ public:
 
     virtual double giveLength() override;
 
-    virtual double giveArea() override;
+    virtual double giveArea(GaussPoint *gp) override;
 
     virtual int computeNumberOfDofs() override { return 12; }
 

@@ -199,8 +199,7 @@ Lattice2dBoundary :: computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode
 // Computes numerically the stiffness matrix of the receiver.
 {
   double length = this->giveLength();
-  double dV;
-    FloatMatrix d, b, db, bt;
+    FloatMatrix d, ds, b, db, bt;
 
     FloatMatrix answerTemp(6, 6);
     answerTemp.zero();
@@ -209,8 +208,9 @@ Lattice2dBoundary :: computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode
     this->computeBmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), b);
     this->computeConstitutiveMatrixAt(d, rMode, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
 
+    convertTangentToResultantTangent2d(ds, d, integrationRulesArray [ 0 ]->getIntegrationPoint(0));
 
-    db.beProductOf(d, b);
+    db.beProductOf(ds, b);
     bt.beTranspositionOf(b);    
     answerTemp.beProductOf(bt, db);
     answerTemp.times(1./length);
@@ -495,7 +495,11 @@ Lattice2dBoundary :: giveInternalForcesVector(FloatArray &answer, TimeStep *tSte
     // compute nodal representation of internal forces using f = B^T*Sigma dV
     //
     //    dV  = this->computeVolumeAround(integrationRulesArray [ 0 ]->getIntegrationPoint(0) );
-    bs.beProductOf(bt, TotalStressVector);
+
+    FloatArray s;
+    convertStressToResultants2d(s,TotalStressVector,integrationRulesArray [ 0 ]->getIntegrationPoint(0));
+
+    bs.beProductOf(bt, s);
     //    bs.times(dV);
 
     for ( int m = 1; m <= 6; m++ ) {

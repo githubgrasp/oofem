@@ -437,12 +437,12 @@ namespace oofem {
         LatticeFrameConcretePlastic_ReturnResult returnResult = RR_Unknown;
         int kIter = 0;
         double g = this->e / ( 2. * ( 1. + this->nu ) );
-        const double area       = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveArea();
-        const double shearareay = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveShearAreaY();
-        const double shearareaz = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveShearAreaZ();
-        const double ik         = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveIk();
-        const double iy         = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveIy();
-        const double iz         = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveIz();
+        const double area       = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveArea(gp);
+        const double shearareay = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveShearArea1(gp);
+        const double shearareaz = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveShearArea2(gp);
+        const double ik         = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveIp(gp);
+        const double iy         = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveI1(gp);
+        const double iz         = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveI2(gp);
 
         auto status = static_cast < LatticeFrameConcretePlasticStatus * > ( this->giveStatus(gp) );
 
@@ -671,12 +671,12 @@ namespace oofem {
                 /* Compute the fVector*/
                 auto FVector            = computeFVector(tempStress, k, gp, tStep);
                 double g = this->e / ( 2. * ( 1. + this->nu ) );
-                const double area       = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveArea();
-                const double shearareay = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveShearAreaY();
-                const double shearareaz = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveShearAreaZ();
-                const double ik         = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveIk();
-                const double iy         = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveIy();
-                const double iz         = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveIz();
+                const double area       = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveArea(gp);
+                const double shearareay = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveShearArea1(gp);
+                const double shearareaz = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveShearArea2(gp);
+                const double ik         = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveIp(gp);
+                const double iy         = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveI1(gp);
+                const double iz         = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveI2(gp);
 
                 residuals.at(1) = tempStress.at(1) - trialStress.at(1) + area * this->e * deltaLambda * FVector.at(1);
                 residuals.at(2) = tempStress.at(2) - trialStress.at(2) + shearareay * g * deltaLambda * FVector.at(2);
@@ -700,12 +700,12 @@ namespace oofem {
         auto dMMatrix           = computeDMMatrix(stress, k, gp, tStep);
         auto fVector            = computeFVector(stress, k, gp, tStep);
         double g = this->e / ( 2. * ( 1. + this->nu ) );
-        const double area       = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveArea();
-        const double shearareay = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveShearAreaY();
-        const double shearareaz = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveShearAreaZ();
-        const double ik         = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveIk();
-        const double iy         = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveIy();
-        const double iz         = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveIz();
+        const double area       = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveArea(gp);
+        const double shearareay = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveShearArea1(gp);
+        const double shearareaz = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveShearArea2(gp);
+        const double ik         = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveIp(gp);
+        const double iy         = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveI1(gp);
+        const double iz         = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveI2(gp);
 
         /* Compute matrix*/
         FloatMatrixF < 7, 7 > jacobian;
@@ -835,12 +835,12 @@ namespace oofem {
         static_cast < LatticeFrameConcretePlasticStatus * > ( this->giveStatus(gp) );
 
         double g = this->e / ( 2. * ( 1. + this->nu ) );
-        const double area       = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveArea();
-        const double shearareay = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveShearAreaY();
-        const double shearareaz = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveShearAreaZ();
-        const double ik         = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveIk();
-        const double iy         = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveIy();
-        const double iz         = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveIz();
+        const double area       = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveArea(gp);
+        const double shearareay = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveShearArea1(gp);
+        const double shearareaz = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveShearArea2(gp);
+        const double ik         = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveIp(gp);
+        const double iy         = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveI1(gp);
+        const double iz         = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveI2(gp);
 
 
         FloatArrayF < 6 > d = {

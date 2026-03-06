@@ -262,32 +262,32 @@ namespace oofem {
 
 
 
-    double LatticeFrame3d::giveArea() {
+    double LatticeFrame3d::giveArea(GaussPoint *gp) {
         FloatArray lc(1);
         return this->giveCrossSection()->give(CS_Area, lc, this);
     }
 
-    double LatticeFrame3d::giveIy() {
+    double LatticeFrame3d::giveI1(GaussPoint *gp) {
         FloatArray lc(1);
         return this->giveCrossSection()->give(CS_InertiaMomentY, lc, this);
     }
 
-    double LatticeFrame3d::giveIz() {
+    double LatticeFrame3d::giveI2(GaussPoint *gp) {
         FloatArray lc(1);
         return this->giveCrossSection()->give(CS_InertiaMomentZ, lc, this);
     }
 
-    double LatticeFrame3d::giveIk() {
+    double LatticeFrame3d::giveIp(GaussPoint *gp) {
         FloatArray lc(1);
         return this->giveCrossSection()->give(CS_TorsionConstantX, lc, this);
     }
 
-    double LatticeFrame3d::giveShearAreaY() {
+    double LatticeFrame3d::giveShearArea1(GaussPoint *gp) {
         FloatArray lc(1);
         return this->giveCrossSection()->give(CS_ShearAreaY, lc, this);
     }
 
-    double LatticeFrame3d::giveShearAreaZ() {
+    double LatticeFrame3d::giveShearArea2(GaussPoint *gp) {
         FloatArray lc(1);
         return this->giveCrossSection()->give(CS_ShearAreaZ, lc, this);
     }
@@ -507,7 +507,7 @@ namespace oofem {
     double
     LatticeFrame3d::computeVolumeAround(GaussPoint *aGaussPoint)
     {
-        return giveArea() * computeLength();
+        return giveArea(aGaussPoint) * computeLength();
     }
 
     int

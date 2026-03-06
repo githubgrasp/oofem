@@ -44,6 +44,92 @@ LatticeStructuralElement :: initializeFrom(InputRecord &ir)
     StructuralElement :: initializeFrom(ir);
 }
 
+
+void LatticeStructuralElement :: giveSectionScaleFactors3d(FloatArray &q, GaussPoint *gp)
+{
+    q.resize(6);
+    double A  = this->giveArea(gp);
+    double I1 = this->giveI1(gp);
+    double I2 = this->giveI2(gp);
+    double Ip = this->giveIp(gp);
+
+    q.at(1) = A;
+    q.at(2) = A;
+    q.at(3) = A;
+    q.at(4) = Ip;
+    q.at(5) = I1;
+    q.at(6) = I2;
+}
+
+void LatticeStructuralElement :: giveSectionScaleFactors2d(FloatArray &q, GaussPoint *gp)
+{
+    q.resize(3);
+    double A  = this->giveArea(gp);
+    double I2 = this->giveI2(gp);
+
+
+    q.at(1) = A;
+    q.at(2) = A;
+    q.at(3) = I2;
+} 
+
+void LatticeStructuralElement :: convertStressToResultants3d(FloatArray &S, const FloatArray &sigma, GaussPoint *gp)
+{
+    FloatArray q;
+    this->giveSectionScaleFactors3d(q, gp);
+
+    S = sigma;
+    for (int i = 1; i <= 6; ++i) {
+        S.at(i) *= q.at(i);
+    }
+}
+
+void LatticeStructuralElement :: convertStressToResultants2d(FloatArray &S, const FloatArray &sigma, GaussPoint *gp)
+{
+    FloatArray q;
+    this->giveSectionScaleFactors2d(q, gp);
+
+    S = sigma;
+    for (int i = 1; i <= 3; ++i) {
+        S.at(i) *= q.at(i);
+    }
+}
+
+
+
+
+ 
+void LatticeStructuralElement :: convertTangentToResultantTangent3d(FloatMatrix &DS, const FloatMatrix &Dsig, GaussPoint *gp)
+{
+    FloatArray q;
+    this->giveSectionScaleFactors3d(q, gp);
+
+    DS = Dsig;
+    // DS = Q * Dsig. Scale rows
+    for (int i = 1; i <= 6; ++i) {
+        for (int j = 1; j <= 6; ++j) {
+            DS.at(i,j) *= q.at(i);
+        }
+    }
+}
+
+
+void LatticeStructuralElement :: convertTangentToResultantTangent2d(FloatMatrix &DS, const FloatMatrix &Dsig, GaussPoint *gp)
+{
+    FloatArray q;
+    this->giveSectionScaleFactors2d(q, gp);
+
+    DS = Dsig;
+    // DS = Q * Dsig. Scale rows
+    for (int i = 1; i <= 3; ++i) {
+        for (int j = 1; j <= 3; ++j) {
+            DS.at(i,j) *= q.at(i);
+        }
+    }
+}
+ 
+ 
+ 
 void
 LatticeStructuralElement :: printOutputAt(FILE *file, TimeStep *tStep)
 {

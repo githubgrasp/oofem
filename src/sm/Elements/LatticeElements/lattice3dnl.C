@@ -294,11 +294,7 @@ void Lattice3dNL :: computeGaussPoints()
 
 
 
-double Lattice3dNL :: giveArea() {
-    if ( geometryFlag == 0 ) {
-        computeGeometryProperties();
-    }
-
+double Lattice3dNL :: giveArea(GaussPoint *gp) {
     return this->area;
 }
 

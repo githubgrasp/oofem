@@ -90,7 +90,7 @@ public:
     LatticeLinearElastic(int n, Domain *d) : LatticeStructuralMaterial(n, d), RandomMaterialExtensionInterface() { };
 
 
-    LatticeLinearElastic(int n, Domain *d, double eNormalMean, double alphaOne, double alphaTwo);
+    LatticeLinearElastic(int n, Domain *d, double eNormalMean, double alphaOne, double alphaTwo, double alphaThree);
 
     const char *giveInputRecordName() const override { return _IFT_LatticeLinearElastic_Name; }
 

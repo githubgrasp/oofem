@@ -80,9 +80,9 @@ public:
 
     int hasBeenUpdated() override;
 
-    double giveArea() override { return this->width * this->thickness; }
+    double giveArea(GaussPoint *gp) override { return this->width * this->thickness; }
 
-  double giveIz() override { return pow(this->width,3.)*this->thickness/12; }
+  double giveI2(GaussPoint *gp) override { return pow(this->width,3.)*this->thickness/12; }
   
     int computeNumberOfDofs() override { return 6; }
     void giveDofManDofIDMask(int inode, IntArray &) const override;

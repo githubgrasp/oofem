@@ -488,7 +488,7 @@ namespace oofem {
         //    status->letTempLatticeStressBe(assemble< 6 >(stress, { 0, 1, 2 }) );
 
         answer = assemble < 6 > ( stress, { 0, 1, 2 } );
-        answer.at(4) = this->alphaTwo * this->eNormalMean * reducedStrain.at(4);
+        answer.at(4) = this->alphaThree * this->eNormalMean * reducedStrain.at(4);
         answer.at(5) = this->alphaTwo * this->eNormalMean * reducedStrain.at(5);
         answer.at(6) = this->alphaTwo * this->eNormalMean * reducedStrain.at(6);
 
@@ -675,8 +675,6 @@ namespace oofem {
             return stress;
         }
 
-
-
         auto reducedStrain = originalStrain;
         auto thermalStrain = this->computeStressIndependentStrainVector(gp, tStep, VM_Total);
         if ( thermalStrain.giveSize() ) {
@@ -858,7 +856,7 @@ namespace oofem {
         double deltaDissDamage  = 0.5 * length * ( pow( ( tempReducedStrain.at(1) - tempPlasticStrain.at(1) + reducedStrain.at(1) - plasticStrain.at(1) ) / 2., 2.) * this->eNormalMean +
                                                    pow( ( tempReducedStrain.at(2) - tempPlasticStrain.at(2) + reducedStrain.at(2) - plasticStrain.at(2) ) / 2., 2.) * this->alphaOne * this->eNormalMean +
                                                    pow( ( tempReducedStrain.at(3) - tempPlasticStrain.at(3) + reducedStrain.at(3) - plasticStrain.at(3) ) / 2., 2.) * this->alphaOne * this->eNormalMean +
-                                                   pow( ( tempReducedStrain.at(4) + reducedStrain.at(4) ) / 2., 2.) * this->alphaTwo * this->eNormalMean +
+                                                   pow( ( tempReducedStrain.at(4) + reducedStrain.at(4) ) / 2., 2.) * this->alphaThree * this->eNormalMean +
                                                    pow( ( tempReducedStrain.at(5) + reducedStrain.at(5) ) / 2., 2.) * this->alphaTwo * this->eNormalMean +
                                                    pow( ( tempReducedStrain.at(6) + reducedStrain.at(6) ) / 2., 2.) * this->alphaTwo * this->eNormalMean ) * deltaOmega;
 

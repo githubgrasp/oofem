@@ -63,8 +63,21 @@ public:
      * Returns the cross-sectional area of the lattice element.
      * @return Cross-section area.
      */
-    virtual double giveArea() { return 0; }
+    virtual double giveArea(GaussPoint *gp) { return 0; }
 
+
+  virtual void giveSectionScaleFactors3d(FloatArray &q, GaussPoint *gp);
+
+  virtual void giveSectionScaleFactors2d(FloatArray &q, GaussPoint *gp);
+
+  virtual void convertStressToResultants3d(FloatArray &S, const FloatArray &sigma, GaussPoint *gp);
+
+  virtual void convertStressToResultants2d(FloatArray &S, const FloatArray &sigma, GaussPoint *gp);
+
+  virtual void convertTangentToResultantTangent3d(FloatMatrix &DS, const FloatMatrix &Dsig, GaussPoint *gp);
+
+  virtual void convertTangentToResultantTangent2d(FloatMatrix &DS, const FloatMatrix &Dsig, GaussPoint *gp);
+    
     /**
      * Returns the element length
      * @return Element length.
@@ -196,28 +209,49 @@ public:
 {
     return 1.; // current element-constant value
 }
-  
+
+
     /**
      * Gives the y second moment of area
      */
-    virtual double giveIy() { return 0.; }
+    virtual double giveI1(GaussPoint *gp) { return 0.; }
 
     /**
-     * Gives the z second moment of area
+     * Gives the I2 second moment of area
      */
-    virtual double giveIz() { return 0.; }
+    virtual double giveI2(GaussPoint *gp) { return 0.; }
+
     /**
-     * Gives the polar second moment of area
+     * Gives the polar moment
      */
-    virtual double giveIk() { return 0.; }
+    virtual double giveIp(GaussPoint *gp) { return 0.; }
+  
+
+  
+    // /**
+    //  * Gives the y second moment of area
+    //  */
+    // virtual double giveIy() { return 0.; }
+
+    // /**
+    //  * Gives the z second moment of area
+    //  */
+    // virtual double giveIz() { return 0.; }
+    // /**
+    //  * Gives the polar second moment of area
+    //  */
+    // virtual double giveIk() { return 0.; }
+
     /**
-     * Gives the shear area y
+     * Gives the shear area 1
      */
-    virtual double giveShearAreaY() { return 0.; }
+    virtual double giveShearArea1(GaussPoint *gp) { return 0.; }
+
     /**
-     * Gives the shear area z
+     * Gives the shear area 2
      */
-    virtual double giveShearAreaZ() { return 0.; }
+    virtual double giveShearArea2(GaussPoint *gp) { return 0.; }
+
 };
 } // end namespace oofem
 #endif

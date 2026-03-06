@@ -53,11 +53,12 @@ namespace oofem {
 REGISTER_Material(LatticeLinearElastic);
 
 // constructor which creates a dummy material without a status and without random extension interface
-LatticeLinearElastic :: LatticeLinearElastic(int n, Domain *d, double e, double a1, double a2) :
+LatticeLinearElastic :: LatticeLinearElastic(int n, Domain *d, double e, double a1, double a2, double a3) :
     LatticeStructuralMaterial(n, d),
     eNormalMean(e),
     alphaOne(a1),
-    alphaTwo(a2)
+    alphaTwo(a2),
+      alphaThree(a3)
 {}
 
 
@@ -85,6 +86,9 @@ LatticeLinearElastic :: initializeFrom(InputRecord &ir)
     alphaTwo = 0.;
     IR_GIVE_OPTIONAL_FIELD(ir, alphaTwo, _IFT_LatticeLinearElastic_a2); // Macro
 
+    this->alphaThree = this->alphaTwo;
+    IR_GIVE_OPTIONAL_FIELD(ir, this->alphaThree, _IFT_LatticeLinearElastic_a3); // Macro
+
     localRandomType = 0; //Default: No local random field
     IR_GIVE_OPTIONAL_FIELD(ir, localRandomType, _IFT_LatticeLinearElastic_localrandomtype); // Macro
     if ( localRandomType == 1 ) { //Gaussian random generator
@@ -92,8 +96,7 @@ LatticeLinearElastic :: initializeFrom(InputRecord &ir)
         IR_GIVE_FIELD(ir, coefficientOfVariation, _IFT_LatticeLinearElastic_cov); // Macro
     }
 
-    this->alphaThree = this->alphaTwo;
-    IR_GIVE_OPTIONAL_FIELD(ir, this->alphaThree, _IFT_LatticeLinearElastic_a3); // Macro
+
     
     this->cAlpha = 0;
     IR_GIVE_OPTIONAL_FIELD(ir, cAlpha, _IFT_LatticeLinearElastic_calpha);
@@ -146,9 +149,6 @@ LatticeLinearElastic :: giveLatticeStress3d(const FloatArrayF< 6 > &strain,
 
     //Read in fluid pressures from structural element if this is not a slave problem
 
-    //Need to multiply stress with area
-    const double area = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveArea();
-
     FloatArray pressures;
     if ( !domain->giveEngngModel()->giveMasterEngngModel() ) {
         static_cast< LatticeStructuralElement * >( gp->giveElement() )->givePressures(pressures);
@@ -160,7 +160,7 @@ LatticeLinearElastic :: giveLatticeStress3d(const FloatArrayF< 6 > &strain,
         waterPressure += 1. / pressures.giveSize() * pressures [ i ];
     }
 
-    stress.at(1) += area*waterPressure;
+    stress.at(1) += waterPressure;
 
     //Set all temp values
     status->letTempLatticeStrainBe(strain);
@@ -197,30 +197,22 @@ LatticeLinearElastic :: give3dLatticeStiffnessMatrix(MatResponseMode rmode, Gaus
     //Needed to make sure that status exists before random values are requested for elastic stiffness. Problem is that gp->giveMaterialStatus does not check if status exist already
   static_cast< LatticeMaterialStatus * >( this->giveStatus(gp) );
 
-   //Reduce Young's modulus based on temperature
-   double reductionFactor =1.;
-   if(this->tCrit !=0.){
-     reductionFactor = computeTemperatureReductionFactor(gp,atTime,VM_Total);
-   }
-   
-   //   double eReduced = reductionFactor*this->e;           
-   //   double g = eReduced / ( 2. * ( 1. + this->nu ) );
-
-    const double area = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveArea();
-    const double iy = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveIy();
-    const double iz = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveIz();
-    const double ik = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveIk();
+   // //Reduce Young's modulus based on temperature
+   // double reductionFactor =1.;
+   // if(this->tCrit !=0.){
+   //   reductionFactor = computeTemperatureReductionFactor(gp,atTime,VM_Total);
+   // }
 
     FloatArrayF< 6 >d = {
-      area,
-      this->alphaOne * area,
-      this->alphaOne * area,
-      this->alphaThree * ik,
-      this->alphaTwo * iy,
-      this->alphaTwo * iz
+      1.,
+      this->alphaOne,
+      this->alphaOne,
+      this->alphaThree,
+      this->alphaTwo,
+      this->alphaTwo
     };
 
-    return diag(d * this->give(eNormal_ID, gp) * this->eNormalMean * reductionFactor);;
+    return diag(d * this->give(eNormal_ID, gp) * this->eNormalMean);;
  }
 
 FloatMatrixF< 3, 3 >
@@ -229,15 +221,10 @@ LatticeLinearElastic :: give2dLatticeStiffnessMatrix(MatResponseMode rmode, Gaus
   //Needed to make sure that status exists before random values are requested for elastic stiffness. Problem is that gp->giveMaterialStatus does not check if status exist already
   static_cast< LatticeMaterialStatus * >( this->giveStatus(gp) );
 
-  const double area = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveArea();
-  const double iz = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveIz();
-    
   FloatArrayF< 3 >d = {
-        area,
-        this->alphaOne*area, // shear
-	//TODO: We need to check which coordinate system is used in 2D and use the correct second moment of area.
-	//Currently, I assume x-y
-        this->alphaTwo*iz, // bending
+        1.,
+        this->alphaOne, // shear
+        this->alphaTwo, // bending
     };
 
     return diag(d * this->give(eNormal_ID, gp) * this->eNormalMean);

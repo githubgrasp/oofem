@@ -175,13 +175,15 @@ Lattice2d :: computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode,
                                     TimeStep *tStep)
 // Computes numerically the stiffness matrix of the receiver.
 {
-    double dV;
-    FloatMatrix d, b, db, bt;
+    FloatMatrix d, ds, b, db, bt;
     answer.resize(6, 6);
     answer.zero();
     this->computeBmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), b);
     this->computeConstitutiveMatrixAt(d, rMode, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
-    db.beProductOf(d, b);
+
+    convertTangentToResultantTangent2d(ds, d, integrationRulesArray [ 0 ]->getIntegrationPoint(0));
+
+    db.beProductOf(ds, b);
     bt.beTranspositionOf(b);
     answer.beProductOf(bt,db);
     answer.times(1./length);
@@ -220,15 +222,19 @@ Lattice2d :: giveInternalForcesVector(FloatArray &answer,
 	      strain.zero();
             }
             strain.beProductOf(b, u);
+            strain.times(1. / this->length);
             this->computeStressVector(stress, strain, gp, tStep);
         }
 
         if ( stress.giveSize() == 0 ) {
             break;
         }
-	
+
+        FloatArray s;
+        convertStressToResultants2d(s,stress,gp);
+
         bt.beTranspositionOf(b);
-        answer.beProductOf(bt, stress);
+        answer.beProductOf(bt, s);
     }
 
     // if inactive update state, but no contribution to global system

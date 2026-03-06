@@ -180,7 +180,8 @@ LatticePlasticityDamageViscoelastic::giveLatticeStress3d(const FloatArrayF< 6 > 
         reducedStrainForViscoMat -= inelasticTrialStrain;
 
         rheoMat->giveRealStressVector(tempStressVE, rChGP, reducedStrainForViscoMat, tStep);
-        viscoStress = FloatArrayF< 6 >(tempStressVE);
+
+	viscoStress = FloatArrayF< 6 >(tempStressVE);
 
         for ( int i = 1; i <= 6; i++ ) {
             quasiReducedStrain.at(i) =  viscoStress.at(i) / elasticStiffnessMatrix.at(i, i) + inelasticTrialStrain.at(i);
@@ -193,7 +194,6 @@ LatticePlasticityDamageViscoelastic::giveLatticeStress3d(const FloatArrayF< 6 > 
 	  status->letTempLatticeStressBe(plastDamStress);
 	  return plastDamStress;      
 	}
-    
 	    
 	    this->performDamageEvaluation(gp, quasiReducedStrain, tStep);
         double tempDamage = status->giveTempDamage();
@@ -344,6 +344,10 @@ int LatticePlasticityDamageViscoelastic::checkConsistency()
 
     if ( rheoMat->giveAlphaTwo() != this->alphaTwo ) {
         OOFEM_ERROR("a2 must be set to the same value in both master and viscoelastic slave materials");
+    }
+
+    if ( rheoMat->giveAlphaThree() != this->alphaThree ) {
+      OOFEM_ERROR("a3 must be set to the same value in both master and viscoelastic slave materials");
     }
 
     GaussPoint *noGP = NULL;

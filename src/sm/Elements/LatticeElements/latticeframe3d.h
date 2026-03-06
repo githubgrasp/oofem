@@ -83,17 +83,17 @@ public:
 
     double giveLength() override;
 
-    double giveArea() override;
+    double giveArea(GaussPoint *gp) override;
 
-    double giveIy() override;
+    double giveI1(GaussPoint *gp) override;
 
-    double giveIz() override;
+    double giveI2(GaussPoint *gp) override;
 
-    double giveIk() override;
+    double giveIp(GaussPoint *gp) override;
 
-    double giveShearAreaY() override;
+    double giveShearArea1(GaussPoint *gp) override;
 
-    double giveShearAreaZ() override;
+    double giveShearArea2(GaussPoint *gp) override;
 
     int computeNumberOfDofs() override { return 12; }
 

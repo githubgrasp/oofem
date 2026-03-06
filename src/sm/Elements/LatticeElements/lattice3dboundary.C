@@ -192,7 +192,7 @@ Lattice3dBoundary :: computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode
                                             TimeStep *tStep)
 // Computes numerically the stiffness matrix of the receiver.
 {
-    FloatMatrix d, b, db, bt;
+    FloatMatrix d, ds, b, db, bt;
     FloatMatrix t(12, 18), tt;
     FloatMatrix answerTemp(12, 12), answerHelp, ttk(18, 12);
     bool matStiffSymmFlag = this->giveCrossSection()->isCharacteristicMtrxSymmetric(rMode);
@@ -213,8 +213,11 @@ Lattice3dBoundary :: computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode
     /* for ( int i = 1; i <= 6; i++ ) { */
     /*     d.at(i, i) *= volume; */
     /* } */
+    convertTangentToResultantTangent3d(ds, d, integrationRulesArray [ 0 ]->getIntegrationPoint(0));
 
-    db.beProductOf(d, b);
+
+
+    db.beProductOf(ds, b);
     bt.beTranspositionOf(b);
     answerTemp.beProductOf(bt, db);
     answerTemp.times(1./length);
@@ -460,10 +463,12 @@ Lattice3dBoundary ::   giveDofManDofIDMask(int inode, IntArray &answer) const
 void
 Lattice3dBoundary :: initializeFrom(InputRecord &ir)
 {
-    Lattice3d :: initializeFrom(ir);
 
     this->location.resize(2);
     IR_GIVE_FIELD(ir, location, _IFT_Lattice3dBoundary_location); // Macro
+
+    Lattice3d :: initializeFrom(ir);
+
 }
 
 
@@ -502,9 +507,11 @@ Lattice3dBoundary :: giveInternalForcesVector(FloatArray &answer, TimeStep *tSte
 
     this->computeStressVector(TotalStressVector, strain, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
 
-    //    dV  = this->computeVolumeAround(integrationRulesArray [ 0 ]->getIntegrationPoint(0) );
-    bs.beProductOf(bt, TotalStressVector);
-    //    bs.times(dV);
+    //Stress is now converted to sectional forces
+    FloatArray s;
+    convertStressToResultants3d(s,TotalStressVector, integrationRulesArray [ 0 ]->getIntegrationPoint(0));
+
+    bs.beProductOf(bt, s);
 
     for ( int m = 1; m <= 12; m++ ) {
         answer.at(m) = bs.at(m);

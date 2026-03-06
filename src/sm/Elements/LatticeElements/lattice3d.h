@@ -81,7 +81,7 @@ public:
 
     double giveNormalStress() override;
 
-    double giveArea() override;
+    double giveArea(GaussPoint *gp) override;
 
     int computeNumberOfDofs() override { return 12; }
 
@@ -119,11 +119,9 @@ public:
     const char *giveClassName() const override { return "Lattice3d"; }
     void initializeFrom(InputRecord &ir) override;
 
-  double giveIk() override;
-  double giveIy() override;
-  double giveIz() override;
-
-
+  double giveIp(GaussPoint *gp) override;
+  double giveI1(GaussPoint *gp) override;
+  double giveI2(GaussPoint *gp) override;
 
   void giveInternalForcesVector(FloatArray &answer, TimeStep *tStep, int useUpdatedGpRecord) override;
 

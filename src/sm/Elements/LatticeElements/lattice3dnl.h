@@ -81,7 +81,7 @@ public:
 
     double giveNormalStress() override;
 
-    double giveArea() override;
+    double giveArea(GaussPoint *gp) override;
 
     int computeNumberOfDofs() override { return 12; }
 

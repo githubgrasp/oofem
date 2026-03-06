@@ -187,11 +187,7 @@ void LatticeBeam3d :: computeGaussPoints()
 
 
 
-double LatticeBeam3d :: giveArea() {
-    if ( geometryFlag == 0 ) {
-        computeGeometryProperties();
-    }
-
+double LatticeBeam3d :: giveArea(GaussPoint *gp) {
     return this->area;
 }
 

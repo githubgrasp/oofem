@@ -223,7 +223,12 @@ Lattice3d :: computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, int 
             this->computeStressVector(stress, strain, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
         }
 
-        answer.beProductOf(bt, stress);
+    //Stress is now converted to sectional forces
+        FloatArray s;
+        convertStressToResultants3d(s,stress, integrationRulesArray [ 0 ]->getIntegrationPoint(0));
+
+
+        answer.beProductOf(bt, s);
         if ( !this->isActivated(tStep) ) {
             answer.zero();
             return;
@@ -312,21 +317,16 @@ Lattice3d :: computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode,
                                     TimeStep *tStep)
 // Computes numerically the stiffness matrix of the receiver.
 {
-    FloatMatrix d, bi, bj, bjt, dbj, dij;
+    FloatMatrix d, ds, bi, bj, bjt, dbj, dij;
 
     answer.resize(12, 12);
     answer.zero();
     this->computeBmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), bj);
     this->computeConstitutiveMatrixAt(d, rMode, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
 
-    
-    //    double volume = this->computeVolumeAround(integrationRulesArray [ 0 ]->getIntegrationPoint(0) );
+    convertTangentToResultantTangent3d(ds, d, integrationRulesArray [ 0 ]->getIntegrationPoint(0));
 
-    /* for ( int i = 1; i <= 6; i++ ) { */
-    /*     d.at(i, i) *= volume; */
-    /* } */
-
-    dbj.beProductOf(d, bj);
+    dbj.beProductOf(ds, bj);
     bjt.beTranspositionOf(bj);
     answer.beProductOf(bjt, dbj);
     answer.times(1./this->giveLength());
@@ -344,11 +344,10 @@ void Lattice3d :: computeGaussPoints()
 
 
 
-double Lattice3d :: giveArea() {
+double Lattice3d :: giveArea(GaussPoint *gp) {
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
     }
-
     return this->area;
 }
 
@@ -439,6 +438,10 @@ Lattice3d :: initializeFrom(InputRecord &ir)
     pressures.resize(numberOfPolygonVertices);
     pressures.zero();
     IR_GIVE_OPTIONAL_FIELD(ir, pressures, _IFT_Lattice3d_pressures);
+
+//Introduce here the geometry calculation
+//computeGeometryProperties();
+
 }
 
 
@@ -719,14 +722,14 @@ void
   return;
 }
 
-double Lattice3d :: giveIy() {
+double Lattice3d :: giveI1(GaussPoint *gp) {
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
     }
     return this->I1;
 }
 
-double Lattice3d :: giveIz() {
+double Lattice3d :: giveI2(GaussPoint *gp) {
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
     }
@@ -734,15 +737,12 @@ double Lattice3d :: giveIz() {
     return this->I2;
 }
 
-double Lattice3d :: giveIk() {
+double Lattice3d :: giveIp(GaussPoint *gp) {
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
     }
-
     return this->Ip;
 }
-
-
 
 void
 Lattice3d :: computeLumpedMassMatrix(FloatMatrix &answer, TimeStep *tStep)

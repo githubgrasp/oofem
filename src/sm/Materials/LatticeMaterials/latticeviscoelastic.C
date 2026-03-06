@@ -33,6 +33,7 @@
  */
 
 #include "latticeviscoelastic.h"
+#include "Elements/LatticeElements/latticestructuralelement.h"
 #include "gausspoint.h"
 #include "floatarray.h"
 #include "datastream.h"
@@ -99,10 +100,8 @@ LatticeViscoelastic::giveLatticeStress3d(const FloatArrayF< 6 > &totalStrain,
         reducedStrainForViscoMat -= FloatArrayF< 6 >(indepStrain);
     }
 
-
     rheoMat->giveRealStressVector(viscoStress, rChGP, reducedStrainForViscoMat, tStep);
     tempStress = FloatArrayF< 6 >(viscoStress);
-
 
     status->letTempLatticeStrainBe(totalStrain);
     status->letTempLatticeStressBe(tempStress);
@@ -186,6 +185,9 @@ int LatticeViscoelastic::checkConsistency()
         OOFEM_ERROR("a2 must be set to the same value in both master and viscoelastic slave materials");
     }
 
+    if ( rheoMat->giveAlphaThree() != this->alphaThree ) {
+      OOFEM_ERROR("a3 must be set to the same value in both master and viscoelastic slave materials");
+    }
 
     return FEMComponent::checkConsistency();
 }

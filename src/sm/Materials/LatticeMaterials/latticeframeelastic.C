@@ -164,12 +164,12 @@ LatticeFrameElastic::give3dFrameStiffnessMatrix(MatResponseMode rmode, GaussPoin
    double eReduced = reductionFactor*this->e;           
     double g = eReduced / ( 2. * ( 1. + this->nu ) );
 
-    const double area = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveArea();
-    const double iy = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveIy();
-    const double iz = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveIz();
-    const double ik = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveIk();
-    const double shearareay = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveShearAreaY();
-    const double shearareaz = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveShearAreaZ();
+    const double area = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveArea(gp);
+    const double iy = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveI1(gp);
+    const double iz = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveI2(gp);
+    const double ik = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveIp(gp);
+    const double shearareay = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveShearArea1(gp);
+    const double shearareaz = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveShearArea2(gp);
 
     FloatArrayF< 6 >d = {
         eReduced * area,

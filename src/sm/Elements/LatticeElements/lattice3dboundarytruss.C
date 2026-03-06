@@ -133,14 +133,16 @@ Lattice3dBoundaryTruss :: computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix 
     answer.at(4, 1) = 0.;
     answer.at(4, 2) = 0;
     answer.at(4, 3) = 0.;
-    answer.at(4, 4) = -sqrt(Ip / this->area);
+//    answer.at(4, 4) = -sqrt(Ip / this->area);
+    answer.at(4, 4) = -1.;
     answer.at(4, 5) = 0.;
     answer.at(4, 6) = 0.;
     //Second node
     answer.at(4, 7) = 0.;
     answer.at(4, 8) = 0.;
     answer.at(4, 9) = 0.;
-    answer.at(4, 10) = sqrt(Ip / this->area);
+    //answer.at(4, 10) = sqrt(Ip / this->area);
+    answer.at(4, 10) = 1.;
     answer.at(4, 11) = 0.;
     answer.at(4, 12) = 0.;
 
@@ -150,14 +152,16 @@ Lattice3dBoundaryTruss :: computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix 
     answer.at(5, 2) = 0.;
     answer.at(5, 3) = 0.;
     answer.at(5, 4) = 0.;
-    answer.at(5, 5) = -sqrt(I1 / this->area);
+  //  answer.at(5, 5) = -sqrt(I1 / this->area);
+    answer.at(5, 5) = -1.;
     answer.at(5, 6) = 0.;
     //Second node
     answer.at(5, 7) = 0.;
     answer.at(5, 8) = 0.;
     answer.at(5, 9) =  0.;
     answer.at(5, 10) = 0.;
-    answer.at(5, 11) = sqrt(I1 / this->area);
+//    answer.at(5, 11) = sqrt(I1 / this->area);
+    answer.at(5, 11) = 1.;
     answer.at(5, 12) = 0.;
 
     //Rotation around z-axis
@@ -167,16 +171,18 @@ Lattice3dBoundaryTruss :: computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix 
     answer.at(6, 3) = 0.;
     answer.at(6, 4) = 0.;
     answer.at(6, 5) = 0.;
-    answer.at(6, 6) = -sqrt(I2 / this->area);
+//    answer.at(6, 6) = -sqrt(I2 / this->area);
+    answer.at(6, 6) = -1.;
     //Second node
     answer.at(6, 7) = 0.;
     answer.at(6, 8) = 0.;
     answer.at(6, 9) =  0.;
     answer.at(6, 10) = 0.;
     answer.at(6, 11) = 0.;
-    answer.at(6, 12) = sqrt(I2 / this->area);
+//    answer.at(6, 12) = sqrt(I2 / this->area);
+    answer.at(6, 12) = 1.;
 
-    answer.times(1. / this->length);
+//    answer.times(1. / this->length);
 
     return;
 }
@@ -187,10 +193,11 @@ Lattice3dBoundaryTruss :: computeStiffnessMatrix(FloatMatrix &answer, MatRespons
 // Computes numerically the stiffness matrix of the receiver.
 {
     //    double dV;
-    FloatMatrix d, bi, bj, dbj, dij, bjt;
+    FloatMatrix d, ds, bi, bj, dbj, dij, bjt;
     FloatMatrix t(12, 13), tt;
     FloatMatrix answerTemp(12, 12), answerHelp, ttk(13, 12);
     bool matStiffSymmFlag = this->giveCrossSection()->isCharacteristicMtrxSymmetric(rMode);
+    double length = this->giveLength();
     answerTemp.zero();
     answerHelp.zero();
     t.zero();
@@ -203,13 +210,14 @@ Lattice3dBoundaryTruss :: computeStiffnessMatrix(FloatMatrix &answer, MatRespons
 
     this->computeBmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), bj);
     this->computeConstitutiveMatrixAt(d, rMode, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
-    for ( int i = 1; i <= 6; i++ ) {
-        d.at(i, i) *= volume;
-    }
 
-    dbj.beProductOf(d, bj);
+    convertTangentToResultantTangent3d(ds, d, integrationRulesArray [ 0 ]->getIntegrationPoint(0));
+
+
+    dbj.beProductOf(ds, bj);
     bjt.beTranspositionOf(bj);
     answerTemp.beProductOf(bjt, dbj);
+    answerTemp.times(1./length);
 
     answer.resize(computeNumberOfDofs(), computeNumberOfDofs() );
     answer.zero();
@@ -370,6 +378,7 @@ Lattice3dBoundaryTruss :: computeStrainVector(FloatArray &answer, GaussPoint *gp
     }
 
     answer.beProductOf(b, uTemp);
+    answer.times(1./length);
 }
 
 bool
@@ -464,9 +473,13 @@ Lattice3dBoundaryTruss :: giveInternalForcesVector(FloatArray &answer, TimeStep 
 
     this->computeStressVector(TotalStressVector, strain, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
 
-    dV  = this->computeVolumeAround(integrationRulesArray [ 0 ]->getIntegrationPoint(0) );
-    bs.beProductOf(bt, TotalStressVector);
-    bs.times(dV);
+    //Stress is now converted to sectional forces
+    FloatArray s;
+    convertStressToResultants3d(s,TotalStressVector, integrationRulesArray [ 0 ]->getIntegrationPoint(0));
+
+
+    bs.beProductOf(bt, s);
+
 
     for ( int m = 1; m <= 12; m++ ) {
         answer.at(m) = bs.at(m);
