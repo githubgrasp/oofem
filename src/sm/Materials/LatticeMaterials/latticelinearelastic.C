@@ -197,12 +197,12 @@ LatticeLinearElastic :: give3dLatticeStiffnessMatrix(MatResponseMode rmode, Gaus
     //Needed to make sure that status exists before random values are requested for elastic stiffness. Problem is that gp->giveMaterialStatus does not check if status exist already
   static_cast< LatticeMaterialStatus * >( this->giveStatus(gp) );
 
-   // //Reduce Young's modulus based on temperature
-   // double reductionFactor =1.;
-   // if(this->tCrit !=0.){
-   //   reductionFactor = computeTemperatureReductionFactor(gp,atTime,VM_Total);
-   // }
-
+  //Reduce Young's modulus based on temperature
+  double reductionFactor =1.;
+  if(this->tCrit !=0.){
+    reductionFactor = computeTemperatureReductionFactor(gp,atTime,VM_Total);
+  }
+  
     FloatArrayF< 6 >d = {
       1.,
       this->alphaOne,
@@ -212,7 +212,7 @@ LatticeLinearElastic :: give3dLatticeStiffnessMatrix(MatResponseMode rmode, Gaus
       this->alphaTwo
     };
 
-    return diag(d * this->give(eNormal_ID, gp) * this->eNormalMean);;
+    return diag(d * this->give(eNormal_ID, gp) * this->eNormalMean * reductionFactor);;
  }
 
 FloatMatrixF< 3, 3 >
