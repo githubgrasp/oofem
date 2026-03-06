@@ -65,7 +65,7 @@ int ExpressionField :: evaluateAt(FloatArray &answer, const Coordinates &coords,
         p.setVariableValue("z", 0, (coords.giveSize()>2)?coords.at(3):0);
         p.setVariableValue("t", 0, tStep->giveIntrinsicTime());
         p.eval(this->expression.c_str(), answer, "f", err); // evaluate the expression; return value of "f" array
-        return (err==0);
+        return (err);
     } else {
         OOFEM_ERROR("Unsupported mode");
         return 1;
