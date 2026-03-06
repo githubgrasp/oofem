@@ -129,6 +129,34 @@ void LatticeStructuralElement :: convertTangentToResultantTangent2d(FloatMatrix 
 }
  
  
+void
+LatticeStructuralElement :: computeStrainVector(FloatArray &answer, GaussPoint *gp, TimeStep *tStep)
+// Computes the vector containing the strains at the Gauss point gp of
+// the receiver, at time step tStep. The nature of these strains depends
+// on the element's type.
+{
+    FloatMatrix b;
+    FloatArray u;
+
+    if ( !this->isActivated(tStep) ) {
+        this->computeBmatrixAt(gp, b);
+        answer.resize(b.giveNumberOfRows());
+        answer.zero();
+        return;
+    }
+
+    this->computeBmatrixAt(gp, b);
+    this->computeVectorOf(VM_Total, tStep, u);
+
+    // subtract initial displacements, if defined
+    if ( initialDisplacements ) {
+        u.subtract(* initialDisplacements);
+    }
+    answer.beProductOf(b, u);
+    answer.times(1./giveLength());
+}
+
+
  
 void
 LatticeStructuralElement :: printOutputAt(FILE *file, TimeStep *tStep)

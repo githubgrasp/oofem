@@ -234,8 +234,7 @@ Lattice3d :: computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, int 
             return;
         }
     }
-
-
+    
 void
 Lattice3d :: giveGPCoordinates(FloatArray &coords)
 {

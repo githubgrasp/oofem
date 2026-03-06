@@ -193,6 +193,7 @@ public:
      */
     virtual double giveOldNormalStress() { return 0; }
 
+    void computeStrainVector(FloatArray &answer, GaussPoint *gp, TimeStep *tStep) override;
 
     /**
      * Returns flag indicating if status has been updated

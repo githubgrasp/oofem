@@ -80,8 +80,6 @@ public:
 
     int hasBeenUpdated() override;
 
-    void computeStrainVector(FloatArray &answer, GaussPoint *gp, TimeStep *tStep);
-
     double giveArea(GaussPoint *gp) override { return this->width * this->thickness; }
 
   double giveI2(GaussPoint *gp) override { return pow(this->width,3.)*this->thickness/12; }

@@ -171,30 +171,6 @@ Lattice2d :: computeStressVector(FloatArray &answer, const FloatArray &strain, G
 }
 
 
-void
-Lattice2d :: computeStrainVector(FloatArray &answer, GaussPoint *gp, TimeStep *tStep)
-{
-    FloatMatrix b;
-    FloatArray u;
-
-    if ( !this->isActivated(tStep) ) {
-        answer.resize(3);
-        answer.zero();
-        return;
-    }
-
-    this->computeBmatrixAt(gp, b);
-    this->computeVectorOf(VM_Total, tStep, u);
-
-    // subtract initial displacements, if defined
-    if ( initialDisplacements ) {
-        u.subtract(* initialDisplacements);
-    }
-
-    answer.beProductOf(b, u);
-    answer.times(1./this->giveLength());
-}
-
 
 void
 Lattice2d :: computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode,
