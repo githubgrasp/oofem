@@ -23,13 +23,13 @@ IntElLine1IntPen::IntElLine1IntPen(int n, Domain * d) : IntElLine1(n, d)
     numberOfGaussPoints = 4;
 }
 
-int IntElLine1IntPen :: computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords)
+int IntElLine1IntPen :: computeGlobalCoordinates(Coordinates &answer, const FloatArray &lcoords)
 {
     FloatArray N;
     FEInterpolation *interp = this->giveInterpolation();
     interp->evalN( N, lcoords, FEIElementGeometryWrapper(this) );
 
-    answer.resize(this->giveDofManager(1)->giveCoordinates().giveSize());
+    //answer.resize(this->giveDofManager(1)->giveCoordinates().giveSize());
     answer.zero();
 
     double xi_0 = 0.;

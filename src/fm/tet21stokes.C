@@ -260,7 +260,7 @@ void Tet21Stokes :: computeLoadVector(FloatArray &answer, BodyLoad *load, CharTy
             if ( load->giveFormulationType() == Load :: FT_Entity ) { // load in xi-eta system
                 load->computeValueAt(t, tStep, lcoords, VM_Total);
             } else { // Edge load in x-y system
-                FloatArray gcoords;
+                Coordinates gcoords;
                 this->interpolation_quad.surfaceLocal2global( gcoords, iSurf, lcoords, FEIElementGeometryWrapper(this) );
                 load->computeValueAt(t, tStep, gcoords, VM_Total);
             }

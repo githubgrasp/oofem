@@ -148,6 +148,9 @@ public:
 
     virtual double giveDamage() const { return 0.0; }     // no default damage
     virtual double giveTempDamage() const { return 0.0; } // no default damage
+
+    FloatArray jumpTractionReduced(const FloatArrayF<3> &vec, GaussPoint *gp) const;
+
 };
 } // end namespace oofem
 #endif // structuralinterfacematerialstatus_h

@@ -378,7 +378,7 @@ TR_SHELL02 :: ZZErrorEstimatorI_computeLocalStress(FloatArray &answer, FloatArra
 
 
 void
-TR_SHELL02 :: SpatialLocalizerI_giveBBox(FloatArray &bb0, FloatArray &bb1)
+TR_SHELL02 :: SpatialLocalizerI_giveBBox(Coordinates &bb0, Coordinates &bb1)
 {
     FloatArray lt3, gt3; // global vector in the element thickness direction of lenght thickeness/2
     const FloatMatrix *GtoLRotationMatrix = plate->computeGtoLRotationMatrix();
@@ -398,16 +398,25 @@ TR_SHELL02 :: SpatialLocalizerI_giveBBox(FloatArray &bb0, FloatArray &bb1)
         _c = coordinates;
         _c.add(gt3);
         if ( i == 1 ) {
-            bb0 = bb1 = _c;
+            bb0 = _c;
+            bb1 = _c;
         } else {
-            bb0.beMinOf(bb0, _c);
-            bb1.beMaxOf(bb1, _c);
+            //bb0.beMinOf(bb0, _c);
+            //bb1.beMaxOf(bb1, _c);
+            for (int j = 0; j < 3; ++j) {
+                if (bb0[j] > _c[j]) bb0[j] = _c[j];
+                if (bb1[j] < _c[j]) bb1[j] = _c[j];
+            }
         }
 
         _c = coordinates;
         _c.subtract(gt3);
-        bb0.beMinOf(bb0, _c);
-        bb1.beMaxOf(bb1, _c);
+        //bb0.beMinOf(bb0, _c);
+        //bb1.beMaxOf(bb1, _c);
+        for (int j = 0; j < 3; ++j) {
+            if (bb0[j] > _c[j]) bb0[j] = _c[j];
+            if (bb1[j] < _c[j]) bb1[j] = _c[j];
+        }
     }
 }
 

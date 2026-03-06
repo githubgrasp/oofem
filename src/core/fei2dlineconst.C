@@ -54,13 +54,13 @@ double FEI2dLineConst :: evaldNdx(FloatMatrix &answer, const FloatArray &lcoords
     return 0.;
 }
 
-void FEI2dLineConst :: local2global(FloatArray &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
+void FEI2dLineConst :: local2global(Coordinates &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
 {
     FloatArray n(2);
     double xi = lcoords(0);
     n.at(1) = ( 1. - xi ) * 0.5;
     n.at(2) = ( 1. + xi ) * 0.5;
-    answer.resize( max(xind, yind) );
+    //answer.resize(3);
     answer.zero();
     answer.at(xind) = n(0) * cellgeo.giveVertexCoordinates(1).at(xind) +
                       n(1) * cellgeo.giveVertexCoordinates(2).at(xind);
@@ -68,14 +68,14 @@ void FEI2dLineConst :: local2global(FloatArray &answer, const FloatArray &lcoord
                       n(1) * cellgeo.giveVertexCoordinates(2).at(yind);
 }
 
-int FEI2dLineConst :: global2local(FloatArray &answer, const FloatArray &gcoords, const FEICellGeometry &cellgeo) const
+int FEI2dLineConst :: global2local(FloatArray &answer, const Coordinates &gcoords, const FEICellGeometry &cellgeo) const
 {
     double x2_x1 = cellgeo.giveVertexCoordinates(2).at(xind) - cellgeo.giveVertexCoordinates(1).at(xind);
     double y2_y1 = cellgeo.giveVertexCoordinates(2).at(yind) - cellgeo.giveVertexCoordinates(1).at(yind);
 
     // Projection of the global coordinate gives the value interpolated in [0,1].
-    double dx = gcoords(0) - cellgeo.giveVertexCoordinates(1).at(xind);
-    double dy = gcoords(1) - cellgeo.giveVertexCoordinates(1).at(yind);
+    double dx = gcoords.at(xind) - cellgeo.giveVertexCoordinates(1).at(xind);
+    double dy = gcoords.at(yind) - cellgeo.giveVertexCoordinates(1).at(yind);
     double xi = (x2_x1) ? ( sqrt( dx*dx*(1 + (y2_y1 / x2_x1)*(y2_y1 / x2_x1) )) ) / ( sqrt(x2_x1 * x2_x1 + y2_y1 * y2_y1) ) : sqrt(dy*dy) / ( sqrt(x2_x1 * x2_x1 + y2_y1 * y2_y1) );
     // Map to [-1,1] domain.
     xi = xi * 2 - 1;

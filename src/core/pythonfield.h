@@ -56,7 +56,7 @@ namespace oofem {
  * Custom user supplied python scripts for field.
  * The python module should contain the functions
  * @code{.py}
- * evaluateAt(FloatArray &answer, const FloatArray &coords, ValueModeType mode, TimeStep *tStep) # returns int 
+ * evaluateAt(FloatArray &answer, const Coordinates &coords, ValueModeType mode, TimeStep *tStep) # returns int 
  * @endcode
  * 
  * @author Vit Smilauer
@@ -75,7 +75,7 @@ public:
     void setFunctionName(std::string functionName);
     void setModuleName(std::string moduleName);
     
-    int evaluateAt(FloatArray &answer, const FloatArray &coords,
+    int evaluateAt(FloatArray &answer, const Coordinates &coords,
                            ValueModeType mode, TimeStep *tStep) override;
                            
                            

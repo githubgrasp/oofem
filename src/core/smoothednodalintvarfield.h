@@ -70,7 +70,7 @@ public:
     SmoothedNodalInternalVariableField(InternalStateType ist, FieldType b, NodalRecoveryModel :: NodalRecoveryModelType st, Domain * d);
     virtual ~SmoothedNodalInternalVariableField();
 
-    int evaluateAt(FloatArray &answer, const FloatArray &coords, ValueModeType mode, TimeStep *tStep) override;
+    int evaluateAt(FloatArray &answer, const Coordinates &coords, ValueModeType mode, TimeStep *tStep) override;
     int evaluateAt(FloatArray &answer, DofManager *dman, ValueModeType mode, TimeStep *tStep) override;
 
     InternalStateType giveInternalType() { return istType; }

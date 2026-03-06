@@ -54,7 +54,7 @@ public:
     void boundaryEvalN(FloatArray &answer, int boundary, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override;
     double boundaryEvalNormal(FloatArray &answer, int boundary, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const  override;
     double boundaryGiveTransformationJacobian(int boundary, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override;
-    void boundaryLocal2Global(FloatArray &answer, int boundary, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override;
+    void boundaryLocal2Global(Coordinates &answer, int boundary, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override;
     const Element_Geometry_Type giveBoundaryGeometryType(int boundary) const override { return EGT_point; } 
 
     /**@name Surface interpolation services */
@@ -65,7 +65,7 @@ public:
     { OOFEM_ERROR("Functions not supported for this interpolator."); }
     double boundarySurfaceEvalNormal(FloatArray &answer, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override
     { OOFEM_ERROR("Functions not supported for this interpolator."); }
-    void boundarySurfaceLocal2global(FloatArray &answer, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override
+    void boundarySurfaceLocal2global(Coordinates &answer, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override
     { OOFEM_ERROR("Functions not supported for this interpolator."); }
     double boundarySurfaceGiveTransformationJacobian(int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override
     { OOFEM_ERROR("Functions not supported for this interpolator."); }
@@ -80,7 +80,7 @@ public:
     { OOFEM_ERROR("Functions not supported for this interpolator."); }
     double boundaryEdgeGiveTransformationJacobian(int boundary, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override
     { OOFEM_ERROR("Functions not supported for this interpolator."); }
-    void boundaryEdgeLocal2Global(FloatArray &answer, int boundary, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override
+    void boundaryEdgeLocal2Global(Coordinates &answer, int boundary, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override
     { OOFEM_ERROR("Functions not supported for this interpolator."); }
     //@}
 

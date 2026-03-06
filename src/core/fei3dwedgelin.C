@@ -174,13 +174,13 @@ FEI3dWedgeLin :: evaldNdx(FloatMatrix &answer, const FloatArray &lcoords, const 
 
 
 void
-FEI3dWedgeLin :: local2global(FloatArray &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
+FEI3dWedgeLin :: local2global(Coordinates &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
 {
     FloatArray n;
 
     this->evalN(n, lcoords, cellgeo);
 
-    answer.clear();
+    answer.zero();
     for ( int i = 1; i <= 6; i++ ) {
         answer.add( n.at(i), cellgeo.giveVertexCoordinates(i) );
     }
@@ -198,9 +198,10 @@ double FEI3dWedgeLin :: giveCharacteristicLength(const FEICellGeometry &cellgeo)
 #define POINT_TOL 1.e-3
 
 int
-FEI3dWedgeLin :: global2local(FloatArray &answer, const FloatArray &gcoords, const FEICellGeometry &cellgeo) const
+FEI3dWedgeLin :: global2local(FloatArray &answer, const Coordinates &gcoords, const FEICellGeometry &cellgeo) const
 {
-    FloatArray res, delta, guess;
+    FloatArray res, delta;
+    Coordinates guess;
     FloatMatrix jac;
     double convergence_limit, error = 0.0;
 
@@ -294,14 +295,14 @@ FEI3dWedgeLin :: edgeEvaldNdx(FloatMatrix &answer, int iedge, const FloatArray &
 
 
 void
-FEI3dWedgeLin :: edgeLocal2global(FloatArray &answer, int iedge, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
+FEI3dWedgeLin :: edgeLocal2global(Coordinates &answer, int iedge, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
 {
     FloatArray n;
 
     const auto &nodes = this->computeLocalEdgeMapping(iedge);
     this->edgeEvalN(n, iedge, lcoords, cellgeo);
 
-    answer.clear();
+    answer.zero();
     for ( int i = 1; i <= n.giveSize(); ++i ) {
         answer.add( n.at(i), cellgeo.giveVertexCoordinates( nodes.at(i) ) );
     }
@@ -366,7 +367,7 @@ FEI3dWedgeLin :: surfaceEvalN(FloatArray &answer, int isurf, const FloatArray &l
 
 
 void
-FEI3dWedgeLin :: surfaceLocal2global(FloatArray &answer, int isurf,
+FEI3dWedgeLin :: surfaceLocal2global(Coordinates &answer, int isurf,
                                      const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
 {
     FloatArray n;
@@ -374,7 +375,7 @@ FEI3dWedgeLin :: surfaceLocal2global(FloatArray &answer, int isurf,
     const auto &nodes = this->computeLocalSurfaceMapping(isurf);
     this->surfaceEvalN(n, isurf, lcoords, cellgeo);
 
-    answer.clear();
+    answer.zero();
     for ( int i = 1; i <= n.giveSize(); ++i ) {
         answer.add( n.at(i), cellgeo.giveVertexCoordinates( nodes.at(i) ) );
     }

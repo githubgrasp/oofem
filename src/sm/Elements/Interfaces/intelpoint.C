@@ -208,11 +208,11 @@ IntElPoint :: computeGaussPoints()
 
 
 int
-IntElPoint :: computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords)
+IntElPoint :: computeGlobalCoordinates(Coordinates &answer, const FloatArray &lcoords)
 {
     answer = this->giveNode(1)->giveCoordinates();
-    answer.add(this->giveNode(2)->giveCoordinates());
-    answer.times(0.5);
+    answer+= this->giveNode(2)->giveCoordinates();
+    answer*=0.5;
     return 1;
 }
 

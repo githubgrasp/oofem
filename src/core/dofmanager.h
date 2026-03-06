@@ -38,6 +38,7 @@
 #include <cstdio>
 #include <map>
 
+#include "oofemcfg.h"
 #include "femcmpnn.h"
 #include "intarray.h"
 #include "floatarray.h"
@@ -100,7 +101,7 @@ class OOFEM_EXPORT DofManager : public FEMComponent
 {
 protected:
     /// Array storing nodal coordinates.
-    FloatArray coordinates;
+    Coordinates coordinates;
 
     /// Array of DOFs.
     std::vector< Dof * > dofArray;
@@ -387,11 +388,11 @@ public:
         return this->coordinates.at(i);
     }
     /// @return Pointer to node coordinate array.
-    const FloatArray &giveCoordinates() const { return this->coordinates; }
+    const Coordinates &giveCoordinates() const { return this->coordinates; }
     //@}
 
     /// Set coordinates
-    void setCoordinates(const FloatArray &coords) {
+    void setCoordinates(const Coordinates &coords) {
         this->coordinates = coords;
     }
     

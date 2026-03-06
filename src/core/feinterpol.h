@@ -69,7 +69,7 @@ public:
     FEICellGeometry() {}
     virtual ~FEICellGeometry() { }
     virtual int giveNumberOfVertices() const = 0;
-    virtual const FloatArray giveVertexCoordinates(int i) const = 0;
+    virtual const Coordinates giveVertexCoordinates(int i) const = 0;
     virtual const Element_Geometry_Type giveGeometryType() const = 0;
     virtual const FEInterpolation* getGeometryInterpolation() const {return nullptr;};
 };
@@ -89,7 +89,7 @@ public:
     {
         OOFEM_ERROR("no reference geometry");
     }
-    const FloatArray giveVertexCoordinates(int i) const override
+    const Coordinates giveVertexCoordinates(int i) const override
     {
         OOFEM_ERROR("no reference geometry");
     }
@@ -113,7 +113,7 @@ public:
         FEICellGeometry(), elem(elem) { }
     virtual ~FEIElementGeometryWrapper() { }
     int giveNumberOfVertices() const override;
-    const FloatArray giveVertexCoordinates(int i) const override
+    const Coordinates giveVertexCoordinates(int i) const override
     {
         return elem->giveNode(i)->giveCoordinates();
     }
@@ -139,7 +139,7 @@ public:
     FEIElementDeformedGeometryWrapper(const Element *elem, TimeStep *tStep);
     virtual ~FEIElementDeformedGeometryWrapper() { }
     int giveNumberOfVertices() const override;
-    const FloatArray giveVertexCoordinates(int i) const override;
+    const Coordinates giveVertexCoordinates(int i) const override;
     void setTimeStep(TimeStep *ts) { tStep = ts; }
     void setAlpha(double val) { this->alpha = val; }
     const Element_Geometry_Type giveGeometryType() const override {
@@ -155,15 +155,15 @@ public:
 class OOFEM_EXPORT FEIVertexListGeometryWrapper : public FEICellGeometry
 {
 protected:
-    const std::vector< FloatArray > &coords;
+    const std::vector< Coordinates > &coords;
     Element_Geometry_Type gtype;
 
 public:
-    FEIVertexListGeometryWrapper(const std::vector< FloatArray > &coords, const Element_Geometry_Type gt) : 
+    FEIVertexListGeometryWrapper(const std::vector< Coordinates > &coords, const Element_Geometry_Type gt) : 
         FEICellGeometry(), coords(coords), gtype(gt) { }
     virtual ~FEIVertexListGeometryWrapper() { }
     int giveNumberOfVertices() const override { return (int)this->coords.size(); }
-    const FloatArray giveVertexCoordinates(int i) const override { return this->coords [ i - 1 ]; }
+    const Coordinates giveVertexCoordinates(int i) const override { return this->coords [ i - 1 ]; }
     const Element_Geometry_Type giveGeometryType() const override {return gtype;}
 };
 
@@ -253,11 +253,11 @@ public:
     }
     /**
      * Evaluates global coordinates from given local ones.
-     * @param answer Contains resulting global coordinates.
+     * @param answer Contains resulting global coordinates with size=3.
      * @param lcoords Array containing (local) coordinates.
      * @param cellgeo Underlying cell geometry.
      */
-    virtual void local2global(FloatArray &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const = 0;
+    virtual void local2global(Coordinates &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const = 0;
     /**
      * Evaluates local coordinates from given global ones.
      * If local coordinates cannot be found (generate elements, or point far outside geometry,
@@ -267,7 +267,7 @@ public:
      * @param cellgeo Underlying cell geometry.
      * @return Nonzero is returned if point is within the element geometry, zero otherwise.
      */
-    virtual int global2local(FloatArray &answer, const FloatArray &gcoords, const FEICellGeometry &cellgeo) const = 0;
+    virtual int global2local(FloatArray &answer, const Coordinates &gcoords, const FEICellGeometry &cellgeo) const = 0;
     /**
      * Evaluates the determinant of the transformation.
      * @param lcoords Array containing (local) coordinates.
@@ -333,7 +333,7 @@ public:
      * @param lcoords The local coordinates (on the boundary local coordinate system).
      * @param cellgeo Underlying cell geometry.
      */
-    virtual void boundaryEdgeLocal2Global(FloatArray &answer, int boundary, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const = 0;
+    virtual void boundaryEdgeLocal2Global(Coordinates &answer, int boundary, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const = 0;
     /// Returns boundary integration domain
     virtual integrationDomain giveBoundaryEdgeIntegrationDomain(int boundary, const Element_Geometry_Type) const = 0;
     /**
@@ -391,7 +391,7 @@ public:
      * @param lcoords Array containing (local) coordinates.
      * @param cellgeo Underlying cell geometry.
      */
-    virtual void boundarySurfaceLocal2global(FloatArray &answer, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const =0;
+    virtual void boundarySurfaceLocal2global(Coordinates &answer, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const =0;
     /**
      * Evaluates the edge jacobian of transformation between local and global coordinates.
      * @param isurf Determines the surface number.
@@ -467,7 +467,7 @@ public:
      * @param lcoords The local coordinates (on the boundary local coordinate system).
      * @param cellgeo Underlying cell geometry.
      */
-    virtual void boundaryLocal2Global(FloatArray &answer, int boundary, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const = 0;
+    virtual void boundaryLocal2Global(Coordinates &answer, int boundary, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const = 0;
     /**
      * Computes the integral @f$ \int_S n \cdot x \mathrm{d}s @f$.
      * @param boundary Boundary number.
@@ -580,11 +580,11 @@ public:
         return 0.;
     }
 
-    void local2global(FloatArray &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override {
-        answer.clear();
+    void local2global(Coordinates &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override {
+        //answer.clear();
     }
 
-    int global2local(FloatArray &answer, const FloatArray &gcoords, const FEICellGeometry &cellgeo) const override {
+    int global2local(FloatArray &answer, const Coordinates &gcoords, const FEICellGeometry &cellgeo) const override {
         answer.clear();
         return 0;
     }
@@ -606,8 +606,8 @@ public:
         return 0.;
     }
 
-    void boundaryEdgeLocal2Global(FloatArray &answer, int boundary, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override {
-        answer.clear();
+    void boundaryEdgeLocal2Global(Coordinates &answer, int boundary, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override {
+        //answer.clear();
     }
 
     integrationDomain giveBoundaryEdgeIntegrationDomain(int boundary, const Element_Geometry_Type) const override {return integrationDomain::_UnknownIntegrationDomain;}
@@ -634,8 +634,8 @@ public:
         return 0.;
     }
 
-    void boundarySurfaceLocal2global(FloatArray &answer, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override {
-        answer.clear();
+    void boundarySurfaceLocal2global(Coordinates &answer, int isurf, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override {
+        //answer.clear();
     }
 
     integrationDomain giveBoundarySurfaceIntegrationDomain(int boundary, const Element_Geometry_Type) const override {return integrationDomain::_UnknownIntegrationDomain;}
@@ -644,8 +644,8 @@ public:
         return IntArray();
     }
 
-    void boundaryLocal2Global(FloatArray &answer, int boundary, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override {
-        answer.clear();
+    void boundaryLocal2Global(Coordinates &answer, int boundary, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override {
+        //answer.clear();
     }
 
     void boundaryEvalN(FloatArray &answer, int boundary, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override {

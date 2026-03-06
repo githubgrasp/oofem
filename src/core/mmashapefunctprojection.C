@@ -58,7 +58,7 @@ MMAShapeFunctProjection :: ~MMAShapeFunctProjection()
 { }
 
 void
-MMAShapeFunctProjection :: __init(Domain *dold, IntArray &varTypes, const FloatArray &coords, Set &elemSet, TimeStep *tStep, bool iCohesiveZoneGP)
+MMAShapeFunctProjection :: __init(Domain *dold, IntArray &varTypes, const Coordinates &coords, Set &elemSet, TimeStep *tStep, bool iCohesiveZoneGP)
 //(Domain* dold, IntArray& varTypes, GaussPoint* gp, TimeStep* tStep)
 {
     int nvar = varTypes.giveSize();
@@ -122,10 +122,11 @@ MMAShapeFunctProjection :: mapVariable(FloatArray &answer, GaussPoint *gp, Inter
 
 
 int
-MMAShapeFunctProjection :: __mapVariable(FloatArray &answer, const FloatArray &coords,
+MMAShapeFunctProjection :: __mapVariable(FloatArray &answer, const Coordinates &coords,
                                          InternalStateType type, TimeStep *tStep)
 {
-    FloatArray lcoords, closest;
+    FloatArray lcoords;
+    Coordinates closest;
     Element *elem = domain->giveSpatialLocalizer()->giveElementClosestToPoint(lcoords, closest, coords);
     if ( !elem ) {
         OOFEM_ERROR("no suitable source found");

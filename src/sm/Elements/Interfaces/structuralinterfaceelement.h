@@ -76,7 +76,7 @@ public:
      */
     StructuralInterfaceElement(int n, Domain * d);
 
-    int computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords) override;
+    int computeGlobalCoordinates(Coordinates &answer, const FloatArray &lcoords) override;
 
     void giveCharacteristicMatrix(FloatMatrix &answer, CharType, TimeStep *tStep) override;
     void giveCharacteristicVector(FloatArray &answer, CharType type, ValueModeType mode, TimeStep *tStep) override;

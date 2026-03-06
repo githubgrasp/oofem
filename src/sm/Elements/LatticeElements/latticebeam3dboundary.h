@@ -63,7 +63,7 @@ public:
 
     int computeNumberOfDofs() override { return 18; }
 
-    int computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords) override;
+    int computeGlobalCoordinates(Coordinates &answer, const FloatArray &lcoords) override;
 
     double computeVolumeAround(GaussPoint *) override;
 

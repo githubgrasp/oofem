@@ -61,12 +61,12 @@ int EnrFrontIntersection :: giveNumEnrichments(const DofManager &iDMan) const
 
 void EnrFrontIntersection :: evaluateEnrFuncAt(std :: vector< double > &oEnrFunc, const EfInput &iEfInput) const
 {
-    FloatArray xTip = Vec2(
-        mTipInfo.mGlobalCoord.at(1), mTipInfo.mGlobalCoord.at(2)
+    FloatArray xTip = Vec3(
+        mTipInfo.mGlobalCoord.at(1), mTipInfo.mGlobalCoord.at(2), mTipInfo.mGlobalCoord.giveSize() > 2 ? mTipInfo.mGlobalCoord.at(3) : 0.0
     );
 
-    FloatArray pos = Vec2(
-        iEfInput.mPos.at(1), iEfInput.mPos.at(2)
+    FloatArray pos = Vec3(
+        iEfInput.mPos.at(1), iEfInput.mPos.at(2), iEfInput.mPos.giveSize() > 2 ? iEfInput.mPos.at(3) : 0.0
     );
 
     // Crack tip normal and use defined tangent
@@ -74,19 +74,18 @@ void EnrFrontIntersection :: evaluateEnrFuncAt(std :: vector< double > &oEnrFunc
     const FloatArray &t = mTangent;
     const FloatArray &n = mTipInfo.mNormalDir;
 
-    FloatArray tipToPos = Vec2(
-        iEfInput.mPos(0) - xTip(0), iEfInput.mPos(1) - xTip(1)
-    );
+    FloatArray tipToPos = Vec3(
+        iEfInput.mPos.at(1) - xTip.at(1), iEfInput.mPos.at(2) - xTip.at(2), iEfInput.mPos.giveSize() > 2 ? iEfInput.mPos.at(3) - xTip.at(3) : 0.0);
 
     // Heaviside in normal direction
     double Hn = 0.0;
-    if ( tipToPos.dotProduct(n) > 0.0 ) {
+    if ( tipToPos.dotProduct(Vec3(n.at(1), n.at(2), n.giveSize() > 2 ? n.at(3) : 0.0)) > 0.0 ) {
         Hn = 1.0;
     }
 
     // Heaviside in tangential direction
     double Ht = 0.0;
-    if ( tipToPos.dotProduct(t) < 0.0 ) {
+    if ( tipToPos.dotProduct(Vec3(t.at(1), t.at(2), t.giveSize() > 2 ? t.at(3) : 0.0)) < 0.0 ) {
         Ht = 1.0;
     }
 
@@ -95,8 +94,8 @@ void EnrFrontIntersection :: evaluateEnrFuncAt(std :: vector< double > &oEnrFunc
 
 void EnrFrontIntersection :: evaluateEnrFuncDerivAt(std :: vector< FloatArray > &oEnrFuncDeriv, const EfInput &iEfInput, const FloatArray &iGradLevelSet) const
 {
-    FloatArray enrFuncDeriv = Vec2(
-        0.0, 0.0
+    FloatArray enrFuncDeriv = Vec3(
+        0.0, 0.0, 0.0
     );
     oEnrFuncDeriv.push_back(enrFuncDeriv);
 }
@@ -123,6 +122,7 @@ void EnrFrontIntersection :: evaluateEnrFuncJumps(std :: vector< double > &oEnrF
 void EnrFrontIntersection :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
     IR_GIVE_FIELD(ir, mTangent, _IFT_EnrFrontIntersection_Tangent);
+    mTangent.resizeWithValues(3);
 }
 
 void EnrFrontIntersection :: giveInputRecord(DynamicInputRecord &input)

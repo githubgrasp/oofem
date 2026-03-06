@@ -75,8 +75,8 @@ public:
     Shell7Base(int n, Domain *d); // constructor
 
     void giveDofManDofIDMask(int inode, IntArray &) const override;
-    int computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords) override;
-    virtual int computeGlobalCoordinatesOnEdge(FloatArray &answer, const FloatArray &lcoords, const int iEdge);
+    int computeGlobalCoordinates(Coordinates &answer, const FloatArray &lcoords) override;
+    virtual int computeGlobalCoordinatesOnEdge(Coordinates &answer, const FloatArray &lcoords, const int iEdge);
     int computeNumberOfDofs() override { return this->giveNumberOfDofs(); }
     int checkConsistency() override;
     void postInitialize() override;
@@ -239,9 +239,9 @@ protected:
     void giveCompositeExportData(std::vector< ExportRegion > &vtkPieces, IntArray &primaryVarsToExport, IntArray &internalVarsToExport, IntArray cellVarsToExport, TimeStep *tStep ) override;
     virtual void giveShellExportData(ExportRegion &vtkPiece, IntArray &primaryVarsToExport, IntArray &internalVarsToExport, IntArray cellVarsToExport, TimeStep *tStep );
 
-    std::vector< FloatArray >giveFictiousNodeCoordsForExport(int layer);
-    std::vector< FloatArray >giveFictiousCZNodeCoordsForExport(int interface);
-    std::vector< FloatArray >giveFictiousUpdatedNodeCoordsForExport(int layer, TimeStep *tStep);
+    std::vector< Coordinates >giveFictiousNodeCoordsForExport(int layer);
+    std::vector< Coordinates >giveFictiousCZNodeCoordsForExport(int interface);
+    std::vector< Coordinates >giveFictiousUpdatedNodeCoordsForExport(int layer, TimeStep *tStep);
     //void giveLocalNodeCoordsForExport(FloatArray &nodeLocalXi1Coords, FloatArray &nodeLocalXi2Coords, FloatArray &nodeLocalXi3Coords);
 
     // Recovery of through thickness stresses by momentum balance

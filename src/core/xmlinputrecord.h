@@ -44,7 +44,11 @@
 #include <iostream>
 #include <set>
 
+#ifdef __GNUC__
 #define _XML_NI std::cerr<<__PRETTY_FUNCTION__<<": not yet implemented."<<std::endl; abort();
+#else
+#define _XML_NI std::cerr<<__FUNCTION__<<": not yet implemented."<<std::endl; abort();
+#endif
 
 namespace oofem {
 class XMLDataReader;
@@ -84,6 +88,7 @@ public:
     void giveField(FloatArray &answer, InputFieldType id) override;
     void giveField(IntArray &answer, InputFieldType id) override;
     void giveField(FloatMatrix &answer, InputFieldType id) override;
+    void giveField(Coordinates &answer, InputFieldType id) override;
     void giveField(std :: vector< std :: string > &answer, InputFieldType id) override { _XML_NI; }
     void giveField(Dictionary &answer, InputFieldType id) override;
     void giveField(std :: list< Range > &answer, InputFieldType id) override;

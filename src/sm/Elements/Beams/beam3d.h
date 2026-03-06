@@ -118,7 +118,7 @@ public:
     void giveInternalForcesVector(FloatArray &answer, TimeStep *, int useUpdatedGpRecord = 0) override;
     void giveEndForcesVector(FloatArray &answer, TimeStep *tStep);
 
-    int computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords) override;
+    int computeGlobalCoordinates(Coordinates &answer, const FloatArray &lcoords) override;
 
 
     int testElementExtension(ElementExtension ext) override {
@@ -236,7 +236,7 @@ protected:
     void computeInternalForcesFromBoundaryEdgeLoadVectorAtPoint(FloatArray &answer, BoundaryLoad *load, int edge, CharType type, ValueModeType mode,
                                                                 TimeStep *tStep, FloatArray &pointCoords, double ds, bool global);
     void computeInternalForcesFromBodyLoadVectorAtPoint(FloatArray &answer, Load *forLoad, TimeStep *tStep, ValueModeType mode, FloatArray &pointCoords, double ds);
-    virtual int computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords, const FloatArray &point);
+    virtual int computeGlobalCoordinates(Coordinates &answer, const FloatArray &lcoords, const FloatArray &point);
 
 };
 } // end namespace oofem

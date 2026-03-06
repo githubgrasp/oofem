@@ -117,19 +117,20 @@ FEI1dHermite :: evald2Ndx2(FloatMatrix &answer, const FloatArray &lcoords, const
 }
 
 void
-FEI1dHermite :: local2global(FloatArray &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
+FEI1dHermite :: local2global(Coordinates &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
 {
     FloatArray n;
     this->evalN(n, lcoords, cellgeo);
 
-    answer.resize(1);
+    //answer.zero();
     answer.at(1) = n.at(1) * cellgeo.giveVertexCoordinates(1).at(cindx) +
                    n.at(2) * cellgeo.giveVertexCoordinates(2).at(cindx) +
                    n.at(3) * cellgeo.giveVertexCoordinates(3).at(cindx);
+    answer.at(2)=answer.at(3)=0.0;
 }
 
 int
-FEI1dHermite :: global2local(FloatArray &answer, const FloatArray &coords, const FEICellGeometry &cellgeo) const
+FEI1dHermite :: global2local(FloatArray &answer, const Coordinates &coords, const FEICellGeometry &cellgeo) const
 {
     double x1 = cellgeo.giveVertexCoordinates(1).at(cindx);
     double x2 = cellgeo.giveVertexCoordinates(2).at(cindx);

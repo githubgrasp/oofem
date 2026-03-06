@@ -122,23 +122,22 @@ public:
     int XfemElementInterface_giveNumDofManEnrichments(const DofManager &iDMan, XfemManager &iXMan) const;
 
     /// Partitions the element into patches by a triangulation.
-    virtual void XfemElementInterface_partitionElement(std :: vector< Triangle > &oTriangles, const std :: vector< FloatArray > &iPoints);
+    virtual void XfemElementInterface_partitionElement(std :: vector< Triangle > &oTriangles, const std :: vector< Coordinates > &iPoints);
     /// Updates integration rule based on the triangulation.
     virtual bool XfemElementInterface_updateIntegrationRule();
 
     /// Returns an array of array of points. Each array of points defines the points of a subregion of the element.
-    virtual void XfemElementInterface_prepareNodesForDelaunay(std :: vector< std :: vector< FloatArray > > &oPointPartitions, double &oCrackStartXi, double &oCrackEndXi, int iEnrItemIndex, bool &oIntersection);
-    virtual void XfemElementInterface_prepareNodesForDelaunay(std :: vector< std :: vector< FloatArray > > &oPointPartitions, double &oCrackStartXi, double &oCrackEndXi, const Triangle &iTri, int iEnrItemIndex, bool &oIntersection);
+    virtual void XfemElementInterface_prepareNodesForDelaunay(std :: vector< std :: vector< Coordinates > > &oPointPartitions, double &oCrackStartXi, double &oCrackEndXi, int iEnrItemIndex, bool &oIntersection);
+    virtual void XfemElementInterface_prepareNodesForDelaunay(std :: vector< std :: vector< Coordinates > > &oPointPartitions, double &oCrackStartXi, double &oCrackEndXi, const Triangle &iTri, int iEnrItemIndex, bool &oIntersection);
 
     // Help functions for partitioning
-    void putPointsInCorrectPartition(std :: vector< std :: vector< FloatArray > > &oPointPartitions, const std :: vector< FloatArray > &iIntersecPoints, const std :: vector< const FloatArray * > &iNodeCoord) const;
-
+    void putPointsInCorrectPartition(std :: vector< std :: vector< Coordinates > > &oPointPartitions, const std :: vector< Coordinates > &iIntersecPoints, const std :: vector< const Coordinates * > &iNodeCoord) const;
     /**
      * Partition a boundary segment to account for cracks cutting
      * the boundary. This is a necessary step to evaluate integrals
      * along an edge cut by one or several cracks.
      */
-    void partitionEdgeSegment(int iBndIndex, std :: vector< Line > &oSegments, std :: vector< FloatArray > &oIntersectionPoints, const double &iTangDistPadding = 0.0);
+    void partitionEdgeSegment(int iBndIndex, std :: vector< Line > &oSegments, std :: vector< Coordinates > &oIntersectionPoints, const double &iTangDistPadding = 0.0);
 
     // TODO: Move to XfemStructuralElementInterface
     std :: vector< std :: unique_ptr< IntegrationRule > >mpCZIntegrationRules;

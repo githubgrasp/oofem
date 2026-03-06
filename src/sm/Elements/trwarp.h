@@ -83,7 +83,7 @@ public:
 
     void ZZNodalRecoveryMI_computeNNMatrix(FloatArray &answer, InternalStateType type) override;
     bool ZZNodalRecoveryMI_computeNValProduct(FloatMatrix &answer, InternalStateType type, TimeStep *tStep) override;
-    int SpatialLocalizerI_containsPoint(const FloatArray &coords) override;
+    int SpatialLocalizerI_containsPoint(const Coordinates &coords) override;
 
     FEInterpolation *giveInterpolation() const override { return & this->interp; }
     Element_Geometry_Type giveGeometryType() const override { return EGT_triangle_1; }
@@ -97,7 +97,7 @@ public:
 protected:
     void computeGaussPoints() override;
     double computeEdgeVolumeAround(GaussPoint *gp, int iEdge) override;
-    void transformCoordinates(FloatArray &answer, FloatArray &c, const int CGnumber);
+    void transformCoordinates(Coordinates &answer, const Coordinates &c, const int CGnumber);
     void postInitialize() override;
 };
 } // end namespace oofem

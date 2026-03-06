@@ -614,7 +614,8 @@ TransportElement :: computeBoundarySurfaceLoadVector(FloatArray &answer, Boundar
         return;
     }
 
-    FloatArray gcoords, val, n, unknowns, field;
+    FloatArray val, n, unknowns, field;
+    Coordinates gcoords;
     FloatMatrix N;
     IntArray dofid;
     int unknownsPerNode = this->emode == HeatMass1TransferEM ? 2 : 1;
@@ -687,7 +688,8 @@ TransportElement :: computeTangentFromSurfaceLoad(FloatMatrix &answer, BoundaryL
         return;
     }
 
-    FloatArray gcoords, n, unknowns;
+    Coordinates gcoords;
+    FloatArray n, unknowns;
     FloatMatrix N;
     int unknownsPerNode = this->emode == HeatMass1TransferEM ? 2 : 1;
 
@@ -738,7 +740,8 @@ TransportElement :: computeTangentFromEdgeLoad(FloatMatrix &answer, BoundaryLoad
         return;
     }
 
-    FloatArray gcoords, n, unknowns;
+    Coordinates gcoords;
+    FloatArray n, unknowns;
     FloatMatrix N;
     int unknownsPerNode = this->emode == HeatMass1TransferEM ? 2 : 1;
 
@@ -799,7 +802,8 @@ TransportElement :: computeBoundaryEdgeLoadVector(FloatArray &answer, BoundaryLo
       return;
     }
 
-    FloatArray gcoords, val, n, unknowns, field;
+    Coordinates gcoords;
+    FloatArray val, n, unknowns, field;
     FloatMatrix N;
     int unknownsPerNode = this->emode == HeatMass1TransferEM ? 2 : 1;
 
@@ -848,7 +852,7 @@ TransportElement :: computeBoundaryEdgeLoadVector(FloatArray &answer, BoundaryLo
                 if ( unknownsPerNode != 1 ) {
                     OOFEM_ERROR("Not implemented for >=2 coupled fields");
                 }
-                a = load->giveProperty('a', tStep, { { "u", field.at(1) } });
+                a = load->giveProperty('a', tStep, { { "u", field.at(1) }, {"t", tStep->giveIntrinsicTime()} } );
             } else {
                 a = load->giveProperty('a', tStep);
             }
@@ -958,7 +962,8 @@ void
 TransportElement :: computeBodyBCSubVectorAt(FloatArray &answer, Load *load,
                                              TimeStep *tStep, ValueModeType mode, int indx)
 {
-    FloatArray val, globalIPcoords, n;
+    FloatArray val, n;
+    Coordinates globalIPcoords;
     answer.resize( this->giveNumberOfDofManagers() );
 
     std :: unique_ptr< IntegrationRule > iRule( this->giveInterpolation()->giveIntegrationRule(load->giveApproxOrder(), this->giveGeometryType()) );
@@ -1020,7 +1025,7 @@ TransportElement :: computeEdgeBCSubVectorAt(FloatArray &answer, Load *load, int
             dV = this->computeEdgeVolumeAround(gp, iEdge);
 
             FieldPtr tf;
-            FloatArray gcoords;
+            Coordinates gcoords;
             if ((tf = domain->giveEngngModel()->giveContext()->giveFieldManager()->giveField(FT_TemperatureAmbient))){
                 //this->computeEdgeIpGlobalCoords(gcoords, lcoords, iEdge);
                 this->giveInterpolation()->boundaryEdgeLocal2Global( gcoords, iEdge, lcoords, FEIElementGeometryWrapper(this) );
@@ -1056,7 +1061,8 @@ TransportElement :: computeSurfaceBCSubVectorAt(FloatArray &answer, Load *load,
 
     BoundaryLoad *surfLoad = dynamic_cast< BoundaryLoad * >(load);
     if ( surfLoad ) {
-        FloatArray reducedAnswer, val, gcoords, n;
+        FloatArray reducedAnswer, val, n;
+        Coordinates gcoords;    
         IntArray mask;
 
         answer.resize( this->giveNumberOfDofManagers() );
@@ -1168,7 +1174,7 @@ TransportElement :: computeBCSubMtrxAt(FloatMatrix &answer, TimeStep *tStep, Val
                             this->giveEdgeDofMapping(mask, id);
                             this->computeBoundaryVectorOf(mask, dofid, VM_TotalIntrinsic, tStep, unknowns);
                             double value = n.dotProduct(unknowns);//unknown in IP
-                            a = edgeLoad->giveProperty('a', tStep, { { "u", value } });
+                            a = edgeLoad->giveProperty('a', tStep, { { "u", value }, {"t", tStep->giveIntrinsicTime()} } );
                         } else {
                             a = edgeLoad->giveProperty('a', tStep);
                         }
@@ -1208,7 +1214,7 @@ TransportElement :: computeBCSubMtrxAt(FloatMatrix &answer, TimeStep *tStep, Val
                             this->giveSurfaceDofMapping(mask, id);
                             this->computeBoundaryVectorOf(mask, dofid, VM_TotalIntrinsic, tStep, unknowns);
                             double value = n.dotProduct(unknowns);//unknown in IP
-                            a = surfLoad->giveProperty('a', tStep, { { "u", value } });
+                            a = surfLoad->giveProperty('a', tStep, { { "u", value }, {"t", tStep->giveIntrinsicTime()} } );
                         } else {
                             a = surfLoad->giveProperty('a', tStep);
                         }

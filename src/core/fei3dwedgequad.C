@@ -245,12 +245,12 @@ FEI3dWedgeQuad :: giveLocalNodeCoords(FloatMatrix &answer, const Element_Geometr
 
 
 void
-FEI3dWedgeQuad :: local2global(FloatArray &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
+FEI3dWedgeQuad :: local2global(Coordinates &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
 {
     FloatArray n;
     this->evalN(n, lcoords, cellgeo);
 
-    answer.resize(3);
+    // answer.resize(3);
     answer.zero();
     for ( int i = 1; i <= 15; i++ ) {
         answer.at(1) += n.at(i) * cellgeo.giveVertexCoordinates(i).at(1);
@@ -262,9 +262,10 @@ FEI3dWedgeQuad :: local2global(FloatArray &answer, const FloatArray &lcoords, co
 #define POINT_TOL 1.e-3
 
 int
-FEI3dWedgeQuad :: global2local(FloatArray &answer, const FloatArray &gcoords, const FEICellGeometry &cellgeo) const
+FEI3dWedgeQuad :: global2local(FloatArray &answer, const Coordinates &gcoords, const FEICellGeometry &cellgeo) const
 {
-    FloatArray res, delta, guess;
+    FloatArray res, delta;
+    Coordinates guess;
     FloatMatrix jac;
     double convergence_limit, error = 0.0;
 
@@ -365,14 +366,14 @@ void FEI3dWedgeQuad :: edgeEvaldNdx(FloatMatrix &answer, int iedge, const FloatA
 }
 
 
-void FEI3dWedgeQuad :: edgeLocal2global(FloatArray &answer, int iedge, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
+void FEI3dWedgeQuad :: edgeLocal2global(Coordinates &answer, int iedge, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
 {
     FloatArray n;
 
     const auto &nodes = this->computeLocalEdgeMapping(iedge);
     this->edgeEvalN(n, iedge, lcoords, cellgeo);
 
-    answer.clear();
+    answer.zero();
     for ( int i = 1; i <= n.giveSize(); ++i ) {
         answer.add( n.at(i), cellgeo.giveVertexCoordinates( nodes.at(i) ) );
     }
@@ -448,7 +449,7 @@ FEI3dWedgeQuad :: surfaceEvalN(FloatArray &answer, int isurf, const FloatArray &
 
 
 void
-FEI3dWedgeQuad :: surfaceLocal2global(FloatArray &answer, int isurf,
+FEI3dWedgeQuad :: surfaceLocal2global(Coordinates &answer, int isurf,
                                       const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
 {
     FloatArray n;
@@ -456,7 +457,7 @@ FEI3dWedgeQuad :: surfaceLocal2global(FloatArray &answer, int isurf,
     const auto &nodes = this->computeLocalSurfaceMapping(isurf);
     this->surfaceEvalN(n, isurf, lcoords, cellgeo);
 
-    answer.clear();
+    answer.zero();
     for ( int i = 1; i <= n.giveSize(); ++i ) {
         answer.add( n.at(i), cellgeo.giveVertexCoordinates( nodes.at(i) ) );
     }

@@ -891,7 +891,8 @@ SimpleCrossSection::giveTemperatureVector(FloatArray &answer, GaussPoint *gp, Ti
 
     if ( ( tf = fm->giveField(FT_Temperature) ) ) {
         // temperature field registered
-        FloatArray gcoords, et2;
+        Coordinates gcoords;
+        FloatArray et2;
         int err;
         elem->computeGlobalCoordinates(gcoords, gp->giveNaturalCoordinates() );
         if ( ( err = tf->evaluateAt(et2, gcoords, VM_Total, tStep) ) ) {

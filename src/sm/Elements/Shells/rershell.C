@@ -382,7 +382,7 @@ RerShell :: giveLocalCoordinateSystem(FloatMatrix &answer)
 //does check that the point is in the element thickness
 #define POINT_TOL 1.e-3
 bool
-RerShell :: computeLocalCoordinates(FloatArray &answer, const FloatArray &coords)
+RerShell :: computeLocalCoordinates(FloatArray &answer, const Coordinates &coords)
 {
     //set size of return value to 3 area coordinates
     answer.resize(3);

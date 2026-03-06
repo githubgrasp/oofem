@@ -13,7 +13,7 @@ import numpy as np
 def evalField(coords, mode, tStep):
     val = 10.*tStep.giveNumber()*coords[0]
     print("Evaluating field at %f,%f. Assigning temperature %f" % (coords[0], coords[1], val))
-    return np.array([val,]) #Return list of len 1
+    return oofempy.FloatArray([val,]) #Return list of len 1
 
 
 def test_5():

@@ -375,7 +375,8 @@ void PrescribedGradientBCWeak :: computeIntForceGPContrib(FloatArray &oContrib_d
 
     iEl.giveTractionLocationArray(oTrac_loc_array, type, s);
 
-    FloatArray dispElLocCoord, closestPoint;
+    FloatArray dispElLocCoord;
+    Coordinates closestPoint;
     Element *dispEl = localizer->giveElementClosestToPoint(dispElLocCoord, closestPoint, iBndCoord );
 
     // Compute vector of displacement unknowns
@@ -586,7 +587,8 @@ void PrescribedGradientBCWeak :: assembleGPContrib(SparseMtrx &answer, TimeStep 
     iEl.giveTractionLocationArray(trac_rows, type, r_s);
 
 
-    FloatArray dispElLocCoord, closestPoint;
+    FloatArray dispElLocCoord;
+    Coordinates closestPoint;
     Element *dispEl = localizer->giveElementClosestToPoint(dispElLocCoord, closestPoint, iGP.giveGlobalCoordinates() );
 
     IntArray disp_cols;
@@ -625,7 +627,7 @@ void PrescribedGradientBCWeak :: assembleGPContrib(SparseMtrx &answer, TimeStep 
     iEl.giveTractionLocationArray(trac_rows, type, r_s);
 
 
-    dispElLocCoord.clear(); closestPoint.clear();
+    dispElLocCoord.clear(); //closestPoint.clear();
     dispEl = localizer->giveElementClosestToPoint(dispElLocCoord, closestPoint, xMinus );
 
     disp_cols.clear();
@@ -1509,7 +1511,8 @@ void PrescribedGradientBCWeak :: assembleTangentGPContributionNew(FloatMatrix &o
     // and compute local coordinates on
     // the displacement element
     SpatialLocalizer *localizer = domain->giveSpatialLocalizer();
-    FloatArray dispElLocCoord, closestPoint;
+    FloatArray dispElLocCoord;
+    Coordinates closestPoint;
     Element *dispEl = localizer->giveElementClosestToPoint(dispElLocCoord, closestPoint, iBndCoord );
 
     // Compute basis functions
@@ -1915,7 +1918,7 @@ void PrescribedGradientBCWeak :: findCrackBndIntersecCoord(std::vector<FloatArra
 
         if ( xfemElInt && domain->hasXfemManager() ) {
             std :: vector< Line >segments;
-            std :: vector< FloatArray >intersecPoints;
+            std :: vector< Coordinates >intersecPoints;
             xfemElInt->partitionEdgeSegment(boundary, segments, intersecPoints, mTangDistPadding);
 
             for ( auto x : intersecPoints ) {
@@ -2007,12 +2010,14 @@ void PrescribedGradientBCWeak :: removeSegOverHoles(TracSegArray &ioTSeg, const 
         const auto &xE = l.giveVertex(2);
         FloatArray xPlus = Vec2(0.5*(xS[0]+xE[0]), 0.5*(xS[1]+xE[1]));
 
-        FloatArray lcoordsPlus, closestPlus;
+        FloatArray lcoordsPlus;
+        Coordinates closestPlus;
         localizer->giveElementClosestToPoint(lcoordsPlus, closestPlus, xPlus);
 
         FloatArray xMinus;
         giveMirroredPointOnGammaMinus(xMinus, xPlus);
-        FloatArray lcoordsMinus, closestMinus;
+        FloatArray lcoordsMinus;
+        Coordinates closestMinus;
         localizer->giveElementClosestToPoint(lcoordsMinus, closestMinus, xMinus);
 
         if ( !(distance_square(xPlus, closestPlus) > tol2 || distance_square(xMinus, closestMinus) > tol2) ) {

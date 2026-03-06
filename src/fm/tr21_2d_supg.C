@@ -441,7 +441,7 @@ TR21_2D_SUPG :: LS_PCS_computedN(FloatMatrix &answer)
 }
 
 void
-TR21_2D_SUPG :: LS_PCS_computeVolume(double &answer, const FloatArray **coordinates)
+TR21_2D_SUPG :: LS_PCS_computeVolume(double &answer, const Coordinates **coordinates)
 {
     //double answer = 0.0;
     answer = 0.0;
@@ -592,7 +592,7 @@ TR21_2D_SUPG :: LS_PCS_computeVOFFractions(FloatArray &answer, FloatArray &fi)
 
 
         if ( inter_case > 3 ) { //only one node (vertex in this case) of triangle has diffenert level set value, than others
-            FloatArray inter1(2), inter2(2);
+            Coordinates inter1, inter2;
 
             //kontrola!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             int second_control1;
@@ -638,7 +638,8 @@ TR21_2D_SUPG :: LS_PCS_computeVOFFractions(FloatArray &answer, FloatArray &fi)
             //computing point on zero level set curve: [xM, yM]
             // this point lies on line from the "si" vertex, the condition is fi([xM, yM]) = 0, M = [xM, yM]
 
-            FloatArray _l(4), M(2), X_si(2), _Mid(2), line(6), _X1(2), Mid1(2), Mid2(2), Coeff(3), loc_Mid(3), loc_X1(3), N_Mid, N_X1;
+            FloatArray _l(4), _Mid(2), line(6), _X1(2), Coeff(3), loc_Mid(3), loc_X1(3), N_Mid, N_X1;
+            Coordinates Mid1, Mid2, X_si, M;
             double x1, xsi, y1, ysi, t, fi_X1, fi_Mid, r1, r11, r12;
 
             _l.at(1) = inter1.at(1);
@@ -648,11 +649,9 @@ TR21_2D_SUPG :: LS_PCS_computeVOFFractions(FloatArray &answer, FloatArray &fi)
 
             this->computeCenterOf(_Mid, _l, 1);
 
-            xsi = this->giveNode(si)->giveCoordinate(1);
-            ysi = this->giveNode(si)->giveCoordinate(2);
-
-            X_si.at(1) = xsi;
-            X_si.at(2) = ysi;
+            X_si = this->giveNode(si)->giveCoordinates();
+            xsi = X_si.at(1);
+            ysi = X_si.at(2);
 
             x1 = xsi + 2 * ( _Mid.at(1) - xsi );
             y1 = ysi + 2 * ( _Mid.at(2) - ysi );
@@ -691,6 +690,7 @@ TR21_2D_SUPG :: LS_PCS_computeVOFFractions(FloatArray &answer, FloatArray &fi)
 
             M.at(1) = xsi + t * ( _Mid.at(1) - xsi );
             M.at(2) = ysi + t * ( _Mid.at(2) - ysi );
+            M.at(3) = 0.0;
 
 
             OOFEM_LOG_INFO("case 1 - after computing third point on zero level set curve inside element, element no. %d", second_control1);
@@ -716,7 +716,7 @@ TR21_2D_SUPG :: LS_PCS_computeVOFFractions(FloatArray &answer, FloatArray &fi)
             this->computeMiddlePointOnParabolicArc(Mid2, edge2, borderpoints);
 
 
-            const FloatArray *c1 [ 6 ];
+            const Coordinates *c1 [ 6 ];
 
 
 
@@ -754,7 +754,8 @@ TR21_2D_SUPG :: LS_PCS_computeVOFFractions(FloatArray &answer, FloatArray &fi)
             OOFEM_LOG_INFO("case 2 - second type of element deviation by LS, element no. %d", second_control2);
 
 
-            FloatArray inter1(2), inter2(2), crosssect(4);
+            Coordinates inter1(2), inter2(2);
+            FloatArray crosssect(4);
             crosssect.zero();
 
             if ( si == 1 ) { // computing intersection points in order to vertex with different sign of level set funct
@@ -782,19 +783,17 @@ TR21_2D_SUPG :: LS_PCS_computeVOFFractions(FloatArray &answer, FloatArray &fi)
 
             //computing point on zero level set curve: [xM, yM]
             // this point lies on line from the "si" vertex, the condition is fi([xM, yM]) = 0
-            FloatArray X_qsi(2), X_si(2), _Mid(2), line(6), _X1(2), Mid1(2), Coeff(3), loc_Mid, loc_X1, N_Mid, N_X1, M(2);
+            FloatArray _Mid(2), line(6), _X1(2), Coeff(3), loc_Mid, loc_X1, N_Mid, N_X1;
+            Coordinates X_si, M, Mid1, X_qsi;
             double x1, xsi, y1, ysi, t, fi_X1, fi_Mid, r1, r11, r12;
             this->computeCenterOf(_Mid, crosssect, 1);
 
-            xsi = this->giveNode(si)->giveCoordinate(1);
-            ysi = this->giveNode(si)->giveCoordinate(2);
+            X_si = this->giveNode(si)->giveCoordinates();
+            
+            xsi = X_si.at(1);
+            ysi = X_si.at(2);
 
-            X_si.at(1) = xsi;
-            X_si.at(2) = ysi;
-
-            X_qsi.at(1) = this->giveNode(sqi)->giveCoordinate(1);
-            X_qsi.at(2) = this->giveNode(sqi)->giveCoordinate(2);
-
+            X_qsi = this->giveNode(sqi)->giveCoordinates();
 
             x1 = xsi + 1.3 * ( _Mid.at(1) - xsi );
             y1 = ysi + 1.3 * ( _Mid.at(2) - ysi );
@@ -891,7 +890,7 @@ TR21_2D_SUPG :: LS_PCS_computeVOFFractions(FloatArray &answer, FloatArray &fi)
                 this->computeMiddlePointOnParabolicArc(Mid1, edge1, borderpoints);
             }
 
-            const FloatArray *c1 [ 6 ];
+            const Coordinates *c1 [ 6 ];
 
 
 
@@ -938,7 +937,8 @@ TR21_2D_SUPG :: LS_PCS_computeVOFFractions(FloatArray &answer, FloatArray &fi)
             OOFEM_LOG_INFO("case 3 - third type of element deviation by LS, element no. %d", second_control3);
 
 
-            FloatArray inter1(2), inter2(2), crosssect(4);
+            Coordinates inter1(2), inter2(2);
+            FloatArray crosssect(4);
             crosssect.zero();
 
             if ( si == 1 ) { // computing intersection points in order to vertex with different sign of level set funct
@@ -968,15 +968,14 @@ TR21_2D_SUPG :: LS_PCS_computeVOFFractions(FloatArray &answer, FloatArray &fi)
 
             //computing point on zero level set curve: [xM, yM]
             // this point lies on line from the "si" vertex, the condition is fi([xM, yM]) = 0
-            FloatArray X_si(2), M(2), _Mid(2), line(6), _X1(2), Mid1(2), Coeff(3), loc_Mid, loc_X1, N_Mid, N_X1;
+            FloatArray  _Mid(2), line(6), _X1(2), Mid1(2), Coeff(3), loc_Mid, loc_X1, N_Mid, N_X1;
+            Coordinates X_si, M;
             double x1, xsi, y1, ysi, t, fi_X1, fi_Mid, r1, r11, r12;
             this->computeCenterOf(_Mid, crosssect, 1);
 
-            xsi = this->giveNode(si)->giveCoordinate(1);
-            ysi = this->giveNode(si)->giveCoordinate(2);
-
-            X_si.at(1) = xsi;
-            X_si.at(2) = ysi;
+            X_si = this->giveNode(si)->giveCoordinates();
+            xsi = X_si.at(1);
+            ysi = X_si.at(2);
 
             x1 = xsi + 0.5 * ( _Mid.at(1) - xsi );
             y1 = ysi + 0.5 * ( _Mid.at(2) - ysi );
@@ -1016,20 +1015,18 @@ TR21_2D_SUPG :: LS_PCS_computeVOFFractions(FloatArray &answer, FloatArray &fi)
             M.at(2) = ysi + t * ( _Mid.at(2) - ysi );
 
 
-            FloatArray X_e1(2), X_e2(2); //points on edges close to the vertex si, "quadratic" nodes
+            Coordinates X_e1, X_e2; //points on edges close to the vertex si, "quadratic" nodes
             double vol_1, vol;
 
             X_e1.at(1) = this->giveNode(si + 3)->giveCoordinate(1);
             X_e1.at(2) = this->giveNode(si + 3)->giveCoordinate(2);
+            X_e1.at(3) = 0.0;
 
             X_e2.at(1) = this->giveNode( ( ( si + 4 ) % 3 ) + 4 )->giveCoordinate(1);
             X_e2.at(2) = this->giveNode( ( ( si + 4 ) % 3 ) + 4 )->giveCoordinate(2);
+            X_e2.at(3) = 0.0;
 
-
-
-
-            const FloatArray *c1 [ 6 ];
-
+            const Coordinates *c1 [ 6 ];
 
             c1 [ 0 ] = & X_si;
             c1 [ 1 ] = & inter1;
@@ -1059,12 +1056,12 @@ TR21_2D_SUPG :: LS_PCS_computeVOFFractions(FloatArray &answer, FloatArray &fi)
 }
 
 void
-TR21_2D_SUPG :: computeIntersection(int iedge, FloatArray &intcoords, FloatArray &fi)
+TR21_2D_SUPG :: computeIntersection(int iedge, Coordinates &intcoords, FloatArray &fi)
 {
     FloatArray Coeff(3), helplcoords(3);
     double fi1, fi2, fi3, r1, r11, r12;
-    intcoords.resize(2);
-    intcoords.zero();
+    //intcoords.resize(2);
+    //intcoords.zero();
 
     const auto &edge = this->velocityInterpolation.computeLocalEdgeMapping(iedge);
     fi1 = fi.at( edge.at(1) );
@@ -1129,7 +1126,7 @@ TR21_2D_SUPG :: computeIntersection(int iedge, FloatArray &intcoords, FloatArray
 #endif
 
 void
-TR21_2D_SUPG :: computeMiddlePointOnParabolicArc(FloatArray &answer, int iedge, FloatArray borderpoints)
+TR21_2D_SUPG :: computeMiddlePointOnParabolicArc(Coordinates &answer, int iedge, FloatArray borderpoints)
 {
     double a, b, c;
     FloatArray Coeff, C(2);
@@ -1148,6 +1145,7 @@ TR21_2D_SUPG :: computeMiddlePointOnParabolicArc(FloatArray &answer, int iedge, 
 
     answer.at(1) = C.at(1);
     answer.at(2) = a * C.at(1) * C.at(1) + b *C.at(1) + c;
+    answer.at(3) = 0.0;
 }
 
 

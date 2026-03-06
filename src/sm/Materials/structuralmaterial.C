@@ -2092,7 +2092,8 @@ StructuralMaterial::giveIPValue(FloatArray &answer, GaussPoint *gp, InternalStat
         int err;
         if ( ( tf = fm->giveField(FT_Temperature) ) ) {
             // temperature field registered
-            FloatArray gcoords, et2;
+            Coordinates gcoords;
+            FloatArray et2;
             static_cast< StructuralElement * >( gp->giveElement() )->computeGlobalCoordinates(gcoords, gp->giveNaturalCoordinates() );
             if ( ( err = tf->evaluateAt(answer, gcoords, VM_Total, tStep) ) ) {
                 OOFEM_ERROR("tf->evaluateAt failed, element %d, error code %d", gp->giveElement()->giveNumber(), err);
@@ -2104,7 +2105,8 @@ StructuralMaterial::giveIPValue(FloatArray &answer, GaussPoint *gp, InternalStat
 
         return 1;
     } else if ( type == IST_CylindricalStressTensor || type == IST_CylindricalStrainTensor ) {
-        FloatArray gc, val = status->giveStressVector();
+        FloatArray val = status->giveStressVector();
+        Coordinates gc;
         FloatMatrix base(3, 3);
         static_cast< StructuralElement * >( gp->giveElement() )->computeGlobalCoordinates(gc, gp->giveNaturalCoordinates() );
         double l = sqrt(gc.at(1) * gc.at(1) + gc.at(2) * gc.at(2) );
@@ -2197,7 +2199,8 @@ StructuralMaterial::computeStressIndependentStrainVector(GaussPoint *gp, TimeSte
 
     if ( ( tf = fm->giveField(FT_Temperature) ) ) {
         // temperature field registered
-        FloatArray gcoords, et2;
+        Coordinates gcoords; 
+        FloatArray et2;
         int err;
         elem->computeGlobalCoordinates(gcoords, gp->giveNaturalCoordinates() );
         if ( ( err = tf->evaluateAt(et2, gcoords, mode, tStep) ) ) {
@@ -2240,7 +2243,8 @@ StructuralMaterial::computeStressIndependentStrainVector(GaussPoint *gp, TimeSte
     
         //Add external eigenstrain if defined
     if ( ( tf = fm->giveField(FT_EigenStrain)) && (tf->hasElementInSets(selem->giveNumber(), this->giveDomain() )) ) {
-        FloatArray gcoords, eigStrain;
+        Coordinates gcoords;
+        FloatArray eigStrain;
         int err;
         elem->computeGlobalCoordinates(gcoords, gp->giveNaturalCoordinates() );
         if ( ( err = tf->evaluateAt(eigStrain, gcoords, mode, tStep) ) ) {
@@ -2295,7 +2299,8 @@ StructuralMaterial::computeStressIndependentStrainVector_3d(GaussPoint *gp, Time
     FieldPtr tf = fm->giveField(FT_Temperature);
     if ( tf ) {
         // temperature field registered
-        FloatArray gcoords, et2;
+        Coordinates gcoords;
+        FloatArray et2;
         elem->computeGlobalCoordinates(gcoords, gp->giveNaturalCoordinates() );
         int err;
         if ( ( err = tf->evaluateAt(et2, gcoords, mode, tStep) ) ) {
@@ -2324,7 +2329,8 @@ StructuralMaterial::computeStressIndependentStrainVector_3d(GaussPoint *gp, Time
     
     //Add external eigenstrain if defined
     if ( ( tf = fm->giveField(FT_EigenStrain)) && (tf->hasElementInSets(selem->giveNumber(), this->giveDomain() )) ) {
-        FloatArray gcoords, eigStrain;
+        Coordinates gcoords;
+        FloatArray eigStrain;
         int err;
         elem->computeGlobalCoordinates(gcoords, gp->giveNaturalCoordinates() );
         if ( ( err = tf->evaluateAt(eigStrain, gcoords, mode, tStep) ) ) {

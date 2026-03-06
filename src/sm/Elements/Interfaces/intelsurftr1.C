@@ -166,15 +166,16 @@ IntElSurfTr1 :: computeTransformationMatrixAt(GaussPoint *gp, FloatMatrix &answe
 
 
 int
-IntElSurfTr1 :: computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords)
+IntElSurfTr1 :: computeGlobalCoordinates(Coordinates &answer, const FloatArray &lcoords)
 {
-    FloatArray N, meanNode;
+    FloatArray N;
+    Coordinates meanNode;
     this->interpolation.evalN( N, lcoords, FEIElementGeometryWrapper(this) );
-    answer.resize(3);
+    //answer.resize(3);
     answer.zero();
     for ( int i = 1; i <= 3; i++ ) {
         meanNode = 0.5 * ( this->giveNode(i)->giveCoordinates() + this->giveNode(i + 3)->giveCoordinates() );
-        answer += N.at(i) * meanNode;
+        answer.add(N.at(i), meanNode);
     }
 
     return 1;
@@ -182,7 +183,7 @@ IntElSurfTr1 :: computeGlobalCoordinates(FloatArray &answer, const FloatArray &l
 
 
 bool
-IntElSurfTr1 :: computeLocalCoordinates(FloatArray &answer, const FloatArray &gcoords)
+IntElSurfTr1 :: computeLocalCoordinates(FloatArray &answer, const Coordinates &gcoords)
 {
     OOFEM_ERROR("Not implemented");
     //return false;

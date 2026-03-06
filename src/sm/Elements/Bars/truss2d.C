@@ -165,7 +165,7 @@ Truss2d::computeNmatrixAt(const FloatArray &iLocCoord, FloatMatrix &answer)
 
 
 int
-Truss2d::computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords)
+Truss2d::computeGlobalCoordinates(Coordinates &answer, const FloatArray &lcoords)
 {
     //determine in which plane the truss is defined
     int c1 = 0, c2 = 0;
@@ -177,7 +177,7 @@ Truss2d::computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords)
     n1  = ( 1. - ksi ) * 0.5;
     n2  = ( 1. + ksi ) * 0.5;
 
-    answer.resize(3);
+    //answer.resize(3);
     answer.zero();
     answer.at(c1) = n1 * this->giveNode(1)->giveCoordinate(c1) + n2 * this->giveNode(2)->giveCoordinate(c1);
     answer.at(c2) = n1 * this->giveNode(1)->giveCoordinate(c2) + n2 * this->giveNode(2)->giveCoordinate(c2);

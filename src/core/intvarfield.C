@@ -46,7 +46,7 @@ InternalVariableField :: InternalVariableField(InternalStateType ist, FieldType 
 {}
 
 int
-InternalVariableField :: evaluateAt(FloatArray &answer, const FloatArray &coords, ValueModeType mode, TimeStep *tStep)
+InternalVariableField :: evaluateAt(FloatArray &answer, const Coordinates &coords, ValueModeType mode, TimeStep *tStep)
 {
     IntArray types(1);
     types.at(1) = this->type;

@@ -137,10 +137,10 @@ Tr_Warp :: computeBmatrixAt(GaussPoint *gp, FloatMatrix &answer,
 // luated at gp.
 {
     FloatMatrix dN;
-    FloatArray tc(2);
+    Coordinates tc;
     this->interp.evaldNdx( dN, gp->giveNaturalCoordinates(), FEIElementGeometryWrapper(this) );
     // gausspoint coordinates
-    FloatArray gcoords;
+    Coordinates gcoords;
     Element *elem = gp->giveElement(); ///@todo Why?! Is this really called *not* by this elements own GP?!?!?! If so, ouch! / Mikael
     elem->computeGlobalCoordinates( gcoords, gp->giveNaturalCoordinates() );
 
@@ -161,15 +161,16 @@ Tr_Warp :: computeBmatrixAt(GaussPoint *gp, FloatMatrix &answer,
 
 
 void
-Tr_Warp :: transformCoordinates(FloatArray &answer, FloatArray &c, const int CGnumber)
+Tr_Warp :: transformCoordinates(Coordinates &answer, const Coordinates &c, const int CGnumber)
 {
-    answer.resize(2);
+    //answer.resize(2);
     FreeWarping *em = dynamic_cast< FreeWarping * >( this->giveDomain()->giveEngngModel() );
     if ( em ) {
         FloatMatrix CG;
         em->getCenterOfGravity(CG);
         answer.at(1) = c.at(1) - CG.at(CGnumber, 1);
         answer.at(2) = c.at(2) - CG.at(CGnumber, 2);
+        answer.at(3) = 0.0;
     } else   {
         OOFEM_ERROR("Error during transformCoordinates");
     }
@@ -181,12 +182,14 @@ Tr_Warp :: computeFirstMomentOfArea(FloatArray &answer)
 {
     answer.resize(2);
 
-    FloatArray gcoords;
+    Coordinates gcoords;
     GaussPoint *gp = this->giveDefaultIntegrationRulePtr()->getIntegrationPoint(0);
     double A = this->computeVolumeAround(gp);
     Element *elem = gp->giveElement();
-    elem->computeGlobalCoordinates( answer, gp->giveNaturalCoordinates() );
-    answer.times(A);
+    elem->computeGlobalCoordinates( gcoords, gp->giveNaturalCoordinates() );
+    answer.at(1) = gcoords.at(1) * A;
+    answer.at(2) = gcoords.at(2) * A;
+    //answer.at(3) = gcoords.at(3) * A;
 }
 
 double
@@ -251,14 +254,16 @@ Tr_Warp :: computeEdgeLoadVectorAt(FloatArray &answer, Load *load, TimeStep *tSt
         double y2 = coord2.at(2);
 
         // transform to coordinates w.r. center of gravity
-        FloatArray tc1(2), c1(2), tc2(2), c2(2);
+        Coordinates tc1, c1, tc2, c2;
         c1.at(1) = x1;
         c1.at(2) = y1;
+        c1.at(3) = 0.0;
         this->transformCoordinates( tc1, c1, this->giveCrossSection()->giveNumber() );
         x1 = tc1.at(1);
         y1 = tc1.at(2);
         c2.at(1) = x2;
         c2.at(2) = y2;
+        c2.at(3) = 0.0;
         this->transformCoordinates( tc2, c2, this->giveCrossSection()->giveNumber() );
         x2 = tc2.at(1);
         y2 = tc2.at(2);
@@ -340,7 +345,7 @@ Tr_Warp :: giveInterface(InterfaceType interface)
 }
 
 int
-Tr_Warp :: SpatialLocalizerI_containsPoint(const FloatArray &coords)
+Tr_Warp :: SpatialLocalizerI_containsPoint(const Coordinates &coords)
 {
     FloatArray lcoords;
     return this->computeLocalCoordinates(lcoords, coords);

@@ -80,7 +80,7 @@ QuadAxisym1_ht :: giveThicknessAt(const FloatArray &gcoords)
 double
 QuadAxisym1_ht :: computeEdgeVolumeAround(GaussPoint *gp, int iEdge)
 {
-    FloatArray gcoords;
+    Coordinates gcoords;
     this->interpolation.edgeLocal2global( gcoords, iEdge, gp->giveSubPatchCoordinates(), FEIElementGeometryWrapper(this) );
     double radius = gcoords.at(1);
 
@@ -92,7 +92,7 @@ QuadAxisym1_ht :: computeEdgeVolumeAround(GaussPoint *gp, int iEdge)
 double
 QuadAxisym1_ht :: computeRadiusAt(GaussPoint *gp)
 {
-    FloatArray gcoords;
+    Coordinates gcoords;
     this->interpolation.local2global( gcoords, gp->giveSubPatchCoordinates(), FEIElementGeometryWrapper(this) );
     return gcoords.at(1);
 }

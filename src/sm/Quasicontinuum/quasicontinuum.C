@@ -901,7 +901,7 @@ Quasicontinuum :: computeIntersectionsOfLinkWith2DTringleElements(IntArray &inte
         intersected.followedBy(iel);     // cislo elementu
         break;
     case 1:     // link starts in this element
-        iLen = distance(X1, intersectCoords[0]);
+        iLen = distance(X1, Vec3(intersectCoords[0][0], intersectCoords[0][1], 0.0));
         if ( iLen / TotalLength >= 1.e-6 ) { // intersection is not negligible
             lengths.push_back(iLen);
             intersected.followedBy(iel);
@@ -915,7 +915,7 @@ Quasicontinuum :: computeIntersectionsOfLinkWith2DTringleElements(IntArray &inte
         //lengths of all possible cobmination of intersection points
         iLens.resize(numberOfIntersected);
         for ( int nn = 1; nn <= numberOfIntersected; nn++ ) {
-            iLens.at(nn) = distance(X1, intersectCoords[nn - 1]);
+            iLens.at(nn) = distance(X1, Vec3(intersectCoords[nn - 1][0], intersectCoords[nn - 1][1], 0.0));
         }
         iLen = iLens.at( iLens.giveIndexMaxElem() );     // real length is maximal one
         if ( iLen / TotalLength >= 1.e-6 ) { // intersection is not negligible
@@ -982,7 +982,7 @@ Quasicontinuum :: computeIntersectionsOfLinkWith2DTringleElements(IntArray &inte
                 continue;
             case 1: // link ends here or there in only fake intersection
                 if ( iel == end2 ) { // end of the link in in this element
-                    iLen = distance(X2, intersectCoords[0]);
+                    iLen = distance(X2, Vec3(intersectCoords[0][0], intersectCoords[0][1], 0.0));
                     if ( iLen / TotalLength >= 1.e-6 ) { // intersection is not negligible
                         lengths.push_back(iLen);
                         intersected.followedBy(iel);
@@ -1001,7 +1001,7 @@ Quasicontinuum :: computeIntersectionsOfLinkWith2DTringleElements(IntArray &inte
                     //lengths of all possible cobmination of intersection points
                     iLens.resize(numberOfIntersected);
                     for ( int nn = 1; nn <= numberOfIntersected; nn++ ) {
-                        iLens.at(nn) = distance(X2, intersectCoords[nn - 1]);
+                        iLens.at(nn) = distance(X2, Vec3(intersectCoords[nn - 1][0], intersectCoords[nn - 1][1], 0.0));
                     }
                     iLen = iLens.at( iLens.giveIndexMaxElem() ); // real length is maximal
                     if ( iLen / TotalLength >= 1.e-6 ) { // intersection is not negligible

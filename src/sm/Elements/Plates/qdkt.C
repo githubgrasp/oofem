@@ -450,7 +450,7 @@ QDKTPlate::computeBodyLoadVectorAt(FloatArray &answer, Load *forLoad, TimeStep *
 #define POINT_TOL 1.e-3
 
 bool
-QDKTPlate::computeLocalCoordinates(FloatArray &answer, const FloatArray &coords)
+QDKTPlate::computeLocalCoordinates(FloatArray &answer, const Coordinates &coords)
 //converts global coordinates to local planar area coordinates,
 //does not return a coordinate in the thickness direction, but
 //does check that the point is in the element thickness

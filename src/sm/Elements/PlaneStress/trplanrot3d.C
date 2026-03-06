@@ -53,7 +53,7 @@ TrPlaneStrRot3d :: TrPlaneStrRot3d(int n, Domain *aDomain) : TrPlaneStrRot(n, aD
 
 
 void
-TrPlaneStrRot3d :: giveLocalCoordinates(FloatArray &answer, const FloatArray &global)
+TrPlaneStrRot3d :: giveLocalCoordinates(Coordinates &answer, const Coordinates &global)
 // Returns global coordinates given in global vector
 // transformed into local coordinate system of the
 // receiver
@@ -68,9 +68,9 @@ TrPlaneStrRot3d :: giveLocalCoordinates(FloatArray &answer, const FloatArray &gl
         this->computeGtoLRotationMatrix();
     }
 
-    FloatArray offset = global;
-    offset.subtract( this->giveNode(1)->giveCoordinates() );
-    answer.beProductOf(GtoLRotationMatrix, offset);
+    Coordinates offset = global;
+    offset -= this->giveNode(1)->giveCoordinates();
+    answer = GtoLRotationMatrix * offset;
 }
 
 
@@ -79,9 +79,9 @@ TrPlaneStrRot3d :: computeVolumeAround(GaussPoint *gp)
 {
     double detJ, weight;
 
-    FloatArray x, y;
+    Coordinates x, y;
     this->giveNodeCoordinates(x, y);
-    std :: vector< FloatArray > lc = {Vec2(x[0], y[0]), Vec2(x[1], y[1]), Vec2(x[2], y[2])};
+    std :: vector< Coordinates > lc = {Coordinates(x[0], y[0],0.0), Coordinates(x[1], y[1],0.0), Coordinates(x[2], y[2],0.0)};
 
     weight = gp->giveWeight();
     detJ = fabs( this->interp.giveTransformationJacobian( gp->giveNaturalCoordinates(), FEIVertexListGeometryWrapper(lc, this->interp.giveGeometryType()) ) );
@@ -90,20 +90,20 @@ TrPlaneStrRot3d :: computeVolumeAround(GaussPoint *gp)
 
 
 void
-TrPlaneStrRot3d :: giveNodeCoordinates(FloatArray &x, FloatArray &y)
+TrPlaneStrRot3d :: giveNodeCoordinates(Coordinates &x, Coordinates &y)
 {
-    FloatArray nc1(3), nc2(3), nc3(3);
+    Coordinates nc1, nc2, nc3;
 
     this->giveLocalCoordinates( nc1, this->giveNode(1)->giveCoordinates() );
     this->giveLocalCoordinates( nc2, this->giveNode(2)->giveCoordinates() );
     this->giveLocalCoordinates( nc3, this->giveNode(3)->giveCoordinates() );
 
-    x.resize(3);
+    //x.resize(3);
     x.at(1) = nc1.at(1);
     x.at(2) = nc2.at(1);
     x.at(3) = nc3.at(1);
 
-    y.resize(3);
+    //y.resize(3);
     y.at(1) = nc1.at(2);
     y.at(2) = nc2.at(2);
     y.at(3) = nc3.at(2);

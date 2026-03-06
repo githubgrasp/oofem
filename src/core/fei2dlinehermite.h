@@ -62,8 +62,8 @@ public:
     double giveArea(const FEICellGeometry &cellgeo) const override { return 0.0; }
     double giveLength(const FEICellGeometry &cellgeo) const;
 
-    void local2global(FloatArray &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override;
-    int global2local(FloatArray &answer, const FloatArray &gcoords, const FEICellGeometry &cellgeo) const override;
+    void local2global(Coordinates&answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override;
+    int global2local(FloatArray &answer, const Coordinates &gcoords, const FEICellGeometry &cellgeo) const override;
 
     // "Bulk"
     void evalN(FloatArray &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override;
@@ -77,7 +77,7 @@ public:
     void edgeEvaldNds(FloatArray &answer, int iedge, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override;
     void edgeEvald2Nds2(FloatArray &answer, int iedge, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const ;
 
-    void edgeLocal2global(FloatArray &answer, int iedge, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override { }
+    void edgeLocal2global(Coordinates &answer, int iedge, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override { }
 
     int giveNumberOfNodes(const Element_Geometry_Type) const override { return 2; }
 

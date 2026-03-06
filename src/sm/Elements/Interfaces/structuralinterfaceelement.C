@@ -53,13 +53,13 @@ StructuralInterfaceElement :: StructuralInterfaceElement(int n, Domain *aDomain)
 {
 }
 
-int StructuralInterfaceElement :: computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords)
+int StructuralInterfaceElement :: computeGlobalCoordinates(Coordinates &answer, const FloatArray &lcoords)
 {
     FloatArray N;
     FEInterpolation *interp = this->giveInterpolation();
     interp->evalN( N, lcoords, FEIElementGeometryWrapper(this) );
 
-    answer.resize(this->giveDofManager(1)->giveCoordinates().giveSize());
+    //answer.resize(this->giveDofManager(1)->giveCoordinates().giveSize());
     answer.zero();
 
     int numNodes = this->giveNumberOfNodes();

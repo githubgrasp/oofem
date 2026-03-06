@@ -45,27 +45,36 @@
 namespace oofem {
 
 int
-SpatialLocalizerInterface :: SpatialLocalizerI_containsPoint(const FloatArray &coords)
+SpatialLocalizerInterface :: SpatialLocalizerI_containsPoint(const Coordinates &coords)
 {
     FloatArray lcoords;
     return this->element->computeLocalCoordinates(lcoords, coords);
 }
 
 void
-SpatialLocalizerInterface :: SpatialLocalizerI_giveBBox(FloatArray &bb0, FloatArray &bb1)
+SpatialLocalizerInterface :: SpatialLocalizerI_giveBBox(Coordinates &bb0, Coordinates &bb1)
 {
-    bb1 = bb0 = element->giveNode(1)->giveCoordinates();
+    bb0 = element->giveNode(1)->giveCoordinates();
+    bb1 = bb0;
 
     for ( int i = 2; i <= element->giveNumberOfNodes(); ++i ) {
         const auto &coordinates = element->giveNode(i)->giveCoordinates();
-        bb0.beMinOf(bb0, coordinates);
-        bb1.beMaxOf(bb1, coordinates);
+        //bb0.beMinOf(bb0, coordinates);
+        //bb1.beMaxOf(bb1, coordinates);
+        for ( int j = 0; j < 3; ++j ) {
+            if ( coordinates[j] < bb0[j] ) {
+                bb0[j] = coordinates[j];
+            }
+            if ( coordinates[j] > bb1[j] ) {
+                bb1[j] = coordinates[j];
+            }
+        }
     }
 }
 
 
 double
-SpatialLocalizerInterface :: SpatialLocalizerI_giveClosestPoint(FloatArray &lcoords, FloatArray &closest, const FloatArray &gcoords)
+SpatialLocalizerInterface :: SpatialLocalizerI_giveClosestPoint(FloatArray &lcoords, Coordinates &closest, const Coordinates &gcoords)
 {
     FEInterpolation *interp = element->giveInterpolation();
 
@@ -80,9 +89,9 @@ SpatialLocalizerInterface :: SpatialLocalizerI_giveClosestPoint(FloatArray &lcoo
 
 
 int
-SpatialLocalizerInterface :: SpatialLocalizerI_BBoxContainsPoint(const FloatArray &coords)
+SpatialLocalizerInterface :: SpatialLocalizerI_BBoxContainsPoint(const Coordinates &coords)
 {
-    FloatArray coordMin, coordMax;
+    Coordinates coordMin, coordMax;
     this->SpatialLocalizerI_giveBBox(coordMin, coordMax);
 
     int size = min( coordMin.giveSize(), coords.giveSize() );
@@ -98,7 +107,7 @@ SpatialLocalizerInterface :: SpatialLocalizerI_BBoxContainsPoint(const FloatArra
 
 
 void
-SpatialLocalizer :: giveAllElementsWithNodesWithinBox(elementContainerType &elemSet, const FloatArray &coords,
+SpatialLocalizer :: giveAllElementsWithNodesWithinBox(elementContainerType &elemSet, const Coordinates &coords,
                                                       const double radius)
 {
     nodeContainerType nodesWithinBox;

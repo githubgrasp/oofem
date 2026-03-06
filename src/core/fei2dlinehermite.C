@@ -74,11 +74,11 @@ double FEI2dLineHermite :: evaldNdx(FloatMatrix &answer, const FloatArray &lcoor
     return detJ;
 }
 
-void FEI2dLineHermite :: local2global(FloatArray &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
+void FEI2dLineHermite :: local2global(Coordinates &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
 {
     FloatArray n;
     this->evalN(n, lcoords, cellgeo);
-    answer.resize( max(xind, yind) );
+    //answer.resize( 3 );
     answer.zero();
     answer.at(xind) = n.at(1) * cellgeo.giveVertexCoordinates(1).at(xind) +
                       n.at(2) * cellgeo.giveVertexCoordinates(2).at(xind);
@@ -86,18 +86,18 @@ void FEI2dLineHermite :: local2global(FloatArray &answer, const FloatArray &lcoo
                       n.at(2) * cellgeo.giveVertexCoordinates(2).at(yind);
 }
 
-int FEI2dLineHermite :: global2local(FloatArray &answer, const FloatArray &gcoords, const FEICellGeometry &cellgeo) const
+int FEI2dLineHermite :: global2local(FloatArray &answer, const Coordinates &gcoords, const FEICellGeometry &cellgeo) const
 {
     double x2_x1 = cellgeo.giveVertexCoordinates(2).at(xind) - cellgeo.giveVertexCoordinates(1).at(xind);
     double y2_y1 = cellgeo.giveVertexCoordinates(2).at(yind) - cellgeo.giveVertexCoordinates(1).at(yind);
 
     // Projection of the global coordinate gives the value interpolated in [0,1].
-    double xi = ( x2_x1 * gcoords(0) + y2_y1 * gcoords(1) ) / ( sqrt(x2_x1 * x2_x1 + y2_y1 * y2_y1) );
+    double xi = ( x2_x1 * gcoords.at(xind) + y2_y1 * gcoords.at(yind) ) / ( sqrt(x2_x1 * x2_x1 + y2_y1 * y2_y1) );
     // Map to [-1,1] domain.
     xi = xi * 2.0 - 1.0;
 
-    answer.resize(1);
-    answer(0) = clamp(xi, -1., 1.);
+    answer.zero();
+    answer.at(1) = clamp(xi, -1., 1.);
     return false;
 }
 

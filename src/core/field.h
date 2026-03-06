@@ -37,6 +37,7 @@
 
 #include "domain.h"
 #include "oofemenv.h"
+#include "oofemcfg.h"
 #include "valuemodetype.h"
 #include "contextioresulttype.h"
 #include "contextmode.h"
@@ -100,7 +101,7 @@ public:
      * @param mode Mode of value (total, velocity,...).
      * @return Zero if ok, otherwise nonzero.
      */
-    virtual int evaluateAt(FloatArray &answer, const FloatArray &coords,
+    virtual int evaluateAt(FloatArray &answer, const Coordinates &coords,
                            ValueModeType mode, TimeStep *tStep) = 0;
 
     /**

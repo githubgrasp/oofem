@@ -108,10 +108,10 @@ RandomMaterialExtensionInterface :: _generateStatusVariables(GaussPoint *gp) con
                                                      ( matStat->giveInterface(RandomMaterialStatusExtensionInterfaceType) );
 
     for ( int i = 1; i <= size; i++ ) {
-        FloatArray globalCoordinates;
+        Coordinates globalCoordinates;
         if ( gp->giveElement()->computeGlobalCoordinates(globalCoordinates, gp->giveSubPatchCoordinates() ) ) {
             Function *f = gp->giveElement()->giveDomain()->giveFunction(randomVariableGenerators.at(i) );
-            value = f->evaluate({{ "x", globalCoordinates } });
+            value = f->evaluate({{ "x", FloatArray(globalCoordinates) } });
             status->_setProperty(randVariables.at(i), value);
         } else {
             OOFEM_ERROR("computeGlobalCoordinates failed");

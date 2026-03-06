@@ -292,6 +292,7 @@ void FloatMatrix :: beTranspositionOf(const FloatMatrix &src) { *this=src.transp
 void FloatMatrix :: beProductOf(const FloatMatrix &aMatrix, const FloatMatrix &bMatrix){ *this=aMatrix*bMatrix; }
 void FloatMatrix :: beTProductOf(const FloatMatrix &aMatrix, const FloatMatrix &bMatrix){ *this=aMatrix.transpose()*bMatrix; }
 void FloatMatrix :: beProductTOf(const FloatMatrix &aMatrix, const FloatMatrix &bMatrix){ *this=aMatrix*bMatrix.transpose(); }
+void FloatMatrix :: beTProductTOf(const FloatMatrix &aMatrix, const FloatMatrix &bMatrix){ *this=aMatrix.transpose()*bMatrix.transpose(); }
 void FloatMatrix :: addProductOf(const FloatMatrix &aMatrix, const FloatMatrix &bMatrix){ *this+=aMatrix*bMatrix; }
 void FloatMatrix :: addTProductOf(const FloatMatrix &aMatrix, const FloatMatrix &bMatrix){ *this+=aMatrix.transpose()*bMatrix; }
 void FloatMatrix :: beDyadicProductOf(const FloatArray &vec1, const FloatArray &vec2){ *this=vec1*vec2.transpose(); }
@@ -313,7 +314,7 @@ void FloatMatrix :: copyColumn(FloatArray &dest, int c) const { dest=this->col(c
 void FloatMatrix :: plusDyadSymmUpper(const FloatArray &a, double dV)                             { _zeroedIfEmpty(*this,a.size(),a.size()); this->selfadjointView<Eigen::Upper>().rankUpdate(a,dV); }
 void FloatMatrix :: plusProductUnsym(const FloatMatrix &a, const FloatMatrix &b, double dV)       { _zeroedIfEmpty(*this,a.cols(),b.cols()); *this+=a.transpose()*b*dV; }
 void FloatMatrix :: plusDyadUnsym(const FloatArray &a, const FloatArray &b, double dV)            { _zeroedIfEmpty(*this,a.size(),b.size()); *this+=a*b.transpose()*dV; }
-void FloatMatrix :: plus_Nt_a_otimes_b_B(const FloatMatrix &N, const FloatArray &a, const FloatArray &b, const FloatMatrix &B, double dV){ _zeroedIfEmpty(*this,N.cols(),B.cols()); *this=dV*((N*a)*(b.transpose()*B).transpose()); }
+void FloatMatrix :: plus_Nt_a_otimes_b_B(const FloatMatrix &N, const FloatArray &a, const FloatArray &b, const FloatMatrix &B, double dV){ _zeroedIfEmpty(*this,N.cols(),B.cols()); *this=dV*(N.transpose()*(a*b.transpose())*B); }
 bool FloatMatrix :: beInverseOf(const FloatMatrix &src){
     Eigen::FullPivLU<Eigen::MatrixXd> lu(src);
     // lu.setThreshold(1e-30); // this is what the original code uses
@@ -459,6 +460,42 @@ void FloatMatrix :: beProductTOf(const FloatMatrix &aMatrix, const FloatMatrix &
     }
 #  endif
 }
+
+void FloatMatrix :: beTProductTOf(const FloatMatrix &aMatrix, const FloatMatrix &bMatrix)
+// Receiver = aMatrix * bMatrix^T
+{
+#  ifndef NDEBUG
+    if ( aMatrix.rows() != bMatrix.cols() ) {
+        OOFEM_ERROR("error in product A*B : dimensions do not match");
+    }
+#  endif
+    _resize_internal(aMatrix.cols(), bMatrix.rows());
+#  ifdef __LAPACK_MODULE
+    const int this_nColumns=cols(), this_nRows=rows();
+    const int aMatrix_nColumns=aMatrix.cols(), aMatrix_nRows=aMatrix.rows();
+    const int bMatrix_nColumns=bMatrix.cols(), bMatrix_nRows=bMatrix.rows();
+    double alpha = 1., beta = 0.;
+    dgemm_("t", "t", & this_nRows, & this_nColumns, & aMatrix_nColumns,
+           & alpha, aMatrix.givePointer(), & aMatrix_nRows, bMatrix.givePointer(), & bMatrix_nRows,
+           & beta, this->givePointer(), & this_nRows,
+           aMatrix_nColumns, bMatrix_nColumns, this_nColumns);
+#  else
+    for (Index i = 1; i <= aMatrix.cols(); i++ ) {
+        for (Index j = 1; j <= bMatrix.rows(); j++ ) {
+            double coeff = 0.;
+            for (Index k = 1; k <= aMatrix.rows(); k++ ) {
+                coeff += aMatrix.at(k, i) * bMatrix.at(j, k);
+            }
+
+            this->at(i, j) = coeff;
+        }
+    }
+#  endif
+}
+
+
+
+
 
 
 void FloatMatrix :: addProductOf(const FloatMatrix &aMatrix, const FloatMatrix &bMatrix)
@@ -744,6 +781,11 @@ void FloatMatrix :: plusDyadUnsym(const FloatArray &a, const FloatArray &b, doub
 
 void FloatMatrix :: plus_Nt_a_otimes_b_B(const FloatMatrix &N, const FloatArray &a, const FloatArray &b, const FloatMatrix &B, double dV)
 {
+    #ifndef NDEBUG
+        if (a.giveSize() != N.nRows || b.giveSize() != B.nRows ) {
+            OOFEM_ERROR("Size mismatch in FloatMatrix :: plus_Nt_a_otimes_b_B");
+        }
+    #endif
     if ( !this->isNotEmpty() ) {
       this->nRows = N.nColumns;
       this->nColumns = B.nColumns;
@@ -1042,6 +1084,22 @@ void FloatMatrix :: subtract(const FloatMatrix &aMatrix)
 #endif
 }
 
+FloatMatrix FloatMatrix :: fromMatrix(const FloatMatrix &matrix, bool transposed)
+//
+// constructor : creates (vector->giveSize(),1) FloatMatrix
+// if transpose = 1 creates (1,vector->giveSize()) FloatMatrix
+//
+{
+    FloatMatrix ret;
+    if ( transposed ) {
+        ret.resize(matrix.cols(), matrix.rows());
+        for (int r = 0; r < ret.rows(); r++)
+            for(int c=0; c<ret.cols(); c++) ret(r,c)=matrix(c,r);
+    } else {
+        ret = matrix;
+    }
+    return ret;
+}
 
 FloatMatrix FloatMatrix :: fromArray(const FloatArray &vector, bool transposed)
 //
@@ -1305,7 +1363,7 @@ bool FloatMatrix :: solveForRhs(const FloatArray &b, FloatArray &answer, bool tr
 {
 #  ifndef NDEBUG
     if ( !this->isSquare() ) {
-        OOFEM_ERROR("cannot solve a %d by %d matrix", rows(), cols());
+        OOFEM_ERROR("cannot solve a %d by %d matrix", (int)rows(), (int)cols());
     }
 
     if ( rows() != b.size() ) {
@@ -1403,7 +1461,7 @@ bool FloatMatrix :: solveForRhs(const FloatMatrix &b, FloatMatrix &answer, bool 
 {
 #  ifndef NDEBUG
     if ( !this->isSquare() ) {
-        OOFEM_ERROR("cannot solve a %d by %d matrix", rows(), cols());
+        OOFEM_ERROR("cannot solve a %d by %d matrix", (int)rows(), (int)cols());
     }
 
     if ( rows() != b.rows() ) {
@@ -1770,7 +1828,7 @@ double FloatMatrix :: computeReciprocalCondition(char p) const
 {
 #  ifndef NDEBUG
     if ( !this->isSquare() ) {
-        OOFEM_ERROR("receiver must be square (is %d by %d)", this->rows(), this->cols());
+        OOFEM_ERROR("receiver must be square (is %d by %d)", (int)this->rows(), (int)this->cols());
     }
 #  endif
     double anorm = this->computeNorm(p);

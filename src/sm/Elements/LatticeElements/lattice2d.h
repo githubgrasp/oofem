@@ -79,7 +79,7 @@ public:
      * function as it returns the global coordinates of the gausspoint
      * independent to the value of the lcoords.
      */
-    int computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords) override;
+    int computeGlobalCoordinates(Coordinates &answer, const FloatArray &lcoords) override;
 
     double giveLength() override;
 
@@ -131,7 +131,8 @@ protected:
     void computeStressVector(FloatArray &answer, const FloatArray &strain, GaussPoint *gp, TimeStep *tStep) override;
     void computeConstitutiveMatrixAt(FloatMatrix &answer, MatResponseMode rMode, GaussPoint *gp, TimeStep *tStep) override;
     void computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode, TimeStep *tStep) override;
-
+    void giveInternalForcesVector(FloatArray &answer, TimeStep *tStep, int useUpdatedGpRecord) override;
+  
     int giveNumberOfCrossSectionNodes() override { return 2; }
     double givePitch();
     void computeGaussPoints() override;

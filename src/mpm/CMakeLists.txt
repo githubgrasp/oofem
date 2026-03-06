@@ -1,6 +1,7 @@
 set (mpm_core
     mpm.C
     integral.C
+    mpmsymbolic.C
     )
 
 

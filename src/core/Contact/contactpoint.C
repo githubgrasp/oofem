@@ -106,10 +106,11 @@ FEContactPoint :: computeCurvature(FloatMatrix &kappa, const FloatArray &normal,
   
   FloatArray d2Ndxidxi, d2Ndetadeta, d2Ndxideta;
   for (int i = 1; i <= ce->giveNumberOfNodes(); ++i) {
-    d2Ndxidxi.add(d2Ndxi2.at(i, 1), cellgeo.giveVertexCoordinates(i));
+    Coordinates nodeCoords = cellgeo.giveVertexCoordinates(i);
+    d2Ndxidxi.add(d2Ndxi2.at(i, 1), FloatArrayF<2>(nodeCoords.at(1), nodeCoords.at(2)));
     if(surface_dimension == 2) {
-      d2Ndetadeta.add(d2Ndxi2.at(i, 2), cellgeo.giveVertexCoordinates(i));
-      d2Ndxideta.add(d2Ndxi2.at(i, 3), cellgeo.giveVertexCoordinates(i));
+      d2Ndetadeta.add(d2Ndxi2.at(i, 2), FloatArrayF<2>(nodeCoords.at(1), nodeCoords.at(2)));
+      d2Ndxideta.add(d2Ndxi2.at(i, 3), FloatArrayF<2>(nodeCoords.at(1), nodeCoords.at(2)));
     }
   }
   kappa.resize(surface_dimension,surface_dimension);
@@ -131,7 +132,7 @@ FEContactPoint :: computeVectorOf(ValueModeType mode, TimeStep *tStep, FloatArra
   
 
 void
-FEContactPoint :: giveUpdatedCoordinates(FloatArray &coords, TimeStep* tStep)
+FEContactPoint :: giveUpdatedCoordinates(Coordinates &coords, TimeStep* tStep)
 {
   this->giveInterpolation()->local2global(coords, this->giveLocalCoordinates(), FEIElementDeformedGeometryWrapper(contactSurface->giveContactElement(contactElementId), tStep));
 }
@@ -158,10 +159,10 @@ FEContactPoint ::giveUnknownVector(FloatArray &answer, const IntArray &dofMask, 
 }
 
 
-FloatArray
+Coordinates
 FEContactPoint_Master :: giveGlobalCoordinates()
 {
-  FloatArray ret;
+  Coordinates ret;
   this->contactSurface->giveContactElement(contactElementId)->computeGlobalCoordinates(ret, this->localCoordinates);
   return ret;
 }

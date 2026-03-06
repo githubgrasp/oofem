@@ -80,7 +80,7 @@ public:
 
     int giveLocalCoordinateSystem(FloatMatrix &answer) override;
 
-    int computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords) override;
+    int computeGlobalCoordinates(Coordinates &answer, const FloatArray &lcoords) override;
 
     double giveBondLength() override;
 

@@ -98,6 +98,11 @@ public:
     int read(char *data, std::size_t count) override { return this->recv_buff->read(data, count); }
     int read(bool &data) override { return recv_buff->read(data); }
 
+#ifdef _WIN32
+    int write( const size_t *data, std::size_t count ) override { return send_buff->write( data, count ); }
+    int read( size_t *data, std::size_t count ) override { return this->recv_buff->read( data, count ); }
+#endif
+
     /// Initializes send buffer to empty state. All packed data are lost.
     void initSendBuff() { send_buff->init(); }
     /// Initializes send buffer to empty state. All packed data are lost.

@@ -469,7 +469,8 @@ SPRNodalRecoveryModel :: computePatch(FloatMatrix &a, IntArray &patchElems, int 
                                       SPRPatchType regType, InternalStateType type, TimeStep *tStep)
 {
     int nelem, neq;
-    FloatArray ipVal, coords, P;
+    FloatArray ipVal, P;
+    Coordinates coords;
     FloatMatrix A, rhs;
 
     neq = this->giveNumberOfUnknownPolynomialCoefficients(regType);

@@ -42,6 +42,7 @@
 #define gausspoint_h
 
 #include "oofemenv.h"
+#include "oofemcfg.h"
 #include "integrationrule.h"
 #include "integrationpointstatus.h"
 #include "element.h"
@@ -103,7 +104,7 @@ private:
     /// Optional local sub-patch (sub-patches form element volume) coordinates of the receiver.
     std::unique_ptr<FloatArray> subPatchCoordinates;
     /// Optional global (Cartesian) coordinates
-    std::unique_ptr<FloatArray> globalCoordinates;
+    std::unique_ptr<Coordinates> globalCoordinates;
     /// Integration weight.
     double weight;
     /// Material mode of receiver.
@@ -156,23 +157,23 @@ public:
         }
     }
 
-    inline const FloatArray &giveGlobalCoordinates()
+    inline const Coordinates&giveGlobalCoordinates()
     {
         if ( globalCoordinates ) {
             return *globalCoordinates;
         } else {
-            globalCoordinates = std::make_unique<FloatArray>();
+            globalCoordinates = std::make_unique<Coordinates>();
             this->giveElement()->computeGlobalCoordinates(*globalCoordinates, naturalCoordinates);
             return *globalCoordinates;
         }
     }
 
-    void setGlobalCoordinates(const FloatArray &iCoord)
+    void setGlobalCoordinates(const Coordinates &iCoord)
     {
         if ( globalCoordinates ) {
             *globalCoordinates = iCoord;
         } else {
-            globalCoordinates = std::make_unique<FloatArray>(iCoord);
+            globalCoordinates = std::make_unique<Coordinates>(iCoord);
         }
     }
 
@@ -192,7 +193,9 @@ public:
     void setMaterialMode(MaterialMode newMode) { this->materialMode = newMode; }
     ///@todo giveMaterial routine most be removed from gauss-points, it doesn't fit with different types of cross-sections.
 
-    /// Returns reference to material associated to related element of receiver.
+    /** Returns reference to material associated to related element of receiver.
+     *  Deprecated, always use cross-section giveMaterial(gp) method instead
+     */
     Material *giveMaterial() { return giveElement()->giveMaterial(); }
 
     /// Returns reference to cross section associated to related element of receiver.

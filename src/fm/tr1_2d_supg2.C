@@ -1678,7 +1678,8 @@ TR1_2D_SUPG2 :: updateIntegrationRules()
     integrationRulesArray [ 0 ]->clear();
     integrationRulesArray [ 1 ]->clear();
 
-    FloatArray gc, lc;
+    FloatArray lc;
+    Coordinates gc;
     const Vertex *p;
     FEI2dTrLin triaApprox(1, 2);
     FEI2dQuadLin quadApprox(1, 2);
@@ -1756,7 +1757,7 @@ TR1_2D_SUPG2 :: updateIntegrationRules()
 
 
 double
-TR1_2D_SUPG2 :: computeVolumeAroundID(GaussPoint *gp, integrationDomain id, const std::vector< FloatArray > &idpoly)
+TR1_2D_SUPG2 :: computeVolumeAroundID(GaussPoint *gp, integrationDomain id, const std::vector< Coordinates > &idpoly)
 {
     double weight = gp->giveWeight();
 

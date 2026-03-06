@@ -231,7 +231,7 @@ void EnrichmentItem :: givePotentialEIDofIdArray(IntArray &answer) const {
     }
 }
 
-bool EnrichmentItem :: evalLevelSetNormalInNode(double &oLevelSet, int iNodeInd, const FloatArray &iGlobalCoord) const
+bool EnrichmentItem :: evalLevelSetNormalInNode(double &oLevelSet, int iNodeInd, const Coordinates &iGlobalCoord) const
 {
     auto res = mLevelSetNormalDirMap.find(iNodeInd);
     if ( res != mLevelSetNormalDirMap.end() ) {
@@ -243,7 +243,7 @@ bool EnrichmentItem :: evalLevelSetNormalInNode(double &oLevelSet, int iNodeInd,
     }
 }
 
-bool EnrichmentItem :: evalLevelSetTangInNode(double &oLevelSet, int iNodeInd, const FloatArray &iGlobalCoord) const
+bool EnrichmentItem :: evalLevelSetTangInNode(double &oLevelSet, int iNodeInd, const Coordinates &iGlobalCoord) const
 {
     auto res = mLevelSetTangDirMap.find(iNodeInd);
     if ( res != mLevelSetTangDirMap.end() ) {
@@ -390,10 +390,9 @@ double EnrichmentItem :: calcXiZeroLevel(const double &iQ1, const double &iQ2)
 
 void EnrichmentItem :: calcPolarCoord(double &oR, double &oTheta, const FloatArray &iOrigin, const FloatArray &iPos, const FloatArray &iN, const FloatArray &iT, const EfInput &iEfInput, bool iFlipTangent)
 {
-    FloatArray q = Vec2(
-        iPos.at(1) - iOrigin.at(1), iPos.at(2) - iOrigin.at(2)
+    FloatArray q = Vec3(
+        iPos.at(1) - iOrigin.at(1), iPos.at(2) - iOrigin.at(2), iPos.at(3) - iOrigin.at(3)
     );
-
     const double tol = 1.0e-20;
 
     // Compute polar coordinates

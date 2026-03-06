@@ -79,20 +79,21 @@ TrPlanestressRotAllman :: giveInterface(InterfaceType interface)
 }
 
 void
-TrPlanestressRotAllman :: computeLocalNodalCoordinates(std::vector< FloatArray > &lxy)
+TrPlanestressRotAllman :: computeLocalNodalCoordinates(std::vector< Coordinates > &lxy)
 {
     lxy.resize(6);
     for ( int i = 0; i < 3; i++ ) {
         lxy [ i ] = this->giveNode(i + 1)->giveCoordinates();
     }
-    lxy [ 3 ].resize(2);
-    lxy [ 4 ].resize(2);
-    lxy [ 5 ].resize(2);
+    //lxy [ 3 ].resize(2);
+    //lxy [ 4 ].resize(2);
+    //lxy [ 5 ].resize(2);
     for ( int i = 1; i <= 2; i++ ) {
         lxy [ 3 ].at(i) = 0.5 * ( lxy [ 0 ].at(i) + lxy [ 1 ].at(i) );
         lxy [ 4 ].at(i) = 0.5 * ( lxy [ 1 ].at(i) + lxy [ 2 ].at(i) );
         lxy [ 5 ].at(i) = 0.5 * ( lxy [ 2 ].at(i) + lxy [ 0 ].at(i) );
     }
+    lxy[3][2] = lxy[4][2] = lxy[5][2] = 0.0;
 }
 
 
@@ -103,7 +104,7 @@ TrPlanestressRotAllman :: computeNmatrixAt(const FloatArray &iLocCoord, FloatMat
 // luated at gp.
 {
     FloatArray L, n;
-    std::vector< FloatArray > lxy;
+    std::vector< Coordinates > lxy;
 
     answer.resize(3, 9);
     answer.zero();
@@ -133,7 +134,7 @@ TrPlanestressRotAllman :: computeBmatrixAt(GaussPoint *gp, FloatMatrix &answer, 
 // luated at gp.
 {
     FloatMatrix dnx;
-    std::vector< FloatArray > lxy;
+    std::vector< Coordinates > lxy;
 
     this->computeLocalNodalCoordinates(lxy); // get ready for tranformation into 3d
     this->qinterpolation.evaldNdx( dnx, gp->giveNaturalCoordinates(), FEIVertexListGeometryWrapper(lxy, this->qinterpolation.giveGeometryType()) );
@@ -191,7 +192,7 @@ TrPlanestressRotAllman :: computeStiffnessMatrixZeroEnergyStabilization(FloatMat
     FloatMatrix b(1, 9);
     FloatMatrix dnx;
     FloatArray lec = Vec3(0.333333333333, 0.333333333333, 0.333333333333); // element center in local coordinates
-    std::vector< FloatArray > lxy; 
+    std::vector< Coordinates > lxy; 
 
     this->computeLocalNodalCoordinates(lxy); // get ready for tranformation into 3d
     this->qinterpolation.evaldNdx( dnx, lec, FEIVertexListGeometryWrapper(lxy, this->qinterpolation.giveGeometryType()) );
@@ -256,7 +257,7 @@ void TrPlanestressRotAllman :: computeGaussPoints()
 void
 TrPlanestressRotAllman :: computeEgdeNMatrixAt(FloatMatrix &answer, int iedge, GaussPoint *gp)
 {
-    std::vector< FloatArray > lxy;
+    std::vector< Coordinates > lxy;
     FloatArray l, n;
     FEI2dTrQuad qi(1, 2);
 
@@ -320,7 +321,7 @@ void TrPlanestressRotAllman :: computeBoundaryEdgeLoadVector(FloatArray &answer,
 
     double dV;
     FloatMatrix T;
-    FloatArray globalIPcoords;
+    Coordinates globalIPcoords;
 
     EdgeLoad *edgeLoad = dynamic_cast< EdgeLoad * >(load);
     if ( edgeLoad ) {

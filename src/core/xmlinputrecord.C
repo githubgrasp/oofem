@@ -229,7 +229,7 @@ namespace oofem {
         return oss.str();
     }
     std::string XMLInputRecord::giveRecordInTXTFormat() const {
-        OOFEM_ERROR("%s: not (yet?) implemented.",__PRETTY_FUNCTION__);
+        OOFEM_ERROR("%s: not (yet?) implemented.",__FUNCTION__);
     }
 
     void XMLInputRecord::giveField(std::string& answer, InputFieldType id){
@@ -241,6 +241,15 @@ namespace oofem {
         Tokens tt(id,this);
         // std::cerr<<id<<": FloatArray from '"<<tt.str<<"' ("<<tt.size()<<" items)"<<std::endl;
         answer.resize(tt.size());
+        for(size_t i=0; i<tt.size(); i++) answer[i]=tt.as<double>(i);
+        _XML_DEBUG(tt.loc()<<": parsed attribute "<<id<<" as "<<answer);
+    }
+    void XMLInputRecord::giveField(Coordinates &answer, InputFieldType id){
+        Tokens tt(id,this);
+        // std::cerr<<id<<": FloatArray from '"<<tt.str<<"' ("<<tt.size()<<" items)"<<std::endl;
+        answer.zero();
+        if ((int) tt.size()>answer.size()) 
+            OOFEM_ERROR("%s: too many items for Coordinates (got %d, expected at most %d)",tt.loc().c_str(),(int)tt.size(),(int)answer.size());
         for(size_t i=0; i<tt.size(); i++) answer[i]=tt.as<double>(i);
         _XML_DEBUG(tt.loc()<<": parsed attribute "<<id<<" as "<<answer);
     }

@@ -108,18 +108,18 @@ FEI2dTrLin :: evaldNdx(FloatMatrix &answer, const FloatArray &lcoords, const FEI
 }
 
 void
-FEI2dTrLin :: local2global(FloatArray &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
+FEI2dTrLin :: local2global(Coordinates &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
 {
     double l1 = lcoords.at(1);
     double l2 = lcoords.at(2);
     double l3 = 1.0 - l1 - l2;
 
-    answer.resize(3);
+    //answer.resize(3);
     answer.zero();
-    answer.at(1) = l1 * cellgeo.giveVertexCoordinates(1).at(xind) +
+    answer.at(xind) = l1 * cellgeo.giveVertexCoordinates(1).at(xind) +
                    l2 * cellgeo.giveVertexCoordinates(2).at(xind) +
                    l3 * cellgeo.giveVertexCoordinates(3).at(xind);
-    answer.at(2) = l1 * cellgeo.giveVertexCoordinates(1).at(yind) +
+    answer.at(yind) = l1 * cellgeo.giveVertexCoordinates(1).at(yind) +
                    l2 * cellgeo.giveVertexCoordinates(2).at(yind) +
                    l3 * cellgeo.giveVertexCoordinates(3).at(yind);
 }
@@ -127,7 +127,7 @@ FEI2dTrLin :: local2global(FloatArray &answer, const FloatArray &lcoords, const 
 #define POINT_TOL 1.e-3
 
 int
-FEI2dTrLin :: global2local(FloatArray &answer, const FloatArray &coords, const FEICellGeometry &cellgeo) const
+FEI2dTrLin :: global2local(FloatArray &answer, const Coordinates &coords, const FEICellGeometry &cellgeo) const
 {
     double x1 = cellgeo.giveVertexCoordinates(1).at(xind);
     double x2 = cellgeo.giveVertexCoordinates(2).at(xind);
@@ -231,17 +231,18 @@ double FEI2dTrLin :: edgeEvalNormal(FloatArray &normal, int iedge, const FloatAr
 }
 
 void
-FEI2dTrLin :: edgeLocal2global(FloatArray &answer, int iedge,
+FEI2dTrLin :: edgeLocal2global(Coordinates &answer, int iedge,
                                const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
 {
     FloatArray n;
     const auto &edgeNodes = this->computeLocalEdgeMapping(iedge);
     this->edgeEvalN(n, iedge, lcoords, cellgeo);
 
-    answer.resize(2);
-    answer.at(1) = ( n.at(1) * cellgeo.giveVertexCoordinates( edgeNodes.at(1) ).at(xind) +
+    //answer.resize(3);
+    answer.zero();
+    answer.at(xind) = ( n.at(1) * cellgeo.giveVertexCoordinates( edgeNodes.at(1) ).at(xind) +
                     n.at(2) * cellgeo.giveVertexCoordinates( edgeNodes.at(2) ).at(xind) );
-    answer.at(2) = ( n.at(1) * cellgeo.giveVertexCoordinates( edgeNodes.at(1) ).at(yind) +
+    answer.at(yind) = ( n.at(1) * cellgeo.giveVertexCoordinates( edgeNodes.at(1) ).at(yind) +
                     n.at(2) * cellgeo.giveVertexCoordinates( edgeNodes.at(2) ).at(yind) );
 }
 

@@ -58,8 +58,8 @@ public:
 
     double giveArea(const FEICellGeometry &cellgeo) const override { return 0.0; }
 
-    void local2global(FloatArray &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override;
-    int global2local(FloatArray &answer, const FloatArray &gcoords, const FEICellGeometry &cellgeo) const override;
+    void local2global(Coordinates &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override;
+    int global2local(FloatArray &answer, const Coordinates &gcoords, const FEICellGeometry &cellgeo) const override;
 
     int giveNumberOfEdges(const Element_Geometry_Type) const override { return 1; }
     void giveCellDofMans(IntArray& nodes, IntArray& internalDofMans, Element* elem) const override {nodes={};internalDofMans={1};}
@@ -76,7 +76,7 @@ public:
     void edgeEvalN(FloatArray &answer, int iedge, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override;
     double edgeEvalNormal(FloatArray &normal, int iedge, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override;
     void edgeEvaldNds(FloatArray &answer, int iedge, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override;
-    void edgeLocal2global(FloatArray &answer, int iedge, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override { }
+    void edgeLocal2global(Coordinates &answer, int iedge, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override { }
     double evalNXIntegral(int iEdge, const FEICellGeometry &cellgeo) const override;
 
     int giveNumberOfNodes(const Element_Geometry_Type) const override { return 2; }

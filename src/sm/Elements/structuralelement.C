@@ -121,7 +121,8 @@ void StructuralElement :: computeBoundarySurfaceLoadVector(FloatArray &answer, B
 
     FloatArray n_vec;
     FloatMatrix n, T;
-    FloatArray force, globalIPcoords;
+    FloatArray force;
+    Coordinates globalIPcoords;
     //int nsd = fei->giveNsd();
 
     std :: unique_ptr< IntegrationRule >iRule(this->giveBoundarySurfaceIntegrationRule(load->giveApproxOrder(), boundary) );
@@ -196,7 +197,8 @@ void StructuralElement :: computeBoundaryEdgeLoadVector(FloatArray &answer, Boun
     }
 
     FloatMatrix n, T;
-    FloatArray force, globalIPcoords;
+    FloatArray force;
+    Coordinates globalIPcoords;
 
     std :: unique_ptr< IntegrationRule >iRule(this->giveBoundaryEdgeIntegrationRule(load->giveApproxOrder(), boundary) );
 
@@ -477,7 +479,8 @@ StructuralElement :: computeResultingIPTemperatureAt(FloatArray &answer, TimeSte
 {
     int n, nLoads;
     Load *load;
-    FloatArray gCoords, temperature;
+    FloatArray temperature;
+    Coordinates gCoords;
     //int nbc = domain->giveNumberOfBoundaryConditions();
 
     if ( this->computeGlobalCoordinates(gCoords, gp->giveNaturalCoordinates() ) == 0 ) {
@@ -520,7 +523,8 @@ StructuralElement :: computeResultingIPEigenstrainAt(FloatArray &answer, TimeSte
 {
     int n, nLoads;
     Load *load;
-    FloatArray gCoords, eigenstrain;
+    Coordinates gCoords;
+    FloatArray eigenstrain;
     //int nbc = domain->giveNumberOfBoundaryConditions();
 
     if ( this->computeGlobalCoordinates(gCoords, gp->giveNaturalCoordinates() ) == 0 ) {
@@ -749,6 +753,7 @@ StructuralElement :: giveInternalForcesVector(FloatArray &answer,
         this->computeBmatrixAt(gp, b);
 
         if ( useUpdatedGpRecord == 1 ) {
+            /* TODO: consider unification, reduce dynamic_cast usage */
             auto status = gp->giveMaterialStatus();
             StructuralMaterialStatus *matStat = dynamic_cast< StructuralMaterialStatus * >( status );
             if ( matStat ) {
@@ -759,7 +764,7 @@ StructuralElement :: giveInternalForcesVector(FloatArray &answer,
                     stress = lmatStat->giveLatticeStress();
                 } else   {
                     StructuralInterfaceMaterialStatus *ms = static_cast< StructuralInterfaceMaterialStatus * >( status );
-                    stress = ms->giveTraction();
+                    stress = ms->jumpTractionReduced(ms->giveTraction(), gp);
                 }
             }
         } else {

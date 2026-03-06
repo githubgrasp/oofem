@@ -207,7 +207,7 @@ class SADGBoundaryElement : public SADGElement {
             IntegrationRule* ir = this->giveDefaultIntegrationRulePtr();
             for (int j=0;j<ir->giveNumberOfIntegrationPoints();j++) {
                 FloatArray lc = ir->getIntegrationPoint(j)->giveNaturalCoordinates();
-                FloatArray gc;
+                Coordinates gc;
                 this->giveInterpolation()->local2global(gc, lc, FEIElementGeometryWrapper(this));
                 FloatArray normal, v, N;
                 this->giveInterpolation()->boundaryEvalNormal(normal, 1, lc, FEIElementGeometryWrapper(this));

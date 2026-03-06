@@ -321,7 +321,7 @@ Delamination :: findInitiationFronts(bool &failureChecked, const IntArray &CSnum
 }
 
 
-void Delamination :: evaluateEnrFuncAt(std :: vector< double > &oEnrFunc, const FloatArray &iGlobalCoord, const FloatArray &iLocalCoord, int iNodeInd, const Element &iEl) const
+void Delamination :: evaluateEnrFuncAt(std :: vector< double > &oEnrFunc, const Coordinates &iGlobalCoord, const FloatArray &iLocalCoord, int iNodeInd, const Element &iEl) const
 {
     if ( iLocalCoord.giveSize() != 3 ) {
         OOFEM_ERROR("iLocalCoord.giveSize() != 3")
@@ -334,7 +334,7 @@ void Delamination :: evaluateEnrFuncAt(std :: vector< double > &oEnrFunc, const 
 }
 
 
-void Delamination :: evaluateEnrFuncAt(std :: vector< double > &oEnrFunc, const FloatArray &iGlobalCoord, const FloatArray &iLocalCoord, int iNodeInd, const Element &iEl, const FloatArray &iN, const IntArray &iElNodes) const
+void Delamination :: evaluateEnrFuncAt(std :: vector< double > &oEnrFunc, const Coordinates &iGlobalCoord, const FloatArray &iLocalCoord, int iNodeInd, const Element &iEl, const FloatArray &iN, const IntArray &iElNodes) const
 {
     evaluateEnrFuncAt(oEnrFunc, iGlobalCoord, iLocalCoord, iNodeInd, iEl);
 }
@@ -538,13 +538,13 @@ Delamination :: appendInputRecords(DynamicDataReader &oDR)
     }
 }
 
-void Delamination :: evalLevelSetNormal(double &oLevelSet, const FloatArray &iGlobalCoord, const FloatArray &iN, const IntArray &iNodeInd) const
+void Delamination :: evalLevelSetNormal(double &oLevelSet, const Coordinates &iGlobalCoord, const FloatArray &iN, const IntArray &iNodeInd) const
 {
     // TODO: For consistency, this should be evaluated based on giveDelamXiCoord() /ES
     //    interpLevelSet(oLevelSet, iN, iNodeInd);
 }
 
-void Delamination :: evaluateEnrFuncAt(std :: vector< double > &oEnrFunc, const FloatArray &iPos, const double &iLevelSet) const
+void Delamination :: evaluateEnrFuncAt(std :: vector< double > &oEnrFunc, const Coordinates &iPos, const double &iLevelSet) const
 {
     oEnrFunc.resize(1, 0.0);
     mpEnrichmentFunc->evaluateEnrFuncAt(oEnrFunc [ 0 ], iPos, iLevelSet);

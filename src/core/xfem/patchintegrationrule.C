@@ -110,7 +110,7 @@ PatchIntegrationRule :: SetUpPointsOnTriangle(int nPoints, MaterialMode mode)
     // Loop over triangles
     for ( int tri: triToKeep ) {
         // TODO: Probably unnecessary to allocate here
-        std :: vector< FloatArray >coords( mTriangles [ tri ].giveNrVertices() );
+        std :: vector< Coordinates >coords( mTriangles [ tri ].giveNrVertices() );
         // this we should put into the function before
         for ( int k = 1; k <= mTriangles [ tri ].giveNrVertices(); k++ ) {
             coords [ k - 1 ] = mTriangles [ tri ].giveVertex(k);
@@ -120,7 +120,7 @@ PatchIntegrationRule :: SetUpPointsOnTriangle(int nPoints, MaterialMode mode)
         //int nPointsTri = GaussIntegrationRule :: SetUpPointsOnTriangle(nPoints, mode);
 
         for ( int j = 0; j < nPoints; j++ ) {
-            FloatArray global;
+            Coordinates global;
             GaussPoint * &gp = this->gaussPoints [ pointsPassed ];
 
             gp = new GaussPoint(this, pointsPassed + 1,
@@ -227,7 +227,7 @@ PatchIntegrationRule :: SetUpPointsOnWedge(int nPointsTri, int nPointsDepth, Mat
         Triangle triangle = mTriangles [ triToKeep [ i ] ];
 
         // global coords of the the triangle verticies
-        std :: vector< FloatArray >gCoords( triangle.giveNrVertices() );
+        std :: vector< Coordinates >gCoords( triangle.giveNrVertices() );
         for ( int j = 0; j < triangle.giveNrVertices(); j++ ) {
             gCoords [ j ] = ( triangle.giveVertex(j + 1) );
         }
@@ -249,7 +249,7 @@ PatchIntegrationRule :: SetUpPointsOnWedge(int nPointsTri, int nPointsDepth, Mat
 
 
                 // Compute global gp coordinate in the element from local gp coord in the sub triangle
-                FloatArray global;
+                Coordinates global;
                 mTriInterp.local2global( global, gp->giveNaturalCoordinates(),
                                          FEIVertexListGeometryWrapper(gCoords, EGT_triangle_1) );
 

@@ -52,10 +52,10 @@ Polygon :: testPoint(double x, double y) const
     Vertex p1, p2;
     double x1, x2, y1, y2;
     while ( it.giveNext(p1, p2) ) {
-        x1 = p1.coords(0);
-        y1 = p1.coords(1);
-        x2 = p2.coords(0);
-        y2 = p2.coords(1);
+        x1 = p1.coords[0];
+        y1 = p1.coords[1];
+        x2 = p2.coords[0];
+        y2 = p2.coords[1];
 
         if ( ( ( y1 < y ) && ( y2 >= y ) ) ||
             ( ( y2 < y ) && ( y1 >= y ) ) ) {
@@ -77,14 +77,14 @@ Polygon :: computeVolume() const
     Polygon :: PolygonVertexIterator it(this);
 
     it.giveNext(p);
-    x1 = p.coords(0);
-    y1 = p.coords(1);
+    x1 = p.coords[0];
+    y1 = p.coords[1];
     it.giveNext(p);
-    x2 = p.coords(0);
-    y2 = p.coords(1);
+    x2 = p.coords[0];
+    y2 = p.coords[1];
     while ( it.giveNext(p) ) {
-        x3 = p.coords(0);
-        y3 = p.coords(1);
+        x3 = p.coords[0];
+        y3 = p.coords[1];
         area += ( x2 * y3 + x1 * y2 + y1 * x3 - x2 * y1 - x3 * y2 - x1 * y3 );
         x2 = x3;
         y2 = y3;
@@ -108,10 +108,10 @@ Polygon :: pointDistance(double xp, double yp) const
     bool init = true;
 
     while ( it.giveNext(p1, p2) ) {
-        x1 = p1.coords(0);
-        y1 = p1.coords(1);
-        x2 = p2.coords(0);
-        y2 = p2.coords(1);
+        x1 = p1.coords[0];
+        y1 = p1.coords[1];
+        x2 = p2.coords[0];
+        y2 = p2.coords[1];
 
         // first check start vertex (end vertex checked by next edge)
         d = sqrt( ( xp - x1 ) * ( xp - x1 ) + ( yp - y1 ) * ( yp - y1 ) );
@@ -165,8 +165,8 @@ Polygon :: draw(oofegGraphicContext &gc, bool filled, int layer)
         Polygon :: PolygonVertexIterator it(this);
 
         while ( it.giveNext(p) ) {
-            xc += p.coords(0);
-            yc += p.coords(1);
+            xc += p.coords[0];
+            yc += p.coords[1];
             count++;
         }
 
@@ -180,11 +180,11 @@ Polygon :: draw(oofegGraphicContext &gc, bool filled, int layer)
         Polygon :: PolygonEdgeIterator it2(this);
         Vertex p1, p2;
         while ( it2.giveNext(p1, p2) ) {
-            r [ 1 ].x = p1.coords(0);
-            r [ 1 ].y = p1.coords(1);
+            r [ 1 ].x = p1.coords[0];
+            r [ 1 ].y = p1.coords[1];
             r [ 1 ].z = 0.0;
-            r [ 2 ].x = p2.coords(0);
-            r [ 2 ].y = p2.coords(1);
+            r [ 2 ].x = p2.coords[0];
+            r [ 2 ].y = p2.coords[1];
             r [ 2 ].z = 0.0;
             go =  CreateTriangle3D(r);
             add_to_tail(ggroup, go);
@@ -197,11 +197,11 @@ Polygon :: draw(oofegGraphicContext &gc, bool filled, int layer)
         Vertex p1, p2;
         EASValsSetFillStyle(FILL_HOLLOW);
         while ( it.giveNext(p1, p2) ) {
-            p [ 0 ].x = p1.coords(0);
-            p [ 0 ].y = p1.coords(1);
+            p [ 0 ].x = p1.coords[0];
+            p [ 0 ].y = p1.coords[1];
             p [ 0 ].z = 0.0;
-            p [ 1 ].x = p2.coords(0);
-            p [ 1 ].y = p2.coords(1);
+            p [ 1 ].x = p2.coords[0];
+            p [ 1 ].y = p2.coords[1];
             p [ 1 ].z = 0.0;
 
             go = CreateLine3D(p);
@@ -590,7 +590,7 @@ Graph :: clip(Polygon &result, const Polygon &a, const Polygon &b)
 
     it.init(& a);
     while ( it.giveNext(v) ) {
-        nw = this->createNode(v.coords(0), v.coords(1), 0, 0, 0, 0, NS_Vertex, 0, 0, 0);
+        nw = this->createNode(v.coords[0], v.coords[1], 0, 0, 0, 0, NS_Vertex, 0, 0, 0);
         if ( c ) {
             c->prev->next = nw;
             nw->next = c;
@@ -604,7 +604,7 @@ Graph :: clip(Polygon &result, const Polygon &a, const Polygon &b)
 
     it.init(& b);
     while ( it.giveNext(v) ) {
-        nw = this->createNode(v.coords(0), v.coords(1), 0, 0, 0, 0, NS_Vertex, 0, 0, 0);
+        nw = this->createNode(v.coords[0], v.coords[1], 0, 0, 0, 0, NS_Vertex, 0, 0, 0);
         if ( s ) {
             s->prev->next = nw;
             nw->next = s;

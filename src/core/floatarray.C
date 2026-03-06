@@ -71,14 +71,14 @@ namespace oofem {
         if(n==size()){ _DBG("rwv/AFTER"); return; }
         Index size0=size();
         VectorXd::conservativeResize(n);
-        (*this).tail(size()-size0).array()=0.;
+        if(size0<n) (*this).tail(n-size0).array()=0.;
         _DBG("rwv/AFTER");
     }
     void FloatArray::resize(Index n){
         _DBG("r/BEFORE");
         Index size0=size();
         VectorXd::conservativeResize(n);
-        (*this).tail(size()-size0).array()=0.;
+        if(size0<n) (*this).tail(n-size0).array()=0.;
         _DBG("r/AFTER");
     }
 #else
@@ -299,6 +299,9 @@ void FloatArray :: plusProduct(const FloatMatrix &b, const FloatArray &s, double
 #  ifndef NDEBUG
     if ( this->giveSize() != b.giveNumberOfColumns() ) {
         OOFEM_ERROR( "dimension mismatch in a[%d] and b[%d, *]", this->giveSize(), b.giveNumberOfColumns() );
+    }
+    if (b.rows() != s.giveSize()) {
+        OOFEM_ERROR( "dimension mismatch in b[*,%d] and s[%d]", b.giveNumberOfRows(), s.giveSize() );
     }
 #  endif
 
@@ -601,6 +604,11 @@ double FloatArray :: distance_square(const FloatArray &from) const
 // returns distance between receiver and from from
 // computed using generalized pythagorean formulae
 {
+#ifndef NDEBUG
+    if ( this->giveSize() != from.giveSize() ) {
+        OOFEM_ERROR("dimension mismatch in distance_square(x[%d], y[%d])", this->giveSize(), from.giveSize());
+    }
+#endif
     double dist = 0.;
     Index s = min(this->size(), from.size());
     for (Index i = 1; i <= s; ++i ) {
@@ -621,7 +629,7 @@ void FloatArray :: assemble(const FloatArray &fe, const IntArray &loc)
     Index n = fe.size();
 #  ifndef NDEBUG
     if ( n != (Index) loc.size() ) {
-        OOFEM_ERROR("dimensions of 'fe' (%d) and 'loc' (%d) mismatch", fe.giveSize(), loc.giveSize() );
+        OOFEM_ERROR("dimensions of 'fe' (%d) and 'loc' (%d) mismatch", (int)fe.giveSize(), (int)loc.giveSize() );
     }
 
 #  endif
@@ -642,7 +650,7 @@ void FloatArray :: assembleSquared(const FloatArray &fe, const IntArray &loc)
     Index n = fe.size();
 #  ifndef NDEBUG
     if ( n != (Index) loc.size() ) {
-        OOFEM_ERROR("dimensions of 'fe' (%d) and 'loc' (%d) mismatch", fe.giveSize(), loc.giveSize() );
+        OOFEM_ERROR("dimensions of 'fe' (%d) and 'loc' (%d) mismatch", (int)fe.giveSize(), (int)loc.giveSize() );
     }
 
 #  endif

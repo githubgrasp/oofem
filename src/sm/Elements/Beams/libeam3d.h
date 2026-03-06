@@ -81,7 +81,7 @@ public:
     int giveLocalCoordinateSystem(FloatMatrix &answer) override;
     Node* giveReferenceNode(int refNode);
     int giveIPValue(FloatArray &answer, GaussPoint *gp, InternalStateType type, TimeStep *tStep) override;
-    int computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords) override;
+    int computeGlobalCoordinates(Coordinates &answer, const FloatArray &lcoords) override;
 
     bool isCast(TimeStep *tStep) override {return true;}
     Element_Geometry_Type giveGeometryType() const override { return EGT_line_1; }

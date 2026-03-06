@@ -97,9 +97,9 @@ public:
     void giveCrackWidths(FloatArray &widths) override { widths = crackWidths; }
 
 
-    int computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords) override;
+    int computeGlobalCoordinates(Coordinates &answer, const FloatArray &lcoords) override;
 
-    bool computeLocalCoordinates(FloatArray &answer, const FloatArray &gcoords) override;
+    bool computeLocalCoordinates(FloatArray &answer, const Coordinates &gcoords) override;
 
     void computeConductivityMatrix(FloatMatrix &answer, MatResponseMode rMode, TimeStep *tStep) override;
 

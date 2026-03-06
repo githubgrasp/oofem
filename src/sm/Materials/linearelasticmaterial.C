@@ -228,7 +228,7 @@ LinearElasticMaterial :: giveRealStressVector_Warping(const FloatArrayF<2> &redu
     
     auto status = static_cast< StructuralMaterialStatus * >( this->giveStatus(gp) );
     double G = this->giveShearModulus();
-    FloatArray gcoords;
+    Coordinates gcoords;
     Element *elem = gp->giveElement();
     elem->computeGlobalCoordinates( gcoords, gp->giveNaturalCoordinates() );
     FloatArrayF<2> answer;

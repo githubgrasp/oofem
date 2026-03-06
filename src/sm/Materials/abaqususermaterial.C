@@ -292,7 +292,7 @@ AbaqusUserMaterial::giveRealStressVector_3d(const FloatArrayF< 6 > &strain, Gaus
     /* An array containing the coordinates of this point. These are the current coordinates if geometric
      * nonlinearity is accounted for during the step (see “Procedures: overview,” Section 6.1.1); otherwise,
      * the array contains the original coordinates of the point */
-    FloatArray coords;
+    Coordinates coords;
     gp->giveElement()->computeGlobalCoordinates(coords, gp->giveNaturalCoordinates() );
 
     /* Rotation increment matrix. This matrix represents the increment of rigid body rotation of the basis
@@ -444,7 +444,7 @@ AbaqusUserMaterial::giveFirstPKStressVector_3d(const FloatArrayF< 9 > &vF, Gauss
     /* An array containing the coordinates of this point. These are the current coordinates if geometric
      * nonlinearity is accounted for during the step (see “Procedures: overview,” Section 6.1.1); otherwise,
      * the array contains the original coordinates of the point */
-    FloatArray coords;
+    Coordinates coords;
     gp->giveElement()->computeGlobalCoordinates(coords, gp->giveNaturalCoordinates() );  ///@todo Large deformations?
 
     /* Rotation increment matrix. This matrix represents the increment of rigid body rotation of the basis

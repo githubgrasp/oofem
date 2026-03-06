@@ -171,7 +171,8 @@ SolutionbasedShapeFunction :: computeCorrectionFactors(modeStruct &myMode, IntAr
 
         for ( auto &gp: *iRule ) {
             const FloatArray &lcoords = gp->giveNaturalCoordinates();
-            FloatArray gcoords, normal, N;
+            Coordinates gcoords;
+            FloatArray normal, N;
             FloatArray Phi;
 
             double detJ = fabs( geoInterpolation->boundaryGiveTransformationJacobian( Boundary, lcoords, FEIElementGeometryWrapper(thisElement) ) ) * gp->giveWeight();
@@ -487,7 +488,7 @@ SolutionbasedShapeFunction :: setLoads(EngngModel &myEngngModel, int d)
 }
 
 void
-SolutionbasedShapeFunction :: computeBaseFunctionValueAt(FloatArray &answer, const FloatArray &coords, IntArray &dofIDs, EngngModel &myEngngModel)
+SolutionbasedShapeFunction :: computeBaseFunctionValueAt(FloatArray &answer, const Coordinates &coords, IntArray &dofIDs, EngngModel &myEngngModel)
 {
     answer.resize( dofIDs.giveSize() );
     answer.zero();
@@ -570,16 +571,17 @@ SolutionbasedShapeFunction :: computeBaseFunctionValueAt(FloatArray &answer, con
 }
 
 void
-SolutionbasedShapeFunction :: giveValueAtPoint(FloatArray &answer, const FloatArray &coords, IntArray &dofIDs, EngngModel &myEngngModel)
+SolutionbasedShapeFunction :: giveValueAtPoint(FloatArray &answer, const Coordinates &coords, IntArray &dofIDs, EngngModel &myEngngModel)
 {
     answer.resize( dofIDs.giveSize() );
 
-    FloatArray closest, lcoords, values;
-
+    Coordinates closest;
+    FloatArray values;
+    FloatArray lcoords;
     Element *elementAtCoords = myEngngModel.giveDomain(1)->giveSpatialLocalizer()->giveElementClosestToPoint(lcoords, closest, coords, 1);
     if ( elementAtCoords == NULL ) {
         OOFEM_WARNING("Cannot find element closest to point");
-        coords.pY();
+        //coords.pY();
         return;
     }
 

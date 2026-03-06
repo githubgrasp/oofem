@@ -222,7 +222,7 @@ void MixedGradientPressureWeakPeriodic :: evaluateTractionBasisFunctions(FloatAr
 }
 
 
-void MixedGradientPressureWeakPeriodic :: constructMMatrix(FloatMatrix &mMatrix, FloatArray &coords, FloatArray &normal)
+void MixedGradientPressureWeakPeriodic :: constructMMatrix(FloatMatrix &mMatrix, Coordinates &coords, FloatArray &normal)
 {
     FloatArray t, surfCoords;
     int nsd = this->giveDomain()->giveNumberOfSpatialDimensions();
@@ -236,7 +236,7 @@ void MixedGradientPressureWeakPeriodic :: constructMMatrix(FloatMatrix &mMatrix,
         // First we compute the surface coordinates. Its the global coordinates without the kj component.
         for ( int c = 0, q = 0; c < nsd; ++c ) {
             if ( c != kj ) {
-                surfCoords(q) = coords(c);
+                surfCoords(q) = coords[c];
                 q++;
             }
         }
@@ -255,7 +255,8 @@ void MixedGradientPressureWeakPeriodic :: constructMMatrix(FloatMatrix &mMatrix,
 void MixedGradientPressureWeakPeriodic :: integrateTractionVelocityTangent(FloatMatrix &answer, Element *el, int boundary)
 {
     // Computes the integral: int dt . dv dA
-    FloatArray normal, n, coords;
+    FloatArray normal, n;
+    Coordinates coords;
     FloatMatrix nMatrix, mMatrix;
 
     FEInterpolation *interp = el->giveInterpolation(); // Geometry interpolation. The displacements or velocities must have the same interpolation scheme (on the boundary at least).
@@ -286,7 +287,8 @@ void MixedGradientPressureWeakPeriodic :: integrateTractionXTangent(FloatMatrix 
 {
     // Computes the integral: int dt . dx_m dA
     FloatMatrix mMatrix;
-    FloatArray normal, coords, vM_vol;
+    FloatArray normal, vM_vol;
+    Coordinates coords;
 
     FEInterpolation *interp = el->giveInterpolation(); // Geometry interpolation. The displacements or velocities must have the same interpolation scheme (on the boundary at least).
 
@@ -315,7 +317,8 @@ void MixedGradientPressureWeakPeriodic :: integrateTractionDev(FloatArray &answe
 {
     // Computes the integral: int dt . dx dA
     FloatMatrix mMatrix;
-    FloatArray normal, coords, vM_dev;
+    FloatArray normal, vM_dev;
+    Coordinates coords;
 
     FEInterpolation *interp = el->giveInterpolation(); // Geometry interpolation. The displacements or velocities must have the same interpolation scheme (on the boundary at least).
 
@@ -509,7 +512,8 @@ void MixedGradientPressureWeakPeriodic :: computeFields(FloatArray &sigmaDev, do
 void MixedGradientPressureWeakPeriodic :: computeStress(FloatArray &sigmaDev, FloatArray &tractions, double rve_size)
 {
     FloatMatrix mMatrix;
-    FloatArray normal, coords, t;
+    FloatArray normal, t;
+    Coordinates coords;
 
     int nsd = domain->giveNumberOfSpatialDimensions();
     Set *set = this->giveDomain()->giveSet(this->set);

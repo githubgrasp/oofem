@@ -439,7 +439,7 @@ LIBeam2dNL::giveDofManDofIDMask(int inode, IntArray &answer) const
 
 
 int
-LIBeam2dNL::computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords)
+LIBeam2dNL::computeGlobalCoordinates(Coordinates &answer, const FloatArray &lcoords)
 {
     double ksi, n1, n2;
 
@@ -447,9 +447,10 @@ LIBeam2dNL::computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoor
     n1  = ( 1. - ksi ) * 0.5;
     n2  = ( 1. + ksi ) * 0.5;
 
-    answer.resize(3);
+    //answer.resize(3);
     answer.at(1) = n1 * this->giveNode(1)->giveCoordinate(1) + n2 * this->giveNode(2)->giveCoordinate(1);
     answer.at(3) = n1 * this->giveNode(1)->giveCoordinate(3) + n2 * this->giveNode(2)->giveCoordinate(3);
+    answer.at(2) = 0.;
 
     return 1;
 }

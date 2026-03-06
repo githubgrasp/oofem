@@ -156,7 +156,8 @@ LEPlic :: doLagrangianPhase(TimeStep *tStep)
     int nsd = 2;
     double dt = tStep->giveTimeIncrement();
     IntArray velocityMask;
-    FloatArray x2(nsd), v_t, v_tn1;
+    FloatArray v_t, v_tn1;
+    Coordinates x2;
     FloatMatrix t;
 #if 1
     EngngModel *emodel = domain->giveEngngModel();
@@ -188,6 +189,7 @@ LEPlic :: doLagrangianPhase(TimeStep *tStep)
 
         // Original version
         // compute updated position x(tn)+0.5*dt*v(tn,x(tn))
+        x2.zero();
         for ( ci = 1; ci <= nsd; ci++ ) {
             x2.at(ci) = x.at(ci) + 0.5 *dt *v_t.at(ci);
         }

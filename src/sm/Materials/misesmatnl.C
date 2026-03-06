@@ -146,7 +146,7 @@ MisesMatNl :: modifyNonlocalWeightFunctionAround(GaussPoint *gp) const
     }
 
     Element *elem = gp->giveElement();
-    FloatArray coords;
+    Coordinates coords;
     elem->computeGlobalCoordinates( coords, gp->giveNaturalCoordinates() );
     double xtarget = coords.at(1);
 

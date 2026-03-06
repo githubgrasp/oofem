@@ -127,8 +127,10 @@ void WeakPeriodicBoundaryCondition :: postInitialize()
 {
     ActiveBoundaryCondition :: postInitialize();
     if (g.isEmpty()) {
-        g.resize(this->domain->giveNumberOfSpatialDimensions());
+        g.resize(3);
         g.zero();
+    } else {
+        g.resizeWithValues(3);
     }
     
     if ( this->domain->giveNumberOfSpatialDimensions() == 2 ) {
@@ -207,7 +209,7 @@ double WeakPeriodicBoundaryCondition :: computeProjectionCoefficient(int vIndex,
         for ( GaussPoint *gp: *iRule ) {
 
             const FloatArray &lcoords = gp->giveNaturalCoordinates();
-            FloatArray gcoords;
+            Coordinates gcoords;
 
             geoInterpolation->boundaryLocal2Global( gcoords, side [ thisSide ].at(ielement), lcoords, FEIElementGeometryWrapper(thisElement) );
             double detJ = fabs( geoInterpolation->boundaryGiveTransformationJacobian( side [ thisSide ].at(ielement), lcoords, FEIElementGeometryWrapper(thisElement) ) );
@@ -527,7 +529,8 @@ void WeakPeriodicBoundaryCondition :: assemble(SparseMtrx &answer, TimeStep *tSt
 
             for ( auto &gp: *iRule ) {
                 auto const &lcoords = gp->giveNaturalCoordinates();
-                FloatArray N, gcoords;
+                FloatArray N;
+                Coordinates gcoords;
 
                 geoInterpolation->boundaryLocal2Global( gcoords, boundary, lcoords, FEIElementGeometryWrapper(thisElement));
 
@@ -727,7 +730,8 @@ WeakPeriodicBoundaryCondition :: giveInternalForcesVector(FloatArray &answer, Ti
 
             for ( GaussPoint *gp: *iRule ) {
                 FloatArray lcoords = gp->giveNaturalCoordinates();
-                FloatArray N, gcoords;
+                FloatArray N;
+                Coordinates gcoords;
                 FloatMatrix C, D, Nbeta, Nv;
 
                 geoInterpolation->boundaryLocal2Global( gcoords, boundary , lcoords, FEIElementGeometryWrapper(thisElement));
@@ -835,7 +839,7 @@ WeakPeriodicBoundaryCondition :: giveExternalForcesVector(FloatArray &answer, Ti
 
             for ( auto gp: *iRule ) {
 
-                FloatArray gcoords;
+                Coordinates gcoords;
                 FloatArray lcoords = gp->giveNaturalCoordinates();
 
                 // Find the value of parameter s which is the vert/horiz distance to 0

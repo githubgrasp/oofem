@@ -996,7 +996,8 @@ VTKXMLExportModule::exportIntVarsInGpAs(IntArray valIDs, TimeStep *tStep)
     Domain *d = emodel->giveDomain(1);
     int nc = 0;
     ( void ) nc; //silence the warning
-    FloatArray gc, value;
+    Coordinates gc;
+    FloatArray value;
     std::ofstream stream;
     InternalStateType isttype;
     InternalStateValueType vtype;

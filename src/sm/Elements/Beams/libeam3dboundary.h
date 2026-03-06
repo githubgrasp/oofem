@@ -71,7 +71,7 @@ public:
 
     int computeNumberOfDofs() override { return 21; }
     void giveDofManDofIDMask(int inode, IntArray &answer) const override;
-    int computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords) override;
+    int computeGlobalCoordinates(Coordinates &answer, const FloatArray &lcoords) override;
     int giveLocalCoordinateSystem(FloatMatrix &answer) override;
     bool computeGtoLRotationMatrix(FloatMatrix &answer) override;
     int giveIPValue(FloatArray &answer, GaussPoint *gp, InternalStateType type, TimeStep *tStep) override;

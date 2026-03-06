@@ -58,7 +58,7 @@ protected:
      * myPoly[1] Occupied by second fluid (air).
      */
     Polygon myPoly [ 2 ];
-    std::vector< FloatArray > vcoords [ 2 ];
+    std::vector< Coordinates > vcoords [ 2 ];
 
     integrationDomain id [ 2 ];
     /**
@@ -115,7 +115,7 @@ protected:
     void computeTangent(FloatMatrix &answer, MatResponseMode mode, GaussPoint *gp, TimeStep *tStep) override;
     void updateVolumePolygons(Polygon &referenceFluidPoly, Polygon &secondFluidPoly, int &rfPoints, int &sfPoints,
                               const FloatArray &normal, const double p, bool updFlag);
-    double computeVolumeAroundID(GaussPoint *gp, integrationDomain id, const std::vector< FloatArray > &idpoly);
+    double computeVolumeAroundID(GaussPoint *gp, integrationDomain id, const std::vector< Coordinates > &idpoly);
     double computeRadiusAt(GaussPoint *gp);
     void computeBMtrx(FloatMatrix &answer, GaussPoint *gp);
     void computeNVector(FloatArray &answer, GaussPoint *gp);

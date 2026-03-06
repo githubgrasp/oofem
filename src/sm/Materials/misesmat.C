@@ -743,7 +743,8 @@ double MisesMat::giveTemperature(GaussPoint *gp, TimeStep *tStep) const
     int err;
     if ( ( tf = fm->giveField(FT_Temperature) ) ) {
         // temperature field registered
-        FloatArray gcoords, answer;
+        FloatArray answer;
+        Coordinates gcoords;
         static_cast< StructuralElement * >( gp->giveElement() )->computeGlobalCoordinates(gcoords, gp->giveNaturalCoordinates() );
         if ( ( err = tf->evaluateAt(answer, gcoords, VM_Total, tStep) ) ) {
             OOFEM_ERROR("tf->evaluateAt failed, element %d, error code %d", gp->giveElement()->giveNumber(), err);

@@ -145,8 +145,8 @@ private:
     int giveIPValue(FloatArray &answer, GaussPoint *gp, InternalStateType type, TimeStep *tStep) override;
     FloatMatrix giveCharacteristicTensor(CharTensor type, GaussPoint *gp, TimeStep *tStep);
     void printOutputAt(FILE *file, TimeStep *tStep) override;
-    int computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords) override;
-    bool computeLocalCoordinates(FloatArray &answer, const FloatArray &coords) override;
+    int computeGlobalCoordinates(Coordinates &answer, const FloatArray &lcoords) override;
+    bool computeLocalCoordinates(FloatArray &answer, const Coordinates &coords) override;
     double computeVolumeAround(GaussPoint *gp) override;
     std::array< FloatArrayF< 3 >, 3 >computeLocalBaseVectors();
     std::array< FloatArrayF< 4 >, 2 >givedNdx(const FloatArrayF< 3 > &coords);

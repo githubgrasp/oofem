@@ -168,14 +168,13 @@ public:
 
     virtual void evaluateEnrFuncInNode(std :: vector< double > &oEnrFunc, const Node &iNode) const = 0;
 
-    virtual void evaluateEnrFuncAt(std :: vector< double > &oEnrFunc, const FloatArray &iGlobalCoord, const FloatArray &iLocalCoord, int iNodeInd, const Element &iEl) const = 0;
-    virtual void evaluateEnrFuncAt(std :: vector< double > &oEnrFunc, const FloatArray &iGlobalCoord, const FloatArray &iLocalCoord, int iNodeInd, const Element &iEl, const FloatArray &iN, const IntArray &iElNodes) const = 0;
+    virtual void evaluateEnrFuncAt(std :: vector< double > &oEnrFunc, const Coordinates &iGlobalCoord, const FloatArray &iLocalCoord, int iNodeInd, const Element &iEl) const = 0;
+    virtual void evaluateEnrFuncAt(std :: vector< double > &oEnrFunc, const Coordinates &iGlobalCoord, const FloatArray &iLocalCoord, int iNodeInd, const Element &iEl, const FloatArray &iN, const IntArray &iElNodes) const = 0;
 
-    virtual void evaluateEnrFuncDerivAt(std :: vector< FloatArray > &oEnrFuncDeriv, const FloatArray &iGlobalCoord, const FloatArray &iLocalCoord, int iNodeInd, const Element &iEl) const = 0;
-    virtual void evaluateEnrFuncDerivAt(std :: vector< FloatArray > &oEnrFuncDeriv, const FloatArray &iGlobalCoord, const FloatArray &iLocalCoord, int iNodeInd, const Element &iEl, const FloatArray &iN, const FloatMatrix &idNdX, const IntArray &iElNodes) const = 0;
-
-    bool evalLevelSetNormalInNode(double &oLevelSet, int iNodeInd, const FloatArray &iGlobalCoord) const;
-    bool evalLevelSetTangInNode(double &oLevelSet, int iNodeInd, const FloatArray &iGlobalCoord) const;
+    virtual void evaluateEnrFuncDerivAt(std :: vector< FloatArray > &oEnrFuncDeriv, const Coordinates &iGlobalCoord, const FloatArray &iLocalCoord, int iNodeInd, const Element &iEl) const = 0;
+    virtual void evaluateEnrFuncDerivAt(std :: vector< FloatArray > &oEnrFuncDeriv, const Coordinates &iGlobalCoord, const FloatArray &iLocalCoord, int iNodeInd, const Element &iEl, const FloatArray &iN, const FloatMatrix &idNdX, const IntArray &iElNodes) const = 0;
+    bool evalLevelSetNormalInNode(double &oLevelSet, int iNodeInd, const Coordinates &iGlobalCoord) const;
+    bool evalLevelSetTangInNode(double &oLevelSet, int iNodeInd, const Coordinates &iGlobalCoord) const;
     bool evalNodeEnrMarkerInNode(double &oNodeEnrMarker, int iNodeInd) const;
 
 protected:
@@ -184,21 +183,21 @@ protected:
      * point iGlobalCoord. To improve performance, basis
      * function values corresponding to that point should also be provided.
      */
-    virtual void evalLevelSetNormal(double &oLevelSet, const FloatArray &iGlobalCoord, const FloatArray &iN, const IntArray &iNodeInd) const = 0;
+    virtual void evalLevelSetNormal(double &oLevelSet, const Coordinates &iGlobalCoord, const FloatArray &iN, const IntArray &iNodeInd) const = 0;
 
     /**
      * Evaluate the tangential direction level set in the
      * point iGlobalCoord. To improve performance, basis
      * function values corresponding to that point should also be provided.
      */
-    virtual void evalLevelSetTangential(double &oLevelSet, const FloatArray &iGlobalCoord, const FloatArray &iN, const IntArray &iNodeInd) const = 0;
+    virtual void evalLevelSetTangential(double &oLevelSet, const Coordinates &iGlobalCoord, const FloatArray &iN, const IntArray &iNodeInd) const = 0;
 
     /**
      * Evaluate the gradient of the normal direction level set in the
      * point iGlobalCoord. To improve performance, basis
      * function values corresponding to that point should also be provided.
      */
-    virtual void evalGradLevelSetNormal(FloatArray &oGradLevelSet, const FloatArray &iGlobalCoord, const FloatMatrix &idNdX, const IntArray &iNodeInd) const = 0;
+    virtual void evalGradLevelSetNormal(FloatArray &oGradLevelSet, const Coordinates &iGlobalCoord, const FloatMatrix &idNdX, const IntArray &iNodeInd) const = 0;
 
 
     // Level set routines
@@ -226,7 +225,7 @@ public:
 
     const std :: unordered_map< int, NodeEnrichmentType > &giveEnrNodeMap() const { return mNodeEnrMarkerMap; }
 
-    virtual void giveBoundingSphere(FloatArray &oCenter, double &oRadius) = 0;
+    virtual void giveBoundingSphere(Coordinates &oCenter, double &oRadius) = 0;
 
     EnrichmentFront *giveEnrichmentFrontStart() { return mpEnrichmentFrontStart.get(); }
     void setEnrichmentFrontStart(std::unique_ptr<EnrichmentFront> ipEnrichmentFrontStart, bool iDeleteOld = true);

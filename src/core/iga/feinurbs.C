@@ -556,7 +556,7 @@ double NURBSInterpolation :: evaldNdx(FloatMatrix &answer, const FloatArray &lco
 }
 
 
-void NURBSInterpolation :: local2global(FloatArray &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
+void NURBSInterpolation :: local2global(Coordinates &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
 {
     /* Based on SurfacePoint A4.3 implementation*/
     const FEIIGAElementGeometryWrapper &gw = static_cast< const FEIIGAElementGeometryWrapper& >(cellgeo);
@@ -576,7 +576,7 @@ void NURBSInterpolation :: local2global(FloatArray &answer, const FloatArray &lc
         this->basisFuns(N [ i ], span[i], lcoords[i], degree [ i ], knotVector [ i ]);
     }
 
-    answer.resize(nsd);
+    //answer.resize(3);
     answer.zero();
 
     if ( nsd == 1 ) {
@@ -649,7 +649,7 @@ void NURBSInterpolation :: local2global(FloatArray &answer, const FloatArray &lc
         OOFEM_ERROR("lnot implemented for nsd = %d", nsd);
     }
 
-    answer.times(1.0 / weight);
+    answer*=(1.0 / weight);
 }
 
 

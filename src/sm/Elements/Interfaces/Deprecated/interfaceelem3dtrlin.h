@@ -57,8 +57,8 @@ public:
     InterfaceElement3dTrLin(int n, Domain * d);
     virtual ~InterfaceElement3dTrLin() { }
 
-    int computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords) override;
-    bool computeLocalCoordinates(FloatArray &answer, const FloatArray &gcoords) override;
+    int computeGlobalCoordinates(Coordinates &answer, const FloatArray &lcoords) override;
+    bool computeLocalCoordinates(FloatArray &answer, const Coordinates &gcoords) override;
 
     int computeNumberOfDofs() override { return 18; }
     void giveDofManDofIDMask(int inode, IntArray &answer) const override;

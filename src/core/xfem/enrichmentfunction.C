@@ -60,7 +60,7 @@ void DiscontinuousFunction :: evaluateEnrFuncAt(double &oEnrFunc, const FloatArr
 
 void HeavisideFunction :: evaluateEnrFuncDerivAt(FloatArray &oEnrFuncDeriv, const FloatArray &iPos, const double &iLevelSet, const FloatArray &iGradLevelSet) const
 {
-    oEnrFuncDeriv.resize(2);
+    oEnrFuncDeriv.resize(3);
     oEnrFuncDeriv.zero();
 }
 
@@ -75,7 +75,7 @@ void HeavisideFunction :: evaluateEnrFuncAt(double &oEnrFunc, const FloatArray &
 
 void DiscontinuousFunction :: evaluateEnrFuncDerivAt(FloatArray &oEnrFuncDeriv, const FloatArray &iPos, const double &iLevelSet, const FloatArray &iGradLevelSet) const
 {
-    oEnrFuncDeriv.resize(2);
+    oEnrFuncDeriv.resize(3);
     oEnrFuncDeriv.zero();
 }
 
@@ -86,7 +86,7 @@ void RampFunction :: evaluateEnrFuncAt(double &oEnrFunc, const FloatArray &iPos,
 
 void RampFunction :: evaluateEnrFuncDerivAt(FloatArray &oEnrFuncDeriv, const FloatArray &iPos, const double &iLevelSet, const FloatArray &iGradLevelSet) const
 {
-    oEnrFuncDeriv.resize(2);
+    oEnrFuncDeriv.resize(3);
     oEnrFuncDeriv.zero();
     oEnrFuncDeriv.at(1) = iGradLevelSet.at(1) * sgn(iLevelSet);
     oEnrFuncDeriv.at(2) = iGradLevelSet.at(2) * sgn(iLevelSet);
@@ -128,22 +128,22 @@ void LinElBranchFunction :: evaluateEnrFuncDerivAt(std :: vector< FloatArray > &
     // Psi 1
     const double dP1dr = ( 1.0 / ( 2.0 * sqrt(iR) ) ) * sin(0.5 * iTheta);
     const double dP1dt = 0.5 * sqrt(iR) * cos(0.5 * iTheta);
-    oEnrFuncDeriv.push_back(Vec2( dP1dr *drdx + dP1dt *dtdx, dP1dr *drdy + dP1dt *dtdy ));
+    oEnrFuncDeriv.push_back(Vec3( dP1dr *drdx + dP1dt *dtdx, dP1dr *drdy + dP1dt *dtdy,0.0 ));
 
     // Psi 2
     const double dP2dr = ( 1.0 / ( 2.0 * sqrt(iR) ) ) * sin(0.5 * iTheta) * sin(iTheta);
     const double dP2dt = 0.5 * sqrt(iR) * cos(0.5 * iTheta) * sin(iTheta) + sqrt(iR) * sin(0.5 * iTheta) * cos(iTheta);
-    oEnrFuncDeriv.push_back(Vec2( dP2dr *drdx + dP2dt *dtdx, dP2dr *drdy + dP2dt *dtdy ));
+    oEnrFuncDeriv.push_back(Vec3( dP2dr *drdx + dP2dt *dtdx, dP2dr *drdy + dP2dt *dtdy,0.0 ));
 
     // Psi 3
     const double dP3dr = ( 1.0 / ( 2.0 * sqrt(iR) ) ) * cos(0.5 * iTheta);
     const double dP3dt = -0.5 * sqrt(iR) * sin(0.5 * iTheta);
-    oEnrFuncDeriv.push_back(Vec2( dP3dr *drdx + dP3dt *dtdx, dP3dr *drdy + dP3dt *dtdy ));
+    oEnrFuncDeriv.push_back(Vec3( dP3dr *drdx + dP3dt *dtdx, dP3dr *drdy + dP3dt *dtdy,0.0 ));
 
     // Psi 4
     const double dP4dr = ( 1.0 / ( 2.0 * sqrt(iR) ) ) * cos(0.5 * iTheta) * sin(iTheta);
     const double dP4dt = -0.5 * sqrt(iR) * sin(0.5 * iTheta) * sin(iTheta) + sqrt(iR) * cos(0.5 * iTheta) * cos(iTheta);
-    oEnrFuncDeriv.push_back(Vec2( dP4dr *drdx + dP4dt *dtdx, dP4dr *drdy + dP4dt *dtdy ));
+    oEnrFuncDeriv.push_back(Vec3( dP4dr *drdx + dP4dt *dtdx, dP4dr *drdy + dP4dt *dtdy,0.0 ));
 }
 
 void LinElBranchFunction :: giveJump(std :: vector< double > &oJumps) const
@@ -185,7 +185,7 @@ void CohesiveBranchFunction :: evaluateEnrFuncDerivAt(std :: vector< FloatArray 
     // Psi 1
     const double dP1dr = mExponent*pow(iR, mExponent-1.0) * sin(0.5 * iTheta);
     const double dP1dt = 0.5 * pow(iR,mExponent) * cos(0.5 * iTheta);
-    oEnrFuncDeriv.push_back(Vec2( dP1dr *drdx + dP1dt *dtdx, dP1dr *drdy + dP1dt *dtdy ));
+    oEnrFuncDeriv.push_back(Vec3( dP1dr *drdx + dP1dt *dtdx, dP1dr *drdy + dP1dt *dtdy,0.0 ));
 }
 
 void CohesiveBranchFunction :: giveJump(std :: vector< double > &oJumps) const

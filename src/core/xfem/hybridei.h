@@ -60,9 +60,9 @@ public:
     const char *giveClassName() const override { return "HybridEI"; }
     const char *giveInputRecordName() const override { return _IFT_HybridEI_Name; }
 
-    void evalLevelSetNormal(double &oLevelSet, const FloatArray &iGlobalCoord, const FloatArray &iN, const IntArray &iNodeInd) const override;
-    void evalLevelSetTangential(double &oLevelSet, const FloatArray &iGlobalCoord, const FloatArray &iN, const IntArray &iNodeInd) const override;
-    void evalGradLevelSetNormal(FloatArray &oGradLevelSet, const FloatArray &iGlobalCoord, const FloatMatrix &idNdX, const IntArray &iNodeInd) const override;
+    void evalLevelSetNormal(double &oLevelSet, const Coordinates &iGlobalCoord, const FloatArray &iN, const IntArray &iNodeInd) const override;
+    void evalLevelSetTangential(double &oLevelSet, const Coordinates &iGlobalCoord, const FloatArray &iN, const IntArray &iNodeInd) const override;
+    void evalGradLevelSetNormal(FloatArray &oGradLevelSet, const Coordinates &iGlobalCoord, const FloatMatrix &idNdX, const IntArray &iNodeInd) const override;
 
     // By templating the function this way, we may choose if we want to pass iNodeInd as
     // an IntArray, a std::vector<int> or something else.

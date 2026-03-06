@@ -56,7 +56,7 @@ class LinQuad3DPlaneStress : public PlaneStress2d
 {
 protected:
     /// Local vertex coordinates
-    std :: vector< FloatArray > lc; 
+    std :: vector< Coordinates > lc; 
     /**
      * Transformation Matrix form GtoL(3,3) is stored
      * at the element level for computation efficiency
@@ -81,7 +81,7 @@ public:
 
     Interface *giveInterface(InterfaceType it) override;
     FEICellGeometry* giveCellGeometryWrapper() override;
-    void computeLocalNodalCoordinates(std::vector< FloatArray > &lxy);
+    void computeLocalNodalCoordinates(std::vector< Coordinates > &lxy);
 
     int computeNumberOfDofs() override { return 8; }
     int computeNumberOfGlobalDofs() override { return 12; }
