@@ -476,7 +476,7 @@ Lattice3dBoundary :: initializeFrom(InputRecord &ir)
 void
 Lattice3dBoundary :: giveInternalForcesVector(FloatArray &answer, TimeStep *tStep, int useUpdatedGpRecord)
 {
-    Material *mat = this->giveMaterial();
+    Material *mat = this->giveCrossSection()->giveMaterial(integrationRulesArray [ 0 ]->getIntegrationPoint(0));
 
     FloatMatrix b, bt, A, R, GNT;
     FloatArray bs, TotalStressVector, u, strain;

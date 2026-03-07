@@ -100,7 +100,7 @@ public:
     void giveDofManDofIDMask(int inode, IntArray &) const override;
 
 
-    virtual void giveGpCoordinates(FloatArray &coords);
+    void giveGpCoordinates(FloatArray &coords) override;
 
     const char *giveInputRecordName() const override { return _IFT_LatticeFrame3d_Name; }
     const char *giveClassName() const override { return "latticeframe3d"; }

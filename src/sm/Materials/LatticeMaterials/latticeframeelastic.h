@@ -70,7 +70,13 @@ protected:
 
   
 public:
+
     LatticeFrameElastic(int n, Domain *d) : LatticeStructuralMaterial(n, d) { };
+
+    LatticeResponseType giveLatticeResponseType() const override
+    {
+        return LRT_ResultantBased;
+    }
 
 
     FloatArrayF< 6 >giveThermalDilatationVector(GaussPoint *gp,  TimeStep *tStep) const override;

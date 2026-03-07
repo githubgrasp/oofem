@@ -117,8 +117,8 @@ LatticeBeam3d :: computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMo
     double j = iz + iy;
     double l = this->giveLength();
 
-    double nu = ( static_cast< LatticeLinearElastic * >( this->giveMaterial() ) )->give('n', gp);
-    double e = ( static_cast< LatticeLinearElastic * >( this->giveMaterial() ) )->give('E', gp);
+    double nu = ( static_cast< LatticeLinearElastic * >( this->giveCrossSection()->giveMaterial(gp) ) )->give('n', gp);
+    double e = ( static_cast< LatticeLinearElastic * >( this->giveCrossSection()->giveMaterial(gp) ) )->give('E', gp);
 
     answer.at(1, 1) = a / l;
     answer.at(1, 7) = -a / l;
@@ -374,15 +374,11 @@ LatticeBeam3d :: giveInternalForcesVector(FloatArray &answer,
         u.subtract(* initialDisplacements);
     }
 
-    //    printf("Check what u is.\n");
-    //    u.printYourself();
-
     this->computeStiffnessMatrix(stiffness, ElasticStiffness, tStep);
 
     // zero answer will resize accordingly when adding first contribution
     answer.clear();
     answer.beProductOf(stiffness, u);
-    //    printf("answer.at(1) = %e, answer.at(7) = %e\n", answer.at(1), answer.at(7));
 
     double area = pow(this->diameter / 2., 2.) * myPi;
     //Apply yield limit to axial component
@@ -391,7 +387,6 @@ LatticeBeam3d :: giveInternalForcesVector(FloatArray &answer,
     this->computeStressVector(stress, strain, gp, tStep);
     answer.at(1) = -stress.at(1) * area;
     answer.at(7) = -answer.at(1);
-    //     printf("answerNew.at(1) = %e, answerNew.at(7) = %e\n", answer.at(1), answer.at(7));
 
     // if inactive update state, but no contribution to global system
     if ( !this->isActivated(tStep) ) {

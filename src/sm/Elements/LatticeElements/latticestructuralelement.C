@@ -33,6 +33,8 @@
  */
 
 #include "sm/Elements/LatticeElements/latticestructuralelement.h"
+#include "gausspoint.h"
+#include "crosssection.h"
 
 namespace oofem {
 LatticeStructuralElement :: LatticeStructuralElement(int n, Domain *aDomain) : StructuralElement(n, aDomain)
@@ -75,23 +77,31 @@ void LatticeStructuralElement :: giveSectionScaleFactors2d(FloatArray &q, GaussP
 
 void LatticeStructuralElement :: convertStressToResultants3d(FloatArray &S, const FloatArray &sigma, GaussPoint *gp)
 {
-    FloatArray q;
-    this->giveSectionScaleFactors3d(q, gp);
 
     S = sigma;
-    for (int i = 1; i <= 6; ++i) {
-        S.at(i) *= q.at(i);
+
+    auto *mat = static_cast<LatticeStructuralMaterial*>(this->giveCrossSection()->giveMaterial(gp));
+    if ( mat->giveLatticeResponseType() == LatticeStructuralMaterial::LRT_StressBased ) {
+        FloatArray q;
+        this->giveSectionScaleFactors3d(q, gp);
+        for (int i = 1; i <= 6; ++i) {
+            S.at(i) *= q.at(i);
+        }
     }
 }
 
 void LatticeStructuralElement :: convertStressToResultants2d(FloatArray &S, const FloatArray &sigma, GaussPoint *gp)
 {
-    FloatArray q;
-    this->giveSectionScaleFactors2d(q, gp);
-
     S = sigma;
-    for (int i = 1; i <= 3; ++i) {
-        S.at(i) *= q.at(i);
+
+    auto *mat = static_cast<LatticeStructuralMaterial*>(this->giveCrossSection()->giveMaterial(gp));
+    if ( mat->giveLatticeResponseType() == LatticeStructuralMaterial::LRT_StressBased ) {
+        FloatArray q;
+        this->giveSectionScaleFactors2d(q, gp);
+
+        for (int i = 1; i <= 3; ++i) {
+            S.at(i) *= q.at(i);
+        }
     }
 }
 
@@ -101,14 +111,19 @@ void LatticeStructuralElement :: convertStressToResultants2d(FloatArray &S, cons
  
 void LatticeStructuralElement :: convertTangentToResultantTangent3d(FloatMatrix &DS, const FloatMatrix &Dsig, GaussPoint *gp)
 {
-    FloatArray q;
-    this->giveSectionScaleFactors3d(q, gp);
 
     DS = Dsig;
-    // DS = Q * Dsig. Scale rows
-    for (int i = 1; i <= 6; ++i) {
-        for (int j = 1; j <= 6; ++j) {
-            DS.at(i,j) *= q.at(i);
+
+    auto *mat = static_cast<LatticeStructuralMaterial*>(this->giveCrossSection()->giveMaterial(gp));
+    if ( mat->giveLatticeResponseType() == LatticeStructuralMaterial::LRT_StressBased ) {
+        FloatArray q;
+        this->giveSectionScaleFactors3d(q, gp);
+
+        // DS = Q * Dsig. Scale rows
+        for (int i = 1; i <= 6; ++i) {
+            for (int j = 1; j <= 6; ++j) {
+                DS.at(i,j) *= q.at(i);
+            }
         }
     }
 }
@@ -116,17 +131,20 @@ void LatticeStructuralElement :: convertTangentToResultantTangent3d(FloatMatrix 
 
 void LatticeStructuralElement :: convertTangentToResultantTangent2d(FloatMatrix &DS, const FloatMatrix &Dsig, GaussPoint *gp)
 {
-    FloatArray q;
-    this->giveSectionScaleFactors2d(q, gp);
-
     DS = Dsig;
-    // DS = Q * Dsig. Scale rows
-    for (int i = 1; i <= 3; ++i) {
-        for (int j = 1; j <= 3; ++j) {
-            DS.at(i,j) *= q.at(i);
+
+    auto *mat = static_cast<LatticeStructuralMaterial*>(this->giveCrossSection()->giveMaterial(gp));
+    if ( mat->giveLatticeResponseType() == LatticeStructuralMaterial::LRT_StressBased ) {
+        FloatArray q;
+        this->giveSectionScaleFactors2d(q, gp);
+        // DS = Q * Dsig. Scale rows
+        for (int i = 1; i <= 3; ++i) {
+            for (int j = 1; j <= 3; ++j) {
+                DS.at(i,j) *= q.at(i);
+            }
         }
     }
-}
+    }
  
  
 void

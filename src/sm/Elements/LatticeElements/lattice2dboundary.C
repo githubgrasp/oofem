@@ -54,6 +54,8 @@
  #include "oofeggraphiccontext.h"
 #endif
 
+#include "crosssection.h"
+
 namespace oofem {
 REGISTER_Element(Lattice2dBoundary);
 
@@ -457,7 +459,7 @@ Lattice2dBoundary :: initializeFrom(InputRecord &ir)
 void
 Lattice2dBoundary :: giveInternalForcesVector(FloatArray &answer, TimeStep *tStep, int useUpdatedGpRecord)
 {
-    Material *mat = this->giveMaterial();
+    auto *mat = static_cast<LatticeStructuralMaterial*>(this->giveCrossSection()->giveMaterial(integrationRulesArray [ 0 ]->getIntegrationPoint(0)));
 
     FloatMatrix b, bt, A, R, GNT;
     FloatArray bs, TotalStressVector, u, strain;

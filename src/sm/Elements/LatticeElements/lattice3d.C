@@ -285,7 +285,7 @@ void
 Lattice3d :: givePlasticStrain(FloatArray &plasticStrain)
 {
     GaussPoint *gp = this->giveDefaultIntegrationRulePtr()->getIntegrationPoint(0);
-    LatticeMaterialStatus *status = static_cast< LatticeMaterialStatus * >( this->giveMaterial()->giveStatus(gp) );
+    LatticeMaterialStatus *status = static_cast< LatticeMaterialStatus * >( this->giveCrossSection()->giveMaterial(gp)->giveStatus(gp) );
     plasticStrain = status->givePlasticLatticeStrain();
     return;
 }
@@ -294,7 +294,7 @@ void
 Lattice3d :: giveOldPlasticStrain(FloatArray &plasticStrain)
 {
     GaussPoint *gp = this->giveDefaultIntegrationRulePtr()->getIntegrationPoint(0);
-    LatticeMaterialStatus *status = static_cast< LatticeMaterialStatus * >( this->giveMaterial()->giveStatus(gp) );
+    LatticeMaterialStatus *status = static_cast< LatticeMaterialStatus * >( this->giveCrossSection()->giveMaterial(gp)->giveStatus(gp) );
     plasticStrain = status->giveOldPlasticLatticeStrain();
     return;
 }

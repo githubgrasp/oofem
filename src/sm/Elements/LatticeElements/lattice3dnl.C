@@ -233,7 +233,7 @@ void
 Lattice3dNL :: givePlasticStrain(FloatArray &plasticStrain)
 {
     GaussPoint *gp = this->giveDefaultIntegrationRulePtr()->getIntegrationPoint(0);
-    LatticeMaterialStatus *status = static_cast< LatticeMaterialStatus * >( this->giveMaterial()->giveStatus(gp) );
+    LatticeMaterialStatus *status = static_cast< LatticeMaterialStatus * >( this->giveCrossSection()->giveMaterial(gp)->giveStatus(gp) );
     plasticStrain = status->givePlasticLatticeStrain();
     return;
 }
@@ -264,20 +264,16 @@ Lattice3dNL :: computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode
                                     TimeStep *tStep)
 // Computes numerically the stiffness matrix of the receiver.
 {
-    FloatMatrix d, bi, bj, bjt, dbj, dij;
+    FloatMatrix d, ds, bi, bj, bjt, dbj, dij;
 
     answer.resize(12, 12);
     answer.zero();
     this->computeBmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), bj);
     this->computeConstitutiveMatrixAt(d, rMode, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
 
-    double volume = this->computeVolumeAround(integrationRulesArray [ 0 ]->getIntegrationPoint(0) );
+    convertTangentToResultantTangent3d(ds, d, integrationRulesArray [ 0 ]->getIntegrationPoint(0));
 
-    for ( int i = 1; i <= 6; i++ ) {
-        d.at(i, i) *= volume;
-    }
-
-    dbj.beProductOf(d, bj);
+    dbj.beProductOf(ds, bj);
     bjt.beTranspositionOf(bj);
     answer.beProductOf(bjt, dbj);
 

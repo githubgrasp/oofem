@@ -236,7 +236,7 @@ namespace oofem {
                                            TimeStep *tStep)
     // Computes numerically the stiffness matrix of the receiver.
     {
-        FloatMatrix d, bi, bj, bjt, dbj, dij;
+        FloatMatrix d, ds, bi, bj, bjt, dbj, dij;
 
         this->length = computeLength();
 
@@ -244,6 +244,8 @@ namespace oofem {
         answer.zero();
         this->computeBmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), bj);
         this->computeConstitutiveMatrixAt(d, rMode, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
+
+        convertTangentToResultantTangent3d(ds, d, integrationRulesArray [ 0 ]->getIntegrationPoint(0));
 
         dbj.beProductOf(d, bj);
         dbj.times(1. / length);
@@ -327,7 +329,11 @@ namespace oofem {
             this->computeStressVector(stress, strain, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
         }
 
-        answer.beProductOf(bt, stress);
+        //Stress is now converted to sectional forces
+        FloatArray s;
+        convertStressToResultants3d(s,stress, integrationRulesArray [ 0 ]->getIntegrationPoint(0));
+
+        answer.beProductOf(bt, s);
         if ( !this->isActivated(tStep) ) {
             answer.zero();
             return;

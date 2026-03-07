@@ -272,7 +272,7 @@ namespace oofem {
     LatticeFrame3dNL::computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode,
                                              TimeStep *tStep)
     {
-        FloatMatrix d, bt, db, b;
+        FloatMatrix d, ds, bt, db, b;
         this->length = computeLength();
 
         FloatArray u;
@@ -289,13 +289,15 @@ namespace oofem {
 
         this->computeConstitutiveMatrixAt(d, rMode, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
 
+        convertTangentToResultantTangent3d(ds, d, integrationRulesArray [ 0 ]->getIntegrationPoint(0));
+
         //Rotate constitutive stiffness matrix
         FloatMatrix r(6, 6), rT(6, 6), dR(6, 6), rTDR(6, 6);
         computeCurrentGtoLStrainRotationMatrix(r, u, coordA, coordB, coordGp);
 
         rT.beTranspositionOf(r);
 
-        dR.beProductOf(d, r);
+        dR.beProductOf(ds, r);
         rTDR.beProductOf(rT, dR);
 
         db.beProductOf(rTDR, b);
@@ -412,7 +414,7 @@ namespace oofem {
         this->length = computeLength();
 
         if ( useUpdatedGpRecord == 1 ) {
-            LatticeMaterialStatus *lmatStat = dynamic_cast < LatticeMaterialStatus * > ( this->giveMaterial()->giveStatus(gp) );
+            LatticeMaterialStatus *lmatStat = dynamic_cast < LatticeMaterialStatus * > ( this->giveCrossSection()->giveMaterial(gp)->giveStatus(gp) );
             stress = lmatStat->giveLatticeStress();
         } else {
             if ( !this->isActivated(tStep) ) {
@@ -421,6 +423,10 @@ namespace oofem {
             this->computeStrainVector(strain, gp, tStep);
             this->computeStressVector(stress, strain, gp, tStep);
         }
+
+        //Stress is now converted to sectional forces
+        FloatArray s;
+        convertStressToResultants3d(s,stress, integrationRulesArray [ 0 ]->getIntegrationPoint(0));
 
         FloatMatrix rotationMatrix(3, 3);
         FloatArray spinOne(3);
@@ -446,18 +452,18 @@ namespace oofem {
         stress.rotatedWith(rotMatrix, 't');
 
         answer.resize(12);
-        answer.at(1) = -stress.at(1);
-        answer.at(2) = -stress.at(2);
-        answer.at(3) = -stress.at(3);
-        answer.at(4) =  stress.at(2) * c1.at(3) - stress.at(3) * c1.at(2) - stress.at(4);
-        answer.at(5) = -stress.at(1) * c1.at(3) + stress.at(3) * c1.at(1) - stress.at(5);
-        answer.at(6) = stress.at(1) * c1.at(2) - stress.at(2) * c1.at(1) - stress.at(6);
-        answer.at(7) = stress.at(1);
-        answer.at(8) = stress.at(2);
-        answer.at(9) = stress.at(3);
-        answer.at(10) =  stress.at(2) * c2.at(3) - stress.at(3) * c2.at(2) + stress.at(4);
-        answer.at(11) = -stress.at(1) * c2.at(3) + stress.at(3) * c2.at(1) + stress.at(5);
-        answer.at(12) = stress.at(1) * c2.at(2) - stress.at(2) * c2.at(1) + stress.at(6);
+        answer.at(1) = -s.at(1);
+        answer.at(2) = -s.at(2);
+        answer.at(3) = -s.at(3);
+        answer.at(4) =  s.at(2) * c1.at(3) - s.at(3) * c1.at(2) - s.at(4);
+        answer.at(5) = -s.at(1) * c1.at(3) + s.at(3) * c1.at(1) - s.at(5);
+        answer.at(6) = s.at(1) * c1.at(2) - stress.at(2) * c1.at(1) - s.at(6);
+        answer.at(7) = s.at(1);
+        answer.at(8) = s.at(2);
+        answer.at(9) = s.at(3);
+        answer.at(10) =  s.at(2) * c2.at(3) - s.at(3) * c2.at(2) + s.at(4);
+        answer.at(11) = -s.at(1) * c2.at(3) + s.at(3) * c2.at(1) + s.at(5);
+        answer.at(12) = s.at(1) * c2.at(2) - s.at(2) * c2.at(1) + s.at(6);
     }
 
 

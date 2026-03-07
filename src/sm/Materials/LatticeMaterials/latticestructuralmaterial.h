@@ -89,6 +89,16 @@ public:
   
     virtual bool hasAnalyticalTangentStiffness() const { return true; }
 
+    enum LatticeResponseType {
+        LRT_StressBased,
+        LRT_ResultantBased
+    };
+
+    virtual LatticeResponseType giveLatticeResponseType() const
+    {
+        return LRT_StressBased;
+    }
+
     bool hasMaterialModeCapability(MaterialMode mode) const override;
     const char *giveClassName() const override { return "LatticeStructuralMaterial"; }
 
