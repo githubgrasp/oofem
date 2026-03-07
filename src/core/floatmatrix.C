@@ -782,7 +782,7 @@ void FloatMatrix :: plusDyadUnsym(const FloatArray &a, const FloatArray &b, doub
 void FloatMatrix :: plus_Nt_a_otimes_b_B(const FloatMatrix &N, const FloatArray &a, const FloatArray &b, const FloatMatrix &B, double dV)
 {
     #ifndef NDEBUG
-        if (a.giveSize() != N.nRows || b.giveSize() != B.nRows ) {
+        if (a.giveSize() != N.rows() || b.giveSize() != B.rows() ) {
             OOFEM_ERROR("Size mismatch in FloatMatrix :: plus_Nt_a_otimes_b_B");
         }
     #endif
@@ -794,13 +794,13 @@ void FloatMatrix :: plus_Nt_a_otimes_b_B(const FloatMatrix &N, const FloatArray 
     auto a_size = a.giveSize();
     auto b_size = b.giveSize();
     for (std::size_t i = 1; i <= nRows; i++ ) {
-      for (std::size_t j = 1; j <= nColumns; j++ ) {
-	for (int k = 1; k <= a_size; k++ ) {
-	  for (int l = 1; l <= b_size; l++ ) {
-	    this->at(i, j) += N.at(k,i) * a.at(k) * b.at(l) * B.at(l,j) * dV;
-	  }
-	}
-      }
+        for (std::size_t j = 1; j <= nColumns; j++ ) {
+	        for (int k = 1; k <= a_size; k++ ) {
+	            for (int l = 1; l <= b_size; l++ ) {
+	                this->at(i, j) += N.at(k,i) * a.at(k) * b.at(l) * B.at(l,j) * dV;
+	            }
+	        }
+        }
     }
 }
 
