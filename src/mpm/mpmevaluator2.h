@@ -481,9 +481,26 @@ public:
     }
 
     // Public API
+    /*
     void set_variable(std::string name, VarData val) {
         if (symbol_table.count(name)) init_slot(symbol_table.at(name), val);
         else throw std::runtime_error("Variable '" + name + "' not found in script symbols.");
+    }
+    */
+    /**
+     * @brief Safely attempts to bind a variable to the memory pool.
+     * @param name The string identifier of the variable.
+     * @param val The data to inject (double, MatrixXd, or void*).
+     * @return true if the script uses this variable and it was bound, false if ignored.
+     */
+    bool set_variable(const std::string& name, VarData val) {
+        auto it = symbol_table.find(name);
+        if (it != symbol_table.end()) {
+            init_slot(it->second, val);
+            return true;
+        }
+        // Silently ignore variables that the script doesn't care about
+        return false; 
     }
     
     VarSlot get_result() { 
