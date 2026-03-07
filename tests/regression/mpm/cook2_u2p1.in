@@ -10,8 +10,8 @@ Variable name "p" interpolation "feilin"  type 0 quantity 3 size 1 dofs 1 11 # p
 Variable name "dp" interpolation "feilin" type 0 quantity 3 size 1 dofs 1 11 # test function
 BTSigmaTerm 1 variable "u"  testvariable "w" mmode 7 lhsmatmode 29
 BTamNTerm 2 variable "p" testvariable "w" mmode 7 atype 28 
-NTamTBTerm 3 variable "u" testvariable "dp" mmode 7 atype 28
-NTcN 4 variable "p" testvariable "dp" mmode 7 ctype 27
+NTamTBTerm 3 variable "u" testvariable "dp" mmode 7 atype 28  uvmt 1
+NTcN 4 variable "p" testvariable "dp" mmode 7 ctype 27  uvmt 1
 NTfTerm 5 variable "u" testvariable "w" mmode 6 flux 2 0. 6.25
 #NTfTerm 5 variable "u" testvariable "w" mmode 6 flux 2 0. 31.25
 Integral 1 domain 1 set 1 term 1
