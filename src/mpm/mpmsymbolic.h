@@ -48,20 +48,174 @@
 #include "mpm.h"
 #include "mpmevaluator2.h"
 #include "logger.h"
+#include "feinterpol.h"
+#include "CrossSections/structuralcrosssection.h"
+#include "matresponsemode.h"
+
 
 
 namespace oofem {
+
+    void MPMhelper_Grad_s(FloatMatrix& answer, const Variable *v, GaussPoint* gp)  {
+    const FEInterpolation* interpol = v->interpolation;
+    const MPElement* cell = static_cast<const MPElement*>(gp->giveElement());
+    const MaterialMode mmode = gp->giveMaterialMode();
+
+    FloatMatrix dn, dndx, jacobianMatrix, inv;
+    int nnodes = interpol->giveNumberOfNodes(cell->giveGeometryType());
+    int ndofs = v->size;
+    interpol->evaldNdx(dndx, gp->giveNaturalCoordinates(), FEIElementGeometryWrapper(cell));
+
+    if ((mmode == _3dUP) || (mmode == _3dUPV) || (mmode==_3dMat)) {
+            // 3D mode only now
+            answer.resize(6, nnodes*ndofs);
+            for (int i = 0; i< nnodes; i++) {
+                answer(0, i*ndofs+0) = dndx(i, 0);
+                answer(1, i*ndofs+1) = dndx(i, 1);
+                answer(2, i*ndofs+2) = dndx(i, 2);
+
+                answer(3, i*ndofs+1) = dndx(i, 2);
+                answer(3, i*ndofs+2) = dndx(i, 1);
+
+                answer(4, i*ndofs+0) = dndx(i, 2);
+                answer(4, i*ndofs+2) = dndx(i, 0);
+
+                answer(5, i*ndofs+0) = dndx(i, 1);
+                answer(5, i*ndofs+1) = dndx(i, 0);
+            }   
+        } else if ((mmode == _2dUP) || (mmode == _2dUPV)) {
+            answer.resize(6, nnodes*ndofs);
+            for (int i = 0; i< nnodes; i++) {
+                answer(0, i*ndofs+0) = dndx(i, 0);
+                answer(1, i*ndofs+1) = dndx(i, 1);
+
+                answer(5, i*ndofs+0) = dndx(i, 1);
+                answer(5, i*ndofs+1) = dndx(i, 0);
+            }
+        } else if ((mmode == _PlaneStress)) {
+            answer.resize(3, nnodes*ndofs);
+            for (int i = 0; i< nnodes; i++) {
+                answer(0, i*ndofs+0) = dndx(i, 0);
+                answer(1, i*ndofs+1) = dndx(i, 1);
+
+                answer(2, i*ndofs+0) = dndx(i, 1);
+                answer(2, i*ndofs+1) = dndx(i, 0);
+            }
+        } else if (mmode == _PlaneStrain) {
+            answer.resize(4, nnodes*ndofs);
+            for (int i = 0; i< nnodes; i++) {
+                answer(0, i*ndofs+0) = dndx(i, 0);
+                answer(1, i*ndofs+1) = dndx(i, 1);
+
+                answer(3, i*ndofs+0) = dndx(i, 1);
+                answer(3, i*ndofs+1) = dndx(i, 0);
+            }
+        } else if (mmode == _1dMat) {
+            answer.resize(1, nnodes*ndofs);
+            for (int i = 0; i< nnodes; i++) {
+                answer(0, i*ndofs+0) = dndx(i, 0);
+            }
+        } else {
+            OOFEM_ERROR("Unsupported material mode %d", mmode);
+        }
+    }
+
+    /* Define custom functors for evaluator */
+    auto MPMfunctor_B = [](const std::vector<const VarSlot*>& args, VarSlot& out) {
+        // Compute the symmetric gradient of the first argument (assumed to be a vector field) 
+        // ARGS: args[0] - pointer to VarSlot containing the vector field (as a user pointer)
+        //       args[1] - pointer to GaussPoint (as a user pointer)
+        // OUTPUT: out - VarSlot to store the resulting symmetric gradient matrix
+        std::cout << "    [C++ Callback] Called B functor with " << args.size() << " arguments." << std::endl;
+        if (args.size() != 2) {
+            OOFEM_ERROR("MPMfunctor_B functor expects exactly 2 arguments: vector field (Variable class) and GaussPoint.");
+        }
+        // 1. Retrieve the generic pointers to arguments
+        void* raw_ptr0 = std::get<void*>(args[0]->value);
+        void* raw_ptr1 = std::get<void*>(args[1]->value);
+        // 2. Cast back to your specific application type (Variable class)
+        const Variable* v = static_cast<const Variable*>(raw_ptr0);
+        GaussPoint* gp = static_cast<GaussPoint*>(raw_ptr1);
+        // functor logic
+        FloatMatrix answer;
+        MPMhelper_Grad_s(answer, v, gp);
+
+        out.value = answer;
+        out.type = VarSlot::Type::MATRIX;
+    };
+
+    auto MPMfunctor_Dm = [](const std::vector<const VarSlot*>& args, VarSlot& out) {
+        // Compute the symmetric gradient of the first argument (assumed to be a vector field) 
+        // ARGS: args[0] - pointer to GaussPoint (as a user pointer)
+        //       args[1] - pointer to TimeStep (as a user pointer)
+        // OUTPUT: out - VarSlot to store the resulting symmetric gradient matrix
+        std::cout << "    [C++ Callback] Called Dm functor with " << args.size() << " arguments." << std::endl;
+        if (args.size() != 2) {
+            OOFEM_ERROR("MPMfunctor_Dm functor expects exactly 2 arguments: GaussPoint and TimeStep.");
+        }
+        // 1. Retrieve the generic pointers to arguments
+        void* raw_ptr0 = std::get<void*>(args[0]->value);
+        void* raw_ptr1 = std::get<void*>(args[1]->value);
+        // 2. Cast back to your specific application type (Variable class)
+        GaussPoint* gp = static_cast<GaussPoint*>(raw_ptr0);
+        TimeStep* tstep = static_cast<TimeStep*>(raw_ptr1);
+        // functor logic
+        MPElement* cell = static_cast<MPElement*>(gp->giveElement());
+        StructuralCrossSection* cs = static_cast<StructuralCrossSection*>(cell->giveCrossSection());
+
+        FloatMatrix D;
+        cs->giveCharMaterialStiffnessMatrix(D, TangentStiffness, gp, tstep);
+        out.value = D;
+        out.type = VarSlot::Type::MATRIX;
+    };
+
+    auto MPMfunctor_Sig = [](const std::vector<const VarSlot*>& args, VarSlot& out) {
+        // Compute the symmetric gradient of the first argument (assumed to be a vector field) 
+        // ARGS: args[0] - pointer to GaussPoint (as a user pointer)
+        //       args[1] - pointer to TimeStep (as a user pointer)
+        // OUTPUT: out - VarSlot to store the resulting symmetric gradient matrix
+        std::cout << "    [C++ Callback] Called Sig functor with " << args.size() << " arguments." << std::endl;
+        if (args.size() != 3) {
+            OOFEM_ERROR("MPMfunctor_Sig functor expects exactly 3 arguments: Field Variable, GaussPoint (gp), TimeStep (ts).");
+        }
+        // 1. Retrieve the generic pointers to arguments
+        void* raw_ptr0 = std::get<void*>(args[0]->value);
+        void* raw_ptr1 = std::get<void*>(args[1]->value);
+        void* raw_ptr2 = std::get<void*>(args[2]->value);
+
+        // 2. Cast back to your specific application type (Variable class)
+        const Variable* v = static_cast<const Variable*>(raw_ptr0);
+        GaussPoint* gp = static_cast<GaussPoint*>(raw_ptr1);
+        TimeStep* tstep = static_cast<TimeStep*>(raw_ptr2);
+        // functor logic
+        MPElement* cell = static_cast<MPElement*>(gp->giveElement());
+        StructuralCrossSection* cs = static_cast<StructuralCrossSection*>(cell->giveCrossSection());
+
+        FloatMatrix B, answer;
+        FloatArray u, eps, sig;
+        MPMhelper_Grad_s(B, v, gp);
+        cell->getUnknownVector(u, v, VM_TotalIntrinsic, tstep);
+        eps.beProductOf(B,u);
+        cs->giveMaterial(gp)->giveCharacteristicVector(sig, eps, MatResponseMode::Stress, gp, tstep);
+        answer = FloatMatrix::fromArray(sig);
+        out.value = answer;
+        out.type = VarSlot::Type::MATRIX;
+    };
+
 /**
  * @brief Symbolic term allowing to parse and evaluate user defined expressions
  * 
  */
 class SymbolicTerm : public GenericCellTerm {
     protected:
-        std::string expression;
+        std::string lhsExpression, rhsExpression;
         mutable int pool_ptr=0;
-        mutable std::vector<Instruction> program;
-        mutable std::map<std::string, int> symbols;
-        mutable std::map<int, VarData> constants;
+        struct VMContext {
+            mutable std::vector<Instruction> program;
+            mutable std::map<std::string, int> symbols;
+            mutable std::map<int, VarData> constants;
+        };
+        mutable VMContext lhsExpressionContext, rhsExpressionContext;
  
         struct TestField {
             FloatMatrix values; // Nodal values (e.g., Temperature at 3 nodes)
@@ -72,51 +226,68 @@ class SymbolicTerm : public GenericCellTerm {
 
     public:
     SymbolicTerm() : GenericCellTerm() {}
-    SymbolicTerm (const Variable *testField, const Variable* unknownField, const std::string& expr, MaterialMode m=MaterialMode::_Unknown)  : GenericCellTerm(testField, unknownField, m), expression(expr) {}
+    SymbolicTerm (const Variable *testField, const Variable* unknownField, const std::string &lexpr, const std::string& rexpr, MaterialMode m=MaterialMode::_Unknown)  : GenericCellTerm(testField, unknownField, m), lhsExpression(lexpr), rhsExpression(rexpr) {}
 
     void initializeFrom(const std::shared_ptr<InputRecord> &ir, EngngModel* problem) override {
         GenericCellTerm::initializeFrom(ir, problem);
-        IR_GIVE_FIELD(ir, expression, "expression");
+        IR_GIVE_FIELD(ir, lhsExpression, "lexpression");
+        IR_GIVE_FIELD(ir, rhsExpression, "rexpression");
 
         MPMCompiler compiler;
 
         // Register variables (classes)
-        compiler.register_function("B"); 
+        compiler.register_function("B");
+        compiler.register_function("Dm"); 
+        compiler.register_function("Sig");
 
         try {
-            compiler.compile_script(expression, program, symbols, constants, pool_ptr);
+            compiler.compile_script(lhsExpression, lhsExpressionContext.program, lhsExpressionContext.symbols, lhsExpressionContext.constants, pool_ptr);
         } catch (const std::exception& e) {
-            std::string msg = "SymbolicTerm: Compilation error in expression '" + expression + "': " + e.what();
+            std::string msg = "SymbolicTerm: Compilation error in expression '" + lhsExpression + "': " + e.what();
             OOFEM_LOG_ERROR("%s", msg.c_str());
         }
-     }
-    void evaluate_lin (FloatMatrix& answer, MPElement& cell, GaussPoint* gp, TimeStep* tStep) const override {
-        try {   
-            MPMEvaluator vm(pool_ptr, symbols);
-            for(auto const& [idx, val] : constants) vm.init_slot(idx, val);
-
- 
-            vm.set_variable("u", 1.0);
-            //vm.set_variable("v", 1.0, VarType::SCALAR);
-            vm.register_functor("B", [](const auto& a, auto& out){
-                FloatMatrix m = FloatMatrix::fromIniList({{1.}, {-1.}});
-                std::cout << "B called\n" << m << "\n";
-                out.value = m; out.type = VarSlot::Type::MATRIX;
-            });
-        vm.execute(program);
-        if (vm.get_result().type == VarSlot::Type::MATRIX) {
-            FloatMatrix m = std::get<FloatMatrix>(vm.get_result().value);
-            std::cout << "Result:\n" << m << "\n";
+        try {
+            compiler.compile_script(rhsExpression, rhsExpressionContext.program, rhsExpressionContext.symbols, rhsExpressionContext.constants, pool_ptr);
+        } catch (const std::exception& e) {
+            std::string msg = "SymbolicTerm: Compilation error in expression '" + rhsExpression + "': " + e.what();
+            OOFEM_LOG_ERROR("%s", msg.c_str());
         }
+    }
+
+    void _evaluateVM (FloatMatrix& answer, MPElement& cell, GaussPoint* gp, TimeStep* tStep, VMContext& context) const {
+        try {   
+            MPMEvaluator vm(pool_ptr, context.symbols);
+            for(auto const& [idx, val] : context.constants) vm.init_slot(idx, val);
+ 
+            vm.set_variable("u",  (void*)this->field);
+            vm.set_variable("v",  (void*)this->testField);
+            vm.set_variable("gp", (void*)gp);
+            vm.set_variable("ts", (void*)tStep);
+
+            vm.register_functor("B", MPMfunctor_B);
+            vm.register_functor("Dm", MPMfunctor_Dm);
+            vm.register_functor("Sig", MPMfunctor_Sig);
+            vm.execute(context.program);
+            if (vm.get_result().type == VarSlot::Type::MATRIX) {
+                answer = std::get<FloatMatrix>(vm.get_result().value);
+                std::cout << "Result:\n" << answer << "\n";
+            }
 
         } catch (const std::exception& e) {
             std::cerr << "VM ERROR: " << e.what() << std::endl;
         }
     }
-    void evaluate (FloatArray&, MPElement& cell, GaussPoint* gp, TimeStep* tStep) const override{}
+    void evaluate_lin (FloatMatrix& answer, MPElement& cell, GaussPoint* gp, TimeStep* tStep) const override {
+        _evaluateVM(answer, cell, gp, tStep, lhsExpressionContext);
+    }
+    void evaluate (FloatArray&answer, MPElement& cell, GaussPoint* gp, TimeStep* tStep) const override {
+        FloatMatrix help;
+        _evaluateVM(help, cell, gp, tStep, rhsExpressionContext);
+        // convert result to array
+        help.copyColumn(answer, 1);
+    }
     void getDimensions(Element& cell) const override {}
 
-};
-
-}
+}; // end class SymbolicTerm
+}  // end namespace oofem
 #endif // mpmsymbolic_h
