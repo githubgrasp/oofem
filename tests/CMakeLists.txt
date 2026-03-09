@@ -9,7 +9,7 @@ find_package(Python3 COMPONENTS Interpreter)
 if(USE_OOFEM_EXE)
 set (oofem_REGRESSION_TEST_DIR "${oofem_SOURCE_DIR}/tests/regression")
 set (oofem_BENCHMARK_DIR "${oofem_REGRESSION_TEST_DIR}/benchmark")
-set (oofem_cmd $<TARGET_FILE:oofem> -Werror)
+set (oofem_cmd $<TARGET_FILE:oofem>)
 #file(TO_CMAKE_PATH "${oofem_TEST_DIR}/valgrind.supp" MEMORYCHECK_SUPPRESSIONS_FILE)
 #set (CTEST_MEMORYCHECK_SUPPRESSIONS_FILE ${oofem_TEST_DIR}/tests/valgrind.supp)
 
@@ -26,7 +26,7 @@ if (USE_MPI_PARALLEL)
     set_tests_properties(${test_rel_dir}/brazil_2d_nl7 PROPERTIES TIMEOUT 2500)
 endif ()
 
-
+set (oofem_cmd $<TARGET_FILE:oofem> -Werror)
 function(oofem_regression_ctest dir label)
     # discover tests
     set (test_rel_dir "tests/regression")
