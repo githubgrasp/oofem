@@ -34,6 +34,9 @@
 
 #include "tm/Materials/nlisomoisturemat.h"
 #include "gausspoint.h"
+#include "engngm.h"
+#include "fieldmanager.h"
+#include "valuemodetype.h"
 #include "mathfem.h"
 #include "classfactory.h"
 
@@ -408,7 +411,22 @@ NlIsoMoistureMaterial::giveTemperature(GaussPoint *gp, TimeStep *tStep) const
 {
     double temperature;
 
-    if ( this->T_TF !=  0 ) {
+    /* check for external source, if provided */
+    FieldManager *fm = domain->giveEngngModel()->giveContext()->giveFieldManager();
+    FieldPtr tf;
+
+    if ( ( tf = fm->giveField(FT_Temperature) ) ) {
+        // temperature field registered
+        Coordinates gcoords; 
+        FloatArray temp;
+        int err;
+        gp->giveElement()->computeGlobalCoordinates(gcoords, gp->giveNaturalCoordinates() );
+        if ( ( err = tf->evaluateAt(temp, gcoords, VM_Total, tStep) ) ) {
+            OOFEM_ERROR("tf->evaluateAt failed, element %d, error code %d", gp->giveElement()->giveNumber(), err);
+        }
+        temperature = temp.at(1);
+
+    } else if ( this->T_TF !=  0 ) {
         temperature = domain->giveFunction(this->T_TF)->evaluateAtTime(tStep->giveTargetTime() );
     } else {
         temperature = this->T;
