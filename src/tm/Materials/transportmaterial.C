@@ -90,7 +90,7 @@ TransportMaterialStatus :: saveContext(DataStream &stream, ContextMode mode)
         THROW_CIOERR(iores);
     }
 
-    if ( stream.read(field) ) {
+    if ( !stream.write(field) ) {
         THROW_CIOERR(CIO_IOERR);
     }
 

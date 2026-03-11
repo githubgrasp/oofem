@@ -85,6 +85,9 @@ public:
 
     const char *giveClassName() const override { return "SimpleTransportCrossSection"; }
     const char *giveInputRecordName() const override { return _IFT_SimpleTransportCrossSection_Name; }
+
+    void saveContext(DataStream &stream, ContextMode mode) override;
+    void restoreContext(DataStream &stream, ContextMode mode) override;
 };
 } // end namespace oofem
 #endif // simpletransportcrosssection_h
