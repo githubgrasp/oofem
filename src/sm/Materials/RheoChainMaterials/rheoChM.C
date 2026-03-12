@@ -669,6 +669,94 @@ RheoChainMaterial :: giveIPValue(FloatArray &answer, GaussPoint *gp, InternalSta
     // return 1; // to make the compiler happy
 }
 
+void 
+RheoChainMaterial::saveContext(DataStream &stream, ContextMode mode) 
+{
+    StructuralMaterial::saveContext(stream, mode);
+    if ( ( mode & CM_Definition ) ) {
+        if ( !stream.write(talpha) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(nUnits) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(relMatAge) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(lattice) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(nu) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(alphaOne) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(alphaTwo) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(EparValTime) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(begOfTimeOfInterest) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(endOfTimeOfInterest) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        EparVal.storeYourself(stream);
+        charTimes.storeYourself(stream);
+        discreteTimeScale.storeYourself(stream);
+
+    }
+    // linearElasticMaterial
+    this->giveLinearElasticMaterial()->saveContext(stream, mode);
+}
+
+void 
+RheoChainMaterial::restoreContext(DataStream &stream, ContextMode mode) 
+{
+    StructuralMaterial::restoreContext(stream, mode);
+    if ( ( mode & CM_Definition ) ) {
+        if ( !stream.read(talpha) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(nUnits) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(relMatAge) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(lattice) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(nu) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(alphaOne) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(alphaTwo) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(EparValTime) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(begOfTimeOfInterest) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(endOfTimeOfInterest) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        EparVal.restoreYourself(stream);
+        charTimes.restoreYourself(stream);
+        discreteTimeScale.restoreYourself(stream);
+    }
+    // linearElasticMaterial
+    this->giveLinearElasticMaterial()->restoreContext(stream, mode);
+}
+
+
 /****************************************************************************************/
 
 RheoChainMaterialStatus :: RheoChainMaterialStatus(GaussPoint *g, int nunits) :
@@ -754,6 +842,11 @@ RheoChainMaterialStatus :: saveContext(DataStream &stream, ContextMode mode)
     StructuralMaterialStatus :: saveContext(stream, mode);
 
     contextIOResultType iores;
+
+    if ( !stream.write(nUnits) ) {
+        THROW_CIOERR(CIO_IOERR);
+    }
+
     for ( int i = 0; i < nUnits; i++ ) {
         if ( ( iores = hiddenVars [ i ].storeYourself(stream) ) != CIO_OK ) {
             THROW_CIOERR(iores);
@@ -772,6 +865,12 @@ RheoChainMaterialStatus :: restoreContext(DataStream &stream, ContextMode mode)
     StructuralMaterialStatus :: restoreContext(stream, mode);
 
     contextIOResultType iores;
+
+    if ( !stream.read(nUnits) ) {
+        THROW_CIOERR(CIO_IOERR);
+    }
+    hiddenVars.resize(nUnits);
+
     for ( int i = 0; i < nUnits; i++ ) {
         if ( ( iores = hiddenVars [ i ].restoreYourself(stream) ) != CIO_OK ) {
             THROW_CIOERR(iores);

@@ -39,6 +39,8 @@
 #include "parser.h"
 #include "error.h"
 #include "gausspoint.h"
+#include "contextioerr.h"
+#include "datareader.h"
 
 #include <map>
 #include <string>
@@ -177,4 +179,42 @@ std :: ostream &operator << ( std :: ostream & out, const ScalarFunction & s )
     }
     return out;
 }
+
+void ScalarFunction::saveContext(DataStream &stream, ContextMode mode) {
+    if ( ( mode & CM_Definition ) ) {
+        if ( !stream.write(dValue) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(eValue) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(fReference) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(dvType) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+    }
+
+}
+
+void ScalarFunction::restoreContext(DataStream &stream, ContextMode mode) {
+    if ( ( mode & CM_Definition ) ) {
+        if ( !stream.read(dValue) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(eValue) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(fReference) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        int ival;
+        if ( !stream.read(ival) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        this->dvType = (decltype(this->dvType))ival;
+    }
+}
+
 } // end namespace OOFEM

@@ -203,6 +203,10 @@ public:
 
     bool hasInternalSource() const override;
     void computeInternalSourceVector(FloatArray &val, GaussPoint *gp, TimeStep *tStep, ValueModeType mode) const override;
+
+    void saveContext(DataStream &stream, ContextMode mode) override;
+    void restoreContext(DataStream &stream, ContextMode mode) override;
+
 };
 } // end namespace oofem
 #endif // nlisomoisturemat_h

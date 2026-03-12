@@ -66,7 +66,12 @@ protected:
 
 public:
     CommunicatorBuff(int s, CommBuffType t = CBT_static);
+    // Make CommunicatorBuff itself move‑only, just like ProcessCommunicatorBuff
+    CommunicatorBuff( const CommunicatorBuff & )            = delete;
+    CommunicatorBuff &operator=( const CommunicatorBuff & ) = delete;
 
+    CommunicatorBuff( CommunicatorBuff && )            = default;
+    CommunicatorBuff &operator=( CommunicatorBuff && ) = default;
     /**
      * Returns i-th process communicator buff. The process comm buffs are numbered from rank 0.
      * @param i Process communicator buff index [0..size-1].

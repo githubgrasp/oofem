@@ -36,6 +36,8 @@
 #include "tm/Materials/transportmaterial.h"
 #include "dynamicinputrecord.h"
 #include "classfactory.h"
+#include "contextioerr.h"
+#include "datastream.h"
 
 namespace oofem {
 REGISTER_CrossSection(SimpleTransportCrossSection);
@@ -128,4 +130,33 @@ SimpleTransportCrossSection :: estimatePackSize(DataStream &buff, GaussPoint *gp
     return this->domain->giveMaterial(this->matNumber)->estimatePackSize(buff, gp);
 }
 
+void SimpleTransportCrossSection :: saveContext(DataStream &stream, ContextMode mode)
+{
+    TransportCrossSection :: saveContext(stream, mode);
+
+    if ( ( mode & CM_Definition ) ) {
+
+        if ( !stream.write(matNumber) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(thickness) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+    }
+}
+
+
+void SimpleTransportCrossSection :: restoreContext(DataStream &stream, ContextMode mode)
+{
+    TransportCrossSection :: restoreContext(stream, mode);
+
+    if ( mode & CM_Definition ) {
+            if ( !stream.read(matNumber) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(thickness) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+    }
+}
 } // end namespace oofem

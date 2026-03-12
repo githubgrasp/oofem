@@ -290,6 +290,10 @@ public:
 
     FloatMatrixF<1,1> give1dStressStiffMtrx(MatResponseMode mode, GaussPoint *gp,
                                             TimeStep *tStep) const override;
+
+    void saveContext(DataStream &stream, ContextMode mode) override;
+    void restoreContext(DataStream &stream, ContextMode mode) override;
+
 };
 } // end namespace oofem
 #endif // mpsdammat_h

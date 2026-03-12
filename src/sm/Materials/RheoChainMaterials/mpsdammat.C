@@ -895,4 +895,100 @@ MPSDamMaterial :: giveIPValue(FloatArray &answer, GaussPoint *gp, InternalStateT
 
     // return 1; // to make the compiler happy
 }
+
+
+void 
+MPSDamMaterial::saveContext(DataStream &stream, ContextMode mode)
+{
+    MPSMaterial::saveContext(stream, mode);
+    if ( ( mode & CM_Definition ) ) {
+        if (!stream.write(timeDepFracturing)) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if (!stream.write(fib_s)) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if (!stream.write(fib_fcm28)) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if (!stream.write(isotropic)) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if (!stream.write(maxOmega)) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if (!stream.write(ft)) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if (!stream.write(const_gf)) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if (!stream.write(checkSnapBack)) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if (!stream.write(softType)) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if (!stream.write(ecsMethod)) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if (!stream.write(ft28)) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if (!stream.write(gf28)) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+    }
+}
+
+void
+MPSDamMaterial::restoreContext(DataStream &stream, ContextMode mode) 
+{
+    MPSMaterial::restoreContext(stream, mode);
+    if ( ( mode & CM_Definition ) ) {
+        if (!stream.read(timeDepFracturing)) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if (!stream.read(fib_s)) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if (!stream.read(fib_fcm28)) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if (!stream.read(isotropic)) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if (!stream.read(maxOmega)) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if (!stream.read(ft)) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if (!stream.read(const_gf)) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if (!stream.read(checkSnapBack)) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        int ival;        
+        if (!stream.read(ival)) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        softType = (SofteningType) ival;
+        
+        if (!stream.read(ival)) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        ecsMethod = (ElementCharSizeMethod) ival;
+
+        if (!stream.read(ft28)) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if (!stream.read(gf28)) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+    }
+}
+
+
 }  // end namespace oofem

@@ -1775,4 +1775,105 @@ MPSMaterial::giveIPValue(FloatArray &answer, GaussPoint *gp, InternalStateType t
     }
     // return 0; // to make the compiler happy
 }
+
+#define readAttribute( attr ) \
+    if ( !stream.read(attr) ) { \
+        THROW_CIOERR(CIO_IOERR); \
+    }
+#define writeAttribute( attr ) \
+    if ( !stream.write(attr) ) { \
+        THROW_CIOERR(CIO_IOERR); \
+    }
+
+void
+MPSMaterial::saveContext(DataStream &stream, ContextMode mode) 
+{
+    KelvinChainSolidMaterial::saveContext(stream, mode);
+    if ( ( mode & CM_Definition ) ) {
+        writeAttribute( t0 );
+        writeAttribute (q1);
+        writeAttribute (q2);
+        writeAttribute (q3);
+        writeAttribute (q4);
+        writeAttribute(lambda0);
+        writeAttribute(CoupledAnalysis);
+        writeAttribute(EspringVal);
+        writeAttribute(kSh);
+        writeAttribute(muS);
+        writeAttribute(k3);
+        writeAttribute(kTm);
+        writeAttribute(kTc);
+        writeAttribute(khc);
+        writeAttribute(roomTemperature);
+        writeAttribute(QRtoR);
+        writeAttribute(QStoR);
+        writeAttribute(QEtoR);
+        writeAttribute(alphaE);
+        writeAttribute(alphaR);
+        writeAttribute(alphaS);
+        writeAttribute(p);
+        writeAttribute(sh_a);
+        writeAttribute(sh_hC);
+        writeAttribute(sh_n);
+        writeAttribute(timeDependent_ksh);
+        ksh_h.storeYourself(stream);
+        ksh_fh.storeYourself(stream);
+        writeAttribute(eps_cas0);
+        writeAttribute(b4_eps_au_infty);
+        writeAttribute(b4_tau_au);
+        writeAttribute(b4_alpha);
+        writeAttribute(b4_r_t);
+        writeAttribute(stiffnessFactor);
+        writeAttribute(temperScaleDifference);
+        writeAttribute(autoShrinkageTF);
+        writeAttribute(tau_nano);
+    }
+}
+
+void
+MPSMaterial::restoreContext(DataStream &stream, ContextMode mode)
+{
+    KelvinChainSolidMaterial::restoreContext(stream, mode);
+    if ( ( mode & CM_Definition ) ) {
+        int ival;
+        readAttribute( t0 );
+        readAttribute (q1);
+        readAttribute (q2);
+        readAttribute (q3);
+        readAttribute (q4);
+        readAttribute(lambda0);
+        readAttribute(ival); CoupledAnalysis = static_cast< coupledAnalysisType >(ival);    
+        readAttribute(EspringVal);
+        readAttribute(kSh);
+        readAttribute(muS);
+        readAttribute(k3);
+        readAttribute(kTm);
+        readAttribute(kTc);
+        readAttribute(khc);
+        readAttribute(roomTemperature);
+        readAttribute(QRtoR);
+        readAttribute(QStoR);
+        readAttribute(QEtoR);
+        readAttribute(alphaE);
+        readAttribute(alphaR);
+        readAttribute(alphaS);
+        readAttribute(p);
+        readAttribute(sh_a);
+        readAttribute(sh_hC);
+        readAttribute(sh_n);
+        readAttribute(timeDependent_ksh);
+        ksh_h.restoreYourself(stream);
+        ksh_fh.restoreYourself(stream);
+        readAttribute(eps_cas0);
+        readAttribute(b4_eps_au_infty);
+        readAttribute(b4_tau_au);
+        readAttribute(b4_alpha);
+        readAttribute(b4_r_t);
+        readAttribute(stiffnessFactor);
+        readAttribute(temperScaleDifference);
+        readAttribute(autoShrinkageTF);
+        readAttribute(tau_nano);
+    }
+}
+
 } // end namespace oofem
