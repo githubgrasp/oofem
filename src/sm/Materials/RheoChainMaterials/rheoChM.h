@@ -330,7 +330,9 @@ public:
     virtual double giveEquivalentTime(GaussPoint *gp, TimeStep *tStep) const
     { return ( tStep->giveTargetTime() - tStep->giveTimeIncrement() / 2 ); }
 
-
+    void saveContext(DataStream &stream, ContextMode mode) override;
+    void restoreContext(DataStream &stream, ContextMode mode) override;
+    
 protected:
     /**
      * If only incremental shrinkage strain formulation is provided, then total shrinkage strain must be tracked
