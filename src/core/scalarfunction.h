@@ -140,6 +140,9 @@ public:
     bool isDefined() const;
 
     friend std :: ostream &operator << ( std :: ostream & out, const ScalarFunction & s );
+    void saveContext(DataStream &stream, ContextMode mode) ;
+    void restoreContext(DataStream &stream, ContextMode mode) ;
+
 };
 } // end namespace OOFEM
 

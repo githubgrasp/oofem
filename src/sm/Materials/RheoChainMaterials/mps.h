@@ -326,6 +326,10 @@ public:
 
     std::unique_ptr<MaterialStatus> CreateStatus(GaussPoint *gp) const override;
 
+    void saveContext(DataStream &stream, ContextMode mode) override;
+    void restoreContext(DataStream &stream, ContextMode mode) override;
+
+
 protected:
     void predictParametersFrom(double, double, double, double);
 
