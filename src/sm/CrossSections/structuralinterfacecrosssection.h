@@ -142,6 +142,10 @@ public:
     const char *giveClassName() const override { return "StructuralInterfaceCrossSection"; }
     const char *giveInputRecordName() const override { return _IFT_StructuralInterfaceCrossSection_Name; }
 
+    void saveContext(DataStream &stream, ContextMode mode) override;
+    void restoreContext(DataStream &stream, ContextMode mode) override;
+
+
     CrossSectExtension crossSectionType;
 private:
     int materialNum;

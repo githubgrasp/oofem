@@ -37,6 +37,7 @@
 
 #include "oofemenv.h"
 
+#include <stdio.h>
 #include <sstream>
 #include <cstdio>
 #include <exception>
@@ -192,6 +193,8 @@ public:
     int givePackSizeOfBool(std::size_t count) override;
     int givePackSizeOfLong(std::size_t count) override;
     int givePackSizeOfSizet(std::size_t count) override;
+
+    long int getpos() const {return ftell(this->stream);}
 
 };
 

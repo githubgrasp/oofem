@@ -764,7 +764,7 @@ EngngModel :: terminate(TimeStep *tStep)
     }
     monitorManager.update(tStep, Monitor::MonitorEvent::TimeStepTermination);
     
-    this->saveStepContext(tStep, CM_State | CM_Definition);
+    this->saveStepContext(tStep, CM_State);
 }
 
 
