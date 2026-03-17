@@ -688,6 +688,11 @@ NonLinearStatic :: printOutputAt(FILE *file, TimeStep *tStep)
     this->printReactionForces(tStep, 1, file);
 }
 
+void NonLinearStatic::saveStepContext(TimeStep *tStep, ContextMode mode) {
+    // force definition context to be saved, as it is needed for correct adaptive restore
+    EngngModel :: saveStepContext(tStep, mode | CM_Definition); 
+}
+
 
 void
 NonLinearStatic :: saveContext(DataStream &stream, ContextMode mode)

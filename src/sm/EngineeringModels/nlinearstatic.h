@@ -163,6 +163,8 @@ public:
 
     void saveContext(DataStream &stream, ContextMode mode) override;
     void restoreContext(DataStream &stream, ContextMode mode) override;
+    void saveStepContext(TimeStep *tStep, ContextMode mode) override;
+
 
     void updateDomainLinks() override;
 
