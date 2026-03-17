@@ -388,7 +388,7 @@ NonLinearStatic :: terminate(TimeStep *tStep)
 {
     this->doStepOutput(tStep);
     this->updateLoadVectors(tStep);
-    this->saveStepContext(tStep, CM_State | CM_Definition);
+    this->saveStepContext(tStep, CM_State );
 }
 
 
@@ -688,10 +688,6 @@ NonLinearStatic :: printOutputAt(FILE *file, TimeStep *tStep)
     this->printReactionForces(tStep, 1, file);
 }
 
-void NonLinearStatic::saveStepContext(TimeStep *tStep, ContextMode mode) {
-    // force definition context to be saved, as it is needed for correct adaptive restore
-    EngngModel :: saveStepContext(tStep, mode | CM_Definition); 
-}
 
 
 void
