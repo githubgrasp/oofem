@@ -388,7 +388,7 @@ NonLinearStatic :: terminate(TimeStep *tStep)
 {
     this->doStepOutput(tStep);
     this->updateLoadVectors(tStep);
-    this->saveStepContext(tStep, CM_State | CM_Definition);
+    this->saveStepContext(tStep, CM_State );
 }
 
 
@@ -687,6 +687,7 @@ NonLinearStatic :: printOutputAt(FILE *file, TimeStep *tStep)
     this->giveDomain(1)->giveOutputManager()->doElementOutput(file, tStep);
     this->printReactionForces(tStep, 1, file);
 }
+
 
 
 void

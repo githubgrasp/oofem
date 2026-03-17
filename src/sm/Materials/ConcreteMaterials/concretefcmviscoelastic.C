@@ -209,8 +209,9 @@ ConcreteFCMViscoElastic::giveStatus(GaussPoint *gp) const
     if (gp->hasMaterialStatus()) {
         return static_cast< MaterialStatus * >( gp->giveMaterialStatus() );
     } else {
-        MaterialStatus *status = static_cast<MaterialStatus*> (gp->setMaterialStatus (this->CreateStatus(gp)));
+        ConcreteFCMViscoElasticStatus *status = static_cast<ConcreteFCMViscoElasticStatus*> (gp->setMaterialStatus (this->CreateStatus(gp)));
         this->_generateStatusVariables(gp);
+        domain->giveMaterial(this->viscoMat)->giveStatus(status->giveSlaveGaussPointVisco()); // make sure the status exists
         return status;
     }
 }
@@ -384,7 +385,57 @@ ConcreteFCMViscoElastic::giveEquivalentTime(GaussPoint *gp, TimeStep *tStep) con
     return rheoMat->giveEquivalentTime(status->giveSlaveGaussPointVisco(), tStep);
 }
 
+void 
+ConcreteFCMViscoElastic::saveContext(DataStream &stream, ContextMode mode) 
+{
+    ConcreteFCM::saveContext(stream, mode);
+    if ( ( mode & CM_Definition ) ) {
+        if ( !stream.write(viscoMat) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(fib) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(fib_s) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(fib_fcm28) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(timeFactor) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(stiffnessFactor) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+    }
+}
 
+void 
+ConcreteFCMViscoElastic::restoreContext(DataStream &stream, ContextMode mode) 
+{
+    ConcreteFCM::restoreContext(stream, mode);
+    if ( ( mode & CM_Definition ) ) {
+        if ( !stream.read(viscoMat) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(fib) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(fib_s) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(fib_fcm28) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(timeFactor) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(stiffnessFactor) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+    }
+}
 
 
 ///////////////////////////////////////////////////////////////////
@@ -448,6 +499,12 @@ ConcreteFCMViscoElasticStatus::saveContext(DataStream &stream, ContextMode mode)
     ConcreteFCMStatus::saveContext(stream, mode);
     // save viscoelastic status
     this->giveSlaveGaussPointVisco()->giveMaterialStatus()->saveContext(stream, mode);
+    if ( !stream.write(var_ft) ) {
+        THROW_CIOERR(CIO_IOERR);
+    }
+    if ( !stream.write(var_gf) ) {
+        THROW_CIOERR(CIO_IOERR);
+    }
 }
 
 void
@@ -459,7 +516,13 @@ ConcreteFCMViscoElasticStatus::restoreContext(DataStream &stream, ContextMode mo
     // read parent cracking class status
     ConcreteFCMStatus::restoreContext(stream, mode);
 
-    // restore viscoelastic amterial
+    // restore viscoelastic amterial status
     this->giveSlaveGaussPointVisco()->giveMaterialStatus()->restoreContext(stream, mode);
+    if ( !stream.read(var_ft) ) {
+        THROW_CIOERR(CIO_IOERR);
+    }
+    if ( !stream.read(var_gf) ) {
+        THROW_CIOERR(CIO_IOERR);
+    }
 }
 } // end namespace oofem

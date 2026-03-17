@@ -544,7 +544,7 @@ StaggeredProblem :: terminate(TimeStep *tStep)
     for ( auto &emodel: emodelList ) {
         emodel->terminate(tStep);
     }
-    this->saveStepContext(tStep, CM_State | CM_Definition);
+    this->saveStepContext(tStep, CM_State );
 
 }
 

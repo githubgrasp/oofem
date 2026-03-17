@@ -116,6 +116,10 @@ public:
     
     MaterialStatus* giveStatus(GaussPoint *gp) const override;
 
+    void saveContext(DataStream &stream, ContextMode mode) override;
+    void restoreContext(DataStream &stream, ContextMode mode) override;
+
+
 protected:
     /// number of the viscoelastic material
     int viscoMat = 0;

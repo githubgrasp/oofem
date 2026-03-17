@@ -496,7 +496,7 @@ public:
     /**
      * Saves context of given solution step, if required (determined using this->giveContextOutputMode() method).
      */
-    void saveStepContext(TimeStep *tStep, ContextMode mode);
+    virtual void saveStepContext(TimeStep *tStep, ContextMode mode);
     /**
      * Updates internal state after finishing time step. (for example total values may be
      * updated according to previously solved increments). Then element values are also updated

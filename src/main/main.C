@@ -163,7 +163,7 @@ int main(int argc, char *argv[])
         for ( int i = 1; i < argc; i++ ) {
             if ( ( strcmp(argv [ i ], "-context") == 0 ) || ( strcmp(argv [ i ], "-c") == 0 ) ) {
                 contextFlag = true;
-            } else if ( strcmp(argv [ i ], "-v") == 0 ) {
+     } else if ( strcmp(argv [ i ], "-v") == 0 ) {
                 if ( rank == 0 ) {
                     oofem_print_version();
                 }
@@ -348,7 +348,8 @@ int main(int argc, char *argv[])
     if ( restartFlag ) {
         try {
             FileDataStream stream(problem->giveContextFileName(restartStep, 0), false);
-            problem->restoreContext(stream, CM_State | CM_Definition);
+            //problem->restoreContext(stream, CM_State | CM_Definition);
+            problem->restoreContext(stream, CM_State);
         } catch ( const FileDataStream::CantOpen & e ) {
             printf("%s", e.what());
             exit(1);
@@ -359,7 +360,7 @@ int main(int argc, char *argv[])
         problem->initStepIncrements();
     } else if ( adaptiveRestartFlag ) {
         problem->initializeAdaptive(adaptiveRestartFlag);
-        problem->saveStepContext(problem->giveCurrentStep(),CM_State);
+        problem->saveStepContext(problem->giveCurrentStep(),CM_State| CM_Definition);
         // exit (1);
     }
 
