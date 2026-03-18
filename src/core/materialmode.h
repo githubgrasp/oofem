@@ -93,6 +93,9 @@ namespace oofem {
     ENUM_ITEM(_Warping) \
 
 #include "enum-impl.h"
+bool mmodeIs1D(MaterialMode mmode);
+bool mmodeIs2D(MaterialMode mmode);
+bool mmodeIs3D(MaterialMode mmode);
 
 } // end namespace oofem
 #endif // materialmode_h
