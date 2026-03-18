@@ -587,11 +587,14 @@ EngngModel :: solveYourself()
     }
     
     
-    if ( ( this->giveNumberOfSteps() == 1 ) && ( this->giveNumberOfMetaSteps() == 1 ) ) {
+    if ( this->master || (( this->giveNumberOfSteps() == 1 ) && ( this->giveNumberOfMetaSteps() == 1 )) ) {
         showProgress=false;
     }
 
-    if ( showProgress ) oofem_ProgressBar.initialize();
+    if ( showProgress ) {
+        oofem_ProgressBar.initialize();
+        if ( showProgress ) oofem_ProgressBar.update(0, "OOFEM");
+    }
 
 
     for ( int imstep = smstep; imstep <= timeStepController->giveNumberOfMetaSteps(); imstep++ ) { //loop over meta steps
@@ -601,7 +604,7 @@ EngngModel :: solveYourself()
         timeStepController->initMetaStepAttributes( activeMStep );
         double msFinalTime = activeMStep->giveFinalTime() - this->giveInitialTime();
         //
-        if ( showProgress ) oofem_ProgressBar.update(0, "OOFEM");
+
         do {
             this->timer.startTimer(EngngModelTimer :: EMTT_SolutionStepTimer);
             this->timer.initTimer(EngngModelTimer :: EMTT_NetComputationalStepTimer);
@@ -761,7 +764,7 @@ EngngModel :: terminate(TimeStep *tStep)
     }
     monitorManager.update(tStep, Monitor::MonitorEvent::TimeStepTermination);
     
-    this->saveStepContext(tStep, CM_State | CM_Definition);
+    this->saveStepContext(tStep, CM_State);
 }
 
 

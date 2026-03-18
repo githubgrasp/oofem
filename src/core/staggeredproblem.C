@@ -45,6 +45,7 @@
 #include "verbose.h"
 #include "classfactory.h"
 #include "domain.h"
+#include "progressbar.h"
 
 #include <stdlib.h>
 
@@ -428,6 +429,22 @@ StaggeredProblem :: solveYourself()
         sjstep = sp->giveMetaStep(smstep)->giveStepRelativeNumber( sp->giveCurrentStep()->giveNumber() ) + 1;
     }
 
+    bool showProgress=true;
+    std::string progressMsg = std::string(PRG_VERSION_SHORT) + " | Solution Progress:";
+    if ( this->master || (( this->giveNumberOfSteps() == 1 ) && ( this->giveNumberOfMetaSteps() == 1 )) ) {
+        showProgress=false;
+    }
+    if ( showProgress ) {
+        oofem_ProgressBar.initialize();
+        if ( showProgress ) oofem_ProgressBar.update(0, "OOFEM");
+    }
+
+    // determine the total number of steps accross all meta steps, for progress bar
+    int totalSteps = 0;
+    for ( int imstep = 1; imstep <= sp->giveNumberOfMetaSteps(); imstep++ ) {
+        totalSteps += sp->giveMetaStep(imstep)->giveNumberOfSteps();
+    }
+    int stepCounter = 0; // for progress bar
     for ( int imstep = smstep; imstep <= sp->giveNumberOfMetaSteps(); imstep++ ) { //loop over meta steps
         MetaStep *activeMStep = sp->giveMetaStep(imstep);
         // update state according to new meta step in all slaves
@@ -435,6 +452,7 @@ StaggeredProblem :: solveYourself()
 
         int nTimeSteps = activeMStep->giveNumberOfSteps();
         for ( int jstep = sjstep; jstep <= nTimeSteps; jstep++ ) { //loop over time steps
+            stepCounter++; // for progress bar
             this->timer.startTimer(EngngModelTimer :: EMTT_SolutionStepTimer);
             this->timer.initTimer(EngngModelTimer :: EMTT_NetComputationalStepTimer);
             sp->preInitializeNextStep();
@@ -453,6 +471,9 @@ StaggeredProblem :: solveYourself()
             sp->giveCurrentStep()->solutionTime = _steptime;
             
             this->terminate( sp->giveCurrentStep() );
+
+            // update progress bar
+            if ( showProgress ) oofem_ProgressBar.update( stepCounter / ( double ) totalSteps, progressMsg.c_str() );
 
             OOFEM_LOG_INFO("EngngModel info: user time consumed by solution step %d: %.2fs\n",
                            sp->giveCurrentStep()->giveNumber(), _steptime);
@@ -523,6 +544,8 @@ StaggeredProblem :: terminate(TimeStep *tStep)
     for ( auto &emodel: emodelList ) {
         emodel->terminate(tStep);
     }
+    this->saveStepContext(tStep, CM_State );
+
 }
 
 void

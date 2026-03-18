@@ -73,6 +73,13 @@ protected:
 public:
     /// Constructor, creates empty send and receive com buffs in MPI_COMM_WORLD.
     ProcessCommunicatorBuff(CommBuffType t);
+    //Make ProcessCommunicatorBuff explicitly move‑only
+    ProcessCommunicatorBuff( const ProcessCommunicatorBuff & )            = delete;
+    ProcessCommunicatorBuff &operator=( const ProcessCommunicatorBuff & ) = delete;
+
+    ProcessCommunicatorBuff( ProcessCommunicatorBuff && )            = default;
+    ProcessCommunicatorBuff &operator=( ProcessCommunicatorBuff && ) = default;
+
 
     int givePackSizeOfInt(std::size_t count) override { return send_buff->givePackSizeOfInt(count); }
     int givePackSizeOfDouble(std::size_t count) override { return send_buff->givePackSizeOfDouble(count); }

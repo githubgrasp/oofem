@@ -745,6 +745,10 @@ AdaptiveNonLinearStatic :: restoreContext(DataStream &stream, ContextMode mode)
     }
 }
 
+void AdaptiveNonLinearStatic::saveStepContext(TimeStep *tStep, ContextMode mode) {
+    // force definition context to be saved, as it is needed for correct adaptive restore
+    NonLinearStatic :: saveStepContext(tStep, mode | CM_Definition); 
+}
 
 void
 AdaptiveNonLinearStatic :: updateDomainLinks()

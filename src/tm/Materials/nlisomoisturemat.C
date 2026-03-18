@@ -34,8 +34,13 @@
 
 #include "tm/Materials/nlisomoisturemat.h"
 #include "gausspoint.h"
+#include "engngm.h"
+#include "fieldmanager.h"
+#include "valuemodetype.h"
 #include "mathfem.h"
 #include "classfactory.h"
+#include "contextioerr.h"
+#include "floatarray.h"
 
 namespace oofem {
 REGISTER_Material(NlIsoMoistureMaterial);
@@ -408,7 +413,22 @@ NlIsoMoistureMaterial::giveTemperature(GaussPoint *gp, TimeStep *tStep) const
 {
     double temperature;
 
-    if ( this->T_TF !=  0 ) {
+    /* check for external source, if provided */
+    FieldManager *fm = domain->giveEngngModel()->giveContext()->giveFieldManager();
+    FieldPtr tf;
+
+    if ( ( tf = fm->giveField(FT_Temperature) ) ) {
+        // temperature field registered
+        Coordinates gcoords; 
+        FloatArray temp;
+        int err;
+        gp->giveElement()->computeGlobalCoordinates(gcoords, gp->giveNaturalCoordinates() );
+        if ( ( err = tf->evaluateAt(temp, gcoords, VM_Total, tStep) ) ) {
+            OOFEM_ERROR("tf->evaluateAt failed, element %d, error code %d", gp->giveElement()->giveNumber(), err);
+        }
+        temperature = temp.at(1);
+
+    } else if ( this->T_TF !=  0 ) {
         temperature = domain->giveFunction(this->T_TF)->evaluateAtTime(tStep->giveTargetTime() );
     } else {
         temperature = this->T;
@@ -448,4 +468,281 @@ NlIsoMoistureMaterial::computeInternalSourceVector(FloatArray &val, GaussPoint *
         OOFEM_ERROR("Undefined mode %s\n", __ValueModeTypeToString(mode) );
     }
 }
+
+
+void NlIsoMoistureMaterial :: saveContext(DataStream &stream, ContextMode mode)
+{
+    IsotropicMoistureTransferMaterial :: saveContext(stream, mode);
+
+    if ( ( mode & CM_Definition ) ) {
+        if ( !stream.write(Isotherm) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(rhodry) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(moistureCapacity) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        iso_h.storeYourself(stream);
+        iso_wh.storeYourself(stream);
+
+        if ( !stream.write(dd) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(wf) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(b) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(uh) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(A) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(nn) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(c) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(k) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(Vm) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(hx) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(dx) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(iso_offset) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if (!stream.write(c1) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if (!stream.write(c2) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(capa2) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(vG_b) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(vG_m) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(wn) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        alpha.saveContext(stream, mode);
+
+        if ( !stream.write(Permeability) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        perm_h.storeYourself(stream);
+        perm_ch.storeYourself(stream); 
+
+        if ( !stream.write(C1) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(n) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(alpha0) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(hC) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(alphah) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(betah) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(gammah) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(CapillaryTransport) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(Abs) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(mu) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(PL) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(timeScale) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(capillary_transport_coef) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(T) ) {   
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(T_TF) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        capPerm_h.storeYourself(stream);
+        capPerm_Dwh.storeYourself(stream);
+        capPerm_wV.storeYourself(stream);
+        capPerm_DwwV.storeYourself(stream);
+        if ( !stream.write(rhoH2O) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+    }
+}
+
+
+void NlIsoMoistureMaterial :: restoreContext(DataStream &stream, ContextMode mode)
+{
+    IsotropicMoistureTransferMaterial :: restoreContext(stream, mode);
+
+    if ( mode & CM_Definition ) {
+        int ival;
+        if ( !stream.read(ival) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        Isotherm = (isothermType)ival;
+        if ( !stream.read(rhodry) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(moistureCapacity) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        iso_h.restoreYourself(stream);
+        iso_wh.restoreYourself(stream);
+
+        if ( !stream.read(dd) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(wf) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(b) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(uh) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(A) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(nn) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(c) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(k) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(Vm) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(hx) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(dx) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(iso_offset) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if (!stream.read(c1) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if (!stream.read(c2) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(capa2) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(vG_b) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(vG_m) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(wn) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        alpha.restoreContext(stream, mode);
+
+        if ( !stream.read(ival) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        Permeability = (permeabilityType)ival;
+
+        perm_h.restoreYourself(stream);
+        perm_ch.restoreYourself(stream); 
+
+        if ( !stream.read(C1) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(n) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(alpha0) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(hC) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(alphah) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(betah) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(gammah) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(ival) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        CapillaryTransport = (capillaryTransportType)ival;
+
+        if ( !stream.read(Abs) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(mu) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(PL) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(timeScale) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(capillary_transport_coef) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(T) ) {   
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(T_TF) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        capPerm_h.restoreYourself(stream);
+        capPerm_Dwh.restoreYourself(stream);
+        capPerm_wV.restoreYourself(stream);
+        capPerm_DwwV.restoreYourself(stream);
+        if ( !stream.read(rhoH2O) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+    }
+}
+
 } // end namespace oofem

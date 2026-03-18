@@ -1546,33 +1546,16 @@ FCMMaterial :: updateCrackStatus(GaussPoint *gp) const
                 // closed previously
             } else if ( crackStrain.at(i) <= 0. ) {
 
-	      if (status->giveCrackStatus(i) != pscm_NONE ) {
-                status->setTempCrackStatus(i, pscm_CLOSED);
-	      } else {
-                status->setTempCrackStatus(i, pscm_NONE);
-		status->setTempMaxCrackStrain(i, 0.);
-	      }
-
-
-		//                if ( status->giveMaxCrackStrain(i) == 0. ) { //not existing crack in previous step that wants to close?
-
-
-		
-              //      status->setTempMaxCrackStrain(i, 0.);
-
-		    //		    status->setTempCrackStatus(i, pscm_NONE);
-		    
-                    //	  status->setTempCrackStatus(i, pscm_NONE);
-                    // CLOSED status should have similar behavior and it is safer. The status can be changed within one iteration loop on the local scale
-                    // the crack can be changed from CLOSED to NONE during overall updating
-                    //	  status->setTempCrackStatus(i, pscm_CLOSED);
-	      //}
-
-                // unloading--reloading
+                if (status->giveCrackStatus(i) != pscm_NONE ) {
+                        status->setTempCrackStatus(i, pscm_CLOSED);
+                } else {
+                        status->setTempCrackStatus(i, pscm_NONE);
+                status->setTempMaxCrackStrain(i, 0.);
+                }
             } else if ( crackStrain.at(i) < maxCrackStrain.at(i) ) {
                 status->setTempCrackStatus(i, pscm_UNLO_RELO);
             } else {
-	      OOFEM_ERROR("Unexpected value of %d-th cracking strain %f ", i, crackStrain.at(i) );
+	            OOFEM_ERROR("Unexpected value of %d-th cracking strain %f ", i, crackStrain.at(i) );
             }
         }
     }
@@ -2553,10 +2536,6 @@ FCMMaterialStatus :: saveContext(DataStream &stream, ContextMode mode)
     }
 
     if ( ( iores = charLengths.storeYourself(stream) ) != CIO_OK ) {
-        THROW_CIOERR(iores);
-    }
-
-    if ( ( iores = crackStrainVector.storeYourself(stream) ) != CIO_OK ) {
         THROW_CIOERR(iores);
     }
 

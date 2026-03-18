@@ -38,6 +38,8 @@
 #include "gausspoint.h"
 #include "element.h"
 #include "floatarray.h"
+#include "contextioerr.h"
+#include "datareader.h"
 
 namespace oofem {
 REGISTER_CrossSection(StructuralInterfaceCrossSection);
@@ -195,5 +197,28 @@ StructuralInterfaceCrossSection :: estimatePackSize(DataStream &buff, GaussPoint
 {
     return this->giveInterfaceMaterial()->estimatePackSize(buff, gp);
 }
+
+void 
+StructuralInterfaceCrossSection::saveContext(DataStream &stream, ContextMode mode) 
+{
+    CrossSection::saveContext(stream, mode);
+    if ( ( mode & CM_Definition ) ) {
+        if ( !stream.write(materialNum) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+    }
+}
+
+void 
+StructuralInterfaceCrossSection::restoreContext(DataStream &stream, ContextMode mode) 
+{
+    CrossSection::restoreContext(stream, mode);
+    if ( ( mode & CM_Definition ) ) {
+        if ( !stream.read(materialNum) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+    }
+}
+
 
 } // end namespace oofem
