@@ -144,6 +144,51 @@ namespace oofem {
         out.type = VarSlot::Type::MATRIX;
     };
 
+    // define gradient of the unknown field variable (displacement) functor
+    auto MPMfunctor_Grad = [](const std::vector<const VarSlot*>& args, VarSlot& out) {
+        // Compute the gradient of the first argument (assumed to be a scalar field) 
+        // ARGS: args[0] - pointer to VarSlot containing the scalar field (as a user pointer)
+        //       args[1] - pointer to GaussPoint (as a user pointer)
+        // OUTPUT: out - VarSlot to store the resulting symmetric gradient matrix
+        std::cout << "    [C++ Callback] Called Grad functor with " << args.size() << " arguments." << std::endl;
+        if (args.size() != 2) {
+            OOFEM_ERROR("MPMfunctor_Grad functor expects exactly 2 arguments: scalar field (Variable class) and GaussPoint.");
+        }
+        // 1. Retrieve the generic pointers to arguments
+        void* raw_ptr0 = std::get<void*>(args[0]->value);
+        void* raw_ptr1 = std::get<void*>(args[1]->value);
+        // 2. Cast back to your specific application type (Variable class)
+        const Variable* v = static_cast<const Variable*>(raw_ptr0);
+        GaussPoint* gp = static_cast<GaussPoint*>(raw_ptr1);
+        const MPElement* cell = static_cast<const MPElement*>(gp->giveElement());
+        const MaterialMode mmode = gp->giveMaterialMode();
+
+
+        // functor logic
+        if (v->size != 1) {
+            OOFEM_ERROR("MPMfunctor_Grad functor expects a scalar field variable (size=1).");
+        }
+        FloatMatrix answer;
+        const FEInterpolation* interpol = v->interpolation;
+
+        FloatMatrix dndx, answerT;
+        interpol->evaldNdx(dndx, gp->giveNaturalCoordinates(), FEIElementGeometryWrapper(cell));
+        if (mmodeIs1D(mmode)) {
+            answerT.beSubMatrixOf(dndx, 1, dndx.rows(), 1, 1);
+        } else if (mmodeIs2D(mmode)) {  
+            answerT.beSubMatrixOf(dndx, 1, dndx.rows(), 1, 2);
+        } else if (mmodeIs3D(mmode)) { 
+            answerT.beSubMatrixOf(dndx, 1, dndx.rows(), 1, 3);
+        } else {
+            OOFEM_ERROR("Unsupported material mode %d", mmode);
+        } 
+
+        answer.beTranspositionOf(answerT); // Gradient of scalar field is just dN/dx, size will be (nnodes x 1) -> (1 x nnodes) after transpose
+
+        out.value = answer;
+        out.type = VarSlot::Type::MATRIX;
+    };
+
     auto MPMfunctor_Dm = [](const std::vector<const VarSlot*>& args, VarSlot& out) {
         // Compute the symmetric gradient of the first argument (assumed to be a vector field) 
         // ARGS: args[0] - pointer to GaussPoint (as a user pointer)
@@ -239,6 +284,7 @@ class SymbolicTerm : public GenericCellTerm {
         compiler.register_function("B");
         compiler.register_function("Dm"); 
         compiler.register_function("Sig");
+        compiler.register_function("Grad");
 
         try {
             compiler.compile_script(lhsExpression, lhsExpressionContext.program, lhsExpressionContext.symbols, lhsExpressionContext.constants, pool_ptr);
@@ -267,6 +313,7 @@ class SymbolicTerm : public GenericCellTerm {
             vm.register_functor("B", MPMfunctor_B);
             vm.register_functor("Dm", MPMfunctor_Dm);
             vm.register_functor("Sig", MPMfunctor_Sig);
+            vm.register_functor("Grad", MPMfunctor_Grad);
             vm.execute(context.program);
             if (vm.get_result().type == VarSlot::Type::MATRIX) {
                 answer = std::get<FloatMatrix>(vm.get_result().value);
