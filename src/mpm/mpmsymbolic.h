@@ -210,9 +210,6 @@ namespace oofem {
         
 
         // functor logic
-        if (v->size != 1) {
-            OOFEM_ERROR("MPMfunctor_N functor expects a field variable.");
-        }
         FloatMatrix N;
         FloatArray nvec;
 
