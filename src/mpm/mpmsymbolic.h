@@ -189,6 +189,42 @@ namespace oofem {
         out.type = VarSlot::Type::MATRIX;
     };
 
+    // define Interpolation op (interpolation matrix) of the unknown field variable functor
+    auto MPMfunctor_N= [](const std::vector<const VarSlot*>& args, VarSlot& out) {
+        // Compute the gradient of the first argument (assumed to be a scalar field) 
+        // ARGS: args[0] - pointer to VarSlot containing the scalar field (as a user pointer)
+        //       args[1] - pointer to GaussPoint (as a user pointer)
+        // OUTPUT: out - VarSlot to store the resulting interpolation matrix
+        std::cout << "    [C++ Callback] Called N functor with " << args.size() << " arguments." << std::endl;
+        if (args.size() != 2) {
+            OOFEM_ERROR("MPMfunctor_N functor expects exactly 2 arguments: scalar field (Variable class) and GaussPoint.");
+        }
+        // 1. Retrieve the generic pointers to arguments
+        void* raw_ptr0 = std::get<void*>(args[0]->value);
+        void* raw_ptr1 = std::get<void*>(args[1]->value);
+        // 2. Cast back to your specific application type (Variable class)
+        const Variable* v = static_cast<const Variable*>(raw_ptr0);
+        GaussPoint* gp = static_cast<GaussPoint*>(raw_ptr1);
+        const MPElement* cell = static_cast<const MPElement*>(gp->giveElement());
+        //const MaterialMode mmode = gp->giveMaterialMode();
+        
+
+        // functor logic
+        if (v->size != 1) {
+            OOFEM_ERROR("MPMfunctor_N functor expects a field variable.");
+        }
+        FloatMatrix N;
+        FloatArray nvec;
+
+        const FEInterpolation* interpol = v->interpolation;
+
+        interpol->evalN(nvec, gp->giveNaturalCoordinates(), FEIElementGeometryWrapper(cell));
+        N.beNMatrixOf(nvec, v->size);
+
+        out.value = N;
+        out.type = VarSlot::Type::MATRIX;
+    };
+
     auto MPMfunctor_Dm = [](const std::vector<const VarSlot*>& args, VarSlot& out) {
         // Compute the symmetric gradient of the first argument (assumed to be a vector field) 
         // ARGS: args[0] - pointer to GaussPoint (as a user pointer)
@@ -282,6 +318,7 @@ class SymbolicTerm : public GenericCellTerm {
 
         // Register variables (classes)
         compiler.register_function("B");
+        compiler.register_function("N");
         compiler.register_function("Dm"); 
         compiler.register_function("Sig");
         compiler.register_function("Grad");
@@ -311,6 +348,7 @@ class SymbolicTerm : public GenericCellTerm {
             vm.set_variable("ts", (void*)tStep);
 
             vm.register_functor("B", MPMfunctor_B);
+            vm.register_functor("N", MPMfunctor_N);
             vm.register_functor("Dm", MPMfunctor_Dm);
             vm.register_functor("Sig", MPMfunctor_Sig);
             vm.register_functor("Grad", MPMfunctor_Grad);
