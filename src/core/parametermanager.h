@@ -63,6 +63,16 @@ namespace oofem {
         } \
     }
 
+#define PM_UPDATE_ENUM_ARRAY_PARAMETER(_enumtype, _val, _pm, _ir, _componentnum, _paramkey, _prio) \
+    { \
+        std::size_t _indx=_paramkey.getIndex(); \
+        const char* _kwd = _paramkey.getName().c_str(); \
+        if ((_prio >= _pm.getPriority(_componentnum, _indx)) && (_ir->hasField(_kwd))) { \
+            _ir->giveField<_enumtype>(_val, _kwd); \
+            _pm.setPriority(_componentnum, _indx, _prio); \
+        } \
+    }
+
 #define PM_UPDATE_PARAMETER_AND_REPORT(_val, _pm, _ir, _componentnum, _paramkey, _prio, _flag) \
     { \
         std::size_t _indx=_paramkey.getIndex(); \

@@ -326,13 +326,14 @@ const char *__Element_Geometry_TypeToString(Element_Geometry_Type _value) {
     TO_STRING_BODY(Element_Geometry_Type_DEF)
 }
 
-std :: string __DofIDItemToString(DofIDItem _value) {
+std::string DofIDItemToString(DofIDItem _value) {
     if ( _value >= MaxDofID ) {
         char tmp [ 1024 ];
         sprintf(tmp, "X_%d", _value - MaxDofID + 1);
-        return tmp;
+        return std::string(tmp);
+    } else {
+        return std::string(__DofIDItemToString(_value));
     }
-    TO_STRING_BODY(DofIDItem_DEF)
 }
 
 const char *__CharTypeToString(CharType _value) {
