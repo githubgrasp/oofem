@@ -35,12 +35,19 @@
 #ifndef dofiditemh
 #define dofiditemh
 
-#include "enumitem.h"
-
-#include <string>
+#include "enum.h"
 
 namespace oofem {
-#define DofIDItem_DEF \
+ /**
+ * Type representing particular dof type. Values of this type describe the physical meaning of
+ * available DOFs.
+ * @note{The implementation of Node::computeGNTransformation rely on D_u, D_v and D_w (R_u, R_v, R_w) order.
+ * Do not change their order and do not insert any values between these values.}
+ */
+
+#define ENUM_TYPE DofIDItem
+//#define ENUM_PREFIX "_"
+#define ENUM_DEF \
     ENUM_ITEM_WITH_VALUE(Undef, 0) /* Error value */ \
     ENUM_ITEM_WITH_VALUE(D_u, 1) /* u-displacement (in direction of x-axis) */ \
     ENUM_ITEM_WITH_VALUE(D_v, 2) /* v-displacement (in direction of y-axis) */ \
@@ -105,22 +112,10 @@ namespace oofem {
         ENUM_ITEM_WITH_VALUE(S_w, 53) /* Macroscopic reinforcement slip field in z-direction */          \
 \
         ENUM_ITEM_WITH_VALUE(VF, 54) /* Volume fraction */          \
-      
-/**
- * Type representing particular dof type. Values of this type describe the physical meaning of
- * available DOFs.
- * @note{The implementation of Node::computeGNTransformation rely on D_u, D_v and D_w (R_u, R_v, R_w) order.
- * Do not change their order and do not insert any values between these values.}
- */
-enum DofIDItem {
-    DofIDItem_DEF
-    MaxDofID = 500
-};
+        ENUM_ITEM_WITH_VALUE(MaxDofID, 500) /* Maximum value of DofIDItem, used for validation and array sizing */
 
-#undef ENUM_ITEM
-#undef ENUM_ITEM_WITH_VALUE
-#undef enumitem_h
+#include "enum-impl.h"
+std::string DofIDItemToString(DofIDItem _value);
 
-std :: string __DofIDItemToString(DofIDItem _value);
 } // end namespace oofem
 #endif // dofiditem_h

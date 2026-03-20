@@ -498,7 +498,7 @@ StaggeredSolver :: checkConvergenceDofIdArray(FloatArray &RT, FloatArray &F, Flo
             }
 
             
-            OOFEM_LOG_INFO( "  %s:", __DofIDItemToString( ( DofIDItem ) dg ).c_str() );
+            OOFEM_LOG_INFO( "  %s:", DofIDItemToString( ( DofIDItem ) dg ).c_str() );
 
             if ( rtolf.at(1) > 0.0 ) {
                 //  compute a relative error norm
