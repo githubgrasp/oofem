@@ -9,6 +9,7 @@ Variable name "w" interpolation "feiquad" type 1 quantity 0 size 2 dofs 2 1 2 # 
 Variable name "p" interpolation "feilin"  type 0 quantity 3 size 1 dofs 1 11 # pressure 
 Variable name "dp" interpolation "feilin" type 0 quantity 3 size 1 dofs 1 11 # test function
 BTSigmaTerm 1 variable "u"  testvariable "w" mmode 7 lhsmatmode 29
+# symbolic equivalent of BTamNTerm
 SymbolicTerm 2 variable "p"  testvariable "w" mmode 7 lexpression "Div(v,gp).T*N(u,gp)" rexpression "Div(v,gp).T*N(u,gp)*ru(u, cell, ts)"
 #BTamNTerm 2 variable "p" testvariable "w" mmode 7 atype 28 
 NTamTBTerm 3 variable "u" testvariable "dp" mmode 7 atype 28 uvmt 1
