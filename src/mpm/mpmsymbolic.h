@@ -189,6 +189,42 @@ namespace oofem {
         out.type = VarSlot::Type::MATRIX;
     };
 
+    // define divergence op functor on vector field variable (e.g. velocity) 
+    auto MPMfunctor_Div = [](const std::vector<const VarSlot*>& args, VarSlot& out) {
+        // Compute the divergence of the first argument (assumed to be a vector field) 
+        // ARGS: args[0] - pointer to VarSlot containing the vector field (as a user pointer)
+        //       args[1] - pointer to GaussPoint (as a user pointer)
+        // OUTPUT: out - VarSlot to store the resulting divergence (scalar)
+        std::cout << "    [C++ Callback] Called Div functor with " << args.size() << " arguments." << std::endl;
+        if (args.size() != 2) {
+            OOFEM_ERROR("MPMfunctor_Div functor expects exactly 2 arguments: vector field (Variable class) and GaussPoint.");
+        }
+        // 1. Retrieve the generic pointers to arguments
+        void* raw_ptr0 = std::get<void*>(args[0]->value);
+        void* raw_ptr1 = std::get<void*>(args[1]->value);
+        // 2. Cast back to your specific application type (Variable class)
+        const Variable* v = static_cast<const Variable*>(raw_ptr0);
+        GaussPoint* gp = static_cast<GaussPoint*>(raw_ptr1);
+        const MPElement* cell = static_cast<const MPElement*>(gp->giveElement());
+        const MaterialMode mmode = gp->giveMaterialMode();
+        // functor logic
+        FloatMatrix answer;
+        const FEInterpolation* interpol = v->interpolation;
+
+        FloatMatrix dndx;
+        interpol->evaldNdx(dndx, gp->giveNaturalCoordinates(), FEIElementGeometryWrapper(cell));
+        int nnodes = interpol->giveNumberOfNodes(cell->giveGeometryType());
+        answer.resize(1, nnodes*v->size);
+        int nsd = 1*mmodeIs1D(mmode) + 2*mmodeIs2D(mmode) + 3*mmodeIs3D(mmode);
+        for (int i = 0; i< nnodes; i++) {
+            for (int j = 0; j< nsd; j++) {
+                answer(0, i*v->size+j) = dndx(i, j);
+            }
+        }
+        out.value = answer;
+        out.type = VarSlot::Type::MATRIX;   
+    };
+
     // define Interpolation op (interpolation matrix) of the unknown field variable functor
     auto MPMfunctor_N= [](const std::vector<const VarSlot*>& args, VarSlot& out) {
         // Compute the gradient of the first argument (assumed to be a scalar field) 
@@ -319,6 +355,7 @@ class SymbolicTerm : public GenericCellTerm {
         compiler.register_function("Dm"); 
         compiler.register_function("Sig");
         compiler.register_function("Grad");
+        compiler.register_function("Div");
 
         try {
             compiler.compile_script(lhsExpression, lhsExpressionContext.program, lhsExpressionContext.symbols, lhsExpressionContext.constants, pool_ptr);
@@ -349,6 +386,8 @@ class SymbolicTerm : public GenericCellTerm {
             vm.register_functor("Dm", MPMfunctor_Dm);
             vm.register_functor("Sig", MPMfunctor_Sig);
             vm.register_functor("Grad", MPMfunctor_Grad);
+            vm.register_functor("Div", MPMfunctor_Div);
+            
             vm.execute(context.program);
             if (vm.get_result().type == VarSlot::Type::MATRIX) {
                 answer = std::get<FloatMatrix>(vm.get_result().value);
