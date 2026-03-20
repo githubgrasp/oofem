@@ -54,7 +54,8 @@ Variable::initializeFrom(const std::shared_ptr<InputRecord> &ir)
     // read variable size
     IR_GIVE_FIELD(ir, this->size, "size");
     // read dofs 
-    IR_GIVE_FIELD(ir, this->dofIDs, "dofs");
+    // IR_GIVE_FIELD(ir, this->dofIDs, "dofs");
+    IR_GIVE_ENUM_ARRAY_FIELD(ir, this->dofIDs, "dofs", DofIDItem);
 }    
 
 void
