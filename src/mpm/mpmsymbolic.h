@@ -316,6 +316,35 @@ namespace oofem {
         out.type = VarSlot::Type::MATRIX;
     };
 
+    // define functor to return element field nodal values (e.g. temperature at nodes) as a column matrix
+    auto MPMfunctor_FieldNodalValues = [](const std::vector<const VarSlot*>& args, VarSlot& out) {
+        // Compute the nodal values of the first argument (assumed to be a field) at intrinsic time of time step.
+        // ARGS: args[0] - pointer to Variable (as a user pointer)
+        //       args[1] - element (cell) (as a user pointer)
+        //       args[2] - timep step (as a user pointer)
+        // OUTPUT: out - VarSlot to store the resulting nodal values column matrix (dof ordering determined by field dof ordering)
+        std::cout << "    [C++ Callback] Called FieldNodalValues functor with " << args.size() << " arguments." << std::endl;
+        if (args.size() != 3) {
+            OOFEM_ERROR("MPMfunctor_FieldNodalValues functor expects exactly 3 arguments: Variable, Element(cell), and TimeStep(ts)");
+        }
+        // 1. Retrieve the generic pointers to arguments
+        void* raw_ptr0 = std::get<void*>(args[0]->value);
+        void* raw_ptr1 = std::get<void*>(args[1]->value);
+        void* raw_ptr2 = std::get<void*>(args[2]->value);
+        // 2. Cast back to your specific application type (Variable class)
+        const Variable* v = static_cast<const Variable*>(raw_ptr0);
+        MPElement* cell = static_cast<MPElement*>(raw_ptr1);
+        TimeStep* tstep = static_cast<TimeStep*>(raw_ptr2);
+
+        // functor logic
+        FloatArray u;
+        cell->getUnknownVector(u, v, VM_TotalIntrinsic, tstep); // get nodal values of the variable at current time step
+        FloatMatrix answer = FloatMatrix::fromArray(u);
+
+        out.value = answer;
+        out.type = VarSlot::Type::MATRIX;
+    }; 
+
 /**
  * @brief Symbolic term allowing to parse and evaluate user defined expressions
  * 
@@ -356,6 +385,7 @@ class SymbolicTerm : public GenericCellTerm {
         compiler.register_function("Sig");
         compiler.register_function("Grad");
         compiler.register_function("Div");
+        compiler.register_function("ru");
 
         try {
             compiler.compile_script(lhsExpression, lhsExpressionContext.program, lhsExpressionContext.symbols, lhsExpressionContext.constants, pool_ptr);
@@ -380,6 +410,8 @@ class SymbolicTerm : public GenericCellTerm {
             vm.set_variable("v",  (void*)this->testField);
             vm.set_variable("gp", (void*)gp);
             vm.set_variable("ts", (void*)tStep);
+            vm.set_variable("cell", (void*)&cell);
+
 
             vm.register_functor("B", MPMfunctor_B);
             vm.register_functor("N", MPMfunctor_N);
@@ -387,6 +419,7 @@ class SymbolicTerm : public GenericCellTerm {
             vm.register_functor("Sig", MPMfunctor_Sig);
             vm.register_functor("Grad", MPMfunctor_Grad);
             vm.register_functor("Div", MPMfunctor_Div);
+            vm.register_functor("ru", MPMfunctor_FieldNodalValues);
             
             vm.execute(context.program);
             if (vm.get_result().type == VarSlot::Type::MATRIX) {
