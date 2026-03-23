@@ -17,7 +17,7 @@ NTfTerm 5 variable "u" testvariable "w" mmode 6 flux 2 0. 6.25
 Integral 1 domain 1 set 1 term 1
 Integral 2 domain 1 set 1 term 2 factor -1.0
 Integral 3 domain 1 set 1 term 3 factor -1.0
-Integral 4 domain 1 set 1 term 4 factor -1.0
+Integral 4 domain 1 set 1 term 4
 Integral 5 domain 1 set 2 term 5
 domain HeatTransfer
 outputmanager tstep_all dofman_all element_all
@@ -50,7 +50,7 @@ set 2 elementranges  {(5 6)}
 set 3 elementedges 4 1 4 3 4
 #%BEGIN_CHECK% 
 ## check nodes 
-#NODE tStep 1 number 9 dof 1 unknown d value -4.57798522e+00 tolerance 1.e-6
-#NODE tStep 1 number 9 dof 2 unknown d value 6.53588061e+00 tolerance 1.e-6
+#NODE tStep 1 number 9 dof 1 unknown d value -4.57760080 tolerance 1.e-6
+#NODE tStep 1 number 9 dof 2 unknown d value 6.53540269 tolerance 1.e-6
 #%END_CHECK%
 
