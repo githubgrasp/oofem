@@ -133,6 +133,10 @@ namespace oofem {
                 Integral* integral = this->integralList[i-1].get();
                 integral->assemble_rhs (rhs, EModelDefaultEquationNumbering(), tStep); 
             }
+            // experimental: allow traditional BCs to contribute to rhs as well by treating them as integrals
+            this->assembleVectorFromBC(rhs, tStep, ExternalForceAssembler(), VM_Total,
+                                       EModelDefaultEquationNumbering(), this->giveDomain(1) );
+
             this->updateSharedDofManagers(rhs, EModelDefaultEquationNumbering(), LoadExchangeTag);
 
             residualVector.resize(neq);
