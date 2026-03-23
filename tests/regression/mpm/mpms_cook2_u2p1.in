@@ -2,6 +2,7 @@ mpms_cook2_u2p1.out
 Demo of symbolic mpm problem; Cook membrane benchmark
 # 
 test nsteps 1 nvariables 4 nterms 5 nintegrals 5 lhsterms 4 1 2 3 4 rhsterms 1 5 nmodules 1 profileopt 1
+#mpmsymbolicstationaryproblem nsteps 1 nvariables 4 nterms 5 nintegrals 5 lhsterms 4 1 2 3 4 rhsterms 1 5 nmodules 1 profileopt 1
 #vtkxml primvars 1 1 tstep_all
 errorcheck
 Variable name "u" interpolation "feiquad" type 1 quantity 0 size 2 dofs 2 1 2 # displacement 
@@ -10,10 +11,12 @@ Variable name "p" interpolation "feilin"  type 0 quantity 3 size 1 dofs 1 11 # p
 Variable name "dp" interpolation "feilin" type 0 quantity 3 size 1 dofs 1 11 # test function
 BTSigmaTerm 1 variable "u"  testvariable "w" mmode 7 lhsmatmode 29
 # symbolic equivalent of BTamNTerm
-SymbolicTerm 2 variable "p"  testvariable "w" mmode 7 lexpression "Div(v,gp).T*N(u,gp)" rexpression "Div(v,gp).T*N(u,gp)*ru(u, cell, ts)"
 #BTamNTerm 2 variable "p" testvariable "w" mmode 7 atype 28 
-NTamTBTerm 3 variable "u" testvariable "dp" mmode 7 atype 28 uvmt 1
+SymbolicTerm 2 variable "p"  testvariable "w" mmode 7 lexpression "Div(v,gp).T*N(u,gp)" rexpression "Div(v,gp).T*N(u,gp)*ru(u, cell, ts)"
+#NTamTBTerm 3 variable "u" testvariable "dp" mmode 7 atype 28 uvmt 1
+SymbolicTerm 3 variable "u"  testvariable "dp" mmode 7 lexpression "N(v,gp).T*Div(u,gp)" rexpression "N(v,gp).T*Div(u,gp)*ru(u, cell, ts)"
 NTcN 4 variable "p" testvariable "dp" mmode 7 ctype 27  uvmt 1
+#SymbolicTerm 4 variable "p"  testvariable "dp" mmode 7 ctype 27 uvmt 1 lexpression "N(v,gp).T*2.4000000000024e-07*N(u,gp)" rexpression "N(v,gp).T*2.4000000000024e-07*N(u,gp)*ru(u, cell, ts)"
 NTfTerm 5 variable "u" testvariable "w" mmode 6 flux 2 0. 6.25
 #NTfTerm 5 variable "u" testvariable "w" mmode 6 flux 2 0. 31.25
 Integral 1 domain 1 set 1 term 1
