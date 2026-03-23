@@ -24,7 +24,7 @@
       <Integral domain="1" set="1" term="1"/>
       <Integral domain="1" set="1" term="2" factor="-1.0"/>
       <Integral domain="1" set="1" term="3" factor="-1.0"/>
-      <Integral domain="1" set="1" term="4" factor="-1.0"/>
+      <Integral domain="1" set="1" term="4"/>
       <Integral id="5" domain="1" set="2" term="5"/>
     </MPMIntegrals>
   </Analysis>
@@ -73,8 +73,8 @@
   <ExportModules>
     <errorcheck>
       <!-- check nodes -->
-      <NODE tStep="1" number="9" dof="1" unknown="d" value="-3.04792369" tolerance="1e-06"/>
-      <NODE tStep="1" number="9" dof="2" unknown="d" value="4.75052676" tolerance="1e-06"/>
+      <NODE tStep="1" number="9" dof="1" unknown="d" value="-3.04777375" tolerance="1e-06"/>
+      <NODE tStep="1" number="9" dof="2" unknown="d" value="4.75029998" tolerance="1e-06"/>
     </errorcheck>
   </ExportModules>
 </oofem>
