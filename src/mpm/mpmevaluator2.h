@@ -261,7 +261,9 @@ private:
                           std::map<std::string, int>& symbols, std::map<int, VarData>& constants, int& pool_ptr, int target_slot) {
         
         // Regex: Matches Matrices [[..]], Slices [..], Logic (&&, ||), Comparisons (>=, ==), Math, Parens
-        std::regex re(R"(\[\[.*?\]\]|\[.*?\]|[a-zA-Z_]\w*|\d*\.?\d+|&&|\|\||==|!=|>=|<=|>|<|\.T|\+|\-|\*|\(|\)|,)");
+        //std::regex re(R"(\[\[.*?\]\]|\[.*?\]|[a-zA-Z_]\w*|\d*\.?\d+|&&|\|\||==|!=|>=|<=|>|<|\.T|\+|\-|\*|\(|\)|,)");
+        // Added (?:[eE][+-]?\d+)? to the number matching block
+        std::regex re(R"(\[\[.*?\]\]|\[.*?\]|[a-zA-Z_]\w*|\d*\.?\d+(?:[eE][+-]?\d+)?|&&|\|\||==|!=|>=|<=|>|<|\.T|\+|\-|\*|\(|\)|,)");
         
         auto it = std::sregex_token_iterator(expr.begin(), expr.end(), re);
         std::vector<std::string> tokens(it, std::sregex_token_iterator());
