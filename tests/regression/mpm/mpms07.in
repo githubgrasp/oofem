@@ -1,7 +1,7 @@
 mpms07.out
 Demo of symbolic mpm expression parser 
 # 2d plane stress cantilever 
-test nsteps 1 nvariables 2 nterms 2 nintegrals 2 lhsterms 1 1 rhsterms 1 2 nmodules 1
+mpmsymbolicstationaryproblem nsteps 1 nvariables 2 nterms 2 nintegrals 2 lhsterms 1 1 rhsterms 1 2 nmodules 1
 errorcheck
 #Variable name "u" interpolation "feilin" type 1 quantity 0 size 2 dofs 2 1 2 # temperature 
 #Variable name "w" interpolation "feilin" type 1 quantity 0 size 2 dofs 2 1 2 # test function
