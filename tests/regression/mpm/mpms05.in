@@ -1,7 +1,7 @@
 mpms05.out
 Demo of symbolic mpm expression parser 
 # 
-test nsteps 1 nvariables 2 nterms 1 nintegrals 1 lhsterms 1 1 rhsterms 0 nmodules 0
+mpmsymbolicstationaryproblem nsteps 1 nvariables 2 nterms 1 nintegrals 1 lhsterms 1 1 rhsterms 0 nmodules 0
 #errorcheck
 Variable name "u" interpolation "feilin" type 1 quantity 0 size 1 dofs 1 1 # displacement 
 Variable name "w" interpolation "feilin" type 1 quantity 0 size 1 dofs 1 1 # test function
