@@ -406,8 +406,8 @@ class SymbolicTerm : public GenericCellTerm {
             MPMEvaluator vm(pool_ptr, context.symbols);
             for(auto const& [idx, val] : context.constants) vm.init_slot(idx, val);
  
-            vm.set_variable("u",  (void*)this->field);
-            vm.set_variable("v",  (void*)this->testField);
+            vm.set_variable(this->field->name.c_str(),  (void*)this->field);
+            vm.set_variable(this->testField->name.c_str(),  (void*)this->testField);
             vm.set_variable("gp", (void*)gp);
             vm.set_variable("ts", (void*)tStep);
             vm.set_variable("cell", (void*)&cell);
