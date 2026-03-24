@@ -41,11 +41,13 @@ namespace oofem {
 void
 Variable::initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
+    // read variable name
+    IR_GIVE_FIELD(ir, this->name, "name");
     // read interpolation type
-    std::string name;
-    IR_GIVE_FIELD(ir, name, "interpolation");
+    std::string iname;
+    IR_GIVE_FIELD(ir, iname, "interpolation");
     // get corresponding interpolation from catalogue
-    this->interpolation = interpolationCatalogue.getInterpolationByName(name);
+    this->interpolation = interpolationCatalogue.getInterpolationByName(iname);
     
     // read variable type
     ir->giveField(this->type,"type");
