@@ -283,11 +283,36 @@ namespace oofem {
         out.type = VarSlot::Type::MATRIX;
     };
 
-    auto MPMfunctor_Sig = [](const std::vector<const VarSlot*>& args, VarSlot& out) {
-        // Compute the symmetric gradient of the first argument (assumed to be a vector field) 
+    auto MPMfunctor_Dm_dev = [](const std::vector<const VarSlot*>& args, VarSlot& out) {
+        // Compute the material deviatoric stiffness matrix  
         // ARGS: args[0] - pointer to GaussPoint (as a user pointer)
         //       args[1] - pointer to TimeStep (as a user pointer)
         // OUTPUT: out - VarSlot to store the resulting symmetric gradient matrix
+        std::cout << "    [C++ Callback] Called Dm_dev functor with " << args.size() << " arguments." << std::endl;
+        if (args.size() != 2) {
+            OOFEM_ERROR("MPMfunctor_Dm_dev functor expects exactly 2 arguments: GaussPoint and TimeStep.");
+        }
+        // 1. Retrieve the generic pointers to arguments
+        void* raw_ptr0 = std::get<void*>(args[0]->value);
+        void* raw_ptr1 = std::get<void*>(args[1]->value);
+        // 2. Cast back to your specific application type (Variable class)
+        GaussPoint* gp = static_cast<GaussPoint*>(raw_ptr0);
+        TimeStep* tstep = static_cast<TimeStep*>(raw_ptr1);
+        // functor logic
+        MPElement* cell = static_cast<MPElement*>(gp->giveElement());
+        StructuralCrossSection* cs = static_cast<StructuralCrossSection*>(cell->giveCrossSection());
+
+        FloatMatrix D;
+        cs->giveMaterial(gp)->giveCharacteristicMatrix(D, DeviatoricStiffness, gp, tstep);
+        out.value = D;
+        out.type = VarSlot::Type::MATRIX;
+    };
+
+    auto MPMfunctor_Sig = [](const std::vector<const VarSlot*>& args, VarSlot& out) {
+        // Compute the Stress vector of the first argument (assumed to be a vector field) 
+        // ARGS: args[0] - pointer to GaussPoint (as a user pointer)
+        //       args[1] - pointer to TimeStep (as a user pointer)
+        // OUTPUT: out - VarSlot to store the resulting stress vector
         std::cout << "    [C++ Callback] Called Sig functor with " << args.size() << " arguments." << std::endl;
         if (args.size() != 3) {
             OOFEM_ERROR("MPMfunctor_Sig functor expects exactly 3 arguments: Field Variable, GaussPoint (gp), TimeStep (ts).");
@@ -311,6 +336,39 @@ namespace oofem {
         cell->getUnknownVector(u, v, VM_TotalIntrinsic, tstep);
         eps.beProductOf(B,u);
         cs->giveMaterial(gp)->giveCharacteristicVector(sig, eps, MatResponseMode::Stress, gp, tstep);
+        answer = FloatMatrix::fromArray(sig);
+        out.value = answer;
+        out.type = VarSlot::Type::MATRIX;
+    };
+
+    auto MPMfunctor_Sig_dev = [](const std::vector<const VarSlot*>& args, VarSlot& out) {
+        // Compute the deviatoric stress vector of the first argument (assumed to be a vector field) 
+        // ARGS: args[0] - pointer to GaussPoint (as a user pointer)
+        //       args[1] - pointer to TimeStep (as a user pointer)
+        // OUTPUT: out - VarSlot to store the resulting deviatoric stress vector
+        std::cout << "    [C++ Callback] Called Sig_dev functor with " << args.size() << " arguments." << std::endl;
+        if (args.size() != 3) {
+            OOFEM_ERROR("MPMfunctor_Sig_dev functor expects exactly 3 arguments: Field Variable, GaussPoint (gp), TimeStep (ts).");
+        }
+        // 1. Retrieve the generic pointers to arguments
+        void* raw_ptr0 = std::get<void*>(args[0]->value);
+        void* raw_ptr1 = std::get<void*>(args[1]->value);
+        void* raw_ptr2 = std::get<void*>(args[2]->value);
+
+        // 2. Cast back to your specific application type (Variable class)
+        const Variable* v = static_cast<const Variable*>(raw_ptr0);
+        GaussPoint* gp = static_cast<GaussPoint*>(raw_ptr1);
+        TimeStep* tstep = static_cast<TimeStep*>(raw_ptr2);
+        // functor logic
+        MPElement* cell = static_cast<MPElement*>(gp->giveElement());
+        StructuralCrossSection* cs = static_cast<StructuralCrossSection*>(cell->giveCrossSection());
+
+        FloatMatrix B, answer;
+        FloatArray u, eps, sig;
+        MPMhelper_Grad_s(B, v, gp);
+        cell->getUnknownVector(u, v, VM_TotalIntrinsic, tstep);
+        eps.beProductOf(B,u);
+        cs->giveMaterial(gp)->giveCharacteristicVector(sig, eps, MatResponseMode::DeviatoricStress, gp, tstep);
         answer = FloatMatrix::fromArray(sig);
         out.value = answer;
         out.type = VarSlot::Type::MATRIX;
@@ -382,7 +440,9 @@ class SymbolicTerm : public GenericCellTerm {
         compiler.register_function("B");
         compiler.register_function("N");
         compiler.register_function("Dm"); 
+        compiler.register_function("Dm_dev");
         compiler.register_function("Sig");
+        compiler.register_function("Sig_dev");
         compiler.register_function("Grad");
         compiler.register_function("Div");
         compiler.register_function("ru");
@@ -416,7 +476,9 @@ class SymbolicTerm : public GenericCellTerm {
             vm.register_functor("B", MPMfunctor_B);
             vm.register_functor("N", MPMfunctor_N);
             vm.register_functor("Dm", MPMfunctor_Dm);
+            vm.register_functor("Dm_dev", MPMfunctor_Dm_dev);
             vm.register_functor("Sig", MPMfunctor_Sig);
+            vm.register_functor("Sig_dev", MPMfunctor_Sig_dev);
             vm.register_functor("Grad", MPMfunctor_Grad);
             vm.register_functor("Div", MPMfunctor_Div);
             vm.register_functor("ru", MPMfunctor_FieldNodalValues);
