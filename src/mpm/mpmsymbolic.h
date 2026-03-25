@@ -51,6 +51,7 @@
 #include "feinterpol.h"
 #include "CrossSections/structuralcrosssection.h"
 #include "matresponsemode.h"
+#include "engngm.h"
 
 
 
@@ -417,6 +418,8 @@ class SymbolicTerm : public GenericCellTerm {
             mutable std::map<int, VarData> constants;
         };
         mutable VMContext lhsExpressionContext, rhsExpressionContext;
+        
+        EngngModel *problem;
  
         struct TestField {
             FloatMatrix values; // Nodal values (e.g., Temperature at 3 nodes)
@@ -436,7 +439,7 @@ class SymbolicTerm : public GenericCellTerm {
 
         MPMCompiler compiler;
 
-        // Register variables (classes)
+        // Declare functions (functors)
         compiler.register_function("B");
         compiler.register_function("N");
         compiler.register_function("Dm"); 
@@ -459,20 +462,29 @@ class SymbolicTerm : public GenericCellTerm {
             std::string msg = "SymbolicTerm: Compilation error in expression '" + rhsExpression + "': " + e.what();
             OOFEM_LOG_ERROR("%s", msg.c_str());
         }
+        this->problem = problem;
     }
 
     void _evaluateVM (FloatMatrix& answer, MPElement& cell, GaussPoint* gp, TimeStep* tStep, VMContext& context) const {
         try {   
             MPMEvaluator vm(pool_ptr, context.symbols);
             for(auto const& [idx, val] : context.constants) vm.init_slot(idx, val);
- 
-            vm.set_variable(this->field->name.c_str(),  (void*)this->field);
-            vm.set_variable(this->testField->name.c_str(),  (void*)this->testField);
+            
+            // define variables accessible in the VM (as user pointers)
+            if (0) {
+                vm.set_variable(this->field->name.c_str(),  (void*)this->field);
+                vm.set_variable(this->testField->name.c_str(),  (void*)this->testField);
+            } else {
+                // experimental - register all problem variables
+                for (auto &i : problem->giveVariables()) {
+                    vm.set_variable(i.first.c_str(), (void*)i.second.get());
+                }
+            }
             vm.set_variable("gp", (void*)gp);
             vm.set_variable("ts", (void*)tStep);
             vm.set_variable("cell", (void*)&cell);
 
-
+            // register functors
             vm.register_functor("B", MPMfunctor_B);
             vm.register_functor("N", MPMfunctor_N);
             vm.register_functor("Dm", MPMfunctor_Dm);
