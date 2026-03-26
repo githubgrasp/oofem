@@ -10,7 +10,7 @@
  *
  *             OOFEM : Object Oriented Finite Element Code
  *
- *               Copyright (C) 1993 - 2019   Borek Patzak
+ *               Copyright () 1993 - 2019   Borek Patzak
  *
  *
  *
@@ -336,6 +336,8 @@ Lattice3d :: computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode,
 void Lattice3d :: computeGaussPoints()
 // Sets up the array of Gauss Points of the receiver.
 {
+    this->numberOfGaussPoints = 1;
+
     integrationRulesArray.resize(1);
     integrationRulesArray [ 0 ].reset(new GaussIntegrationRule(1, this, 1, 3) );
     integrationRulesArray [ 0 ]->SetUpPointsOnLine(1, _3dLattice);
@@ -420,7 +422,7 @@ Lattice3d :: giveDofManDofIDMask(int inode, IntArray &answer) const
 void
 Lattice3d :: initializeFrom(InputRecord &ir)
 {
-    LatticeStructuralElement :: initializeFrom(ir);
+    LatticeStructuralElement ::initializeFrom(ir);
     
     minLength = 1.e-20;
     IR_GIVE_OPTIONAL_FIELD(ir, minLength, _IFT_Lattice3d_mlength);
@@ -437,6 +439,9 @@ Lattice3d :: initializeFrom(InputRecord &ir)
     pressures.resize(numberOfPolygonVertices);
     pressures.zero();
     IR_GIVE_OPTIONAL_FIELD(ir, pressures, _IFT_Lattice3d_pressures);
+
+    thickness = 0.;
+    IR_GIVE_OPTIONAL_FIELD(ir, thickness, _IFT_Lattice3d_thickness);
 
 //Introduce here the geometry calculation
 //computeGeometryProperties();
@@ -464,7 +469,9 @@ Lattice3d :: computeGeometryProperties()
     //coordinates of the two nodes
     Node *nodeA, *nodeB;
     FloatArray coordsA(3), coordsB(3);
-
+    if (this->giveNumber() == 163){
+        printf("Debug\n");
+            }
     nodeA  = this->giveNode(1);
     nodeB  = this->giveNode(2);
 
@@ -741,6 +748,35 @@ double Lattice3d :: giveIp(GaussPoint *gp) {
         computeGeometryProperties();
     }
     return this->Ip;
+}
+
+double Lattice3d :: giveShearArea1(GaussPoint *gp) {
+    if ( geometryFlag == 0 ) {
+        computeGeometryProperties();
+    }
+    //Temporary assumption. Ideally, shear area should be less than area.
+    return this->area*100;
+}
+
+double Lattice3d :: giveShearArea2(GaussPoint *gp) {
+    if ( geometryFlag == 0 ) {
+        computeGeometryProperties();
+    }
+    //Temporary assumption. Ideally, shear area should be less than area.
+    return this->area*100;
+}
+
+double Lattice3d :: giveTributaryWidth(GaussPoint *gp)
+{
+    if (geometryFlag == 0) {
+        computeGeometryProperties();
+    }
+
+    if (this->thickness > 0.0) {
+        return this->area / this->thickness;
+    }
+
+    return 1.0;
 }
 
 void

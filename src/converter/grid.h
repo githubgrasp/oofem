@@ -160,6 +160,11 @@ std::unordered_map<int, std::vector<int>> curveToSegIdx;
 
   std::vector<SetDef> generatedNodeSets;
 
+
+    double defaultThickness = 1.0;
+
+    std::map<int, std::map<int,double>> entityThickness;
+    // entityThickness[entType][entID] = thickness
   
     /// Grid number
     int number;
@@ -214,6 +219,9 @@ std::unordered_map<int, std::vector<int>> curveToSegIdx;
 
   //for t3d shells
   double shellThickness = 1.0;
+
+    double beamWidth = -1.0;
+    double beamThickness = -1.0;
   
     std::vector< Vertex * >delaunayVertexList;
 
@@ -259,6 +267,9 @@ std::unordered_map<int, std::vector<int>> curveToSegIdx;
 
   std::vector<double> edgeWidth;
 
+    std::vector<int> loadNodeSetID;  // size = nodes.size()
+    std::vector<double> loadFx, loadFy, loadFz;
+
   
 public:
 
@@ -285,6 +296,8 @@ public:
 
   void computeNodalLengthsOnCurve(int curveID, std::vector<double> &L) const;
 
+    oofem::FloatArray triBarycentre(int triIndex) const;
+
   void readBCRequests();
 
   std::set<int> collectBCNodes(const BCRequest &bc) const;
@@ -293,8 +306,9 @@ public:
   
   double triArea(int triIndex) const;
 
-  int countNodalLoads() const;
+    void prepareLiveLoadSets();
   
+    double giveThicknessForEntity(int entType, int entID) const;
 
 bool isConverterDirective(const std::string &t) const
 {
@@ -307,7 +321,9 @@ bool isConverterDirective(const std::string &t) const
   struct LoadRequest {
     int entType = -1;   // 1 vertex, 2 curve, 3 surface, 5 patch, 6 shell
     int entID   = -1;
-    double q    = 0.0;  // N/m^2 for tri-entities, N/m for curves, N for vertex
+    double q    = 0.0;  // N/m^2 for tri-entities, N/m for curves, N for vertexint setID   = -1;
+      int setID   = -1;
+      int ltf     = 1;   // default load time function
   };
   std::vector<LoadRequest> loadRequests;
   

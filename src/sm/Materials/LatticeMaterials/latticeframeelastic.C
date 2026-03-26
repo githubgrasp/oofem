@@ -150,6 +150,24 @@ LatticeFrameElastic::giveInterface(InterfaceType type)
 }
 
 
+ FloatMatrixF < 6, 6 >
+   LatticeFrameElastic::give3dLatticeStiffnessMatrix(MatResponseMode mode, GaussPoint * gp, TimeStep * tStep) const
+    //
+    // return material stiffness matrix for 3dlattice
+    //
+    {
+      return this->give3dFrameStiffnessMatrix(mode, gp, tStep);      
+    }
+
+
+ FloatArrayF < 6 >
+   LatticeFrameElastic::giveLatticeStress3d(const FloatArrayF < 6 > & strain, GaussPoint * gp, TimeStep * tStep)
+   {
+     return giveFrameForces3d(strain, gp, tStep);
+   }
+ 
+  
+ 
 FloatMatrixF< 6, 6 >
 LatticeFrameElastic::give3dFrameStiffnessMatrix(MatResponseMode rmode, GaussPoint *gp, TimeStep *atTime) const
 {

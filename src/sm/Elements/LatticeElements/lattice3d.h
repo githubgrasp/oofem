@@ -45,6 +45,7 @@
 #define _IFT_Lattice3d_couplingflag "couplingflag"
 #define _IFT_Lattice3d_couplingnumber "couplingnumber"
 #define _IFT_Lattice3d_pressures "pressures"
+#define _IFT_Lattice3d_thickness "thickness"
 //@}
 
 namespace oofem {
@@ -67,6 +68,7 @@ protected:
     int couplingFlag;
     IntArray couplingNumbers;
     FloatArray pressures;
+    double thickness;
 
 public:
     Lattice3d(int n, Domain *);
@@ -122,6 +124,10 @@ public:
   double giveIp(GaussPoint *gp) override;
   double giveI1(GaussPoint *gp) override;
   double giveI2(GaussPoint *gp) override;
+    double giveShearArea1(GaussPoint *gp) override;
+    double giveShearArea2(GaussPoint *gp) override;
+
+    double giveTributaryWidth(GaussPoint *gp) override;
 
   void giveInternalForcesVector(FloatArray &answer, TimeStep *tStep, int useUpdatedGpRecord) override;
 

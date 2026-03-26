@@ -49,6 +49,8 @@ LatticeStructuralElement :: initializeFrom(InputRecord &ir)
 
 void LatticeStructuralElement :: giveSectionScaleFactors3d(FloatArray &q, GaussPoint *gp)
 {
+
+
     q.resize(6);
     double A  = this->giveArea(gp);
     double I1 = this->giveI1(gp);

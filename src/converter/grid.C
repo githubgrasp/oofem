@@ -495,7 +495,38 @@ void Grid::readBCRequests()
             iss >> liveDir.at(1) >> liveDir.at(2) >> liveDir.at(3);
             liveDir.normalize();
             continue;
-        }	
+        }
+
+        // -----------------------
+        // #@THICKNESS
+        // -----------------------
+        if (tag == "#@THICKNESS") {
+
+            std::string next;
+            if (!(iss >> next)) {
+                converter::error("Invalid #@THICKNESS line");
+            }
+
+            // Case 1: global thickness
+            if (std::isdigit(next[0]) || next[0] == '.' || next[0] == '-') {
+                defaultThickness = std::stod(next);
+                continue;
+            }
+
+            // Case 2: entity-specific
+            int entType = entityTypeFromString(next);
+            if (entType < 0)
+                converter::error("Unknown entity type in #@THICKNESS");
+
+            int entID;
+            double t;
+
+            iss >> entID >> t;
+
+            entityThickness[entType][entID] = t;
+
+            continue;
+        }
     }
 
     // optional debug
@@ -522,6 +553,19 @@ double Grid::triArea(int triIndex) const
 
     return 0.5 * c.computeNorm();
 }
+
+double Grid::giveThicknessForEntity(int entType, int entID) const
+{
+    auto itT = entityThickness.find(entType);
+    if (itT != entityThickness.end()) {
+        auto itID = itT->second.find(entID);
+        if (itID != itT->second.end()) {
+            return itID->second;
+        }
+    }
+    return defaultThickness;
+}
+
 
 double Grid::edgeLength(const Edge &e) const
 {
@@ -578,7 +622,8 @@ void Grid::computeEdgeWidths(double thickness)
     // PASS 2 — convert area to width
     for (size_t ei = 0; ei < edges.size(); ++ei) {
         double Le = edgeLength(edges[ei]);
-        edgeWidth[ei] /= (Le * thickness);
+        edgeWidth[ei] /= (Le);
+        edgeWidth[ei] *= 2.;
     }
 }
 
@@ -638,93 +683,25 @@ void Grid::buildEdges(const std::vector<Tri> &tris,
     }
 }
 
-
 void Grid::writeLiveLoads(std::ostream &out, int &bcID)
 {
-    if (loadRequests.empty()) return;
-
     const size_t n = nodes.size();
 
-    // default direction if #@DIR missing
-    if (liveDir.giveSize() != 3) {
-        liveDir.resize(3);
-        liveDir.at(1) = 0.0;
-        liveDir.at(2) = 0.0;
-        liveDir.at(3) = -1.0;
-        liveDir.normalize();
-    }
-
-    std::vector<double> Fx(n, 0.0), Fy(n, 0.0), Fz(n, 0.0);
-
-    auto anyPositive = [](const std::vector<double> &w) -> bool {
-        for (double a : w) if (a > 0.0) return true;
-        return false;
-    };
-
-    for (const auto &req : loadRequests) {
-
-        std::vector<double> w(n, 0.0);
-
-        if (req.entType == 1) {
-            // vertex: point load
-            for (size_t i = 0; i < n; ++i) {
-                if (nodes[i].entType == 1 && nodes[i].entID == req.entID) {
-                    w[i] = 1.0;
-                }
-            }
-        }
-        else if (req.entType == 2) {
-            // curve: line load
-            computeNodalLengthsOnCurve(req.entID, w);
-        }
-        else if (req.entType == 3 || req.entType == 5 || req.entType == 6) {
-            // surface/patch/shell: area load
-            computeNodalAreasOnTriEntity(req.entType, req.entID, w);
-        }
-        else {
-            converter::error("Unsupported #@LOAD entity type in writeLiveLoads()");
-        }
-
-        // safeguard: don't silently do nothing
-        if (!anyPositive(w)) {
-            char msg[256];
-            std::snprintf(msg, sizeof(msg),
-                          "writeLiveLoads: zero tributary measure (entType=%d entID=%d). "
-                          "Check IDs and T3D -p options.",
-                          req.entType, req.entID);
-            converter::error(msg);
-        }
-
-        // accumulate nodal forces
-        for (size_t i = 0; i < n; ++i) {
-            if (w[i] <= 0.0) continue;
-
-            const double Fi = req.q * w[i];
-
-            Fx[i] += Fi * liveDir.at(1);
-            Fy[i] += Fi * liveDir.at(2);
-            Fz[i] += Fi * liveDir.at(3);
-        }
-    }
-
-    // emit one NodalLoad per node
     for (size_t i = 0; i < n; ++i) {
-        if (Fx[i] == 0.0 && Fy[i] == 0.0 && Fz[i] == 0.0) continue;
+
+        if (loadNodeSetID[i] < 0) continue;
 
         out << "NodalLoad " << bcID++
-            << " loadTimeFunction 1"
+            << " loadTimeFunction 2"
             << " dofs 3 1 2 3"
-            << " values 3 "
+            << " components 3 "
             << std::scientific
-            << Fx[i] << " " << Fy[i] << " " << Fz[i]
-            << " dofman " << nodes[i].id
+            << loadFx[i] << " "
+            << loadFy[i] << " "
+            << loadFz[i]
+            << " set " << loadNodeSetID[i]
             << "\n";
     }
-
-    double sumFx=0, sumFy=0, sumFz=0;
-    for (size_t i=0;i<n;++i) { sumFx += Fx[i]; sumFy += Fy[i]; sumFz += Fz[i]; }
-    printf("Total applied force: (%g,%g,%g)\n", sumFx, sumFy, sumFz);
-
 }
 
 
@@ -2087,25 +2064,30 @@ void Grid::giveOofemOutput(const std::string &fileName)
     return;
 };
 
-
-
-
 void Grid::giveOutputT3d(const std::string &fileName)
 {
-  int bcID = 1;
+    int bcID = 1;
 
-  //Prepare BC and sets
-  prepareBCSets();
+    // Prepare BC and load sets first
+    prepareBCSets();
+    prepareLiveLoadSets();
 
-  int nLoads = countNodalLoads();
-  int nBCs   = bcRequests.size();
-  int totalNBC = nLoads + nBCs;
+    int nLoads = 0;
+    for (int sid : loadNodeSetID) {
+        if (sid >= 0) ++nLoads;
+    }
 
-  //Start with output
-    printf("starting giving output... \n");
+    int nBCs = 0;
+    for (const auto &bc : bcRequests) {
+        if (bc.setID >= 0) ++nBCs;
+    }
 
+    int totalNBC = nLoads + nBCs;
+    int nSets = (int)generatedNodeSets.size();
+
+    printf("starting giving output...\n");
     printf("READING controlFileName = %s\n", controlFileName.c_str());
-    
+
     std::ifstream ctrl(controlFileName);
     std::ofstream out(fileName);
 
@@ -2116,133 +2098,70 @@ void Grid::giveOutputT3d(const std::string &fileName)
     bool injected = false;
 
     const int nNodes = (int)nodes.size();
-    const int nElems   = (int)edges.size();
+    const int nElems = (int)edges.size();
 
+    while (std::getline(ctrl, line)) {
+        std::string t = line;
+        size_t pos = t.find_first_not_of(" \t");
+        if (pos != std::string::npos) t.erase(0, pos);
+        else t.clear();
 
-while (std::getline(ctrl, line)) {
-    std::string t = line;
-    size_t pos = t.find_first_not_of(" \t");
-    if (pos != std::string::npos) t.erase(0, pos);
-    else t.clear(); // blank line
+        if (!injected && t.rfind("ncrosssect", 0) == 0) {
 
-if (!injected && t.rfind("ncrosssect", 0) == 0) {
+            std::istringstream iss(t);
+            std::string token;
 
-    std::istringstream iss(t);
-    std::string token;
+            out << "ndofman " << nNodes
+                << " nelem " << nElems << " ";
 
-    out << "ndofman " << nNodes
-        << " nelem " << nElems << " ";
-
-    while (iss >> token) {
-
-        if (token == "nbc") {
-            out << "nbc " << totalNBC << " ";
-            iss >> token; // skip old value
-        }
-        else {
-            out << token << " ";
-        }
-    }
-
-    out << "\n";
-
-    writeT3dNodesOofem(out);
-    writeT3dElemsOofem(out);
-
-    injected = true;
-    continue;
-}
-
-    if (t.rfind("#@INSERT_LIVELOADS", 0) == 0) {
-      printf("writeLiveLoads: nLoadReq=%zu dir=(%g,%g,%g)\n",
-	     loadRequests.size(),
-	     liveDir.giveSize()>=3 ? liveDir.at(1) : 0.0,
-	     liveDir.giveSize()>=3 ? liveDir.at(2) : 0.0,
-	     liveDir.giveSize()>=3 ? liveDir.at(3) : 0.0);
-      
-      for (const auto &r : loadRequests) {
-	printf("  LOAD entType=%d entID=%d q=%g\n", r.entType, r.entID, r.q);
-      }
-      
-      writeLiveLoads(out,bcID);
-      writeBCRecords(out,bcID);
-      continue; // don't print the marker
-    }
-
-    if (t.rfind("#@INSERT_SETS", 0) == 0) {
-      writeGeneratedSets(out);
-      continue;
-    }
-
-    if (!isConverterDirective(t))
-      out << line << "\n";    
-    
-}
-
-    return;
-};
-
-
-int Grid::countNodalLoads() const
-{
-    if (loadRequests.empty()) return 0;
-
-    const size_t n = nodes.size();
-    std::vector<double> F(n, 0.0);
-
-    auto anyPositive = [](const std::vector<double> &w) -> bool {
-        for (double a : w) if (a > 0.0) return true;
-        return false;
-    };
-
-    for (const auto &req : loadRequests) {
-
-        std::vector<double> w(n, 0.0);
-
-        if (req.entType == 1) {
-            // vertex: point load
-            for (size_t i = 0; i < n; ++i) {
-                if (nodes[i].entType == 1 && nodes[i].entID == req.entID) {
-                    w[i] = 1.0;
+            while (iss >> token) {
+                if (token == "nbc") {
+                    out << "nbc " << totalNBC << " ";
+                    iss >> token; // skip old value
+                }
+                else if (token == "nset") {
+                    out << "nset " << nSets << " ";
+                    iss >> token; // skip old value
+                }
+                else {
+                    out << token << " ";
                 }
             }
-        }
-        else if (req.entType == 2) {
-            // curve: line load
-            computeNodalLengthsOnCurve(req.entID, w);
-        }
-        else if (req.entType == 3 || req.entType == 5 || req.entType == 6) {
-            // surface/patch/shell: area load
-            computeNodalAreasOnTriEntity(req.entType, req.entID, w);
-        }
-        else {
-            converter::error("Unsupported #@LOAD entity type in countNodalLoads()");
+
+            out << "\n";
+
+            writeT3dNodesOofem(out);
+            writeT3dElemsOofem(out);
+
+            injected = true;
+            continue;
         }
 
-        // safeguard (same reason as in writeLiveLoads)
-        if (!anyPositive(w)) {
-            // don't silently ignore; this would make nbc wrong
-            char msg[256];
-            std::snprintf(msg, sizeof(msg),
-                          "countNodalLoads: zero tributary measure (entType=%d entID=%d). "
-                          "Check IDs and T3D -p options.",
-                          req.entType, req.entID);
-            converter::error(msg);
+        if (t.rfind("#@INSERT_LIVELOADS", 0) == 0) {
+            printf("writeLiveLoads: nLoadReq=%zu dir=(%g,%g,%g)\n",
+                   loadRequests.size(),
+                   liveDir.giveSize()>=3 ? liveDir.at(1) : 0.0,
+                   liveDir.giveSize()>=3 ? liveDir.at(2) : 0.0,
+                   liveDir.giveSize()>=3 ? liveDir.at(3) : 0.0);
+
+            for (const auto &r : loadRequests) {
+                printf("  LOAD entType=%d entID=%d q=%g\n", r.entType, r.entID, r.q);
+            }
+
+            writeLiveLoads(out, bcID);
+            writeBCRecords(out, bcID);
+            continue;
         }
 
-        for (size_t i = 0; i < n; ++i) {
-            if (w[i] <= 0.0) continue;
-            F[i] += req.q * w[i]; // magnitude only; direction not needed for counting
+        if (t.rfind("#@INSERT_SETS", 0) == 0) {
+            writeGeneratedSets(out);
+            continue;
         }
+
+        if (!isConverterDirective(t))
+            out << line << "\n";
     }
-
-    int count = 0;
-    for (double f : F) {
-        if (std::abs(f) > 1e-15) ++count;
-    }
-    return count;
 }
-
 
 void Grid::prepareBCSets()
 {
@@ -2265,6 +2184,68 @@ void Grid::prepareBCSets()
     }
 }
 
+void Grid::prepareLiveLoadSets()
+{
+    const size_t n = nodes.size();
+
+    loadFx.assign(n, 0.0);
+    loadFy.assign(n, 0.0);
+    loadFz.assign(n, 0.0);
+    loadNodeSetID.assign(n, -1);
+
+    // --- accumulate forces ---
+    for (const auto &req : loadRequests) {
+
+        std::vector<double> w(n, 0.0);
+
+        if (req.entType == 1) {
+            for (size_t i = 0; i < n; ++i)
+                if (nodes[i].entType == 1 && nodes[i].entID == req.entID)
+                    w[i] = 1.0;
+        }
+        else if (req.entType == 2) {
+            computeNodalLengthsOnCurve(req.entID, w);
+        }
+        else {
+            computeNodalAreasOnTriEntity(req.entType, req.entID, w);
+        }
+
+        for (size_t i = 0; i < n; ++i) {
+            if (w[i] <= 0.0) continue;
+
+            double Fi = req.q * w[i];
+
+            loadFx[i] += Fi * liveDir.at(1);
+            loadFy[i] += Fi * liveDir.at(2);
+            loadFz[i] += Fi * liveDir.at(3);
+        }
+    }
+
+    // --- create sets ---
+    int nextSetID = 1;
+    for (const auto &sd : generatedNodeSets)
+        if (sd.setID >= nextSetID)
+            nextSetID = sd.setID + 1;
+
+    for (size_t i = 0; i < n; ++i) {
+
+        const double tol = 1e-15;
+        if (std::abs(loadFx[i]) < tol &&
+            std::abs(loadFy[i]) < tol &&
+            std::abs(loadFz[i]) < tol)
+            continue;
+
+        SetDef sd;
+        sd.setID = nextSetID++;
+        sd.nodeIDs.push_back(nodes[i].id);
+
+        generatedNodeSets.push_back(sd);
+
+        loadNodeSetID[i] = sd.setID;
+    }
+}
+
+
 void Grid::writeT3dNodesOofem(std::ostream &out)
 {
     for (const auto &n : nodes) {
@@ -2279,72 +2260,133 @@ void Grid::writeT3dNodesOofem(std::ostream &out)
 void Grid::writeT3dElemsOofem(std::ostream &out)
 {
     int eid = 1;
-    const int cs  = 1;   // set appropriately
-    const int mat = 1;   // set appropriately
-
-    /* const double thickness = 1.0e-3;  // test value */
-    /* const double width     = 2.0e-3;  // test value */
-    
-    const double b = 0.5*this->shellThickness;
+    const int cs  = 1;
+    const int mat = 1;
 
     for (size_t i = 0; i < edges.size(); ++i) {
-      
-      const Edge &e = edges[i];
-      const double width = edgeWidth[i];
-      const double a = 0.5*width;
 
-      // endpoints
-      oofem::FloatArray xi = getX(e.n1);
-      oofem::FloatArray xj = getX(e.n2);
+        const Edge &e = edges[i];
 
-// axis direction
-oofem::FloatArray u(3);
-u.beDifferenceOf(xj, xi);
-u.normalize();
+        // thickness from adjacent triangle(s)
+        double t = 0.0;
 
-// midpoint
-oofem::FloatArray xm = xi;
-xm.add(xj);
-xm.times(0.5);
+        if (e.tri1 >= 0 && e.tri2 >= 0) {
+            const Tri &tr1 = tris[e.tri1];
+            const Tri &tr2 = tris[e.tri2];
 
-// averaged normal
-oofem::FloatArray n = triNormal(e.tri1);
+            double t1 = giveThicknessForEntity(tr1.entType, tr1.entID);
+            double t2 = giveThicknessForEntity(tr2.entType, tr2.entID);
 
-if (e.tri2 >= 0) {
-    oofem::FloatArray n2 = triNormal(e.tri2);
-    n.add(n2);
-    n.normalize();
-}
+            t = 0.5 * (t1 + t2);
+        }
+        else if (e.tri1 >= 0) {
+            const Tri &tr1 = tris[e.tri1];
+            t = giveThicknessForEntity(tr1.entType, tr1.entID);
+        }
+        else if (e.tri2 >= 0) {
+            const Tri &tr2 = tris[e.tri2];
+            t = giveThicknessForEntity(tr2.entType, tr2.entID);
+        }
+        else {
+            converter::error("Edge has no adjacent triangle; cannot determine shell thickness");
+        }
 
-// width direction
-oofem::FloatArray r(3);
-r.beVectorProductOf(n, u);
-r.normalize();
+        const double b = 0.5 * t;
+
+        // endpoints
+        oofem::FloatArray xi = getX(e.n1);
+        oofem::FloatArray xj = getX(e.n2);
+
+        // axis direction
+        oofem::FloatArray u(3);
+        u.beDifferenceOf(xj, xi);
+        u.normalize();
+
+        // midpoint
+        oofem::FloatArray xm = xi;
+        xm.add(xj);
+        xm.times(0.5);
+
+        // averaged normal
+        oofem::FloatArray n = triNormal(e.tri1);
+
+        if (e.tri2 >= 0) {
+            oofem::FloatArray n2 = triNormal(e.tri2);
+            n.add(n2);
+            n.normalize();
+        }
+
+        // width direction
+        oofem::FloatArray r(3);
+        r.beVectorProductOf(n, u);
+        r.normalize();
+
+        // --- projected side distances from barycentres ---
+        double aPlus  = 0.0;
+        double aMinus = 0.0;
+
+        if (e.tri1 >= 0) {
+            oofem::FloatArray bc1 = triBarycentre(e.tri1);
+            oofem::FloatArray d1(3);
+            d1.beDifferenceOf(bc1, xm);
+
+            double s1 = d1.dotProduct(r);
+
+            if (s1 >= 0.0) {
+                aPlus = std::max(aPlus, s1);
+            } else {
+                aMinus = std::max(aMinus, -s1);
+            }
+        }
+
+        if (e.tri2 >= 0) {
+            oofem::FloatArray bc2 = triBarycentre(e.tri2);
+            oofem::FloatArray d2(3);
+            d2.beDifferenceOf(bc2, xm);
+
+            double s2 = d2.dotProduct(r);
+
+            if (s2 >= 0.0) {
+                aPlus = std::max(aPlus, s2);
+            } else {
+                aMinus = std::max(aMinus, -s2);
+            }
+        }
+
+        // fallback safety
+        if (aPlus <= 0.0 && aMinus <= 0.0) {
+            converter::error("Both projected side widths are zero in writeT3dElemsOofem");
+        }
 
         // compute 4 corners
-	oofem::FloatArray x1=xm, x2=xm, x3=xm, x4=xm, tmp(3);
+        oofem::FloatArray x1(3), x2(3), x3(3), x4(3), tmp(3);
+        x1 = xm;
+        x2 = xm;
+        x3 = xm;
+        x4 = xm;
 
-        // x1 = xm + a*r + b*n
-        tmp = r; tmp.times(+a); x1.add(tmp);
-        tmp = n; tmp.times(+b); x1.add(tmp);
+        // x1 = xm + aPlus*r + b*n
+        tmp = r; tmp.times(+aPlus); x1.add(tmp);
+        tmp = n; tmp.times(+b);     x1.add(tmp);
 
-        // x2 = xm - a*r + b*n
-        tmp = r; tmp.times(-a); x2.add(tmp);
-        tmp = n; tmp.times(+b); x2.add(tmp);
+        // x2 = xm - aMinus*r + b*n
+        tmp = r; tmp.times(-aMinus); x2.add(tmp);
+        tmp = n; tmp.times(+b);      x2.add(tmp);
 
-        // x3 = xm - a*r - b*n
-        tmp = r; tmp.times(-a); x3.add(tmp);
-        tmp = n; tmp.times(-b); x3.add(tmp);
+        // x3 = xm - aMinus*r - b*n
+        tmp = r; tmp.times(-aMinus); x3.add(tmp);
+        tmp = n; tmp.times(-b);      x3.add(tmp);
 
-        // x4 = xm + a*r - b*n
-        tmp = r; tmp.times(+a); x4.add(tmp);
-        tmp = n; tmp.times(-b); x4.add(tmp);
+        // x4 = xm + aPlus*r - b*n
+        tmp = r; tmp.times(+aPlus); x4.add(tmp);
+        tmp = n; tmp.times(-b);     x4.add(tmp);
 
         // write element
         out << "lattice3D " << eid++
             << " nodes 2 " << e.n1 << " " << e.n2
             << " crossSect " << cs
             << " mat " << mat
+            << " thickness " << t
             << " polycoords 12 "
             << std::scientific
             << x1.at(1) << " " << x1.at(2) << " " << x1.at(3) << " "
@@ -2369,7 +2411,7 @@ void Grid::checkAreaConservation() const
 
     for (size_t ei = 0; ei < edges.size(); ++ei) {
         double Le = edgeLength(edges[ei]);
-	edgeAreaSum += Le * edgeWidth[ei] * this->shellThickness;
+	edgeAreaSum += Le * edgeWidth[ei];
     }
 
     printf("\n=== AREA CONSERVATION CHECK ===\n");
@@ -2411,12 +2453,16 @@ void Grid::writeBCRecords(std::ostream &out, int &bcID) const
 void Grid::writeGeneratedSets(std::ostream &out) const
 {
     for (const auto &sd : generatedNodeSets) {
-        out << "set " << sd.setID << " nodes { ";
-        for (int nid : sd.nodeIDs) out << nid << " ";
-        out << "}\n";
+        out << "set " << sd.setID
+            << " nodes " << sd.nodeIDs.size();
+
+        for (int nid : sd.nodeIDs) {
+            out << " " << nid;
+        }
+
+        out << "\n";
     }
 }
-
 
 void Grid::giveVtkOutput(const std::string &fileName)
 {
@@ -11119,6 +11165,22 @@ Grid::giveBeamElementVTKOutput(FILE *outputStream)
     fprintf(outputStream, "</UnstructuredGrid>\n</VTKFile>");
 
     return;
+}
+
+oofem::FloatArray Grid::triBarycentre(int triIndex) const
+{
+    const Tri &t = tris[triIndex];
+
+    oofem::FloatArray x1 = getX(t.n1);
+    oofem::FloatArray x2 = getX(t.n2);
+    oofem::FloatArray x3 = getX(t.n3);
+
+    oofem::FloatArray b(3);
+    b.at(1) = (x1.at(1) + x2.at(1) + x3.at(1)) / 3.0;
+    b.at(2) = (x1.at(2) + x2.at(2) + x3.at(2)) / 3.0;
+    b.at(3) = (x1.at(3) + x2.at(3) + x3.at(3)) / 3.0;
+
+    return b;
 }
 
 void

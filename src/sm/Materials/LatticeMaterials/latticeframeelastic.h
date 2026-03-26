@@ -87,13 +87,17 @@ public:
 
     void initializeFrom(InputRecord &ir) override;
 
-  
     bool isCharacteristicMtrxSymmetric(MatResponseMode rMode) const override { return false; }
 
     FloatArrayF< 6 >giveFrameForces3d(const FloatArrayF< 6 > &strain, GaussPoint *gp, TimeStep *tStep) override;
 
     FloatMatrixF< 6, 6 >give3dFrameStiffnessMatrix(MatResponseMode rMode, GaussPoint *gp, TimeStep *tStep) const override;
 
+
+  FloatMatrixF < 6, 6 > give3dLatticeStiffnessMatrix(MatResponseMode mode, GaussPoint * gp, TimeStep * tStep) const override;
+  FloatArrayF < 6 > giveLatticeStress3d(const FloatArrayF < 6 > & strain, GaussPoint * gp, TimeStep * tStep) override;
+ 
+  
 
     bool hasMaterialModeCapability(MaterialMode mode) const override;
 

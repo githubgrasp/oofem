@@ -207,11 +207,10 @@ public:
      */
   virtual void  giveGpCoordinates(FloatArray &coords){return;}
 
-  virtual double giveTributaryWidth(GaussPoint *gp) const
+  virtual double giveTributaryWidth(GaussPoint *gp)
 {
     return 1.; // current element-constant value
 }
-
 
     /**
      * Gives the y second moment of area

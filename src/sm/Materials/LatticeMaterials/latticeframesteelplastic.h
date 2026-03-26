@@ -110,7 +110,7 @@ public:
 
     int giveTempReturnResult() const { return tempReturnResult; }
 
-    void updateYourself(TimeStep *atTime);
+    void updateYourself(TimeStep *atTime) override;
 
     void initTempStatus() override;
 
@@ -182,6 +182,8 @@ public:
 
     FloatArrayF< 6 >giveReducedLatticeStrain(GaussPoint *gp, TimeStep *tStep) const;
 
+  void giveEffectiveCapacities(double &nx0Eff, double &mx0Eff, double &my0Eff, double &mz0Eff, GaussPoint *gp, TimeStep *tStep) const;
+  
     virtual FloatArrayF< 6 >giveReducedStrain(GaussPoint *gp, TimeStep *tStep) const;
 
     FloatArrayF< 6 >performPlasticityReturn(GaussPoint *gp, const FloatArrayF< 6 > &reducedStrain, TimeStep *tStep) const;

@@ -110,8 +110,11 @@ namespace oofem {
         }
 
 	capacityMode = 0;
-        IR_GIVE_OPTIONAL_FIELD(ir, capacityMode, _IFT_LatticeFrameSteelPlastic_capmode); //hardening type	
-
+        IR_GIVE_OPTIONAL_FIELD(ir, capacityMode, _IFT_LatticeFrameSteelPlastic_capmode);
+	if (capacityMode != 0 && capacityMode != 1) {
+	  throw ValueInputException(ir, _IFT_LatticeFrameSteelPlastic_capmode, "capmode must be 0 (resultant, default) or 1 (per-width).");
+	}
+	
     }
 
     MaterialStatus *
@@ -149,27 +152,47 @@ namespace oofem {
         double yieldValue = 0.;
         double hardening = computeHardening(kappa);
 
-        //Reduce properties based on temperature
-        double reductionFactor = 1.;
-        if ( this->tCrit != 0. ) {
-            reductionFactor = computeTemperatureReductionFactor(gp, tStep, VM_Total);
-        }
-
-        double nx0Reduced = reductionFactor * this->nx0;
-        double mx0Reduced = reductionFactor * this->mx0;
-        double my0Reduced = reductionFactor * this->my0;
-        double mz0Reduced = reductionFactor * this->mz0;
-
         double nx = stress.at(1);
         double mx = stress.at(2);
         double my = stress.at(3);
         double mz = stress.at(4);
 
-        yieldValue = 1. / ( pow(hardening, 2.) ) * ( pow(nx / nx0Reduced, 2.) + pow(mx / mx0Reduced, 2.) + pow(my / my0Reduced, 2.) + pow(mz / mz0Reduced, 2.) ) - 1.;
+	double nx0Eff, mx0Eff, my0Eff, mz0Eff;
+	giveEffectiveCapacities(nx0Eff, mx0Eff, my0Eff, mz0Eff, gp, tStep);	
+    	
+        yieldValue = 1. / ( pow(hardening, 2.) ) * ( pow(nx / nx0Eff, 2.) + pow(mx / mx0Eff, 2.) + pow(my / my0Eff, 2.) + pow(mz / mz0Eff, 2.) ) - 1.;
 
         return yieldValue;
     }
 
+
+void LatticeFrameSteelPlastic::giveEffectiveCapacities(double &nx0Eff,
+                                                       double &mx0Eff,
+                                                       double &my0Eff,
+                                                       double &mz0Eff,
+                                                       GaussPoint *gp,
+                                                       TimeStep *tStep) const
+{
+    double reductionFactor = 1.0;
+    if (this->tCrit != 0.0) {
+        reductionFactor = computeTemperatureReductionFactor(gp, tStep, VM_Total);
+    }
+
+    double widthFactor = 1.0;
+    if (this->capacityMode == 1) {
+        widthFactor = static_cast<LatticeStructuralElement *>(gp->giveElement())->giveTributaryWidth(gp);
+        if (widthFactor <= 0.0) {
+            OOFEM_ERROR("Non-positive tributary width.");
+        }
+    }
+
+    nx0Eff = reductionFactor * widthFactor * this->nx0;
+    mx0Eff = reductionFactor * widthFactor * this->mx0;
+    my0Eff = reductionFactor * widthFactor * this->my0;
+    mz0Eff = reductionFactor * widthFactor * this->mz0;
+}
+
+    
     double
     LatticeFrameSteelPlastic::computeHardening(const double kappa) const
     {
@@ -202,18 +225,10 @@ namespace oofem {
     {
         double hardening = computeHardening(kappa);
         double dHardeningDKappa = computeDHardeningDKappa(kappa);
-        //Reduce properties based on temperature
-        double reductionFactor = 1.;
-        if ( this->tCrit != 0. ) {
-            reductionFactor = computeTemperatureReductionFactor(gp, tStep, VM_Total);
-        }
 
-        double nx0Reduced = reductionFactor * this->nx0;
-        double mx0Reduced = reductionFactor * this->mx0;
-        double my0Reduced = reductionFactor * this->my0;
-        double mz0Reduced = reductionFactor * this->mz0;
-
-
+	double nx0Eff, mx0Eff, my0Eff, mz0Eff;
+	giveEffectiveCapacities(nx0Eff, mx0Eff, my0Eff, mz0Eff, gp, tStep);	
+	
         double nx = stress.at(1);
         double mx = stress.at(2);
         double my = stress.at(3);
@@ -221,11 +236,11 @@ namespace oofem {
 
         FloatArrayF < 5 > f;
 
-        f.at(1) = 2. * nx / ( pow(nx0Reduced, 2.) * pow(hardening, 2.) );
-        f.at(2) = 2. * mx / ( pow(mx0Reduced, 2.) * pow(hardening, 2.) );
-        f.at(3) = 2. * my / ( pow(my0Reduced, 2.) * pow(hardening, 2.) );
-        f.at(4) = 2. * mz / ( pow(mz0Reduced, 2.) * pow(hardening, 2.) );
-        f.at(5) = -2 / pow(hardening, 3.) * ( pow(nx / nx0Reduced, 2.) + pow(mx / mx0Reduced, 2.) + pow(my / my0Reduced, 2.) + pow(mz / mz0Reduced, 2.) ) * dHardeningDKappa;
+        f.at(1) = 2. * nx / ( pow(nx0Eff, 2.) * pow(hardening, 2.) );
+        f.at(2) = 2. * mx / ( pow(mx0Eff, 2.) * pow(hardening, 2.) );
+        f.at(3) = 2. * my / ( pow(my0Eff, 2.) * pow(hardening, 2.) );
+        f.at(4) = 2. * mz / ( pow(mz0Eff, 2.) * pow(hardening, 2.) );
+        f.at(5) = -2 / pow(hardening, 3.) * ( pow(nx / nx0Eff, 2.) + pow(mx / mx0Eff, 2.) + pow(my / my0Eff, 2.) + pow(mz / mz0Eff, 2.) ) * dHardeningDKappa;
 
         return f;
     }
@@ -238,18 +253,9 @@ namespace oofem {
                                              TimeStep * tStep) const
     {
         double hardening = computeHardening(kappa);
-        //	double dHardeningDKappa = computeDHardeningDKappa(kappa);
-        //Reduce properties based on temperature
-        double reductionFactor = 1.;
-        if ( this->tCrit != 0. ) {
-            reductionFactor = computeTemperatureReductionFactor(gp, tStep, VM_Total);
-        }
 
-        double nx0Reduced = reductionFactor * this->nx0;
-        double mx0Reduced = reductionFactor * this->mx0;
-        double my0Reduced = reductionFactor * this->my0;
-        double mz0Reduced = reductionFactor * this->mz0;
-
+	double nx0Eff, mx0Eff, my0Eff, mz0Eff;
+	giveEffectiveCapacities(nx0Eff, mx0Eff, my0Eff, mz0Eff, gp, tStep);	
 
         double nx = stress.at(1);
         double mx = stress.at(2);
@@ -258,10 +264,10 @@ namespace oofem {
 
         FloatArrayF < 5 > m;
 
-        m.at(1) = 2. * nx / ( pow(nx0Reduced, 2.) * pow(hardening, 2.) );
-        m.at(2) = 2. * mx / ( pow(mx0Reduced, 2.) * pow(hardening, 2.) );
-        m.at(3) = 2. * my / ( pow(my0Reduced, 2.) * pow(hardening, 2.) );
-        m.at(4) = 2. * mz / ( pow(mz0Reduced, 2.) * pow(hardening, 2.) );
+        m.at(1) = 2. * nx / ( pow(nx0Eff, 2.) * pow(hardening, 2.) );
+        m.at(2) = 2. * mx / ( pow(mx0Eff, 2.) * pow(hardening, 2.) );
+        m.at(3) = 2. * my / ( pow(my0Eff, 2.) * pow(hardening, 2.) );
+        m.at(4) = 2. * mz / ( pow(mz0Eff, 2.) * pow(hardening, 2.) );
 
         m.at(5) = sqrt(pow(m.at(1), 2.) + pow(this->hardeningLength, 2.) * ( pow(m.at(2), 2.) + pow(m.at(3), 2.) +  pow(m.at(4), 2.) ) );
 
@@ -281,19 +287,11 @@ namespace oofem {
         double hardening = computeHardening(kappa);
         double dHardeningDKappa = computeDHardeningDKappa(kappa);
 
-        //Reduce properties based on temperature
-        double reductionFactor = 1.;
-        if ( this->tCrit != 0. ) {
-            reductionFactor = computeTemperatureReductionFactor(gp, tStep, VM_Total);
-        }
+	double nx0Eff, mx0Eff, my0Eff, mz0Eff;
+	giveEffectiveCapacities(nx0Eff, mx0Eff, my0Eff, mz0Eff, gp, tStep);	
 
-        double nx0Reduced = reductionFactor * this->nx0;
-        double mx0Reduced = reductionFactor * this->mx0;
-        double my0Reduced = reductionFactor * this->my0;
-        double mz0Reduced = reductionFactor * this->mz0;
-
-        //dm1dnx
-        dm.at(1, 1) = 2. / ( pow(nx0Reduced, 2.) * pow(hardening, 2.) );
+	//dm1dnx
+        dm.at(1, 1) = 2. / ( pow(nx0Eff, 2.) * pow(hardening, 2.) );
         //dm2dnx
         dm.at(1, 2) = 0;
         //dm3dnx
@@ -301,27 +299,27 @@ namespace oofem {
         //dm4dnx
         dm.at(1, 4) = 0;
         //dm5dnx
-        dm.at(1, 5) = -4. * stress.at(1) / ( pow(nx0Reduced, 2.) * pow(hardening, 3.) ) * dHardeningDKappa;
+        dm.at(1, 5) = -4. * stress.at(1) / ( pow(nx0Eff, 2.) * pow(hardening, 3.) ) * dHardeningDKappa;
 
 
         dm.at(2, 1) = 0;
-        dm.at(2, 2) = 2. / ( pow(mx0Reduced, 2.) * pow(hardening, 2.) );
+        dm.at(2, 2) = 2. / ( pow(mx0Eff, 2.) * pow(hardening, 2.) );
         dm.at(2, 3) = 0;
         dm.at(2, 4) = 0;
-        dm.at(2, 5) = -4. * stress.at(2) / ( pow(mx0Reduced, 2.) * pow(hardening, 3.) ) * dHardeningDKappa;
+        dm.at(2, 5) = -4. * stress.at(2) / ( pow(mx0Eff, 2.) * pow(hardening, 3.) ) * dHardeningDKappa;
 
         dm.at(3, 1) = 0;
         dm.at(3, 2) = 0;
-        dm.at(3, 3) = 2. / ( pow(my0Reduced, 2.) * pow(hardening, 2.) );
+        dm.at(3, 3) = 2. / ( pow(my0Eff, 2.) * pow(hardening, 2.) );
         dm.at(3, 4) = 0;
-        dm.at(3, 5) = -4. * stress.at(3) / ( pow(my0Reduced, 2.) * pow(hardening, 3.) ) * dHardeningDKappa;
+        dm.at(3, 5) = -4. * stress.at(3) / ( pow(my0Eff, 2.) * pow(hardening, 3.) ) * dHardeningDKappa;
 
 
         dm.at(4, 1) = 0;
         dm.at(4, 2) = 0;
         dm.at(4, 3) = 0;
-        dm.at(4, 4) = 2. / ( pow(mz0Reduced, 2.) * pow(hardening, 2.) );
-        dm.at(4, 5) = -4. * stress.at(4) / ( pow(mz0Reduced, 2.) * pow(hardening, 3.) ) * dHardeningDKappa;
+        dm.at(4, 4) = 2. / ( pow(mz0Eff, 2.) * pow(hardening, 2.) );
+        dm.at(4, 5) = -4. * stress.at(4) / ( pow(mz0Eff, 2.) * pow(hardening, 3.) ) * dHardeningDKappa;
 
 
         if ( this->hardeningLength == 0. ) {
@@ -329,17 +327,17 @@ namespace oofem {
             dm.at(5, 2) = 0.0;
             dm.at(5, 3) = 0.0;
             dm.at(5, 4) = 0.0;
-            dm.at(5, 5) = -4.0 * fabs(stress.at(1) ) / ( pow(nx0Reduced, 2.) * pow(hardening, 3.) ) * dHardeningDKappa;
+            dm.at(5, 5) = -4.0 * fabs(stress.at(1) ) / ( pow(nx0Eff, 2.) * pow(hardening, 3.) ) * dHardeningDKappa;
         } else if ( fabs(mVector.at(5) ) > 1.e-14 )         {
             dm.at(5, 1) = mVector.at(1) * dm.at(1, 1) / mVector.at(5);
             dm.at(5, 2) = mVector.at(2) * dm.at(2, 2) * pow(hardeningLength, 2.) / mVector.at(5);
             dm.at(5, 3) = mVector.at(3) * dm.at(3, 3) * pow(hardeningLength, 2.) / mVector.at(5);
             dm.at(5, 4) = mVector.at(4) * dm.at(4, 4) * pow(hardeningLength, 2.) / mVector.at(5);
 
-            double term1 = mVector.at(1) * ( -4. * stress.at(1) / ( pow(nx0Reduced, 2.) * pow(hardening, 3.) ) ) * dHardeningDKappa;
-            double term2 = mVector.at(2) * ( -4. * stress.at(2) / ( pow(mx0Reduced, 2.) * pow(hardening, 3.) ) ) * dHardeningDKappa;
-            double term3 = mVector.at(3) * ( -4. * stress.at(3) / ( pow(my0Reduced, 2.) * pow(hardening, 3.) ) ) * dHardeningDKappa;
-            double term4 = mVector.at(4) * ( -4. * stress.at(4) / ( pow(mz0Reduced, 2.) * pow(hardening, 3.) ) ) * dHardeningDKappa;
+            double term1 = mVector.at(1) * ( -4. * stress.at(1) / ( pow(nx0Eff, 2.) * pow(hardening, 3.) ) ) * dHardeningDKappa;
+            double term2 = mVector.at(2) * ( -4. * stress.at(2) / ( pow(mx0Eff, 2.) * pow(hardening, 3.) ) ) * dHardeningDKappa;
+            double term3 = mVector.at(3) * ( -4. * stress.at(3) / ( pow(my0Eff, 2.) * pow(hardening, 3.) ) ) * dHardeningDKappa;
+            double term4 = mVector.at(4) * ( -4. * stress.at(4) / ( pow(mz0Eff, 2.) * pow(hardening, 3.) ) ) * dHardeningDKappa;
 
             dm.at(5, 5) = ( term1 + pow(this->hardeningLength, 2.) * ( term2 + term3 + term4 ) ) / mVector.at(5);
         } else   {
@@ -504,17 +502,8 @@ namespace oofem {
 
         double deltaLambda = 0.;
 
-        //Reduce properties based on temperature
-        double reductionFactor = 1.;
-        if ( this->tCrit != 0. ) {
-            reductionFactor = computeTemperatureReductionFactor(gp, tStep, VM_Total);
-        }
-
-        double nx0Reduced = reductionFactor * this->nx0;
-        double mx0Reduced = reductionFactor * this->mx0;
-        double my0Reduced = reductionFactor * this->my0;
-        double mz0Reduced = reductionFactor * this->mz0;
-
+	double nx0Eff, mx0Eff, my0Eff, mz0Eff;
+	giveEffectiveCapacities(nx0Eff, mx0Eff, my0Eff, mz0Eff, gp, tStep);	
 
         auto trialStress = stress;
         auto tempStress = trialStress;
@@ -543,10 +532,10 @@ namespace oofem {
             }
 
             FloatArrayF < 6 > residualsNorm;
-            residualsNorm.at(1) = residuals.at(1) / nx0Reduced;
-            residualsNorm.at(2) = residuals.at(2) / mx0Reduced;
-            residualsNorm.at(3) = residuals.at(3) / my0Reduced;
-            residualsNorm.at(4) = residuals.at(4) / mz0Reduced;
+            residualsNorm.at(1) = residuals.at(1) / nx0Eff;
+            residualsNorm.at(2) = residuals.at(2) / mx0Eff;
+            residualsNorm.at(3) = residuals.at(3) / my0Eff;
+            residualsNorm.at(4) = residuals.at(4) / mz0Eff;
             residualsNorm.at(5) = residuals.at(5);
             residualsNorm.at(6) = residuals.at(6);
 
@@ -664,15 +653,6 @@ namespace oofem {
         auto status = static_cast < LatticeFrameSteelPlasticStatus * > ( this->giveStatus(gp) );
 
         this->initTempStatus(gp);
-
-	double b = 1.0;
-	if (this->capacityMode == 1) { // perWidth input
-	  b = static_cast < LatticeStructuralElement * > ( gp->giveElement() )->giveTributaryWidth(gp);
-	  if (b <= 0.0) {
-	    OOFEM_ERROR("Non-positive tributary width.");
-	  }
-	}
-
 	
         auto reducedStrain = originalStrain;
         auto thermalStrain = this->computeStressIndependentStrainVector(gp, tStep, VM_Total);
