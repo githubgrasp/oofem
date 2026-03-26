@@ -46,9 +46,9 @@
 #include "oofemenv.h"
 #include "enum.h"
 #include "oofemcfg.h"
+#include "intarray.h"
 
 namespace oofem {
-class IntArray;
 class FloatArray;
 template <std::size_t N> class FloatArrayF;
 class FloatMatrix;
@@ -83,6 +83,20 @@ typedef const char *InputFieldType;
  */
 #define IR_GIVE_RECORD_KEYWORD_FIELD(__ir, __name, __value) \
     (__ir)->giveRecordKeywordField(__name, __value);
+
+/**
+ * Macro facilitating the use of input record reading methods for IntArrays filled with enum values.
+ * Uses the given input record (__ir parameter) and reads the compulsory
+ * field identified by __id, translating strings to enum integers.
+ */
+#define IR_GIVE_ENUM_ARRAY_FIELD(__ir, __value, __id, __enumtype) \
+    (__ir)->giveField<__enumtype>(__value, __id);
+
+/**
+ * Macro facilitating the use of input record reading methods for optional enum arrays.
+ */
+#define IR_GIVE_OPTIONAL_ENUM_ARRAY_FIELD(__ir, __value, __id, __enumtype) \
+    (__ir)->giveOptionalField<__enumtype>(__value, __id);
 
 
 // #define _INPUTRECORD_OPTIONAL_OLD
@@ -172,6 +186,35 @@ public:
             answer=v.value();
         }
     }
+
+    /// Reads an array of enumerations (must be defined via enum-impl.hpp) into IntArray
+    template<typename AnEnum>
+    void giveField(IntArray& answer, InputFieldType id){
+        typedef EnumTraits<AnEnum> Traits;
+        std::vector<std::string> s;
+        giveField(s,id);
+        #ifdef _USE_TRACE_FIELDS
+            if(InputRecord::TraceFields::active){
+                traceEnum(Traits::enum_name,Traits::all_values_to_names());
+                traceField(id,(std::string("enumArray:")+Traits::enum_name).c_str());
+            }
+        #endif
+        int n = static_cast<int>(s.size());
+        answer.resize(n);
+        for(int i = 0; i < n; ++i){
+            if(std::regex_match(s[i],std::regex("\\s*[0-9]+\\s*"))){
+                int val=std::atoi(s[i].c_str());
+                auto v=Traits::value(val);
+                if(!v) OOFEM_ERROR("%s: %s (enum %s): invalid index '%d'%s",giveLocation().c_str(),id,Traits::enum_name,val,error_msg_with_hints("",Traits::all_values_to_names()).c_str());
+                answer[i] = static_cast<int>(v.value());
+            } else {
+                auto v=Traits::value(s[i].c_str());
+                if(!v){ OOFEM_ERROR("%s: %s (enum %s): unrecognized name '%s'%s",giveLocation().c_str(),id,Traits::enum_name,s[i].c_str(),error_msg_with_hints(s[i],Traits::all_values_to_names()).c_str()); }
+                answer[i] = static_cast<int>(v.value());
+            }
+        }
+    }
+
     #ifdef _USE_TRACE_FIELDS
         // field access tracing variables, set at startup from main()
         struct TraceFields {
@@ -191,6 +234,8 @@ public:
      */
     template<typename T>
     void giveOptionalField(T& answer, InputFieldType id){ if(hasField(id)) giveField(answer,id); }
+    template<typename AnEnum>
+    void giveOptionalField(IntArray& answer, InputFieldType id){ if(hasField(id)) giveField<AnEnum>(answer,id); }
     //@}
 
     /**@name Child reader methods

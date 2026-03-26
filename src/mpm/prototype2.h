@@ -626,12 +626,20 @@ namespace oofem {
                 Integral* integral = this->integralList[i-1].get();
                 integral->assemble_rhs (rhs, EModelDefaultEquationNumbering(), tStep); 
             }
-            //rhs.printYourself();
+            // experimental: allow traditional BCs to contribute to rhs as well by treating them as integrals
+            this->assembleVectorFromBC(rhs, tStep, ExternalForceAssembler(), VM_Total,
+                                       EModelDefaultEquationNumbering(), this->giveDomain(1) );
             solution.resize(rhs.giveSize());
             // solve the system
             nMethod->solve(*effectiveMatrix, rhs, solution);
             //solution.printYourself();
-            
+            // update the problem (evaluate residuals on lhs terms)
+            FloatArray internalForces(rhs.giveSize());
+            internalForces.zero();
+            for (auto i: lhsIntegrals) {
+                Integral* integral = this->integralList[i-1].get();
+                integral->assemble_rhs (internalForces, EModelDefaultEquationNumbering(), tStep); 
+            }          
         }
 
         TimeStep *giveNextStep() override
@@ -681,6 +689,7 @@ namespace oofem {
             switch ( mode ) {
             case VM_Total:
             case VM_Incremental:
+            case VM_TotalIntrinsic:
                 if ( solution.isNotEmpty() ) {
                     return solution.at(eq);
                 } else {

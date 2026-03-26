@@ -1056,6 +1056,10 @@ public:
         return variableMap[name].get();
         
     }
+    std :: map< std :: string, std::unique_ptr< Variable > > & giveVariables () {
+        return variableMap;
+    }
+
     const Term* giveTerm (int indx) {
         // @BP: add better error handling than provided by at()
         if(indx<1 || (int)termList.size()<indx) OOFEM_ERROR("MPM term number %d outside of valid range 1..%d",indx,(int)termList.size());

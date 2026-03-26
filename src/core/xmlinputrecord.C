@@ -244,6 +244,12 @@ namespace oofem {
         for(size_t i=0; i<tt.size(); i++) answer[i]=tt.as<double>(i);
         _XML_DEBUG(tt.loc()<<": parsed attribute "<<id<<" as "<<answer);
     }
+    void XMLInputRecord::giveField(std::vector<std::string>& answer, InputFieldType id){
+        Tokens tt(id,this);
+        answer.resize(tt.size());
+        for(size_t i=0; i<tt.size(); i++) answer[i]=tt.toks[i];
+        _XML_DEBUG(tt.loc()<<": parsed attribute "<<id<<" as std::vector<std::string>");
+    }
     void XMLInputRecord::giveField(Coordinates &answer, InputFieldType id){
         Tokens tt(id,this);
         // std::cerr<<id<<": FloatArray from '"<<tt.str<<"' ("<<tt.size()<<" items)"<<std::endl;

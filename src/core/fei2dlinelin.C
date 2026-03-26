@@ -56,9 +56,20 @@ void FEI2dLineLin :: evalN(FloatArray &answer, const FloatArray &lcoords, const 
 
 double FEI2dLineLin :: evaldNdx(FloatMatrix &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
 {
-    // Not meaningful to return anything.
-    answer.clear();
-    return 0.;
+    ///@todo Not clear what this function should return. Just dNds would make sense if the caller defines a local coordinate system.
+
+    double x21 = cellgeo.giveVertexCoordinates(2).at(xind) - cellgeo.giveVertexCoordinates(1).at(xind);
+    double y21 = cellgeo.giveVertexCoordinates(2).at(yind) - cellgeo.giveVertexCoordinates(1).at(yind);
+    double detJ = (x21 * x21 + y21 * y21) * 0.5;
+    double l2_inv = 0.5 / detJ;
+    answer.resize(2, 2);
+
+    answer.at(1, 1) = -x21 * l2_inv;
+    answer.at(2, 1) =  x21 * l2_inv;
+    answer.at(1, 2) = -y21 * l2_inv;
+    answer.at(2, 2) =  y21 * l2_inv;
+
+    return detJ;
 }
 
 void FEI2dLineLin :: evaldNdxi(FloatMatrix &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const

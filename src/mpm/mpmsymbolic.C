@@ -34,11 +34,12 @@
 
 #include "mpmsymbolic.h"
 
-
 namespace oofem {
-#define _IFT_SymbolicTerm_Name "SymbolicTerm"
+    #define _IFT_SymbolicTerm_Name "SymbolicTerm"
 
-REGISTER_Term(SymbolicTerm)
+    REGISTER_Term(SymbolicTerm)
+
+    
 
 } // end namespace oofem
 

@@ -91,6 +91,7 @@ class OOFEM_EXPORT Variable {
     typedef oofem::VariableType VariableType;
     typedef oofem::VariableQuantity VariableQuantity;
 
+    std::string name;
     const FEInterpolation* interpolation;  
     Variable* dualVar; //? or just bool?
     VariableType type;
@@ -98,8 +99,8 @@ class OOFEM_EXPORT Variable {
     int size;
     IntArray dofIDs;
 
-    Variable () : interpolation(nullptr), dualVar(NULL), type(VariableType::scalar), q(VariableQuantity::Displacement), size(0) {}
-    Variable (const FEInterpolation* i, Variable::VariableQuantity q, Variable::VariableType t, int size, Variable* dual = NULL, std :: initializer_list< int > dofIDs={}) : 
+    Variable () : name(), interpolation(nullptr), dualVar(NULL), type(VariableType::scalar), q(VariableQuantity::Displacement), size(0) {}
+    Variable (const FEInterpolation* i, Variable::VariableQuantity q, Variable::VariableType t, int size, Variable* dual = NULL, std :: initializer_list< int > dofIDs={}, std::string name="") : 
         interpolation(i), 
         dualVar(dual), 
         q(q), 
@@ -107,7 +108,8 @@ class OOFEM_EXPORT Variable {
         this->type = t;
         this->size = size;
     }
-    Variable (const FEInterpolation* i, Variable::VariableQuantity q, Variable::VariableType t, int size, IntArray& dofIDs, Variable* dual = NULL) : 
+    Variable (const FEInterpolation* i, Variable::VariableQuantity q, Variable::VariableType t, int size, IntArray& dofIDs, Variable* dual = NULL, std::string name="") : 
+        name(name),
         interpolation(i), 
         dualVar(dual), 
         q(q), 

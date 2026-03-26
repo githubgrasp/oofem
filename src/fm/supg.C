@@ -1349,7 +1349,7 @@ SUPG :: updateSolutionVectors(FloatArray &solutionVector, FloatArray &_accelerat
  *            OOFEM_ERROR("3d not yet supported");
  *          } else if (type == P_f) {
  *          //iDof->updateUnknownsDictionary (tStep, VM_Total, 0.0);
- *          } else {_error2 ("unknown DOF type encountered (%s)", __DofIDItemToString (type));}
+ *          } else {_error2 ("unknown DOF type encountered (%s)", DofIDItemToString (type).c_str());}
  *      }
  *    }
  *  }

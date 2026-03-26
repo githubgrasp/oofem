@@ -156,7 +156,7 @@ endif(USE_OOFEM_EXE)
 
 ######################## Tests of Python bindings ########################################
 if (USE_PYBIND_BINDINGS)
-    add_test (NAME "bindings/python/tests" WORKING_DIRECTORY ${oofem_SOURCE_DIR}/bindings/python/tests COMMAND ${Python_EXECUTABLE} "-m" "pytest" ${oofem_SOURCE_DIR}/bindings/python/tests)
+    add_test (NAME "bindings/python/tests" WORKING_DIRECTORY ${oofem_SOURCE_DIR}/bindings/python/tests COMMAND ${Python3_EXECUTABLE} "-m" "pytest" ${oofem_SOURCE_DIR}/bindings/python/tests)
     set_tests_properties("bindings/python/tests" PROPERTIES ENVIRONMENT PYTHONPATH=${CMAKE_BINARY_DIR}:${oofem_SOURCE_DIR}/bindings/python/oofem)
 endif()
 ######################## End of tests of Python bindings ########################################

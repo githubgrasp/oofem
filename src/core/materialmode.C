@@ -32,47 +32,18 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "mpm.h"
-#include "interpolationcatalogue.h"
-#include "engngm.h"
+#include "materialmode.h"
 
 namespace oofem {
 
-void
-Variable::initializeFrom(const std::shared_ptr<InputRecord> &ir)
-{
-    // read variable name
-    IR_GIVE_FIELD(ir, this->name, "name");
-    // read interpolation type
-    std::string iname;
-    IR_GIVE_FIELD(ir, iname, "interpolation");
-    // get corresponding interpolation from catalogue
-    this->interpolation = interpolationCatalogue.getInterpolationByName(iname);
-    
-    // read variable type
-    ir->giveField(this->type,"type");
-    // read quantity
-    ir->giveField(this->q,"quantity");
-    // read variable size
-    IR_GIVE_FIELD(ir, this->size, "size");
-    // read dofs 
-    // IR_GIVE_FIELD(ir, this->dofIDs, "dofs");
-    IR_GIVE_ENUM_ARRAY_FIELD(ir, this->dofIDs, "dofs", DofIDItem);
-}    
-
-void
-Term::initializeFrom(const std::shared_ptr<InputRecord> &ir, EngngModel* problem)
-{
-    // read field and test field ids (names)
-    std::string name;
-    IR_GIVE_FIELD(ir, name, "variable");
-    this->field = problem->giveVariableByName(name);
-    IR_GIVE_FIELD(ir, name, "testvariable");
-    this->testField = problem->giveVariableByName(name);
-    IR_GIVE_FIELD(ir, this->mode, "mmode");
+bool mmodeIs1D(MaterialMode mmode){
+    return (mmode == _1dMat) || (mmode == _1dMatGrad) || (mmode == _1dInterface) || (mmode == _1dHeat) || (mmode == _1dHeMo) || (mmode == _1dLattice);
+}
+bool mmodeIs2D(MaterialMode mmode){
+    return (mmode == _PlaneStress) || (mmode == _PlaneStrain) || (mmode == _PlaneStressGrad) || (mmode == _PlaneStrainGrad) || (mmode == _2dPlate) || (mmode == _2dPlateSubSoil) || (mmode == _2dBeam) || (mmode == _2dInterface) || (mmode == _2dHeat) || (mmode == _2dHeMo) || (mmode == _2dFlow) || (mmode == _2dAxiFlow) || (mmode == _2dUP) || (mmode == _2dUPV) || (mmode == _2dLattice) || (mmode == _2dMTLattice);  
+}
+bool mmodeIs3D(MaterialMode mmode){
+    return (mmode == _3dMat) || (mmode == _3dMatGrad) || (mmode == _3dBeam) || (mmode == _3dShell) || (mmode == _3dShellRot) || (mmode == _3dDegeneratedShell) || (mmode == _3dInterface) || (mmode == _3dHeat) || (mmode == _3dHeMo) || (mmode == _3dFlow) || (mmode == _3dUP) || (mmode == _3dUPV) || (mmode == _3dLattice) || (mmode == _3dMTLattice) || (mmode == _Warping);
 }
 
-
-
 } // end namespace oofem
-

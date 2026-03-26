@@ -1,0 +1,47 @@
+mpms07.out
+Demo of symbolic mpm expression parser 
+# 2d plane stress cantilever 
+mpmsymbolicstationaryproblem nsteps 1 nvariables 2 nterms 2 nintegrals 2 lhsterms 1 1 rhsterms 1 2 nmodules 1
+errorcheck
+#Variable name "u" interpolation "feilin" type 1 quantity 0 size 2 dofs 2 1 2 # temperature 
+#Variable name "w" interpolation "feilin" type 1 quantity 0 size 2 dofs 2 1 2 # test function
+Variable name "u" interpolation "feiquad" type 1 quantity 0 size 2 dofs 2 1 2 # temperature 
+Variable name "w" interpolation "feiquad" type 1 quantity 0 size 2 dofs 2 1 2 # test function
+SymbolicTerm 1 variable "u"  testvariable "w" mmode 6 lexpression "B(w,gp).T*Dm(gp,ts)*B(u,gp)" rexpression "B(w,gp).T*Sig(u,gp,ts)"
+SymbolicTerm 2 variable "u"  testvariable "w" mmode 6 lexpression "0.0" rexpression "N(w,gp).T*[[0.0],[-1.0]]" # constant heat source
+Integral 1 domain 1 set 1 term 1
+Integral 2 domain 1 set 3 term 2
+#
+domain HeatTransfer
+outputmanager tstep_all dofman_all element_all
+ndofman 8 nelem 6 nbc 1 ncrosssect 1 nic 0 nltf 1 nmat 1 nset 3
+node 1 coords 3 0.0 0.0 0.0
+node 2 coords 3 1.0 0.0 0.0
+node 3 coords 3 2.0 0.0 0.0
+node 4 coords 3 3.0 0.0 0.0
+node 5 coords 3 0.0 0.3 0.0
+node 6 coords 3 1.0 0.3 0.0
+node 7 coords 3 2.0 0.3 0.0
+node 8 coords 3 3.0 0.3 0.0
+#
+q1 1 nodes 4 1 2 6 5 mat 1 crosssect 1
+q1 2 nodes 4 2 3 7 6 mat 1 crosssect 1
+q1 3 nodes 4 3 4 8 7 mat 1 crosssect 1
+l1 4 nodes 2 5 6 mat 1 crosssect 1
+l1 5 nodes 2 6 7 mat 1 crosssect 1
+l1 6 nodes 2 7 8 mat 1 crosssect 1
+#
+simplecs 1 thick 1.0
+isole 1 d 1 e 1 n 0.3 talpha 1.
+# x-displacement
+boundarycondition 1 loadtimefunction 1 set 2 values 2 0 0  dofs 2 1 2
+#
+#
+constantfunction 1 f(t) 1
+set 1 elements 3 1 2 3  
+# x-bc
+set 2 nodes 2 1 5
+set 3 elements 3 4 5 6
+#%BEGIN_CHECK% 
+#NODE tStep 1 number 4 dof 2 unknown d value -4.4515e3 tolerance 1.e-1
+#%END_CHECK%

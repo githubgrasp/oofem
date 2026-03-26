@@ -485,7 +485,7 @@ Node :: computeL2GTransformation(FloatMatrix &answer, const IntArray &dofIDArry)
                     break;
 
                 default:
-                    OOFEM_ERROR("unknown dofID (%s)", __DofIDItemToString(id).c_str());
+                    OOFEM_ERROR("unknown dofID (%s)", DofIDItemToString(id).c_str());
                 }
             }
         } else { // end if (dofIDArry.isEmpty())
@@ -540,7 +540,7 @@ Node :: computeL2GTransformation(FloatMatrix &answer, const IntArray &dofIDArry)
                     break;
 
                 default:
-                    OOFEM_ERROR("unknown dofID (%s)", __DofIDItemToString(id).c_str());
+                    OOFEM_ERROR("unknown dofID (%s)", DofIDItemToString(id).c_str());
                 }
             }
         } // end map is provided -> assemble for requested dofs
