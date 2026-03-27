@@ -287,24 +287,50 @@ namespace oofem {
         answer.zero();
         this->computeNLBmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), b, tStep);
 
+	printf("b matrix");
+	b.printYourself();
+	
         this->computeConstitutiveMatrixAt(d, rMode, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
 
+	printf("d matrix");
+	d.printYourself();
+		    
         convertTangentToResultantTangent3d(ds, d, integrationRulesArray [ 0 ]->getIntegrationPoint(0));
 
+	printf("ds matrix before rotation");
+	ds.printYourself();
+	
         //Rotate constitutive stiffness matrix
         FloatMatrix r(6, 6), rT(6, 6), dR(6, 6), rTDR(6, 6);
         computeCurrentGtoLStrainRotationMatrix(r, u, coordA, coordB, coordGp);
 
+	printf("currentGtoLStrainRotationMatrix\n");
+	r.printYourself();
+
+	FloatMatrix rDebug(6,6);
+	computeGtoLStrainRotationMatrix(rDebug);
+
+	printf("GtoLStrainRotationMatrix\n");
+	rDebug.printYourself();
+	       	
+	
         rT.beTranspositionOf(r);
 
         dR.beProductOf(ds, r);
         rTDR.beProductOf(rT, dR);
 
+	printf("rTDR matrix (ds after rotation");
+	rTDR.printYourself();
+
+	
         db.beProductOf(rTDR, b);
         db.times(1. / length);
         bt.beTranspositionOf(b);
         answer.beProductOf(bt, db);
 
+	printf("Print stiffness matrix\n");
+	answer.printYourself();
+	
         return;
     }
 
@@ -449,7 +475,7 @@ namespace oofem {
         computeCurrentGtoLStrainRotationMatrix(rotMatrix, u, coordA, coordB, coordGp);
 
         //Calculate stress in global coordinate system
-        stress.rotatedWith(rotMatrix, 't');
+        s.rotatedWith(rotMatrix, 't');
 
         answer.resize(12);
         answer.at(1) = -s.at(1);
@@ -457,13 +483,13 @@ namespace oofem {
         answer.at(3) = -s.at(3);
         answer.at(4) =  s.at(2) * c1.at(3) - s.at(3) * c1.at(2) - s.at(4);
         answer.at(5) = -s.at(1) * c1.at(3) + s.at(3) * c1.at(1) - s.at(5);
-        answer.at(6) = s.at(1) * c1.at(2) - stress.at(2) * c1.at(1) - s.at(6);
+        answer.at(6) = s.at(1) * c1.at(2) - s.at(2) * c1.at(1) - s.at(6);
         answer.at(7) = s.at(1);
         answer.at(8) = s.at(2);
         answer.at(9) = s.at(3);
         answer.at(10) =  s.at(2) * c2.at(3) - s.at(3) * c2.at(2) + s.at(4);
         answer.at(11) = -s.at(1) * c2.at(3) + s.at(3) * c2.at(1) + s.at(5);
-        answer.at(12) = s.at(1) * c2.at(2) - s.at(2) * c2.at(1) + s.at(6);
+        answer.at(12) = s.at(1) * c2.at(2) - s.at(2) * c2.at(1) + s.at(6);		
     }
 
 
@@ -473,100 +499,129 @@ namespace oofem {
                                                                   const FloatArray &coordB,
                                                                   const FloatArray &coordGP)
     {
-        FloatArray e = coordB - coordA;
-        FloatArray r = coordGP - coordA;
+    // Position of GP along the element in the reference configuration
+    FloatArray e = coordB - coordA;
+    FloatArray r = coordGP - coordA;
 
-        double num = r.at(1) * e.at(1) + r.at(2) * e.at(2) + r.at(3) * e.at(3);
-        double den = e.at(1) * e.at(1) + e.at(2) * e.at(2) + e.at(3) * e.at(3);
-        double t = num / den;
-        if ( t < 0. ) {
-            t = 0.;
+    double num = r.at(1) * e.at(1) + r.at(2) * e.at(2) + r.at(3) * e.at(3);
+    double den = e.at(1) * e.at(1) + e.at(2) * e.at(2) + e.at(3) * e.at(3);
+
+    double t = num / den;
+    if ( t < 0.0 ) {
+        t = 0.0;
+    }
+    if ( t > 1.0 ) {
+        t = 1.0;
+    }
+
+    // Interpolate nodal spin in global coordinates
+    FloatArray spinOne(3), spinTwo(3), spinAverage(3), help(3);
+
+    spinOne.at(1) = u.at(4);
+    spinOne.at(2) = u.at(5);
+    spinOne.at(3) = u.at(6);
+
+    spinTwo.at(1) = u.at(10);
+    spinTwo.at(2) = u.at(11);
+    spinTwo.at(3) = u.at(12);
+
+    spinAverage = spinOne;
+    spinAverage.times(1.0 - t);
+
+    help = spinTwo;
+    help.times(t);
+
+    spinAverage.add(help);
+
+    // Initial global-to-local strain rotation matrix
+    FloatMatrix GtoL0(6, 6);
+    computeGtoLStrainRotationMatrix(GtoL0);
+
+    // Extract initial local basis vectors in global coordinates
+    FloatArray e10(3), e20(3), e30(3);
+    for ( int j = 1; j <= 3; ++j ) {
+        e10.at(j) = GtoL0.at(1, j);
+        e20.at(j) = GtoL0.at(2, j);
+        e30.at(j) = GtoL0.at(3, j);
+    }
+
+    // Rotate the initial basis by the average spin in GLOBAL coordinates
+    FloatMatrix Qrot(3, 3);
+    this->computeGlobalRotationMatrix(Qrot, spinAverage);
+
+    FloatArray e1(3), e2(3), e3(3);
+    e1.beProductOf(Qrot, e10);
+    e2.beProductOf(Qrot, e20);
+    e3.beProductOf(Qrot, e30);
+
+    // Re-orthonormalise and enforce right-handedness
+    e1.normalize();
+
+    e3.beVectorProductOf(e1, e2);
+    e3.normalize();
+
+    e2.beVectorProductOf(e3, e1);
+    e2.normalize();
+
+    // Build current global-to-local 3x3 direction cosine matrix
+    FloatMatrix Qloc(3, 3);
+    Qloc.zero();
+    for ( int j = 1; j <= 3; ++j ) {
+        Qloc.at(1, j) = e1.at(j);
+        Qloc.at(2, j) = e2.at(j);
+        Qloc.at(3, j) = e3.at(j);
+    }
+
+    // Assemble the 6x6 strain/resultant rotation matrix
+    GtoLCurrent.resize(6, 6);
+    GtoLCurrent.zero();
+    for ( int i = 1; i <= 3; ++i ) {
+        for ( int j = 1; j <= 3; ++j ) {
+            GtoLCurrent.at(i, j) = Qloc.at(i, j);
+            GtoLCurrent.at(i + 3, j + 3) = Qloc.at(i, j);
         }
-        if ( t > 1. ) {
-            t = 1.;
-        }
+    }
 
+    // Ensure local axis 1 points along the current element axis
+    FloatArray x1_cur(3), x2_cur(3), vaxis(3);
+    x1_cur = coordA;
+    x2_cur = coordB;
 
-        FloatArray spinOne(3), spinTwo(3);
-        spinOne.at(1) = u.at(4);
-        spinOne.at(2) = u.at(5);
-        spinOne.at(3) = u.at(6);
+    x1_cur.at(1) += u.at(1);
+    x1_cur.at(2) += u.at(2);
+    x1_cur.at(3) += u.at(3);
 
-        spinTwo.at(1) = u.at(10);
-        spinTwo.at(2) = u.at(11);
-        spinTwo.at(3) = u.at(12);
+    x2_cur.at(1) += u.at(7);
+    x2_cur.at(2) += u.at(8);
+    x2_cur.at(3) += u.at(9);
 
-        FloatArray spinAverage(3), help(3);
-        spinAverage = spinOne;
-        spinAverage.times(1. - t);
-        help = spinTwo;
-        help.times(t);
-        spinAverage.add(help);
+    vaxis.beDifferenceOf(x2_cur, x1_cur);
 
+    double norm = sqrt(vaxis.at(1) * vaxis.at(1)
+                     + vaxis.at(2) * vaxis.at(2)
+                     + vaxis.at(3) * vaxis.at(3));
 
-        FloatMatrix GtoL0(6, 6);
-        computeGtoLStrainRotationMatrix(GtoL0);
+    if ( norm > 0.0 ) {
+        vaxis.times(1.0 / norm);
 
-        FloatArray spinLocal(3);
-        for (int i = 1; i <= 3; ++i) {
-            double s = 0.0;
-            for (int j = 1; j <= 3; ++j) {
-                s += GtoL0.at(i + 3, j + 3) * spinAverage.at(j);
-            }
-            spinLocal.at(i) = s;
-        }
+        FloatArray e1_from_R(3);
+        e1_from_R.at(1) = GtoLCurrent.at(1, 1);
+        e1_from_R.at(2) = GtoLCurrent.at(1, 2);
+        e1_from_R.at(3) = GtoLCurrent.at(1, 3);
 
+        double dot = e1_from_R.at(1) * vaxis.at(1)
+                   + e1_from_R.at(2) * vaxis.at(2)
+                   + e1_from_R.at(3) * vaxis.at(3);
 
-        FloatMatrix Qloc(3, 3);
-        this->computeGlobalRotationMatrix(Qloc, spinLocal);
-
-        FloatMatrix Q6(6, 6);
-        for (int i = 1; i <= 3; ++i) {
-            for (int j = 1; j <= 3; ++j) {
-                Q6.at(i,  j) = Qloc.at(i, j);
-                Q6.at(i + 3, j + 3) = Qloc.at(i, j);
-            }
-        }
-
-        GtoLCurrent.beProductOf(Q6, GtoL0);
-
-	
-        FloatArray x1_cur(3), x2_cur(3);
-        x1_cur = coordA;
-        x1_cur.at(1) += u.at(1);
-        x1_cur.at(2) += u.at(2);
-        x1_cur.at(3) += u.at(3);
-
-        x2_cur = coordB;
-        x2_cur.at(1) += u.at(7);
-        x2_cur.at(2) += u.at(8);
-        x2_cur.at(3) += u.at(9);
-
-        FloatArray vaxis(3);
-        vaxis.beDifferenceOf(x2_cur, x1_cur);
-        double norm = sqrt(vaxis.at(1) * vaxis.at(1) +
-                           vaxis.at(2) * vaxis.at(2) +
-                           vaxis.at(3) * vaxis.at(3) );
-        if ( norm > 0.0 ) {
-            vaxis.times(1.0 / norm);
-
-            FloatArray e1_from_R(3);
-            e1_from_R.at(1) = GtoLCurrent.at(1, 1);
-            e1_from_R.at(2) = GtoLCurrent.at(1, 2);
-            e1_from_R.at(3) = GtoLCurrent.at(1, 3);
-
-            double dot = e1_from_R.at(1) * vaxis.at(1)
-                         + e1_from_R.at(2) * vaxis.at(2)
-                         + e1_from_R.at(3) * vaxis.at(3);
-
-            if ( dot < 0.0 ) {
-                for (int i = 1; i <= 3; ++i) {
-                    for (int j = 1; j <= 3; ++j) {
-                        GtoLCurrent.at(i,  j) *= -1.0;
-                        GtoLCurrent.at(i + 3, j + 3) *= -1.0;
-                    }
+        if ( dot < 0.0 ) {
+            for ( int i = 1; i <= 3; ++i ) {
+                for ( int j = 1; j <= 3; ++j ) {
+                    GtoLCurrent.at(i, j) *= -1.0;
+                    GtoLCurrent.at(i + 3, j + 3) *= -1.0;
                 }
             }
         }
     }
-} // end namespace oofem
+
+    }
+ } // end namespace oofem

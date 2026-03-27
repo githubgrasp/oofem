@@ -91,15 +91,21 @@ LatticeCrossSection::initializeFrom(InputRecord &ir)
     IR_GIVE_OPTIONAL_FIELD(ir, value, _IFT_LatticeCrossSection_iy);
     propertyDictionary.add(CS_InertiaMomentY, value);
 
+    printf("I1 = %e\n", value);
+    
     value = 0.0;
     IR_GIVE_OPTIONAL_FIELD(ir, value, _IFT_LatticeCrossSection_iz);
     propertyDictionary.add(CS_InertiaMomentZ, value);
 
+    printf("I2 = %e\n", value);
+	
     value = 0.0;
     IR_GIVE_OPTIONAL_FIELD(ir, value, _IFT_LatticeCrossSection_ik);
     propertyDictionary.add(CS_TorsionConstantX, value);
 
-    double beamshearcoeff = 0.0;
+    printf("Ip = %e\n", value);
+    
+    double beamshearcoeff = 1.;
     IR_GIVE_OPTIONAL_FIELD(ir, beamshearcoeff, _IFT_LatticeCrossSection_shearcoeff);
     propertyDictionary.add(CS_BeamShearCoeff, beamshearcoeff);
 

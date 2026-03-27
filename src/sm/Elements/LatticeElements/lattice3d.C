@@ -462,6 +462,17 @@ Lattice3d :: computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoo
     return 1;
 }
 
+void
+Lattice3d::giveGpCoordinates(FloatArray &answer)
+{
+    if ( geometryFlag == 0 ) {
+        computeGeometryProperties();
+    }
+    answer.resize(3);
+    answer = this->globalCentroid;
+    return;
+}
+
 
 void
 Lattice3d :: computeGeometryProperties()
@@ -671,6 +682,9 @@ void
 
     this->Ip = I1 + I2;
 
+    printf("I1 = %e, I2 = %e, Ip=%e\n", I1, I2, Ip);
+    printf("area = %e\n", area);
+    
     //Rotation around normal axis by angleChange
 
     FloatMatrix rotationChange(3, 3);
@@ -755,7 +769,7 @@ double Lattice3d :: giveShearArea1(GaussPoint *gp) {
         computeGeometryProperties();
     }
     //Temporary assumption. Ideally, shear area should be less than area.
-    return this->area*100;
+    return this->area;
 }
 
 double Lattice3d :: giveShearArea2(GaussPoint *gp) {
@@ -763,7 +777,7 @@ double Lattice3d :: giveShearArea2(GaussPoint *gp) {
         computeGeometryProperties();
     }
     //Temporary assumption. Ideally, shear area should be less than area.
-    return this->area*100;
+    return this->area;
 }
 
 double Lattice3d :: giveTributaryWidth(GaussPoint *gp)

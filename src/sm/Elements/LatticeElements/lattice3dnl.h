@@ -34,10 +34,9 @@
 
 #ifndef lattice3dnl_h
 #define lattice3dnl_h
+#include "lattice3d.h"
 
-#include "latticestructuralelement.h"
-
-///@name Input fields for Lattice3d
+///@name Input fields for lattice3dnl
 //@{
 #define _IFT_Lattice3dNL_Name "lattice3dnl"
 #define _IFT_Lattice3dNL_mlength "mlength"
@@ -45,113 +44,47 @@
 #define _IFT_Lattice3dNL_couplingflag "couplingflag"
 #define _IFT_Lattice3dNL_couplingnumber "couplingnumber"
 #define _IFT_Lattice3dNL_pressures "pressures"
+#define _IFT_Lattice3dNL_thickness "thickness"
 //@}
 
 namespace oofem {
 /**
- * This class implements a 3-dimensional lattice element
+ * This class implements a geometric nonlinear 3-dimensional lattice element based on rigid body spring models.
+Related reference (for the special case of a beam element with symmetric cross-section): A 3D frame element for large rotations based on the rigid-body-spring concept for analysing the failure of structures. International Journal of Solids and Structures. https://doi.org/10.1016/j.ijsolstr.2025.113812
+ Author: Peter Grassl, 2026
  */
 
-class Lattice3dNL : public LatticeStructuralElement
+class Lattice3dNL : public Lattice3d
 {
 protected:
-    double minLength;
-    double kappa, length;
-    double I1, I2, Ip;
-    FloatArray polygonCoords;
-    int numberOfPolygonVertices;
-    FloatMatrix localCoordinateSystem;
-    double eccS, eccT, area;
-    FloatArray midPoint, centroid, globalCentroid, normal;
-    int geometryFlag;
-    int couplingFlag;
-    IntArray couplingNumbers;
-    FloatArray pressures;
 
 public:
     Lattice3dNL(int n, Domain *);
     virtual ~Lattice3dNL();
 
+  const char *giveInputRecordName() const override { return _IFT_Lattice3dNL_Name; }
+    const char *giveClassName() const override { return "lattice3dnl"; }
 
-    int giveLocalCoordinateSystem(FloatMatrix &answer) override;
+  void giveInternalForcesVector(FloatArray &answer, TimeStep *tStep, int useUpdatedGpRecord) override;
 
-    int computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords) override;
-
-    double giveLength() override;
-
-    double giveNormalStress() override;
-
-    double giveArea(GaussPoint *gp) override;
-
-    int computeNumberOfDofs() override { return 12; }
-
-    void giveDofManDofIDMask(int inode, IntArray &) const override;
-
-    double computeVolumeAround(GaussPoint *) override;
-
-    int giveNumberOfCrossSectionNodes() override { return numberOfPolygonVertices; }
-
-    int giveCrackFlag() override;
-
-    double giveCrackWidth() override;
-
-    void givePlasticStrain(FloatArray &plas) override;
-    void giveOldPlasticStrain(FloatArray &plas) override;
-
-    void givePressures(FloatArray &pres) override { pres = pressures; }
-
-    int giveCouplingFlag() override { return couplingFlag; }
-
-    void giveCouplingNumbers(IntArray &numbers) override { numbers = this->couplingNumbers; }
-
-    /**
-     * This function gives the cross-section coordinates.
-     */
-    void giveCrossSectionCoordinates(FloatArray &coords) override { coords = polygonCoords; }
-
-    virtual void giveGPCoordinates(FloatArray &coords);
-
-    virtual void computeGeometryProperties();
-
-    virtual void computeCrossSectionProperties();
-
-    const char *giveInputRecordName() const override { return _IFT_Lattice3dNL_Name; }
-    const char *giveClassName() const override { return "Lattice3dnl;"; }
-    void initializeFrom(InputRecord &ir) override;
-
-
-
-    Element_Geometry_Type giveGeometryType() const override { return EGT_line_1; }
-
-    void saveContext(DataStream &stream, ContextMode mode) override;
-
-    void restoreContext(DataStream &stream, ContextMode mode) override;
-
-#ifdef __OOFEG
-    void drawYourself(oofegGraphicContext &context, TimeStep *tStep) override;
-    void drawRawGeometry(oofegGraphicContext &, TimeStep *tStep) override;
-    void drawRawCrossSections(oofegGraphicContext &, TimeStep *tStep);
-    void drawDeformedGeometry(oofegGraphicContext &, TimeStep *tStep, UnknownType) override;
-#endif
-
-
+ 
 protected:
-    void computeBmatrixAt(GaussPoint *, FloatMatrix &, int = 1, int = ALL_STRAINS) override;
-    bool computeGtoLRotationMatrix(FloatMatrix &) override;
-    void computeLumpedMassMatrix(FloatMatrix &answer, TimeStep *tStep) override;
-    void computeMassMatrix(FloatMatrix &answer, TimeStep *tStep) override
-    { this->computeLumpedMassMatrix(answer, tStep); }    
-    void computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode, TimeStep *tStep) override;
-    void computeConstitutiveMatrixAt(FloatMatrix &answer, MatResponseMode rMode, GaussPoint *gp, TimeStep *tStep) override;
-    void computeStressVector(FloatArray &answer, const FloatArray &strain, GaussPoint *gp, TimeStep *tStep) override;
+    void computeGlobalRotationMatrix(FloatMatrix &answer, FloatArray &rotation);
+  bool computeGtoLRotationMatrix(FloatMatrix &) override;
+  void computeSMtrx(FloatMatrix &answer, FloatArray &vec);
+    bool computeGtoLStrainRotationMatrix(FloatMatrix &answer);
+    void computeNLBmatrixAt(GaussPoint *gp, FloatMatrix &, TimeStep *tStep);
 
-    /**
-     * This computes the geometrical properties of the element once.
-     */
-    void computePropertiesOfCrossSection();
 
-    void computeGaussPoints() override;
-    integrationDomain giveIntegrationDomain() const override { return _Line; }
+  
+    void updateYourself(TimeStep *tStep) override;
+    void initForNewStep() override;
+
+    void computeCurrentGtoLStrainRotationMatrix(FloatMatrix &GtoLCurrent, const FloatArray &u, const FloatArray &coordA, const FloatArray &coordB, const FloatArray &coordGP);
+
+      void computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode, TimeStep *tStep) override;
+    virtual void  computeStrainVector(FloatArray &answer, GaussPoint *gp, TimeStep *tStep) override;
+
 };
 } // end namespace oofem
 #endif

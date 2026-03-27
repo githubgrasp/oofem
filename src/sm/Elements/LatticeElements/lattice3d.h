@@ -121,6 +121,8 @@ public:
     const char *giveClassName() const override { return "Lattice3d"; }
     void initializeFrom(InputRecord &ir) override;
 
+    void giveGpCoordinates(FloatArray &answer) override;
+
   double giveIp(GaussPoint *gp) override;
   double giveI1(GaussPoint *gp) override;
   double giveI2(GaussPoint *gp) override;
