@@ -122,14 +122,14 @@ namespace oofem {
     }
 
     /* Define custom functors for evaluator */
-    auto MPMfunctor_B = [](const std::vector<const VarSlot*>& args, VarSlot& out) {
+    auto MPMfunctor_Grad_s = [](const std::vector<const VarSlot*>& args, VarSlot& out) {
         // Compute the symmetric gradient of the first argument (assumed to be a vector field) 
         // ARGS: args[0] - pointer to VarSlot containing the vector field (as a user pointer)
         //       args[1] - pointer to GaussPoint (as a user pointer)
         // OUTPUT: out - VarSlot to store the resulting symmetric gradient matrix
-        std::cout << "    [C++ Callback] Called B functor with " << args.size() << " arguments." << std::endl;
+        std::cout << "    [C++ Callback] Called Grad_s functor with " << args.size() << " arguments." << std::endl;
         if (args.size() != 2) {
-            OOFEM_ERROR("MPMfunctor_B functor expects exactly 2 arguments: vector field (Variable class) and GaussPoint.");
+            OOFEM_ERROR("MPMfunctor_Grad_s functor expects exactly 2 arguments: vector field (Variable class) and GaussPoint.");
         }
         // 1. Retrieve the generic pointers to arguments
         void* raw_ptr0 = std::get<void*>(args[0]->value);
@@ -259,52 +259,35 @@ namespace oofem {
         out.type = VarSlot::Type::MATRIX;
     };
 
-    auto MPMfunctor_Dm = [](const std::vector<const VarSlot*>& args, VarSlot& out) {
-        // Compute the symmetric gradient of the first argument (assumed to be a vector field) 
+    auto MPMfunctor_MDer = [](const std::vector<const VarSlot*>& args, VarSlot& out) {
+        // Compute the constitutive derivative of the given property 
         // ARGS: args[0] - pointer to GaussPoint (as a user pointer)
         //       args[1] - pointer to TimeStep (as a user pointer)
+        //       args[2] - property ID (as a double, to be casted to MaterialResponseMode enum)
         // OUTPUT: out - VarSlot to store the resulting symmetric gradient matrix
-        std::cout << "    [C++ Callback] Called Dm functor with " << args.size() << " arguments." << std::endl;
-        if (args.size() != 2) {
-            OOFEM_ERROR("MPMfunctor_Dm functor expects exactly 2 arguments: GaussPoint and TimeStep.");
+        std::cout << "    [C++ Callback] Called MDer functor with " << args.size() << " arguments." << std::endl;
+        if (args.size() != 3) {
+            OOFEM_ERROR("MPMfunctor_MDer functor expects exactly 3 arguments: GaussPoint, TimeStep and PropertyID.");
         }
         // 1. Retrieve the generic pointers to arguments
         void* raw_ptr0 = std::get<void*>(args[0]->value);
         void* raw_ptr1 = std::get<void*>(args[1]->value);
+        double raw_val2 = std::get<double>(args[2]->value);
         // 2. Cast back to your specific application type (Variable class)
         GaussPoint* gp = static_cast<GaussPoint*>(raw_ptr0);
         TimeStep* tstep = static_cast<TimeStep*>(raw_ptr1);
+        MatResponseMode propertyID = static_cast<MatResponseMode>(raw_val2);
+
         // functor logic
         MPElement* cell = static_cast<MPElement*>(gp->giveElement());
         StructuralCrossSection* cs = static_cast<StructuralCrossSection*>(cell->giveCrossSection());
 
         FloatMatrix D;
-        cs->giveCharMaterialStiffnessMatrix(D, TangentStiffness, gp, tstep);
-        out.value = D;
-        out.type = VarSlot::Type::MATRIX;
-    };
-
-    auto MPMfunctor_Dm_dev = [](const std::vector<const VarSlot*>& args, VarSlot& out) {
-        // Compute the material deviatoric stiffness matrix  
-        // ARGS: args[0] - pointer to GaussPoint (as a user pointer)
-        //       args[1] - pointer to TimeStep (as a user pointer)
-        // OUTPUT: out - VarSlot to store the resulting symmetric gradient matrix
-        std::cout << "    [C++ Callback] Called Dm_dev functor with " << args.size() << " arguments." << std::endl;
-        if (args.size() != 2) {
-            OOFEM_ERROR("MPMfunctor_Dm_dev functor expects exactly 2 arguments: GaussPoint and TimeStep.");
+        if (propertyID == MatResponseMode::DeviatoricStiffness) {
+            cs->giveMaterial(gp)->giveCharacteristicMatrix(D, propertyID, gp, tstep);
+        } else {
+            cs->giveCharMaterialStiffnessMatrix(D, propertyID, gp, tstep);
         }
-        // 1. Retrieve the generic pointers to arguments
-        void* raw_ptr0 = std::get<void*>(args[0]->value);
-        void* raw_ptr1 = std::get<void*>(args[1]->value);
-        // 2. Cast back to your specific application type (Variable class)
-        GaussPoint* gp = static_cast<GaussPoint*>(raw_ptr0);
-        TimeStep* tstep = static_cast<TimeStep*>(raw_ptr1);
-        // functor logic
-        MPElement* cell = static_cast<MPElement*>(gp->giveElement());
-        StructuralCrossSection* cs = static_cast<StructuralCrossSection*>(cell->giveCrossSection());
-
-        FloatMatrix D;
-        cs->giveMaterial(gp)->giveCharacteristicMatrix(D, DeviatoricStiffness, gp, tstep);
         out.value = D;
         out.type = VarSlot::Type::MATRIX;
     };
@@ -440,27 +423,28 @@ class SymbolicTerm : public GenericCellTerm {
         MPMCompiler compiler;
 
         // Declare functions (functors)
-        compiler.register_function("B");
-        compiler.register_function("N");
-        compiler.register_function("Dm"); 
-        compiler.register_function("Dm_dev");
-        compiler.register_function("Sig");
-        compiler.register_function("Sig_dev");
+        compiler.register_function("Grad_s");
         compiler.register_function("Grad");
         compiler.register_function("Div");
+        compiler.register_function("N");
+        compiler.register_function("Sig");
+        compiler.register_function("Sig_dev");
+        compiler.register_function("MDer");
+
+
         compiler.register_function("ru");
 
         try {
             compiler.compile_script(lhsExpression, lhsExpressionContext.program, lhsExpressionContext.symbols, lhsExpressionContext.constants, pool_ptr);
         } catch (const std::exception& e) {
             std::string msg = "SymbolicTerm: Compilation error in expression '" + lhsExpression + "': " + e.what();
-            OOFEM_LOG_ERROR("%s", msg.c_str());
+            OOFEM_ERROR("%s", msg.c_str());
         }
         try {
             compiler.compile_script(rhsExpression, rhsExpressionContext.program, rhsExpressionContext.symbols, rhsExpressionContext.constants, pool_ptr);
         } catch (const std::exception& e) {
             std::string msg = "SymbolicTerm: Compilation error in expression '" + rhsExpression + "': " + e.what();
-            OOFEM_LOG_ERROR("%s", msg.c_str());
+            OOFEM_ERROR("%s", msg.c_str());
         }
         this->problem = problem;
     }
@@ -480,19 +464,25 @@ class SymbolicTerm : public GenericCellTerm {
                     vm.set_variable(i.first.c_str(), (void*)i.second.get());
                 }
             }
+
+            // define enum literals accessible in the VM (e.g., material response mode IDs)
+            vm.set_variable("MatResponseMode::TangentStiffness", (double)MatResponseMode::TangentStiffness);
+            vm.set_variable("MatResponseMode::DeviatoricStiffness", (double)MatResponseMode::DeviatoricStiffness);
+
             vm.set_variable("gp", (void*)gp);
             vm.set_variable("ts", (void*)tStep);
             vm.set_variable("cell", (void*)&cell);
 
             // register functors
-            vm.register_functor("B", MPMfunctor_B);
-            vm.register_functor("N", MPMfunctor_N);
-            vm.register_functor("Dm", MPMfunctor_Dm);
-            vm.register_functor("Dm_dev", MPMfunctor_Dm_dev);
-            vm.register_functor("Sig", MPMfunctor_Sig);
-            vm.register_functor("Sig_dev", MPMfunctor_Sig_dev);
+            vm.register_functor("Grad_s", MPMfunctor_Grad_s);
             vm.register_functor("Grad", MPMfunctor_Grad);
             vm.register_functor("Div", MPMfunctor_Div);
+            vm.register_functor("N", MPMfunctor_N);          
+            vm.register_functor("Sig", MPMfunctor_Sig);
+            vm.register_functor("Sig_dev", MPMfunctor_Sig_dev);
+            vm.register_functor("MDer", MPMfunctor_MDer);
+
+            
             vm.register_functor("ru", MPMfunctor_FieldNodalValues);
             
             vm.execute(context.program);
@@ -502,7 +492,7 @@ class SymbolicTerm : public GenericCellTerm {
             }
 
         } catch (const std::exception& e) {
-            std::cerr << "VM ERROR: " << e.what() << std::endl;
+            OOFEM_ERROR("VM ERROR: %s", e.what());
         }
     }
     void evaluate_lin (FloatMatrix& answer, MPElement& cell, GaussPoint* gp, TimeStep* tStep) const override {
