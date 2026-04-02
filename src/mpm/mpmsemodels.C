@@ -204,12 +204,18 @@ void NonStationaryMPMSProblem :: solveYourselfAt(TimeStep *tStep)
     OOFEM_LOG_INFO("Assembling external forces\n");
     FloatArray externalForces(neq);
     externalForces.zero();
-    // loop over rhs integrals
-    for (auto i: rhsIntegrals) {
-        Integral* integral = this->integralList[i-1].get();
-        integral->assemble_rhs (externalForces, EModelDefaultEquationNumbering(), tStep); 
+    if (this->problemType == "symbolic") {
+        // loop over rhs integrals
+        for (auto i: rhsIntegrals) {
+            Integral* integral = this->integralList[i-1].get();
+            integral->assemble_rhs (externalForces, EModelDefaultEquationNumbering(), tStep); 
+        }
+        // experimental: allow traditional BCs to contribute to rhs as well by treating them as integrals
+        this->assembleVectorFromBC(externalForces, tStep, ExternalForceAssembler(), VM_Total,
+                                    EModelDefaultEquationNumbering(), this->giveDomain(1) );
+    } else {
+        this->assembleVector( externalForces, tStep, ExternalForceAssembler(), VM_Total, EModelDefaultEquationNumbering(), d );
     }
-    this->assembleVector( externalForces, tStep, ExternalForceAssembler(), VM_Total, EModelDefaultEquationNumbering(), d );
     this->updateSharedDofManagers(externalForces, EModelDefaultEquationNumbering(), LoadExchangeTag);
 
     // set-up numerical method
@@ -221,7 +227,7 @@ void NonStationaryMPMSProblem :: solveYourselfAt(TimeStep *tStep)
     FloatArray incrementOfSolution;
     double loadLevel;
     int currentIterations = 0;
-    this->updateInternalRHS(this->internalForces, tStep, this->giveDomain(1), &this->eNorm); /// @todo Hack to ensure that internal RHS is evaluated before the tangent. This is not ideal, causing this to be evaluated twice for a linearproblem. We have to find a better way to handle this.
+    this->updateInternalRHS(this->internalForces, tStep, this->giveDomain(1), NULL); /// @todo Hack to ensure that internal RHS is evaluated before the tangent. This is not ideal, causing this to be evaluated twice for a linearproblem. We have to find a better way to handle this.
     ConvergedReason status = this->nMethod->solve(*this->effectiveMatrix,
                                                   externalForces,
                                                   nullptr, // ignore
@@ -252,6 +258,18 @@ NonStationaryMPMSProblem :: updateSolution(FloatArray &solutionVector, TimeStep 
 void
 NonStationaryMPMSProblem :: updateInternalRHS(FloatArray &answer, TimeStep *tStep, Domain *d, FloatArray *eNorm)
 {
+    if ( eNorm ) {
+        int maxdofids = this->giveDomain(1)->giveMaxDofID();
+#ifdef __MPI_PARALLEL_MODE
+        if ( this->isParallel() ) {
+            int val;
+            MPI_Allreduce(& maxdofids, & val, 1, MPI_INT, MPI_MAX, this->comm);
+            maxdofids = val;
+        }
+#endif
+        eNorm->resize(maxdofids);
+        eNorm->zero();
+    }
     // F_eff = F(T^(k)) + C * dT/dt^(k)
     answer.zero();
     if (this->problemType == "up") {
