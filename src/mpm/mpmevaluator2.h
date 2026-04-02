@@ -263,8 +263,9 @@ private:
         // Regex: Matches Matrices [[..]], Slices [..], Logic (&&, ||), Comparisons (>=, ==), Math, Parens
         //std::regex re(R"(\[\[.*?\]\]|\[.*?\]|[a-zA-Z_]\w*|\d*\.?\d+|&&|\|\||==|!=|>=|<=|>|<|\.T|\+|\-|\*|\(|\)|,)");
         // Added (?:[eE][+-]?\d+)? to the number matching block
-        std::regex re(R"(\[\[.*?\]\]|\[.*?\]|[a-zA-Z_]\w*|\d*\.?\d+(?:[eE][+-]?\d+)?|&&|\|\||==|!=|>=|<=|>|<|\.T|\+|\-|\*|\(|\)|,)");
-        
+        // std::regex re(R"(\[\[.*?\]\]|\[.*?\]|[a-zA-Z_]\w*|\d*\.?\d+(?:[eE][+-]?\d+)?|&&|\|\||==|!=|>=|<=|>|<|\.T|\+|\-|\*|\(|\)|,)");
+        // Added support for enum literals (e.g., MatResponseMode::Stress)
+        std::regex re(R"(\[\[.*?\]\]|\[.*?\]|[a-zA-Z_]\w*(?:::\w+)*|\d*\.?\d+(?:[eE][+-]?\d+)?|&&|\|\||==|!=|>=|<=|>|<|\.T|\+|\-|\*|\(|\)|,)");
         auto it = std::sregex_token_iterator(expr.begin(), expr.end(), re);
         std::vector<std::string> tokens(it, std::sregex_token_iterator());
 
@@ -284,7 +285,12 @@ private:
                 ops.push(t); arg_count_stack.push(0);
             } 
             // 3. Parentheses
-            else if (t == "(") { ops.push(t); }
+            else if (t == "(") { 
+                // --- NEW: Detect if the user is trying to call an undeclared function ---
+                if (std::isalpha(last[0]) && last != "if" && !func_registry.count(last)) {
+                    throw std::runtime_error("Compiler Error: Unregistered function '" + last + "()'");
+                }
+                ops.push(t); }
             else if (t == ")") {
                 while (!ops.empty() && ops.top() != "(") { rpn.push_back(ops.top()); ops.pop(); }
                 if (!ops.empty()) ops.pop(); 
@@ -417,6 +423,10 @@ private:
                 eval_stack.push(slot);
                 if (is_last) program.push_back({OpCode::COPY, "COPY", {}, -1, slot, final_target});
             }
+        }
+        // --- NEW: Validate the final Abstract Syntax Tree ---
+        if (eval_stack.size() != 1) {
+            throw std::runtime_error("Compiler Error: Invalid expression syntax. Missing operator between variables?");
         }
     }
 };
