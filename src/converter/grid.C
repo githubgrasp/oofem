@@ -50,6 +50,28 @@
 #define RNMX ( 1.0 - EPS )
 
 
+struct FaceKey {
+    int a, b, c;
+
+    FaceKey() : a(0), b(0), c(0) {}
+
+    FaceKey(int i, int j, int k)
+    {
+        if (i > j) std::swap(i, j);
+        if (j > k) std::swap(j, k);
+        if (i > j) std::swap(i, j);
+        a = i; b = j; c = k;
+    }
+
+    bool operator<(const FaceKey &other) const
+    {
+        if (a != other.a) return a < other.a;
+        if (b != other.b) return b < other.b;
+        return c < other.c;
+    }
+};
+
+
 Grid::Grid(int i)
 {
     delaunayLocalizer      = NULL;
@@ -237,12 +259,12 @@ void Grid::resolveMacroType(const std::string &name)
     return;
 }
 
+
 bool Grid::readT3d(const std::string &fn,
                    std::vector<Node> &nodes,
                    std::vector<Tri> &tris,
-		   std::vector<Tet> &tets)
+                   std::vector<Tet> &tets)
 {
-  
     std::ifstream in(fn);
     if (!in) return false;
 
@@ -250,7 +272,7 @@ bool Grid::readT3d(const std::string &fn,
     in >> meshType >> deg >> renum >> outType;
 
     this->t3dOutType = outType;
-    
+
     int nNodes=0, nEdges=0, nTris=0, nQuads=0, nTets=0, nPyr=0, nWed=0, nHex=0;
 
     if (meshType == 7) {
@@ -267,91 +289,278 @@ bool Grid::readT3d(const std::string &fn,
         return false;
     }
 
-    nodes.clear(); nodes.reserve(nNodes);
-    for (int i=0;i<nNodes;i++) {
+    entityNodes.clear();
+    entityTris.clear();
+
+    nodes.clear();
+    nodes.reserve(nNodes);
+
+    for (int i = 0; i < nNodes; i++) {
         Node n;
         int entProp;
-	in >> n.id >> n.x >> n.y >> n.z >> n.entType >> n.entID >> entProp;
-	nodes.push_back(n);
-	entityNodes[n.entType][n.entID].push_back(n.id);
+        in >> n.id >> n.x >> n.y >> n.z >> n.entType >> n.entID >> entProp;
+        nodes.push_back(n);
+        entityNodes[n.entType][n.entID].push_back(n.id);
     }
 
-    //Debug
+    // Debug
     printf("First few node classifications:\n");
-    for (size_t i=0; i<std::min((size_t)5, nodes.size()); ++i) {
-      printf("node %d → type %d id %d\n",
-	     nodes[i].id,
-	     nodes[i].entType,
-	     nodes[i].entID);
+    for (size_t i = 0; i < std::min((size_t)5, nodes.size()); ++i) {
+        printf("node %d -> type %d id %d\n",
+               nodes[i].id,
+               nodes[i].entType,
+               nodes[i].entID);
     }
 
-    //Debug
+    // Debug
     printf("\nEntity classification summary:\n");
-
     for (const auto &typePair : entityNodes) {
-      int type = typePair.first;
-      printf("Type %d:\n", type);
-      
-      for (const auto &idPair : typePair.second) {
-        printf("  ID %d → %zu nodes\n",
-               idPair.first,
-               idPair.second.size());
-      }
-    }
-    
-    
+        int type = typePair.first;
+        printf("Type %d:\n", type);
 
-
-tris.clear();
-tris.reserve(nTris);
-
-for (int i = 0; i < nTris; i++) {
-    Tri t{};
-    in >> t.id >> t.n1 >> t.n2 >> t.n3 >> t.entType >> t.entID >> t.entProp;
-
-    // --- optional triangle fields (order matters) ---
-
-    // iso type (bit 64)
-    if (t3dOutType & 64) {
-        int iso;
-        in >> iso;
+        for (const auto &idPair : typePair.second) {
+            printf("  ID %d -> %zu nodes\n",
+                   idPair.first,
+                   idPair.second.size());
+        }
     }
 
-    // neighbour element IDs (bit 32)
-    if (t3dOutType & 32) {
-        int ng1, ng2, ng3;
-        in >> ng1 >> ng2 >> ng3;
-    }
+    // ---------- triangles ----------
+    tris.clear();
+    tris.reserve(nTris);
 
-    // boundary curve IDs + props (bit 8)
-    if (t3dOutType & 8) {
-        in >> t.bndCurveId[0] >> t.bndCurveId[1] >> t.bndCurveId[2]
-           >> t.bndCurveProp[0] >> t.bndCurveProp[1] >> t.bndCurveProp[2];
-    }
+    for (int i = 0; i < nTris; i++) {
+        Tri t{};
+        in >> t.id >> t.n1 >> t.n2 >> t.n3 >> t.entType >> t.entID >> t.entProp;
 
-    tris.push_back(t);
-}
+        // optional triangle fields (order matters)
+
+        // iso type (bit 64)
+        if (t3dOutType & 64) {
+            int iso;
+            in >> iso;
+        }
+
+        // neighbour element IDs (bit 32)
+        if (t3dOutType & 32) {
+            int ng1, ng2, ng3;
+            in >> ng1 >> ng2 >> ng3;
+        }
+
+        // boundary curve IDs + props (bit 8)
+        if (t3dOutType & 8) {
+            in >> t.bndCurveId[0] >> t.bndCurveId[1] >> t.bndCurveId[2]
+               >> t.bndCurveProp[0] >> t.bndCurveProp[1] >> t.bndCurveProp[2];
+        }
+
+        tris.push_back(t);
+    }
 
     entityTris.clear();
     for (size_t i = 0; i < tris.size(); ++i) {
-      entityTris[tris[i].entType][tris[i].entID].push_back((int)i);
+        entityTris[tris[i].entType][tris[i].entID].push_back((int)i);
     }
 
-
-
     int cnt = 0;
-    for (const auto &t : tris)
-      if (t.bndCurveId[0] || t.bndCurveId[1] || t.bndCurveId[2])
-        cnt++;
-    
+    for (const auto &t : tris) {
+        if (t.bndCurveId[0] || t.bndCurveId[1] || t.bndCurveId[2]) {
+            cnt++;
+        }
+    }
     printf("Triangles touching curves: %d / %d\n", cnt, nTris);
 
-    
-    // Todo: Later read also tets.
-    tets.clear();
-    
+
+// ---------- tetrahedra ----------
+tets.clear();
+tets.reserve(nTets);
+
+// consume remainder of current line before using getline
+std::string line;
+std::getline(in, line);
+
+for (int i = 0; i < nTets; ) {
+    if (!std::getline(in, line)) {
+        converter::error("Unexpected end of file while reading tetrahedra");
+    }
+
+    // skip empty lines
+    if (line.find_first_not_of(" \t\r\n") == std::string::npos) {
+        continue;
+    }
+
+    std::istringstream iss(line);
+
+    Tet t{};
+
+    if (!(iss >> t.id >> t.n1 >> t.n2 >> t.n3 >> t.n4
+              >> t.entType >> t.entID >> t.entProp)) {
+        converter::error("Failed to parse tetrahedron line");
+    }
+
+    // For outType 8, tetra lines appear to contain:
+    // 4 face entity IDs, 4 face entity types, 4 face props
+    for (int k = 0; k < 4; ++k) {
+        if (!(iss >> t.faceEntID[k])) {
+            t.faceEntID[k] = 0;
+        }
+    }
+
+    for (int k = 0; k < 4; ++k) {
+        if (!(iss >> t.faceEntType[k])) {
+            t.faceEntType[k] = 0;
+        }
+    }
+
+    for (int k = 0; k < 4; ++k) {
+        if (!(iss >> t.faceEntProp[k])) {
+            t.faceEntProp[k] = 0;
+        }
+    }
+
+    tets.push_back(t);
+    ++i;
+}
+
+printf("Read tetrahedra: %zu\n", tets.size());
+if (!tets.empty()) {
+    for (size_t i = 0; i < std::min((size_t)5, tets.size()); ++i) {
+        printf("tet %d -> (%d,%d,%d,%d), face IDs [%d %d %d %d], face types [%d %d %d %d]\n",
+               tets[i].id, tets[i].n1, tets[i].n2, tets[i].n3, tets[i].n4,
+               tets[i].faceEntID[0], tets[i].faceEntID[1], tets[i].faceEntID[2], tets[i].faceEntID[3],
+               tets[i].faceEntType[0], tets[i].faceEntType[1], tets[i].faceEntType[2], tets[i].faceEntType[3]);
+    }
+}
+
     return true;
 }
+
+
+/* bool Grid::readT3d(const std::string &fn, */
+/*                    std::vector<Node> &nodes, */
+/*                    std::vector<Tri> &tris, */
+/* 		   std::vector<Tet> &tets) */
+/* { */
+  
+/*     std::ifstream in(fn); */
+/*     if (!in) return false; */
+
+/*     int meshType, deg, renum, outType; */
+/*     in >> meshType >> deg >> renum >> outType; */
+
+/*     this->t3dOutType = outType; */
+    
+/*     int nNodes=0, nEdges=0, nTris=0, nQuads=0, nTets=0, nPyr=0, nWed=0, nHex=0; */
+
+/*     if (meshType == 7) { */
+/*         in >> nNodes >> nEdges >> nTris >> nQuads >> nTets >> nPyr >> nWed >> nHex; */
+/*     } else if (meshType == 3) { */
+/*         int nTetras; */
+/*         in >> nNodes >> nEdges >> nTris >> nTetras; */
+/*         nTets = nTetras; */
+/*     } else if (meshType == 4) { */
+/*         int nHexas; */
+/*         in >> nNodes >> nEdges >> nQuads >> nHexas; */
+/*         nHex = nHexas; */
+/*     } else { */
+/*         return false; */
+/*     } */
+
+/*     nodes.clear(); nodes.reserve(nNodes); */
+/*     for (int i=0;i<nNodes;i++) { */
+/*         Node n; */
+/*         int entProp; */
+/* 	in >> n.id >> n.x >> n.y >> n.z >> n.entType >> n.entID >> entProp; */
+/* 	nodes.push_back(n); */
+/* 	entityNodes[n.entType][n.entID].push_back(n.id); */
+/*     } */
+
+/*     //Debug */
+/*     printf("First few node classifications:\n"); */
+/*     for (size_t i=0; i<std::min((size_t)5, nodes.size()); ++i) { */
+/*       printf("node %d → type %d id %d\n", */
+/* 	     nodes[i].id, */
+/* 	     nodes[i].entType, */
+/* 	     nodes[i].entID); */
+/*     } */
+
+/*     //Debug */
+/*     printf("\nEntity classification summary:\n"); */
+
+/*     for (const auto &typePair : entityNodes) { */
+/*       int type = typePair.first; */
+/*       printf("Type %d:\n", type); */
+      
+/*       for (const auto &idPair : typePair.second) { */
+/*         printf("  ID %d → %zu nodes\n", */
+/*                idPair.first, */
+/*                idPair.second.size()); */
+/*       } */
+/*     } */
+    
+    
+
+
+/* tris.clear(); */
+/* tris.reserve(nTris); */
+
+/* for (int i = 0; i < nTris; i++) { */
+/*     Tri t{}; */
+/*     in >> t.id >> t.n1 >> t.n2 >> t.n3 >> t.entType >> t.entID >> t.entProp; */
+
+/*     // --- optional triangle fields (order matters) --- */
+
+/*     // iso type (bit 64) */
+/*     if (t3dOutType & 64) { */
+/*         int iso; */
+/*         in >> iso; */
+/*     } */
+
+/*     // neighbour element IDs (bit 32) */
+/*     if (t3dOutType & 32) { */
+/*         int ng1, ng2, ng3; */
+/*         in >> ng1 >> ng2 >> ng3; */
+/*     } */
+
+/*     // boundary curve IDs + props (bit 8) */
+/*     if (t3dOutType & 8) { */
+/*         in >> t.bndCurveId[0] >> t.bndCurveId[1] >> t.bndCurveId[2] */
+/*            >> t.bndCurveProp[0] >> t.bndCurveProp[1] >> t.bndCurveProp[2]; */
+/*     } */
+
+/*     tris.push_back(t); */
+/* } */
+
+/*     entityTris.clear(); */
+/*     for (size_t i = 0; i < tris.size(); ++i) { */
+/*       entityTris[tris[i].entType][tris[i].entID].push_back((int)i); */
+/*     } */
+
+
+
+/*     int cnt = 0; */
+/*     for (const auto &t : tris) */
+/*       if (t.bndCurveId[0] || t.bndCurveId[1] || t.bndCurveId[2]) */
+/*         cnt++; */
+    
+/*     printf("Triangles touching curves: %d / %d\n", cnt, nTris); */
+
+    
+
+/*     tets.clear(); */
+/*     tets.reserve(nTets); */
+    
+/*     for (int i = 0; i < nTets; i++) { */
+/*       Tet t{}; */
+/*       int entType, entID, entProp; */
+      
+/*       in >> t.id >> t.n1 >> t.n2 >> t.n3 >> t.n4 >> entType >> entID >> entProp; */
+      
+/*       tets.push_back(t); */
+/*     } */
+
+    
+/*     return true; */
+/* } */
 
 
 int Grid::entityTypeFromString(const std::string &s) const {
@@ -363,6 +572,83 @@ int Grid::entityTypeFromString(const std::string &s) const {
     return -1;
 }
 
+
+
+void Grid::buildBoundaryTrisFromTets()
+{
+    struct FaceInfo {
+        int tetIndex;
+        int localFace;
+    };
+
+    std::map<FaceKey, std::vector<FaceInfo>> faceMap;
+
+    for (size_t ti = 0; ti < tets.size(); ++ti) {
+        const Tet &t = tets[ti];
+
+int fn[4][3] = {
+    {t.n1, t.n2, t.n3}, // T3D face 1
+    {t.n1, t.n2, t.n4}, // T3D face 2
+    {t.n2, t.n3, t.n4}, // T3D face 3
+    {t.n1, t.n3, t.n4}  // T3D face 4
+};
+
+
+	/* int fn[4][3] = { */
+        /*     {t.n1, t.n2, t.n3}, // local face 0 */
+        /*     {t.n1, t.n2, t.n4}, // local face 1 */
+        /*     {t.n1, t.n3, t.n4}, // local face 2 */
+        /*     {t.n2, t.n3, t.n4}  // local face 3 */
+        /* }; */
+
+        for (int k = 0; k < 4; ++k) {
+            FaceKey key(fn[k][0], fn[k][1], fn[k][2]);
+            faceMap[key].push_back({(int)ti, k});
+        }
+    }
+
+    tris.clear();
+    int triID = 1;
+
+    for (const auto &kv : faceMap) {
+        if (kv.second.size() == 1) {
+            const FaceInfo &fi = kv.second[0];
+            const Tet &t = tets[fi.tetIndex];
+            int lf = fi.localFace;
+
+            Tri tr{};
+            tr.id = triID++;
+            tr.n1 = kv.first.a;
+            tr.n2 = kv.first.b;
+            tr.n3 = kv.first.c;
+
+            tr.entType = t.faceEntType[lf];
+            tr.entID   = t.faceEntID[lf];
+            tr.entProp = t.faceEntProp[lf];
+
+            tr.bndCurveId[0] = tr.bndCurveId[1] = tr.bndCurveId[2] = 0;
+            tr.bndCurveProp[0] = tr.bndCurveProp[1] = tr.bndCurveProp[2] = 0;
+
+            tris.push_back(tr);
+        }
+    }
+
+    printf("Boundary triangles reconstructed from tets: %zu\n", tris.size());
+
+    // debug summary
+    std::map<int, std::map<int,int>> triCount;
+    for (const auto &tr : tris) {
+        triCount[tr.entType][tr.entID]++;
+    }
+
+    printf("Boundary triangle classification summary:\n");
+    for (const auto &tp : triCount) {
+        printf("Type %d:\n", tp.first);
+        for (const auto &ip : tp.second) {
+            printf("  ID %d -> %d tris\n", ip.first, ip.second);
+        }
+    }
+}
 
 void Grid::buildCurveSegsFromTris()
 {
@@ -402,6 +688,436 @@ void Grid::buildCurveSegsFromTris()
  printf("Curve segments built: %zu\n", curveSegs.size());
 }
 
+
+void Grid::buildEdgeAdjacency3D()
+{
+    edgeToTets.assign(edges.size(), {});
+    edgeToBoundaryTris.assign(edges.size(), {});
+
+    std::map<std::pair<int,int>, int> edgeMap;
+    for (size_t ei = 0; ei < edges.size(); ++ei) {
+        int a = edges[ei].n1;
+        int b = edges[ei].n2;
+        if (a > b) std::swap(a, b);
+        edgeMap[{a, b}] = (int)ei;
+    }
+
+    // tetra adjacency
+    for (size_t ti = 0; ti < tets.size(); ++ti) {
+        const Tet &t = tets[ti];
+
+        int en[6][2] = {
+            {t.n1, t.n2}, {t.n1, t.n3}, {t.n1, t.n4},
+            {t.n2, t.n3}, {t.n2, t.n4}, {t.n3, t.n4}
+        };
+
+        for (int k = 0; k < 6; ++k) {
+            int a = en[k][0];
+            int b = en[k][1];
+            if (a > b) std::swap(a, b);
+
+            auto it = edgeMap.find({a, b});
+            if (it != edgeMap.end()) {
+                edgeToTets[it->second].push_back((int)ti);
+            }
+        }
+    }
+
+    // boundary triangle adjacency
+    for (size_t trii = 0; trii < tris.size(); ++trii) {
+        const Tri &tr = tris[trii];
+
+        int en[3][2] = {
+            {tr.n1, tr.n2},
+            {tr.n2, tr.n3},
+            {tr.n3, tr.n1}
+        };
+
+        for (int k = 0; k < 3; ++k) {
+            int a = en[k][0];
+            int b = en[k][1];
+            if (a > b) std::swap(a, b);
+
+            auto it = edgeMap.find({a, b});
+            if (it != edgeMap.end()) {
+                edgeToBoundaryTris[it->second].push_back((int)trii);
+            }
+        }
+    }
+
+    /* for (size_t ei = 0; ei < edges.size(); ++ei) { */
+    /*     printf("edge %zu: (%d,%d) ntets=%zu nbtris=%zu\n", */
+    /*            ei, */
+    /*            edges[ei].n1, edges[ei].n2, */
+    /*            edgeToTets[ei].size(), */
+    /*            edgeToBoundaryTris[ei].size()); */
+    /* } */
+}
+
+
+oofem::FloatArray Grid::tetBarycentre(int tetIndex) const
+{
+    const Tet &t = tets[tetIndex];
+
+    oofem::FloatArray x1 = getX(t.n1);
+    oofem::FloatArray x2 = getX(t.n2);
+    oofem::FloatArray x3 = getX(t.n3);
+    oofem::FloatArray x4 = getX(t.n4);
+
+    oofem::FloatArray c(3);
+    c.zero();
+    c.add(x1);
+    c.add(x2);
+    c.add(x3);
+    c.add(x4);
+    c.times(0.25);
+
+    return c;
+}
+
+
+oofem::FloatArray Grid::faceBarycentre(int triIndex) const
+{
+    const Tri &t = tris[triIndex];
+
+    oofem::FloatArray x1 = getX(t.n1);
+    oofem::FloatArray x2 = getX(t.n2);
+    oofem::FloatArray x3 = getX(t.n3);
+
+    oofem::FloatArray c(3);
+    c.zero();
+    c.add(x1);
+    c.add(x2);
+    c.add(x3);
+    c.times(1.0 / 3.0);
+
+    return c;
+}
+
+
+/* void Grid::buildEdgePolygon3D(int edgeIndex, oofem::FloatArray &polycoords) const */
+/* { */
+/*     const Edge &e = edges[edgeIndex]; */
+
+/*     oofem::FloatArray xi = getX(e.n1); */
+/*     oofem::FloatArray xj = getX(e.n2); */
+
+/*     // midpoint */
+/*     oofem::FloatArray xm(3); */
+/*     xm = xi; */
+/*     xm.add(xj); */
+/*     xm.times(0.5); */
+
+/*     // edge direction */
+/*     oofem::FloatArray u(3); */
+/*     u.beDifferenceOf(xj, xi); */
+/*     double L = u.computeNorm(); */
+/*     if (L <= 0.0) { */
+/*         converter::error("Zero length edge in buildEdgePolygon3D"); */
+/*     } */
+/*     u.times(1.0 / L); */
+
+/*     // transverse basis r,s */
+/*     oofem::FloatArray ref(3), r(3), s(3); */
+/*     ref.zero(); */
+/*     ref.at(3) = 1.0; */
+
+/*     if (fabs(u.dotProduct(ref)) > 0.9) { */
+/*         ref.zero(); */
+/*         ref.at(2) = 1.0; */
+/*     } */
+
+/*     r.beVectorProductOf(ref, u); */
+/*     r.normalize(); */
+
+/*     s.beVectorProductOf(u, r); */
+/*     s.normalize(); */
+
+/*     struct PolarPoint { */
+/*         double ang; */
+/*         oofem::FloatArray p; */
+/*     }; */
+
+/*     std::vector<PolarPoint> pts; */
+
+/*     // tetra barycentres */
+/*     for (int tetIdx : edgeToTets[edgeIndex]) { */
+/*         oofem::FloatArray c = tetBarycentre(tetIdx); */
+
+/*         oofem::FloatArray d(3), tmp(3), proj(3); */
+/*         d.beDifferenceOf(c, xm); */
+
+/*         tmp = u; */
+/*         tmp.times(d.dotProduct(u)); */
+
+/*         proj = d; */
+/*         proj.subtract(tmp); // remove axial component */
+
+/*         double pr = proj.dotProduct(r); */
+/*         double ps = proj.dotProduct(s); */
+/*         double ang = atan2(ps, pr); */
+
+/*         oofem::FloatArray xp(3); */
+/*         xp = xm; */
+/*         xp.add(proj); */
+
+/*         pts.push_back({ang, xp}); */
+/*     } */
+
+/*     // closure with boundary triangles */
+/*     for (int triIdx : edgeToBoundaryTris[edgeIndex]) { */
+/*         oofem::FloatArray c = faceBarycentre(triIdx); */
+
+/*         oofem::FloatArray d(3), tmp(3), proj(3); */
+/*         d.beDifferenceOf(c, xm); */
+
+/*         tmp = u; */
+/*         tmp.times(d.dotProduct(u)); */
+
+/*         proj = d; */
+/*         proj.subtract(tmp); */
+
+/*         double pr = proj.dotProduct(r); */
+/*         double ps = proj.dotProduct(s); */
+/*         double ang = atan2(ps, pr); */
+
+/*         oofem::FloatArray xp(3); */
+/*         xp = xm; */
+/*         xp.add(proj); */
+
+/*         pts.push_back({ang, xp}); */
+/*     } */
+
+/*     if (pts.size() < 3) { */
+/*         converter::error("Not enough points to build 3D edge polygon"); */
+/*     } */
+
+/*     std::sort(pts.begin(), pts.end(), */
+/*               [](const PolarPoint &a, const PolarPoint &b) { */
+/*                   return a.ang < b.ang; */
+/*               }); */
+
+/*     // remove duplicates */
+/*     const double tol = 1e-10; */
+/*     std::vector<oofem::FloatArray> uniquePts; */
+
+/*     for (const auto &pp : pts) { */
+/*         bool isNew = true; */
+/*         for (const auto &up : uniquePts) { */
+/*             oofem::FloatArray d(3); */
+/*             d.beDifferenceOf(pp.p, up); */
+/*             if (d.computeNorm() < tol) { */
+/*                 isNew = false; */
+/*                 break; */
+/*             } */
+/*         } */
+/*         if (isNew) { */
+/*             uniquePts.push_back(pp.p); */
+/*         } */
+/*     } */
+
+/*     if (uniquePts.size() < 3) { */
+/*         converter::error("Polygon degenerates after duplicate removal"); */
+/*     } */
+
+/*     polycoords.resize(3 * (int)uniquePts.size()); */
+/*     for (size_t k = 0; k < uniquePts.size(); ++k) { */
+/*         polycoords.at(3 * (int)k + 1) = uniquePts[k].at(1); */
+/*         polycoords.at(3 * (int)k + 2) = uniquePts[k].at(2); */
+/*         polycoords.at(3 * (int)k + 3) = uniquePts[k].at(3); */
+/*     } */
+/* } */
+
+
+void Grid::buildEdgePolygon3D(int edgeIndex, oofem::FloatArray &polycoords) const
+{
+    const Edge &e = edges[edgeIndex];
+
+    oofem::FloatArray xi = getX(e.n1);
+    oofem::FloatArray xj = getX(e.n2);
+
+    // midpoint
+    oofem::FloatArray xm(3);
+    xm = xi;
+    xm.add(xj);
+    xm.times(0.5);
+
+    // edge direction
+    oofem::FloatArray u(3);
+    u.beDifferenceOf(xj, xi);
+    double L = u.computeNorm();
+    if (L <= 0.0) {
+        converter::error("Zero length edge in buildEdgePolygon3D");
+    }
+    u.times(1.0 / L);
+
+    // transverse basis r,s
+    oofem::FloatArray ref(3), r(3), s(3);
+    ref.zero();
+    ref.at(3) = 1.0;
+
+    if (fabs(u.dotProduct(ref)) > 0.9) {
+        ref.zero();
+        ref.at(2) = 1.0;
+    }
+
+    r.beVectorProductOf(ref, u);
+    r.normalize();
+
+    s.beVectorProductOf(u, r);
+    s.normalize();
+
+    struct PolarPoint {
+        double ang;
+        oofem::FloatArray p;
+    };
+
+    std::vector<PolarPoint> pts;
+
+    auto addProjectedPoint = [&](const oofem::FloatArray &c)
+    {
+        oofem::FloatArray d(3), tmp(3), proj(3);
+        d.beDifferenceOf(c, xm);
+
+        tmp = u;
+        tmp.times(d.dotProduct(u));
+
+        proj = d;
+        proj.subtract(tmp);
+
+        double pr = proj.dotProduct(r);
+        double ps = proj.dotProduct(s);
+        double ang = atan2(ps, pr);
+
+        oofem::FloatArray xp(3);
+        xp = xm;
+        xp.add(proj);
+
+        pts.push_back({ang, xp});
+    };
+
+    const size_t ntets  = edgeToTets[edgeIndex].size();
+    const size_t nbtris = edgeToBoundaryTris[edgeIndex].size();
+
+    // --- special case: one tetra only ---
+    if (ntets == 1) {
+        addProjectedPoint(tetBarycentre(edgeToTets[edgeIndex][0]));
+
+        for (int triIdx : edgeToBoundaryTris[edgeIndex]) {
+            addProjectedPoint(faceBarycentre(triIdx));
+        }
+
+        // add midpoint itself as 4th stabilising point
+        addProjectedPoint(xm);
+    }
+    else {
+        // standard case
+        for (int tetIdx : edgeToTets[edgeIndex]) {
+            addProjectedPoint(tetBarycentre(tetIdx));
+        }
+
+        for (int triIdx : edgeToBoundaryTris[edgeIndex]) {
+            addProjectedPoint(faceBarycentre(triIdx));
+        }
+    }
+
+    if (pts.size() < 3) {
+        converter::error("Not enough points to build 3D edge polygon");
+    }
+
+    std::sort(pts.begin(), pts.end(),
+              [](const PolarPoint &a, const PolarPoint &b) {
+                  return a.ang < b.ang;
+              });
+
+    // remove duplicates
+    const double tol = 1e-10;
+    std::vector<oofem::FloatArray> uniquePts;
+
+    for (const auto &pp : pts) {
+        bool isNew = true;
+        for (const auto &up : uniquePts) {
+            oofem::FloatArray d(3);
+            d.beDifferenceOf(pp.p, up);
+            if (d.computeNorm() < tol) {
+                isNew = false;
+                break;
+            }
+        }
+        if (isNew) {
+            uniquePts.push_back(pp.p);
+        }
+    }
+
+    if (uniquePts.size() < 3) {
+        converter::error("Polygon degenerates after duplicate removal");
+    }
+
+    polycoords.resize(3 * (int)uniquePts.size());
+    for (size_t k = 0; k < uniquePts.size(); ++k) {
+        polycoords.at(3 * (int)k + 1) = uniquePts[k].at(1);
+        polycoords.at(3 * (int)k + 2) = uniquePts[k].at(2);
+        polycoords.at(3 * (int)k + 3) = uniquePts[k].at(3);
+    }
+}
+
+void Grid::write3DEdgeSection(std::ostream &out, int &eid, const Edge &e, int edgeIndex)
+{
+    const int cs  = 1;
+    const int mat = 1;
+
+    oofem::FloatArray polycoords;
+    buildEdgePolygon3D(edgeIndex, polycoords);
+
+    out << "lattice3D " << eid++
+        << " nodes 2 " << e.n1 << " " << e.n2
+        << " crossSect " << cs
+        << " mat " << mat
+        << " polycoords " << polycoords.giveSize() << " "
+        << std::scientific;
+
+    for (int k = 1; k <= polycoords.giveSize(); ++k) {
+        out << polycoords.at(k);
+        if (k < polycoords.giveSize()) out << " ";
+    }
+    out << "\n";
+    
+    printf("Writing edge (%d,%d), poly npts=%d\n",
+	   e.n1, e.n2, polycoords.giveSize()/3);    
+}
+
+
+
+
+void Grid::computeGlobalCircularFrameSection()
+{
+
+double Lsum = 0.0;
+for (const auto &e : edges) {
+    Lsum += edgeLength(e);
+}
+
+double Veff = 0.0;
+
+if (!tets.empty()) {
+    // 3D
+    for (size_t ti = 0; ti < tets.size(); ++ti) {
+        Veff += tetVolume((int)ti);
+    }
+} else {
+    // 2D shell
+    double A = 0.0;
+    for (size_t ti = 0; ti < tris.size(); ++ti) {
+        A += triArea((int)ti);
+    }
+
+    double t = defaultThickness;   // or from entityThickness
+    Veff = A * t;
+}
+
+frameRadius = std::sqrt(Veff / (M_PI * Lsum));
+
+}
 
 
 void Grid::readBCRequests()
@@ -497,6 +1213,8 @@ void Grid::readBCRequests()
             continue;
         }
 
+
+	
         // -----------------------
         // #@THICKNESS
         // -----------------------
@@ -527,13 +1245,33 @@ void Grid::readBCRequests()
 
             continue;
         }
+
+	if (tag == "#@3DSECTION") {
+	  std::string mode;
+	  iss >> mode;
+	  
+	  if (mode == "FRAME") {
+	    use3DFrameSection = true;
+	  } else {
+	    use3DFrameSection = false;
+	  }
+	}
+
+
+
     }
 
     // optional debug
     // printf("Parsed %zu BC requests, %zu load requests\n", bcRequests.size(), loadRequests.size());
 }
 
-
+void Grid::rebuildEntityTris()
+{
+    entityTris.clear();
+    for (size_t i = 0; i < tris.size(); ++i) {
+        entityTris[tris[i].entType][tris[i].entID].push_back((int)i);
+    }
+}
 
 
 double Grid::triArea(int triIndex) const
@@ -553,6 +1291,183 @@ double Grid::triArea(int triIndex) const
 
     return 0.5 * c.computeNorm();
 }
+
+
+double Grid::computePolygonAreaProjected(const oofem::FloatArray &polycoords,
+                                         const oofem::FloatArray &xm,
+                                         const oofem::FloatArray &r,
+                                         const oofem::FloatArray &s) const
+{
+    int n = polycoords.giveSize() / 3;
+
+    if (n < 3) return 0.0;
+
+    std::vector<double> x(n), y(n);
+
+    for (int i = 0; i < n; ++i) {
+        oofem::FloatArray p(3), d(3);
+        p.at(1) = polycoords.at(3*i+1);
+        p.at(2) = polycoords.at(3*i+2);
+        p.at(3) = polycoords.at(3*i+3);
+
+        d.beDifferenceOf(p, xm);
+
+        x[i] = d.dotProduct(r);
+        y[i] = d.dotProduct(s);
+    }
+
+    double A = 0.0;
+    for (int i = 0; i < n; ++i) {
+        int j = (i+1) % n;
+        A += x[i]*y[j] - x[j]*y[i];
+    }
+
+    return 0.5 * fabs(A);
+}
+
+
+double Grid::tetVolume(int tetIndex) const
+{
+    const Tet &t = tets[tetIndex];
+
+    oofem::FloatArray x1 = getX(t.n1);
+    oofem::FloatArray x2 = getX(t.n2);
+    oofem::FloatArray x3 = getX(t.n3);
+    oofem::FloatArray x4 = getX(t.n4);
+
+    oofem::FloatArray a(3), b(3), c(3), cross(3);
+
+    a.beDifferenceOf(x2, x1);
+    b.beDifferenceOf(x3, x1);
+    c.beDifferenceOf(x4, x1);
+
+    cross.beVectorProductOf(b, c);
+
+    double vol = fabs(a.dotProduct(cross)) / 6.0;
+
+    return vol;
+}
+
+double Grid::checkAssumed3DEdgeVolume() const
+{
+    if (tets.empty()) {
+        printf("checkAssumed3DEdgeVolume: no tetrahedra present\n");
+        return 0.0;
+    }
+
+    double Vmesh = 0.0;
+    for (size_t ti = 0; ti < tets.size(); ++ti) {
+        Vmesh += tetVolume((int)ti);
+    }
+
+    double Vlattice = 0.0;
+
+    for (size_t ei = 0; ei < edges.size(); ++ei) {
+        const Edge &e = edges[ei];
+
+        oofem::FloatArray xi = getX(e.n1);
+        oofem::FloatArray xj = getX(e.n2);
+
+        // midpoint
+        oofem::FloatArray xm(3);
+        xm = xi;
+        xm.add(xj);
+        xm.times(0.5);
+
+        // edge direction
+        oofem::FloatArray u(3);
+        u.beDifferenceOf(xj, xi);
+        double L = u.computeNorm();
+        if (L <= 0.0) {
+            converter::error("Zero edge length in checkAssumed3DEdgeVolume");
+        }
+        u.times(1.0 / L);
+
+        // local transverse basis
+        oofem::FloatArray ref(3), r(3), s(3);
+        ref.zero();
+        ref.at(3) = 1.0;
+        if (fabs(u.dotProduct(ref)) > 0.9) {
+            ref.zero();
+            ref.at(2) = 1.0;
+        }
+
+        r.beVectorProductOf(ref, u);
+        r.normalize();
+
+        s.beVectorProductOf(u, r);
+        s.normalize();
+
+        // raw polygon
+        oofem::FloatArray polycoords;
+        buildEdgePolygon3D((int)ei, polycoords);
+
+        // raw area
+        double A_geom = computePolygonAreaProjected(polycoords, xm, r, s);
+        if (A_geom <= 0.0) {
+            printf("edge %zu (%d,%d): raw geometric area = %g\n",
+                   ei, e.n1, e.n2, A_geom);
+            converter::error("Zero or negative raw area in checkAssumed3DEdgeVolume");
+        }
+
+        // same target area as used in element writing
+        double A_target = computeTargetArea((int)ei, L);
+        if (A_target <= 0.0) {
+            printf("edge %zu (%d,%d): target area = %g\n",
+                   ei, e.n1, e.n2, A_target);
+            converter::error("Zero or negative target area in checkAssumed3DEdgeVolume");
+        }
+
+        double scale = sqrt(A_target / A_geom);
+
+        // apply local scaling exactly as in writeT3dElemsOofem()
+        int npts = polycoords.giveSize() / 3;
+        for (int k = 0; k < npts; ++k) {
+            oofem::FloatArray p(3), d(3);
+
+            p.at(1) = polycoords.at(3 * k + 1);
+            p.at(2) = polycoords.at(3 * k + 2);
+            p.at(3) = polycoords.at(3 * k + 3);
+
+            d.beDifferenceOf(p, xm);
+            d.times(scale);
+
+            p = xm;
+            p.add(d);
+
+            polycoords.at(3 * k + 1) = p.at(1);
+            polycoords.at(3 * k + 2) = p.at(2);
+            polycoords.at(3 * k + 3) = p.at(3);
+        }
+
+        // recompute scaled area
+        double A_scaled = computePolygonAreaProjected(polycoords, xm, r, s);
+
+        // cone-like / double-pyramid assumption
+        Vlattice += A_scaled * L / 3.0;
+    }
+
+    printf("\n=== 3D EDGE-VOLUME CHECK ===\n");
+    printf("Mesh volume           : %.12e\n", Vmesh);
+    printf("Lattice assumed volume: %.12e\n", Vlattice);
+    printf("Ratio lattice/mesh    : %.12e\n", Vlattice / Vmesh);
+    printf("Relative error        : %.12e\n", (Vlattice - Vmesh) / Vmesh);
+
+    return Vlattice / Vmesh;
+}
+
+double Grid::computeTargetArea(int edgeIndex, double Le) const
+{
+    double A = 0.0;
+
+    for (int tetIdx : edgeToTets[edgeIndex]) {
+        double V = tetVolume(tetIdx);
+        A += V / (2.0 * Le);
+    }
+
+    return A;
+}
+
 
 double Grid::giveThicknessForEntity(int entType, int entID) const
 {
@@ -743,8 +1658,6 @@ void Grid::computeNodalAreasOnTriEntity(int entType, int entID, std::vector<doub
 }
 
 
-
-
 int Grid::instanciateYourselfFromT3d(const std::string &t3d, const std::string &control)
 {
     this->controlFileName = control;
@@ -755,43 +1668,72 @@ int Grid::instanciateYourselfFromT3d(const std::string &t3d, const std::string &
         converter::error("Failed to read T3d file");
     }
 
-    nodeIndex.clear();
-    nodeIndex.reserve(nodes.size());
-    
-    for (size_t i = 0; i < nodes.size(); ++i) {
-      nodeIndex[nodes[i].id] = (int)i;
-    }   
-    buildCurveSegsFromTris();
+    bool is3D = !tets.empty();
 
-    //Debug
-    for (auto &kv : curveToSegIdx) {
-      double Lsum = 0.0;
-      for (int si : kv.second) {
-        const auto &s = curveSegs[si];
-        Lsum += segLength(s.n1, s.n2);
-      }
-      printf("curve %d: segs=%zu, total length=%g\n", kv.first, kv.second.size(), Lsum);
-    }
-    
-    
+    // build node index (only once needed)
     nodeIndex.clear();
     nodeIndex.reserve(nodes.size());
-    for (int i = 0; i < (int)nodes.size(); ++i) {
-      nodeIndex[nodes[i].id] = i;
+    for (size_t i = 0; i < nodes.size(); ++i) {
+        nodeIndex[nodes[i].id] = (int)i;
     }
-    
-    // 2) build edges
+
+    // -------------------------------------------------
+    // 2) PREPROCESS DEPENDING ON MESH TYPE
+    // -------------------------------------------------
+
+    if (is3D) {
+
+        // (A) reconstruct boundary triangles if missing
+        if (tris.empty()) {
+	 buildBoundaryTrisFromTets();
+	 rebuildEntityTris();       
+        }
+
+
+	
+    } else {
+
+        // existing surface logic
+        buildCurveSegsFromTris();
+
+        // Debug
+        for (auto &kv : curveToSegIdx) {
+            double Lsum = 0.0;
+            for (int si : kv.second) {
+                const auto &s = curveSegs[si];
+                Lsum += segLength(s.n1, s.n2);
+            }
+            printf("curve %d: segs=%zu, total length=%g\n",
+                   kv.first, kv.second.size(), Lsum);
+        }
+    }
+
+    // -------------------------------------------------
+    // 3) BUILD EDGES
+    // -------------------------------------------------
+
     buildEdges(tris, tets, edges);
 
-    // Compute width
-    this->shellThickness = 0.01;
-    computeEdgeWidths(shellThickness);
 
-    //Check of area
-     checkAreaConservation();
-
+    readBCRequests();
     
-    // 3) counts for output
+    // -------------------------------------------------
+    // 4) ADDITIONAL 3D OR SHELL PROCESSING
+    // -------------------------------------------------
+
+    if (is3D) {
+      // build adjacency needed for polygon construction
+      buildEdgeAdjacency3D();
+      checkAssumed3DEdgeVolume();
+	
+    } else {
+      checkAssumed2DEdgeArea();      
+    }
+    
+    // -------------------------------------------------
+    // 5) OUTPUT INFO
+    // -------------------------------------------------
+
     int nNodes = (int)nodes.size();
     int nElems = (int)edges.size();
 
@@ -800,15 +1742,86 @@ int Grid::instanciateYourselfFromT3d(const std::string &t3d, const std::string &
 
     int bnd=0, interior=0;
     for (auto &e: edges) (e.tri2<0 ? bnd : interior)++;
-    printf("edges: boundary=%d interior=%d total=%zu\n", bnd, interior, edges.size());
 
-    //readLiveLoadSpec();
+    printf("edges: boundary=%d interior=%d total=%zu\n",
+           bnd, interior, edges.size());
 
-    readBCRequests();
+
+
+	printf("DEBUG: is3D=%d use3DFrameSection=%d\n", is3D, use3DFrameSection);
+	if (use3DFrameSection) {
+	  computeGlobalCircularFrameSection();
+	}
+
     
     printf("finished initializing\n");
     return 1;
 }
+
+/* int Grid::instanciateYourselfFromT3d(const std::string &t3d, const std::string &control) */
+/* { */
+/*     this->controlFileName = control; */
+/*     printf("INIT control = %s\n", control.c_str()); */
+
+/*     // 1) read mesh */
+/*     if (!readT3d(t3d, nodes, tris, tets)) { */
+/*         converter::error("Failed to read T3d file"); */
+/*     } */
+
+/*     nodeIndex.clear(); */
+/*     nodeIndex.reserve(nodes.size()); */
+    
+/*     for (size_t i = 0; i < nodes.size(); ++i) { */
+/*       nodeIndex[nodes[i].id] = (int)i; */
+/*     }    */
+/*     buildCurveSegsFromTris(); */
+
+/*     //Debug */
+/*     for (auto &kv : curveToSegIdx) { */
+/*       double Lsum = 0.0; */
+/*       for (int si : kv.second) { */
+/*         const auto &s = curveSegs[si]; */
+/*         Lsum += segLength(s.n1, s.n2); */
+/*       } */
+/*       printf("curve %d: segs=%zu, total length=%g\n", kv.first, kv.second.size(), Lsum); */
+/*     } */
+    
+    
+/*     nodeIndex.clear(); */
+/*     nodeIndex.reserve(nodes.size()); */
+/*     for (int i = 0; i < (int)nodes.size(); ++i) { */
+/*       nodeIndex[nodes[i].id] = i; */
+/*     } */
+    
+/*     // 2) build edges */
+/*     buildEdges(tris, tets, edges); */
+
+/*     // Compute width */
+/*     this->shellThickness = 0.01; */
+/*     computeEdgeWidths(shellThickness); */
+
+/*     //Check of area */
+/*      checkAreaConservation(); */
+
+    
+/*     // 3) counts for output */
+/*     int nNodes = (int)nodes.size(); */
+/*     int nElems = (int)edges.size(); */
+
+/*     printf("T3d loaded: nodes=%d tris=%zu tets=%zu edges=%d\n", */
+/*            nNodes, tris.size(), tets.size(), nElems); */
+
+/*     int bnd=0, interior=0; */
+/*     for (auto &e: edges) (e.tri2<0 ? bnd : interior)++; */
+/*     printf("edges: boundary=%d interior=%d total=%zu\n", bnd, interior, edges.size()); */
+
+/*     //readLiveLoadSpec(); */
+
+/*     readBCRequests(); */
+    
+/*     printf("finished initializing\n"); */
+/*     return 1; */
+/* } */
 
 
 void Grid::computeNodalLengthsOnCurve(int curveID, std::vector<double> &L) const
@@ -870,17 +1883,19 @@ double Grid::segLength(int n1, int n2) const
 }
 
 
-
-
-oofem::FloatArray Grid::getX(int nid) const
+oofem::FloatArray Grid::getX(int nodeID) const
 {
-    const auto &n = nodes.at(nodeIndex.at(nid));
+    auto it = nodeIndex.find(nodeID);
+    if (it == nodeIndex.end()) {
+        printf("getX failed: nodeID %d not found in nodeIndex\n", nodeID);
+        converter::error("getX: nodeID not found");
+    }
 
+    const Node &n = nodes[it->second];
     oofem::FloatArray x(3);
     x.at(1) = n.x;
     x.at(2) = n.y;
     x.at(3) = n.z;
-
     return x;
 }
 
@@ -2137,6 +3152,20 @@ void Grid::giveOutputT3d(const std::string &fileName)
             continue;
         }
 
+
+        if (t.rfind("#@INSERT_CROSSSECTION", 0) == 0) {
+            if (use3DFrameSection) {
+                out << "latticecs 1 material 1 shape 1 radius "
+                    << std::scientific << frameRadius
+                    << "\n";
+            } else {
+                converter::error("Encountered #@INSERT_CROSSSECTION but use3DFrameSection is false");
+            }
+            continue;
+        }
+
+
+	
         if (t.rfind("#@INSERT_LIVELOADS", 0) == 0) {
             printf("writeLiveLoads: nLoadReq=%zu dir=(%g,%g,%g)\n",
                    loadRequests.size(),
@@ -2210,6 +3239,15 @@ void Grid::prepareLiveLoadSets()
             computeNodalAreasOnTriEntity(req.entType, req.entID, w);
         }
 
+double sumW = 0.0;
+int nLoaded = 0;
+for (size_t i = 0; i < n; ++i) {
+    sumW += w[i];
+    if (w[i] > 0.0) ++nLoaded;
+}
+printf("entity %d: nLoaded=%d sumW=%g\n", req.entID, nLoaded, sumW);
+
+	
         for (size_t i = 0; i < n; ++i) {
             if (w[i] <= 0.0) continue;
 
@@ -2257,18 +3295,307 @@ void Grid::writeT3dNodesOofem(std::ostream &out)
     }
 }
 
+/* void Grid::writeT3dElemsOofem(std::ostream &out) */
+/* { */
+/*     int eid = 1; */
+/*     const int cs  = 1; */
+/*     const int mat = 1; */
+
+/*     for (size_t i = 0; i < edges.size(); ++i) { */
+
+/*         const Edge &e = edges[i]; */
+
+/*         // thickness from adjacent triangle(s) */
+/*         double t = 0.0; */
+
+/*         if (e.tri1 >= 0 && e.tri2 >= 0) { */
+/*             const Tri &tr1 = tris[e.tri1]; */
+/*             const Tri &tr2 = tris[e.tri2]; */
+
+/*             double t1 = giveThicknessForEntity(tr1.entType, tr1.entID); */
+/*             double t2 = giveThicknessForEntity(tr2.entType, tr2.entID); */
+
+/*             t = 0.5 * (t1 + t2); */
+/*         } */
+/*         else if (e.tri1 >= 0) { */
+/*             const Tri &tr1 = tris[e.tri1]; */
+/*             t = giveThicknessForEntity(tr1.entType, tr1.entID); */
+/*         } */
+/*         else if (e.tri2 >= 0) { */
+/*             const Tri &tr2 = tris[e.tri2]; */
+/*             t = giveThicknessForEntity(tr2.entType, tr2.entID); */
+/*         } */
+/*         else { */
+/*             converter::error("Edge has no adjacent triangle; cannot determine shell thickness"); */
+/*         } */
+
+/*         const double b = 0.5 * t; */
+
+/*         // endpoints */
+/*         oofem::FloatArray xi = getX(e.n1); */
+/*         oofem::FloatArray xj = getX(e.n2); */
+
+/*         // edge length */
+/*         const double Le = edgeLength(e); */
+
+/*         // axis direction */
+/*         oofem::FloatArray u(3); */
+/*         u.beDifferenceOf(xj, xi); */
+/*         u.normalize(); */
+
+/*         // midpoint */
+/*         oofem::FloatArray xm = xi; */
+/*         xm.add(xj); */
+/*         xm.times(0.5); */
+
+/*         // averaged normal */
+/*         oofem::FloatArray n = triNormal(e.tri1); */
+
+/*         if (e.tri2 >= 0) { */
+/*             oofem::FloatArray n2 = triNormal(e.tri2); */
+/*             n.add(n2); */
+/*             n.normalize(); */
+/*         } */
+
+/*         // width direction */
+/*         oofem::FloatArray r(3); */
+/*         r.beVectorProductOf(n, u); */
+/*         r.normalize(); */
+
+/*         // --- side widths from area split --- */
+/*         double aPlus  = 0.0; */
+/*         double aMinus = 0.0; */
+
+/*         auto computeEdgeShareWidth = [&](int triIdx) -> double */
+/*         { */
+/*             const Tri &tr = tris[triIdx]; */
+
+/*             double At = triArea(triIdx); */
+
+/*             double L1 = (getX(tr.n1) - getX(tr.n2)).computeNorm(); */
+/*             double L2 = (getX(tr.n2) - getX(tr.n3)).computeNorm(); */
+/*             double L3 = (getX(tr.n3) - getX(tr.n1)).computeNorm(); */
+
+/*             double Lsum = L1 + L2 + L3; */
+
+/*             double Ae = At * Le / Lsum;     // tributary area of this triangle to this edge */
+/*             double a  = Ae / Le;      // side width at element midpoint */
+
+/*             return a; */
+/*         }; */
+
+/*         if (e.tri1 >= 0) { */
+/*             aPlus = computeEdgeShareWidth(e.tri1); */
+/*         } */
+
+/*         if (e.tri2 >= 0) { */
+/*             aMinus = computeEdgeShareWidth(e.tri2); */
+/*         } */
+
+/*         // fallback safety */
+/*         if (aPlus <= 0.0 && aMinus <= 0.0) { */
+/*             converter::error("Both side widths are zero in writeT3dElemsOofem"); */
+/*         } */
+
+/* 	double widthScale = 2.33; // Determined from a tensile test. */
+
+/* 	aPlus  *= widthScale; */
+/* 	aMinus *= widthScale; */
+	
+/*         // compute 4 corners */
+/*         oofem::FloatArray x1(3), x2(3), x3(3), x4(3), tmp(3); */
+/*         x1 = xm; */
+/*         x2 = xm; */
+/*         x3 = xm; */
+/*         x4 = xm; */
+
+/*         // x1 = xm + aPlus*r + b*n */
+/*         tmp = r; tmp.times(+aPlus); x1.add(tmp); */
+/*         tmp = n; tmp.times(+b);     x1.add(tmp); */
+
+/*         // x2 = xm - aMinus*r + b*n */
+/*         tmp = r; tmp.times(-aMinus); x2.add(tmp); */
+/*         tmp = n; tmp.times(+b);      x2.add(tmp); */
+
+/*         // x3 = xm - aMinus*r - b*n */
+/*         tmp = r; tmp.times(-aMinus); x3.add(tmp); */
+/*         tmp = n; tmp.times(-b);      x3.add(tmp); */
+
+/*         // x4 = xm + aPlus*r - b*n */
+/*         tmp = r; tmp.times(+aPlus); x4.add(tmp); */
+/*         tmp = n; tmp.times(-b);     x4.add(tmp); */
+
+/*         // write element */
+/*         out << "lattice3D " << eid++ */
+/*             << " nodes 2 " << e.n1 << " " << e.n2 */
+/*             << " crossSect " << cs */
+/*             << " mat " << mat */
+/*             << " thickness " << t */
+/*             << " polycoords 12 " */
+/*             << std::scientific */
+/*             << x1.at(1) << " " << x1.at(2) << " " << x1.at(3) << " " */
+/*             << x2.at(1) << " " << x2.at(2) << " " << x2.at(3) << " " */
+/*             << x3.at(1) << " " << x3.at(2) << " " << x3.at(3) << " " */
+/*             << x4.at(1) << " " << x4.at(2) << " " << x4.at(3) */
+/*             << "\n"; */
+/*     } */
+/* } */
+
+
 void Grid::writeT3dElemsOofem(std::ostream &out)
 {
     int eid = 1;
     const int cs  = 1;
-    const int mat = 1;
+    const int mat = 1;   
+    const bool is3D = !tets.empty();
+    const bool useFrame = use3DFrameSection;
 
     for (size_t i = 0; i < edges.size(); ++i) {
 
         const Edge &e = edges[i];
 
+        // =================================================
+        // 3D tetrahedral case: barycentric polygon section
+        // =================================================
+        if (is3D) {
+
+	  if (useFrame) {
+	    out << "lattice3d " << eid++
+		<< " nodes 2 " << e.n1 << " " << e.n2
+		<< " crossSect " << cs
+		<< " mat " << mat
+		<< "\n";
+	    continue;
+	  }
+	  
+            oofem::FloatArray polycoords;
+            buildEdgePolygon3D((int)i, polycoords);
+
+            // edge endpoints
+            oofem::FloatArray xi = getX(e.n1);
+            oofem::FloatArray xj = getX(e.n2);
+
+            // midpoint
+            oofem::FloatArray xm(3);
+            xm = xi;
+            xm.add(xj);
+            xm.times(0.5);
+
+            // edge direction
+            oofem::FloatArray u(3);
+            u.beDifferenceOf(xj, xi);
+            double L = u.computeNorm();
+            if (L <= 0.0) {
+                converter::error("Zero edge length in writeT3dElemsOofem");
+            }
+            u.times(1.0 / L);
+
+            // local transverse basis r,s
+            oofem::FloatArray ref(3), r(3), s(3);
+            ref.zero();
+            ref.at(3) = 1.0;
+
+            if (fabs(u.dotProduct(ref)) > 0.9) {
+                ref.zero();
+                ref.at(2) = 1.0;
+            }
+
+            r.beVectorProductOf(ref, u);
+            r.normalize();
+
+            s.beVectorProductOf(u, r);
+            s.normalize();
+
+            // area of current polygon
+            double A_geom = computePolygonAreaProjected(polycoords, xm, r, s);
+            if (A_geom <= 0.0) {
+                printf("edge %zu (%d,%d): geometric area = %g\n",
+                       i, e.n1, e.n2, A_geom);
+                converter::error("Zero or negative geometric area in 3D section");
+            }
+
+            // target area based on V/(3*l)
+            double A_target = computeTargetArea((int)i, L);
+            if (A_target <= 0.0) {
+                printf("edge %zu (%d,%d): target area = %g\n",
+                       i, e.n1, e.n2, A_target);
+                converter::error("Zero or negative target area in 3D section");
+            }
+
+/* double A_geom   = computePolygonAreaProjected(polycoords, xm, r, s); */
+/* double A_target = computeTargetArea((int)i, L); */
+
+	    double diffAbs = A_geom - A_target;
+	    double diffRel = (A_target > 0.0) ? (A_geom / A_target - 1.0) : 0.0;
+
+	    /* printf("edge %zu (%d,%d): ntets=%zu " */
+	    /* 	   "A_geom=%g A_target=%g diff=%g rel=%g\n", */
+	    /* 	   i, e.n1, e.n2, */
+	    /* 	   edgeToTets[i].size(), */
+	    /* 	   A_geom, A_target, */
+	    /* 	   diffAbs, diffRel); */
+
+	    
+            double scale = sqrt(A_target / A_geom);
+
+            // scale polygon uniformly about midpoint
+            int npts = polycoords.giveSize() / 3;
+            for (int k = 0; k < npts; ++k) {
+                oofem::FloatArray p(3), d(3);
+
+                p.at(1) = polycoords.at(3 * k + 1);
+                p.at(2) = polycoords.at(3 * k + 2);
+                p.at(3) = polycoords.at(3 * k + 3);
+
+                d.beDifferenceOf(p, xm);
+                d.times(scale);
+
+                p = xm;
+                p.add(d);
+
+                polycoords.at(3 * k + 1) = p.at(1);
+                polycoords.at(3 * k + 2) = p.at(2);
+                polycoords.at(3 * k + 3) = p.at(3);
+            }
+
+            // optional debug
+            // printf("edge %zu (%d,%d): ntets=%zu nbtris=%zu A_geom=%g A_target=%g scale=%g npts=%d\n",
+            //        i, e.n1, e.n2,
+            //        edgeToTets[i].size(), edgeToBoundaryTris[i].size(),
+            //        A_geom, A_target, scale, npts);
+
+            // write 3D element
+            out << "lattice3D " << eid++
+                << " nodes 2 " << e.n1 << " " << e.n2
+                << " crossSect " << cs
+                << " mat " << mat
+                << " polycoords " << polycoords.giveSize() << " "
+                << std::scientific;
+
+            for (int k = 1; k <= polycoords.giveSize(); ++k) {
+                out << polycoords.at(k);
+                if (k < polycoords.giveSize()) out << " ";
+            }
+            out << "\n";
+
+            continue;
+        }
+
+        // ================================================
+        // Shell case: original implementation unchanged
+        // ================================================
+
+	if (useFrame) {
+	  out << "lattice3d " << eid++
+	      << " nodes 2 " << e.n1 << " " << e.n2
+	      << " crossSect " << cs
+	      << " mat " << mat
+	      << "\n";
+	  continue;
+        }
+	
         // thickness from adjacent triangle(s)
-        double t = 0.0;
+	double t = 0.0;
 
         if (e.tri1 >= 0 && e.tri2 >= 0) {
             const Tri &tr1 = tris[e.tri1];
@@ -2321,49 +3648,68 @@ void Grid::writeT3dElemsOofem(std::ostream &out)
         r.beVectorProductOf(n, u);
         r.normalize();
 
-        // --- projected side distances from barycentres ---
-        double aPlus  = 0.0;
-        double aMinus = 0.0;
+// --- projected side distances from barycentres ---
+double aPlus  = 0.0;
+double aMinus = 0.0;
 
-        if (e.tri1 >= 0) {
-            oofem::FloatArray bc1 = triBarycentre(e.tri1);
-            oofem::FloatArray d1(3);
-            d1.beDifferenceOf(bc1, xm);
+if (e.tri1 >= 0) {
+    oofem::FloatArray bc1 = triBarycentre(e.tri1);
+    oofem::FloatArray d1(3);
+    d1.beDifferenceOf(bc1, xm);
 
-            double s1 = d1.dotProduct(r);
+    double s1 = d1.dotProduct(r);
 
-            if (s1 >= 0.0) {
-                aPlus = std::max(aPlus, s1);
-            } else {
-                aMinus = std::max(aMinus, -s1);
-            }
-        }
+    if (s1 >= 0.0) {
+        aPlus = std::max(aPlus, s1);
+    } else {
+        aMinus = std::max(aMinus, -s1);
+    }
+}
 
-        if (e.tri2 >= 0) {
-            oofem::FloatArray bc2 = triBarycentre(e.tri2);
-            oofem::FloatArray d2(3);
-            d2.beDifferenceOf(bc2, xm);
+if (e.tri2 >= 0) {
+    oofem::FloatArray bc2 = triBarycentre(e.tri2);
+    oofem::FloatArray d2(3);
+    d2.beDifferenceOf(bc2, xm);
 
-            double s2 = d2.dotProduct(r);
+    double s2 = d2.dotProduct(r);
 
-            if (s2 >= 0.0) {
-                aPlus = std::max(aPlus, s2);
-            } else {
-                aMinus = std::max(aMinus, -s2);
-            }
-        }
+    if (s2 >= 0.0) {
+        aPlus = std::max(aPlus, s2);
+    } else {
+        aMinus = std::max(aMinus, -s2);
+    }
+}
 
-        // fallback safety
-        if (aPlus <= 0.0 && aMinus <= 0.0) {
-            converter::error("Both projected side widths are zero in writeT3dElemsOofem");
-        }
+// fallback safety
+if (aPlus <= 0.0 && aMinus <= 0.0) {
+    converter::error("Both projected side widths are zero in writeT3dElemsOofem");
+}
 
-        // compute 4 corners
-        oofem::FloatArray x1(3), x2(3), x3(3), x4(3), tmp(3);
-        x1 = xm;
-        x2 = xm;
-        x3 = xm;
-        x4 = xm;
+double wGeom = aPlus + aMinus;
+if (wGeom <= 0.0) {
+    converter::error("Geometric width is zero in writeT3dElemsOofem");
+}
+
+double Le = edgeLength(e);
+double wTarget = 0.0;
+
+if (e.tri1 >= 0) {
+    wTarget += 2.0 * triArea(e.tri1) / (3.0 * Le);
+}
+if (e.tri2 >= 0) {
+    wTarget += 2.0 * triArea(e.tri2) / (3.0 * Le);
+}
+
+double s = wTarget / wGeom;
+aPlus  *= s;
+aMinus *= s;
+
+// compute 4 corners
+oofem::FloatArray x1(3), x2(3), x3(3), x4(3), tmp(3);
+x1 = xm;
+x2 = xm;
+x3 = xm;
+x4 = xm;
 
         // x1 = xm + aPlus*r + b*n
         tmp = r; tmp.times(+aPlus); x1.add(tmp);
@@ -2381,7 +3727,7 @@ void Grid::writeT3dElemsOofem(std::ostream &out)
         tmp = r; tmp.times(+aPlus); x4.add(tmp);
         tmp = n; tmp.times(-b);     x4.add(tmp);
 
-        // write element
+        // write shell element
         out << "lattice3D " << eid++
             << " nodes 2 " << e.n1 << " " << e.n2
             << " crossSect " << cs
@@ -2397,6 +3743,418 @@ void Grid::writeT3dElemsOofem(std::ostream &out)
     }
 }
 
+
+
+/* void Grid::writeT3dElemsOofem(std::ostream &out) */
+/* { */
+/*     int eid = 1; */
+/*     const int cs  = 1; */
+/*     const int mat = 1; */
+
+/*     const bool is3D = !tets.empty(); */
+
+/*     for (size_t i = 0; i < edges.size(); ++i) { */
+
+/*         const Edge &e = edges[i]; */
+
+/*         // ------------------------------------------------- */
+/*         // 3D tetrahedral case: use barycentric polygon */
+/*         // ------------------------------------------------- */
+
+/* 	if (is3D) { */
+/*             oofem::FloatArray polycoords; */
+/*             buildEdgePolygon3D((int)i, polycoords); */
+
+/*             out << "lattice3D " << eid++ */
+/*                 << " nodes 2 " << e.n1 << " " << e.n2 */
+/*                 << " crossSect " << cs */
+/*                 << " mat " << mat */
+/*                 << " polycoords " << polycoords.giveSize() << " " */
+/*                 << std::scientific; */
+
+/*             for (int k = 1; k <= polycoords.giveSize(); ++k) { */
+/*                 out << polycoords.at(k); */
+/*                 if (k < polycoords.giveSize()) out << " "; */
+/*             } */
+/*             out << "\n"; */
+
+/*             continue; */
+/*         } */
+
+/*         // ------------------------------------------------- */
+/*         // existing shell code below */
+/*         // ------------------------------------------------- */
+
+/*         // thickness from adjacent triangle(s) */
+/*         double t = 0.0; */
+
+/*         if (e.tri1 >= 0 && e.tri2 >= 0) { */
+/*             const Tri &tr1 = tris[e.tri1]; */
+/*             const Tri &tr2 = tris[e.tri2]; */
+
+/*             double t1 = giveThicknessForEntity(tr1.entType, tr1.entID); */
+/*             double t2 = giveThicknessForEntity(tr2.entType, tr2.entID); */
+
+/*             t = 0.5 * (t1 + t2); */
+/*         } */
+/*         else if (e.tri1 >= 0) { */
+/*             const Tri &tr1 = tris[e.tri1]; */
+/*             t = giveThicknessForEntity(tr1.entType, tr1.entID); */
+/*         } */
+/*         else if (e.tri2 >= 0) { */
+/*             const Tri &tr2 = tris[e.tri2]; */
+/*             t = giveThicknessForEntity(tr2.entType, tr2.entID); */
+/*         } */
+/*         else { */
+/*             converter::error("Edge has no adjacent triangle; cannot determine shell thickness"); */
+/*         } */
+
+/*         const double b = 0.5 * t; */
+
+/*         // endpoints */
+/*         oofem::FloatArray xi = getX(e.n1); */
+/*         oofem::FloatArray xj = getX(e.n2); */
+
+/*         // axis direction */
+/*         oofem::FloatArray u(3); */
+/*         u.beDifferenceOf(xj, xi); */
+/*         u.normalize(); */
+
+/*         // midpoint */
+/*         oofem::FloatArray xm = xi; */
+/*         xm.add(xj); */
+/*         xm.times(0.5); */
+
+/*         // averaged normal */
+/*         oofem::FloatArray n = triNormal(e.tri1); */
+
+/*         if (e.tri2 >= 0) { */
+/*             oofem::FloatArray n2 = triNormal(e.tri2); */
+/*             n.add(n2); */
+/*             n.normalize(); */
+/*         } */
+
+/*         // width direction */
+/*         oofem::FloatArray r(3); */
+/*         r.beVectorProductOf(n, u); */
+/*         r.normalize(); */
+
+/*         // --- projected side distances from barycentres --- */
+/*         double aPlus  = 0.0; */
+/*         double aMinus = 0.0; */
+
+/*         if (e.tri1 >= 0) { */
+/*             oofem::FloatArray bc1 = triBarycentre(e.tri1); */
+/*             oofem::FloatArray d1(3); */
+/*             d1.beDifferenceOf(bc1, xm); */
+
+/*             double s1 = d1.dotProduct(r); */
+
+/*             if (s1 >= 0.0) { */
+/*                 aPlus = std::max(aPlus, s1); */
+/*             } else { */
+/*                 aMinus = std::max(aMinus, -s1); */
+/*             } */
+/*         } */
+
+/*         if (e.tri2 >= 0) { */
+/*             oofem::FloatArray bc2 = triBarycentre(e.tri2); */
+/*             oofem::FloatArray d2(3); */
+/*             d2.beDifferenceOf(bc2, xm); */
+
+/*             double s2 = d2.dotProduct(r); */
+
+/*             if (s2 >= 0.0) { */
+/*                 aPlus = std::max(aPlus, s2); */
+/*             } else { */
+/*                 aMinus = std::max(aMinus, -s2); */
+/*             } */
+/*         } */
+
+/*         // fallback safety */
+/*         if (aPlus <= 0.0 && aMinus <= 0.0) { */
+/*             converter::error("Both projected side widths are zero in writeT3dElemsOofem"); */
+/*         } */
+
+/*         // compute 4 corners */
+/*         oofem::FloatArray x1(3), x2(3), x3(3), x4(3), tmp(3); */
+/*         x1 = xm; */
+/*         x2 = xm; */
+/*         x3 = xm; */
+/*         x4 = xm; */
+
+/*         // x1 = xm + aPlus*r + b*n */
+/*         tmp = r; tmp.times(+aPlus); x1.add(tmp); */
+/*         tmp = n; tmp.times(+b);     x1.add(tmp); */
+
+/*         // x2 = xm - aMinus*r + b*n */
+/*         tmp = r; tmp.times(-aMinus); x2.add(tmp); */
+/*         tmp = n; tmp.times(+b);      x2.add(tmp); */
+
+/*         // x3 = xm - aMinus*r - b*n */
+/*         tmp = r; tmp.times(-aMinus); x3.add(tmp); */
+/*         tmp = n; tmp.times(-b);      x3.add(tmp); */
+
+/*         // x4 = xm + aPlus*r - b*n */
+/*         tmp = r; tmp.times(+aPlus); x4.add(tmp); */
+/*         tmp = n; tmp.times(-b);     x4.add(tmp); */
+
+/*         // write element */
+/*         out << "lattice3D " << eid++ */
+/*             << " nodes 2 " << e.n1 << " " << e.n2 */
+/*             << " crossSect " << cs */
+/*             << " mat " << mat */
+/*             << " thickness " << t */
+/*             << " polycoords 12 " */
+/*             << std::scientific */
+/*             << x1.at(1) << " " << x1.at(2) << " " << x1.at(3) << " " */
+/*             << x2.at(1) << " " << x2.at(2) << " " << x2.at(3) << " " */
+/*             << x3.at(1) << " " << x3.at(2) << " " << x3.at(3) << " " */
+/*             << x4.at(1) << " " << x4.at(2) << " " << x4.at(3) */
+/*             << "\n"; */
+/*     } */
+/* } */
+
+/* void Grid::writeT3dElemsOofem(std::ostream &out) */
+/* { */
+/*     int eid = 1; */
+/*     const int cs  = 1; */
+/*     const int mat = 1; */
+
+/*     for (size_t i = 0; i < edges.size(); ++i) { */
+
+/*         const Edge &e = edges[i]; */
+
+/*         // thickness from adjacent triangle(s) */
+/*         double t = 0.0; */
+
+/*         if (e.tri1 >= 0 && e.tri2 >= 0) { */
+/*             const Tri &tr1 = tris[e.tri1]; */
+/*             const Tri &tr2 = tris[e.tri2]; */
+
+/*             double t1 = giveThicknessForEntity(tr1.entType, tr1.entID); */
+/*             double t2 = giveThicknessForEntity(tr2.entType, tr2.entID); */
+
+/*             t = 0.5 * (t1 + t2); */
+/*         } */
+/*         else if (e.tri1 >= 0) { */
+/*             const Tri &tr1 = tris[e.tri1]; */
+/*             t = giveThicknessForEntity(tr1.entType, tr1.entID); */
+/*         } */
+/*         else if (e.tri2 >= 0) { */
+/*             const Tri &tr2 = tris[e.tri2]; */
+/*             t = giveThicknessForEntity(tr2.entType, tr2.entID); */
+/*         } */
+/*         else { */
+/*             converter::error("Edge has no adjacent triangle; cannot determine shell thickness"); */
+/*         } */
+
+/*         const double b = 0.5 * t; */
+
+/*         // endpoints */
+/*         oofem::FloatArray xi = getX(e.n1); */
+/*         oofem::FloatArray xj = getX(e.n2); */
+
+/*         // axis direction */
+/*         oofem::FloatArray u(3); */
+/*         u.beDifferenceOf(xj, xi); */
+/*         u.normalize(); */
+
+/*         // midpoint */
+/*         oofem::FloatArray xm = xi; */
+/*         xm.add(xj); */
+/*         xm.times(0.5); */
+
+/*         // averaged normal */
+/*         oofem::FloatArray n = triNormal(e.tri1); */
+
+/*         if (e.tri2 >= 0) { */
+/*             oofem::FloatArray n2 = triNormal(e.tri2); */
+/*             n.add(n2); */
+/*             n.normalize(); */
+/*         } */
+
+/*         // width direction */
+/*         oofem::FloatArray r(3); */
+/*         r.beVectorProductOf(n, u); */
+/*         r.normalize(); */
+
+/*         // --- projected side distances from barycentres --- */
+/*         double aPlus  = 0.0; */
+/*         double aMinus = 0.0; */
+
+/*         if (e.tri1 >= 0) { */
+/*             oofem::FloatArray bc1 = triBarycentre(e.tri1); */
+/*             oofem::FloatArray d1(3); */
+/*             d1.beDifferenceOf(bc1, xm); */
+
+/*             double s1 = d1.dotProduct(r); */
+
+/*             if (s1 >= 0.0) { */
+/*                 aPlus = std::max(aPlus, s1); */
+/*             } else { */
+/*                 aMinus = std::max(aMinus, -s1); */
+/*             } */
+/*         } */
+
+/*         if (e.tri2 >= 0) { */
+/*             oofem::FloatArray bc2 = triBarycentre(e.tri2); */
+/*             oofem::FloatArray d2(3); */
+/*             d2.beDifferenceOf(bc2, xm); */
+
+/*             double s2 = d2.dotProduct(r); */
+
+/*             if (s2 >= 0.0) { */
+/*                 aPlus = std::max(aPlus, s2); */
+/*             } else { */
+/*                 aMinus = std::max(aMinus, -s2); */
+/*             } */
+/*         } */
+
+/*         // fallback safety */
+/*         if (aPlus <= 0.0 && aMinus <= 0.0) { */
+/*             converter::error("Both projected side widths are zero in writeT3dElemsOofem"); */
+/*         } */
+
+/*         // compute 4 corners */
+/*         oofem::FloatArray x1(3), x2(3), x3(3), x4(3), tmp(3); */
+/*         x1 = xm; */
+/*         x2 = xm; */
+/*         x3 = xm; */
+/*         x4 = xm; */
+
+/*         // x1 = xm + aPlus*r + b*n */
+/*         tmp = r; tmp.times(+aPlus); x1.add(tmp); */
+/*         tmp = n; tmp.times(+b);     x1.add(tmp); */
+
+/*         // x2 = xm - aMinus*r + b*n */
+/*         tmp = r; tmp.times(-aMinus); x2.add(tmp); */
+/*         tmp = n; tmp.times(+b);      x2.add(tmp); */
+
+/*         // x3 = xm - aMinus*r - b*n */
+/*         tmp = r; tmp.times(-aMinus); x3.add(tmp); */
+/*         tmp = n; tmp.times(-b);      x3.add(tmp); */
+
+/*         // x4 = xm + aPlus*r - b*n */
+/*         tmp = r; tmp.times(+aPlus); x4.add(tmp); */
+/*         tmp = n; tmp.times(-b);     x4.add(tmp); */
+
+/*         // write element */
+/*         out << "lattice3D " << eid++ */
+/*             << " nodes 2 " << e.n1 << " " << e.n2 */
+/*             << " crossSect " << cs */
+/*             << " mat " << mat */
+/*             << " thickness " << t */
+/*             << " polycoords 12 " */
+/*             << std::scientific */
+/*             << x1.at(1) << " " << x1.at(2) << " " << x1.at(3) << " " */
+/*             << x2.at(1) << " " << x2.at(2) << " " << x2.at(3) << " " */
+/*             << x3.at(1) << " " << x3.at(2) << " " << x3.at(3) << " " */
+/*             << x4.at(1) << " " << x4.at(2) << " " << x4.at(3) */
+/*             << "\n"; */
+/*     } */
+/* } */
+
+
+double Grid::checkAssumed2DEdgeArea() const
+{
+    if (tris.empty()) {
+        printf("checkAssumed2DEdgeArea: no triangles present\n");
+        return 0.0;
+    }
+
+    // total triangle area
+    double Amesh = 0.0;
+    for (size_t ti = 0; ti < tris.size(); ++ti) {
+        Amesh += triArea((int)ti);
+    }
+
+    double Aedge = 0.0;
+
+    for (size_t ei = 0; ei < edges.size(); ++ei) {
+        const Edge &e = edges[ei];
+
+        // edge length
+        double Le = edgeLength(e);
+
+        // reconstruct width using SAME logic as in writeT3dElemsOofem()
+
+        oofem::FloatArray xi = getX(e.n1);
+        oofem::FloatArray xj = getX(e.n2);
+
+        // midpoint
+        oofem::FloatArray xm = xi;
+        xm.add(xj);
+        xm.times(0.5);
+
+        // edge direction
+        oofem::FloatArray u(3);
+        u.beDifferenceOf(xj, xi);
+        u.normalize();
+
+        // normal direction (same as before)
+        oofem::FloatArray n = triNormal(e.tri1);
+        if (e.tri2 >= 0) {
+            oofem::FloatArray n2 = triNormal(e.tri2);
+            n.add(n2);
+            n.normalize();
+        }
+
+        // width direction
+        oofem::FloatArray r(3);
+        r.beVectorProductOf(n, u);
+        r.normalize();
+
+        double aPlus = 0.0, aMinus = 0.0;
+
+        if (e.tri1 >= 0) {
+            oofem::FloatArray bc1 = triBarycentre(e.tri1);
+            oofem::FloatArray d1(3);
+            d1.beDifferenceOf(bc1, xm);
+            double s1 = d1.dotProduct(r);
+            if (s1 >= 0.0) aPlus = std::max(aPlus, s1);
+            else           aMinus = std::max(aMinus, -s1);
+        }
+
+        if (e.tri2 >= 0) {
+            oofem::FloatArray bc2 = triBarycentre(e.tri2);
+            oofem::FloatArray d2(3);
+            d2.beDifferenceOf(bc2, xm);
+            double s2 = d2.dotProduct(r);
+            if (s2 >= 0.0) aPlus = std::max(aPlus, s2);
+            else           aMinus = std::max(aMinus, -s2);
+        }
+
+        double wGeom = aPlus + aMinus;
+
+        // compute target width (same as in element generation)
+        double wTarget = 0.0;
+        if (e.tri1 >= 0) {
+            wTarget += 2.0 * triArea(e.tri1) / (3.0 * Le);
+        }
+        if (e.tri2 >= 0) {
+            wTarget += 2.0 * triArea(e.tri2) / (3.0 * Le);
+        }
+
+        // scaled width
+        double w = wTarget;
+
+        // area of tapered strip
+        Aedge += 0.5 * w * Le;
+    }
+
+    printf("\n=== 2D EDGE-AREA CHECK ===\n");
+    printf("Mesh area        : %.12e\n", Amesh);
+    printf("Edge strip area  : %.12e\n", Aedge);
+    printf("Ratio edge/mesh  : %.12e\n", Aedge / Amesh);
+    printf("Relative error   : %.12e\n", (Aedge - Amesh) / Amesh);
+
+    return Aedge / Amesh;
+}
+
+
+
+
 void Grid::checkAreaConservation() const
 {
     double triAreaSum = 0.0;
@@ -2411,7 +4169,7 @@ void Grid::checkAreaConservation() const
 
     for (size_t ei = 0; ei < edges.size(); ++ei) {
         double Le = edgeLength(edges[ei]);
-	edgeAreaSum += Le * edgeWidth[ei];
+	edgeAreaSum += Le * edgeWidth[ei]/2.;
     }
 
     printf("\n=== AREA CONSERVATION CHECK ===\n");

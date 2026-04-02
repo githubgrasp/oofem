@@ -62,6 +62,7 @@
 #define _IFT_LatticeFrameSteelPlastic_h_eps "h_eps"
 #define _IFT_LatticeFrameSteelPlastic_h_function_eps "h(eps)"
 #define _IFT_LatticeFrameSteelPlastic_capmode "capmode"
+#define _IFT_LatticeFrameSteelPlastic_sigmay "sigmay"
 
 //@}
 
@@ -166,7 +167,9 @@ protected:
 
     double initialYieldStress = 0.;
 
-    //
+    double sigmay = 0.0;
+  
+    bool autoCapacitiesFromSigmay = false;
 
 public:
     LatticeFrameSteelPlastic(int n, Domain *d) : LatticeFrameElastic(n, d) { };
@@ -196,6 +199,8 @@ public:
 
     FloatArrayF< 6 >giveFrameForces3d(const FloatArrayF< 6 > &strain, GaussPoint *gp, TimeStep *tStep) override;
 
+    void giveBaseCapacitiesFromSection(double &nx0Base, double &mx0Base, double &my0Base, double &mz0Base, GaussPoint *gp) const;
+  
     const char *giveInputRecordName() const override { return _IFT_LatticeFrameSteelPlastic_Name; }
 
     const char *giveClassName() const override { return "LatticeFrameSteelPlastic"; }

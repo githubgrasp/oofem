@@ -52,6 +52,8 @@
 #define _IFT_LatticeCrossSection_shearcoeff "shearcoeff"
 #define _IFT_LatticeCrossSection_shearareay "shearareay"
 #define _IFT_LatticeCrossSection_shearareaz "shearareaz"
+#define _IFT_LatticeCrossSection_shape "shape"
+#define _IFT_LatticeCrossSection_radius "radius"
 
 //@}
 
@@ -78,7 +80,8 @@ protected:
     double beamshearcoeff = 0.;
     double shearareay = 0.;
     double shearareaz = 0.;
-
+  int shape = 0;
+  double radius = 0.;
 
 public:
     /**
@@ -152,6 +155,9 @@ public:
 
     virtual double give(int aProperty, GaussPoint *gp) const override;
 
+  int giveShape() const { return shape; }
+  double giveRadius() const { return radius; }
+  
     //    void giveCharMaterialStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode, GaussPoint *gp, TimeStep *tStep);
 
 

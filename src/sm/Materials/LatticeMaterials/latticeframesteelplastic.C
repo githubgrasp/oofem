@@ -42,6 +42,7 @@
 #include "floatarray.h"
 #include "floatarrayf.h"
 #include "CrossSections/structuralcrosssection.h"
+#include "CrossSections/latticecrosssection.h"
 #include "engngm.h"
 #include "mathfem.h"
 #include "Elements/LatticeElements/latticestructuralelement.h"
@@ -63,60 +64,123 @@ namespace oofem {
     }
 
 
-    void
-    LatticeFrameSteelPlastic::initializeFrom(InputRecord &ir)
-    {
-        LatticeFrameElastic::initializeFrom(ir);
 
-        IR_GIVE_FIELD(ir, this->nx0, _IFT_LatticeFrameSteelPlastic_nx0); // Macro
+void
+LatticeFrameSteelPlastic::initializeFrom(InputRecord &ir)
+{
+    LatticeFrameElastic::initializeFrom(ir);
 
-        IR_GIVE_FIELD(ir, this->mx0, _IFT_LatticeFrameSteelPlastic_mx0); // Macro
+    // Optional automatic capacity definition from yield stress
+    this->sigmay = 0.0;
+    IR_GIVE_OPTIONAL_FIELD(ir, this->sigmay, _IFT_LatticeFrameSteelPlastic_sigmay);
 
-        IR_GIVE_FIELD(ir, this->my0, _IFT_LatticeFrameSteelPlastic_my0); // Macro
+    this->autoCapacitiesFromSigmay = (this->sigmay > 0.0);
 
-        IR_GIVE_FIELD(ir, this->mz0, _IFT_LatticeFrameSteelPlastic_mz0); // Macro
-
-        yieldTol = 1.e-6;
-        IR_GIVE_OPTIONAL_FIELD(ir, this->yieldTol, _IFT_LatticeFrameSteelPlastic_tol); // Macro
-
-        this->newtonIter = 100;
-        IR_GIVE_OPTIONAL_FIELD(ir, this->newtonIter, _IFT_LatticeFrameSteelPlastic_iter); // Macro
-
-        numberOfSubIncrements = 10;
-        IR_GIVE_OPTIONAL_FIELD(ir, this->numberOfSubIncrements, _IFT_LatticeFrameSteelPlastic_sub); // Macro
-
-        this->hardeningLength = 0.;
-        IR_GIVE_OPTIONAL_FIELD(ir, this->hardeningLength, _IFT_LatticeFrameSteelPlastic_hlength); //length scale for hardening variable
-
-        hType = 0;
-        IR_GIVE_OPTIONAL_FIELD(ir, this->hType, _IFT_LatticeFrameSteelPlastic_htype); //hardening type
-
-        if ( hType == 0 ) {
-            H = 0.;
-            IR_GIVE_OPTIONAL_FIELD(ir, H, _IFT_LatticeFrameSteelPlastic_h); // hardening modulus
-        } else if ( hType == 1 ) {     //user defined hardening function
-            IR_GIVE_FIELD(ir, h_eps, _IFT_LatticeFrameSteelPlastic_h_eps);
-            IR_GIVE_FIELD(ir, h_function_eps, _IFT_LatticeFrameSteelPlastic_h_function_eps);
-
-            if ( h_eps.at(1) != 0. ) {
-                throw ValueInputException(ir, _IFT_LatticeFrameSteelPlastic_h_eps, "The first entry in h_eps must be 0.");
-            }
-
-            if ( h_eps.giveSize() != h_function_eps.giveSize() ) {
-                throw ValueInputException(ir, _IFT_LatticeFrameSteelPlastic_h_function_eps, "the size of 'h_eps' and 'h(eps)' must be the same");
-            }
-        } else {
-            throw ValueInputException(ir, _IFT_LatticeFrameSteelPlastic_htype, "Unknown htype. Should be either 0 or 1.\n");
-        }
-
-	capacityMode = 0;
-        IR_GIVE_OPTIONAL_FIELD(ir, capacityMode, _IFT_LatticeFrameSteelPlastic_capmode);
-	if (capacityMode != 0 && capacityMode != 1) {
-	  throw ValueInputException(ir, _IFT_LatticeFrameSteelPlastic_capmode, "capmode must be 0 (resultant, default) or 1 (per-width).");
-	}
-	
+    if (!this->autoCapacitiesFromSigmay) {
+        IR_GIVE_FIELD(ir, this->nx0, _IFT_LatticeFrameSteelPlastic_nx0);
+        IR_GIVE_FIELD(ir, this->mx0, _IFT_LatticeFrameSteelPlastic_mx0);
+        IR_GIVE_FIELD(ir, this->my0, _IFT_LatticeFrameSteelPlastic_my0);
+        IR_GIVE_FIELD(ir, this->mz0, _IFT_LatticeFrameSteelPlastic_mz0);
+    } else {
+        // placeholders; actual values computed per element in giveEffectiveCapacities()
+        this->nx0 = 0.0;
+        this->mx0 = 0.0;
+        this->my0 = 0.0;
+        this->mz0 = 0.0;
     }
 
+    yieldTol = 1.e-6;
+    IR_GIVE_OPTIONAL_FIELD(ir, this->yieldTol, _IFT_LatticeFrameSteelPlastic_tol);
+
+    this->newtonIter = 100;
+    IR_GIVE_OPTIONAL_FIELD(ir, this->newtonIter, _IFT_LatticeFrameSteelPlastic_iter);
+
+    numberOfSubIncrements = 10;
+    IR_GIVE_OPTIONAL_FIELD(ir, this->numberOfSubIncrements, _IFT_LatticeFrameSteelPlastic_sub);
+
+    this->hardeningLength = 0.;
+    IR_GIVE_OPTIONAL_FIELD(ir, this->hardeningLength, _IFT_LatticeFrameSteelPlastic_hlength);
+
+    hType = 0;
+    IR_GIVE_OPTIONAL_FIELD(ir, this->hType, _IFT_LatticeFrameSteelPlastic_htype);
+
+    if ( hType == 0 ) {
+        H = 0.;
+        IR_GIVE_OPTIONAL_FIELD(ir, H, _IFT_LatticeFrameSteelPlastic_h);
+    } else if ( hType == 1 ) {
+        IR_GIVE_FIELD(ir, h_eps, _IFT_LatticeFrameSteelPlastic_h_eps);
+        IR_GIVE_FIELD(ir, h_function_eps, _IFT_LatticeFrameSteelPlastic_h_function_eps);
+
+        if ( h_eps.at(1) != 0. ) {
+            throw ValueInputException(ir, _IFT_LatticeFrameSteelPlastic_h_eps,
+                                      "The first entry in h_eps must be 0.");
+        }
+
+        if ( h_eps.giveSize() != h_function_eps.giveSize() ) {
+            throw ValueInputException(ir, _IFT_LatticeFrameSteelPlastic_h_function_eps,
+                                      "the size of 'h_eps' and 'h(eps)' must be the same");
+        }
+    } else {
+        throw ValueInputException(ir, _IFT_LatticeFrameSteelPlastic_htype,
+                                  "Unknown htype. Should be either 0 or 1.\n");
+    }
+
+    capacityMode = 0;
+    IR_GIVE_OPTIONAL_FIELD(ir, capacityMode, _IFT_LatticeFrameSteelPlastic_capmode);
+    if (capacityMode != 0 && capacityMode != 1) {
+        throw ValueInputException(ir, _IFT_LatticeFrameSteelPlastic_capmode,
+                                  "capmode must be 0 (resultant, default) or 1 (per-width).");
+    }
+}
+
+
+ void
+LatticeFrameSteelPlastic::giveBaseCapacitiesFromSection(double &nx0Base,
+                                                        double &mx0Base,
+                                                        double &my0Base,
+                                                        double &mz0Base,
+                                                        GaussPoint *gp) const
+{
+    if (!this->autoCapacitiesFromSigmay) {
+        nx0Base = this->nx0;
+        mx0Base = this->mx0;
+        my0Base = this->my0;
+        mz0Base = this->mz0;
+        return;
+    }
+
+    auto *elem = static_cast< LatticeStructuralElement * >(gp->giveElement());
+    if (!elem) {
+        OOFEM_ERROR("Expected LatticeStructuralElement in giveBaseCapacitiesFromSection.");
+    }
+
+    const double A  = elem->giveArea(gp);
+    const double I1 = elem->giveI1(gp);
+    const double I2 = elem->giveI2(gp);
+    const double Ip = elem->giveIp(gp);
+
+    auto *cs = dynamic_cast< LatticeCrossSection * >(elem->giveCrossSection());
+    if (!cs) {
+        OOFEM_ERROR("Expected LatticeCrossSection in giveBaseCapacitiesFromSection.");
+    }
+
+    if (cs->giveShape() != 1) {
+        OOFEM_ERROR("Automatic sigmay-based capacities currently implemented only for circular sections (shape=1).");
+    }
+
+    const double r = cs->giveRadius();
+    if (r <= 0.0) {
+        OOFEM_ERROR("Non-positive radius for circular section.");
+    }
+
+    // Elastic first-yield capacities
+    nx0Base = this->sigmay * A;
+    mx0Base = this->sigmay * I1 / r;
+    my0Base = this->sigmay * I2 / r;
+    mz0Base = this->sigmay * Ip / r; // use if mz is torsional capacity in your yield function
+}
+ 
+ 
     MaterialStatus *
     LatticeFrameSteelPlastic::CreateStatus(GaussPoint *gp) const
     {
@@ -165,13 +229,13 @@ namespace oofem {
         return yieldValue;
     }
 
-
-void LatticeFrameSteelPlastic::giveEffectiveCapacities(double &nx0Eff,
-                                                       double &mx0Eff,
-                                                       double &my0Eff,
-                                                       double &mz0Eff,
-                                                       GaussPoint *gp,
-                                                       TimeStep *tStep) const
+void
+LatticeFrameSteelPlastic::giveEffectiveCapacities(double &nx0Eff,
+                                                  double &mx0Eff,
+                                                  double &my0Eff,
+                                                  double &mz0Eff,
+                                                  GaussPoint *gp,
+                                                  TimeStep *tStep) const
 {
     double reductionFactor = 1.0;
     if (this->tCrit != 0.0) {
@@ -180,16 +244,19 @@ void LatticeFrameSteelPlastic::giveEffectiveCapacities(double &nx0Eff,
 
     double widthFactor = 1.0;
     if (this->capacityMode == 1) {
-        widthFactor = static_cast<LatticeStructuralElement *>(gp->giveElement())->giveTributaryWidth(gp);
+        widthFactor = static_cast< LatticeStructuralElement * >(gp->giveElement())->giveTributaryWidth(gp);
         if (widthFactor <= 0.0) {
             OOFEM_ERROR("Non-positive tributary width.");
         }
     }
 
-    nx0Eff = reductionFactor * widthFactor * this->nx0;
-    mx0Eff = reductionFactor * widthFactor * this->mx0;
-    my0Eff = reductionFactor * widthFactor * this->my0;
-    mz0Eff = reductionFactor * widthFactor * this->mz0;
+    double nx0Base, mx0Base, my0Base, mz0Base;
+    giveBaseCapacitiesFromSection(nx0Base, mx0Base, my0Base, mz0Base, gp);
+
+    nx0Eff = reductionFactor * widthFactor * nx0Base;
+    mx0Eff = reductionFactor * widthFactor * mx0Base;
+    my0Eff = reductionFactor * widthFactor * my0Base;
+    mz0Eff = reductionFactor * widthFactor * mz0Base;
 }
 
     

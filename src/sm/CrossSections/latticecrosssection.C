@@ -83,28 +83,21 @@ LatticeCrossSection::initializeFrom(InputRecord &ir)
     propertyDictionary.add(CS_Area, area);
 
     double thickness = 0.0;
-    IR_GIVE_OPTIONAL_FIELD(ir, area, _IFT_LatticeCrossSection_thickness);
+    IR_GIVE_OPTIONAL_FIELD(ir, thickness, _IFT_LatticeCrossSection_thickness);
     propertyDictionary.add(CS_Thickness, thickness);
-
     
     value = 0.0;
     IR_GIVE_OPTIONAL_FIELD(ir, value, _IFT_LatticeCrossSection_iy);
     propertyDictionary.add(CS_InertiaMomentY, value);
 
-    printf("I1 = %e\n", value);
-    
     value = 0.0;
     IR_GIVE_OPTIONAL_FIELD(ir, value, _IFT_LatticeCrossSection_iz);
     propertyDictionary.add(CS_InertiaMomentZ, value);
 
-    printf("I2 = %e\n", value);
-	
     value = 0.0;
     IR_GIVE_OPTIONAL_FIELD(ir, value, _IFT_LatticeCrossSection_ik);
     propertyDictionary.add(CS_TorsionConstantX, value);
 
-    printf("Ip = %e\n", value);
-    
     double beamshearcoeff = 1.;
     IR_GIVE_OPTIONAL_FIELD(ir, beamshearcoeff, _IFT_LatticeCrossSection_shearcoeff);
     propertyDictionary.add(CS_BeamShearCoeff, beamshearcoeff);
@@ -121,7 +114,14 @@ LatticeCrossSection::initializeFrom(InputRecord &ir)
     if ( value == 0.0 ) {
         value = beamshearcoeff * area;
     }
-    propertyDictionary.add(CS_ShearAreaZ, value);
+    propertyDictionary.add(CS_ShearAreaZ, value);    
+
+    this->shape = 0;
+    IR_GIVE_OPTIONAL_FIELD(ir, this->shape, _IFT_LatticeCrossSection_shape);
+    
+    this->radius = 0.0;
+    IR_GIVE_OPTIONAL_FIELD(ir, this->radius, _IFT_LatticeCrossSection_radius);
+    
 }
 
 double LatticeCrossSection::giveLatticeStress1d(double strain, GaussPoint *gp, TimeStep *tStep) const

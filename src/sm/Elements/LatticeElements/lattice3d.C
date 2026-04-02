@@ -234,7 +234,7 @@ Lattice3d :: computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, int 
             return;
         }
     }
-    
+
 void
 Lattice3d :: giveGPCoordinates(FloatArray &coords)
 {
@@ -480,9 +480,6 @@ Lattice3d :: computeGeometryProperties()
     //coordinates of the two nodes
     Node *nodeA, *nodeB;
     FloatArray coordsA(3), coordsB(3);
-    if (this->giveNumber() == 163){
-        printf("Debug\n");
-            }
     nodeA  = this->giveNode(1);
     nodeB  = this->giveNode(2);
 
@@ -522,6 +519,63 @@ Lattice3d :: computeGeometryProperties()
  
 void
   Lattice3d :: computeCrossSectionProperties() {
+
+
+  auto *cs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );
+  if (!cs) {
+    OOFEM_ERROR("Expected LatticeCrossSection");
+  }
+  
+  if (cs->giveShape() == 1) {
+    double r = cs->giveRadius();
+    
+    this->area = M_PI * r * r;
+    this->I1   = M_PI * pow(r, 4) / 4.0;
+    this->I2   = this->I1;
+    this->Ip   = M_PI * pow(r, 4) / 2.0;
+    
+    const double k = 0.9;
+    this->shearArea1 = k * this->area;
+    this->shearArea2 = k * this->area;
+    
+    FloatArray s(3), t(3), ref(3);
+    ref.resize(3);
+    ref.zero();
+    ref.at(3) = 1.0;
+    
+    if (fabs(normal.dotProduct(ref)) > 0.99) {
+      ref.zero();
+      ref.at(2) = 1.0;
+    }
+    
+    s.beVectorProductOf(ref, normal);
+    s.normalize();
+    
+    t.beVectorProductOf(normal, s);
+    t.normalize();
+    
+    this->localCoordinateSystem.resize(3,3);
+    for (int i = 1; i <= 3; ++i) {
+      this->localCoordinateSystem.at(1,i) = normal.at(i);
+      this->localCoordinateSystem.at(2,i) = s.at(i);
+      this->localCoordinateSystem.at(3,i) = t.at(i);
+    }
+    
+    centroid.resize(3);
+    centroid.zero();
+
+    FloatArray midPointLocal(3);
+    midPointLocal.beProductOf(this->localCoordinateSystem, midPoint);
+    centroid = midPointLocal;
+
+    this->eccS = 0.0;
+    this->eccT = 0.0;
+    this->globalCentroid = midPoint;
+
+    return;
+  }
+  
+  //Shape is 0 (polygon based cross-section
   
   if(this->numberOfPolygonVertices < 3){
     OOFEM_ERROR("Too small number of polygon vertices. Check meshing approach.\n");
@@ -529,25 +583,41 @@ void
   
     //Construct two perpendicular axis so that n is normal to the plane which they create
     //Check, if one of the components of the normal-direction is zero
-    FloatArray s(3), t(3);
-    if ( this->normal.at(1) == 0 ) {
-        s.at(1) = 0.;
-        s.at(2) = this->normal.at(3);
-        s.at(3) = -this->normal.at(2);
-    } else if ( this->normal.at(2) == 0 ) {
-        s.at(1) = this->normal.at(3);
-        s.at(2) = 0.;
-        s.at(3) = -this->normal.at(1);
-    } else {
-        s.at(1) = this->normal.at(2);
-        s.at(2) = -this->normal.at(1);
-        s.at(3) = 0.;
-    }
+  FloatArray s(3), t(3);
+  FloatArray ref(3);
+  ref = {0,0,1};
+  
+  if (fabs(normal.dotProduct(ref)) > 0.99) {
+    ref = {0,1,0};
+  }
+  
+  s.beVectorProductOf(ref, normal);
+  s.normalize();
+  
+  t.beVectorProductOf(normal, s);
+  t.normalize();
+  
 
-    s.normalize();
 
-    t.beVectorProductOf(this->normal, s);
-    t.normalize();
+
+  /* if ( this->normal.at(1) == 0 ) { */
+  /*       s.at(1) = 0.; */
+  /*       s.at(2) = this->normal.at(3); */
+  /*       s.at(3) = -this->normal.at(2); */
+  /*   } else if ( this->normal.at(2) == 0 ) { */
+  /*       s.at(1) = this->normal.at(3); */
+  /*       s.at(2) = 0.; */
+  /*       s.at(3) = -this->normal.at(1); */
+  /*   } else { */
+  /*       s.at(1) = this->normal.at(2); */
+  /*       s.at(2) = -this->normal.at(1); */
+  /*       s.at(3) = 0.; */
+  /*   } */
+
+  /*   s.normalize(); */
+
+  /*   t.beVectorProductOf(this->normal, s); */
+  /*   t.normalize(); */
 
     //Set up rotation matrix
     FloatMatrix lcs(3, 3);
@@ -567,8 +637,22 @@ void
 	  help.at(n) = polygonCoords.at(3 * (k - 1) + n);
         }
 
-        test.beProductOf(lcs, help);
-        for ( int n = 1; n <= 3; n++ ) {
+	//        test.beProductOf(lcs, help);
+
+	FloatArray x = help;
+	double xn = x.dotProduct(normal);
+
+	// remove normal component
+	FloatArray x_proj = x;
+	FloatArray n_scaled = normal;
+	n_scaled.times(xn);
+	x_proj.subtract(n_scaled);
+
+	// now rotate
+	test.beProductOf(lcs, x_proj);
+
+
+	for ( int n = 1; n <= 3; n++ ) {
 	  lpc.at(3 * (k - 1) + n) = test.at(n);
         }
     }
@@ -682,11 +766,12 @@ void
 
     this->Ip = I1 + I2;
 
-    printf("I1 = %e, I2 = %e, Ip=%e\n", I1, I2, Ip);
-    printf("area = %e\n", area);
+
+    //For now
+    this->shearArea1 = area;
+    this->shearArea2 = area;
     
     //Rotation around normal axis by angleChange
-
     FloatMatrix rotationChange(3, 3);
     rotationChange.zero();
 
@@ -769,7 +854,7 @@ double Lattice3d :: giveShearArea1(GaussPoint *gp) {
         computeGeometryProperties();
     }
     //Temporary assumption. Ideally, shear area should be less than area.
-    return this->area;
+    return this->shearArea1;
 }
 
 double Lattice3d :: giveShearArea2(GaussPoint *gp) {
@@ -777,7 +862,7 @@ double Lattice3d :: giveShearArea2(GaussPoint *gp) {
         computeGeometryProperties();
     }
     //Temporary assumption. Ideally, shear area should be less than area.
-    return this->area;
+    return this->shearArea2;
 }
 
 double Lattice3d :: giveTributaryWidth(GaussPoint *gp)

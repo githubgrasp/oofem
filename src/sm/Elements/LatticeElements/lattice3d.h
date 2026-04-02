@@ -59,6 +59,7 @@ protected:
     double minLength;
     double kappa, length;
     double I1, I2, Ip;
+     double shearArea1, shearArea2;
     FloatArray polygonCoords;
     int numberOfPolygonVertices;
     FloatMatrix localCoordinateSystem;

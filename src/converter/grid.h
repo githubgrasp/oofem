@@ -100,9 +100,16 @@ struct Tri {
 struct Tet {
     int id;
     int n1, n2, n3, n4;
+
+    int entType;
+    int entID;
+    int entProp;
+
+    int faceEntID[4];
+    int faceEntType[4];
+    int faceEntProp[4];
 };
 
-  
   struct Edge {
     int n1, n2;     // node ids (sorted)
     int tri1 = -1;  // adjacent triangle index
@@ -118,6 +125,7 @@ struct CurveSeg {
 };
 
 
+
 /**
  * Description of class grid
  */
@@ -131,6 +139,9 @@ private:
 
     GridType gridType;
 
+std::vector<std::vector<int>> edgeToTets;
+std::vector<std::vector<int>> edgeToBoundaryTris;
+  
   std::string controlFileName;
 
   std::map<int, std::map<int, std::vector<int>>> entityNodes;
@@ -139,6 +150,10 @@ private:
 
 std::vector<CurveSeg> curveSegs;
 std::unordered_map<int, std::vector<int>> curveToSegIdx;
+
+bool use3DFrameSection = false;
+
+double frameRadius = 0.0;
 
   
   struct BCRequest {
@@ -290,8 +305,36 @@ public:
 
   void computeEdgeWidths(double thickness);
 
+  double computeTargetArea(int edgeIndex, double Le) const;
+
+  double checkAssumed3DEdgeVolume() const;
+
+  double checkAssumed2DEdgeArea() const;
+
+  void computeGlobalCircularFrameSection();
+  
   void buildCurveSegsFromTris();
 
+void buildBoundaryTrisFromTets();
+void buildEdgeAdjacency3D();
+
+oofem::FloatArray tetBarycentre(int tetIndex) const;
+oofem::FloatArray faceBarycentre(int triIndex) const;
+
+  void rebuildEntityTris();
+
+  double tetVolume(int tetIndex) const;
+
+double computePolygonAreaProjected(const oofem::FloatArray &polycoords,
+				   const oofem::FloatArray &xm,
+				   const oofem::FloatArray &r,
+				   const oofem::FloatArray &s) const;
+  
+  
+void buildEdgePolygon3D(int edgeIndex, oofem::FloatArray &polycoords) const;
+void write3DEdgeSection(std::ostream &out, int &eid, const Edge &e, int edgeIndex);
+
+  
   double segLength(int n1, int n2) const;
 
   void computeNodalLengthsOnCurve(int curveID, std::vector<double> &L) const;
@@ -307,7 +350,7 @@ public:
   double triArea(int triIndex) const;
 
     void prepareLiveLoadSets();
-  
+
     double giveThicknessForEntity(int entType, int entID) const;
 
 bool isConverterDirective(const std::string &t) const

@@ -287,50 +287,27 @@ namespace oofem {
         answer.zero();
         this->computeNLBmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), b, tStep);
 
-	printf("b matrix");
-	b.printYourself();
-	
         this->computeConstitutiveMatrixAt(d, rMode, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
 
-	printf("d matrix");
-	d.printYourself();
-		    
         convertTangentToResultantTangent3d(ds, d, integrationRulesArray [ 0 ]->getIntegrationPoint(0));
-
-	printf("ds matrix before rotation");
-	ds.printYourself();
 	
         //Rotate constitutive stiffness matrix
         FloatMatrix r(6, 6), rT(6, 6), dR(6, 6), rTDR(6, 6);
         computeCurrentGtoLStrainRotationMatrix(r, u, coordA, coordB, coordGp);
 
-	printf("currentGtoLStrainRotationMatrix\n");
-	r.printYourself();
-
 	FloatMatrix rDebug(6,6);
 	computeGtoLStrainRotationMatrix(rDebug);
-
-	printf("GtoLStrainRotationMatrix\n");
-	rDebug.printYourself();
-	       	
 	
         rT.beTranspositionOf(r);
 
         dR.beProductOf(ds, r);
         rTDR.beProductOf(rT, dR);
 
-	printf("rTDR matrix (ds after rotation");
-	rTDR.printYourself();
-
-	
         db.beProductOf(rTDR, b);
         db.times(1. / length);
         bt.beTranspositionOf(b);
         answer.beProductOf(bt, db);
 
-	printf("Print stiffness matrix\n");
-	answer.printYourself();
-	
         return;
     }
 
