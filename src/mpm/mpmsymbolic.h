@@ -127,7 +127,7 @@ namespace oofem {
         // ARGS: args[0] - pointer to VarSlot containing the vector field (as a user pointer)
         //       args[1] - pointer to GaussPoint (as a user pointer)
         // OUTPUT: out - VarSlot to store the resulting symmetric gradient matrix
-        std::cout << "    [C++ Callback] Called Grad_s functor with " << args.size() << " arguments." << std::endl;
+        OOFEM_LOG_DEBUG("    [C++ Callback] Called Grad_s functor with %ld arguments\n", args.size());
         if (args.size() != 2) {
             OOFEM_ERROR("MPMfunctor_Grad_s functor expects exactly 2 arguments: vector field (Variable class) and GaussPoint.");
         }
@@ -151,7 +151,7 @@ namespace oofem {
         // ARGS: args[0] - pointer to VarSlot containing the scalar field (as a user pointer)
         //       args[1] - pointer to GaussPoint (as a user pointer)
         // OUTPUT: out - VarSlot to store the resulting symmetric gradient matrix
-        std::cout << "    [C++ Callback] Called Grad functor with " << args.size() << " arguments." << std::endl;
+        OOFEM_LOG_DEBUG("    [C++ Callback] Called Grad functor with %ld arguments\n", args.size());
         if (args.size() != 2) {
             OOFEM_ERROR("MPMfunctor_Grad functor expects exactly 2 arguments: scalar field (Variable class) and GaussPoint.");
         }
@@ -196,7 +196,7 @@ namespace oofem {
         // ARGS: args[0] - pointer to VarSlot containing the vector field (as a user pointer)
         //       args[1] - pointer to GaussPoint (as a user pointer)
         // OUTPUT: out - VarSlot to store the resulting divergence (scalar)
-        std::cout << "    [C++ Callback] Called Div functor with " << args.size() << " arguments." << std::endl;
+        OOFEM_LOG_DEBUG("    [C++ Callback] Called Div functor with %ld arguments\n", args.size());
         if (args.size() != 2) {
             OOFEM_ERROR("MPMfunctor_Div functor expects exactly 2 arguments: vector field (Variable class) and GaussPoint.");
         }
@@ -232,7 +232,7 @@ namespace oofem {
         // ARGS: args[0] - pointer to VarSlot containing the scalar field (as a user pointer)
         //       args[1] - pointer to GaussPoint (as a user pointer)
         // OUTPUT: out - VarSlot to store the resulting interpolation matrix
-        std::cout << "    [C++ Callback] Called N functor with " << args.size() << " arguments." << std::endl;
+        OOFEM_LOG_DEBUG("    [C++ Callback] Called N functor with %ld arguments\n", args.size());
         if (args.size() != 2) {
             OOFEM_ERROR("MPMfunctor_N functor expects exactly 2 arguments: scalar field (Variable class) and GaussPoint.");
         }
@@ -265,7 +265,7 @@ namespace oofem {
         //       args[1] - pointer to TimeStep (as a user pointer)
         //       args[2] - property ID (as a double, to be casted to MaterialResponseMode enum)
         // OUTPUT: out - VarSlot to store the resulting symmetric gradient matrix
-        std::cout << "    [C++ Callback] Called MDer functor with " << args.size() << " arguments." << std::endl;
+        OOFEM_LOG_DEBUG("    [C++ Callback] Called MDer functor with %ld arguments\n", args.size());
         if (args.size() != 3) {
             OOFEM_ERROR("MPMfunctor_MDer functor expects exactly 3 arguments: GaussPoint, TimeStep and PropertyID.");
         }
@@ -297,7 +297,7 @@ namespace oofem {
         // ARGS: args[0] - pointer to GaussPoint (as a user pointer)
         //       args[1] - pointer to TimeStep (as a user pointer)
         // OUTPUT: out - VarSlot to store the resulting stress vector
-        std::cout << "    [C++ Callback] Called Sig functor with " << args.size() << " arguments." << std::endl;
+        OOFEM_LOG_DEBUG("    [C++ Callback] Called Sig functor with %ld arguments\n", args.size());
         if (args.size() != 3) {
             OOFEM_ERROR("MPMfunctor_Sig functor expects exactly 3 arguments: Field Variable, GaussPoint (gp), TimeStep (ts).");
         }
@@ -330,7 +330,7 @@ namespace oofem {
         // ARGS: args[0] - pointer to GaussPoint (as a user pointer)
         //       args[1] - pointer to TimeStep (as a user pointer)
         // OUTPUT: out - VarSlot to store the resulting deviatoric stress vector
-        std::cout << "    [C++ Callback] Called Sig_dev functor with " << args.size() << " arguments." << std::endl;
+        OOFEM_LOG_DEBUG("    [C++ Callback] Called Sig_dev functor with %ld arguments\n", args.size());
         if (args.size() != 3) {
             OOFEM_ERROR("MPMfunctor_Sig_dev functor expects exactly 3 arguments: Field Variable, GaussPoint (gp), TimeStep (ts).");
         }
@@ -365,7 +365,7 @@ namespace oofem {
         //       args[1] - element (cell) (as a user pointer)
         //       args[2] - timep step (as a user pointer)
         // OUTPUT: out - VarSlot to store the resulting nodal values column matrix (dof ordering determined by field dof ordering)
-        std::cout << "    [C++ Callback] Called FieldNodalValues functor with " << args.size() << " arguments." << std::endl;
+        OOFEM_LOG_DEBUG("    [C++ Callback] Called FieldNodalValues functor with %ld arguments\n", args.size());
         if (args.size() != 3) {
             OOFEM_ERROR("MPMfunctor_FieldNodalValues functor expects exactly 3 arguments: Variable, Element(cell), and TimeStep(ts)");
         }
@@ -386,7 +386,34 @@ namespace oofem {
         out.value = answer;
         out.type = VarSlot::Type::MATRIX;
     }; 
+    // define functor to return element field nodal velocities (e.g. temperature rates at nodes) as a column matrix
+    auto MPMfunctor_FieldNodalVelocities = [](const std::vector<const VarSlot*>& args, VarSlot& out) {
+        // Compute the nodal values of the first argument (assumed to be a field) at intrinsic time of time step.
+        // ARGS: args[0] - pointer to Variable (as a user pointer)
+        //       args[1] - element (cell) (as a user pointer)
+        //       args[2] - timep step (as a user pointer)
+        // OUTPUT: out - VarSlot to store the resulting nodal values column matrix (dof ordering determined by field dof ordering)
+        OOFEM_LOG_DEBUG("    [C++ Callback] Called FieldNodalVelocities functor with %ld arguments\n", args.size());
+        if (args.size() != 3) {
+            OOFEM_ERROR("MPMfunctor_FieldNodalVelocities functor expects exactly 3 arguments: Variable, Element(cell), and TimeStep(ts)");
+        }
+        // 1. Retrieve the generic pointers to arguments
+        void* raw_ptr0 = std::get<void*>(args[0]->value);
+        void* raw_ptr1 = std::get<void*>(args[1]->value);
+        void* raw_ptr2 = std::get<void*>(args[2]->value);
+        // 2. Cast back to your specific application type (Variable class)
+        const Variable* v = static_cast<const Variable*>(raw_ptr0);
+        MPElement* cell = static_cast<MPElement*>(raw_ptr1);
+        TimeStep* tstep = static_cast<TimeStep*>(raw_ptr2);
 
+        // functor logic
+        FloatArray u;
+        cell->getUnknownVector(u, v, VM_Velocity, tstep); // get nodal velocities of the variable at current time step
+        FloatMatrix answer = FloatMatrix::fromArray(u);
+
+        out.value = answer;
+        out.type = VarSlot::Type::MATRIX;
+    }; 
 /**
  * @brief Symbolic term allowing to parse and evaluate user defined expressions
  * 
@@ -433,6 +460,7 @@ class SymbolicTerm : public GenericCellTerm {
 
 
         compiler.register_function("ru");
+        compiler.register_function("rv");
 
         try {
             compiler.compile_script(lhsExpression, lhsExpressionContext.program, lhsExpressionContext.symbols, lhsExpressionContext.constants, pool_ptr);
@@ -484,11 +512,14 @@ class SymbolicTerm : public GenericCellTerm {
 
             
             vm.register_functor("ru", MPMfunctor_FieldNodalValues);
-            
+            vm.register_functor("rv", MPMfunctor_FieldNodalVelocities);
+
             vm.execute(context.program);
             if (vm.get_result().type == VarSlot::Type::MATRIX) {
                 answer = std::get<FloatMatrix>(vm.get_result().value);
-                std::cout << "Result:\n" << answer << "\n";
+                std::ostringstream oss;
+                oss << "Result: " << answer << "\n\n";
+                OOFEM_LOG_DEBUG("%s", oss.str().c_str());
             }
 
         } catch (const std::exception& e) {
