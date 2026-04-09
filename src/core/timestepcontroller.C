@@ -118,10 +118,10 @@ TimeStepController :: instanciateMetaSteps(DataReader &dr)
     auto mrecs=dr.giveGroupRecords(DataReader::IR_mstepRec,this->numberOfMetaSteps);
     int i=0;
     for(const std::shared_ptr<InputRecord>& mrec: mrecs){
-        metaStepList[i].initializeFrom(mrec);
         if(i > 0) {
             metaStepList[i].setPreviousMetaStepFinalTime(metaStepList[i-1].giveFinalTime());
         }
+        metaStepList[i].initializeFrom(mrec);
         totalNumberOfSteps += metaStepList[i].giveNumberOfSteps();
         i++;
     }
