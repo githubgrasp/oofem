@@ -50,7 +50,7 @@ public:
 
     // miscellaneous
     /// Returns class name of the receiver.
-    const char *giveClassName() const { return "Cylinder"; }
+    const char *giveClassName() const override { return "Cylinder"; }
 
     void initializeFrom(ConverterInputRecord &ir) override;
 

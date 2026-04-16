@@ -19,7 +19,7 @@
  #include <time.h>
  #include <map>
  #include <list>
-#include <set>
+ #include <set>
 #endif
 #define _IFT_Grid_type "grid"
 #define _IFT_Grid_macrotype "macrotype"
@@ -88,13 +88,12 @@ struct Tri {
     int n1, n2, n3;
     int entType = 0;  // 3,5,6
     int entID   = 0;
-  int entProp = 0;   // <-- add this
-  
-  
-    // only meaningful when (outType & 8)
-    int bndCurveId[3]   = {0,0,0};   // edge (n1-n2), (n2-n3), (n3-n1)
-    int bndCurveProp[3] = {0,0,0};
+    int entProp = 0; // <-- add this
 
+
+    // only meaningful when (outType & 8)
+    int bndCurveId[ 3 ]   = { 0, 0, 0 };   // edge (n1-n2), (n2-n3), (n3-n1)
+    int bndCurveProp[ 3 ] = { 0, 0, 0 };
 };
 
 struct Tet {
@@ -105,18 +104,18 @@ struct Tet {
     int entID;
     int entProp;
 
-    int faceEntID[4];
-    int faceEntType[4];
-    int faceEntProp[4];
+    int faceEntID[ 4 ];
+    int faceEntType[ 4 ];
+    int faceEntProp[ 4 ];
 };
 
-  struct Edge {
+struct Edge {
     int n1, n2;     // node ids (sorted)
     int tri1 = -1;  // adjacent triangle index
     int tri2 = -1;
     int tet1 = -1;  // adjacent tetra index
     int tet2 = -1;
-  };
+};
 
 
 struct CurveSeg {
@@ -139,48 +138,48 @@ private:
 
     GridType gridType;
 
-std::vector<std::vector<int>> edgeToTets;
-std::vector<std::vector<int>> edgeToBoundaryTris;
-  
-  std::string controlFileName;
+    std::vector< std::vector< int > >edgeToTets;
+    std::vector< std::vector< int > >edgeToBoundaryTris;
 
-  std::map<int, std::map<int, std::vector<int>>> entityNodes;
+    std::string controlFileName;
 
-  std::map<int, std::map<int, std::vector<int>>> entityTris;
+    std::map< int, std::map< int, std::vector< int > > >entityNodes;
 
-std::vector<CurveSeg> curveSegs;
-std::unordered_map<int, std::vector<int>> curveToSegIdx;
+    std::map< int, std::map< int, std::vector< int > > >entityTris;
 
-bool use3DFrameSection = false;
+    std::vector< CurveSeg >curveSegs;
+    std::unordered_map< int, std::vector< int > >curveToSegIdx;
 
-double frameRadius = 0.0;
+    bool use3DFrameSection = false;
 
-  
-  struct BCRequest {
-    int entType;               // 1=vertex, 2=curve, 5=patch
-    int entID;
-    std::vector<int> extraVertices;  // endpoints for curves
-    
-    std::vector<int> dofs;
-    std::vector<double> values;
-    int setID = -1; // NEW
-  };
-  
-  std::vector<BCRequest> bcRequests;
+    double frameRadius = 0.0;
 
-  struct SetDef {
-    int setID;
-    std::vector<int> nodeIDs; // sorted
-  };
 
-  std::vector<SetDef> generatedNodeSets;
+    struct BCRequest {
+        int entType;           // 1=vertex, 2=curve, 5=patch
+        int entID;
+        std::vector< int >extraVertices; // endpoints for curves
+
+        std::vector< int >dofs;
+        std::vector< double >values;
+        int setID = -1; // NEW
+    };
+
+    std::vector< BCRequest >bcRequests;
+
+    struct SetDef {
+        int setID;
+        std::vector< int >nodeIDs; // sorted
+    };
+
+    std::vector< SetDef >generatedNodeSets;
 
 
     double defaultThickness = 1.0;
 
-    std::map<int, std::map<int,double>> entityThickness;
+    std::map< int, std::map< int, double > >entityThickness;
     // entityThickness[entType][entID] = thickness
-  
+
     /// Grid number
     int number;
 
@@ -190,16 +189,19 @@ double frameRadius = 0.0;
     const char *boundElemName;
     const char *boundBeamElemName;
 
-  double diameter, density;
-  
-  double liveLoad_q = 0.0;     // N/m^2
- 
-  bool liveLoadEnabled = false;
+    double diameter, density;
 
-  oofem::FloatArray liveDir;   // size 3
+    double liveLoad_q = 0.0;   // N/m^2
 
-  int t3dOutType = 0;
-  
+    double shellWidthScale = -1.0; // < 0 means: use area-based scaling
+
+
+    bool liveLoadEnabled = false;
+
+    oofem::FloatArray liveDir; // size 3
+
+    int t3dOutType = 0;
+
     int dimension;
 
     double TOL;
@@ -232,12 +234,12 @@ double frameRadius = 0.0;
 
     int periodicNodeCounter;
 
-  //for t3d shells
-  double shellThickness = 1.0;
+    //for t3d shells
+    double shellThickness = 1.0;
 
     double beamWidth = -1.0;
     double beamThickness = -1.0;
-  
+
     std::vector< Vertex * >delaunayVertexList;
 
     std::vector< Vertex * >voronoiVertexList;
@@ -270,22 +272,22 @@ double frameRadius = 0.0;
 
     typedef std::list< int >nodeContainerType;
 
-  std::vector<Node> nodes;
-  
-  std::vector<Tri>  tris;
-  
-  std::vector<Tet>  tets;
+    std::vector< Node >nodes;
 
-  std::vector<Edge> edges;
+    std::vector< Tri >tris;
 
-  std::unordered_map<int,int> nodeIndex;
+    std::vector< Tet >tets;
 
-  std::vector<double> edgeWidth;
+    std::vector< Edge >edges;
 
-    std::vector<int> loadNodeSetID;  // size = nodes.size()
-    std::vector<double> loadFx, loadFy, loadFz;
+    std::unordered_map< int, int >nodeIndex;
 
-  
+    std::vector< double >edgeWidth;
+
+    std::vector< int >loadNodeSetID;  // size = nodes.size()
+    std::vector< double >loadFx, loadFy, loadFz;
+
+
 public:
 
     GridLocalizer *delaunayLocalizer;
@@ -299,93 +301,92 @@ public:
     ~Grid();
 
 
-  oofem::FloatArray getX(int nid) const;
-  
-  oofem::FloatArray triNormal(int triIndex) const;
+    oofem::FloatArray getX(int nid) const;
 
-  void computeEdgeWidths(double thickness);
+    oofem::FloatArray triNormal(int triIndex) const;
 
-  double computeTargetArea(int edgeIndex, double Le) const;
+    void computeEdgeWidths(double thickness);
 
-  double checkAssumed3DEdgeVolume() const;
+    double computeTargetArea(int edgeIndex, double Le) const;
 
-  double checkAssumed2DEdgeArea() const;
+    //This function connects edges to t3d curves, so that later the curve numbering of t3d can be used to control the input.
+    void buildCurveSegsFromTris();
 
-  void computeGlobalCircularFrameSection();
-  
-  void buildCurveSegsFromTris();
+    //This function connects triangles to t3d patches, so that patch number can be used to connect patch to triangles.
+    void buildBoundaryTrisFromTets();
 
-void buildBoundaryTrisFromTets();
-void buildEdgeAdjacency3D();
+    void buildEdgeAdjacency3D();
 
-oofem::FloatArray tetBarycentre(int tetIndex) const;
-oofem::FloatArray faceBarycentre(int triIndex) const;
+    oofem::FloatArray tetBarycentre(int tetIndex) const;
+    oofem::FloatArray faceBarycentre(int triIndex) const;
 
-  void rebuildEntityTris();
+    void rebuildEntityTris();
 
-  double tetVolume(int tetIndex) const;
+    double tetVolume(int tetIndex) const;
 
-double computePolygonAreaProjected(const oofem::FloatArray &polycoords,
-				   const oofem::FloatArray &xm,
-				   const oofem::FloatArray &r,
-				   const oofem::FloatArray &s) const;
-  
-  
-void buildEdgePolygon3D(int edgeIndex, oofem::FloatArray &polycoords) const;
-void write3DEdgeSection(std::ostream &out, int &eid, const Edge &e, int edgeIndex);
+    double computePolygonAreaProjected(const oofem::FloatArray &polycoords,
+                                       const oofem::FloatArray &xm,
+                                       const oofem::FloatArray &r,
+                                       const oofem::FloatArray &s) const;
 
-  
-  double segLength(int n1, int n2) const;
 
-  void computeNodalLengthsOnCurve(int curveID, std::vector<double> &L) const;
+    void buildEdgePolygon3D(int edgeIndex, oofem::FloatArray &polycoords) const;
+    void write3DEdgeSection(std::ostream &out, int &eid, const Edge &e, int edgeIndex);
+
+
+    double segLength(int n1, int n2) const;
+
+    void computeNodalLengthsOnCurve(int curveID, std::vector< double > &L) const;
 
     oofem::FloatArray triBarycentre(int triIndex) const;
 
-  void readBCRequests();
 
-  std::set<int> collectBCNodes(const BCRequest &bc) const;
+    // function is used to read input from control file to convert mesh from mesh generation output to oofem input
+    void readControlRecords();
 
-  double edgeLength(const Edge &e) const;
-  
-  double triArea(int triIndex) const;
+    std::set< int >collectBCNodes(const BCRequest &bc) const;
+
+    double edgeLength(const Edge &e) const;
+
+    double triArea(int triIndex) const;
 
     void prepareLiveLoadSets();
 
     double giveThicknessForEntity(int entType, int entID) const;
 
-bool isConverterDirective(const std::string &t) const
-{
-    return t.rfind("#@", 0) == 0;
-}
-  
-  void checkAreaConservation() const;
+    bool isConverterDirective(const std::string &t) const
+    {
+        return t.rfind("#@", 0) == 0;
+    }
+
+    void checkAreaConservation() const;
 
 
-  struct LoadRequest {
-    int entType = -1;   // 1 vertex, 2 curve, 3 surface, 5 patch, 6 shell
-    int entID   = -1;
-    double q    = 0.0;  // N/m^2 for tri-entities, N/m for curves, N for vertexint setID   = -1;
-      int setID   = -1;
-      int ltf     = 1;   // default load time function
-  };
-  std::vector<LoadRequest> loadRequests;
-  
-  int entityTypeFromString(const std::string &s) const;
+    struct LoadRequest {
+        int entType = -1; // 1 vertex, 2 curve, 3 surface, 5 patch, 6 shell
+        int entID   = -1;
+        double q    = 0.0;// N/m^2 for tri-entities, N/m for curves, N for vertexint setID   = -1;
+        int setID   = -1;
+        int ltf     = 1; // default load time function
+    };
+    std::vector< LoadRequest >loadRequests;
+
+    int entityTypeFromString(const std::string &s) const;
 
 
-  void computeNodalAreasOnTriEntity(int entType, int entID, std::vector<double> &A) const;
-  //  void computeNodalAreas(std::vector<double> &A) const;
-  
+    void computeNodalAreasOnTriEntity(int entType, int entID, std::vector< double > &A) const;
+    //  void computeNodalAreas(std::vector<double> &A) const;
+
     int giveNumber() { return this->number; }
 
-  void writeLiveLoads(std::ostream &out, int &bcID);
+    void writeLiveLoads(std::ostream &out, int &bcID);
 
-  void prepareBCSets();
+    void prepareBCSets();
 
-  void writeBCRecords(std::ostream &out, int &bcID) const;
+    void writeBCRecords(std::ostream &out, int &bcID) const;
 
-  void writeGeneratedSets(std::ostream &out) const;
-  
+    void writeGeneratedSets(std::ostream &out) const;
+
     double giveTol() { return this->TOL; }
 
     void setNumber(int nn) { this->number = nn; }
@@ -469,24 +470,24 @@ bool isConverterDirective(const std::string &t) const
     int instanciateYourself(ConverterDataReader *dr, const char nodeFileName[], const char delaunayFileName[], const char voronoiFileName[]);
 
 
-bool readT3d(const std::string &fn,
-                   std::vector<Node> &nodes,
-	     std::vector<Tri> &tris,
-	     std::vector<Tet> &tets);
-  
-void buildEdges(const std::vector<Tri> &tris,
-		const std::vector<Tet> &tets,
-		std::vector<Edge> &edges);
+    bool readT3d(const std::string &fn,
+                 std::vector< Node > &nodes,
+                 std::vector< Tri > &tris,
+                 std::vector< Tet > &tets);
+
+    void buildEdges(const std::vector< Tri > &tris,
+                    const std::vector< Tet > &tets,
+                    std::vector< Edge > &edges);
 
 
-  void writeT3dNodesOofem(std::ostream &out);
+    void writeT3dNodesOofem(std::ostream &out);
 
-  void writeT3dElemsOofem(std::ostream &out);
+    void writeT3dElemsOofem(std::ostream &out);
 
-  
-  int instanciateYourselfFromT3d(const std::string &t3dFileName, const std::string &controlFileName);
+    //Main functions which converts T3D meshes into lattices
+    int instanciateYourselfFromT3d(const std::string &t3dFileName, const std::string &controlFileName);
 
-  double ran1(long *idum);
+    double ran1(long *idum);
 
     /// Returns number of dof managers in grid.
     int                giveNumberOfVertices() { return converter::size1(vertexList); }
@@ -513,9 +514,9 @@ void buildEdges(const std::vector<Tri> &tris,
     int                giveNumberOfReinforcementNode() { return converter::size1(reinforcementNodeList); }
     int                giveNumberOfInterNodes() { return converter::size1(interNodeList); }
 
-    int                giveNumberOfFibres() { return converter::size1(fibreList); }
+    int giveNumberOfFibres() { return converter::size1(fibreList); }
 
-    int                giveNumberOfDelaunayTetras() {  return converter::size1(delaunayTetraList); }
+    int giveNumberOfDelaunayTetras() {  return converter::size1(delaunayTetraList); }
 
 
     void resizeDelaunayVertices(int _newSize);

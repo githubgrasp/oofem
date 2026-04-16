@@ -89,7 +89,7 @@ public:
 
     double giveI2(GaussPoint *gp) override;
 
-    double giveIp(GaussPoint *gp) override;
+    double giveJ(GaussPoint *gp) override;
 
     double giveShearArea1(GaussPoint *gp) override;
 

@@ -597,28 +597,6 @@ void
   t.beVectorProductOf(normal, s);
   t.normalize();
   
-
-
-
-  /* if ( this->normal.at(1) == 0 ) { */
-  /*       s.at(1) = 0.; */
-  /*       s.at(2) = this->normal.at(3); */
-  /*       s.at(3) = -this->normal.at(2); */
-  /*   } else if ( this->normal.at(2) == 0 ) { */
-  /*       s.at(1) = this->normal.at(3); */
-  /*       s.at(2) = 0.; */
-  /*       s.at(3) = -this->normal.at(1); */
-  /*   } else { */
-  /*       s.at(1) = this->normal.at(2); */
-  /*       s.at(2) = -this->normal.at(1); */
-  /*       s.at(3) = 0.; */
-  /*   } */
-
-  /*   s.normalize(); */
-
-  /*   t.beVectorProductOf(this->normal, s); */
-  /*   t.normalize(); */
-
     //Set up rotation matrix
     FloatMatrix lcs(3, 3);
 
@@ -637,20 +615,7 @@ void
 	  help.at(n) = polygonCoords.at(3 * (k - 1) + n);
         }
 
-	//        test.beProductOf(lcs, help);
-
-	FloatArray x = help;
-	double xn = x.dotProduct(normal);
-
-	// remove normal component
-	FloatArray x_proj = x;
-	FloatArray n_scaled = normal;
-	n_scaled.times(xn);
-	x_proj.subtract(n_scaled);
-
-	// now rotate
-	test.beProductOf(lcs, x_proj);
-
+	test.beProductOf(lcs, help);
 
 	for ( int n = 1; n <= 3; n++ ) {
 	  lpc.at(3 * (k - 1) + n) = test.at(n);
@@ -766,10 +731,76 @@ void
 
     this->Ip = I1 + I2;
 
+if (cs->giveShape() == 2) {
+  // shell-type rectangle given by polygon vertices
+// Use effective rotational/torsional parameter J = b*t^3/6,
+// where t is the physical shell thickness and b is the in-plane tributary width.
+// This preserves shell-like thickness scaling and avoids the non-physical
+// mesh dependence.
 
-    //For now
-    this->shearArea1 = area;
-    this->shearArea2 = area;
+  
+    if (this->numberOfPolygonVertices != 4) {
+        OOFEM_ERROR("Rectangle cross-section must have 4 vertices.");
+    }
+
+    auto edgeLength = [&lpc](int k1, int k2) {
+        double dy = lpc.at(3 * (k2 - 1) + 2) - lpc.at(3 * (k1 - 1) + 2);
+        double dz = lpc.at(3 * (k2 - 1) + 3) - lpc.at(3 * (k1 - 1) + 3);
+        return std::sqrt(dy * dy + dz * dz);
+    };
+
+    const double e1 = edgeLength(1, 2);
+    const double e2 = edgeLength(2, 3);
+    const double e3 = edgeLength(3, 4);
+    const double e4 = edgeLength(4, 1);
+
+    const double rectTol = 1e-6 * (e1 + e2 + e3 + e4);
+    if (std::fabs(e1 - e3) > rectTol || std::fabs(e2 - e4) > rectTol) {
+        OOFEM_ERROR("Shape 2 cross-section is not a rectangle.");
+    }
+
+    const double d1 = 0.5 * (e1 + e3);
+    const double d2 = 0.5 * (e2 + e4);
+    const double t  = this->giveThickness();
+
+    const double thickTol = 1e-6 * (d1 + d2);
+
+    double b = 0.0;
+    double h = 0.0;
+
+    if (std::fabs(d1 - t) < thickTol) {
+        h = d1;
+        b = d2;
+    } else if (std::fabs(d2 - t) < thickTol) {
+        h = d2;
+        b = d1;
+    } else {
+        OOFEM_ERROR("Rectangle cross-section does not match element thickness.");
+    }
+
+    this->J = b * h * h * h / 6.0;
+
+      /* if (b <= 0.0 || h <= 0.0) { */
+      /* 	OOFEM_ERROR("Invalid rectangle dimensions in cross-section."); */
+      /* } */
+      
+      /* if (h > b) { */
+      /*   std::swap(b, h); */
+      /* } */
+      
+      /* const double r = h / b; */
+      /* this->J = (b * h * h * h / 3.0) * (1.0 - 0.63 * r + 0.052 * pow(r, 5)); */
+      
+
+    } else {
+      this->J = this->Ip; // temporary fallback for generic polygons
+    }
+
+    
+
+    //For now    
+    this->shearArea1 = 0.83*area;
+    this->shearArea2 = 0.83*area;
     
     //Rotation around normal axis by angleChange
     FloatMatrix rotationChange(3, 3);
@@ -827,6 +858,52 @@ void
   return;
 }
 
+
+bool
+Lattice3d::giveRectangularSectionDimensions(double &by, double &bz, GaussPoint *gp) const
+{
+    if (this->numberOfPolygonVertices != 4) {
+        return false;
+    }
+
+    FloatArray global(3), local(3);
+    std::vector<std::pair<double,double>> yz;
+    yz.reserve(4);
+
+    for (int k = 1; k <= 4; ++k) {
+        for (int i = 1; i <= 3; ++i) {
+            global.at(i) = this->polygonCoords.at(3 * (k - 1) + i);
+        }
+
+        local.beProductOf(this->localCoordinateSystem, global);
+        yz.emplace_back(local.at(2), local.at(3));
+    }
+
+    auto edgeLength = [&yz](int k1, int k2) {
+        const double dy = yz[k2].first  - yz[k1].first;
+        const double dz = yz[k2].second - yz[k1].second;
+        return std::sqrt(dy * dy + dz * dz);
+    };
+
+    const double e1 = edgeLength(0, 1);
+    const double e2 = edgeLength(1, 2);
+    const double e3 = edgeLength(2, 3);
+    const double e4 = edgeLength(3, 0);
+
+    const double scale = std::max({e1, e2, e3, e4, 1.0});
+    const double tol = 1e-8 * scale;
+
+    if (std::fabs(e1 - e3) > tol || std::fabs(e2 - e4) > tol) {
+        return false;
+    }
+
+    by = 0.5 * (e1 + e3);
+    bz = 0.5 * (e2 + e4);
+
+    return (by > tol && bz > tol);
+}
+
+
 double Lattice3d :: giveI1(GaussPoint *gp) {
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
@@ -842,12 +919,15 @@ double Lattice3d :: giveI2(GaussPoint *gp) {
     return this->I2;
 }
 
-double Lattice3d :: giveIp(GaussPoint *gp) {
+
+double Lattice3d :: giveJ(GaussPoint *gp) {
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
     }
-    return this->Ip;
+    return this->J;
 }
+
+
 
 double Lattice3d :: giveShearArea1(GaussPoint *gp) {
     if ( geometryFlag == 0 ) {

@@ -148,30 +148,16 @@ public:
     int init(bool force = false) override;
   
 
-    int checkNodesWithinBox(const oofem::FloatArray &coords, const double radius, int nodeType);
+    int checkNodesWithinBox(const oofem::FloatArray &coords, const double radius, int nodeType) override;
 
-    /**
-     * Returns container (list) of all grid nodes within given box.
-     * @param NODESet answer containing the list of nodes meeting the criteria
-     * @param coords center of box of interest
-     * @param radius radius of bounding sphere
-     */
-    void giveAllNodesWithinBox(nodeContainerType &nodeList, const oofem::FloatArray &coords, const double radius, int nodeType);
+    void giveAllNodesWithinBox(nodeContainerType &nodeList, const oofem::FloatArray &coords, const double radius, int nodeType) override;
 
 
-
-    /**
-     * Returns container (list) of nodes within given box and given root cell.
-     * @param elemSet answer containing the list of nodes meeting the criteria
-     * @param currentCell the starting cell to be transversed
-     * @param coords center of box of interest
-     * @param radius radius of bounding sphere
-     */
     void giveNodesWithinBox(nodeContainerType &nodeList, oofemOctantRec *currentCell,
                             const oofem::FloatArray &coords, const double radius, int nodeType);
 
 
-    void insertSequentialNode(int nodeNum, const oofem::FloatArray &coords, int nodeType);
+    void insertSequentialNode(int nodeNum, const oofem::FloatArray &coords, int nodeType) override;
 
     /// Returns class name of the receiver.
     const char *giveClassName() const override { return "OctreeGridLocalizer"; }

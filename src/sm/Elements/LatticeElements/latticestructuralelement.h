@@ -78,7 +78,13 @@ public:
   virtual void convertTangentToResultantTangent3d(FloatMatrix &DS, const FloatMatrix &Dsig, GaussPoint *gp);
 
   virtual void convertTangentToResultantTangent2d(FloatMatrix &DS, const FloatMatrix &Dsig, GaussPoint *gp);
-    
+
+
+  virtual bool giveRectangularSectionDimensions(double &by, double &bz, GaussPoint *gp) const
+  {
+    return false;
+  }
+  
     /**
      * Returns the element length
      * @return Element length.
@@ -223,11 +229,9 @@ public:
     virtual double giveI2(GaussPoint *gp) { return 0.; }
 
     /**
-     * Gives the polar moment
+     * Gives the torsional Constant
      */
-    virtual double giveIp(GaussPoint *gp) { return 0.; }
-  
-
+    virtual double giveJ(GaussPoint *gp) { return 0.; }
   
     // /**
     //  * Gives the y second moment of area

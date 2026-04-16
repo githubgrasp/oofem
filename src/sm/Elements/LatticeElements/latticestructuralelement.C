@@ -57,12 +57,12 @@ void LatticeStructuralElement :: giveSectionScaleFactors3d(FloatArray &q, GaussP
     double Aq2 = this->giveShearArea2(gp);
     double I1 = this->giveI1(gp);
     double I2 = this->giveI2(gp);
-    double Ip = this->giveIp(gp);
+    double J = this->giveJ(gp);
 
     q.at(1) = A;
     q.at(2) = Aq1;
     q.at(3) = Aq2;
-    q.at(4) = Ip;
+    q.at(4) = J;
     q.at(5) = I1;
     q.at(6) = I2;
 }

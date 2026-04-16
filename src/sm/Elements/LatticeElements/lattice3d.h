@@ -58,7 +58,7 @@ class Lattice3d : public LatticeStructuralElement
 protected:
     double minLength;
     double kappa, length;
-    double I1, I2, Ip;
+  double I1, I2, Ip, J;
      double shearArea1, shearArea2;
     FloatArray polygonCoords;
     int numberOfPolygonVertices;
@@ -82,6 +82,8 @@ public:
 
     double giveLength() override;
 
+   bool giveRectangularSectionDimensions(double &by, double &bz, GaussPoint *gp) const override;
+  
     double giveNormalStress() override;
 
     double giveArea(GaussPoint *gp) override;
@@ -98,6 +100,8 @@ public:
 
     double giveCrackWidth() override;
 
+  double giveThickness(){return thickness;}
+  
     void givePlasticStrain(FloatArray &plas) override;
     void giveOldPlasticStrain(FloatArray &plas) override;
 
@@ -124,7 +128,7 @@ public:
 
     void giveGpCoordinates(FloatArray &answer) override;
 
-  double giveIp(GaussPoint *gp) override;
+  double giveJ(GaussPoint *gp) override;
   double giveI1(GaussPoint *gp) override;
   double giveI2(GaussPoint *gp) override;
     double giveShearArea1(GaussPoint *gp) override;

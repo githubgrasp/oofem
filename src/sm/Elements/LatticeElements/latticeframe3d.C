@@ -279,7 +279,7 @@ namespace oofem {
         return this->giveCrossSection()->give(CS_InertiaMomentZ, lc, this);
     }
 
-    double LatticeFrame3d::giveIp(GaussPoint *gp) {
+    double LatticeFrame3d::giveJ(GaussPoint *gp) {
         FloatArray lc(1);
         return this->giveCrossSection()->give(CS_TorsionConstantX, lc, this);
     }

@@ -55,7 +55,7 @@ public:
     Prism *ofType();
 
     /// Returns class name of the receiver.
-    const char *giveClassName() const { return "Prism"; }
+    const char *giveClassName() const override { return "Prism"; }
 
     void initializeFrom(ConverterInputRecord &ir) override;
 

@@ -112,7 +112,7 @@ public:
 
 
     /// Returns class name of the receiver.
-    const char *giveClassName() const { return "Line"; }
+    const char *giveClassName() const override { return "Line"; }
 
     /// prints receiver state on stdout. Usefull for debuging.
     void         printYourself();

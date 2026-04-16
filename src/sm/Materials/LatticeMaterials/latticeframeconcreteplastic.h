@@ -36,7 +36,7 @@
 #define latticeframeconcreteplastic_h
 
 
-#include "latticestructuralmaterial.h"
+#include "latticeframeelastic.h"
 #include "cltypes.h"
 #include "randommaterialext.h"
 #include "strainvector.h"
@@ -68,6 +68,9 @@
 #define _IFT_LatticeFrameConcretePlastic_wf "wf"
 #define _IFT_LatticeFrameConcretePlastic_wftwo "wftwo"
 #define _IFT_LatticeFrameConcretePlastic_qzero "qzero"
+#define _IFT_LatticeFrameConcretePlastic_capmode "capmode"
+#define _IFT_LatticeFrameConcretePlastic_sigmay "sigmay"
+
 //@}
 
 namespace oofem {
@@ -139,19 +142,31 @@ public:
 /**
  * This class implements a concrete plasticity model for concrete for frame elements.
  */
-class LatticeFrameConcretePlastic : public LatticeStructuralMaterial
+class LatticeFrameConcretePlastic : public LatticeFrameElastic
 
 {
 protected:
 
 
+  struct CapacitySet {
+    double nx0  = 0.0;
+    double vy0  = 0.0;
+    double vz0  = 0.0;
+    double mx0  = 0.0;
+    double my0  = 0.0;
+    double mz0  = 0.0;
 
-    ///Normal modulus
-    double e;
+    double nx01 = 0.0;
+    double vy01 = 0.0;
+    double vz01 = 0.0;
+    double mx01 = 0.0;
+    double my01 = 0.0;
+    double mz01 = 0.0;
+};
 
-    ///Ratio of shear and normal modulus
-    double nu;
-
+   
+    int capacityMode = 0;
+  
     ///maximum axial force in x-axis x-axis nx0
     double nx0;
 
@@ -208,13 +223,16 @@ protected:
     ///qzero
     double qzero;
 
+    double sigmay = 0.0;
+
+  bool autoCapacitiesFromSigmay = false;
 
     enum LatticeFrameConcretePlastic_ReturnResult { RR_NotConverged, RR_Converged, RR_Unknown, RR_known };
 
     double initialYieldStress = 0.;
 
 public:
-    LatticeFrameConcretePlastic(int n, Domain *d) : LatticeStructuralMaterial(n, d) { };
+    LatticeFrameConcretePlastic(int n, Domain *d) : LatticeFrameElastic(n, d) { };
 
     FloatArrayF< 6 >computeFVector(const FloatArrayF< 6 > &stress, const FloatArrayF< 6 > &k, GaussPoint *gp, TimeStep *tStep) const;
 
@@ -247,6 +265,10 @@ public:
 
     void initializeFrom(InputRecord &ir) override;
 
+  CapacitySet giveEffectiveCapacities(GaussPoint *gp, TimeStep *tStep) const;
+  
+  CapacitySet giveBaseCapacitiesFromSection(GaussPoint *gp) const;
+  
     bool isCharacteristicMtrxSymmetric(MatResponseMode rMode) const override { return false; }
 
     Interface *giveInterface(InterfaceType) override;

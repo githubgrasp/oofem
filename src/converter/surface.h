@@ -54,7 +54,7 @@ public:
 
     // miscellaneous
     /// Returns class name of the receiver.
-    const char *giveClassName() const { return "Surface"; }
+    const char *giveClassName() const override { return "Surface"; }
 
     void initializeFrom(ConverterInputRecord &ir);
 

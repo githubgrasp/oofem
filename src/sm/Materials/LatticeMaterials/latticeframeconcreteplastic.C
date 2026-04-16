@@ -42,6 +42,7 @@
 #include "floatarray.h"
 #include "floatarrayf.h"
 #include "CrossSections/structuralcrosssection.h"
+#include "CrossSections/latticecrosssection.h"
 #include "engngm.h"
 #include "mathfem.h"
 #include "Elements/LatticeElements/latticestructuralelement.h"
@@ -68,61 +69,246 @@ namespace oofem {
 
         // Poisson's ratio of the material that the beam element is made of
         IR_GIVE_FIELD(ir, this->nu, _IFT_LatticeFrameConcretePlastic_n); // Macro
+	
+	// Optional automatic capacity definition from yield stress
+	this->sigmay = 0.0;
+	IR_GIVE_OPTIONAL_FIELD(ir, this->sigmay, _IFT_LatticeFrameConcretePlastic_sigmay);
+	
+	this->autoCapacitiesFromSigmay = (this->sigmay > 0.0);
+	
 
+    if (!this->autoCapacitiesFromSigmay) {
+	
         // Nx0
         IR_GIVE_FIELD(ir, this->nx0, _IFT_LatticeFrameConcretePlastic_nx0); // Macro
 
         // Nx01
-        IR_GIVE_FIELD(ir, this->nx01, _IFT_LatticeFrameConcretePlastic_nx01); // Macro
+	this->nx01 = nx0;
+        IR_GIVE_OPTIONAL_FIELD(ir, this->nx01, _IFT_LatticeFrameConcretePlastic_nx01); // Macro
 
         // vy0
         IR_GIVE_FIELD(ir, this->vy0, _IFT_LatticeFrameConcretePlastic_vy0); // Macro
 
         // vy01
-        IR_GIVE_FIELD(ir, this->vy01, _IFT_LatticeFrameConcretePlastic_vy01); // Macro
+	this->vy01 = vy0;
+        IR_GIVE_OPTIONAL_FIELD(ir, this->vy01, _IFT_LatticeFrameConcretePlastic_vy01); // Macro
 
         // vz0
         IR_GIVE_FIELD(ir, this->vz0, _IFT_LatticeFrameConcretePlastic_vz0); // Macro
 
         // vz01
-        IR_GIVE_FIELD(ir, this->vz01, _IFT_LatticeFrameConcretePlastic_vz01); // Macro
+	this->vz01 = vz0;
+        IR_GIVE_OPTIONAL_FIELD(ir, this->vz01, _IFT_LatticeFrameConcretePlastic_vz01); // Macro
 
         // Mx0
         IR_GIVE_FIELD(ir, this->mx0, _IFT_LatticeFrameConcretePlastic_mx0); // Macro
 
         // Mx01
-        IR_GIVE_FIELD(ir, this->mx01, _IFT_LatticeFrameConcretePlastic_mx01); // Macro
+	this->mx01 = mx0;
+        IR_GIVE_OPTIONAL_FIELD(ir, this->mx01, _IFT_LatticeFrameConcretePlastic_mx01); // Macro
 
         // My0
         IR_GIVE_FIELD(ir, this->my0, _IFT_LatticeFrameConcretePlastic_my0); // Macro
 
         // My01
-        IR_GIVE_FIELD(ir, this->my01, _IFT_LatticeFrameConcretePlastic_my01); // Macro
+	this->my01 = my0;
+        IR_GIVE_OPTIONAL_FIELD(ir, this->my01, _IFT_LatticeFrameConcretePlastic_my01); // Macro
 
         // Mz0
         IR_GIVE_FIELD(ir, this->mz0, _IFT_LatticeFrameConcretePlastic_mz0); // Macro
 
         // Mz01
-        IR_GIVE_FIELD(ir, this->mz01, _IFT_LatticeFrameConcretePlastic_mz01); // Macro
+	this->mz01 = mz0;
+        IR_GIVE_OPTIONAL_FIELD(ir, this->mz01, _IFT_LatticeFrameConcretePlastic_mz01); // Macro
 
-        yieldTol = 1.e-6;
-        IR_GIVE_FIELD(ir, this->yieldTol, _IFT_LatticeFrameConcretePlastic_tol); // Macro
+    }
+    else {
+              // placeholders; actual values computed per element in giveEffectiveCapacities()
+        this->nx0 = 0.0;
+	this->vy0 = 0.0;
+	this->vz0 = 0.0;
+        this->mx0 = 0.0;
+        this->my0 = 0.0;
+        this->mz0 = 0.0;
+	this->nx01 = 0.0;
+	this->vy01 = 0.0;
+	this->vz01 = 0.0;
+        this->mx01 = 0.0;
+        this->my01 = 0.0;
+        this->mz01 = 0.0;
+    }
 
+    yieldTol = 1.e-6;
+    IR_GIVE_OPTIONAL_FIELD(ir, this->yieldTol, _IFT_LatticeFrameConcretePlastic_tol); // Macro
+    
         this->newtonIter = 100;
-        IR_GIVE_FIELD(ir, this->newtonIter, _IFT_LatticeFrameConcretePlastic_iter); // Macro
+        IR_GIVE_OPTIONAL_FIELD(ir, this->newtonIter, _IFT_LatticeFrameConcretePlastic_iter); // Macro
 
         numberOfSubIncrements = 10;
-        IR_GIVE_FIELD(ir, this->numberOfSubIncrements, _IFT_LatticeFrameConcretePlastic_sub); // Macro
+        IR_GIVE_OPTIONAL_FIELD(ir, this->numberOfSubIncrements, _IFT_LatticeFrameConcretePlastic_sub); // Macro
 
-        this->plasticFlag = 1;
+        this->plasticFlag = 0;
         IR_GIVE_OPTIONAL_FIELD(ir, plasticFlag, _IFT_LatticeFrameConcretePlastic_plastic); // Macro
 
         // wu
-        IR_GIVE_OPTIONAL_FIELD(ir, this->wu, _IFT_LatticeFrameConcretePlastic_wu);
+	this->wu = 0.;
+	IR_GIVE_OPTIONAL_FIELD(ir, this->wu, _IFT_LatticeFrameConcretePlastic_wu);
 
         // wf
-        IR_GIVE_FIELD(ir, wf, _IFT_LatticeFrameConcretePlastic_wf);
+	this->wf = 0;
+        IR_GIVE_OPTIONAL_FIELD(ir, wf, _IFT_LatticeFrameConcretePlastic_wf);
+
+	capacityMode = 0;
+	IR_GIVE_OPTIONAL_FIELD(ir, capacityMode, _IFT_LatticeFrameConcretePlastic_capmode);
+	if (capacityMode != 0 && capacityMode != 1) {
+	  throw ValueInputException(ir, _IFT_LatticeFrameConcretePlastic_capmode,
+				    "capmode must be 0 (resultant, default) or 1 (per-width).");
+	}
+
     }
+
+
+
+LatticeFrameConcretePlastic::CapacitySet
+LatticeFrameConcretePlastic::giveBaseCapacitiesFromSection(GaussPoint *gp) const
+{
+    LatticeFrameConcretePlastic::CapacitySet cap;
+
+    if (!this->autoCapacitiesFromSigmay) {
+        cap.nx0  = this->nx0;
+        cap.vy0  = this->vy0;
+        cap.vz0  = this->vz0;
+        cap.mx0  = this->mx0;
+        cap.my0  = this->my0;
+        cap.mz0  = this->mz0;
+
+        cap.nx01 = this->nx01;
+        cap.vy01 = this->vy01;
+        cap.vz01 = this->vz01;
+        cap.mx01 = this->mx01;
+        cap.my01 = this->my01;
+        cap.mz01 = this->mz01;
+
+        return cap;
+    }
+
+    auto *elem = static_cast<LatticeStructuralElement *>(gp->giveElement());
+    if (!elem) {
+        OOFEM_ERROR("Expected LatticeStructuralElement.");
+    }
+
+    const double A  = elem->giveArea(gp);
+    const double I1 = elem->giveI1(gp);
+    const double I2 = elem->giveI2(gp);
+    const double J = elem->giveJ(gp);
+
+    auto *cs = dynamic_cast<LatticeCrossSection *>(elem->giveCrossSection());
+    if (!cs) {
+        OOFEM_ERROR("Expected LatticeCrossSection.");
+    }
+
+    // ------------------ circular ------------------
+    if (cs->giveShape() == 1) {
+        const double r = cs->giveRadius();
+        if (r <= 0.0) {
+            OOFEM_ERROR("Non-positive radius.");
+        }
+
+        cap.nx0 = this->sigmay * A;
+
+        cap.vy0 = this->sigmay * A;
+        cap.vz0 = this->sigmay * A;
+
+        cap.mx0 = this->sigmay * J / r;
+
+        const double mpl = this->sigmay * (4.0 * pow(r, 3.0) / 3.0);
+        cap.my0 = mpl;
+        cap.mz0 = mpl;
+
+        // symmetric
+        cap.nx01 = cap.nx0;
+        cap.vy01 = cap.vy0;
+        cap.vz01 = cap.vz0;
+        cap.mx01 = cap.mx0;
+        cap.my01 = cap.my0;
+        cap.mz01 = cap.mz0;
+
+        return cap;
+    }
+
+    // ------------------ rectangle ------------------
+    double by = 0.0, bz = 0.0;
+    if (elem->giveRectangularSectionDimensions(by, bz, gp)) {
+
+        const double Arect = by * bz;
+
+        cap.nx0 = this->sigmay * Arect;
+
+        cap.vy0 = this->sigmay * Arect;
+        cap.vz0 = this->sigmay * Arect;
+
+        const double req = 0.5 * std::max(by, bz);
+        cap.mx0 = this->sigmay * J / req;
+
+        cap.my0 = this->sigmay * by * bz * bz / 4.0;
+        cap.mz0 = this->sigmay * bz * by * by / 4.0;
+
+        // symmetric
+        cap.nx01 = cap.nx0;
+        cap.vy01 = cap.vy0;
+        cap.vz01 = cap.vz0;
+        cap.mx01 = cap.mx0;
+        cap.my01 = cap.my0;
+        cap.mz01 = cap.mz0;
+
+        return cap;
+    }
+
+    OOFEM_ERROR("Unsupported section for automatic capacities.");
+}
+
+
+ LatticeFrameConcretePlastic::CapacitySet
+LatticeFrameConcretePlastic::giveEffectiveCapacities(GaussPoint *gp,
+                                                     TimeStep *tStep) const
+{
+        LatticeFrameConcretePlastic::CapacitySet base = giveBaseCapacitiesFromSection(gp);
+        LatticeFrameConcretePlastic::CapacitySet eff;
+
+    double reductionFactor = 1.0;
+    if (this->tCrit != 0.0) {
+        reductionFactor = computeTemperatureReductionFactor(gp, tStep, VM_Total);
+    }
+
+    double widthFactor = 1.0;
+    if (this->capacityMode == 1) {
+        widthFactor = static_cast<LatticeStructuralElement *>(gp->giveElement())->giveTributaryWidth(gp);
+        if (widthFactor <= 0.0) {
+            OOFEM_ERROR("Non-positive tributary width.");
+        }
+    }
+
+    const double f = reductionFactor * widthFactor;
+
+    eff.nx0  = f * base.nx0;
+    eff.vy0  = f * base.vy0;
+    eff.vz0  = f * base.vz0;
+    eff.mx0  = f * base.mx0;
+    eff.my0  = f * base.my0;
+    eff.mz0  = f * base.mz0;
+
+    eff.nx01 = f * base.nx01;
+    eff.vy01 = f * base.vy01;
+    eff.vz01 = f * base.vz01;
+    eff.mx01 = f * base.mx01;
+    eff.my01 = f * base.my01;
+    eff.mz01 = f * base.mz01;
+
+    return eff;
+}
+
+ 
+   
     MaterialStatus *
     LatticeFrameConcretePlastic::CreateStatus(GaussPoint *gp) const
     {
@@ -162,180 +348,126 @@ namespace oofem {
         }
     }
 
-    double
-    LatticeFrameConcretePlastic::computeYieldValue(const FloatArrayF < 6 > & stress, const FloatArrayF < 6 > & k,
-                                                   GaussPoint *gp,
-                                                   TimeStep *tStep) const
-    {
-        double yieldValue = 0.;
-        double nx         = stress.at(1);
-        double vy         = stress.at(2);
-        double vz         = stress.at(3);
-        double mx         = stress.at(4);
-        double my         = stress.at(5);
-        double mz         = stress.at(6);
 
-        double ax;
-        if ( k.at(1) == 1 ) {
-            ax = nx0;
-        } else {
-            ax = nx01;
-        }
-        double ay;
-        if ( k.at(2) == 1 ) {
-            ay = vy0;
-        } else {
-            ay = vy01;
-        }
-        double az;
-        if ( k.at(3) == 1 ) {
-            az = vz0;
-        } else {
-            az = vz01;
-        }
-        double bx;
+double
+LatticeFrameConcretePlastic::computeYieldValue(const FloatArrayF<6> &stress,
+                                               const FloatArrayF<6> &k,
+                                               GaussPoint *gp,
+                                               TimeStep *tStep) const
+{
+    const double nx = stress.at(1);
+    const double vy = stress.at(2);
+    const double vz = stress.at(3);
+    const double mx = stress.at(4);
+    const double my = stress.at(5);
+    const double mz = stress.at(6);
 
-        if ( k.at(4) == 1 ) {
-            bx = mx0;
-        } else {
-            bx = mx01;
-        }
-        double by;
+        LatticeFrameConcretePlastic::CapacitySet cap = this->giveEffectiveCapacities(gp, tStep);
 
-        if ( k.at(5) == 1 ) {
-            by = my0;
-        } else {
-            by = my01;
-        }
+    const double ax = (k.at(1) == 1.0) ? cap.nx0  : cap.nx01;
+    const double ay = (k.at(2) == 1.0) ? cap.vy0  : cap.vy01;
+    const double az = (k.at(3) == 1.0) ? cap.vz0  : cap.vz01;
+    const double bx = (k.at(4) == 1.0) ? cap.mx0  : cap.mx01;
+    const double by = (k.at(5) == 1.0) ? cap.my0  : cap.my01;
+    const double bz = (k.at(6) == 1.0) ? cap.mz0  : cap.mz01;
 
-        double bz;
-
-        if ( k.at(6) == 1 ) {
-            bz = mz0;
-        } else {
-            bz = mz01;
-        }
-
-
-
-        yieldValue = pow(nx / ax, 2.) + pow(vy / ay, 2.) + pow(vz / az, 2.) + pow(mx / bx, 2.) + pow(my / by, 2.) + pow(mz / bz, 2.) - 1.;
-
-
-        return yieldValue;
+    if (ax <= 0.0 || ay <= 0.0 || az <= 0.0 || bx <= 0.0 || by <= 0.0 || bz <= 0.0) {
+        OOFEM_ERROR("Non-positive effective capacity in computeYieldValue.");
     }
 
-    FloatArrayF < 6 >
-    LatticeFrameConcretePlastic::computeFVector(const FloatArrayF < 6 > & stress, const FloatArrayF < 6 > & k,
-                                                GaussPoint * gp,
-                                                TimeStep * tStep) const
-    {
-        double nx = stress.at(1);
-        double vy = stress.at(2);
-        double vz = stress.at(3);
-        double mx = stress.at(4);
-        double my = stress.at(5);
-        double mz = stress.at(6);
+    const double yieldValue =
+        pow(nx / ax, 2.0) +
+        pow(vy / ay, 2.0) +
+        pow(vz / az, 2.0) +
+        pow(mx / bx, 2.0) +
+        pow(my / by, 2.0) +
+        pow(mz / bz, 2.0) - 1.0;
 
-        double ax = 0.;
-        if ( k.at(1) == 1 ) {
-            ax = nx0;
-        } else {
-            ax = nx01;
-        }
+    return yieldValue;
+}
 
-        double ay = 0.;
-        if ( k.at(2) == 1 ) {
-            ay = vy0;
-        } else {
-            ay = vy01;
-        }
 
-        double az = 0.;
-        if ( k.at(3) == 1 ) {
-            az = vz0;
-        } else {
-            az = vz01;
-        }
+FloatArrayF<6>
+LatticeFrameConcretePlastic::computeFVector(const FloatArrayF<6> &stress,
+                                            const FloatArrayF<6> &k,
+                                            GaussPoint *gp,
+                                            TimeStep *tStep) const
+{
+    const double nx = stress.at(1);
+    const double vy = stress.at(2);
+    const double vz = stress.at(3);
+    const double mx = stress.at(4);
+    const double my = stress.at(5);
+    const double mz = stress.at(6);
 
-        double bx = 0.;
-        if ( k.at(4) == 1 ) {
-            bx = mx0;
-        } else {
-            bx = mx01;
-        }
+        LatticeFrameConcretePlastic::CapacitySet cap = this->giveEffectiveCapacities(gp, tStep);
 
-        double by = 0.;
-        if ( k.at(5) == 1 ) {
-            by = my0;
-        } else {
-            by = my01;
-        }
+    const double ax = (k.at(1) == 1.0) ? cap.nx0  : cap.nx01;
+    const double ay = (k.at(2) == 1.0) ? cap.vy0  : cap.vy01;
+    const double az = (k.at(3) == 1.0) ? cap.vz0  : cap.vz01;
+    const double bx = (k.at(4) == 1.0) ? cap.mx0  : cap.mx01;
+    const double by = (k.at(5) == 1.0) ? cap.my0  : cap.my01;
+    const double bz = (k.at(6) == 1.0) ? cap.mz0  : cap.mz01;
 
-        double bz = 0.;
-        if ( k.at(6) == 1 ) {
-            bz = mz0;
-        } else {
-            bz = mz01;
-        }
-
-        FloatArrayF < 6 > f;
-        f.at(1) = 2. * nx / pow(ax, 2.);
-        f.at(2) = 2. * vy / pow(ay, 2.);
-        f.at(3) = 2. * vz / pow(az, 2.);
-        f.at(4) = 2. * mx / pow(bx, 2.);
-        f.at(5) = 2. * my / pow(by, 2.);
-        f.at(6) = 2. * mz / pow(bz, 2.);
-
-        return f;
+    if (ax <= 0.0 || ay <= 0.0 || az <= 0.0 ||
+        bx <= 0.0 || by <= 0.0 || bz <= 0.0) {
+        OOFEM_ERROR("Non-positive effective capacity in computeFVector.");
     }
 
-    FloatMatrixF < 6, 6 >
-    LatticeFrameConcretePlastic::computeDMMatrix(const FloatArrayF < 6 > & stress, const FloatArrayF < 6 > & k, GaussPoint * gp, TimeStep * tStep) const
-    {
-        double ax = nx01;
-        if ( k.at(1) == 1 ) {
-            ax = nx0;
-        }
+    FloatArrayF<6> f;
 
-        double ay = vy01;
-        ;
-        if ( k.at(2) == 1 ) {
-            ay = vy0;
-        }
+    const double ax2 = ax * ax;
+    const double ay2 = ay * ay;
+    const double az2 = az * az;
+    const double bx2 = bx * bx;
+    const double by2 = by * by;
+    const double bz2 = bz * bz;
 
-        double az = vz01;
-        if ( k.at(3) == 1 ) {
-            az = vz0;
-        }
+    f.at(1) = 2.0 * nx / ax2;
+    f.at(2) = 2.0 * vy / ay2;
+    f.at(3) = 2.0 * vz / az2;
+    f.at(4) = 2.0 * mx / bx2;
+    f.at(5) = 2.0 * my / by2;
+    f.at(6) = 2.0 * mz / bz2;
 
-        double bx = mx01;
-        if ( k.at(4) == 1 ) {
-            bx = mx0;
-        }
+    return f;
+}
+    
 
-        double by = my01;
-        if ( k.at(5) == 1 ) {
-            by = my0;
-        }
+FloatMatrixF<6,6>
+LatticeFrameConcretePlastic::computeDMMatrix(const FloatArrayF<6> &stress,
+                                             const FloatArrayF<6> &k,
+                                             GaussPoint *gp,
+                                             TimeStep *tStep) const
+{
+        LatticeFrameConcretePlastic::CapacitySet cap = this->giveEffectiveCapacities(gp, tStep);
 
-        double bz = mz01;
-        ;
-        if ( k.at(6) == 1 ) {
-            bz = mz0;
-        }
+    const double ax = (k.at(1) == 1.0) ? cap.nx0  : cap.nx01;
+    const double ay = (k.at(2) == 1.0) ? cap.vy0  : cap.vy01;
+    const double az = (k.at(3) == 1.0) ? cap.vz0  : cap.vz01;
+    const double bx = (k.at(4) == 1.0) ? cap.mx0  : cap.mx01;
+    const double by = (k.at(5) == 1.0) ? cap.my0  : cap.my01;
+    const double bz = (k.at(6) == 1.0) ? cap.mz0  : cap.mz01;
 
-        FloatArrayF < 6 > dm = {
-            2. / pow(ax, 2.),
-            2. / pow(ay, 2.),
-            2. / pow(az, 2.),
-            2. / pow(bx, 2.),
-            2. / pow(by, 2.),
-            2. / pow(bz, 2.)
-        };
-
-        return diag(dm);
+    if (ax <= 0.0 || ay <= 0.0 || az <= 0.0 ||
+        bx <= 0.0 || by <= 0.0 || bz <= 0.0) {
+        OOFEM_ERROR("Non-positive effective capacity in computeDMMatrix.");
     }
 
+    const FloatArrayF<6> dm = {
+        2.0 / (ax * ax),
+        2.0 / (ay * ay),
+        2.0 / (az * az),
+        2.0 / (bx * bx),
+        2.0 / (by * by),
+        2.0 / (bz * bz)
+    };
+
+    return diag(dm);
+}
+
+
+    
     FloatArrayF < 6 >
     LatticeFrameConcretePlastic::giveThermalDilatationVector(GaussPoint * gp, TimeStep * tStep) const
     // returns a FloatArray(6) of initial strain vector caused by unit temperature in direction of gp (element) local axes
@@ -440,7 +572,7 @@ namespace oofem {
         const double area       = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveArea(gp);
         const double shearareay = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveShearArea1(gp);
         const double shearareaz = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveShearArea2(gp);
-        const double ik         = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveIp(gp);
+        const double ik         = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveJ(gp);
         const double iy         = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveI1(gp);
         const double iz         = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveI2(gp);
 
@@ -552,145 +684,133 @@ namespace oofem {
     {
         return nullptr;
     }
-    //
+
+
     void
-    LatticeFrameConcretePlastic::performRegularReturn(FloatArrayF < 6 > & stress, LatticeFrameConcretePlastic_ReturnResult, const FloatArrayF < 6 > & k,
-                                                      double yieldValue,
-                                                      GaussPoint *gp,
-                                                      TimeStep *tStep) const
-    {
-        // Use material specific status
-        auto status = static_cast < LatticeFrameConcretePlasticStatus * > ( this->giveStatus(gp) );
+      LatticeFrameConcretePlastic::performRegularReturn(FloatArrayF<6> &stress,
+							LatticeFrameConcretePlastic_ReturnResult,
+							const FloatArrayF<6> &k,
+							double yieldValue,
+							GaussPoint *gp,
+							TimeStep *tStep) const
+{
+    // Use material specific status
+    auto status = static_cast<LatticeFrameConcretePlasticStatus *>( this->giveStatus(gp) );
 
-        double deltaLambda = 0.;
+    double deltaLambda = 0.0;
 
-        auto trialStress = stress;
-        auto tempStress  = trialStress;
+    auto trialStress = stress;
+    auto tempStress  = trialStress;
 
-        // initialise unknowns
-        FloatArrayF < 7 > unknowns;
-        unknowns.at(1) = trialStress.at(1);
-        unknowns.at(2) = trialStress.at(2);
-        unknowns.at(3) = trialStress.at(3);
-        unknowns.at(4) = trialStress.at(4);
-        unknowns.at(5) = trialStress.at(5);
-        unknowns.at(6) = trialStress.at(6);
-        unknowns.at(7) = 0.;
+    // initialise unknowns
+    FloatArrayF<7> unknowns;
+    unknowns.at(1) = trialStress.at(1);
+    unknowns.at(2) = trialStress.at(2);
+    unknowns.at(3) = trialStress.at(3);
+    unknowns.at(4) = trialStress.at(4);
+    unknowns.at(5) = trialStress.at(5);
+    unknowns.at(6) = trialStress.at(6);
+    unknowns.at(7) = 0.0;
 
-        yieldValue = computeYieldValue(tempStress, k, gp, tStep);
+    yieldValue = computeYieldValue(tempStress, k, gp, tStep);
 
-        // initiate residuals
-        FloatArrayF < 7 > residuals;
-        residuals.at(7)      = yieldValue;
-        double normOfResiduals = 1.; // just to get into the loop
-        int iterationCount     = 0;
-        while ( normOfResiduals > yieldTol ) {
-            iterationCount++;
-            if ( iterationCount == newtonIter ) {
-                status->letTempReturnResultBe(LatticeFrameConcretePlasticStatus::RR_NotConverged);
-                return;
-            }
+    // initiate residuals
+    FloatArrayF<7> residuals;
+    residuals.at(7) = yieldValue;
 
+    double normOfResiduals = 1.0; // just to get into the loop
+    int iterationCount = 0;
 
-            double ax;
-            if ( k.at(1) == 1 ) {
-                ax = nx0;
-            } else {
-                ax = nx01;
-            }
-            double ay;
-            if ( k.at(2) == 1 ) {
-                ay = vy0;
-            } else {
-                ay = vy01;
-            }
-            double az;
-            if ( k.at(3) == 1 ) {
-                az = vz0;
-            } else {
-                az = vz01;
-            }
-            double bx;
-
-            if ( k.at(4) == 1 ) {
-                bx = mx0;
-            } else {
-                bx = mx01;
-            }
-            double by;
-
-            if ( k.at(5) == 1 ) {
-                by = my0;
-            } else {
-                by = my01;
-            }
-
-            double bz;
-
-            if ( k.at(6) == 1 ) {
-                bz = mz0;
-            } else {
-                bz = mz01;
-            }
-
-            FloatArrayF < 7 > residualsNorm;
-            residualsNorm.at(1) = residuals.at(1) / ax;
-            residualsNorm.at(2) = residuals.at(2) / ay;
-            residualsNorm.at(3) = residuals.at(3) / az;
-            residualsNorm.at(4) = residuals.at(4) / bx;
-            residualsNorm.at(5) = residuals.at(5) / by;
-            residualsNorm.at(6) = residuals.at(6) / bz;
-            residualsNorm.at(7) = residuals.at(7);
-            normOfResiduals       = norm(residualsNorm);
-            //            printf( "normOfResiduals=%e\n", normOfResiduals );
-            if ( std::isnan(normOfResiduals) ) {
-                status->letTempReturnResultBe(LatticeFrameConcretePlasticStatus::RR_NotConverged);
-                return;
-            }
-
-            if ( normOfResiduals > yieldTol ) {
-                auto jacobian = computeJacobian(tempStress, k, deltaLambda, gp, tStep);
-
-                auto solution = solve_check(jacobian, residuals);
-                if ( solution.first ) {
-                    unknowns -= solution.second;
-                } else {
-                    status->letTempReturnResultBe(LatticeFrameConcretePlastic::RR_NotConverged);
-                }
-                unknowns.at(7) = max(unknowns.at(7), 0.);       // Keep deltaLambda greater than zero!
-
-                /* Update increments final values and DeltaLambda*/
-                tempStress.at(1) = unknowns.at(1);
-                tempStress.at(2) = unknowns.at(2);
-                tempStress.at(3) = unknowns.at(3);
-                tempStress.at(4) = unknowns.at(4);
-                tempStress.at(5) = unknowns.at(5);
-                tempStress.at(6) = unknowns.at(6);
-                deltaLambda = unknowns.at(7);
-
-                /* Compute the fVector*/
-                auto FVector            = computeFVector(tempStress, k, gp, tStep);
-                double g = this->e / ( 2. * ( 1. + this->nu ) );
-                const double area       = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveArea(gp);
-                const double shearareay = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveShearArea1(gp);
-                const double shearareaz = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveShearArea2(gp);
-                const double ik         = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveIp(gp);
-                const double iy         = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveI1(gp);
-                const double iz         = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveI2(gp);
-
-                residuals.at(1) = tempStress.at(1) - trialStress.at(1) + area * this->e * deltaLambda * FVector.at(1);
-                residuals.at(2) = tempStress.at(2) - trialStress.at(2) + shearareay * g * deltaLambda * FVector.at(2);
-                residuals.at(3) = tempStress.at(3) - trialStress.at(3) + shearareaz * g  * deltaLambda * FVector.at(3);
-                residuals.at(4) = tempStress.at(4) - trialStress.at(4) + ik * g * deltaLambda * FVector.at(4);
-                residuals.at(5) = tempStress.at(5) - trialStress.at(5) + iy * this->e * deltaLambda * FVector.at(5);
-                residuals.at(6) = tempStress.at(6) - trialStress.at(6) + iz * this->e * deltaLambda * FVector.at(6);
-                residuals.at(7) = computeYieldValue(tempStress, k, gp, tStep);
-            }
+    while ( normOfResiduals > yieldTol ) {
+        iterationCount++;
+        if ( iterationCount == newtonIter ) {
+            status->letTempReturnResultBe(LatticeFrameConcretePlasticStatus::RR_NotConverged);
+            return;
         }
-        status->letTempReturnResultBe(LatticeFrameConcretePlastic::RR_Converged);
-        stress = tempStress;
+
+            LatticeFrameConcretePlastic::CapacitySet cap = this->giveEffectiveCapacities(gp, tStep);
+
+        const double ax = (k.at(1) == 1.0) ? cap.nx0  : cap.nx01;
+        const double ay = (k.at(2) == 1.0) ? cap.vy0  : cap.vy01;
+        const double az = (k.at(3) == 1.0) ? cap.vz0  : cap.vz01;
+        const double bx = (k.at(4) == 1.0) ? cap.mx0  : cap.mx01;
+        const double by = (k.at(5) == 1.0) ? cap.my0  : cap.my01;
+        const double bz = (k.at(6) == 1.0) ? cap.mz0  : cap.mz01;
+
+        if (ax <= 0.0 || ay <= 0.0 || az <= 0.0 ||
+            bx <= 0.0 || by <= 0.0 || bz <= 0.0) {
+            OOFEM_ERROR("Non-positive effective capacity in performRegularReturn.");
+        }
+
+        FloatArrayF<7> residualsNorm;
+        residualsNorm.at(1) = residuals.at(1) / ax;
+        residualsNorm.at(2) = residuals.at(2) / ay;
+        residualsNorm.at(3) = residuals.at(3) / az;
+        residualsNorm.at(4) = residuals.at(4) / bx;
+        residualsNorm.at(5) = residuals.at(5) / by;
+        residualsNorm.at(6) = residuals.at(6) / bz;
+        residualsNorm.at(7) = residuals.at(7);
+
+        normOfResiduals = norm(residualsNorm);
+
+        if ( std::isnan(normOfResiduals) ) {
+            status->letTempReturnResultBe(LatticeFrameConcretePlasticStatus::RR_NotConverged);
+            return;
+        }
+
+        if ( normOfResiduals > yieldTol ) {
+            auto jacobian = computeJacobian(tempStress, k, deltaLambda, gp, tStep);
+
+            auto solution = solve_check(jacobian, residuals);
+            if ( solution.first ) {
+                unknowns -= solution.second;
+            } else {
+                status->letTempReturnResultBe(LatticeFrameConcretePlastic::RR_NotConverged);
+            }
+
+            unknowns.at(7) = max(unknowns.at(7), 0.0); // Keep deltaLambda greater than zero!
+
+            // Update unknowns
+            tempStress.at(1) = unknowns.at(1);
+            tempStress.at(2) = unknowns.at(2);
+            tempStress.at(3) = unknowns.at(3);
+            tempStress.at(4) = unknowns.at(4);
+            tempStress.at(5) = unknowns.at(5);
+            tempStress.at(6) = unknowns.at(6);
+            deltaLambda = unknowns.at(7);
+
+            // Compute flow vector
+            auto FVector = computeFVector(tempStress, k, gp, tStep);
+
+            const double g = this->e / ( 2.0 * ( 1.0 + this->nu ) );
+
+            auto *elem = static_cast<LatticeStructuralElement *>( gp->giveElement() );
+            const double area       = elem->giveArea(gp);
+            const double shearareay = elem->giveShearArea1(gp);
+            const double shearareaz = elem->giveShearArea2(gp);
+            const double ik         = elem->giveJ(gp);
+            const double iy         = elem->giveI1(gp);
+            const double iz         = elem->giveI2(gp);
+
+            residuals.at(1) = tempStress.at(1) - trialStress.at(1) + area       * this->e * deltaLambda * FVector.at(1);
+            residuals.at(2) = tempStress.at(2) - trialStress.at(2) + shearareay * g       * deltaLambda * FVector.at(2);
+            residuals.at(3) = tempStress.at(3) - trialStress.at(3) + shearareaz * g       * deltaLambda * FVector.at(3);
+            residuals.at(4) = tempStress.at(4) - trialStress.at(4) + ik         * g       * deltaLambda * FVector.at(4);
+            residuals.at(5) = tempStress.at(5) - trialStress.at(5) + iy         * this->e * deltaLambda * FVector.at(5);
+            residuals.at(6) = tempStress.at(6) - trialStress.at(6) + iz         * this->e * deltaLambda * FVector.at(6);
+            residuals.at(7) = computeYieldValue(tempStress, k, gp, tStep);
+        }
     }
 
+    status->letTempReturnResultBe(LatticeFrameConcretePlastic::RR_Converged);
+    stress = tempStress;
+}
+
+
+
+
+
+    
     FloatMatrixF < 7, 7 >
     LatticeFrameConcretePlastic::computeJacobian(const FloatArrayF < 6 > & stress, const FloatArrayF < 6 > & k,
                                                  const double deltaLambda,
@@ -703,7 +823,7 @@ namespace oofem {
         const double area       = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveArea(gp);
         const double shearareay = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveShearArea1(gp);
         const double shearareaz = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveShearArea2(gp);
-        const double ik         = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveIp(gp);
+        const double ik         = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveJ(gp);
         const double iy         = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveI1(gp);
         const double iz         = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveI2(gp);
 
@@ -786,39 +906,43 @@ namespace oofem {
         }
         auto stress = this->performPlasticityReturn(gp, strain, tStep);
 
-        auto tempPlasticStrain = status->giveTempPlasticLatticeStrain();
+	
+	 double tempKappaD = 0.0;
+	 double omega = 0.0;
 
-        double le = static_cast < LatticeStructuralElement * > ( gp->giveElement() )->giveLength();
+	 //Need to switch off damage if plasticFlag =1     
+	if(plasticFlag == 0){
+	  auto tempPlasticStrain = status->giveTempPlasticLatticeStrain();
 
-        //double equivalentStrain = sqrt(pow(tempPlasticStrain.at(1), 2) + pow(tempPlasticStrain.at(2), 2) + pow(tempPlasticStrain.at(3), 2) +
-        //                              pow(tempPlasticStrain.at(4), 2) + pow(tempPlasticStrain.at(5), 2.) + pow(tempPlasticStrain.at(6), 2) ) - wu / le;
-        double equivalentStrain = sqrt( pow(tempPlasticStrain.at(4), 2) + pow(tempPlasticStrain.at(5), 2.) + pow(tempPlasticStrain.at(6), 2) ) - wu / le;
+	  double le = static_cast < LatticeStructuralElement * > ( gp->giveElement() )->giveLength();
 
-        double tempKappaD = 0.0;
+	  double equivalentStrain = sqrt( pow(tempPlasticStrain.at(4), 2) + pow(tempPlasticStrain.at(5), 2.) + pow(tempPlasticStrain.at(6), 2) ) - wu / le;
 
-        if ( equivalentStrain > status->giveKappaD() ) {
+
+	  if ( equivalentStrain > status->giveKappaD() ) {
             tempKappaD = equivalentStrain;
-        } else {
+	  } else {
             tempKappaD = status->giveKappaD();
-        }
+	  }
+	  
 
-        double omega = 0.0;
-        if ( tempKappaD  <= 0.  ) {
+	  if ( tempKappaD  <= 0.  ) {
             omega = 0.;
-        } else if ( tempKappaD > 0. ) {
+	  } else if ( tempKappaD > 0. ) {
             omega = 1. - exp( -tempKappaD * le / ( wf ) );
-        } else {
+	  } else {
             printf("Should not be here\n");
         }
-
-        if ( omega > 1.0 ) {
+	  
+	  if ( omega > 1.0 ) {
             omega = 1.;
-        } else if ( omega < 0.0 ) {
+	  } else if ( omega < 0.0 ) {
             omega = 0.;
-        }
-
-        stress *= ( 1. - omega );
-
+	  }
+	  
+	  stress *= ( 1. - omega );
+	}
+	
         status->letTempLatticeStrainBe(originalStrain);
         status->letTempReducedLatticeStrainBe(strain);
         status->letTempLatticeStressBe(stress);
@@ -838,7 +962,7 @@ namespace oofem {
         const double area       = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveArea(gp);
         const double shearareay = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveShearArea1(gp);
         const double shearareaz = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveShearArea2(gp);
-        const double ik         = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveIp(gp);
+        const double ik         = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveJ(gp);
         const double iy         = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveI1(gp);
         const double iz         = ( static_cast < LatticeStructuralElement * > ( gp->giveElement() ) )->giveI2(gp);
 

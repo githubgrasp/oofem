@@ -134,7 +134,8 @@ LatticeFrameSteelPlastic::initializeFrom(InputRecord &ir)
 }
 
 
- void
+
+void
 LatticeFrameSteelPlastic::giveBaseCapacitiesFromSection(double &nx0Base,
                                                         double &mx0Base,
                                                         double &my0Base,
@@ -157,29 +158,77 @@ LatticeFrameSteelPlastic::giveBaseCapacitiesFromSection(double &nx0Base,
     const double A  = elem->giveArea(gp);
     const double I1 = elem->giveI1(gp);
     const double I2 = elem->giveI2(gp);
-    const double Ip = elem->giveIp(gp);
+    const double J = elem->giveJ(gp);
 
     auto *cs = dynamic_cast< LatticeCrossSection * >(elem->giveCrossSection());
     if (!cs) {
         OOFEM_ERROR("Expected LatticeCrossSection in giveBaseCapacitiesFromSection.");
     }
 
-    if (cs->giveShape() != 1) {
-        OOFEM_ERROR("Automatic sigmay-based capacities currently implemented only for circular sections (shape=1).");
+    // ------------------------------------------------------------
+    // Circular section
+    // ------------------------------------------------------------
+    if (cs->giveShape() == 1) {
+        const double r = cs->giveRadius();
+        if (r <= 0.0) {
+            OOFEM_ERROR("Non-positive radius for circular section.");
+        }
+
+        // Full plastic axial capacity
+        nx0Base = this->sigmay * A;
+
+        // Torsional capacity (this is only a approximation as before)
+        mx0Base = this->sigmay * J / r;
+
+        // Full plastic bending capacity of a solid circle:
+        const double mpl = this->sigmay * (4.0 * pow(r, 3.0) / 3.0);
+        my0Base = mpl;
+        mz0Base = mpl;
+
+        return;
     }
 
-    const double r = cs->giveRadius();
-    if (r <= 0.0) {
-        OOFEM_ERROR("Non-positive radius for circular section.");
+    // ------------------------------------------------------------
+    // Rectangular section reconstructed from polygon coordinates
+    // ------------------------------------------------------------
+    double by = 0.0, bz = 0.0;
+    if (elem->giveRectangularSectionDimensions(by, bz, gp)) {
+        if (by <= 0.0 || bz <= 0.0) {
+            OOFEM_ERROR("Non-positive rectangular dimensions in giveBaseCapacitiesFromSection.");
+        }
+
+        const double Arect = by * bz;
+        if (fabs(Arect - A) > 1e-6 * std::max(1.0, A)) {
+            OOFEM_WARNING("Rectangular dimensions from polygon are slightly inconsistent with computed area.");
+        }
+
+        // Optional consistency check with principal second moments
+        const double Iyy_rect = by * pow(bz, 3.0) / 12.0;
+        const double Izz_rect = bz * pow(by, 3.0) / 12.0;
+
+        if (fabs(Iyy_rect - I1) > 1e-5 * std::max(1.0, fabs(I1)) &&
+            fabs(Iyy_rect - I2) > 1e-5 * std::max(1.0, fabs(I2))) {
+            OOFEM_WARNING("Rectangular dimensions are not fully consistent with principal inertia I1/I2.");
+        }
+
+        // Full plastic axial capacity
+        nx0Base = this->sigmay * Arect;
+
+        // Torsional capacity (simple approximation)
+        const double req = 0.5 * std::max(by, bz);
+        mx0Base = this->sigmay * J / req;
+
+        // Full plastic bending capacities about local principal section axes
+        my0Base = this->sigmay * by * bz * bz / 4.0;
+        mz0Base = this->sigmay * bz * by * by / 4.0;
+
+        return;
     }
 
-    // Elastic first-yield capacities
-    nx0Base = this->sigmay * A;
-    mx0Base = this->sigmay * I1 / r;
-    my0Base = this->sigmay * I2 / r;
-    mz0Base = this->sigmay * Ip / r; // use if mz is torsional capacity in your yield function
+    OOFEM_ERROR("Automatic sigmay-based capacities currently implemented only for circular sections or rectangular polygon sections.");
 }
- 
+
+
  
     MaterialStatus *
     LatticeFrameSteelPlastic::CreateStatus(GaussPoint *gp) const

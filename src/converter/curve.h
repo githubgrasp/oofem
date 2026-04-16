@@ -45,7 +45,7 @@ public:
 
     Curve *ofType();
 
-    const char *giveClassName() const { return "Curve"; }
+    const char *giveClassName() const override { return "Curve"; }
 
     void initializeFrom(ConverterInputRecord &ir);
 

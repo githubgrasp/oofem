@@ -127,6 +127,8 @@ class LatticeFrameSteelPlastic : public LatticeFrameElastic
 {
 protected:
 
+
+    ///capacity mode to allow for shell mode 
     int capacityMode = 0;
 
     ///maximum axial force in x-axis x-axis nx0
@@ -161,7 +163,9 @@ protected:
     /// Hardening modulus.
     double H = 0.;
 
+  
 
+  
     enum LatticeFrameSteelPlastic_ReturnResult { RR_NotConverged, RR_Converged };
     //   mutable LatticeFrameSteelPlastic_ReturnResult returnResult = RR_NotConverged; /// FIXME: This must be removed. Not thread safe. Shouldn't be stored at all.
 

@@ -50,11 +50,9 @@ public:
 
     BoundarySphere *ofType();
 
-    // miscellaneous
-    /// Returns class name of the receiver.
-    const char *giveClassName() const { return "BoundarySphere"; }
+    const char *giveClassName() const override { return "BoundarySphere"; }
 
-    void initializeFrom(ConverterInputRecord &ir);
+    void initializeFrom(ConverterInputRecord &ir) override;
 
     void printYourself();
 

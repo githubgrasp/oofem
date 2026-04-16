@@ -185,7 +185,7 @@ LatticeFrameElastic::give3dFrameStiffnessMatrix(MatResponseMode rmode, GaussPoin
     const double area = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveArea(gp);
     const double iy = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveI1(gp);
     const double iz = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveI2(gp);
-    const double ik = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveIp(gp);
+    const double ik = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveJ(gp);
     const double shearareay = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveShearArea1(gp);
     const double shearareaz = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveShearArea2(gp);
 
