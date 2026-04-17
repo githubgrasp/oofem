@@ -49,6 +49,7 @@
 #define _IFT_Lattice3DMT_area "area"
 #define _IFT_Lattice3DMT_ranarea "ranarea"
 #define _IFT_Lattice3DMT_mlength "mlength"
+#define _IFT_Lattice3DMT_lumpedcapacity "lumpedcapacity"
 //@}
 
 
@@ -78,6 +79,10 @@ protected:
     FloatArray crackLengths;
 
     double dimension = 0.;
+
+    /// 0 = consistent (coupled) capacity matrix; 1 = diagonal lumped form.
+    /// Lumping gives TPFA-style monotone behaviour for nonlinear c(p).
+    int lumpedCapacity = 0;
 
 public:
     Lattice3d_mt(int, Domain *, ElementMode em = HeatTransferEM);

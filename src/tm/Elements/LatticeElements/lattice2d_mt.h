@@ -48,6 +48,7 @@
 #define _IFT_Lattice2DMT_crackwidth "crackwidth"
 #define _IFT_Lattice2DMT_couplingflag "couplingflag"
 #define _IFT_Lattice2DMT_couplingnumber "couplingnumber"
+#define _IFT_Lattice2DMT_lumpedcapacity "lumpedcapacity"
 //@}
 
 
@@ -71,6 +72,10 @@ protected:
     FloatArray gpCoords;
 
     double crackWidth = 0.;
+
+    /// 0 = consistent (coupled) capacity matrix; 1 = diagonal lumped form.
+    /// Lumping gives TPFA-style monotone behaviour for nonlinear c(p).
+    int lumpedCapacity = 0;
 
 public:
     Lattice2d_mt(int, Domain *, ElementMode em = HeatTransferEM);

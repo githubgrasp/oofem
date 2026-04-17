@@ -189,6 +189,9 @@ Lattice3d_mt :: initializeFrom(InputRecord &ir)
     couplingFlag = 0;
     IR_GIVE_OPTIONAL_FIELD(ir, couplingFlag, _IFT_Lattice3DMT_couplingflag);
 
+    lumpedCapacity = 0;
+    IR_GIVE_OPTIONAL_FIELD(ir, lumpedCapacity, _IFT_Lattice3DMT_lumpedcapacity);
+
     couplingNumbers.resize(numberOfPolygonVertices);
     if ( couplingFlag == 1 ) {
         IR_GIVE_OPTIONAL_FIELD(ir, couplingNumbers, _IFT_Lattice3DMT_couplingnumber);
@@ -631,13 +634,22 @@ Lattice3d_mt :: computeCapacityMatrix(FloatMatrix &answer, TimeStep *tStep)
     GaussPoint *gp =  integrationRulesArray [ 0 ]->getIntegrationPoint(0);
     answer.resize(2, 2);
     answer.zero();
-    answer.at(1, 1) = 2.;
-    answer.at(1, 2) = 1.;
-    answer.at(2, 1) = 1.;
-    answer.at(2, 2) = 2.;
     double c = static_cast< TransportMaterial * >( this->giveMaterial() )->giveCharacteristicValue(Capacity, gp, tStep);
-    double dV = this->computeVolumeAround(gp) / ( 6.0 * this->dimension );
-    answer.times(c * dV);
+    if ( this->lumpedCapacity ) {
+        // diagonal (row-sum-preserving) form — TPFA-compatible, monotone for nonlinear c(p)
+        answer.at(1, 1) = 1.;
+        answer.at(2, 2) = 1.;
+        double dV = this->computeVolumeAround(gp) / ( 2.0 * this->dimension );
+        answer.times(c * dV);
+    } else {
+        // consistent (coupled) form
+        answer.at(1, 1) = 2.;
+        answer.at(1, 2) = 1.;
+        answer.at(2, 1) = 1.;
+        answer.at(2, 2) = 2.;
+        double dV = this->computeVolumeAround(gp) / ( 6.0 * this->dimension );
+        answer.times(c * dV);
+    }
 }
 
 
