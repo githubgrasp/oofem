@@ -1,0 +1,36 @@
+oofem.out
+Reinforced prism
+NonLinearStatic nmsteps 1 nsteps 1 profileopt 1 nmodules 1 contextOutputStep 1000
+nsteps 1 rtolf 1.e-3 stiffMode 0 maxiter 1000 controllmode 1 donotfixload 
+vtkxmllattice primvars 1 1 cellvars 4 46 60 90 111 tstep_all domain_all cross 1
+domain 3d
+OutputManager tstep_step 1 dofman_output { 5 }
+ncrosssect 1 nmat 1 nbc 1 nic 0 nltf 2 nset 1 
+LatticeCS 1 material 1 shape 2
+LatticeFrameElastic 1 d 1. tAlpha 0.0 E 30.e9 n 0.0
+#@INSERT_LIVELOADS
+ConstantFunction 1 f(t) 1.0
+PiecewiseLinFunction 2 t 2 0 1 f(t) 2 1 1.
+#@INSERT_SETS
+#@LOAD patch 1 q 1.e2
+#@DIR 0 0 -1
+#@THICKNESS 0.01
+#@SHELLWIDTHSCALE 1.
+
+#@BC curve 1 dofs 1 3 values 1 0
+#@BC curve 2 dofs 1 3 values 1 0
+#@BC curve 3 dofs 1 3 values 1 0 
+#@BC curve 4 dofs 1 3 values 1 0 
+
+#@BC vertex 1 dofs 3 1 2 3 values 3 0 0 0
+#@BC vertex 2 dofs 2 2 3 values 2 0 0
+#@BC vertex 3 dofs 1 3 values 1 0
+#@BC vertex 4 dofs 1 3 values 1 0
+
+#%BEGIN_CHECK%
+#DOFMAN number 37 dof 3 type d
+#REACTION number 33 dof 3
+#REACTION number 35 dof 3
+#REACTION number 37 dof 3
+#TIME
+#%END_CHECK%
