@@ -19,6 +19,9 @@
 
 #define _IFT_Prism_box "box"
 #define _IFT_Prism_refine "refine"
+#define _IFT_Prism_edgeRefine "edgerefine"
+#define _IFT_Prism_surfaceRefine "surfacerefine"
+#define _IFT_Prism_regionRefine "regionrefine"
 
 class Prism : public Region
 {
@@ -26,6 +29,10 @@ protected:
     /// Array storing nodal coordinates.
     int number;
     double refinement;
+    // per-stage spacing ratios applied to grid->diameter; default 1.
+    double edgeRefine;
+    double surfaceRefine;
+    double regionRefine;
     oofem::FloatArray box;
     double xlength, ylength, zlength;
 

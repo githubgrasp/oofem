@@ -3580,21 +3580,63 @@ Grid::give3DSMOutput(const std::string &fileName)
                 }
             }
 
+            // specimen bounds for detecting which face a Voronoi vertex sits on
+            oofem::FloatArray bounds;
+            this->giveRegion(1)->defineBoundaries(bounds);
+            const double tol = this->giveTol();
+
+            // bitmask of which of the 6 specimen faces a point lies on
+            auto faceMask = [ & ](const oofem::FloatArray &c) {
+                int m = 0;
+                if ( std::abs(c.at(1) - bounds.at(1)) < tol ) m |= 1;
+                if ( std::abs(c.at(1) - bounds.at(2)) < tol ) m |= 2;
+                if ( std::abs(c.at(2) - bounds.at(3)) < tol ) m |= 4;
+                if ( std::abs(c.at(2) - bounds.at(4)) < tol ) m |= 8;
+                if ( std::abs(c.at(3) - bounds.at(5)) < tol ) m |= 16;
+                if ( std::abs(c.at(3) - bounds.at(6)) < tol ) m |= 32;
+                return m;
+            };
+
             // write elements
             int elemCounter = 0;
+            oofem::FloatArray A(3), B(3), M(3), cCurr(3), cNext(3);
             for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
                 int flag = this->giveDelaunayLine(i + 1)->giveOutsideFlag();
                 if ( ( flag == 0 || flag == 3 ) && this->giveDelaunayLine(i + 1)->delaunayAreaCheck() == 1 ) {
                     this->giveDelaunayLine(i + 1)->giveLocalVertices(lineNodes);
                     this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
+                    // Delaunay-line midpoint — closing vertex used when the polygon
+                    // wraps around a specimen edge (see "one point per edge crossing").
+                    this->giveDelaunayVertex(lineNodes.at(1))->giveCoordinates(A);
+                    this->giveDelaunayVertex(lineNodes.at(2))->giveCoordinates(B);
+                    M.at(1) = 0.5 * ( A.at(1) + B.at(1) );
+                    M.at(2) = 0.5 * ( A.at(2) + B.at(2) );
+                    M.at(3) = 0.5 * ( A.at(3) + B.at(3) );
+
+                    const int nPoly = crossSectionNodes.giveSize();
+                    std::vector< oofem::FloatArray >polyOut;
+                    polyOut.reserve(nPoly + 3);
+                    for ( int m = 0; m < nPoly; m++ ) {
+                        this->giveVoronoiVertex(crossSectionNodes.at(m + 1))->giveCoordinates(cCurr);
+                        polyOut.push_back(cCurr);
+
+                        int next = ( m + 1 ) % nPoly;
+                        this->giveVoronoiVertex(crossSectionNodes.at(next + 1))->giveCoordinates(cNext);
+
+                        int mCurr = faceMask(cCurr);
+                        int mNext = faceMask(cNext);
+                        if ( mCurr != 0 && mNext != 0 && ( mCurr & mNext ) == 0 ) {
+                            polyOut.push_back(M);
+                        }
+                    }
+
                     out << "lattice3D " << ++elemCounter
                         << " nodes 2 " << nodeMap [ lineNodes.at(1) ] << " " << nodeMap [ lineNodes.at(2) ]
-                        << " crossSect 1 mat 1 polycoords " << 3 * crossSectionNodes.giveSize();
+                        << " crossSect 1 mat 1 polycoords " << 3 * ( int ) polyOut.size();
 
-                    for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                        this->giveVoronoiVertex(crossSectionNodes.at(m + 1))->giveCoordinates(coords);
-                        out << " " << coords.at(1) << " " << coords.at(2) << " " << coords.at(3);
+                    for ( const auto &c : polyOut ) {
+                        out << " " << c.at(1) << " " << c.at(2) << " " << c.at(3);
                     }
                     out << "\n";
                 }
@@ -3614,77 +3656,96 @@ Grid::give3DSMOutput(const std::string &fileName)
 void
 Grid::give3DTMOutput(const std::string &fileName)
 {
-    //Template for irregular nonperiodic transport models. Do not change for applications
-
-    FILE *outputStream = converter::fopen_or_die(fileName, "w");
-
-
-    int numberOfNodes, numberOfLines;
-    oofem::FloatArray coords;
+    oofem::FloatArray coords(3);
     oofem::IntArray nodes;
     oofem::IntArray crossSectionNodes;
 
-    int materialType = 1;
-
-    //Determine the number of Delaunay nodes in the domain
-    numberOfNodes = 0;
+    // build voronoi vertex index → sequential node ID map
+    // include boundary-clipped vertices (flag 2); inside lines can reference them
+    std::unordered_map< int, int >nodeIdMap;
+    int numberOfNodes = 0;
     for ( int i = 0; i < this->giveNumberOfVoronoiVertices(); i++ ) {
-        if ( this->giveVoronoiVertex(i + 1)->giveOutsideFlag() == 0 ) {
-            numberOfNodes++;
+        int flag = this->giveVoronoiVertex(i + 1)->giveOutsideFlag();
+        if ( flag == 0 || flag == 2 ) {
+            nodeIdMap [ i + 1 ] = ++numberOfNodes;
         }
     }
 
-    //Determine the number of Delaunay lines in the domain
-    numberOfLines = 0;
+    int numberOfLines = 0;
     for ( int i = 0; i < this->giveNumberOfVoronoiLines(); i++ ) {
         if ( this->giveVoronoiLine(i + 1)->giveOutsideFlag() == 0 ) {
             numberOfLines++;
         }
     }
 
-    fprintf(outputStream, "oofem.out\n");
-    fprintf(outputStream, "Transport 3D model\n");
-    fprintf(outputStream, "nltransienttransportproblem nsteps 5 deltat 1.0 rtol 0.001 alpha 1. nsmax 200 contextOutputStep 100 nmodules 0\n");
-    fprintf(outputStream, "domain 2dMassLatticeTransport\n");
-    fprintf(outputStream, "OutputManager tstep_all dofman_all element_all\n");
-
-    fprintf(outputStream, "ndofman %d nelem %d ncrosssect 1 nmat 1 nbc 1 nic 0 nltf 2\n", numberOfNodes, numberOfLines);
-
-
-    for ( int i = 0; i < this->giveNumberOfVoronoiVertices(); i++ ) {
-        if ( this->giveVoronoiVertex(i + 1)->giveOutsideFlag() == 0 ) {
-            this->giveVoronoiVertex(i + 1)->giveCoordinates(coords);
-            fprintf(outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
-        }
+    std::ifstream ctrl(controlFileName);
+    std::ofstream out(fileName);
+    if ( !ctrl ) {
+        converter::error("give3DTMOutput: Cannot open control file");
+    }
+    if ( !out ) {
+        converter::error("give3DTMOutput: Cannot open output file");
     }
 
-    for ( int i = 0; i < this->giveNumberOfVoronoiLines(); i++ ) {
-        if ( this->giveVoronoiLine(i + 1)->giveOutsideFlag() == 0 ) {
-            this->giveVoronoiLine(i + 1)->giveLocalVertices(nodes);
-            this->giveVoronoiLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
+    std::string line_s;
+    bool injected = false;
 
-            fprintf(outputStream, "latticemt3D %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
+    while ( std::getline(ctrl, line_s) ) {
+        std::string t = line_s;
+        size_t pos = t.find_first_not_of(" \t");
+        if ( pos != std::string::npos ) {
+            t.erase(0, pos);
+        } else {
+            t.clear();
+        }
 
-            for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                this->giveDelaunayVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-                fprintf(outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
+        if ( !injected && t.rfind("ncrosssect", 0) == 0 ) {
+            std::istringstream iss(t);
+            std::string token;
+            out << "ndofman " << numberOfNodes << " nelem " << numberOfLines << " ";
+            while ( iss >> token ) {
+                out << token << " ";
             }
-            fprintf(outputStream, "\n");
+            out << "\n";
+
+            // write Voronoi nodes
+            for ( int i = 0; i < this->giveNumberOfVoronoiVertices(); i++ ) {
+                int flag = this->giveVoronoiVertex(i + 1)->giveOutsideFlag();
+                if ( flag == 0 || flag == 2 ) {
+                    int nid = nodeIdMap.at(i + 1);
+                    this->giveVoronoiVertex(i + 1)->giveCoordinates(coords);
+                    out << "node " << nid << " coords 3 " << std::scientific
+                        << coords.at(1) << " " << coords.at(2) << " " << coords.at(3) << "\n";
+                }
+            }
+
+            // write Voronoi elements (latticemt3D); cross-section is Delaunay vertices
+            int elemCounter = 0;
+            for ( int i = 0; i < this->giveNumberOfVoronoiLines(); i++ ) {
+                if ( this->giveVoronoiLine(i + 1)->giveOutsideFlag() == 0 ) {
+                    ++elemCounter;
+                    this->giveVoronoiLine(i + 1)->giveLocalVertices(nodes);
+                    this->giveVoronoiLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
+                    out << "latticemt3D " << elemCounter
+                        << " nodes 2 " << nodeIdMap.at(nodes.at(1))
+                        << " " << nodeIdMap.at(nodes.at(2))
+                        << " crossSect 1 mat 1 polycoords " << 3 * crossSectionNodes.giveSize();
+                    for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
+                        this->giveDelaunayVertex(crossSectionNodes.at(m + 1))->giveCoordinates(coords);
+                        out << " " << coords.at(1) << " " << coords.at(2) << " " << coords.at(3);
+                    }
+                    out << "\n";
+                }
+            }
+
+            injected = true;
+            continue;
+        }
+
+        if ( !isConverterDirective(t) ) {
+            out << line_s << "\n";
         }
     }
-
-    fprintf(outputStream, "simplecs 1\n");
-    fprintf(outputStream, "latticetransmat 1 d 1. k 1. vis 1. thetas 1. thetar 0. contype 0 c 0. \n");
-    fprintf(outputStream, "BoundaryCondition 1 loadTimeFunction 1 prescribedvalue 0.\n");
-    fprintf(outputStream, "BoundaryCondition 2 loadTimeFunction 1 prescribedvalue -1.\n");
-    fprintf(outputStream, "ConstantFunction 1 f(t) 1.\n");
-
-    fprintf(outputStream, "#%%BEGIN_CHECK%%\n");
-    fprintf(outputStream, "#LOADLEVEL\n");
-    fprintf(outputStream, "##TIME\n");
-    fprintf(outputStream, "#%%END_CHECK%%\n");
-
-    return;
 }
 
 

@@ -2,7 +2,7 @@ oofem.out
 3D SM test
 NonLinearStatic nmsteps 1 nsteps 1 contextOutputStep 1 nmodules 1
 nsteps 1 rtolv 0.001 reqIterations 100 stiffMode 2 maxiter 2000 controllmode 1 stepLength 1. minsteplength 1.e-10 Psi 0.
-vtkxmllattice primvars 1 1 tstep_step 1 domain_all
+vtkxmllattice primvars 1 1 tstep_step 1 domain_all cross 1
 domain 3dLattice
 OutputManager tstep_all dofman_all element_all
 ncrosssect 1 nmat 1 nbc 2 nic 0 nltf 1 nset 0
@@ -18,4 +18,4 @@ ConstantFunction 1 f(t) 1.
 #%END_CHECK%
 #@diam 0.2
 #@perflag 3 0 0 0
-#@prism 1 box 6 0. 0. 0. 1. 1. 1. refine 1.
+#@prism 1 box 6 0. 0. 0. 1. 1. 1. refine 1. edgerefine 0.5 surfacerefine 0.7 regionrefine 1.

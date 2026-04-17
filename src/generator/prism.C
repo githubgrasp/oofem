@@ -76,19 +76,19 @@ int Prism::generatePoints()
         if ( periodicityFlag.at(1) == 1 ) {
             borderX = grid->TOL;
         } else   {
-            borderX = grid->diameter;
+            borderX = edgeRefine * grid->diameter;
         }
         //y-direction
         if ( periodicityFlag.at(2) == 1 ) {
             borderY = grid->TOL;
         } else   {
-            borderY = grid->diameter;
+            borderY = edgeRefine * grid->diameter;
         }
         //z-direction
         if ( periodicityFlag.at(3) == 1 ) {
             borderZ = grid->TOL;
         } else   {
-            borderZ = grid->diameter;
+            borderZ = edgeRefine * grid->diameter;
         }
     }
 
@@ -100,7 +100,7 @@ int Prism::generatePoints()
     int nTarget = 0;
     double newDiameter;
     if ( periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 0 ) {
-        nTarget = ceil(specimenDimension.at(1) / grid->diameter);
+        nTarget = ceil(specimenDimension.at(1) / ( edgeRefine * grid->diameter ));
         newDiameter = specimenDimension.at(1) / nTarget;
         if ( periodicityFlag.at(1) == 1 ) {
             nTarget--;
@@ -152,7 +152,7 @@ int Prism::generatePoints()
 
     //For y-direction
     if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(3) == 0 ) {
-        nTarget = ceil(specimenDimension.at(2) / grid->diameter);
+        nTarget = ceil(specimenDimension.at(2) / ( edgeRefine * grid->diameter ));
         newDiameter = specimenDimension.at(2) / nTarget;
         //First of four lines
         for (int z = 0; z < 2; z++) {
@@ -199,7 +199,7 @@ int Prism::generatePoints()
 
     //For z-direction
     if ( periodicityFlag.at(1) == 0 && periodicityFlag.at(2) == 0 ) {
-        nTarget = ceil(specimenDimension.at(3) / grid->diameter);
+        nTarget = ceil(specimenDimension.at(3) / ( edgeRefine * grid->diameter ));
         newDiameter = specimenDimension.at(3) / nTarget;
 
         //First of four lines
@@ -261,7 +261,7 @@ int Prism::generatePoints()
             random.at(3) = boundaries.at(5) + borderZ + grid->ran1(& randomIntegerThree) * ( specimenDimension.at(3) - 2. * borderZ );
 
             flag = 0;
-            flag = grid->giveGridLocalizer()->checkNodesWithinBox(random, grid->giveDiameter(random) );
+            flag = grid->giveGridLocalizer()->checkNodesWithinBox(random, surfaceRefine * grid->giveDiameter(random) );
 
             if ( flag == 0 ) {
                 grid->addVertex(random);
@@ -295,7 +295,7 @@ int Prism::generatePoints()
             random.at(2) = boundaries.at(3);
             random.at(3) = boundaries.at(5) + borderZ + grid->ran1(& randomIntegerThree) * ( specimenDimension.at(3) - 2. * borderZ );
             flag = 0;
-            flag = grid->giveGridLocalizer()->checkNodesWithinBox(random, grid->giveDiameter(random) );
+            flag = grid->giveGridLocalizer()->checkNodesWithinBox(random, surfaceRefine * grid->giveDiameter(random) );
 
             if ( flag == 0 ) {
                 grid->addVertex(random);
@@ -330,7 +330,7 @@ int Prism::generatePoints()
             random.at(3) = boundaries.at(5);
 
             flag = 0;
-            flag = grid->giveGridLocalizer()->checkNodesWithinBox(random, grid->giveDiameter(random) );
+            flag = grid->giveGridLocalizer()->checkNodesWithinBox(random, surfaceRefine * grid->giveDiameter(random) );
 
             if ( flag == 0 ) {
                 grid->addVertex(random);
@@ -362,7 +362,7 @@ int Prism::generatePoints()
 
         //Check if this is far enough from the others
         flag = 0;
-        flag = grid->giveGridLocalizer()->checkNodesWithinBox(random, grid->giveDiameter(random) );
+        flag = grid->giveGridLocalizer()->checkNodesWithinBox(random, regionRefine * grid->giveDiameter(random) );
 
         if ( flag == 0 ) {
             grid->addVertex(random);
@@ -574,6 +574,13 @@ Prism::initializeFrom(GeneratorInputRecord &ir)
 
     refinement = 1.;
     IR_GIVE_OPTIONAL_FIELD(ir, refinement, _IFT_Prism_refine); // Macro
+
+    edgeRefine = 1.;
+    surfaceRefine = 1.;
+    regionRefine = 1.;
+    IR_GIVE_OPTIONAL_FIELD(ir, edgeRefine, _IFT_Prism_edgeRefine);
+    IR_GIVE_OPTIONAL_FIELD(ir, surfaceRefine, _IFT_Prism_surfaceRefine);
+    IR_GIVE_OPTIONAL_FIELD(ir, regionRefine, _IFT_Prism_regionRefine);
 
     return;
 }

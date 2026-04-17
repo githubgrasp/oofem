@@ -682,7 +682,6 @@ void Prism::findOutsiders(oofem::FloatArray &boundaries)
         }
 
 
-
         if ( ( outsideFlag == 1 || outsideFlag == 2 ) && ( periodicityFlag.at(1) == 1 || periodicityFlag.at(2) == 1 || periodicityFlag.at(3) == 1 ) ) {
             //Could cause problems with older lattice approaches, which would then need to be resolved.
             //Allow case with nodes on boundary.
@@ -950,7 +949,7 @@ void Prism::findOutsiders(oofem::FloatArray &boundaries)
         }
     }
 
-    //Modify cross-sections of elements. This should fix the problem in the subsequent part. However, for elements on the boundary whichc cross one other boundary, this does not fix it since those elements are given a outside flag = 2
+    //Modify cross-sections of elements. This should fix the problem in the subsequent part. However, for elements on the boundary which cross one other boundary, this does not fix it since those elements are given a outside flag = 2
     for ( int i = 0; i < this->grid->giveNumberOfDelaunayLines(); i++ ) {
         if ( this->grid->giveDelaunayLine(i + 1)->giveOutsideFlag() == 3 ) {
             this->modifyVoronoiCrossSection(i + 1);
