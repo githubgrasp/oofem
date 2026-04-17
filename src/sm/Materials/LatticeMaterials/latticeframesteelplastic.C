@@ -207,7 +207,7 @@ LatticeFrameSteelPlastic::giveBaseCapacitiesFromSection(double &nx0Base,
         const double Izz_rect = bz * pow(by, 3.0) / 12.0;
 
         if (fabs(Iyy_rect - I1) > 1e-5 * std::max(1.0, fabs(I1)) &&
-            fabs(Iyy_rect - I2) > 1e-5 * std::max(1.0, fabs(I2))) {
+            fabs(Izz_rect - I2) > 1e-5 * std::max(1.0, fabs(I2))) {
             OOFEM_WARNING("Rectangular dimensions are not fully consistent with principal inertia I1/I2.");
         }
 

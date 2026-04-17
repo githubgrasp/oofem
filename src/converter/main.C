@@ -46,17 +46,20 @@ std::fprintf(stderr,
       vorFile  = argv[4];
     }
 
-        ConverterTXTDataReader dr(controlFile);
-
-
     auto * grid = new Grid(1);
 
     if (t3dFile) {
       grid->instanciateYourselfFromT3d(t3dFile,controlFile);
-      std::string outName = "oofem.in"; 
+      std::string outName = "oofem.in";
       grid->giveOutputT3d(outName);
+    } else if (nodeFile && !delFile) {
+      // qhull path (nodes + voronoi only): use template-style control file
+      grid->instanciateYourselfFromQhull(controlFile, nodeFile, vorFile);
+      grid->generateOutput();
+      grid->giveOutput("oofem.in");
     } else {
-      const std::string outName = dr.giveOutputFileName();      
+      ConverterTXTDataReader dr(controlFile);
+      const std::string outName = dr.giveOutputFileName();
       if ( outName.empty() ) {
         converter::error("Output filename missing in first line of input file");
       }

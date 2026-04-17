@@ -1,0 +1,11 @@
+nodes.dat
+Corrosion induced cracking cylinder
+domain 3
+diam 4.e-3 maxiter 1000 ranint -1 perflag 3 0 0 0 ranflag 1
+nvertex 2 ncurve 0 nsurface 0 nregion 1 ninclusion 1 ncontrolvertex 0 nrefinement 0
+#Two corner points of bounding box for octree localiser
+vertex 1 coords 3 0. -0.075 -0.075
+vertex 2 coords 3 10.e-3 0.075 0.075
+#region to be meshed
+cylinder 1 line 6 0. 0. 0. 10.e-3 0. 0. radius 75.e-3 refine 1.0
+interfacecylinder 1 line 6 0. 0. 0. 10.e-3 0. 0. radius 8.e-3 refine 1.0 itz 0.1e-3

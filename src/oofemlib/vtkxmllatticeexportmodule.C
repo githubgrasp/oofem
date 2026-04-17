@@ -352,11 +352,6 @@ VTKXMLLatticeExportModule::setupVTKPieceCross(ExportRegion &vtkPieceCross, TimeS
     }
 
     this->exportCellVars(vtkPieceCross, region, cellVarsToExport, tStep);
-
-    NodalRecoveryModel *primVarSmoother = givePrimVarSmoother();
-    
-    //
-    // this->exportPrimaryVarsCross(vtkPieceCross, region, primaryVarsToExport, *primVarSmoother, tStep);
 }
 
 

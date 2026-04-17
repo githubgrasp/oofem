@@ -50,7 +50,7 @@ public:
     void giveLocalSurfaces(oofem::IntArray &surf) { surf = this->surfaces; }
 
     /// Define boundaries
-    void defineBoundaries(oofem::FloatArray &boundaries);
+    virtual void defineBoundaries(oofem::FloatArray &boundaries);
 
     //generate regular points
     int generateRegularPoints1();

@@ -469,6 +469,10 @@ public:
 
     int instanciateYourself(ConverterDataReader *dr, const char nodeFileName[], const char delaunayFileName[], const char voronoiFileName[]);
 
+    int instanciateYourselfFromQhull(const std::string &controlFile, const char *nodeFileName, const char *voronoiFileName);
+
+    void readQhullControlRecords(const std::string &controlFile);
+
 
     bool readT3d(const std::string &fn,
                  std::vector< Node > &nodes,

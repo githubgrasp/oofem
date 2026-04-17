@@ -52,6 +52,8 @@ public:
     void giveLocalSurfaces(oofem::IntArray &surf) { surf = this->surfaces; }
 
 
+    void setBox(const oofem::FloatArray &b) { box = b; }
+
     Prism *ofType();
 
     /// Returns class name of the receiver.

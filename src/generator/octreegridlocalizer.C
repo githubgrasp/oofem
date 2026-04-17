@@ -314,27 +314,46 @@ OctreeGridLocalizer::buildOctreeDataStructure()
     clock_t ec;
 
     // first determine grid extends (bounding box), and check for degenerated grid type
-    for ( i = 1; i <= nnode; i++ ) {
-        dman = grid->giveInputVertex(i);
-        coords = ( ( ( Vertex * ) dman )->giveCoordinates() );
-        if ( init ) {
-            init = 0;
-            for ( j = 1; j <= coords->giveSize(); j++ ) {
-                minc.at(j) = maxc.at(j) = coords->at(j);
-            }
-        } else {
-            for ( j = 1; j <= coords->giveSize(); j++ ) {
-                if ( coords->at(j) < minc.at(j) ) {
-                    minc.at(j) = coords->at(j);
+    if ( nnode > 0 ) {
+        for ( i = 1; i <= nnode; i++ ) {
+            dman = grid->giveInputVertex(i);
+            coords = ( ( ( Vertex * ) dman )->giveCoordinates() );
+            if ( init ) {
+                init = 0;
+                for ( j = 1; j <= coords->giveSize(); j++ ) {
+                    minc.at(j) = maxc.at(j) = coords->at(j);
                 }
+            } else {
+                for ( j = 1; j <= coords->giveSize(); j++ ) {
+                    if ( coords->at(j) < minc.at(j) ) {
+                        minc.at(j) = coords->at(j);
+                    }
 
-                if ( coords->at(j) > maxc.at(j) ) {
-                    maxc.at(j) = coords->at(j);
+                    if ( coords->at(j) > maxc.at(j) ) {
+                        maxc.at(j) = coords->at(j);
+                    }
                 }
             }
+        } // end loop over input nodes
+    } else {
+        // No input vertices: derive bounding box from the region/prism definition
+        oofem::FloatArray boundaries;
+        grid->defineBoundaries(boundaries);
+        if ( boundaries.giveSize() < 6 ) {
+            printf("OctreeGridLocalizer: no input vertices and no region boundaries — cannot initialize octree.\n");
+            exit(1);
         }
-        //        }
-    } // end loop over input nodes
+        double dx = boundaries.at(2) - boundaries.at(1);
+        double dy = boundaries.at(4) - boundaries.at(3);
+        double dz = boundaries.at(6) - boundaries.at(5);
+        double margin = 0.05 * std::max( { dx, dy, dz } );
+        minc.at(1) = boundaries.at(1) - margin;
+        maxc.at(1) = boundaries.at(2) + margin;
+        minc.at(2) = boundaries.at(3) - margin;
+        maxc.at(2) = boundaries.at(4) + margin;
+        minc.at(3) = boundaries.at(5) - margin;
+        maxc.at(3) = boundaries.at(6) + margin;
+    }
 
     //Extend cell in all three directions by plus/minus its size
 

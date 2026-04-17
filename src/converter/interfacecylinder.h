@@ -49,6 +49,9 @@ public:
     double giveRadius() { return this->radius; }
     double giveITZThickness() { return this->itzThickness; }
     void giveLine(oofem::FloatArray &lin) { lin = line; }
+    void setLine(const oofem::FloatArray &l) { line = l; }
+    void setRadius(double r) { radius = r; }
+    void setITZThickness(double t) { itzThickness = t; }
 
 
 

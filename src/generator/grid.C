@@ -723,15 +723,21 @@ int Grid::instanciateYourself(GeneratorDataReader *dr)
     irControlRec.finish();
 
     // read domain description
-    int nvertex, ncontrolvertex = 0, ncurve, nsurface, nregion, ninclusion, nrefinement;
     auto &irDomainCompRec = dr->giveInputRecord(GeneratorDataReader::GIR_domainCompRec, 1);
-    IR_GIVE_FIELD(irDomainCompRec, nvertex, _IFT_Grid_nvertex); // Macro
+    int nvertex = 0;
+    IR_GIVE_OPTIONAL_FIELD(irDomainCompRec, nvertex, _IFT_Grid_nvertex); // Macro
+    int ncontrolvertex = 0;
     IR_GIVE_OPTIONAL_FIELD(irDomainCompRec, ncontrolvertex, _IFT_Grid_ncontrolvertex); // Macro
+    int ncurve = 0;
     IR_GIVE_FIELD(irDomainCompRec, ncurve, _IFT_Grid_ncurve); // Macro
+    int nsurface = 0;
     IR_GIVE_FIELD(irDomainCompRec, nsurface, _IFT_Grid_nsurface); // Macro
-    IR_GIVE_FIELD(irDomainCompRec, nregion, _IFT_Grid_nregion); // Macro
-    IR_GIVE_FIELD(irDomainCompRec, ninclusion, _IFT_Grid_ninclusion); // Macro
-    IR_GIVE_FIELD(irDomainCompRec, nrefinement, _IFT_Grid_nrefinement); // Macro
+    int nregion = 0;
+    IR_GIVE_OPTIONAL_FIELD(irDomainCompRec, nregion, _IFT_Grid_nregion); // Macro
+    int ninclusion = 0;
+    IR_GIVE_OPTIONAL_FIELD(irDomainCompRec, ninclusion, _IFT_Grid_ninclusion); // Macro
+    int nrefinement = 0;
+    IR_GIVE_OPTIONAL_FIELD(irDomainCompRec, nrefinement, _IFT_Grid_nrefinement); // Macro
     irDomainCompRec.finish();
 
     //read vertices

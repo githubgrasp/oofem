@@ -44,6 +44,8 @@ public:
 
     double giveRadius() { return this->radius; }
     void giveLine(oofem::FloatArray &lin) { lin = line; }
+    void setLine(const oofem::FloatArray &l) { line = l; }
+    void setRadius(double r) { radius = r; }
 
 
     Cylinder *ofType();

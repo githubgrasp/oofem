@@ -211,6 +211,8 @@ int Cylinder::generatePoints()
     for (int i = 0; i < maxIter; i++) {
         randomXCoord = this->line.at(1) + spacing +
                        ( line.at(4) - line.at(1) - 2. * spacing ) * grid->ran1(& randomIntegerOne);
+        // clamp to valid range in case diam exceeds cylinder half-length
+        randomXCoord = std::max(this->line.at(1), std::min(this->line.at(4), randomXCoord) );
 
         randomRadius = ( this->radius - spacing ) * grid->ran1(& randomIntegerTwo);
         randomTheta = 2 * myPi * grid->ran1(& randomIntegerThree);

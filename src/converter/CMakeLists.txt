@@ -29,3 +29,49 @@ target_include_directories(converter PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_executable(converter.exec main.C)
 target_link_libraries(converter.exec PRIVATE converter liboofem)
+
+enable_testing()
+
+# Converter tests — diff-based, one subdirectory per test case.
+# Each subdirectory must contain control.in and reference.in.
+# Mesh input format determines the converter path:
+#   mesh.t3d                              → t3d path   (2-arg invocation)
+#   mesh.nodes + mesh.voronoi             → qhull path (3-arg invocation)
+#   mesh.nodes + mesh.delaunay + mesh.voronoi → qhull path (4-arg invocation)
+# Output is always named oofem.in (standardised in test control files).
+
+set(CONVERTER_TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+set(CONVERTER_RUN_TEST ${CONVERTER_TEST_DIR}/run_test.cmake)
+
+file(GLOB _conv_test_entries RELATIVE ${CONVERTER_TEST_DIR} ${CONVERTER_TEST_DIR}/*)
+
+foreach(_entry ${_conv_test_entries})
+    set(_dir ${CONVERTER_TEST_DIR}/${_entry})
+    if(NOT IS_DIRECTORY ${_dir})
+        continue()
+    endif()
+    if(NOT EXISTS ${_dir}/control.in OR NOT EXISTS ${_dir}/reference.in)
+        continue()
+    endif()
+
+    if(EXISTS ${_dir}/mesh.t3d)
+        set(_mesh_args "${_dir}/mesh.t3d")
+    elseif(EXISTS ${_dir}/mesh.nodes AND EXISTS ${_dir}/mesh.delaunay AND EXISTS ${_dir}/mesh.voronoi)
+        set(_mesh_args "${_dir}/mesh.nodes;${_dir}/mesh.delaunay;${_dir}/mesh.voronoi")
+    elseif(EXISTS ${_dir}/mesh.nodes AND EXISTS ${_dir}/mesh.voronoi)
+        set(_mesh_args "${_dir}/mesh.nodes;${_dir}/mesh.voronoi")
+    else()
+        message(WARNING "converter test '${_entry}': no recognised mesh file found, skipping")
+        continue()
+    endif()
+
+    add_test(
+        NAME test_converter_${_entry}
+        COMMAND ${CMAKE_COMMAND}
+            -DCONVERTER=$<TARGET_FILE:converter.exec>
+            -DTEST_DIR=${_dir}
+            "-DMESH_ARGS=${_mesh_args}"
+            -DOUTPUT=oofem.in
+            -P ${CONVERTER_RUN_TEST}
+    )
+endforeach()

@@ -36,25 +36,12 @@ Curve::initializeFrom(GeneratorInputRecord &ir)
 {
     IR_GIVE_FIELD(ir, vertices, _IFT_Curve_vertices); // Macro
     refinement = 1.;
-    IR_GIVE_FIELD(ir, refinement, _IFT_Curve_refine); // Macro
+    IR_GIVE_OPTIONAL_FIELD(ir, refinement, _IFT_Curve_refine); // Macro
     normal.zero();
-    IR_GIVE_FIELD(ir, normal, _IFT_Curve_refine); // Macro
+    IR_GIVE_OPTIONAL_FIELD(ir, normal, _IFT_Curve_normal); // Macro
 
     return;
 }
-
-
-
-/* Curve *Curve :: ofType() */
-/* // Returns a new DofManager, which has the same number than the receiver, */
-/* // but belongs to aClass (Node, ElementSide,..). */
-/* { */
-/*     Curve *curve; */
-
-/*     curve = new Curve(number, grid); */
-
-/*     return curve; */
-/* } */
 
 
 int Curve::generatePoints()
@@ -249,7 +236,6 @@ int Curve::generatePoints()
                     i = 0;
 
                     mirrorShift(newRandom, normal, specimenDimension, boundaries, periodicityFlag);
-
 
                     //Shift in x and y-direction
                     newRandom.at(1) = random.at(1) + shiftX * specimenDimension.at(1);
