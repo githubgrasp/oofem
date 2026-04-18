@@ -116,11 +116,9 @@ Line *Line::ofType()
 }
 
 
-// update material
 void Line::updateMaterial(int typeOfMaterial)
 {
-    m_typeOfMaterial = typeOfMaterial;
-    return;
+    materialType = typeOfMaterial;
 }
 
 int Line::delaunayAreaCheck()

@@ -1,8 +1,6 @@
 #ifndef FIBRE_H_INCLUDED
 #define FIBRE_H_INCLUDED
 
-
-
 #include <vector>
 #include "grid.h"
 #include "vertex.h"
@@ -14,109 +12,77 @@
 #include "convertertxtdatareader.h"
 #include "convertertxtinputrecord.h"
 
-#define  _IFT_Fibre_endpoints "endpoints"
-#define  _IFT_Fibre_diameter "diameter"
-
+#define _IFT_Fibre_endpoints "endpoints"
+#define _IFT_Fibre_diameter  "diameter"
 
 #ifndef __MAKEDEPEND
  #include <stdio.h>
 #endif
 
-
-// warning 1 : vector indices starts at O, for the other type : at 1
-// warning 2 : only staight fibres are here taken into account
-// warning 3 : all fibres in input file must be entirely within the 27 cell structure
+// Notes:
+//   * Only straight fibres are supported.
+//   * All fibres must lie entirely within the 27-cell periodic structure.
 
 class Fibre : public GridComponent
 {
 protected:
-
-    double m_TOL;// used to avoid computation instabilities during discretization
-
-    /// Array storing nodal coordinates.
-    oofem::FloatArray m_endpoints;
-    oofem::FloatArray coordP, coordQ;// coord endpoints
-
-
-    int periodicElement;
-
+    int    number;
     double diameter;
-    oofem::FloatArray direction_vector;
-
     double length;
+    double tolerance;                       // guard against floating-point instabilities in the discretisation walk
 
+    oofem::FloatArray endpoints;            // 6 doubles: (xP, yP, zP, xQ, yQ, zQ)
+    oofem::FloatArray coordP, coordQ;       // endpoint coordinates as 3-vectors
+    oofem::FloatArray directionVector;      // unit vector from P to Q
 
-    int number;
+    // Vertices created in the grid for the fibre endpoints.
+    Vertex *pointP;
+    Vertex *pointQ;
 
+    // Discretisation outputs: indices into the grid's lists.
+    std::vector< int >    reinforcementPoints;
+    std::vector< int >    delaunayVertices;       // matrix Delaunay vertex paired with each reinforcement node
+    std::vector< int >    intersectionPoints;     // points where the fibre crosses Voronoi facets
+    std::vector< double > endLengths;             // distance from each reinforcement node to the nearer fibre endpoint
 
-
-
-    // data from Discretization
-    std::vector< int >m_ReinforcementPoints;
-    std::vector< int >m_DelaunayVertices; // Delaunay corresponding vertices (to create bond link)
-    std::vector< int >m_DelaunayVerticesTwo; // Delaunay corresponding vertices (to create bond link)
-    std::vector< int >m_IntersectionPoints; // Intersection points with Voroinoi cells
-
-    std::vector< double >m_listOfL_end; // list of L_end for use of Link elements
-
-
-    // vertices associated to endpoints
-    Vertex *PointP;
-    Vertex *PointQ;
-
-
-
-    // tool functions
-    void findDelaunayVertex(); // to find nearest Delaunay vertex : called at the first iteration of the discretisation process
-    void findVoronoiVertex();     // to find nearest Delaunay vertex : called at the first iteration of the discretisation process
-    void findIntersect();//find the intersection point with the cell and the next delaunay vertex to consider
+    // Discretisation helpers.
+    void findDelaunayVertex();
+    void findIntersect();
     void placeReinforcementNode();
 
-
-
-
 public:
-
-
-    /**
-     * Constructor. Creates a fibre belonging to grid.
-     * @param n fibre number in grid aGrid
-     * @param aGrid grid to which node belongs
-     */
-
-    Fibre(int n, Grid *aGrid);                   // constructor
-    /// Destructor.
+    Fibre(int n, Grid *aGrid);
     ~Fibre() override = default;
 
     Fibre *ofType();
 
     void initializeFrom(ConverterInputRecord &ir);
-    /// Initialise from already-parsed endpoints + diameter (used by qhull-template path).
+    /// Initialise from already-parsed endpoints + diameter (qhull-template path).
     void initializeFromCoords(const oofem::FloatArray &endpoints, double diam);
-    void discretizeYouself();//
 
+    /// Walk the fibre, place reinforcement nodes, and record the matched
+    /// matrix Delaunay vertices and Voronoi-cell intersection points.
+    void discretize();
 
-    //accessors
-    int giveNumberReinforcementNode(int i);
-    int NbOfReinfNodes();
-    int giveNumberDelaunayNode(int i);
-    int NbOfDelNodes();
-    int giveNumberIntersectionPoint(int i);
-    int NbOfIntersectionPoints();
-    oofem::FloatArray giveDirVector() { return direction_vector; }
-    double giveDiameter() { return diameter; }
-    double giveL_end(int i);
-    int NbOfL_end();
-    int giveNumber() { return number; };
+    int               giveNumber() { return number; }
+    double            giveDiameter() { return diameter; }
+    oofem::FloatArray giveDirectionVector() { return directionVector; }
 
+    int    giveNumberOfReinforcementNodes() { return reinforcementPoints.size(); }
+    int    giveNumberOfDelaunayNodes() { return delaunayVertices.size(); }
+    int    giveNumberOfIntersectionPoints() { return intersectionPoints.size(); }
+    int    giveNumberOfEndLengths() { return endLengths.size(); }
+    int    giveReinforcementNodeNumber(int i) { return reinforcementPoints.at(i - 1); }
+    int    giveDelaunayNodeNumber(int i) { return delaunayVertices.at(i - 1); }
+    int    giveIntersectionPointNumber(int i) { return intersectionPoints.at(i - 1); }
+    double giveEndLength(int i) { return endLengths.at(i - 1); }
 
-    static Vertex *reinforcementLocalizer(oofem::FloatArray coord, Grid *agrid, double TOL = 1.0e-14);
-    // find the reinforcement node localized around the specified coordinates (with TOL as tolerance)
-    // error if no node found
-    // TOL must be chosen enough small, or the returned node will be the first found
+    /// Find the reinforcement node nearest to `coord`, falling back to the
+    /// closest one when no node lies within `tol`. Returns a pointer to an
+    /// existing grid vertex (no allocation).
+    static Vertex *findNearestReinforcementNode(const oofem::FloatArray &coord, Grid *grid, double tol = 1.0e-14);
 
-    static double computedistance(oofem::FloatArray coordsOne, oofem::FloatArray coordsTwo);
+    static double computeDistance(const oofem::FloatArray &a, const oofem::FloatArray &b);
 };
-
 
 #endif // FIBRE_H_INCLUDED

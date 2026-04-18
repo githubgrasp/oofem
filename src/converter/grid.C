@@ -2466,14 +2466,14 @@ Grid::discretizeFibres()
     printf("\n generation of beam elements for fibres and link elements in progress... \n ");
 
     for ( int i = 1; i <= nfibre; i++ ) {
-        const double fibre_diameter = giveFibre(i)->giveDiameter();
-        oofem::FloatArray dir_vector = giveFibre(i)->giveDirVector();
+        const double fibreDiameter = giveFibre(i)->giveDiameter();
+        oofem::FloatArray fibreDirection = giveFibre(i)->giveDirectionVector();
 
         // Reinforcement-node placement: nodes sit at the centre of the cross-section
         // where the fibre intersects each Voronoi cell along its length.
-        giveFibre(i)->discretizeYouself();
+        giveFibre(i)->discretize();
 
-        const int numberOfReinforcementNodes = giveFibre(i)->NbOfReinfNodes();
+        const int numberOfReinforcementNodes = giveFibre(i)->giveNumberOfReinforcementNodes();
         const int numberOfBeams = numberOfReinforcementNodes - 1;
         const int numberOfLinks = numberOfReinforcementNodes;
 
@@ -2486,33 +2486,33 @@ Grid::discretizeFibres()
             beamElementCounter++;
             beamLine = ( Line * ) ( Line(beamElementCounter + 1, this).ofType() );
             setLatticeBeam(beamElementCounter, beamLine);
-            beamNodes.at(1) = giveFibre(i)->giveNumberReinforcementNode(j);
-            beamNodes.at(2) = giveFibre(i)->giveNumberReinforcementNode(j + 1);
+            beamNodes.at(1) = giveFibre(i)->giveReinforcementNodeNumber(j);
+            beamNodes.at(2) = giveFibre(i)->giveReinforcementNodeNumber(j + 1);
             beamLine->setVertices(beamNodes);
             giveReinforcementNode(beamNodes.at(1))->setLocalLine(beamElementCounter);
             giveReinforcementNode(beamNodes.at(2))->setLocalLine(beamElementCounter);
-            beamLine->setDiameter(fibre_diameter);
-            beamLine->setDirVector(dir_vector);
+            beamLine->setDiameter(fibreDiameter);
+            beamLine->setDirectionVector(fibreDirection);
         }
 
         for ( int j = 1; j <= numberOfLinks; j++ ) {
             linkElementCounter++;
             linkLine = ( Line * ) ( Line(linkElementCounter + 1, this).ofType() );
             setLatticeLink(linkElementCounter, linkLine);
-            linkNodes.at(1) = giveFibre(i)->giveNumberReinforcementNode(j);
-            linkNodes.at(2) = giveFibre(i)->giveNumberDelaunayNode(j);
+            linkNodes.at(1) = giveFibre(i)->giveReinforcementNodeNumber(j);
+            linkNodes.at(2) = giveFibre(i)->giveDelaunayNodeNumber(j);
             linkLine->setVertices(linkNodes);
 
-            giveInterNode(giveFibre(i)->giveNumberIntersectionPoint(j))->giveCoordinates(coordP1);
-            giveInterNode(giveFibre(i)->giveNumberIntersectionPoint(j + 1))->giveCoordinates(coordP2);
-            linkLine->setAssociatedLength(Fibre::computedistance(coordP1, coordP2));
+            giveInterNode(giveFibre(i)->giveIntersectionPointNumber(j))->giveCoordinates(coordP1);
+            giveInterNode(giveFibre(i)->giveIntersectionPointNumber(j + 1))->giveCoordinates(coordP2);
+            linkLine->setAssociatedLength(Fibre::computeDistance(coordP1, coordP2));
 
             giveReinforcementNode(linkNodes.at(1))->setLocalLink(linkElementCounter);
             giveDelaunayVertex(linkNodes.at(2))->setLocalLink(linkElementCounter);
 
-            linkLine->setDiameter(fibre_diameter);
-            linkLine->setDirVector(dir_vector);
-            linkLine->setL_end(giveFibre(i)->giveL_end(j));
+            linkLine->setDiameter(fibreDiameter);
+            linkLine->setDirectionVector(fibreDirection);
+            linkLine->setEndLength(giveFibre(i)->giveEndLength(j));
         }
     }
 }
@@ -3790,7 +3790,7 @@ Grid::give3DSMOutput(const std::string &fileName)
                 this->giveLatticeLink(i + 1)->giveLocalVertices(lineNodes);
                 const double linkLen = this->giveLatticeLink(i + 1)->giveAssociatedLength();
                 const double linkDiam = this->giveLatticeLink(i + 1)->giveDiameter();
-                const double linkLend = this->giveLatticeLink(i + 1)->giveL_end();
+                const double linkLend = this->giveLatticeLink(i + 1)->giveEndLength();
                 oofem::FloatArray linkDir = this->giveLatticeLink(i + 1)->giveDirectionVector();
 
                 if ( emitBoundary ) {
@@ -8612,9 +8612,9 @@ Grid::give3DRCSMOutput(const std::string &fileName)
     oofem::FloatMatrix referenceNodes;
     referenceNodes.resize(this->giveNumberOfFibres(), 3);
     for ( int i = 0; i < this->giveNumberOfFibres(); i++) {
-        oofem::FloatArray dirVec = this->giveFibre(i + 1)->giveDirVector();
+        oofem::FloatArray dirVec = this->giveFibre(i + 1)->giveDirectionVector();
         dirVec.rotatedWith(R, 'n');
-        int numReinfNode = this->giveFibre(i + 1)->giveNumberReinforcementNode(1);
+        int numReinfNode = this->giveFibre(i + 1)->giveReinforcementNodeNumber(1);
         oofem::FloatArray refNodeCoords = * this->giveReinforcementNode(numReinfNode)->giveCoordinates();
         refNodeCoords.add(dirVec);
         refNodeNumbers.at(i + 1) = i + 1 + this->giveNumberOfDelaunayVertices() + this->giveNumberOfReinforcementNode();
@@ -8655,7 +8655,7 @@ Grid::give3DRCSMOutput(const std::string &fileName)
             oofem::FloatArray dirVec = this->giveLatticeBeam(i + 1)->giveDirectionVector();
             for ( int j = 0; j < this->giveNumberOfFibres(); j++ ) {
                 oofem::FloatArray perpVec(3), firstNodeCoords(3);
-                int numReinfNode = this->giveFibre(j + 1)->giveNumberReinforcementNode(1);
+                int numReinfNode = this->giveFibre(j + 1)->giveReinforcementNodeNumber(1);
                 firstNodeCoords = * this->giveReinforcementNode(numReinfNode)->giveCoordinates();
                 perpVec.at(1) = referenceNodes.at(j + 1, 1) - firstNodeCoords.at(1);
                 perpVec.at(2) = referenceNodes.at(j + 1, 2) - firstNodeCoords.at(2);
@@ -8712,7 +8712,7 @@ Grid::give3DRCSMOutput(const std::string &fileName)
     std::vector < std::vector < int >> interfaceSets(this->giveNumberOfFibres() );
     oofem::IntArray beamsPerFibre(this->giveNumberOfFibres() ), firstNodeinFibres(this->giveNumberOfFibres() );
     for ( int i = 0; i < this->giveNumberOfFibres(); i++ ) {
-        beamsPerFibre.at(i + 1) = this->giveFibre(i + 1)->NbOfReinfNodes() - 1;
+        beamsPerFibre.at(i + 1) = this->giveFibre(i + 1)->giveNumberOfReinforcementNodes() - 1;
         int beamNo(0);
         if ( i != 0 ) {
             for ( int r = 1; r <= i; r++ ) {
@@ -8720,7 +8720,7 @@ Grid::give3DRCSMOutput(const std::string &fileName)
             }
         }
         //first split reinforcement
-        for ( int j = 0; j < this->giveFibre(i + 1)->NbOfReinfNodes() - 1; j++ ) {
+        for ( int j = 0; j < this->giveFibre(i + 1)->giveNumberOfReinforcementNodes() - 1; j++ ) {
             if ( this->giveLatticeBeam(beamNo + j + 1)->giveOutsideFlag() == 0 || this->giveLatticeBeam(beamNo + j + 1)->giveOutsideFlag() == 2 ) {
                 ( beamSets [ i ] ).push_back(beamNo + j + 1);
                 oofem::IntArray beamNodes;
@@ -9121,9 +9121,9 @@ Grid::give3DRCPeriodicSMOutput(const std::string &fileName)
     oofem::FloatMatrix referenceNodes;
     referenceNodes.resize(this->giveNumberOfFibres(), 3);
     for ( int i = 0; i < this->giveNumberOfFibres(); i++) {
-        oofem::FloatArray dirVec = this->giveFibre(i + 1)->giveDirVector();
+        oofem::FloatArray dirVec = this->giveFibre(i + 1)->giveDirectionVector();
         dirVec.rotatedWith(R, 'n');
-        int numReinfNode = this->giveFibre(i + 1)->giveNumberReinforcementNode(1);
+        int numReinfNode = this->giveFibre(i + 1)->giveReinforcementNodeNumber(1);
         oofem::FloatArray refNodeCoords = * this->giveReinforcementNode(numReinfNode)->giveCoordinates();
         refNodeCoords.add(dirVec);
         refNodeNumbers.at(i + 1) = i + 1 + this->giveNumberOfDelaunayVertices() + this->giveNumberOfReinforcementNode();
@@ -9318,7 +9318,7 @@ Grid::give3DRCPeriodicSMOutput(const std::string &fileName)
             oofem::FloatArray dirVec = this->giveLatticeBeam(i + 1)->giveDirectionVector();
             for ( int j = 0; j < this->giveNumberOfFibres(); j++ ) {
                 oofem::FloatArray perpVec(3), firstNodeCoords(3);
-                int numReinfNode = this->giveFibre(j + 1)->giveNumberReinforcementNode(1);
+                int numReinfNode = this->giveFibre(j + 1)->giveReinforcementNodeNumber(1);
                 firstNodeCoords = * this->giveReinforcementNode(numReinfNode)->giveCoordinates();
                 perpVec.at(1) = referenceNodes.at(j + 1, 1) - firstNodeCoords.at(1);
                 perpVec.at(2) = referenceNodes.at(j + 1, 2) - firstNodeCoords.at(2);
@@ -9366,7 +9366,7 @@ Grid::give3DRCPeriodicSMOutput(const std::string &fileName)
         if ( reinfMirrorNodeList.contains(linkVer1) && mirrorNodeList.contains(linkVer2) ) { //to make sure that the link on master surface is not omitted
             //             fprintf( outputStream, "intelpoint %d nodes 2 %d %d normal 3 %e %e %e length %e\n", this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + i + 1, linkVer2, L2Gmap.at(linkVer1), normalVec.at(1), normalVec.at(2), normalVec.at(3), this->giveLatticeLink(i+1)->giveAssociatedLength() );
 
-            fprintf(outputStream, "bondlink3d %d nodes 2 %d %d dirvector 3 %e %e %e length %e length_end %e diameter %e\n", this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + i + 1, L2Gmap.at(linkVer1), linkVer2, direction.at(1), direction.at(2), direction.at(3), this->giveLatticeLink(i + 1)->giveAssociatedLength(), this->giveLatticeLink(i + 1)->giveL_end(), this->giveLatticeLink(i + 1)->giveDiameter() );
+            fprintf(outputStream, "bondlink3d %d nodes 2 %d %d dirvector 3 %e %e %e length %e length_end %e diameter %e\n", this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + i + 1, L2Gmap.at(linkVer1), linkVer2, direction.at(1), direction.at(2), direction.at(3), this->giveLatticeLink(i + 1)->giveAssociatedLength(), this->giveLatticeLink(i + 1)->giveEndLength(), this->giveLatticeLink(i + 1)->giveDiameter() );
             set3.followedBy(this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + i + 1);
             intElL2Gmap.at(i + 1) = this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + i + 1;
         }
@@ -9378,7 +9378,7 @@ Grid::give3DRCPeriodicSMOutput(const std::string &fileName)
     std::vector < std::vector < int >> interfaceSets(this->giveNumberOfFibres() );
     oofem::IntArray beamsPerFibre(this->giveNumberOfFibres() ), firstNodeinFibres(this->giveNumberOfFibres() );
     for ( int i = 0; i < this->giveNumberOfFibres(); i++ ) {
-        beamsPerFibre.at(i + 1) = this->giveFibre(i + 1)->NbOfReinfNodes() - 1;
+        beamsPerFibre.at(i + 1) = this->giveFibre(i + 1)->giveNumberOfReinforcementNodes() - 1;
         int beamNo(0);
         if ( i != 0 ) {
             for ( int r = 1; r <= i; r++ ) {
@@ -9386,7 +9386,7 @@ Grid::give3DRCPeriodicSMOutput(const std::string &fileName)
             }
         }
         //first split reinforcement
-        for ( int j = 0; j < this->giveFibre(i + 1)->NbOfReinfNodes() - 1; j++ ) {
+        for ( int j = 0; j < this->giveFibre(i + 1)->giveNumberOfReinforcementNodes() - 1; j++ ) {
             if ( this->giveLatticeBeam(beamNo + j + 1)->giveOutsideFlag() == 0 || this->giveLatticeBeam(beamNo + j + 1)->giveOutsideFlag() == 2 ) {
                 ( beamSets [ i ] ).push_back(beamNo + j + 1);
                 oofem::IntArray beamNodes;
@@ -9799,9 +9799,9 @@ Grid::give3DRCPeriodicSMOutput2(const std::string &fileName)
     oofem::FloatMatrix referenceNodes;
     referenceNodes.resize(this->giveNumberOfFibres(), 3);
     for ( int i = 0; i < this->giveNumberOfFibres(); i++) {
-        oofem::FloatArray dirVec = this->giveFibre(i + 1)->giveDirVector();
+        oofem::FloatArray dirVec = this->giveFibre(i + 1)->giveDirectionVector();
         dirVec.rotatedWith(R, 'n');
-        int numReinfNode = this->giveFibre(i + 1)->giveNumberReinforcementNode(1);
+        int numReinfNode = this->giveFibre(i + 1)->giveReinforcementNodeNumber(1);
         oofem::FloatArray refNodeCoords = * this->giveReinforcementNode(numReinfNode)->giveCoordinates();
         refNodeCoords.add(dirVec);
         refNodeNumbers.at(i + 1) = i + 1 + this->giveNumberOfDelaunayVertices() + this->giveNumberOfReinforcementNode();
@@ -9982,7 +9982,7 @@ Grid::give3DRCPeriodicSMOutput2(const std::string &fileName)
             oofem::FloatArray dirVec = this->giveLatticeBeam(i + 1)->giveDirectionVector();
             for ( int j = 0; j < this->giveNumberOfFibres(); j++ ) {
                 oofem::FloatArray perpVec(3), firstNodeCoords(3);
-                int numReinfNode = this->giveFibre(j + 1)->giveNumberReinforcementNode(1);
+                int numReinfNode = this->giveFibre(j + 1)->giveReinforcementNodeNumber(1);
                 firstNodeCoords = * this->giveReinforcementNode(numReinfNode)->giveCoordinates();
                 perpVec.at(1) = referenceNodes.at(j + 1, 1) - firstNodeCoords.at(1);
                 perpVec.at(2) = referenceNodes.at(j + 1, 2) - firstNodeCoords.at(2);
@@ -10048,7 +10048,7 @@ Grid::give3DRCPeriodicSMOutput2(const std::string &fileName)
 
         if ( reinfMirrorNodeList.contains(linkVer1) && mirrorNodeList.contains(linkVer2) ) { //to make sure that the link on master surface is not omitted
             for (int k = 1; k <= 4; k++) {
-                fprintf(outputStream, "bondlink3d %d nodes 2 %d %d dirvector 3 %e %e %e length %e length_end %e diameter %e\n", this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + 4 * i + k, L2Gmap.at(linkVer1), targetTetraNodes.at(k), direction.at(1), direction.at(2), direction.at(3), this->giveLatticeLink(i + 1)->giveAssociatedLength(), this->giveLatticeLink(i + 1)->giveL_end(), this->giveLatticeLink(i + 1)->giveDiameter() );
+                fprintf(outputStream, "bondlink3d %d nodes 2 %d %d dirvector 3 %e %e %e length %e length_end %e diameter %e\n", this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + 4 * i + k, L2Gmap.at(linkVer1), targetTetraNodes.at(k), direction.at(1), direction.at(2), direction.at(3), this->giveLatticeLink(i + 1)->giveAssociatedLength(), this->giveLatticeLink(i + 1)->giveEndLength(), this->giveLatticeLink(i + 1)->giveDiameter() );
                 set3.followedBy(this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + i + 1);
                 intElL2Gmap.at(i + 1) = this->giveNumberOfDelaunayTetras() + this->giveNumberOfLatticeBeams() + i + 1;
             }
@@ -10061,7 +10061,7 @@ Grid::give3DRCPeriodicSMOutput2(const std::string &fileName)
     std::vector < std::vector < int >> interfaceSets(this->giveNumberOfFibres() );
     oofem::IntArray beamsPerFibre(this->giveNumberOfFibres() ), firstNodeinFibres(this->giveNumberOfFibres() );
     for ( int i = 0; i < this->giveNumberOfFibres(); i++ ) {
-        beamsPerFibre.at(i + 1) = this->giveFibre(i + 1)->NbOfReinfNodes() - 1;
+        beamsPerFibre.at(i + 1) = this->giveFibre(i + 1)->giveNumberOfReinforcementNodes() - 1;
         int beamNo(0);
         if ( i != 0 ) {
             for ( int r = 1; r <= i; r++ ) {
@@ -10069,7 +10069,7 @@ Grid::give3DRCPeriodicSMOutput2(const std::string &fileName)
             }
         }
         //first split reinforcement
-        for ( int j = 0; j < this->giveFibre(i + 1)->NbOfReinfNodes() - 1; j++ ) {
+        for ( int j = 0; j < this->giveFibre(i + 1)->giveNumberOfReinforcementNodes() - 1; j++ ) {
             if ( this->giveLatticeBeam(beamNo + j + 1)->giveOutsideFlag() == 0 || this->giveLatticeBeam(beamNo + j + 1)->giveOutsideFlag() == 2 ) {
                 ( beamSets [ i ] ).push_back(beamNo + j + 1);
                 oofem::IntArray beamNodes;

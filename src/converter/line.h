@@ -33,24 +33,23 @@ protected:
     oofem::IntArray localVertexFlag;
     oofem::IntArray boundaryElements;
     int mechanicalLineFlag;
-    int globalPossition;
+    int globalPosition;
 
     double radius;
 
     int edgeFlag;
 
-    // info about material
-    int m_typeOfMaterial;
+    // material assigned to the line by the writer.
+    int materialType;
 
-    //for the links (case with fibre)
-    double associated_length;
+    // For fibre/matrix coupling links: portion of fibre length attributed to this link.
+    double associatedLength;
 
-
-    // for the use of fibre elenents
+    // Fibre-element parameters (also used by coupling links).
     double diameter;
-    oofem::FloatArray dir_vector; // direction vector of the fibre (not necessarily those of the elements...)
+    oofem::FloatArray directionVector;        // unit vector along the fibre, not necessarily along the element
 
-    double L_end;// distance to the nearest fibre endpoint
+    double endLength;                         // distance to the nearer fibre endpoint
 
 public:
 
@@ -86,8 +85,8 @@ public:
     void giveInfinityFlags(oofem::IntArray &flags) { flags = this->infinityFlags; }
     void setInfinityFlags(oofem::IntArray &flags) { this->infinityFlags = flags; }
 
-    void setAssociatedLength(double length) { associated_length = length; }
-    double giveAssociatedLength() { return associated_length; }
+    void setAssociatedLength(double length) { associatedLength = length; }
+    double giveAssociatedLength() { return associatedLength; }
 
     void updateCrossSectionElement(int element);
     void updateCrossSectionElements(oofem::IntArray &elements);
@@ -114,22 +113,19 @@ public:
     /// Returns class name of the receiver.
     const char *giveClassName() const override { return "Line"; }
 
-    /// prints receiver state on stdout. Usefull for debuging.
-    void         printYourself();
+    /// Print receiver state on stdout — useful for debugging.
+    void printYourself();
 
-
-    // update material
     void updateMaterial(int typeOfMaterial);
-    // access to material
-    int giveMaterial() { return this->m_typeOfMaterial; }
+    int  giveMaterial() { return this->materialType; }
 
-    // for the use of fibre elenents
-    void setDiameter(double diameter_fibre) { diameter = diameter_fibre; }
+    // Fibre-element parameters (also used by coupling links).
+    void setDiameter(double diameterFibre) { diameter = diameterFibre; }
     double giveDiameter() { return diameter; }
-    void setDirVector(oofem::FloatArray dir_vector_fibre) { dir_vector = dir_vector_fibre; }
-    oofem::FloatArray giveDirectionVector() { return dir_vector; }
-    void setL_end(double L) { L_end = L; }
-    double giveL_end() { return L_end; }
+    void setDirectionVector(const oofem::FloatArray &dir) { directionVector = dir; }
+    oofem::FloatArray giveDirectionVector() { return directionVector; }
+    void setEndLength(double l) { endLength = l; }
+    double giveEndLength() { return endLength; }
 };
 
 

@@ -1092,7 +1092,7 @@ void Prism::findOutsiders(oofem::FloatArray &boundaries)
                                 newCoords.at(n + 1) = coords.at(n + 1) - switches.at(n + 1) * specimenDimension.at(n + 1);
                             }
 
-                            periodicNode = ( Fibre::reinforcementLocalizer(newCoords, grid, 2 * 10 * grid->giveTol() ) )->giveNumber();
+                            periodicNode = ( Fibre::findNearestReinforcementNode(newCoords, grid, 2 * 10 * grid->giveTol() ) )->giveNumber();
                             this->grid->giveReinforcementNode(nodes.at(m + 1) )->setPeriodicNode(periodicNode);
                             this->grid->giveReinforcementNode(nodes.at(m + 1) )->setLocation(location);
                             //used for the Delaunay transport model
@@ -1147,7 +1147,7 @@ void Prism::findOutsiders(oofem::FloatArray &boundaries)
                         }
 
 
-                        periodicNode = ( Fibre::reinforcementLocalizer(newCoords, grid, 2 * 10 * grid->giveTol() ) )->giveNumber();
+                        periodicNode = ( Fibre::findNearestReinforcementNode(newCoords, grid, 2 * 10 * grid->giveTol() ) )->giveNumber();
                         this->grid->giveReinforcementNode(nodes.at(m + 1) )->setPeriodicNode(periodicNode);
                         this->grid->giveReinforcementNode(nodes.at(m + 1) )->setLocation(location);
                         //used for the Delaunay transport model
