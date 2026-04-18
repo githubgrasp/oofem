@@ -134,7 +134,7 @@ Used when the converter is invoked with `mesh.t3d`. These directives describe BC
 
 ### Unified `3dSM` writer — conventions for matrix, fibres, and links
 
-`#@grid 3dSM` dispatches to a single writer (`Grid::give3DSMOutput`) that handles plain SM, periodic SM, and periodic SM with fibres, driven entirely by `#@perflag` and the presence of `#@fibre` records. The previously separate `3dFPZ`, `3dFPZFibre`, and `3dFibreBenchmark` grid types have been retired.
+`#@grid 3dSM` dispatches to a single writer (`Grid::give3DSMOutput`) that handles plain SM, periodic SM, and periodic SM with fibres, driven entirely by `#@perflag` and the presence of `#@fibre` records. The previously separate `3dFPZ`, `3dFPZFibre`, `3dFibreBenchmark`, `3dGopSha`, and `3dTension` grid types have been retired; their analyses are expressed entirely as `control.in` templates using `#@notch` for per-region material overrides and `#@controlvertex` / `#@CTL<id>` for support/load points.
 
 For the fibre case the writer emits three classes of element, all of them `lattice3D` family, distinguished by their cross-section reference. The control file is expected to declare three `latticecs` records and three materials in this exact slot order:
 

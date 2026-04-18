@@ -1,0 +1,33 @@
+oofem.out
+Mechanical 3D direct tension with elastic ends
+NonLinearStatic nmsteps 1 nsteps 1 contextOutputStep 2000 nmodules 2 lstype 3 smtype 7
+nsteps 1 rtolv 1.e-3 stiffMode 1 manrmsteps 10 maxiter 200 controllmode 1 lstype 3 smtype 7
+vtkxmllattice primvars 1 1 tstep_all domain_all cross 1 cellvars 2 60 90
+gpexportmodule vars 2 46 139 tstep_all
+domain 3dLattice
+OutputManager tstep_all dofman_output { #@CTL1 #@CTL2 }
+ncrosssect 2 nmat 2 nbc 2 nic 0 nltf 2 nset 2
+latticecs 1 material 1 shape 2
+latticecs 2 material 2 shape 2
+latticeplastdam 1 d 0 talpha 0. calpha 0. e 50.46e9 a1 0.215 ft 2.44e6 fc 30.e6 wf 50.e-6 ahard 1.e-3 angle1 0.5 flow 0.25
+latticelinearelastic 2 d 0 talpha 0. calpha 0. e 50.46e9 a1 0.215
+BoundaryCondition 1 loadTimeFunction 1 dofs 6 1 2 3 4 5 6 values 6 0 0 0 0 0 0 set 1
+BoundaryCondition 2 loadTimeFunction 2 dofs 6 1 2 3 4 5 6 values 6 0 4.e-4 0 0 0 0 set 2
+ConstantFunction 1 f(t) 1.
+PiecewiseLinFunction 2 nPoints 2 t 2 0. 1. f(t) 2 0. 1.
+Set 1 nodes 1 #@CTL1
+Set 2 nodes 1 #@CTL2
+#%BEGIN_CHECK%
+#NODE number #@CTL2 dof 2 unknown d
+#REACTION number #@CTL1 dof 2 unknown d
+#TIME
+#%END_CHECK%
+#@grid 3dSM
+#@mesher qhull
+#@diam 0.008
+#@perflag 3 0 0 0
+#@prism 1 box 6 0. 0. 0. 0.05 0.075 0.05 refine 1.
+#@notch 1 box 6 0. 0.     0. 0.05 0.0125 0.05 material 2
+#@notch 2 box 6 0. 0.0625 0. 0.05 0.075  0.05 material 2
+#@controlvertex 1 coords 3 0.025 0.0   0.025
+#@controlvertex 2 coords 3 0.025 0.075 0.025
