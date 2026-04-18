@@ -66,7 +66,9 @@ int main(int argc, char *argv[])
     grid.instanciateYourself(& dr);
 
     grid.generatePoints();
-    grid.exportVTK("points.vtk");
+    if ( grid.giveVtkFlag() ) {
+        grid.exportVTK("points.vtk");
+    }
 
     FILE *outputStream = std::fopen(dr.giveOutputFileName().c_str(), "w");
     if ( !outputStream ) {

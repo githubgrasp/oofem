@@ -1,0 +1,41 @@
+oofem.out
+Mechanical 3D model of GopSha experiment (notched specimen)
+NonLinearStatic nmsteps 1 nsteps 1 contextOutputStep 100 nmodules 2 lstype 3 smtype 7
+nsteps 1 rtolv 1.e-3 stiffMode 1 manrmsteps 10 maxiter 400 controllmode 0 steplength 2.e-6 minsteplength 2.e-6 hpcmode 2 hpc 8 #@CTL3 2 #@CTL4 2 #@CTL5 2 #@CTL6 2 hpcw 4 -1 1 -1 1 donotfixload lstype 3 smtype 7
+vtkxmllattice primvars 1 1 tstep_all domain_all cross 1
+gpexportmodule vars 2 46 139 tstep_all
+domain 3dLattice
+OutputManager tstep_all dofman_output { #@CTL1 #@CTL2 #@CTL3 #@CTL4 #@CTL5 #@CTL6 }
+ncrosssect 2 nmat 2 nbc 3 nic 0 nltf 1 nset 2
+latticecs 1 material 1 shape 2
+latticecs 2 material 2 shape 2
+latticeplastdam 1 d 0 talpha 0. calpha 0. e 50.46e9 a1 0.215 ft 2.44e6 fc 30.e6 wf 50.e-6 ahard 1.e-3 angle1 0.5 flow 0.25
+latticelinearelastic 2 d 0 talpha 0. calpha 0. e 50.46 a1 0.215
+BoundaryCondition 1 loadTimeFunction 1 dofs 6 1 2 3 4 5 6 values 6 0 0 0 0 0 0 set 1
+BoundaryCondition 2 loadTimeFunction 1 dofs 4 1 3 4 5 values 4 0 0 0 0 set 2
+NodalLoad 3 loadTimeFunction 1 dofs 6 1 2 3 4 5 6 Components 6 0. 1. 0. 0. 0. 0. set 2
+ConstantFunction 1 f(t) 1.
+Set 1 nodes 1 #@CTL1
+Set 2 nodes 1 #@CTL2
+#%BEGIN_CHECK%
+#NODE number #@CTL2 dof 2 unknown d
+#REACTION number #@CTL1 dof 2 unknown d
+#NODE number #@CTL3 dof 2 unknown d
+#NODE number #@CTL4 dof 2 unknown d
+#NODE number #@CTL5 dof 2 unknown d
+#NODE number #@CTL6 dof 2 unknown d
+#TIME
+#%END_CHECK%
+#@grid 3dSM
+#@mesher qhull
+#@diam 0.01
+#@perflag 3 0 0 0
+#@prism 1 box 6 0. 0. 0. 0.076 0.305 0.038 refine 1.
+#@notch 1 box 6 0.0   0.151 0.0   0.013 0.154 0.038 material 2
+#@notch 2 box 6 0.063 0.151 0.0   0.076 0.154 0.038 material 2
+#@controlvertex 1 coords 3 0.038 0.0   0.019
+#@controlvertex 2 coords 3 0.038 0.305 0.019
+#@controlvertex 3 coords 3 0.0   0.146 0.019
+#@controlvertex 4 coords 3 0.0   0.159 0.019
+#@controlvertex 5 coords 3 0.076 0.146 0.019
+#@controlvertex 6 coords 3 0.076 0.159 0.019

@@ -222,6 +222,22 @@ private:
     };
     std::map< std::pair< int, int >, EdgeSpec >elementSpecsByEntity;
 
+    /// A notch is an axis-aligned box within which matrix elements whose midpoint
+    /// falls inside get a softened/alternative material. Populated by the
+    /// `#@notch <id> box 6 xmin ymin zmin xmax ymax zmax material <m>` directive.
+    struct NotchSpec {
+        double xmin, ymin, zmin, xmax, ymax, zmax;
+        int material = 3;
+    };
+    std::vector< NotchSpec >notchSpecs;
+
+    /// Control-vertex definitions from `#@controlvertex <id> coords 3 x y z`.
+    /// Each entry declares a specific mesh coordinate whose nearest Delaunay
+    /// vertex id is exposed at write time via the `#@CTL<id>` inline placeholder.
+    std::vector< std::pair< int, oofem::FloatArray > >controlVertexDefinitions;
+    /// Resolved mapping: directive id → raw Delaunay vertex index (1-based).
+    std::map< int, int >controlNodeIds;
+
     int t3dOutType = 0;
 
     int dimension;
@@ -415,6 +431,15 @@ public:
     /// Resolve the EdgeSpec for an edge, falling back to `defaultSpec` if no
     /// `#@element` directive matches the edge's entity.
     EdgeSpec resolveEdgeSpec(const Edge &e, const EdgeSpec &defaultSpec) const;
+
+    /// For a matrix lattice line with endpoint coords A/B, return the notch
+    /// material if the midpoint is inside any `#@notch` box, else `defaultMat`.
+    int resolveNotchMaterial(const oofem::FloatArray &A, const oofem::FloatArray &B,
+                             int defaultMat) const;
+
+    /// Match each `#@controlvertex` declaration to the nearest Delaunay vertex
+    /// and populate `controlNodeIds`. Called after the Delaunay vertex list is loaded.
+    void resolveControlVertices();
 
     void writeGeneratedSets(std::ostream &out) const;
 

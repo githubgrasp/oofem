@@ -709,6 +709,9 @@ int Grid::instanciateYourself(GeneratorDataReader *dr)
         exit(0);
     }
 
+    vtkFlag = 0;
+    IR_GIVE_OPTIONAL_FIELD(irControlRec, vtkFlag, _IFT_Grid_vtk);
+
 
     //This is useful to be able to regenerate the same mesh.
     //Simply set it to a negative value and this is used to generate the random numbers.
@@ -784,16 +787,16 @@ int Grid::instanciateYourself(GeneratorDataReader *dr)
             std::exit(EXIT_FAILURE);
         }
 
-        // 2) duplicate check
-        if ( generator::includes1(inputVertexList, num) ) {
-            std::cerr << "instanciateYourself: Vertex entry already exists (num=" << num << ")\n";
+        // 2) duplicate check — control vertices have their own numbering space
+        if ( generator::includes1(controlVertexList, num) ) {
+            std::cerr << "instanciateYourself: Control vertex entry already exists (num=" << num << ")\n";
             std::exit(EXIT_FAILURE);
         }
 
         // 3) create, init, and insert
         Vertex *vertex = new Vertex(num, this);
         vertex->initializeFrom(irControlVertexRec);
-        setInputVertex(num, vertex);
+        setControlVertex(num, vertex);
 
         irControlVertexRec.finish();
     }

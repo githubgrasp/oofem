@@ -37,6 +37,7 @@
 #define _IFT_Grid_ninclusion      "ninclusion"
 #define _IFT_Grid_nrefinement     "nrefinement"
 #define _IFT_Grid_ranflag     "ranflag"
+#define _IFT_Grid_vtk         "vtk"
 
 class Vertex;
 class Curve;
@@ -109,6 +110,9 @@ private:
     int couplingFlag;
 
     int randomFlag;
+
+    /// Opt in to writing points.vtk alongside nodes.dat (default off).
+    int vtkFlag = 0;
 
     GridLocalizer *gridLocalizer;
 
@@ -259,6 +263,7 @@ public:
 
     /// Returns flag to indicate if mesh generation should be regular
     int                giveRandomFlag() { return this->randomFlag; }
+    int                giveVtkFlag() { return this->vtkFlag; }
 
 
 

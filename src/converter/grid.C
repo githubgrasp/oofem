@@ -1571,6 +1571,34 @@ void Grid::readQhullControlRecords(const std::string &controlFile)
             f->initializeFromCoords(endpoints, diam);
             fibreList.resize(std::max(( int ) fibreList.size(), num), nullptr);
             setFibre(num, f);
+        } else if ( tag == "#@controlvertex" ) {
+            // #@controlvertex <id> coords 3 x y z
+            int id;
+            iss >> id;
+            std::string kw;
+            int sz = 0;
+            iss >> kw >> sz;
+            if ( kw != "coords" || sz != 3 ) {
+                converter::error("Malformed #@controlvertex — expected 'coords 3 x y z'");
+            }
+            oofem::FloatArray c(3);
+            iss >> c.at(1) >> c.at(2) >> c.at(3);
+            controlVertexDefinitions.emplace_back(id, c);
+        } else if ( tag == "#@notch" ) {
+            // #@notch <id> box 6 xmin ymin zmin xmax ymax zmax material <m>
+            int num;
+            iss >> num;
+            std::string kw;
+            int sz = 0;
+            iss >> kw >> sz;              // "box" 6
+            if ( kw != "box" || sz != 6 ) {
+                converter::error("Malformed #@notch — expected 'box 6 xmin ymin zmin xmax ymax zmax material <m>'");
+            }
+            NotchSpec n;
+            iss >> n.xmin >> n.ymin >> n.zmin >> n.xmax >> n.ymax >> n.zmax;
+            iss >> kw;                    // "material"
+            iss >> n.material;
+            notchSpecs.push_back(n);
         }
     }
 
@@ -1627,6 +1655,7 @@ int Grid::instanciateYourselfFromQhull(const std::string &controlFile,
         setDelaunayVertex(i + 1, v);
     }
     delaunayLocalizer->init(true);
+    resolveControlVertices();
     printf("Finished Delaunay vertices (%d)\n", nDelaunayVertices);
 
     // read Voronoi vertices and Delaunay lines
@@ -3470,6 +3499,57 @@ Grid::resolveEdgeSpec(const Edge &e, const EdgeSpec &defaultSpec) const
 }
 
 
+void
+Grid::resolveControlVertices()
+{
+    if ( controlVertexDefinitions.empty() ) return;
+    const double tol = 0.1 * diameter;          // loose — user-declared point must land on the nearest mesh node
+    oofem::FloatArray c;
+    for ( const auto &def : controlVertexDefinitions ) {
+        const int id = def.first;
+        const oofem::FloatArray &target = def.second;
+        int bestIdx = -1;
+        double bestD2 = tol * tol;
+        for ( int i = 1; i <= giveNumberOfDelaunayVertices(); i++ ) {
+            giveDelaunayVertex(i)->giveCoordinates(c);
+            double d2 = 0.;
+            for ( int k = 1; k <= 3; k++ ) {
+                double dd = c.at(k) - target.at(k);
+                d2 += dd * dd;
+            }
+            if ( d2 < bestD2 ) {
+                bestD2  = d2;
+                bestIdx = i;
+            }
+        }
+        if ( bestIdx <= 0 ) {
+            converter::errorf("No Delaunay vertex within tol of #@controlvertex %d at (%g, %g, %g)",
+                              id, target.at(1), target.at(2), target.at(3));
+        }
+        controlNodeIds[ id ] = bestIdx;
+    }
+}
+
+
+int
+Grid::resolveNotchMaterial(const oofem::FloatArray &A, const oofem::FloatArray &B,
+                           int defaultMat) const
+{
+    if ( notchSpecs.empty() ) return defaultMat;
+    const double mx = 0.5 * ( A.at(1) + B.at(1) );
+    const double my = 0.5 * ( A.at(2) + B.at(2) );
+    const double mz = 0.5 * ( A.at(3) + B.at(3) );
+    for ( const auto &n : notchSpecs ) {
+        if ( mx >= n.xmin && mx <= n.xmax &&
+             my >= n.ymin && my <= n.ymax &&
+             mz >= n.zmin && mz <= n.zmax ) {
+            return n.material;
+        }
+    }
+    return defaultMat;
+}
+
+
 void Grid::writeBCRecords(std::ostream &out, int &bcID) const
 {
     for (const auto &bc : bcRequests) {
@@ -3612,12 +3692,36 @@ Grid::give3DSMOutput(const std::string &fileName)
     const int nReinf = this->giveNumberOfReinforcementNode();
     const int ctlNode = nDelV + nReinf + 1;
     const std::string ctlPlaceholder = "#@CTLNODE";
-    auto substitute = [ & ](std::string &s) {
-        if ( !periodic ) return;
+
+    // #@CTL<id> → resolved Delaunay-vertex id from #@controlvertex definitions.
+    // Replace longer ids first so e.g. `#@CTL12` isn't consumed by the `#@CTL1` rule.
+    std::vector< std::pair< std::string, int > >sortedCtlTokens;
+    sortedCtlTokens.reserve(controlNodeIds.size());
+    for ( const auto &kv : controlNodeIds ) {
+        // Translate raw Delaunay index through the compact nodeMap in non-periodic mode;
+        // periodic mode uses raw ids so mapId is identity there.
+        sortedCtlTokens.emplace_back("#@CTL" + std::to_string(kv.first), mapId(kv.second));
+    }
+    std::sort(sortedCtlTokens.begin(), sortedCtlTokens.end(),
+              [](const auto &a, const auto &b) { return a.first.size() > b.first.size(); });
+
+    auto replaceAll = [](std::string &s, const std::string &needle, const std::string &replacement) {
+        if ( needle.empty() ) return;
         size_t pos = 0;
-        while ( ( pos = s.find(ctlPlaceholder, pos) ) != std::string::npos ) {
-            s.replace(pos, ctlPlaceholder.size(), std::to_string(ctlNode));
-            pos += std::to_string(ctlNode).size();
+        while ( ( pos = s.find(needle, pos) ) != std::string::npos ) {
+            s.replace(pos, needle.size(), replacement);
+            pos += replacement.size();
+        }
+    };
+
+    auto substitute = [ & ](std::string &s) {
+        // #@CTLNODE (periodic control node) — periodic mode only.
+        if ( periodic ) {
+            replaceAll(s, ctlPlaceholder, std::to_string(ctlNode));
+        }
+        // #@CTL<id> (mesh control vertices from #@controlvertex).
+        for ( const auto &tok : sortedCtlTokens ) {
+            replaceAll(s, tok.first, std::to_string(tok.second));
         }
     };
 
@@ -3720,6 +3824,12 @@ Grid::give3DSMOutput(const std::string &fileName)
                 this->giveDelaunayLine(i + 1)->giveLocalVertices(lineNodes);
                 this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
+                // Midpoint-based notch check uses the raw (pre-substitution) endpoints.
+                oofem::FloatArray boundaryA(3), boundaryB(3);
+                this->giveDelaunayVertex(lineNodes.at(1))->giveCoordinates(boundaryA);
+                this->giveDelaunayVertex(lineNodes.at(2))->giveCoordinates(boundaryB);
+                const int matBoundary = resolveNotchMaterial(boundaryA, boundaryB, 1);
+
                 if ( emitBoundary ) {
                     location.zero();
                     for ( int m = 0; m < 2; m++ ) {
@@ -3731,7 +3841,8 @@ Grid::give3DSMOutput(const std::string &fileName)
 
                     out << "lattice3Dboundary " << ++elemCounter
                         << " nodes 3 " << lineNodes.at(1) << " " << lineNodes.at(2) << " " << ctlNode
-                        << " crossSect 1 mat 1 polycoords " << ( 3 * crossSectionNodes.giveSize() );
+                        << " crossSect " << matBoundary << " mat " << matBoundary
+                        << " polycoords " << ( 3 * crossSectionNodes.giveSize() );
                     for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
                         this->giveVoronoiVertex(crossSectionNodes.at(m + 1))->giveCoordinates(coords);
                         out << " " << coords.at(1) << " " << coords.at(2) << " " << coords.at(3);
@@ -3766,9 +3877,11 @@ Grid::give3DSMOutput(const std::string &fileName)
                     }
                 }
 
+                const int matInside = resolveNotchMaterial(A, B, 1);
                 out << "lattice3D " << ++elemCounter
                     << " nodes 2 " << mapId(lineNodes.at(1)) << " " << mapId(lineNodes.at(2))
-                    << " crossSect 1 mat 1 polycoords " << 3 * ( int ) polyOut.size();
+                    << " crossSect " << matInside << " mat " << matInside
+                    << " polycoords " << 3 * ( int ) polyOut.size();
                 for ( const auto &c : polyOut ) {
                     out << " " << c.at(1) << " " << c.at(2) << " " << c.at(3);
                 }
