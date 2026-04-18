@@ -88,13 +88,15 @@ Used when the converter is invoked with `mesh.nodes` (+ optional `mesh.delaunay`
 
 | Directive | Arguments | Purpose |
 |-----------|-----------|---------|
-| `#@grid` | `<type>` | Selects the output generator (e.g. `3dSM`, `3dTM`, `3dCoupledSMTM`, `3dCylinder`, …). See `Grid::resolveGridType` for the full list. |
+| `#@grid` | `<type>` | Selects the output generator. The unified types are `3dSM` (covers plain, periodic, and fibre-bearing SM), `3dTM` (mass transport), and `3dCoupledSMTM` (staggered SM + TM). Other legacy values (e.g. `3dCylinder`) still exist; see `Grid::resolveGridType`. |
 | `#@diam` | `<d>` | Nominal grain diameter — must match the `diam` used when the mesh was generated. |
-| `#@perflag` | `3 <px> <py> <pz>` | Periodicity flags per axis (0 = non-periodic, 1 = periodic). |
+| `#@perflag` | `3 <px> <py> <pz>` | Periodicity flags per axis (0 = non-periodic, 1 = periodic). For `3dSM`, any axis = 1 switches the writer into periodic mode (control node, `lattice3Dboundary` for boundary-crossing elements). |
 | `#@ranint` | `<seed>` | Random integer seed. Non-negative values are replaced with `-time(NULL)`. |
 | `#@prism` | `<id> box 6 <xmin> <ymin> <zmin> <xmax> <ymax> <zmax> [refine <r>] [edgerefine <re>] [surfacerefine <rs>] [regionrefine <rr>]` | Defines a box-shaped region. The `*refine` tokens exist for mirroring the generator's `mesh.in` — the converter ignores them, but keeping them in sync keeps the two files readable as a pair. |
 | `#@cylinder` | `<id> line 6 <x1> <y1> <z1> <x2> <y2> <z2> …` | Defines a cylindrical region (see `Grid::readQhullControlRecords`). |
 | `#@interfacecylinder` | `<id> line 6 <x1> <y1> <z1> <x2> <y2> <z2> …` | Defines a cylindrical interface region. |
+| `#@fibre` | `<id> endpoints 6 <x1> <y1> <z1> <x2> <y2> <z2> diameter <d>` | Declares a straight fibre. The converter discretises it into reinforcement nodes at intersections with matrix Voronoi cells, builds `lattice3D` segments along the fibre, and adds `latticelink3D` couplings to the surrounding matrix vertices. |
+| `#@CTLNODE` | *(inline placeholder, not a line directive)* | Substituted with the numeric id of the periodic control node before each non-directive line is written. Use anywhere the OOFEM template needs that id (e.g. `hpc 2 #@CTLNODE 2 hpcw 1 1.`, `OutputManager tstep_all dofman_output {#@CTLNODE}`, `#NODE number #@CTLNODE dof 2 unknown d`). Inert when `perflag` is fully non-periodic. |
 
 ### T3D path directives
 
@@ -111,6 +113,22 @@ Used when the converter is invoked with `mesh.t3d`. These directives describe BC
 
 `<entType>` uses the numeric codes from `Grid::entityTypeFromString`: 1 vertex, 2 curve, 3 surface, 5 patch, 6 shell.
 
+### Unified `3dSM` writer — conventions for matrix, fibres, and links
+
+`#@grid 3dSM` dispatches to a single writer (`Grid::give3DSMOutput`) that handles plain SM, periodic SM, and periodic SM with fibres, driven entirely by `#@perflag` and the presence of `#@fibre` records. The previously separate `3dFPZ`, `3dFPZFibre`, and `3dFibreBenchmark` grid types have been retired.
+
+For the fibre case the writer emits three classes of element, all of them `lattice3D` family, distinguished by their cross-section reference. The control file is expected to declare three `latticecs` records and three materials in this exact slot order:
+
+| Slot | Cross-section / material | Element kind | Geometry source |
+|------|--------------------------|--------------|-----------------|
+| 1    | `latticecs 1 material 1 shape 2`<br>`latticedamage 1 …` (or any matrix material) | matrix `lattice3D` / `lattice3Dboundary` | polygonal `polycoords` from qhull Voronoi facet |
+| 2    | `latticecs 2 material 2 shape 1 radius <r>`<br>`latticelinearelastic 2 …` (or any fibre material) | fibre segment `lattice3D` / `lattice3Dboundary` (Timoshenko frame) | circular cross-section, `radius` taken from `latticecs` |
+| 3    | `latticecs 3 material 3`<br>`latticeslip 3 …` (or any bond material) | `latticelink3D` / `latticelink3Dboundary` (fibre↔matrix coupling) | `length`, `diameter`, `dirvector`, `L_end` written by the converter |
+
+The counts header in `control.in` must read `ncrosssect 3 nmat 3 …` whenever fibres are present (drop to 1 for plain SM). The writer prepends `ndofman` and `nelem` automatically.
+
+Reinforcement-node ids are offset by the raw Delaunay-vertex count `N_DelV`: the i-th reinforcement node is written as `node (N_DelV + i)`. The periodic control node id is `N_DelV + N_reinf + 1`, available throughout the template via the `#@CTLNODE` placeholder.
+
 ### Adding a new analysis type
 
-The long-term goal is that supporting a new analysis type means writing a new `control.in`, not touching C++. When adding a directive, register it in the matching reader (`readControlRecords` for T3D, `readQhullControlRecords` for qhull) and add it to the table above. Keep `mesh.in` and the `#@prism`/`#@cylinder` etc. lines in `control.in` mirrored so that readers can see the mesh parameters in both files.
+The long-term goal is that supporting a new analysis type means writing a new `control.in`, not touching C++. When adding a directive, register it in the matching reader (`readControlRecords` for T3D, `readQhullControlRecords` for qhull) and add it to the table above. Keep `mesh.in` and the `#@prism`/`#@cylinder`/`#@fibre` etc. lines in `control.in` mirrored so that readers can see the mesh parameters in both files. Prefer extending `give3DSMOutput` / `give3DTMOutput` over adding a new grid type.
