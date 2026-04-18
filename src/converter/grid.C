@@ -2854,7 +2854,8 @@ void Grid::giveOofemOutput(const std::string &fileName)
     } else if ( gridType == _3dPerSM ) {  //Base implementation
         give3DPeriodicSMTMOutput(fileName);
     } else if ( gridType == _3dFPZ ) {
-        give3DFPZOutput(fileName);
+        // Periodic SM cases (formerly 3dFPZ) now go through the unified writer.
+        give3DSMOutput(fileName);
     } else if ( gridType == _3dFPZFibre ) {
         give3DFPZFibreOutput(fileName);
     } else if ( gridType == _3dFibreBenchmark ) {
@@ -3511,11 +3512,21 @@ void Grid::giveVtkOutput(const std::string &fileName)
 void
 Grid::give3DSMOutput(const std::string &fileName)
 {
+    // Unified SM writer: handles both non-periodic (plain 3DSM) and periodic
+    // (formerly 3DFPZ) cases. Periodicity is driven by `perflag`. With at
+    // least one periodic axis the writer emits the periodic control node,
+    // pins the first inside Delaunay vertex, and uses lattice3Dboundary +
+    // periodic-image node references for boundary-crossing lines.
+    const bool periodic = ( periodicityFlag.at(1) == 1 ||
+                            periodicityFlag.at(2) == 1 ||
+                            periodicityFlag.at(3) == 1 );
+
     int numberOfNodes = 0;
     int numberOfLines = 0;
     oofem::FloatArray coords(3);
     oofem::IntArray lineNodes;
     oofem::IntArray crossSectionNodes;
+    oofem::IntArray location(2);
 
     for ( int i = 0; i < this->giveNumberOfDelaunayVertices(); i++ ) {
         int flag = this->giveDelaunayVertex(i + 1)->giveOutsideFlag();
@@ -3526,21 +3537,64 @@ Grid::give3DSMOutput(const std::string &fileName)
 
     for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
         int flag = this->giveDelaunayLine(i + 1)->giveOutsideFlag();
-        if ( ( flag == 0 || flag == 3 ) && this->giveDelaunayLine(i + 1)->delaunayAreaCheck() == 1 ) {
-            numberOfLines++;
+        if ( periodic ) {
+            if ( flag == 0 || flag == 2 || flag == 3 ) numberOfLines++;
+        } else {
+            if ( ( flag == 0 || flag == 3 ) && this->giveDelaunayLine(i + 1)->delaunayAreaCheck() == 1 ) {
+                numberOfLines++;
+            }
         }
     }
 
-    // build renumbered node map
+    // Compact node map for non-periodic mode (renumbers inside vertices to 1..N).
+    // Periodic mode uses raw vertex indices because periodic-partner references
+    // returned by Vertex::givePeriodicNode() are raw indices.
     const int nDelV = this->giveNumberOfDelaunayVertices();
     std::vector< int >nodeMap(nDelV + 1, 0);
-    int nodeCounter = 0;
-    for ( int i = 0; i < nDelV; i++ ) {
-        int flag = this->giveDelaunayVertex(i + 1)->giveOutsideFlag();
-        if ( flag == 0 || flag == 2 ) {
-            nodeMap [ i + 1 ] = ++nodeCounter;
+    if ( !periodic ) {
+        int nodeCounter = 0;
+        for ( int i = 0; i < nDelV; i++ ) {
+            int flag = this->giveDelaunayVertex(i + 1)->giveOutsideFlag();
+            if ( flag == 0 || flag == 2 ) {
+                nodeMap [ i + 1 ] = ++nodeCounter;
+            }
         }
     }
+    auto mapId = [ & ](int rawId) {
+        return periodic ? rawId : nodeMap [ rawId ];
+    };
+
+    // Periodic control-node id (only meaningful when periodic).
+    const int ctlNode = nDelV + 1;
+    const std::string ctlPlaceholder = "#@CTLNODE";
+    auto substitute = [ & ](std::string &s) {
+        if ( !periodic ) return;
+        size_t pos = 0;
+        while ( ( pos = s.find(ctlPlaceholder, pos) ) != std::string::npos ) {
+            s.replace(pos, ctlPlaceholder.size(), std::to_string(ctlNode));
+            pos += std::to_string(ctlNode).size();
+        }
+    };
+
+    // Specimen geometry for the control-node coordinates and (non-periodic) midpoint closure.
+    oofem::FloatArray bounds;
+    this->giveRegion(1)->defineBoundaries(bounds);
+    oofem::FloatArray specimenDim(3);
+    specimenDim.at(1) = bounds.at(2) - bounds.at(1);
+    specimenDim.at(2) = bounds.at(4) - bounds.at(3);
+    specimenDim.at(3) = bounds.at(6) - bounds.at(5);
+    const double tol = this->giveTol();
+
+    auto faceMask = [ & ](const oofem::FloatArray &c) {
+        int m = 0;
+        if ( std::abs(c.at(1) - bounds.at(1)) < tol ) m |= 1;
+        if ( std::abs(c.at(1) - bounds.at(2)) < tol ) m |= 2;
+        if ( std::abs(c.at(2) - bounds.at(3)) < tol ) m |= 4;
+        if ( std::abs(c.at(2) - bounds.at(4)) < tol ) m |= 8;
+        if ( std::abs(c.at(3) - bounds.at(5)) < tol ) m |= 16;
+        if ( std::abs(c.at(3) - bounds.at(6)) < tol ) m |= 32;
+        return m;
+    };
 
     std::ifstream ctrl(controlFileName);
     std::ofstream out(fileName);
@@ -3566,84 +3620,106 @@ Grid::give3DSMOutput(const std::string &fileName)
         if ( !injected && t.rfind("ncrosssect", 0) == 0 ) {
             std::istringstream iss(t);
             std::string token;
-            out << "ndofman " << numberOfNodes << " nelem " << numberOfLines << " ";
+            out << "ndofman " << ( numberOfNodes + ( periodic ? 1 : 0 ) )
+                << " nelem " << numberOfLines << " ";
             while ( iss >> token ) {
                 out << token << " ";
             }
             out << "\n";
 
-            // write nodes
-            nodeCounter = 0;
+            // Delaunay nodes (inside or on boundary). In periodic mode, the
+            // first inside vertex is pinned and raw vertex IDs are used.
+            int compactCounter = 0;
+            int firstFlag = 0;
             for ( int i = 0; i < nDelV; i++ ) {
                 int flag = this->giveDelaunayVertex(i + 1)->giveOutsideFlag();
-                if ( flag == 0 || flag == 2 ) {
-                    this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
-                    out << "node " << ++nodeCounter
-                        << " coords 3 " << std::scientific
-                        << coords.at(1) << " " << coords.at(2) << " " << coords.at(3) << "\n";
+                if ( flag != 0 && flag != 2 ) continue;
+
+                this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
+                int nid = periodic ? ( i + 1 ) : ( ++compactCounter );
+                out << "node " << nid << " coords 3 " << std::scientific
+                    << coords.at(1) << " " << coords.at(2) << " " << coords.at(3);
+                if ( periodic && firstFlag == 0 ) {
+                    firstFlag = 1;
+                    out << " bc 6 1 1 1 1 1 1";
                 }
+                out << "\n";
             }
 
-            // specimen bounds for detecting which face a Voronoi vertex sits on
-            oofem::FloatArray bounds;
-            this->giveRegion(1)->defineBoundaries(bounds);
-            const double tol = this->giveTol();
+            // Periodic control node.
+            if ( periodic ) {
+                out << "node " << ctlNode << " coords 3 " << std::scientific
+                    << specimenDim.at(1) << " " << specimenDim.at(2) << " " << specimenDim.at(3)
+                    << " load 1 2\n";
+            }
 
-            // bitmask of which of the 6 specimen faces a point lies on
-            auto faceMask = [ & ](const oofem::FloatArray &c) {
-                int m = 0;
-                if ( std::abs(c.at(1) - bounds.at(1)) < tol ) m |= 1;
-                if ( std::abs(c.at(1) - bounds.at(2)) < tol ) m |= 2;
-                if ( std::abs(c.at(2) - bounds.at(3)) < tol ) m |= 4;
-                if ( std::abs(c.at(2) - bounds.at(4)) < tol ) m |= 8;
-                if ( std::abs(c.at(3) - bounds.at(5)) < tol ) m |= 16;
-                if ( std::abs(c.at(3) - bounds.at(6)) < tol ) m |= 32;
-                return m;
-            };
-
-            // write elements
+            // Delaunay lines → lattice3D (inside) or lattice3Dboundary (periodic crossing).
             int elemCounter = 0;
             oofem::FloatArray A(3), B(3), M(3), cCurr(3), cNext(3);
             for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
                 int flag = this->giveDelaunayLine(i + 1)->giveOutsideFlag();
-                if ( ( flag == 0 || flag == 3 ) && this->giveDelaunayLine(i + 1)->delaunayAreaCheck() == 1 ) {
-                    this->giveDelaunayLine(i + 1)->giveLocalVertices(lineNodes);
-                    this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
-                    // Delaunay-line midpoint — closing vertex used when the polygon
-                    // wraps around a specimen edge (see "one point per edge crossing").
-                    this->giveDelaunayVertex(lineNodes.at(1))->giveCoordinates(A);
-                    this->giveDelaunayVertex(lineNodes.at(2))->giveCoordinates(B);
-                    M.at(1) = 0.5 * ( A.at(1) + B.at(1) );
-                    M.at(2) = 0.5 * ( A.at(2) + B.at(2) );
-                    M.at(3) = 0.5 * ( A.at(3) + B.at(3) );
+                const bool emitInside = ( flag == 0 || flag == 3 ) &&
+                    ( periodic || this->giveDelaunayLine(i + 1)->delaunayAreaCheck() == 1 );
+                const bool emitBoundary = periodic && flag == 2;
+                if ( !emitInside && !emitBoundary ) continue;
 
-                    const int nPoly = crossSectionNodes.giveSize();
-                    std::vector< oofem::FloatArray >polyOut;
-                    polyOut.reserve(nPoly + 3);
-                    for ( int m = 0; m < nPoly; m++ ) {
-                        this->giveVoronoiVertex(crossSectionNodes.at(m + 1))->giveCoordinates(cCurr);
-                        polyOut.push_back(cCurr);
+                this->giveDelaunayLine(i + 1)->giveLocalVertices(lineNodes);
+                this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
+                if ( emitBoundary ) {
+                    location.zero();
+                    for ( int m = 0; m < 2; m++ ) {
+                        if ( this->giveDelaunayVertex(lineNodes.at(m + 1))->giveOutsideFlag() == 1 ) {
+                            location.at(m + 1) = this->giveDelaunayVertex(lineNodes.at(m + 1))->giveLocation();
+                            lineNodes.at(m + 1) = this->giveDelaunayVertex(lineNodes.at(m + 1))->givePeriodicNode();
+                        }
+                    }
+
+                    out << "lattice3Dboundary " << ++elemCounter
+                        << " nodes 3 " << lineNodes.at(1) << " " << lineNodes.at(2) << " " << ctlNode
+                        << " crossSect 1 mat 1 polycoords " << ( 3 * crossSectionNodes.giveSize() );
+                    for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
+                        this->giveVoronoiVertex(crossSectionNodes.at(m + 1))->giveCoordinates(coords);
+                        out << " " << coords.at(1) << " " << coords.at(2) << " " << coords.at(3);
+                    }
+                    out << " location 2 " << location.at(1) << " " << location.at(2) << "\n";
+                    continue;
+                }
+
+                // Inside element. In non-periodic mode, apply midpoint closure when
+                // the cross-section polygon wraps around a specimen edge.
+                this->giveDelaunayVertex(lineNodes.at(1))->giveCoordinates(A);
+                this->giveDelaunayVertex(lineNodes.at(2))->giveCoordinates(B);
+                M.at(1) = 0.5 * ( A.at(1) + B.at(1) );
+                M.at(2) = 0.5 * ( A.at(2) + B.at(2) );
+                M.at(3) = 0.5 * ( A.at(3) + B.at(3) );
+
+                const int nPoly = crossSectionNodes.giveSize();
+                std::vector< oofem::FloatArray >polyOut;
+                polyOut.reserve(nPoly + 3);
+                for ( int m = 0; m < nPoly; m++ ) {
+                    this->giveVoronoiVertex(crossSectionNodes.at(m + 1))->giveCoordinates(cCurr);
+                    polyOut.push_back(cCurr);
+
+                    if ( !periodic ) {
                         int next = ( m + 1 ) % nPoly;
                         this->giveVoronoiVertex(crossSectionNodes.at(next + 1))->giveCoordinates(cNext);
-
                         int mCurr = faceMask(cCurr);
                         int mNext = faceMask(cNext);
                         if ( mCurr != 0 && mNext != 0 && ( mCurr & mNext ) == 0 ) {
                             polyOut.push_back(M);
                         }
                     }
-
-                    out << "lattice3D " << ++elemCounter
-                        << " nodes 2 " << nodeMap [ lineNodes.at(1) ] << " " << nodeMap [ lineNodes.at(2) ]
-                        << " crossSect 1 mat 1 polycoords " << 3 * ( int ) polyOut.size();
-
-                    for ( const auto &c : polyOut ) {
-                        out << " " << c.at(1) << " " << c.at(2) << " " << c.at(3);
-                    }
-                    out << "\n";
                 }
+
+                out << "lattice3D " << ++elemCounter
+                    << " nodes 2 " << mapId(lineNodes.at(1)) << " " << mapId(lineNodes.at(2))
+                    << " crossSect 1 mat 1 polycoords " << 3 * ( int ) polyOut.size();
+                for ( const auto &c : polyOut ) {
+                    out << " " << c.at(1) << " " << c.at(2) << " " << c.at(3);
+                }
+                out << "\n";
             }
 
             injected = true;
@@ -3651,7 +3727,9 @@ Grid::give3DSMOutput(const std::string &fileName)
         }
 
         if ( !isConverterDirective(t) ) {
-            out << line << "\n";
+            std::string written = line;
+            substitute(written);
+            out << written << "\n";
         }
     }
 }
