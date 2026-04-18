@@ -1,0 +1,19 @@
+#t3d -d 0.01 -i mesh.in -o mesh.out
+
+vertex 1 xyz 0.0 0.0 0.0
+vertex 2 xyz 0.0 0.0 32.14
+vertex 3 xyz 50. 0. 32.14
+vertex 4 xyz 50. 0. 0.
+
+curve 1 order 4 vertex 1 2
+polygon 1 xyz 0. 8.16 9.72 weight 0.844
+polygon 2 xyz 0. 8.16 22.42 weight 0.844
+curve 2 vertex 2 3
+curve 3 order 4 vertex 3 4
+polygon 1 xyz 50. 8.16 22.42 weight 0.844
+polygon 2 xyz 50. 8.16 9.72 weight 0.844
+curve 4 vertex 4 1 
+
+vertex 5 xyz 25.0 0.0 0.0 fixed curve 4
+
+surface 1 curve 1 2 3 4 size def

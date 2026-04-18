@@ -1,9 +1,0 @@
-nodes.dat
-3D periodic SM mesh with fibre — random field + one fibre
-domain 3
-diam 0.012 maxiter 10000 perflag 3 1 1 1 ranint -2 ranflag 0
-nvertex 2 ncurve 0 nsurface 0 nregion 1 ninclusion 0 ncontrolvertex 0
-# bounding-box corners widen the localiser so periodic partners can be found
-vertex 1 coords 3 -0.012 -0.012 -0.012 refine 1. radius 0.
-vertex 2 coords 3  0.042  0.102  0.042 refine 1. radius 0.
-prism 1 box 6 0. 0. 0. 0.03 0.09 0.03 refine 1. edgerefine 0.5 surfacerefine 0.7 regionrefine 1.

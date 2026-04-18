@@ -798,9 +798,8 @@ if (cs->giveShape() == 2) {
 
     
 
-    //For now    
-    this->shearArea1 = 0.83*area;
-    this->shearArea2 = 0.83*area;
+    this->shearArea1 = area;
+    this->shearArea2 = area;
     
     //Rotation around normal axis by angleChange
     FloatMatrix rotationChange(3, 3);

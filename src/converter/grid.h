@@ -198,7 +198,29 @@ private:
 
     bool liveLoadEnabled = false;
 
+    /// When true, giveOutput() also writes the auxiliary POV-Ray rendering files
+    /// (`*.vor.line.pov`, `*.del.cross.pov`, etc.). Default off — opt in with the
+    /// `#@pov` directive in the control file.
+    bool emitPovOutput = false;
+
+    /// When true, giveOutput() also writes VTK files for ParaView visualisation
+    /// (`*.voronoielement.vtu`, `*.delaunayelement.*.vtu`, etc.). Default off —
+    /// opt in with the `#@vtk` directive in the control file.
+    bool emitVtkOutput = false;
+
     oofem::FloatArray liveDir; // size 3
+
+    /// Per-entity element override for the T3D writer. Populated by the
+    /// `#@element <entityKind> <entityID> <name> <crossSect> <mat>` directive
+    /// in the control file. Empty by default — writers fall back to their
+    /// hardcoded default element name. Priority during resolution:
+    /// curve (lowest entType) > surface > tetra/region.
+    struct EdgeSpec {
+        std::string elementName;
+        int crossSect = 1;
+        int material  = 1;
+    };
+    std::map< std::pair< int, int >, EdgeSpec >elementSpecsByEntity;
 
     int t3dOutType = 0;
 
@@ -384,6 +406,15 @@ public:
     void prepareBCSets();
 
     void writeBCRecords(std::ostream &out, int &bcID) const;
+
+    /// For a given edge, return the (entType, entID) of the most-specific T3D
+    /// geometric entity it belongs to, with priority curve > surface > region.
+    /// Returns {0, 0} if no entity is associated.
+    std::pair< int, int >entityForEdge(const Edge &e) const;
+
+    /// Resolve the EdgeSpec for an edge, falling back to `defaultSpec` if no
+    /// `#@element` directive matches the edge's entity.
+    EdgeSpec resolveEdgeSpec(const Edge &e, const EdgeSpec &defaultSpec) const;
 
     void writeGeneratedSets(std::ostream &out) const;
 

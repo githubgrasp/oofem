@@ -312,28 +312,6 @@ bool Grid::readT3d(const std::string &fn,
         entityNodes [ n.entType ] [ n.entID ].push_back(n.id);
     }
 
-    // Debug
-    printf("First few node classifications:\n");
-    for (size_t i = 0; i < std::min( ( size_t ) 5, nodes.size() ); ++i) {
-        printf("node %d -> type %d id %d\n",
-               nodes [ i ].id,
-               nodes [ i ].entType,
-               nodes [ i ].entID);
-    }
-
-    // Debug
-    printf("\nEntity classification summary:\n");
-    for (const auto &typePair : entityNodes) {
-        int type = typePair.first;
-        printf("Type %d:\n", type);
-
-        for (const auto &idPair : typePair.second) {
-            printf("  ID %d -> %zu nodes\n",
-                   idPair.first,
-                   idPair.second.size() );
-        }
-    }
-
     // ---------- triangles ----------
     tris.clear();
     tris.reserve(nTris);
@@ -428,16 +406,6 @@ bool Grid::readT3d(const std::string &fn,
 
         tets.push_back(t);
         ++i;
-    }
-
-    printf("Read tetrahedra: %zu\n", tets.size() );
-    if ( !tets.empty() ) {
-        for (size_t i = 0; i < std::min( ( size_t ) 5, tets.size() ); ++i) {
-            printf("tet %d -> (%d,%d,%d,%d), face IDs [%d %d %d %d], face types [%d %d %d %d]\n",
-                   tets [ i ].id, tets [ i ].n1, tets [ i ].n2, tets [ i ].n3, tets [ i ].n4,
-                   tets [ i ].faceEntID [ 0 ], tets [ i ].faceEntID [ 1 ], tets [ i ].faceEntID [ 2 ], tets [ i ].faceEntID [ 3 ],
-                   tets [ i ].faceEntType [ 0 ], tets [ i ].faceEntType [ 1 ], tets [ i ].faceEntType [ 2 ], tets [ i ].faceEntType [ 3 ]);
-        }
     }
 
     return true;
@@ -831,16 +799,15 @@ void Grid::buildEdgePolygon3D(int edgeIndex, oofem::FloatArray &polycoords) cons
 
 void Grid::write3DEdgeSection(std::ostream &out, int &eid, const Edge &e, int edgeIndex)
 {
-    const int cs  = 1;
-    const int mat = 1;
+    const EdgeSpec spec = resolveEdgeSpec(e, EdgeSpec{ "lattice3D", 1, 1 });
 
     oofem::FloatArray polycoords;
     buildEdgePolygon3D(edgeIndex, polycoords);
 
-    out << "lattice3D " << eid++
+    out << spec.elementName << " " << eid++
         << " nodes 2 " << e.n1 << " " << e.n2
-        << " crossSect " << cs
-        << " mat " << mat
+        << " crossSect " << spec.crossSect
+        << " mat " << spec.material
         << " polycoords " << polycoords.giveSize() << " "
         << std::scientific;
 
@@ -851,9 +818,6 @@ void Grid::write3DEdgeSection(std::ostream &out, int &eid, const Edge &e, int ed
         }
     }
     out << "\n";
-
-    printf("Writing edge (%d,%d), poly npts=%d\n",
-           e.n1, e.n2, polycoords.giveSize() / 3);
 }
 
 
@@ -990,6 +954,24 @@ void Grid::readControlRecords()
 
             entityThickness [ entType ] [ entID ] = t;
 
+            continue;
+        }
+
+        if ( tag == "#@element" ) {
+            // #@element <entityKind> <entityID> <elementName> <crossSect> <mat>
+            std::string kind;
+            iss >> kind;
+            int entType = entityTypeFromString(kind);
+            if ( entType < 0 ) {
+                converter::errorf("Unknown entity kind '%s' in #@element directive", kind.c_str());
+            }
+            int entID = 0;
+            std::string elementName;
+            int crossSect = 1, material = 1;
+            if ( !( iss >> entID >> elementName >> crossSect >> material ) ) {
+                converter::error("Malformed #@element directive — expected: <kind> <id> <name> <cs> <mat>");
+            }
+            elementSpecsByEntity[ { entType, entID } ] = EdgeSpec{ elementName, crossSect, material };
             continue;
         }
 
@@ -1303,7 +1285,6 @@ void Grid::computeNodalAreasOnTriEntity(int entType, int entID, std::vector < do
 int Grid::instanciateYourselfFromT3d(const std::string &t3d, const std::string &control)
 {
     this->controlFileName = control;
-    printf("INIT control = %s\n", control.c_str() );
 
     // 1) read mesh
     if ( !readT3d(t3d, nodes, tris, tets) ) {
@@ -1350,18 +1331,13 @@ int Grid::instanciateYourselfFromT3d(const std::string &t3d, const std::string &
     int nNodes = ( int ) nodes.size();
     int nElems = ( int ) edges.size();
 
-    printf("T3d loaded: nodes=%d tris=%zu tets=%zu edges=%d\n",
-           nNodes, tris.size(), tets.size(), nElems);
-
     int bnd = 0, interior = 0;
-    for (auto &e: edges) {
+    for ( const auto &e : edges ) {
         ( e.tri2 < 0 ? bnd : interior )++;
     }
 
-    printf("edges: boundary=%d interior=%d total=%zu\n",
-           bnd, interior, edges.size() );
-
-    printf("finished initializing\n");
+    printf("T3D mesh: %d nodes, %zu triangles, %zu tetrahedra, %d edges (%d boundary, %d interior)\n",
+           nNodes, tris.size(), tets.size(), nElems, bnd, interior);
     return 1;
 }
 
@@ -1382,9 +1358,8 @@ void Grid::computeNodalLengthsOnCurve(int curveID, std::vector < double > & L) c
         auto it1 = nodeIndex.find(s.n1);
         auto it2 = nodeIndex.find(s.n2);
         if ( it1 == nodeIndex.end() || it2 == nodeIndex.end() ) {
-            printf("Missing nodeIndex for segment (%d,%d) on curve %d\n",
-                   s.n1, s.n2, curveID);
-            converter::error("nodeIndex missing key (check nodeIndex build)");
+            converter::errorf("Missing nodeIndex for segment (%d, %d) on curve %d",
+                              s.n1, s.n2, curveID);
         }
 
         L [ it1->second ] += 0.5 * len;
@@ -1433,8 +1408,7 @@ oofem::FloatArray Grid::getX(int nodeID) const
 {
     auto it = nodeIndex.find(nodeID);
     if ( it == nodeIndex.end() ) {
-        printf("getX failed: nodeID %d not found in nodeIndex\n", nodeID);
-        converter::error("getX: nodeID not found");
+        converter::errorf("getX: nodeID %d not found in nodeIndex", nodeID);
     }
 
     const Node &n = nodes [ it->second ];
@@ -1501,6 +1475,12 @@ void Grid::readQhullControlRecords(const std::string &controlFile)
             if ( randomInteger >= 0 ) {
                 randomInteger = -time(NULL);
             }
+        } else if ( tag == "#@pov" ) {
+            // Opt in to writing the POV-Ray rendering files alongside oofem.in.
+            emitPovOutput = true;
+        } else if ( tag == "#@vtk" ) {
+            // Opt in to writing the ParaView .vtu files alongside oofem.in.
+            emitVtkOutput = true;
         } else if ( tag == "#@prism" ) {
             int num;
             iss >> num;
@@ -2417,7 +2397,7 @@ int Grid::instanciateYourself(ConverterDataReader *dr, const char nodeFileName[]
 
     fibreList.resize(nfibre, nullptr);
 
-    std::printf("\n number of fibres detected : %d \n", ( int ) fibreList.size() );
+    std::printf("Detected %d fibres\n", ( int ) fibreList.size() );
 
     for (int i = 0; i < nfibre; ++i) {
         auto &irFibreRec = dr->giveInputRecord(ConverterDataReader::CIR_fibreRec, i + 1);
@@ -2445,7 +2425,7 @@ int Grid::instanciateYourself(ConverterDataReader *dr, const char nodeFileName[]
 
     this->discretizeFibres();
 
-    printf("finished initializing\n");
+    printf("Finished initialisation\n");
 
     return 1;
 }
@@ -2463,7 +2443,7 @@ Grid::discretizeFibres()
     int beamElementCounter = converter::size1(latticeBeamList);
     int linkElementCounter = converter::size1(latticeLinkList);
 
-    printf("\n generation of beam elements for fibres and link elements in progress... \n ");
+    printf("Generating beam and link elements for fibres\n");
 
     for ( int i = 1; i <= nfibre; i++ ) {
         const double fibreDiameter = giveFibre(i)->giveDiameter();
@@ -2743,7 +2723,7 @@ Grid::orderDelaunayCrossSectionVertices(int elementNumber)
     double length  = sqrt(pow(n.at(1), 2.) + pow(n.at(2), 2.) + pow(n.at(3), 2.) );
 
     if ( length < 1.e-20 ) {
-        printf("too small length. Cannot fix orientation\n");
+        std::fprintf(stderr, "warning: degenerate normal — orientation unchanged\n");
         return;
     }
 
@@ -2835,21 +2815,25 @@ Grid::orderDelaunayCrossSectionVertices(int elementNumber)
 
 void Grid::giveOutput(const std::string &fileName)
 {
-    printf("\n starting giving ouputs \n");
+    printf("Writing outputs\n");
     giveOofemOutput(fileName);
 
-    if ( gridType == _3dPerTetraSM || gridType == _3dTetraSM || gridType == _3dRCPerSM || gridType == _3dRCPer2SM || gridType == _3dRCSM ) {
-        giveVtkOutputTetra(fileName, 3);
-    } else {
+    if ( emitVtkOutput ) {
+        if ( gridType == _3dPerTetraSM || gridType == _3dTetraSM || gridType == _3dRCPerSM || gridType == _3dRCPer2SM || gridType == _3dRCSM ) {
+            giveVtkOutputTetra(fileName, 3);
+        } else {
+            giveVtkOutput2(fileName, 3);
+        }
+    }
+    if ( emitPovOutput ) {
         givePOVOutput(fileName);
-        giveVtkOutput2(fileName, 3);
     }
 }
 
 void Grid::giveOofemOutput(const std::string &fileName)
 {
     //Start with oofem output
-    printf("starting giving Oofem output... \n");
+    printf("Writing OOFEM input file\n");
     if ( gridType == _3dSM ) { //Base implementation
         give3DSMOutput(fileName);
     } else if ( gridType == _3dTM ) { //Base implementation
@@ -2935,8 +2919,7 @@ void Grid::giveOutputT3d(const std::string &fileName)
     int totalNBC = nLoads + nBCs;
     int nSets = ( int ) generatedNodeSets.size();
 
-    printf("starting giving output...\n");
-    printf("READING controlFileName = %s\n", controlFileName.c_str() );
+    printf("Writing OOFEM input file\n");
 
     std::ifstream ctrl(controlFileName);
     std::ofstream out(fileName);
@@ -3006,16 +2989,6 @@ void Grid::giveOutputT3d(const std::string &fileName)
 
 
         if ( t.rfind("#@INSERT_LIVELOADS", 0) == 0 ) {
-            printf("writeLiveLoads: nLoadReq=%zu dir=(%g,%g,%g)\n",
-                   loadRequests.size(),
-                   liveDir.giveSize() >= 3 ? liveDir.at(1) : 0.0,
-                   liveDir.giveSize() >= 3 ? liveDir.at(2) : 0.0,
-                   liveDir.giveSize() >= 3 ? liveDir.at(3) : 0.0);
-
-            for (const auto &r : loadRequests) {
-                printf("  LOAD entType=%d entID=%d q=%g\n", r.entType, r.entID, r.q);
-            }
-
             writeLiveLoads(out, bcID);
             writeBCRecords(out, bcID);
             continue;
@@ -3087,8 +3060,6 @@ void Grid::prepareLiveLoadSets()
                 ++nLoaded;
             }
         }
-        printf("entity %d: nLoaded=%d sumW=%g\n", req.entID, nLoaded, sumW);
-
 
         for (size_t i = 0; i < n; ++i) {
             if ( w [ i ] <= 0.0 ) {
@@ -3144,8 +3115,6 @@ void Grid::writeT3dNodesOofem(std::ostream &out)
 void Grid::writeT3dElemsOofem(std::ostream &out)
 {
     int eid = 1;
-    const int cs  = 1;
-    const int mat = 1;
     const bool is3D = !tets.empty();
     const bool useFrame = use3DFrameSection;
 
@@ -3158,10 +3127,11 @@ void Grid::writeT3dElemsOofem(std::ostream &out)
 
         if ( is3D ) {
             if ( useFrame ) {
-                out << "lattice3d " << eid++
+                const EdgeSpec spec = resolveEdgeSpec(e, EdgeSpec{ "lattice3d", 1, 1 });
+                out << spec.elementName << " " << eid++
                     << " nodes 2 " << e.n1 << " " << e.n2
-                    << " crossSect " << cs
-                    << " mat " << mat
+                    << " crossSect " << spec.crossSect
+                    << " mat " << spec.material
                     << "\n";
                 continue;
             }
@@ -3207,17 +3177,15 @@ void Grid::writeT3dElemsOofem(std::ostream &out)
             // area of current polygon
             double A_geom = computePolygonAreaProjected(polycoords, xm, r, s);
             if ( A_geom <= 0.0 ) {
-                printf("edge %zu (%d,%d): geometric area = %g\n",
-                       i, e.n1, e.n2, A_geom);
-                converter::error("Zero or negative geometric area in 3D section");
+                converter::errorf("Zero or negative geometric area for edge %zu (%d, %d): A_geom = %g",
+                                  i, e.n1, e.n2, A_geom);
             }
 
             // target area based on V/(3*l)
             double A_target = computeTargetArea( ( int ) i, L);
             if ( A_target <= 0.0 ) {
-                printf("edge %zu (%d,%d): target area = %g\n",
-                       i, e.n1, e.n2, A_target);
-                converter::error("Zero or negative target area in 3D section");
+                converter::errorf("Zero or negative target area for edge %zu (%d, %d): A_target = %g",
+                                  i, e.n1, e.n2, A_target);
             }
 
             double scale = sqrt(A_target / A_geom);
@@ -3243,10 +3211,11 @@ void Grid::writeT3dElemsOofem(std::ostream &out)
             }
 
             // write 3D element
-            out << "lattice3D " << eid++
+            const EdgeSpec spec = resolveEdgeSpec(e, EdgeSpec{ "lattice3D", 1, 1 });
+            out << spec.elementName << " " << eid++
                 << " nodes 2 " << e.n1 << " " << e.n2
-                << " crossSect " << cs
-                << " mat " << mat
+                << " crossSect " << spec.crossSect
+                << " mat " << spec.material
                 << " polycoords " << polycoords.giveSize() << " "
                 << std::scientific;
 
@@ -3266,10 +3235,11 @@ void Grid::writeT3dElemsOofem(std::ostream &out)
         // ===========
 
         if ( useFrame ) {
-            out << "lattice3d " << eid++
+            const EdgeSpec spec = resolveEdgeSpec(e, EdgeSpec{ "lattice3d", 1, 1 });
+            out << spec.elementName << " " << eid++
                 << " nodes 2 " << e.n1 << " " << e.n2
-                << " crossSect " << cs
-                << " mat " << mat
+                << " crossSect " << spec.crossSect
+                << " mat " << spec.material
                 << "\n";
             continue;
         }
@@ -3429,10 +3399,11 @@ void Grid::writeT3dElemsOofem(std::ostream &out)
         x4.add(tmp);
 
         // write shell element
-        out << "lattice3Dnl " << eid++
+        const EdgeSpec spec = resolveEdgeSpec(e, EdgeSpec{ "lattice3Dnl", 1, 1 });
+        out << spec.elementName << " " << eid++
             << " nodes 2 " << e.n1 << " " << e.n2
-            << " crossSect " << cs
-            << " mat " << mat
+            << " crossSect " << spec.crossSect
+            << " mat " << spec.material
             << " thickness " << t
             << " polycoords 12 "
             << std::scientific
@@ -3443,6 +3414,61 @@ void Grid::writeT3dElemsOofem(std::ostream &out)
             << "\n";
     }
 }
+
+std::pair< int, int >
+Grid::entityForEdge(const Edge &e) const
+{
+    auto idxA = nodeIndex.find(e.n1);
+    auto idxB = nodeIndex.find(e.n2);
+    if ( idxA != nodeIndex.end() && idxB != nodeIndex.end() ) {
+        const Node &na = nodes [ idxA->second ];
+        const Node &nb = nodes [ idxB->second ];
+        // Both endpoints classified to the same low-dim entity (curve/vertex).
+        // Lowest entType wins by virtue of T3D's own classification.
+        if ( na.entType > 0 && na.entType == nb.entType && na.entID == nb.entID ) {
+            return { na.entType, na.entID };
+        }
+    }
+
+    // Adjacent triangles (shell case) — surface entity.
+    if ( e.tri1 >= 0 ) {
+        const Tri &t1 = tris [ e.tri1 ];
+        if ( e.tri2 >= 0 ) {
+            const Tri &t2 = tris [ e.tri2 ];
+            if ( t1.entType == t2.entType && t1.entID == t2.entID ) {
+                return { t1.entType, t1.entID };
+            }
+        }
+        return { t1.entType, t1.entID };          // boundary edge of this surface
+    }
+
+    // Adjacent tetrahedra (3D case) — region entity.
+    if ( e.tet1 >= 0 && ( int ) tets.size() > e.tet1 ) {
+        const Tet &t1 = tets [ e.tet1 ];
+        if ( e.tet2 >= 0 ) {
+            const Tet &t2 = tets [ e.tet2 ];
+            if ( t1.entType == t2.entType && t1.entID == t2.entID ) {
+                return { t1.entType, t1.entID };
+            }
+        }
+        return { t1.entType, t1.entID };
+    }
+
+    return { 0, 0 };
+}
+
+
+Grid::EdgeSpec
+Grid::resolveEdgeSpec(const Edge &e, const EdgeSpec &defaultSpec) const
+{
+    auto key = entityForEdge(e);
+    auto it  = elementSpecsByEntity.find(key);
+    if ( it != elementSpecsByEntity.end() ) {
+        return it->second;
+    }
+    return defaultSpec;
+}
+
 
 void Grid::writeBCRecords(std::ostream &out, int &bcID) const
 {
@@ -11676,7 +11702,7 @@ Grid::giveBeamElementVTKOutput(FILE *outputStream)
     fprintf(outputStream, "<DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">\n");
     //
 
-    printf("\n nb of lattice beam= %d \n", this->giveNumberOfLatticeBeams() );////
+    printf("Lattice beams: %d\n", this->giveNumberOfLatticeBeams());
 
     for ( int i = 0; i <  this->giveNumberOfLatticeBeams(); i++ ) {
         if ( this->giveLatticeBeam(i + 1)->giveOutsideFlag() != 1 ) {
@@ -11786,7 +11812,7 @@ Grid::giveLinkElementVTKOutput(FILE *outputStream)
     fprintf(outputStream, "<DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">\n");
     //
 
-    printf("\n nb of lattice links = %d \n", this->giveNumberOfLatticeLinks() );////
+    printf("Lattice links: %d\n", this->giveNumberOfLatticeLinks());
 
     for ( int i = 0; i <  this->giveNumberOfLatticeLinks(); i++ ) {
         if ( this->giveLatticeLink(i + 1)->giveOutsideFlag() != 1 ) {

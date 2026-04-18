@@ -20,14 +20,14 @@ ctest -R test_converter
 Run a single test by name:
 
 ```bash
-ctest -R test_converter_3DCylinder -V
+ctest -R test_converter_3DCylinderQhull -V
 ```
 
 The `-V` flag prints the full output, which is useful for diagnosing failures.
 
 ### Test layout
 
-Each test lives in `src/converter/tests/<TestName>/` and contains:
+Test directories are named `<Case><Mesher>` so the mesher path is obvious from the directory name (e.g. `2DPlateT3D`, `3DFPZQhull`). Each test lives in `src/converter/tests/<TestName>/` and contains:
 
 | File | Purpose |
 |------|---------|
@@ -42,7 +42,7 @@ Each test lives in `src/converter/tests/<TestName>/` and contains:
 After intentionally changing converter output, regenerate the reference from the test directory:
 
 ```bash
-cd src/converter/tests/3DCylinder
+cd src/converter/tests/3DCylinderQhull
 ~/build/oofem/src/converter/converter.exec control.in mesh.nodes mesh.voronoi
 cp oofem.in reference.in
 ```
@@ -51,15 +51,27 @@ Then re-run the test to confirm it passes.
 
 ## Running the converter
 
+The converter needs to know which mesher produced the input. Specify it with
+either the `--mesher` (or `-m`) CLI flag, or with a `#@mesher t3d|qhull`
+directive in `control.in`. The CLI flag wins if both are present.
+
 ```bash
 # T3D mesh
-converter.exec control.in mesh.t3d
+converter.exec --mesher t3d control.in mesh.t3d
 
 # Qhull mesh (nodes + voronoi)
-converter.exec control.in mesh.nodes mesh.voronoi
+converter.exec --mesher qhull control.in mesh.nodes mesh.voronoi
 
-# Qhull mesh (nodes + delaunay + voronoi)
-converter.exec control.in mesh.nodes mesh.delaunay mesh.voronoi
+# Qhull mesh (nodes + delaunay + voronoi) — legacy 3-file form
+converter.exec --mesher qhull control.in mesh.nodes mesh.delaunay mesh.voronoi
+```
+
+If `control.in` already declares the mesher (e.g. all the converter tests do),
+the flag can be omitted:
+
+```bash
+converter.exec control.in mesh.t3d
+converter.exec control.in mesh.nodes mesh.voronoi
 ```
 
 Output is always written to `oofem.in` in the working directory.
@@ -89,6 +101,7 @@ Used when the converter is invoked with `mesh.nodes` (+ optional `mesh.delaunay`
 | Directive | Arguments | Purpose |
 |-----------|-----------|---------|
 | `#@grid` | `<type>` | Selects the output generator. The unified types are `3dSM` (covers plain, periodic, and fibre-bearing SM), `3dTM` (mass transport), and `3dCoupledSMTM` (staggered SM + TM). Other legacy values (e.g. `3dCylinder`) still exist; see `Grid::resolveGridType`. |
+| `#@mesher` | `t3d` \| `qhull` | Declares which mesher produced the input. Lets `main.C` dispatch without relying on the CLI `--mesher` flag. |
 | `#@diam` | `<d>` | Nominal grain diameter — must match the `diam` used when the mesh was generated. |
 | `#@perflag` | `3 <px> <py> <pz>` | Periodicity flags per axis (0 = non-periodic, 1 = periodic). For `3dSM`, any axis = 1 switches the writer into periodic mode (control node, `lattice3Dboundary` for boundary-crossing elements). |
 | `#@ranint` | `<seed>` | Random integer seed. Non-negative values are replaced with `-time(NULL)`. |
@@ -97,6 +110,8 @@ Used when the converter is invoked with `mesh.nodes` (+ optional `mesh.delaunay`
 | `#@interfacecylinder` | `<id> line 6 <x1> <y1> <z1> <x2> <y2> <z2> …` | Defines a cylindrical interface region. |
 | `#@fibre` | `<id> endpoints 6 <x1> <y1> <z1> <x2> <y2> <z2> diameter <d>` | Declares a straight fibre. The converter discretises it into reinforcement nodes at intersections with matrix Voronoi cells, builds `lattice3D` segments along the fibre, and adds `latticelink3D` couplings to the surrounding matrix vertices. |
 | `#@CTLNODE` | *(inline placeholder, not a line directive)* | Substituted with the numeric id of the periodic control node before each non-directive line is written. Use anywhere the OOFEM template needs that id (e.g. `hpc 2 #@CTLNODE 2 hpcw 1 1.`, `OutputManager tstep_all dofman_output {#@CTLNODE}`, `#NODE number #@CTLNODE dof 2 unknown d`). Inert when `perflag` is fully non-periodic. |
+| `#@pov` | *(no arguments)* | Opt in to writing the auxiliary POV-Ray rendering files (`*.vor.line.pov`, `*.vor.cross.pov`, `*.del.line.pov`, `*.del.cross.pov`). Default off — POV files are not generated unless this directive is present. |
+| `#@vtk` | *(no arguments)* | Opt in to writing the ParaView `.vtu` files (`*.voronoielement.vtu`, `*.delaunayelement.*.vtu`, `*.fibre.beamElement.vtu`, etc.). Default off — VTK files are not generated unless this directive is present. |
 
 ### T3D path directives
 
@@ -110,6 +125,7 @@ Used when the converter is invoked with `mesh.t3d`. These directives describe BC
 | `#@THICKNESS` | `<entID> <t>` | Shell/plate thickness for an entity. |
 | `#@3DSECTION` | `<args>` | 3D section data for shell/beam elements. |
 | `#@SHELLWIDTHSCALE` | `<args>` | Per-edge width scaling for shell elements. |
+| `#@element` | `<entityKind> <entityID> <elementName> <crossSect> <mat>` | Per-region element override for the T3D writer. `<entityKind>` is one of `vertex`, `curve`, `surface`, `patch`, `shell`. Edges classified to the given entity emit `<elementName>` instead of the writer's hardcoded default (`lattice3D`, `lattice3d`, or `lattice3Dnl` depending on geometry). Edges that don't match any directive use the default. Resolution priority for an edge that touches multiple entities: curve > surface > region. |
 
 `<entType>` uses the numeric codes from `Grid::entityTypeFromString`: 1 vertex, 2 curve, 3 surface, 5 patch, 6 shell.
 

@@ -33,11 +33,11 @@ target_link_libraries(converter.exec PRIVATE converter liboofem)
 enable_testing()
 
 # Converter tests — diff-based, one subdirectory per test case.
-# Each subdirectory must contain control.in and reference.in.
-# Mesh input format determines the converter path:
-#   mesh.t3d                              → t3d path   (2-arg invocation)
-#   mesh.nodes + mesh.voronoi             → qhull path (3-arg invocation)
-#   mesh.nodes + mesh.delaunay + mesh.voronoi → qhull path (4-arg invocation)
+# Each subdirectory must contain control.in (with a `#@mesher t3d|qhull`
+# directive) and reference.in. Mesh files are picked from disk:
+#   mesh.t3d                                       → t3d
+#   mesh.nodes + mesh.voronoi                      → qhull
+#   mesh.nodes + mesh.delaunay + mesh.voronoi      → qhull (legacy 3-file form)
 # Output is always named oofem.in (standardised in test control files).
 
 set(CONVERTER_TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tests)

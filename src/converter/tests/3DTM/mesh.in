@@ -1,7 +1,0 @@
-nodes.dat
-Transport base mesh
-domain 3
-diam 0.2 maxiter 10000 perflag 3 0 0 0
-#size of components
-nvertex 0 ncurve 0 nsurface 0 nregion 1 ninclusion 0 ncontrolvertex 0
-prism 1 box 6 0. 0. 0. 1. 1. 1. refine 1. edgerefine 0.5 surfacerefine 0.7 regionrefine 1.

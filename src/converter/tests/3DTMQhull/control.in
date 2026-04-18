@@ -1,0 +1,19 @@
+oofem.out
+Transport 3D model
+nltransienttransportproblem nsteps 1 deltat 1.0 rtol 0.001 alpha 1. nsmax 200 contextOutputStep 100 nmodules 1
+vtkxmllattice tstep_all domain_all cross 1
+domain 2dMassLatticeTransport
+OutputManager tstep_all dofman_all element_all
+ncrosssect 1 nmat 1 nbc 0 nic 0 nltf 1 nset 0
+simpletransportcs 1 mat 1
+latticetransmat 1 d 1. k 1. vis 1. thetas 1. thetar 0. contype 0
+ConstantFunction 1 f(t) 1.
+#%BEGIN_CHECK%
+#LOADLEVEL
+##TIME
+#%END_CHECK%
+#@grid 3dTM
+#@diam 0.2
+#@perflag 3 0 0 0
+#@prism 1 box 6 0. 0. 0. 1. 1. 1. refine 1. edgerefine 0.5 surfacerefine 0.7 regionrefine 1.
+#@mesher qhull
