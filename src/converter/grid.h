@@ -134,7 +134,7 @@ private:
 
     /** Grid type. This determines the type of input to generate
      */
-    enum GridType { _3dSM, _3dTM, _3dSMTM, _3dPerSM, _3dPerTM, _3dPerSMTM, _3dWong, _3dPerPoreTM, _3dPerPoreSM, _3dPerPoreSMTM, _3dCantSM, _3dCantTM, _3dCantExtraTM, _3dCantSMTM, _3dBentoniteSM, _3dBentoniteTM, _3dBentoniteSMTM, _3dCylinder, _3dTetraSM, _3dPerTetraSM, _3dRCPerSM, _3dRCPer2SM, _3dRCSM, _3dKupfer, _3dImran, _3dNotch };
+    enum GridType { _3dSM, _3dTM, _3dSMTM, _3dPerSM, _3dPerTM, _3dPerSMTM, _3dWong, _3dPerPoreTM, _3dPerPoreSM, _3dPerPoreSMTM, _3dCantSM, _3dCantTM, _3dCantExtraTM, _3dCantSMTM, _3dBentoniteSM, _3dBentoniteTM, _3dBentoniteSMTM, _3dTetraSM, _3dPerTetraSM, _3dRCPerSM, _3dRCPer2SM, _3dRCSM, _3dKupfer, _3dImran, _3dNotch };
 
     GridType gridType;
 
@@ -245,6 +245,21 @@ private:
         int bodyload = -1;
     };
     std::vector< SphereInclusionSpec >sphereInclusionSpecs;
+
+    /// A straight-axis cylindrical inclusion with ITZ halo. The inclusion
+    /// classification uses perpendicular distance from each endpoint to the
+    /// (infinite) axis through the two line points. Populated by the
+    /// `#@cylinderinclusion <id> line 6 x1 y1 z1 x2 y2 z2 radius r itz t
+    ///   inside <mi> interface <mif> [bodyload <b>]` directive.
+    struct CylinderInclusionSpec {
+        double x1 = 0., y1 = 0., z1 = 0.;
+        double x2 = 0., y2 = 0., z2 = 0.;
+        double radius = 0., itz = 0.;
+        int inside    = 2;
+        int interface_ = 3;
+        int bodyload = -1;
+    };
+    std::vector< CylinderInclusionSpec >cylinderInclusionSpecs;
 
     /// Control-vertex definitions from `#@controlvertex <id> coords 3 x y z`.
     /// Each entry declares a specific mesh coordinate whose nearest Delaunay
@@ -707,8 +722,6 @@ public:
     //SMTM mesh for Cantilver benchmark of 3D Lattice paper for CMAME
     void give3DCantileverSMTMOutput(const std::string &fileName);
 
-
-    void give3DCylinderOutput(const std::string &fileName);
 
     //Periodic SM mesh for tetrahedra
     void give3DPeriodicTetraSMOutput(const std::string &fileName);

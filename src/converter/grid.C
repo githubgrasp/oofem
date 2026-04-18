@@ -203,8 +203,6 @@ void Grid::resolveGridType(const std::string &name)
         gridType = _3dCantExtraTM;
     } else if ( !strncasecmp(name.c_str(), "3dcantcoupledsmtm", 13) ) {
         gridType = _3dCantSMTM;
-    } else if ( !strncasecmp(name.c_str(), "3dcylinder", 10) ) {
-        gridType = _3dCylinder;
     } else if ( !strncasecmp(name.c_str(), "3dpertetrasm", 12) ) {
         gridType = _3dPerTetraSM;
     } else if ( !strncasecmp(name.c_str(), "3dtetrasm", 9) ) {
@@ -1626,6 +1624,39 @@ void Grid::readQhullControlRecords(const std::string &controlFile)
                 iss >> s.bodyload;
             }
             sphereInclusionSpecs.push_back(s);
+        } else if ( tag == "#@cylinderinclusion" ) {
+            // #@cylinderinclusion <id> line 6 x1 y1 z1 x2 y2 z2
+            //   radius r itz t inside <mi> interface <mif> [bodyload <b>]
+            int num;
+            iss >> num;
+            std::string kw;
+            int sz = 0;
+            iss >> kw >> sz;              // "line" 6
+            if ( kw != "line" || sz != 6 ) {
+                converter::error("Malformed #@cylinderinclusion — expected 'line 6 x1 y1 z1 x2 y2 z2'");
+            }
+            CylinderInclusionSpec c;
+            iss >> c.x1 >> c.y1 >> c.z1 >> c.x2 >> c.y2 >> c.z2;
+            iss >> kw >> c.radius;        // "radius" r
+            if ( kw != "radius" ) {
+                converter::error("Malformed #@cylinderinclusion — expected 'radius <r>'");
+            }
+            iss >> kw >> c.itz;           // "itz" t
+            if ( kw != "itz" ) {
+                converter::error("Malformed #@cylinderinclusion — expected 'itz <t>'");
+            }
+            iss >> kw >> c.inside;
+            if ( kw != "inside" ) {
+                converter::error("Malformed #@cylinderinclusion — expected 'inside <m>'");
+            }
+            iss >> kw >> c.interface_;
+            if ( kw != "interface" ) {
+                converter::error("Malformed #@cylinderinclusion — expected 'interface <m>'");
+            }
+            if ( iss >> kw && kw == "bodyload" ) {
+                iss >> c.bodyload;
+            }
+            cylinderInclusionSpecs.push_back(c);
         }
     }
 
@@ -2920,8 +2951,6 @@ void Grid::giveOofemOutput(const std::string &fileName)
         give3DCantileverTMExtraOutput(fileName);
     } else if ( gridType == _3dCantSMTM ) {  //Implementation for 3D coupling paper Coupled
         give3DCantileverSMTMOutput(fileName);
-    } else if ( gridType == _3dCylinder ) {  //Implementation for 3D cylinder (Milan and Domenico)
-        give3DCylinderOutput(fileName);
     } else if ( gridType == _3dTetraSM ) {  //Implementation for Tetrahedra (Adam)
         give3DTetraSMOutput(fileName);
     } else if ( gridType == _3dPerTetraSM ) {  //Implementation for Tetrahedra, periodic (Adam)
@@ -3576,7 +3605,6 @@ Grid::resolveInclusionMaterial(const oofem::FloatArray &A, const oofem::FloatArr
                                int defaultMat, int &bodyloadOut) const
 {
     bodyloadOut = -1;
-    if ( sphereInclusionSpecs.empty() ) return defaultMat;
     for ( const auto &s : sphereInclusionSpecs ) {
         const double effR = s.radius + 0.5 * s.itz;
         const double d1 = std::sqrt(( A.at(1) - s.cx ) * ( A.at(1) - s.cx ) +
@@ -3592,6 +3620,27 @@ Grid::resolveInclusionMaterial(const oofem::FloatArray &A, const oofem::FloatArr
         } else if ( in1 != in2 ) {
             bodyloadOut = s.bodyload;
             return s.interface_;
+        }
+    }
+    for ( const auto &c : cylinderInclusionSpecs ) {
+        const double effR = c.radius + 0.5 * c.itz;
+        const double ax = c.x2 - c.x1, ay = c.y2 - c.y1, az = c.z2 - c.z1;
+        const double aLen2 = ax * ax + ay * ay + az * az;
+        if ( aLen2 <= 0. ) continue;
+        auto perp = [ & ](const oofem::FloatArray &P) {
+            const double dx = P.at(1) - c.x1, dy = P.at(2) - c.y1, dz = P.at(3) - c.z1;
+            const double cx = dy * az - dz * ay;
+            const double cy = dz * ax - dx * az;
+            const double cz = dx * ay - dy * ax;
+            return std::sqrt(( cx * cx + cy * cy + cz * cz ) / aLen2);
+        };
+        const bool in1 = perp(A) < effR;
+        const bool in2 = perp(B) < effR;
+        if ( in1 && in2 ) {
+            return c.inside;
+        } else if ( in1 != in2 ) {
+            bodyloadOut = c.bodyload;
+            return c.interface_;
         }
     }
     return defaultMat;
@@ -7797,187 +7846,6 @@ Grid::give3DPeriodicPoreTMOutput(const std::string &fileName)
     fprintf(outputStream, "##TIME\n");
     fprintf(outputStream, "#%%END_CHECK%%\n");
     return;
-}
-
-
-void
-Grid::give3DCylinderOutput(const std::string &fileName)
-{
-    oofem::FloatArray coords(3);
-    oofem::FloatArray coordsOne, coordsTwo, line;
-    oofem::IntArray lineNodes;
-    oofem::IntArray crossSectionNodes;
-
-    // build vertex-index → sequential-node-id map (only inside/boundary vertices)
-    std::unordered_map< int, int >nodeIdMap;
-    int numberOfNodes = 0;
-    for ( int i = 0; i < this->giveNumberOfDelaunayVertices(); i++ ) {
-        int f = this->giveDelaunayVertex(i + 1)->giveOutsideFlag();
-        if ( f == 0 || f == 2 ) {
-            nodeIdMap [ i + 1 ] = ++numberOfNodes;
-        }
-    }
-
-    int numberOfLines = 0;
-    for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
-        int flag = this->giveDelaunayLine(i + 1)->giveOutsideFlag();
-        if ( flag == 0 && this->giveDelaunayLine(i + 1)->delaunayAreaCheck() == 1 ) {
-            numberOfLines++;
-        } else if ( flag == 3 && this->giveRegion(1)->modifyVoronoiCrossSection(i + 1) == 1 ) {
-            numberOfLines++;
-        }
-    }
-
-    // --- first pass: assign material zones and build sets ---
-    std::vector< int >set1, set2, set3;
-    int elemCounter = 0;
-    for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
-        int flag = this->giveDelaunayLine(i + 1)->giveOutsideFlag();
-        if ( !( ( flag == 0 || flag == 3 ) && this->giveDelaunayLine(i + 1)->delaunayAreaCheck() == 1 ) ) {
-            continue;
-        }
-
-        ++elemCounter;
-        this->giveDelaunayLine(i + 1)->giveLocalVertices(lineNodes);
-        this->giveDelaunayVertex(lineNodes.at(1))->giveCoordinates(coordsOne);
-        this->giveDelaunayVertex(lineNodes.at(2))->giveCoordinates(coordsTwo);
-
-        int materialType = 2;
-        for ( int m = 0; m < this->giveNumberOfInclusions(); m++ ) {
-            if ( !strcmp(this->giveInclusion(m + 1)->giveClassName(), "InterfaceCylinder") ) {
-                auto *ic = ( InterfaceCylinder * ) this->giveInclusion(m + 1);
-                ic->giveLine(line);
-                double r = ic->giveRadius() + ic->giveITZThickness() / 2.;
-                double d1 = sqrt(pow(coordsOne.at(2) - line.at(2), 2.) + pow(coordsOne.at(3) - line.at(3), 2.) );
-                double d2 = sqrt(pow(coordsTwo.at(2) - line.at(2), 2.) + pow(coordsTwo.at(3) - line.at(3), 2.) );
-                if ( d1 > r && d2 > r ) {
-                    materialType = 2;
-                } else if ( ( d1 > r ) != ( d2 > r ) ) {
-                    materialType = 4;
-                    break;
-                } else {
-                    materialType = 3;
-                    break;
-                }
-            }
-        }
-        this->giveDelaunayLine(i + 1)->updateMaterial(materialType);
-
-        if ( materialType == 2 ) {
-            set1.push_back(elemCounter);
-        } else if ( materialType == 3 ) {
-            set2.push_back(elemCounter);
-        } else {
-            set3.push_back(elemCounter);
-        }
-    }
-
-    // --- template pass ---
-    std::ifstream ctrl(controlFileName);
-    std::ofstream out(fileName);
-    if ( !ctrl ) {
-        converter::error("give3DCylinderOutput: Cannot open control file");
-    }
-    if ( !out ) {
-        converter::error("give3DCylinderOutput: Cannot open output file");
-    }
-
-    std::string line_s;
-    bool injected = false;
-
-    while ( std::getline(ctrl, line_s) ) {
-        std::string t = line_s;
-        size_t pos = t.find_first_not_of(" \t");
-        if ( pos != std::string::npos ) {
-            t.erase(0, pos);
-        } else {
-            t.clear();
-        }
-
-        if ( !injected && t.rfind("ncrosssect", 0) == 0 ) {
-            std::istringstream iss(t);
-            std::string token;
-            out << "ndofman " << numberOfNodes << " nelem " << numberOfLines << " ";
-            while ( iss >> token ) {
-                out << token << " ";
-            }
-            out << "\n";
-
-            // write nodes — first two (rebar ends) get inline BCs
-            int firstFlag = 0;
-            for ( int i = 0; i < this->giveNumberOfDelaunayVertices(); i++ ) {
-                int vflag = this->giveDelaunayVertex(i + 1)->giveOutsideFlag();
-                if ( vflag == 0 || vflag == 2 ) {
-                    int nid = nodeIdMap.at(i + 1);
-                    this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
-                    if ( firstFlag == 0 ) {
-                        firstFlag = 1;
-                        out << "node " << nid << " coords 3 " << std::scientific
-                            << coords.at(1) << " " << coords.at(2) << " " << coords.at(3)
-                            << " bc 6 1 1 1 1 0 0\n";
-                    } else if ( firstFlag == 1 ) {
-                        firstFlag = 2;
-                        out << "node " << nid << " coords 3 " << std::scientific
-                            << coords.at(1) << " " << coords.at(2) << " " << coords.at(3)
-                            << " bc 6 0 1 1 1 0 0\n";
-                    } else {
-                        out << "node " << nid << " coords 3 " << std::scientific
-                            << coords.at(1) << " " << coords.at(2) << " " << coords.at(3) << "\n";
-                    }
-                }
-            }
-
-            // write elements
-            elemCounter = 0;
-            for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
-                int flag = this->giveDelaunayLine(i + 1)->giveOutsideFlag();
-                if ( !( ( flag == 0 || flag == 3 ) && this->giveDelaunayLine(i + 1)->delaunayAreaCheck() == 1 ) ) {
-                    continue;
-                }
-                ++elemCounter;
-                this->giveDelaunayLine(i + 1)->giveLocalVertices(lineNodes);
-                this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
-                int mat = this->giveDelaunayLine(i + 1)->giveMaterial();
-                int cs  = mat - 1;
-
-                int n1 = nodeIdMap.count(lineNodes.at(1)) ? nodeIdMap.at(lineNodes.at(1)) : lineNodes.at(1);
-                int n2 = nodeIdMap.count(lineNodes.at(2)) ? nodeIdMap.at(lineNodes.at(2)) : lineNodes.at(2);
-                out << "lattice3D " << elemCounter
-                    << " nodes 2 " << n1 << " " << n2
-                    << " crossSect " << cs << " mat " << mat
-                    << " polycoords " << 3 * crossSectionNodes.giveSize();
-                for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                    this->giveVoronoiVertex(crossSectionNodes.at(m + 1))->giveCoordinates(coords);
-                    out << " " << coords.at(1) << " " << coords.at(2) << " " << coords.at(3);
-                }
-                if ( mat == 4 ) {
-                    out << " bodyloads 1 2\n";
-                } else {
-                    out << "\n";
-                }
-            }
-
-            injected = true;
-            continue;
-        }
-
-        if ( t.rfind("#@INSERT_SETS", 0) == 0 ) {
-            out << "Set 1 elements " << set1.size();
-            for (int id : set1) { out << " " << id; }
-            out << "\n";
-            out << "Set 2 elements " << set2.size();
-            for (int id : set2) { out << " " << id; }
-            out << "\n";
-            out << "Set 3 elements " << set3.size();
-            for (int id : set3) { out << " " << id; }
-            out << "\n";
-            continue;
-        }
-
-        if ( !isConverterDirective(t) ) {
-            out << line_s << "\n";
-        }
-    }
 }
 
 void
