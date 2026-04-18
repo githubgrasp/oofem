@@ -1,0 +1,28 @@
+oofem.out
+3D periodic SM model with one fibre
+NonLinearStatic nmsteps 1 nsteps 1 contextOutputStep 1 nmodules 2 profileopt 1
+nsteps 1 rtolv 1.e-3 reqIterations 100 stiffMode 1 manrmsteps 10 maxiter 200 controllmode 0 stepLength 1.e-6 minsteplength 1.e-6 maxrestarts 0 hpcmode 2 hpc 2 #@CTLNODE 2 hpcw 1 1. donotfixload
+vtkxmldiscrete tstep_all domain_all
+gpexportmodule vars 5 59 90 84 85 78 tstep_all domain_all
+domain 3dLattice
+OutputManager tstep_all dofman_output {#@CTLNODE}
+ncrosssect 3 nmat 3 nbc 2 nic 0 nltf 1
+latticecs 1 material 1 shape 2
+latticecs 2 material 2 shape 1 radius 1.9e-5
+latticecs 3 material 3
+latticedamage 1 talpha 0. d 0. e 30.e9 e0 100.e6 stype 3 wf 40.e6
+latticelinearelastic 2 d 0. e 200.e9 n 0.
+latticeslip 3 talpha 0. d 0. e 30.e11 a1 1 a2 1 t0 4.e6
+BoundaryCondition 1 loadTimeFunction 1 prescribedvalue 0.0
+NodalLoad 2 loadTimeFunction 1 Components 6 0. 1. 0. 0. 0. 0.
+ConstantFunction 1 f(t) 1.
+#%BEGIN_CHECK%
+#NODE number #@CTLNODE dof 2 unknown d
+#LOADLEVEL
+##TIME
+#%END_CHECK%
+#@grid 3dSM
+#@diam 0.012
+#@perflag 3 1 1 1
+#@prism 1 box 6 0. 0. 0. 0.03 0.09 0.03 refine 1. edgerefine 0.5 surfacerefine 0.7 regionrefine 1.
+#@fibre 1 endpoints 6 0.015 0.035 0.015 0.015 0.065 0.015 diameter 0.000038

@@ -17,7 +17,7 @@ ConstantFunction 1 f(t) 1.
 #LOADLEVEL
 ##TIME
 #%END_CHECK%
-#@grid 3dFPZ
+#@grid 3dSM
 #@diam 0.01
 #@perflag 3 1 1 1
 #@prism 1 box 6 0. 0. 0. 0.1 0.1 0.1 refine 1.

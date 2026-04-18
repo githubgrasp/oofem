@@ -45,6 +45,25 @@ Fibre::initializeFrom(ConverterInputRecord &ir)
     return;
 };
 
+void
+Fibre::initializeFromCoords(const oofem::FloatArray &endpoints, double diam)
+{
+    m_endpoints = endpoints;
+    diameter = diam;
+    coordP.resize(3);
+    coordQ.resize(3);
+    coordP.at(1) = endpoints.at(1);
+    coordP.at(2) = endpoints.at(2);
+    coordP.at(3) = endpoints.at(3);
+    coordQ.at(1) = endpoints.at(4);
+    coordQ.at(2) = endpoints.at(5);
+    coordQ.at(3) = endpoints.at(6);
+    PointP = grid->createInterNode(coordP);
+    PointQ = grid->createInterNode(coordQ);
+    length = computedistance(coordP, coordQ);
+    direction_vector = ( 1. / length ) * ( coordQ - coordP );
+}
+
 // tool functions
 void Fibre::findDelaunayVertex()
 {

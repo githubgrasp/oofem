@@ -91,6 +91,8 @@ public:
     Fibre *ofType();
 
     void initializeFrom(ConverterInputRecord &ir);
+    /// Initialise from already-parsed endpoints + diameter (used by qhull-template path).
+    void initializeFromCoords(const oofem::FloatArray &endpoints, double diam);
     void discretizeYouself();//
 
 

@@ -134,7 +134,7 @@ private:
 
     /** Grid type. This determines the type of input to generate
      */
-    enum GridType { _3dSM, _3dTM, _3dSMTM, _3dPerSM, _3dPerTM, _3dPerSMTM, _3dFPZ, _3dFPZFibre, _3dFibreBenchmark, _3dWong, _3dPerPoreTM, _3dPerPoreSM, _3dPerPoreSMTM, _3dCantSM, _3dCantTM, _3dCantExtraTM, _3dCantSMTM, _3dBentoniteSM, _3dBentoniteTM, _3dBentoniteSMTM, _3dSphere, _3dCylinder, _3dTetraSM, _3dPerTetraSM, _3dRCPerSM, _3dRCPer2SM, _3dRCSM, _3dTension, _3dGopSha, _3dKupfer, _3dImran, _3dNotch };
+    enum GridType { _3dSM, _3dTM, _3dSMTM, _3dPerSM, _3dPerTM, _3dPerSMTM, _3dFPZFibre, _3dFibreBenchmark, _3dWong, _3dPerPoreTM, _3dPerPoreSM, _3dPerPoreSMTM, _3dCantSM, _3dCantTM, _3dCantExtraTM, _3dCantSMTM, _3dBentoniteSM, _3dBentoniteTM, _3dBentoniteSMTM, _3dSphere, _3dCylinder, _3dTetraSM, _3dPerTetraSM, _3dRCPerSM, _3dRCPer2SM, _3dRCSM, _3dTension, _3dGopSha, _3dKupfer, _3dImran, _3dNotch };
 
     GridType gridType;
 
@@ -607,7 +607,11 @@ public:
 
     void give3DBentoniteCoupledOutput(const std::string &fileName);
 
-    void give3DFPZOutput(const std::string &fileName);
+    /// Walk fibreList: discretise each fibre, build reinforcement nodes,
+    /// lattice beams (fibre segments), and lattice links (fibre↔matrix coupling).
+    /// Shared by both ConverterTXTDataReader and qhull-template paths.
+    void discretizeFibres();
+
 
     void give3DFPZFibreOutput(const std::string &fileName);
 

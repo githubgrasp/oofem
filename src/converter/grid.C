@@ -181,8 +181,6 @@ void Grid::resolveGridType(const std::string &name)
         gridType = _3dPerTM;
     } else if ( !strncasecmp(name.c_str(), "3dpercoupledsmtm", 15) ) {
         gridType = _3dPerSMTM;
-    } else if ( !strncasecmp(name.c_str(), "3dfpz", 5) ) {
-        gridType = _3dFPZ;
     } else if ( !strncasecmp(name.c_str(), "3dfibrefpz", 10) ) {
         gridType = _3dFPZFibre;
     } else if ( !strncasecmp(name.c_str(), "3dfibrebenchmark", 10) ) {
@@ -1577,6 +1575,26 @@ void Grid::readQhullControlRecords(const std::string &controlFile)
             ic->setITZThickness(itz);
             inclusionList.resize(std::max(( int ) inclusionList.size(), num), nullptr);
             setInclusion(num, ic);
+        } else if ( tag == "#@fibre" ) {
+            int num;
+            iss >> num;
+
+            std::string kw;
+            int sz = 0;
+            iss >> kw >> sz;
+            oofem::FloatArray endpoints(sz);
+            for ( int i = 1; i <= sz; ++i ) {
+                iss >> endpoints.at(i);
+            }
+
+            iss >> kw;            // "diameter"
+            double diam = 0.0;
+            iss >> diam;
+
+            auto *f = new Fibre(num, this);
+            f->initializeFromCoords(endpoints, diam);
+            fibreList.resize(std::max(( int ) fibreList.size(), num), nullptr);
+            setFibre(num, f);
         }
     }
 
@@ -1754,6 +1772,9 @@ int Grid::instanciateYourselfFromQhull(const std::string &controlFile,
             this->giveDelaunayVertex(i + 1)->updateCellVertices(crossSectionNodes);
         }
     }
+
+    // Discretise any fibres declared via #@fibre directives.
+    this->discretizeFibres();
 
     return 1;
 }
@@ -2426,90 +2447,78 @@ int Grid::instanciateYourself(ConverterDataReader *dr, const char nodeFileName[]
     // generation of the Lines between Reinforcements nodes (beam elements) , and between Reinf and Del vertices (links)
     //=================================
 
-    int numberOfBeams, numberOfLinks, numberOfReinforcementNodes;
-    int indexOfBeamElements, indexOfLinkElements;
-    int beamElementCounter = 0, linkElementCounter = 0;
-    oofem::IntArray beamNodes(2), linkNodes(2);
-    double portionOfFibre;
-    oofem::FloatArray coordP1, coordP2;
-    double fibre_diameter;
-    oofem::FloatArray dir_vector;
-
-    printf("\n generation of beam elements for fibres and link elements in progress... \n ");
-
-    for ( i = 1; i <= nfibre; i++ ) {
-        // 0) collect info about fibre which will be added to elements
-        fibre_diameter = giveFibre(i)->giveDiameter();
-        dir_vector = giveFibre(i)->giveDirVector();
-
-        // 1) discretization and creation of reinforcement nodes
-        /**TODO: This has been written for the lattice generation.
-         * Therefore, the nodes of the rebars are placed in the centre of the section crossing
-         * the Voronoi cell. For meshtype=1 where tetras are used it would be better to place
-         * the node at the intersection with Delaunay tetrahedra of the segment crossing the delaunay tetra.
-         **/
-        giveFibre(i)->discretizeYouself();
-
-        // 2) creation of link and beam elements associated to the fibre
-
-        numberOfReinforcementNodes = giveFibre(i)->NbOfReinfNodes();
-        numberOfBeams = ( giveFibre(i)->NbOfReinfNodes() ) - 1;
-        numberOfLinks = ( giveFibre(i)->NbOfReinfNodes() );
-
-        indexOfLinkElements = converter::size1(latticeLinkList);
-        indexOfBeamElements = converter::size1(latticeBeamList);
-
-        latticeLinkList.resize(indexOfLinkElements + numberOfLinks, nullptr);
-        latticeBeamList.resize(indexOfBeamElements + numberOfBeams, nullptr);
-
-
-        for (int j = 1; j <= numberOfBeams; j++ ) {
-            beamElementCounter++;
-
-            beamLine = ( Line * ) ( Line(beamElementCounter + 1, this).ofType() );
-            setLatticeBeam(beamElementCounter, beamLine);
-
-            beamNodes.at(1) = giveFibre(i)->giveNumberReinforcementNode(j);
-            beamNodes.at(2) = giveFibre(i)->giveNumberReinforcementNode(j + 1);
-
-            beamLine->setVertices(beamNodes);
-            this->giveReinforcementNode(beamNodes.at(1) )->setLocalLine(beamElementCounter);
-            this->giveReinforcementNode(beamNodes.at(2) )->setLocalLine(beamElementCounter);
-
-            beamLine->setDiameter(fibre_diameter);
-            beamLine->setDirVector(dir_vector);
-        }
-
-        for (int j = 1; j <= numberOfReinforcementNodes; j++ ) {
-            linkElementCounter++;
-            linkLine = ( Line * ) ( Line(linkElementCounter + 1, this).ofType() );
-            setLatticeLink(linkElementCounter, linkLine);
-
-            linkNodes.at(1) = giveFibre(i)->giveNumberReinforcementNode(j);
-            linkNodes.at(2) = giveFibre(i)->giveNumberDelaunayNode(j);
-
-            linkLine->setVertices(linkNodes);
-
-            //set of the length of fibre associated to the link
-            this->giveInterNode(giveFibre(i)->giveNumberIntersectionPoint(j) )->giveCoordinates(coordP1);
-            this->giveInterNode(giveFibre(i)->giveNumberIntersectionPoint(j + 1) )->giveCoordinates(coordP2);
-            portionOfFibre = Fibre::computedistance(coordP1, coordP2);
-            linkLine->setAssociatedLength(portionOfFibre);
-
-            this->giveReinforcementNode(linkNodes.at(1) )->setLocalLink(linkElementCounter);
-            this->giveDelaunayVertex(linkNodes.at(2) )->setLocalLink(linkElementCounter);
-
-            linkLine->setDiameter(fibre_diameter);
-            linkLine->setDirVector(dir_vector);
-
-            linkLine->setL_end(giveFibre(i)->giveL_end(j) );
-        }
-    }
-
+    this->discretizeFibres();
 
     printf("finished initializing\n");
 
     return 1;
+}
+
+
+void
+Grid::discretizeFibres()
+{
+    const int nfibre = giveNumberOfFibres();
+    if ( nfibre == 0 ) return;
+
+    Line *beamLine, *linkLine;
+    oofem::IntArray beamNodes(2), linkNodes(2);
+    oofem::FloatArray coordP1, coordP2;
+    int beamElementCounter = converter::size1(latticeBeamList);
+    int linkElementCounter = converter::size1(latticeLinkList);
+
+    printf("\n generation of beam elements for fibres and link elements in progress... \n ");
+
+    for ( int i = 1; i <= nfibre; i++ ) {
+        const double fibre_diameter = giveFibre(i)->giveDiameter();
+        oofem::FloatArray dir_vector = giveFibre(i)->giveDirVector();
+
+        // Reinforcement-node placement: nodes sit at the centre of the cross-section
+        // where the fibre intersects each Voronoi cell along its length.
+        giveFibre(i)->discretizeYouself();
+
+        const int numberOfReinforcementNodes = giveFibre(i)->NbOfReinfNodes();
+        const int numberOfBeams = numberOfReinforcementNodes - 1;
+        const int numberOfLinks = numberOfReinforcementNodes;
+
+        const int indexOfLinkElements = converter::size1(latticeLinkList);
+        const int indexOfBeamElements = converter::size1(latticeBeamList);
+        latticeLinkList.resize(indexOfLinkElements + numberOfLinks, nullptr);
+        latticeBeamList.resize(indexOfBeamElements + numberOfBeams, nullptr);
+
+        for ( int j = 1; j <= numberOfBeams; j++ ) {
+            beamElementCounter++;
+            beamLine = ( Line * ) ( Line(beamElementCounter + 1, this).ofType() );
+            setLatticeBeam(beamElementCounter, beamLine);
+            beamNodes.at(1) = giveFibre(i)->giveNumberReinforcementNode(j);
+            beamNodes.at(2) = giveFibre(i)->giveNumberReinforcementNode(j + 1);
+            beamLine->setVertices(beamNodes);
+            giveReinforcementNode(beamNodes.at(1))->setLocalLine(beamElementCounter);
+            giveReinforcementNode(beamNodes.at(2))->setLocalLine(beamElementCounter);
+            beamLine->setDiameter(fibre_diameter);
+            beamLine->setDirVector(dir_vector);
+        }
+
+        for ( int j = 1; j <= numberOfLinks; j++ ) {
+            linkElementCounter++;
+            linkLine = ( Line * ) ( Line(linkElementCounter + 1, this).ofType() );
+            setLatticeLink(linkElementCounter, linkLine);
+            linkNodes.at(1) = giveFibre(i)->giveNumberReinforcementNode(j);
+            linkNodes.at(2) = giveFibre(i)->giveNumberDelaunayNode(j);
+            linkLine->setVertices(linkNodes);
+
+            giveInterNode(giveFibre(i)->giveNumberIntersectionPoint(j))->giveCoordinates(coordP1);
+            giveInterNode(giveFibre(i)->giveNumberIntersectionPoint(j + 1))->giveCoordinates(coordP2);
+            linkLine->setAssociatedLength(Fibre::computedistance(coordP1, coordP2));
+
+            giveReinforcementNode(linkNodes.at(1))->setLocalLink(linkElementCounter);
+            giveDelaunayVertex(linkNodes.at(2))->setLocalLink(linkElementCounter);
+
+            linkLine->setDiameter(fibre_diameter);
+            linkLine->setDirVector(dir_vector);
+            linkLine->setL_end(giveFibre(i)->giveL_end(j));
+        }
+    }
 }
 
 Vertex *Grid::createReinfNode(oofem::FloatArray coordR)
@@ -2853,9 +2862,6 @@ void Grid::giveOofemOutput(const std::string &fileName)
         give3DSMTMOutput(fileName);
     } else if ( gridType == _3dPerSM ) {  //Base implementation
         give3DPeriodicSMTMOutput(fileName);
-    } else if ( gridType == _3dFPZ ) {
-        // Periodic SM cases (formerly 3dFPZ) now go through the unified writer.
-        give3DSMOutput(fileName);
     } else if ( gridType == _3dFPZFibre ) {
         give3DFPZFibreOutput(fileName);
     } else if ( gridType == _3dFibreBenchmark ) {
@@ -3535,6 +3541,13 @@ Grid::give3DSMOutput(const std::string &fileName)
         }
     }
 
+    // Reinforcement (fibre) nodes are inside-only.
+    for ( int i = 0; i < this->giveNumberOfReinforcementNode(); i++ ) {
+        if ( this->giveReinforcementNode(i + 1)->giveOutsideFlag() == 0 ) {
+            numberOfNodes++;
+        }
+    }
+
     for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
         int flag = this->giveDelaunayLine(i + 1)->giveOutsideFlag();
         if ( periodic ) {
@@ -3544,6 +3557,18 @@ Grid::give3DSMOutput(const std::string &fileName)
                 numberOfLines++;
             }
         }
+    }
+
+    // Fibre beam segments (lattice3D / lattice3Dboundary, circular cross-section).
+    for ( int i = 0; i < this->giveNumberOfLatticeBeams(); i++ ) {
+        int flag = this->giveLatticeBeam(i + 1)->giveOutsideFlag();
+        if ( flag == 0 || ( periodic && flag == 2 ) ) numberOfLines++;
+    }
+
+    // Fibre/matrix coupling links (latticelink3D / latticelink3Dboundary).
+    for ( int i = 0; i < this->giveNumberOfLatticeLinks(); i++ ) {
+        int flag = this->giveLatticeLink(i + 1)->giveOutsideFlag();
+        if ( flag == 0 || ( periodic && flag == 2 ) ) numberOfLines++;
     }
 
     // Compact node map for non-periodic mode (renumbers inside vertices to 1..N).
@@ -3564,8 +3589,10 @@ Grid::give3DSMOutput(const std::string &fileName)
         return periodic ? rawId : nodeMap [ rawId ];
     };
 
-    // Periodic control-node id (only meaningful when periodic).
-    const int ctlNode = nDelV + 1;
+    // Periodic control-node id (only meaningful when periodic). Includes
+    // reinforcement-node count so the fibre case still reaches a unique id.
+    const int nReinf = this->giveNumberOfReinforcementNode();
+    const int ctlNode = nDelV + nReinf + 1;
     const std::string ctlPlaceholder = "#@CTLNODE";
     auto substitute = [ & ](std::string &s) {
         if ( !periodic ) return;
@@ -3646,6 +3673,14 @@ Grid::give3DSMOutput(const std::string &fileName)
                 out << "\n";
             }
 
+            // Reinforcement (fibre) nodes — id = nDelV + reinforcement-index.
+            for ( int i = 0; i < nReinf; i++ ) {
+                if ( this->giveReinforcementNode(i + 1)->giveOutsideFlag() != 0 ) continue;
+                this->giveReinforcementNode(i + 1)->giveCoordinates(coords);
+                out << "node " << ( nDelV + i + 1 ) << " coords 3 " << std::scientific
+                    << coords.at(1) << " " << coords.at(2) << " " << coords.at(3) << "\n";
+            }
+
             // Periodic control node.
             if ( periodic ) {
                 out << "node " << ctlNode << " coords 3 " << std::scientific
@@ -3720,6 +3755,77 @@ Grid::give3DSMOutput(const std::string &fileName)
                     out << " " << c.at(1) << " " << c.at(2) << " " << c.at(3);
                 }
                 out << "\n";
+            }
+
+            // Fibre beam segments: lattice3D / lattice3Dboundary with circular
+            // cross-section (defined by latticecs 2 in the control file).
+            for ( int i = 0; i < this->giveNumberOfLatticeBeams(); i++ ) {
+                int flag = this->giveLatticeBeam(i + 1)->giveOutsideFlag();
+                const bool emitInside = ( flag == 0 );
+                const bool emitBoundary = periodic && flag == 2;
+                if ( !emitInside && !emitBoundary ) continue;
+
+                this->giveLatticeBeam(i + 1)->giveLocalVertices(lineNodes);
+
+                if ( emitBoundary ) {
+                    location.zero();
+                    for ( int m = 0; m < 2; m++ ) {
+                        if ( this->giveReinforcementNode(lineNodes.at(m + 1))->giveOutsideFlag() == 1 ) {
+                            location.at(m + 1) = this->giveReinforcementNode(lineNodes.at(m + 1))->giveLocation();
+                            lineNodes.at(m + 1) = this->giveReinforcementNode(lineNodes.at(m + 1))->givePeriodicNode();
+                        }
+                    }
+                    out << "lattice3Dboundary " << ++elemCounter
+                        << " nodes 3 " << ( nDelV + lineNodes.at(1) ) << " " << ( nDelV + lineNodes.at(2) )
+                        << " " << ctlNode << " crossSect 2 mat 2"
+                        << " location 2 " << location.at(1) << " " << location.at(2) << "\n";
+                } else {
+                    out << "lattice3D " << ++elemCounter
+                        << " nodes 2 " << ( nDelV + lineNodes.at(1) ) << " " << ( nDelV + lineNodes.at(2) )
+                        << " crossSect 2 mat 2\n";
+                }
+            }
+
+            // Fibre/matrix coupling links: latticelink3D / latticelink3Dboundary.
+            // Endpoint 1 is a reinforcement node (offset by nDelV);
+            // endpoint 2 is a matrix Delaunay vertex (raw id).
+            for ( int i = 0; i < this->giveNumberOfLatticeLinks(); i++ ) {
+                int flag = this->giveLatticeLink(i + 1)->giveOutsideFlag();
+                const bool emitInside = ( flag == 0 );
+                const bool emitBoundary = periodic && flag == 2;
+                if ( !emitInside && !emitBoundary ) continue;
+
+                this->giveLatticeLink(i + 1)->giveLocalVertices(lineNodes);
+                const double linkLen = this->giveLatticeLink(i + 1)->giveAssociatedLength();
+                const double linkDiam = this->giveLatticeLink(i + 1)->giveDiameter();
+                const double linkLend = this->giveLatticeLink(i + 1)->giveL_end();
+                oofem::FloatArray linkDir = this->giveLatticeLink(i + 1)->giveDirectionVector();
+
+                if ( emitBoundary ) {
+                    location.zero();
+                    if ( this->giveReinforcementNode(lineNodes.at(1))->giveOutsideFlag() == 1 ) {
+                        location.at(1) = this->giveReinforcementNode(lineNodes.at(1))->giveLocation();
+                        lineNodes.at(1) = this->giveReinforcementNode(lineNodes.at(1))->givePeriodicNode();
+                    }
+                    if ( this->giveDelaunayVertex(lineNodes.at(2))->giveOutsideFlag() == 1 ) {
+                        location.at(2) = this->giveDelaunayVertex(lineNodes.at(2))->giveLocation();
+                        lineNodes.at(2) = this->giveDelaunayVertex(lineNodes.at(2))->givePeriodicNode();
+                    }
+                    out << "latticelink3Dboundary " << ++elemCounter
+                        << " nodes 3 " << ( nDelV + lineNodes.at(1) ) << " " << lineNodes.at(2)
+                        << " " << ctlNode << " crossSect 3 mat 3"
+                        << " length " << linkLen << " diameter " << linkDiam
+                        << " dirvector 3 " << linkDir.at(1) << " " << linkDir.at(2) << " " << linkDir.at(3)
+                        << " L_end " << linkLend
+                        << " location 2 " << location.at(1) << " " << location.at(2) << "\n";
+                } else {
+                    out << "latticelink3D " << ++elemCounter
+                        << " nodes 2 " << ( nDelV + lineNodes.at(1) ) << " " << lineNodes.at(2)
+                        << " crossSect 3 mat 3"
+                        << " length " << linkLen << " diameter " << linkDiam
+                        << " dirvector 3 " << linkDir.at(1) << " " << linkDir.at(2) << " " << linkDir.at(3)
+                        << " L_end " << linkLend << "\n";
+                }
             }
 
             injected = true;
@@ -6850,155 +6956,6 @@ Grid::give3DCantileverSMTMOutput(const std::string &fileName)
     fprintf(outputStreamTM, "#%%END_CHECK%%\n");
 
     return;
-}
-
-
-void
-Grid::give3DFPZOutput(const std::string &fileName)
-{
-    oofem::FloatArray boundaries(3);
-    this->giveRegion(1)->defineBoundaries(boundaries);
-    oofem::FloatArray specimenDimension(3);
-    specimenDimension.at(1) = boundaries.at(2) - boundaries.at(1);
-    specimenDimension.at(2) = boundaries.at(4) - boundaries.at(3);
-    specimenDimension.at(3) = boundaries.at(6) - boundaries.at(5);
-
-    oofem::FloatArray coords;
-    oofem::IntArray nodes, location(2);
-    oofem::IntArray crossSectionNodes;
-
-    int numberOfNodes = 0;
-    for ( int i = 0; i < this->giveNumberOfDelaunayVertices(); i++ ) {
-        int f = this->giveDelaunayVertex(i + 1)->giveOutsideFlag();
-        if ( f == 0 || f == 2 ) {
-            numberOfNodes++;
-        }
-    }
-
-    int numberOfLines = 0;
-    for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
-        int f = this->giveDelaunayLine(i + 1)->giveOutsideFlag();
-        if ( f == 0 || f == 2 || f == 3 ) {
-            numberOfLines++;
-        }
-    }
-
-    // control-node id used in hpc / OutputManager / #NODE — preserves the legacy
-    // convention of using the raw Delaunay-vertex count + 1 (not compact count).
-    const int ctlNode = this->giveNumberOfDelaunayVertices() + 1;
-    const std::string ctlPlaceholder = "#@CTLNODE";
-
-    auto substitute = [ & ](std::string &s) {
-        size_t pos = 0;
-        while ( ( pos = s.find(ctlPlaceholder, pos) ) != std::string::npos ) {
-            s.replace(pos, ctlPlaceholder.size(), std::to_string(ctlNode));
-            pos += std::to_string(ctlNode).size();
-        }
-    };
-
-    std::ifstream ctrl(controlFileName);
-    std::ofstream out(fileName);
-    if ( !ctrl ) {
-        converter::error("give3DFPZOutput: Cannot open control file");
-    }
-    if ( !out ) {
-        converter::error("give3DFPZOutput: Cannot open output file");
-    }
-
-    std::string line;
-    bool injected = false;
-
-    while ( std::getline(ctrl, line) ) {
-        std::string t = line;
-        size_t pos = t.find_first_not_of(" \t");
-        if ( pos != std::string::npos ) {
-            t.erase(0, pos);
-        } else {
-            t.clear();
-        }
-
-        if ( !injected && t.rfind("ncrosssect", 0) == 0 ) {
-            std::istringstream iss(t);
-            std::string token;
-            out << "ndofman " << ( numberOfNodes + 1 ) << " nelem " << numberOfLines << " ";
-            while ( iss >> token ) {
-                out << token << " ";
-            }
-            out << "\n";
-
-            // Delaunay vertices (inside + on-boundary); first inside/boundary node is pinned.
-            int firstFlag = 0;
-            for ( int i = 0; i < this->giveNumberOfDelaunayVertices(); i++ ) {
-                int f = this->giveDelaunayVertex(i + 1)->giveOutsideFlag();
-                if ( f == 0 || f == 2 ) {
-                    this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
-                    out << "node " << ( i + 1 ) << " coords 3 " << std::scientific
-                        << coords.at(1) << " " << coords.at(2) << " " << coords.at(3);
-                    if ( firstFlag == 0 ) {
-                        firstFlag = 1;
-                        out << " bc 6 1 1 1 1 1 1";
-                    }
-                    out << "\n";
-                }
-            }
-
-            // Periodic control node
-            out << "node " << ctlNode << " coords 3 " << std::scientific
-                << specimenDimension.at(1) << " " << specimenDimension.at(2) << " " << specimenDimension.at(3)
-                << " load 1 2\n";
-
-            // Delaunay lines → lattice3D (inside/boundary) or lattice3Dboundarytruss (crossing).
-            int matType = 1;
-            for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
-                int f = this->giveDelaunayLine(i + 1)->giveOutsideFlag();
-                if ( f == 0 || f == 3 ) {
-                    this->giveDelaunayLine(i + 1)->giveLocalVertices(nodes);
-                    this->giveDelaunayLine(i + 1)->updateMaterial(matType);
-                    this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
-
-                    out << "lattice3D " << ( i + 1 )
-                        << " nodes 2 " << nodes.at(1) << " " << nodes.at(2)
-                        << " crossSect 1 mat " << matType
-                        << " polycoords " << ( 3 * crossSectionNodes.giveSize() );
-                    for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                        this->giveVoronoiVertex(crossSectionNodes.at(m + 1))->giveCoordinates(coords);
-                        out << " " << coords.at(1) << " " << coords.at(2) << " " << coords.at(3);
-                    }
-                    out << "\n";
-                } else if ( f == 2 ) {
-                    location.zero();
-                    this->giveDelaunayLine(i + 1)->giveLocalVertices(nodes);
-                    for ( int m = 0; m < 2; m++ ) {
-                        if ( this->giveDelaunayVertex(nodes.at(m + 1))->giveOutsideFlag() == 1 ) {
-                            location.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1))->giveLocation();
-                            nodes.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1))->givePeriodicNode();
-                        }
-                    }
-                    this->giveDelaunayLine(i + 1)->updateMaterial(matType);
-                    this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
-
-                    out << "lattice3Dboundary " << ( i + 1 )
-                        << " nodes 3 " << nodes.at(1) << " " << nodes.at(2) << " " << ctlNode
-                        << " crossSect 1 mat " << matType
-                        << " polycoords " << ( 3 * crossSectionNodes.giveSize() );
-                    for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                        this->giveVoronoiVertex(crossSectionNodes.at(m + 1))->giveCoordinates(coords);
-                        out << " " << coords.at(1) << " " << coords.at(2) << " " << coords.at(3);
-                    }
-                    out << " location 2 " << location.at(1) << " " << location.at(2) << "\n";
-                }
-            }
-
-            injected = true;
-            continue;
-        }
-
-        if ( !isConverterDirective(t) ) {
-            std::string written = line;
-            substitute(written);
-            out << written << "\n";
-        }
-    }
 }
 
 
