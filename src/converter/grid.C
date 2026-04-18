@@ -203,8 +203,6 @@ void Grid::resolveGridType(const std::string &name)
         gridType = _3dCantExtraTM;
     } else if ( !strncasecmp(name.c_str(), "3dcantcoupledsmtm", 13) ) {
         gridType = _3dCantSMTM;
-    } else if ( !strncasecmp(name.c_str(), "3dsphere", 8) ) {
-        gridType = _3dSphere;
     } else if ( !strncasecmp(name.c_str(), "3dcylinder", 10) ) {
         gridType = _3dCylinder;
     } else if ( !strncasecmp(name.c_str(), "3dpertetrasm", 12) ) {
@@ -1595,6 +1593,39 @@ void Grid::readQhullControlRecords(const std::string &controlFile)
             iss >> kw;                    // "material"
             iss >> n.material;
             notchSpecs.push_back(n);
+        } else if ( tag == "#@sphereinclusion" ) {
+            // #@sphereinclusion <id> centre 3 x y z radius r itz t
+            //   inside <mi> interface <mif> [bodyload <b>]
+            int num;
+            iss >> num;
+            std::string kw;
+            int sz = 0;
+            iss >> kw >> sz;              // "centre" 3
+            if ( kw != "centre" || sz != 3 ) {
+                converter::error("Malformed #@sphereinclusion — expected 'centre 3 x y z'");
+            }
+            SphereInclusionSpec s;
+            iss >> s.cx >> s.cy >> s.cz;
+            iss >> kw >> s.radius;        // "radius" r
+            if ( kw != "radius" ) {
+                converter::error("Malformed #@sphereinclusion — expected 'radius <r>'");
+            }
+            iss >> kw >> s.itz;           // "itz" t
+            if ( kw != "itz" ) {
+                converter::error("Malformed #@sphereinclusion — expected 'itz <t>'");
+            }
+            iss >> kw >> s.inside;        // "inside" mi
+            if ( kw != "inside" ) {
+                converter::error("Malformed #@sphereinclusion — expected 'inside <m>'");
+            }
+            iss >> kw >> s.interface_;    // "interface" mif
+            if ( kw != "interface" ) {
+                converter::error("Malformed #@sphereinclusion — expected 'interface <m>'");
+            }
+            if ( iss >> kw && kw == "bodyload" ) {
+                iss >> s.bodyload;
+            }
+            sphereInclusionSpecs.push_back(s);
         }
     }
 
@@ -2889,8 +2920,6 @@ void Grid::giveOofemOutput(const std::string &fileName)
         give3DCantileverTMExtraOutput(fileName);
     } else if ( gridType == _3dCantSMTM ) {  //Implementation for 3D coupling paper Coupled
         give3DCantileverSMTMOutput(fileName);
-    } else if ( gridType == _3dSphere ) {  //Implementation for 3D sphere (Milan and Domenico)
-        give3DSphereOutput(fileName);
     } else if ( gridType == _3dCylinder ) {  //Implementation for 3D cylinder (Milan and Domenico)
         give3DCylinderOutput(fileName);
     } else if ( gridType == _3dTetraSM ) {  //Implementation for Tetrahedra (Adam)
@@ -3542,6 +3571,33 @@ Grid::resolveNotchMaterial(const oofem::FloatArray &A, const oofem::FloatArray &
 }
 
 
+int
+Grid::resolveInclusionMaterial(const oofem::FloatArray &A, const oofem::FloatArray &B,
+                               int defaultMat, int &bodyloadOut) const
+{
+    bodyloadOut = -1;
+    if ( sphereInclusionSpecs.empty() ) return defaultMat;
+    for ( const auto &s : sphereInclusionSpecs ) {
+        const double effR = s.radius + 0.5 * s.itz;
+        const double d1 = std::sqrt(( A.at(1) - s.cx ) * ( A.at(1) - s.cx ) +
+                                    ( A.at(2) - s.cy ) * ( A.at(2) - s.cy ) +
+                                    ( A.at(3) - s.cz ) * ( A.at(3) - s.cz ) );
+        const double d2 = std::sqrt(( B.at(1) - s.cx ) * ( B.at(1) - s.cx ) +
+                                    ( B.at(2) - s.cy ) * ( B.at(2) - s.cy ) +
+                                    ( B.at(3) - s.cz ) * ( B.at(3) - s.cz ) );
+        const bool in1 = d1 < effR;
+        const bool in2 = d2 < effR;
+        if ( in1 && in2 ) {
+            return s.inside;
+        } else if ( in1 != in2 ) {
+            bodyloadOut = s.bodyload;
+            return s.interface_;
+        }
+    }
+    return defaultMat;
+}
+
+
 void Grid::writeBCRecords(std::ostream &out, int &bcID) const
 {
     for (const auto &bc : bcRequests) {
@@ -3820,7 +3876,9 @@ Grid::give3DSMOutput(const std::string &fileName)
                 oofem::FloatArray boundaryA(3), boundaryB(3);
                 this->giveDelaunayVertex(lineNodes.at(1))->giveCoordinates(boundaryA);
                 this->giveDelaunayVertex(lineNodes.at(2))->giveCoordinates(boundaryB);
-                const int matBoundary = resolveNotchMaterial(boundaryA, boundaryB, 1);
+                int matBoundary = resolveNotchMaterial(boundaryA, boundaryB, 1);
+                int boundaryBodyload = -1;
+                matBoundary = resolveInclusionMaterial(boundaryA, boundaryB, matBoundary, boundaryBodyload);
 
                 if ( emitBoundary ) {
                     location.zero();
@@ -3838,6 +3896,9 @@ Grid::give3DSMOutput(const std::string &fileName)
                     for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
                         this->giveVoronoiVertex(crossSectionNodes.at(m + 1))->giveCoordinates(coords);
                         out << " " << coords.at(1) << " " << coords.at(2) << " " << coords.at(3);
+                    }
+                    if ( boundaryBodyload > 0 ) {
+                        out << " bodyloads 1 " << boundaryBodyload;
                     }
                     out << " location 2 " << location.at(1) << " " << location.at(2) << "\n";
                     continue;
@@ -3869,13 +3930,18 @@ Grid::give3DSMOutput(const std::string &fileName)
                     }
                 }
 
-                const int matInside = resolveNotchMaterial(A, B, 1);
+                int matInside = resolveNotchMaterial(A, B, 1);
+                int insideBodyload = -1;
+                matInside = resolveInclusionMaterial(A, B, matInside, insideBodyload);
                 out << "lattice3D " << ++elemCounter
                     << " nodes 2 " << mapId(lineNodes.at(1)) << " " << mapId(lineNodes.at(2))
                     << " crossSect " << matInside << " mat " << matInside
                     << " polycoords " << 3 * ( int ) polyOut.size();
                 for ( const auto &c : polyOut ) {
                     out << " " << c.at(1) << " " << c.at(2) << " " << c.at(3);
+                }
+                if ( insideBodyload > 0 ) {
+                    out << " bodyloads 1 " << insideBodyload;
                 }
                 out << "\n";
             }
@@ -7727,150 +7793,6 @@ Grid::give3DPeriodicPoreTMOutput(const std::string &fileName)
     fprintf(outputStream, "PiecewiseLinFunction 2 nPoints 6 t 6 -1. 0.  %d %d %d %d f(t) 6 0. 0. %e %e %e 0.\n", numberOfNodes / 2, numberOfNodes / 2 + 1, numberOfNodes, 2 * numberOfNodes - 1,  2. * ( 1 - .0001 ) / this->throatMean, 2. * ( 1 + .0001 ) / this->throatMean,  2 * maxSuction);
     fprintf(outputStream, "#%%BEGIN_CHECK%%\n");
     fprintf(outputStream, "#NODE number %d dof 2 unknown d\n", this->giveNumberOfVoronoiVertices() + 1);
-    fprintf(outputStream, "#LOADLEVEL\n");
-    fprintf(outputStream, "##TIME\n");
-    fprintf(outputStream, "#%%END_CHECK%%\n");
-    return;
-}
-
-
-void
-Grid::give3DSphereOutput(const std::string &fileName)
-{
-    //Output for hydraulic fracture of sphere.
-    //Start with mechanical model
-
-    FILE *outputStream = converter::fopen_or_die(fileName, "w");
-
-    int numberOfNodes, numberOfLines;
-    oofem::FloatArray coords(3);
-    oofem::FloatArray coordsOne, coordsTwo, centre;
-    int materialType = 1;
-    oofem::IntArray nodes, location(2);
-    oofem::IntArray crossSectionNodes;
-    double radius, distanceOne, distanceTwo;
-
-    //Determine the number of Delaunay nodes in the domain
-    numberOfNodes = 0;
-    for ( int i = 0; i < this->giveNumberOfDelaunayVertices(); i++ ) {
-        if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0 ||  this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 2 ) {
-            numberOfNodes++;
-        }
-    }
-
-    //Determine the number of Delaunay lines in the domain
-    numberOfLines = 0;
-    for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
-        if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 3 ) {
-            if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 3 ) {
-                this->giveRegion(1)->modifyVoronoiCrossSection(i + 1);
-            }
-            numberOfLines++;
-        }
-    }
-
-    fprintf(outputStream, "oofem.out\n");
-    fprintf(outputStream, "Mechanical 3D model\n");
-    fprintf(outputStream, "NonLinearStatic nmsteps 1 nsteps 1 contextOutputStep 2000 nmodules 2 profileopt 1 lstype 3 smtype 7\n");
-    fprintf(outputStream, "nsteps 1500 rtolv 1.e-3 stiffMode 2 manrmsteps 10 maxiter 200 controllmode 1 lstype 3 smtype 7\n");
-    fprintf(outputStream, "vtkxml primvars 1 1 tstep_all domain_all\n");
-    fprintf(outputStream, "gpexportmodule vars 5 59 90 84 85 78 tstep_all domain_all\n");
-    fprintf(outputStream, "domain 3dLattice\n");
-    fprintf(outputStream, "OutputManager tstep_all dofman_output {%d}\n", this->giveNumberOfDelaunayVertices() + 1);
-    fprintf(outputStream, "ndofman %d nelem %d ncrosssect 3 nmat 3 nbc 2 nic 0 nltf 2\n", numberOfNodes, numberOfLines);
-
-    printf("start nodes\n");
-
-    int firstFlag = 0;
-    for ( int i = 0; i < this->giveNumberOfDelaunayVertices(); i++ ) {
-        if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 2 ) {
-            this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
-            if ( firstFlag == 0 ) {
-                firstFlag = 1;
-                fprintf(outputStream, "node %d coords 3 %e %e %e bc 6 1 1 1 1 1 1\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
-            } else {
-                fprintf(outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
-            }
-        }
-    }
-
-    printf("finished nodes\n");
-
-    for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
-        if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 3 ) { //Elements are inside
-            this->giveDelaunayLine(i + 1)->giveLocalVertices(nodes);
-
-            //=======================================================
-            //Deal with inclusions
-            materialType = 1;
-            this->giveDelaunayLine(i + 1)->updateMaterial(1);
-            this->giveDelaunayVertex(nodes.at(1) )->giveCoordinates(coordsOne);
-            this->giveDelaunayVertex(nodes.at(2) )->giveCoordinates(coordsTwo);
-
-
-            for ( int m = 0; m < this->giveNumberOfInclusions(); m++ ) {
-                //Distinguish between inclusions
-                if ( !strcmp(this->giveInclusion(m + 1)->giveClassName(), "Sphere") ) {
-                    ( ( InterfaceSphere * ) this->giveInclusion(m + 1) )->giveCentre(centre);
-                    radius = ( ( InterfaceSphere * ) this->giveInclusion(m + 1) )->giveRadius() + ( ( InterfaceSphere * ) this->giveInclusion(m + 1) )->giveITZThickness() / 2.;
-                    distanceOne = sqrt(pow(coordsOne.at(1) - centre.at(1), 2.) +
-                                       pow(coordsOne.at(2) - centre.at(2), 2.) +
-                                       pow(coordsOne.at(3) - centre.at(3), 2.) );
-                    distanceTwo = sqrt(pow(coordsTwo.at(1) - centre.at(1), 2.) +
-                                       pow(coordsTwo.at(2) - centre.at(2), 2.) +
-                                       pow(coordsTwo.at(3) - centre.at(3), 2.) );
-
-                    if ( distanceOne > radius && distanceTwo > radius ) {
-                        materialType = 1;
-                        this->giveDelaunayLine(i + 1)->updateMaterial(1);
-                    } else if ( ( distanceOne > radius && distanceTwo < radius ) || ( distanceOne < radius && distanceTwo > radius ) ) {
-                        materialType = 3;
-                        this->giveDelaunayLine(i + 1)->updateMaterial(3);
-                        break;
-                    } else {
-                        materialType = 2;
-                        this->giveDelaunayLine(i + 1)->updateMaterial(2);
-                        break;
-                    }
-                }
-            }
-            //=================================================
-
-
-            this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
-
-            if ( materialType == 3 ) {
-                fprintf(outputStream, "lattice3D %d nodes 2 %d %d crossSect %d mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, materialType, 3 * crossSectionNodes.giveSize() );
-
-                for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                    this->giveVoronoiVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-                    fprintf(outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
-                }
-                fprintf(outputStream, " bodyloads 1 2\n");
-            } else {
-                fprintf(outputStream, "lattice3D %d nodes 2 %d %d crossSect %d mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, materialType, 3 * crossSectionNodes.giveSize() );
-
-                for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                    this->giveVoronoiVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-                    fprintf(outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
-                }
-                fprintf(outputStream, "\n");
-            }
-        }
-    }
-    fprintf(outputStream, "simplecs 1\n");
-    fprintf(outputStream, "simplecs 2\n");
-    fprintf(outputStream, "simplecs 3\n");
-
-    fprintf(outputStream, "latticeplastdam 1 d 0 talpha 0. calpha 0. e 30.e9 ft 3.e6 fc 30.e6 wf 50.e-6 ahard 1.e-3\n");
-    fprintf(outputStream, "latticeplastdam 2 d 0 talpha 0. calpha 0. e 300.e9 ft 1.e16 fc 30.e16 wf 15.4e+6 ahard 1.e-3\n");
-    fprintf(outputStream, "talpha 0. calpha 0.15e-3 e 30.e9 a1 0.001 ft 3.e6 fc 30.e6 wf 50.e-6 ahard 1.e-3\n");
-    fprintf(outputStream, "BoundaryCondition 1 loadTimeFunction 1 prescribedvalue 0.0\n");
-    fprintf(outputStream, "StructTemperatureLoad 2 loadTimeFunction 2 Components 1 1.0\n");
-    fprintf(outputStream, "ConstantFunction 1 f(t) 1.\n");
-    fprintf(outputStream, "PiecewiseLinFunction 2 nPoints 2 t 2 0. 1499. f(t) 2 0. 1.\n");
-    fprintf(outputStream, "#%%BEGIN_CHECK%%\n");
-    fprintf(outputStream, "#NODE number %d dof 2 unknown d\n", this->giveNumberOfDelaunayVertices() + 1);
     fprintf(outputStream, "#LOADLEVEL\n");
     fprintf(outputStream, "##TIME\n");
     fprintf(outputStream, "#%%END_CHECK%%\n");

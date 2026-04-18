@@ -134,7 +134,7 @@ private:
 
     /** Grid type. This determines the type of input to generate
      */
-    enum GridType { _3dSM, _3dTM, _3dSMTM, _3dPerSM, _3dPerTM, _3dPerSMTM, _3dWong, _3dPerPoreTM, _3dPerPoreSM, _3dPerPoreSMTM, _3dCantSM, _3dCantTM, _3dCantExtraTM, _3dCantSMTM, _3dBentoniteSM, _3dBentoniteTM, _3dBentoniteSMTM, _3dSphere, _3dCylinder, _3dTetraSM, _3dPerTetraSM, _3dRCPerSM, _3dRCPer2SM, _3dRCSM, _3dKupfer, _3dImran, _3dNotch };
+    enum GridType { _3dSM, _3dTM, _3dSMTM, _3dPerSM, _3dPerTM, _3dPerSMTM, _3dWong, _3dPerPoreTM, _3dPerPoreSM, _3dPerPoreSMTM, _3dCantSM, _3dCantTM, _3dCantExtraTM, _3dCantSMTM, _3dBentoniteSM, _3dBentoniteTM, _3dBentoniteSMTM, _3dCylinder, _3dTetraSM, _3dPerTetraSM, _3dRCPerSM, _3dRCPer2SM, _3dRCSM, _3dKupfer, _3dImran, _3dNotch };
 
     GridType gridType;
 
@@ -230,6 +230,21 @@ private:
         int material = 3;
     };
     std::vector< NotchSpec >notchSpecs;
+
+    /// A sphere inclusion: elements whose endpoints both fall inside get
+    /// `inside` material; elements that straddle the sphere (one endpoint
+    /// inside, one outside — the ITZ zone) get `interface` material and an
+    /// optional `bodyload` id. Populated by the
+    /// `#@sphereinclusion <id> centre 3 x y z radius r itz t inside <mi>
+    ///   interface <mif> [bodyload <b>]` directive.
+    struct SphereInclusionSpec {
+        double cx = 0., cy = 0., cz = 0.;
+        double radius = 0., itz = 0.;
+        int inside    = 2;
+        int interface_ = 3;
+        int bodyload = -1;
+    };
+    std::vector< SphereInclusionSpec >sphereInclusionSpecs;
 
     /// Control-vertex definitions from `#@controlvertex <id> coords 3 x y z`.
     /// Each entry declares a specific mesh coordinate whose nearest Delaunay
@@ -436,6 +451,14 @@ public:
     /// material if the midpoint is inside any `#@notch` box, else `defaultMat`.
     int resolveNotchMaterial(const oofem::FloatArray &A, const oofem::FloatArray &B,
                              int defaultMat) const;
+
+    /// For a matrix lattice line with endpoint coords A/B, resolve the sphere-
+    /// inclusion material. Returns the `inside` material if both endpoints fall
+    /// within `radius + itz/2` of a sphere centre; the `interface` material
+    /// (and populates `bodyloadOut` if set, otherwise -1) if exactly one endpoint
+    /// does; otherwise returns `defaultMat`.
+    int resolveInclusionMaterial(const oofem::FloatArray &A, const oofem::FloatArray &B,
+                                 int defaultMat, int &bodyloadOut) const;
 
     /// Match each `#@controlvertex` declaration to the nearest Delaunay vertex
     /// and populate `controlNodeIds`. Called after the Delaunay vertex list is loaded.
@@ -684,7 +707,6 @@ public:
     //SMTM mesh for Cantilver benchmark of 3D Lattice paper for CMAME
     void give3DCantileverSMTMOutput(const std::string &fileName);
 
-    void give3DSphereOutput(const std::string &fileName);
 
     void give3DCylinderOutput(const std::string &fileName);
 

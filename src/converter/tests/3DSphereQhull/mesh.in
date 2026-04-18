@@ -1,0 +1,11 @@
+nodes.dat
+3D sphere with elastic inclusion for hydraulic-fracture analysis
+domain 3
+diam 12.e-3 maxiter 10000 ranint 0 perflag 3 0 0 0 ranflag 1
+nvertex 2 ncurve 0 nsurface 0 nregion 1 ninclusion 1 ncontrolvertex 1 nrefinement 0
+# bounding-box corners widen the localiser
+vertex 1 coords 3 -116.e-3 -116.e-3 -116.e-3 refine 1. radius 0.
+vertex 2 coords 3  116.e-3  116.e-3  116.e-3 refine 1. radius 0.
+controlvertex 1 coords 3 0. 0. 0.
+sphere 1 centre 3 0. 0. 0. radius 58.e-3 refine 0.7
+intersphere 1 centre 3 0. 0. 0. radius 8.e-3 refine 0.5 itz 0.5e-3
