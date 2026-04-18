@@ -1655,7 +1655,11 @@ int Grid::instanciateYourselfFromQhull(const std::string &controlFile,
         setVoronoiVertex(i + 1, v);
     }
     if ( voronoiLocalizer ) {
-        voronoiLocalizer->init(true);
+        // Two-arg init with nodeType=1 so the localiser actually indexes Voronoi
+        // vertices; the single-arg overload defaults to nodeType=0 (Delaunay),
+        // which silently miscategorises the localiser and causes downstream
+        // periodic-partner lookups to return 0 matches.
+        static_cast< OctreeGridLocalizer * >(voronoiLocalizer)->init(true, /*nodeType=*/ 1);
     }
     printf("Finished Voronoi vertices (%d)\n", nVoronoiVertices);
 
@@ -6774,10 +6778,6 @@ Grid::give3DCantileverSMTMOutput(const std::string &fileName)
 void
 Grid::give3DFPZOutput(const std::string &fileName)
 {
-    //Output for 3D fracture process zone modelling
-
-    FILE *outputStream = converter::fopen_or_die(fileName, "w");
-
     oofem::FloatArray boundaries(3);
     this->giveRegion(1)->defineBoundaries(boundaries);
     oofem::FloatArray specimenDimension(3);
@@ -6785,104 +6785,142 @@ Grid::give3DFPZOutput(const std::string &fileName)
     specimenDimension.at(2) = boundaries.at(4) - boundaries.at(3);
     specimenDimension.at(3) = boundaries.at(6) - boundaries.at(5);
 
-    int numberOfNodes, numberOfLines;
     oofem::FloatArray coords;
-    int materialType = 1;
     oofem::IntArray nodes, location(2);
     oofem::IntArray crossSectionNodes;
 
-    //Determine the number of Delaunay nodes in the domain
-    numberOfNodes = 0;
+    int numberOfNodes = 0;
     for ( int i = 0; i < this->giveNumberOfDelaunayVertices(); i++ ) {
-        if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 2 ) {
+        int f = this->giveDelaunayVertex(i + 1)->giveOutsideFlag();
+        if ( f == 0 || f == 2 ) {
             numberOfNodes++;
         }
     }
 
-    //Determine the number of Delaunay lines in the domain
-    numberOfLines = 0;
+    int numberOfLines = 0;
     for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
-        if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 2 || this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 3 ) {
+        int f = this->giveDelaunayLine(i + 1)->giveOutsideFlag();
+        if ( f == 0 || f == 2 || f == 3 ) {
             numberOfLines++;
         }
     }
 
-    fprintf(outputStream, "oofem.out\n");
-    fprintf(outputStream, "Mechanical 3D model\n");
-    fprintf(outputStream, "NonLinearStatic nmsteps 1 nsteps 1 contextOutputStep 1000 nmodules 2 profileopt 1 lstype 3 smtype 7\n");
-    fprintf(outputStream, "nsteps 200 rtolv 1.e-3 reqIterations 100 stiffMode 1 manrmsteps 10 maxiter 200 controllmode 0 stepLength 5.e-7 minsteplength 5.e-7 maxrestarts 0 hpcmode 2 hpc 2 %d 31 hpcw 1 1. lstype 3 smtype 7\n", this->giveNumberOfDelaunayVertices() + 1);
-    fprintf(outputStream, "vtkxmllattice primvars 1 1 cellvars 2 60 90 tstep_all domain_all cross 1\n");
-    fprintf(outputStream, "gpexportmodule vars 5 59 90 84 85 78 tstep_all domain_all\n");
-    fprintf(outputStream, "domain 3dLattice\n");
-    fprintf(outputStream, "OutputManager tstep_all dofman_output {%d}\n", this->giveNumberOfDelaunayVertices() + 1);
-    fprintf(outputStream, "ndofman %d nelem %d ncrosssect 1 nmat 1 nbc 2 nic 0 nltf 1\n", numberOfNodes + 1, numberOfLines);
+    // control-node id used in hpc / OutputManager / #NODE — preserves the legacy
+    // convention of using the raw Delaunay-vertex count + 1 (not compact count).
+    const int ctlNode = this->giveNumberOfDelaunayVertices() + 1;
+    const std::string ctlPlaceholder = "#@CTLNODE";
 
-    int firstFlag = 0;
-    for ( int i = 0; i < this->giveNumberOfDelaunayVertices(); i++ ) {
-        if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0 || this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 2 ) {
-            this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
-            if ( firstFlag == 0 ) {
-                firstFlag = 1;
-                fprintf(outputStream, "node %d coords 3 %e %e %e bc 6 1 1 1 1 1 1\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
-            } else {
-                fprintf(outputStream, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
-            }
+    auto substitute = [ & ](std::string &s) {
+        size_t pos = 0;
+        while ( ( pos = s.find(ctlPlaceholder, pos) ) != std::string::npos ) {
+            s.replace(pos, ctlPlaceholder.size(), std::to_string(ctlNode));
+            pos += std::to_string(ctlNode).size();
         }
+    };
+
+    std::ifstream ctrl(controlFileName);
+    std::ofstream out(fileName);
+    if ( !ctrl ) {
+        converter::error("give3DFPZOutput: Cannot open control file");
+    }
+    if ( !out ) {
+        converter::error("give3DFPZOutput: Cannot open output file");
     }
 
-    //Periodic control node
-    fprintf(outputStream, "node %d coords 3 %e %e %e load 1 2\n", this->giveNumberOfDelaunayVertices() + 1, specimenDimension.at(1), specimenDimension.at(2), specimenDimension.at(3) );
+    std::string line;
+    bool injected = false;
 
-    for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
-        if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 0 ||  this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 3 ) { //Elements are inside
-            this->giveDelaunayLine(i + 1)->giveLocalVertices(nodes);
-            materialType = 1;
-            this->giveDelaunayLine(i + 1)->updateMaterial(materialType);
-            this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
+    while ( std::getline(ctrl, line) ) {
+        std::string t = line;
+        size_t pos = t.find_first_not_of(" \t");
+        if ( pos != std::string::npos ) {
+            t.erase(0, pos);
+        } else {
+            t.clear();
+        }
 
-            fprintf(outputStream, "lattice3D %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
-
-            for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                this->giveVoronoiVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-                fprintf(outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
+        if ( !injected && t.rfind("ncrosssect", 0) == 0 ) {
+            std::istringstream iss(t);
+            std::string token;
+            out << "ndofman " << ( numberOfNodes + 1 ) << " nelem " << numberOfLines << " ";
+            while ( iss >> token ) {
+                out << token << " ";
             }
-            fprintf(outputStream, "\n");
-        } else if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 2 ) {      //Element crosses the boundary
-            location.zero();
-            this->giveDelaunayLine(i + 1)->giveLocalVertices(nodes);
-            //Go through nodes and replace the ones outside with periodic nodes
-            for ( int m = 0; m < 2; m++ ) {
-                if ( this->giveDelaunayVertex(nodes.at(m + 1) )->giveOutsideFlag() == 1 ) {
-                    location.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->giveLocation();
-                    nodes.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1) )->givePeriodicNode();
+            out << "\n";
+
+            // Delaunay vertices (inside + on-boundary); first inside/boundary node is pinned.
+            int firstFlag = 0;
+            for ( int i = 0; i < this->giveNumberOfDelaunayVertices(); i++ ) {
+                int f = this->giveDelaunayVertex(i + 1)->giveOutsideFlag();
+                if ( f == 0 || f == 2 ) {
+                    this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
+                    out << "node " << ( i + 1 ) << " coords 3 " << std::scientific
+                        << coords.at(1) << " " << coords.at(2) << " " << coords.at(3);
+                    if ( firstFlag == 0 ) {
+                        firstFlag = 1;
+                        out << " bc 6 1 1 1 1 1 1";
+                    }
+                    out << "\n";
                 }
             }
-            materialType = 1;
-            this->giveDelaunayLine(i + 1)->updateMaterial(materialType);
-            this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
-            fprintf(outputStream, "lattice3Dboundarytruss %d nodes 3 %d %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), this->giveNumberOfDelaunayVertices() + 1, materialType, 3 * crossSectionNodes.giveSize() );
+            // Periodic control node
+            out << "node " << ctlNode << " coords 3 " << std::scientific
+                << specimenDimension.at(1) << " " << specimenDimension.at(2) << " " << specimenDimension.at(3)
+                << " load 1 2\n";
 
-            for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                this->giveVoronoiVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-                fprintf(outputStream, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
+            // Delaunay lines → lattice3D (inside/boundary) or lattice3Dboundarytruss (crossing).
+            int matType = 1;
+            for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
+                int f = this->giveDelaunayLine(i + 1)->giveOutsideFlag();
+                if ( f == 0 || f == 3 ) {
+                    this->giveDelaunayLine(i + 1)->giveLocalVertices(nodes);
+                    this->giveDelaunayLine(i + 1)->updateMaterial(matType);
+                    this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
+
+                    out << "lattice3D " << ( i + 1 )
+                        << " nodes 2 " << nodes.at(1) << " " << nodes.at(2)
+                        << " crossSect 1 mat " << matType
+                        << " polycoords " << ( 3 * crossSectionNodes.giveSize() );
+                    for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
+                        this->giveVoronoiVertex(crossSectionNodes.at(m + 1))->giveCoordinates(coords);
+                        out << " " << coords.at(1) << " " << coords.at(2) << " " << coords.at(3);
+                    }
+                    out << "\n";
+                } else if ( f == 2 ) {
+                    location.zero();
+                    this->giveDelaunayLine(i + 1)->giveLocalVertices(nodes);
+                    for ( int m = 0; m < 2; m++ ) {
+                        if ( this->giveDelaunayVertex(nodes.at(m + 1))->giveOutsideFlag() == 1 ) {
+                            location.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1))->giveLocation();
+                            nodes.at(m + 1) = this->giveDelaunayVertex(nodes.at(m + 1))->givePeriodicNode();
+                        }
+                    }
+                    this->giveDelaunayLine(i + 1)->updateMaterial(matType);
+                    this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
+
+                    out << "lattice3Dboundary " << ( i + 1 )
+                        << " nodes 3 " << nodes.at(1) << " " << nodes.at(2) << " " << ctlNode
+                        << " crossSect 1 mat " << matType
+                        << " polycoords " << ( 3 * crossSectionNodes.giveSize() );
+                    for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
+                        this->giveVoronoiVertex(crossSectionNodes.at(m + 1))->giveCoordinates(coords);
+                        out << " " << coords.at(1) << " " << coords.at(2) << " " << coords.at(3);
+                    }
+                    out << " location 2 " << location.at(1) << " " << location.at(2) << "\n";
+                }
             }
-            fprintf(outputStream, " location 2 %d %d", location.at(1), location.at(2) );
 
-            fprintf(outputStream, "\n");
+            injected = true;
+            continue;
+        }
+
+        if ( !isConverterDirective(t) ) {
+            std::string written = line;
+            substitute(written);
+            out << written << "\n";
         }
     }
-    fprintf(outputStream, "latticecs 1 material 1\n");
-    fprintf(outputStream, "latticeplastdam 1 d 0 talpha 0. calpha 0. e 50.46e9 a1 0.215 ft 3.e6 fc 30.e6 wf 50.e-6 ahard 1.e-6 angle1 0.5 flow 0.25\n");
-    fprintf(outputStream, "BoundaryCondition 1 loadTimeFunction 1 prescribedvalue 0.0\n");
-    fprintf(outputStream, "NodalLoad 2 loadTimeFunction 1 dofs 1 31 Components 1 1.\n");
-    fprintf(outputStream, "ConstantFunction 1 f(t) 1.\n");
-    fprintf(outputStream, "#%%BEGIN_CHECK%%\n");
-    fprintf(outputStream, "#NODE number %d dof 31 unknown d\n", this->giveNumberOfDelaunayVertices() + 1);
-    fprintf(outputStream, "#LOADLEVEL\n");
-    fprintf(outputStream, "##TIME\n");
-    fprintf(outputStream, "#%%END_CHECK%%\n");
-    return;
 }
 
 

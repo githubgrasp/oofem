@@ -3212,7 +3212,7 @@ latticemt3D 1881 nodes 2 1047 1046 crossSect 1 mat 1 polycoords 9 7.449499e-01 3
 latticemt3D 1882 nodes 2 1047 1053 crossSect 1 mat 1 polycoords 9 7.449499e-01 3.733455e-01 1.904735e-01 8.196135e-01 2.928435e-01 5.308989e-01 7.862212e-01 1.989872e-01 3.220226e-01
 latticemt3D 1883 nodes 2 226 406 crossSect 1 mat 1 polycoords 9 3.908466e-01 2.098083e-01 2.034378e-01 4.802028e-01 5.588462e-01 1.970683e-01 4.169438e-01 3.293227e-01 3.734052e-01
 latticemt3D 1884 nodes 2 1048 1047 crossSect 1 mat 1 polycoords 9 7.501023e-01 5.311471e-01 4.564812e-01 8.196135e-01 2.928435e-01 5.308989e-01 7.862212e-01 1.989872e-01 3.220226e-01
-simplecs 1
+simpletransportcs 1 mat 1
 latticetransmat 1 d 1. k 1. vis 1. thetas 1. thetar 0. contype 0
 ConstantFunction 1 f(t) 1.
 #%BEGIN_CHECK%
