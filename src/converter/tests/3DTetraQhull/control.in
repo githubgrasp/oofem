@@ -1,0 +1,16 @@
+#@mesher qhull
+#@grid 3dSM
+#@meshtype tetra
+#@diam 0.3
+#@perflag 3 0 0 0
+oofem.out
+Tetrahedral-element test (ltrspace) on a unit cube
+StaticStructural nsteps 1 rtolv 1.e-3 smtype 7 lstype 3
+vtkxml tstep_all domain_all primvars 1 1 vars 1 1
+domain 3d
+OutputManager tstep_all dofman_all element_all
+ncrosssect 1 nmat 1 nbc 0 nic 0 nltf 1 nset 0
+SimpleCS 1 material 1
+IsoLE 1 d 1.0 E 30.e9 n 0.2 talpha 0
+ConstantFunction 1 f(t) 1.0
+#@prism 1 box 6 0. 0. 0. 1. 1. 1.

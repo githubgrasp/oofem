@@ -115,24 +115,17 @@ int main(int argc, char *argv[])
             grid->generateOutput();
             grid->giveOutput("oofem.in");
         } else if ( npos == 5 ) {
-            // Legacy 3-file qhull form for tetrahedral-element analyses
-            // (_3dTetraSM, _3dRCSM, etc.). The mesh.delaunay file comes from a
-            // separate `qdelaunay i < mesh.nodes` call. Still goes through the
-            // old ConverterTXTDataReader path; should eventually be folded into
-            // instanciateYourselfFromQhull (auto-detect Delaunay from positional
-            // arg or a `#@delaunay` directive) and the tet output writers
-            // migrated to the `#@`-template form like the lattice ones.
+            // 3-file qhull form for tetrahedral-element analyses. The
+            // mesh.delaunay file comes from `qdelaunay Qt i < mesh.nodes`.
+            // Requires `#@meshtype tetra` in control.in so the writer knows
+            // to emit ltrspace elements (and the pipeline knows to read the
+            // delaunay file rather than only the voronoi file).
             const char *nodeFile = positional[2];
             const char *delFile  = positional[3];
             const char *vorFile  = positional[4];
-            ConverterTXTDataReader dr(controlFile);
-            const std::string outName = dr.giveOutputFileName();
-            if ( outName.empty() ) {
-                converter::error("Output filename missing in first line of input file");
-            }
-            grid->instanciateYourself(&dr, nodeFile, delFile, vorFile);
+            grid->instanciateYourselfFromQhull(controlFile, nodeFile, vorFile, delFile);
             grid->generateOutput();
-            grid->giveOutput(outName);
+            grid->giveOutput("oofem.in");
         } else {
             std::fprintf(stderr,
                          "error: qhull mesher expects 2 mesh files (nodes + voronoi)\n"

@@ -134,7 +134,7 @@ private:
 
     /** Grid type. This determines the type of input to generate
      */
-    enum GridType { _3dSM, _3dTM, _3dSMTM, _3dPerSM, _3dPerTM, _3dPerSMTM, _3dWong, _3dPerPoreTM, _3dPerPoreSM, _3dPerPoreSMTM, _3dCantSM, _3dCantTM, _3dCantExtraTM, _3dCantSMTM, _3dBentoniteSM, _3dBentoniteTM, _3dBentoniteSMTM, _3dTetraSM, _3dPerTetraSM, _3dRCPerSM, _3dRCPer2SM, _3dRCSM, _3dKupfer, _3dImran, _3dNotch };
+    enum GridType { _3dSM, _3dTM, _3dSMTM, _3dPerSM, _3dPerTM, _3dPerSMTM, _3dWong, _3dPerPoreTM, _3dPerPoreSM, _3dPerPoreSMTM, _3dCantSM, _3dCantTM, _3dCantExtraTM, _3dCantSMTM, _3dBentoniteSM, _3dBentoniteTM, _3dBentoniteSMTM, _3dPerTetraSM, _3dRCPerSM, _3dRCPer2SM, _3dRCSM, _3dKupfer, _3dImran, _3dNotch };
 
     GridType gridType;
 
@@ -563,7 +563,10 @@ public:
 
     int instanciateYourself(ConverterDataReader *dr, const char nodeFileName[], const char delaunayFileName[], const char voronoiFileName[]);
 
-    int instanciateYourselfFromQhull(const std::string &controlFile, const char *nodeFileName, const char *voronoiFileName);
+    int instanciateYourselfFromQhull(const std::string &controlFile,
+                                     const char *nodeFileName,
+                                     const char *voronoiFileName,
+                                     const char *delaunayFileName = nullptr);
 
     void readQhullControlRecords(const std::string &controlFile);
 
@@ -725,9 +728,6 @@ public:
 
     //Periodic SM mesh for tetrahedra
     void give3DPeriodicTetraSMOutput(const std::string &fileName);
-
-    //Random SM mesh for tetrahedra
-    void  give3DTetraSMOutput(const std::string &fileName);
 
     //Periodic SM mesh for reinforced concrete (concrete with tetrahedra, reinforcement with beams, bond with link elements)
     void give3DRCPeriodicSMOutput(const std::string &fileName);
