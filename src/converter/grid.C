@@ -1601,6 +1601,12 @@ void Grid::readQhullControlRecords(const std::string &controlFile)
                 converter::error("Malformed #@bodyload — expected '<mat> <bc_id>'");
             }
             bodyloadByMaterial[mat] = bc;
+        } else if ( tag == "#@couplingflag" ) {
+            // #@couplingflag — toggle. When present, emitters append
+            // "couplingflag 1 couplingnumber N <ids>" to each element record.
+            // Used by staggered SMTM analyses (e.g. Wong percolation) where
+            // the SM and TM subproblems exchange data element-by-element.
+            emitCouplingFlag = true;
         }
     }
 
@@ -3177,6 +3183,18 @@ Grid::give3DSMOutput(const std::string &fileName)
                         this->giveVoronoiVertex(crossSectionNodes.at(m + 1))->giveCoordinates(coords);
                         out << " " << coords.at(1) << " " << coords.at(2) << " " << coords.at(3);
                     }
+                    if ( emitCouplingFlag ) {
+                        oofem::IntArray crossSectionElements;
+                        this->giveDelaunayLine(i + 1)->giveCrossSectionElements(crossSectionElements);
+                        out << " couplingflag 1 couplingnumber " << crossSectionElements.giveSize();
+                        for ( int m = 0; m < crossSectionElements.giveSize(); m++ ) {
+                            int vid = crossSectionElements.at(m + 1);
+                            int mapped = ( this->giveVoronoiLine(vid)->giveOutsideFlag() == 1 )
+                                ? this->giveVoronoiLine(vid)->givePeriodicElement()
+                                : vid;
+                            out << " " << mapped;
+                        }
+                    }
                     if ( boundaryBodyloadIt != bodyloadByMaterial.end() ) {
                         out << " bodyloads 1 " << boundaryBodyloadIt->second;
                     }
@@ -3219,6 +3237,18 @@ Grid::give3DSMOutput(const std::string &fileName)
                     << " polycoords " << 3 * ( int ) polyOut.size();
                 for ( const auto &c : polyOut ) {
                     out << " " << c.at(1) << " " << c.at(2) << " " << c.at(3);
+                }
+                if ( emitCouplingFlag ) {
+                    oofem::IntArray crossSectionElements;
+                    this->giveDelaunayLine(i + 1)->giveCrossSectionElements(crossSectionElements);
+                    out << " couplingflag 1 couplingnumber " << crossSectionElements.giveSize();
+                    for ( int m = 0; m < crossSectionElements.giveSize(); m++ ) {
+                        int vid = crossSectionElements.at(m + 1);
+                        int mapped = ( this->giveVoronoiLine(vid)->giveOutsideFlag() == 1 )
+                            ? this->giveVoronoiLine(vid)->givePeriodicElement()
+                            : vid;
+                        out << " " << mapped;
+                    }
                 }
                 if ( insideBodyloadIt != bodyloadByMaterial.end() ) {
                     out << " bodyloads 1 " << insideBodyloadIt->second;
@@ -3390,6 +3420,18 @@ Grid::give3DTMOutput(const std::string &fileName)
                     for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
                         this->giveDelaunayVertex(crossSectionNodes.at(m + 1))->giveCoordinates(coords);
                         out << " " << coords.at(1) << " " << coords.at(2) << " " << coords.at(3);
+                    }
+                    if ( emitCouplingFlag ) {
+                        oofem::IntArray crossSectionElements;
+                        this->giveVoronoiLine(i + 1)->giveCrossSectionElements(crossSectionElements);
+                        out << " couplingflag 1 couplingnumber " << crossSectionElements.giveSize();
+                        for ( int m = 0; m < crossSectionElements.giveSize(); m++ ) {
+                            int did = crossSectionElements.at(m + 1);
+                            int mapped = ( this->giveDelaunayLine(did)->giveOutsideFlag() == 1 )
+                                ? this->giveDelaunayLine(did)->givePeriodicElement()
+                                : did;
+                            out << " " << mapped;
+                        }
                     }
                     out << "\n";
                 }

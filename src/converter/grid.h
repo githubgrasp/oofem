@@ -250,6 +250,15 @@ private:
     /// material only.
     std::map< int, int >bodyloadByMaterial;
 
+    /// When true, emitters append `couplingflag 1 couplingnumber N <ids>`
+    /// to each element record. For an SM lattice3D element (at a Delaunay
+    /// line), the ids are the Voronoi-line cross-section elements; for a TM
+    /// latticemt3D element (at a Voronoi line), they are the Delaunay-line
+    /// cross-section elements. Image-side (flag==1) cross-section elements
+    /// get swapped for their periodic partner via `givePeriodicElement()`.
+    /// Enabled by the `#@couplingflag` directive.
+    bool emitCouplingFlag = false;
+
     /// Control-vertex definitions from `#@controlvertex <id> coords 3 x y z`.
     /// Each entry declares a specific mesh coordinate whose nearest Delaunay
     /// vertex id is exposed at write time via the `#@CTL<id>` inline placeholder.
