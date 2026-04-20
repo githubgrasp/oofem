@@ -3343,27 +3343,67 @@ Grid::give3DSMOutput(const std::string &fileName)
 void
 Grid::give3DTMOutput(const std::string &fileName)
 {
+    // Unified TM writer: handles both non-periodic (the original 3DTMQhull
+    // case) and periodic cases. Mirrors give3DSMOutput's periodic structure.
+    // In non-periodic mode compact Voronoi-vertex ids (1..N) are used; in
+    // periodic mode raw ids are used because periodic-partner references
+    // returned by Vertex::givePeriodicNode() are raw indices.
+    const bool periodic = ( periodicityFlag.at(1) == 1 ||
+                            periodicityFlag.at(2) == 1 ||
+                            periodicityFlag.at(3) == 1 );
+
     oofem::FloatArray coords(3);
     oofem::IntArray nodes;
     oofem::IntArray crossSectionNodes;
+    oofem::IntArray location(2);
 
-    // build voronoi vertex index → sequential node ID map
-    // include boundary-clipped vertices (flag 2); inside lines can reference them
+    // Compact Voronoi-vertex id map for non-periodic mode (1..N over
+    // flag==0 | flag==2 vertices). Periodic mode uses raw ids.
+    const int nVorV = this->giveNumberOfVoronoiVertices();
     std::unordered_map< int, int >nodeIdMap;
     int numberOfNodes = 0;
-    for ( int i = 0; i < this->giveNumberOfVoronoiVertices(); i++ ) {
+    for ( int i = 0; i < nVorV; i++ ) {
         int flag = this->giveVoronoiVertex(i + 1)->giveOutsideFlag();
         if ( flag == 0 || flag == 2 ) {
-            nodeIdMap [ i + 1 ] = ++numberOfNodes;
+            if ( !periodic ) {
+                nodeIdMap [ i + 1 ] = ++numberOfNodes;
+            } else {
+                ++numberOfNodes;
+            }
         }
     }
+    auto mapId = [ & ](int rawId) {
+        return periodic ? rawId : nodeIdMap.at(rawId);
+    };
 
     int numberOfLines = 0;
     for ( int i = 0; i < this->giveNumberOfVoronoiLines(); i++ ) {
-        if ( this->giveVoronoiLine(i + 1)->giveOutsideFlag() == 0 ) {
+        int flag = this->giveVoronoiLine(i + 1)->giveOutsideFlag();
+        if ( flag == 0 ) {
+            numberOfLines++;
+        } else if ( periodic && flag == 2 ) {
             numberOfLines++;
         }
     }
+
+    // Periodic control node id: one past the last raw Voronoi vertex.
+    const int ctlNode = nVorV + 1;
+    const std::string ctlPlaceholder = "#@CTLNODE";
+
+    auto replaceAll = [](std::string &s, const std::string &needle, const std::string &replacement) {
+        if ( needle.empty() ) return;
+        size_t pos = 0;
+        while ( ( pos = s.find(needle, pos) ) != std::string::npos ) {
+            s.replace(pos, needle.size(), replacement);
+            pos += replacement.size();
+        }
+    };
+
+    auto substitute = [ & ](std::string &s) {
+        if ( periodic ) {
+            replaceAll(s, ctlPlaceholder, std::to_string(ctlNode));
+        }
+    };
 
     std::ifstream ctrl(controlFileName);
     std::ofstream out(fileName);
@@ -3389,34 +3429,81 @@ Grid::give3DTMOutput(const std::string &fileName)
         if ( !injected && t.rfind("ncrosssect", 0) == 0 ) {
             std::istringstream iss(t);
             std::string token;
-            out << "ndofman " << numberOfNodes << " nelem " << numberOfLines << " ";
+            out << "ndofman " << ( numberOfNodes + ( periodic ? 1 : 0 ) )
+                << " nelem " << numberOfLines << " ";
             while ( iss >> token ) {
                 out << token << " ";
             }
             out << "\n";
 
-            // write Voronoi nodes
-            for ( int i = 0; i < this->giveNumberOfVoronoiVertices(); i++ ) {
+            // write Voronoi nodes. In periodic mode the first emitted vertex
+            // is pinned (bc 1 1) to remove the transport rigid-body mode.
+            int firstFlag = 0;
+            for ( int i = 0; i < nVorV; i++ ) {
                 int flag = this->giveVoronoiVertex(i + 1)->giveOutsideFlag();
-                if ( flag == 0 || flag == 2 ) {
-                    int nid = nodeIdMap.at(i + 1);
-                    this->giveVoronoiVertex(i + 1)->giveCoordinates(coords);
-                    out << "node " << nid << " coords 3 " << std::scientific
-                        << coords.at(1) << " " << coords.at(2) << " " << coords.at(3) << "\n";
+                if ( flag != 0 && flag != 2 ) continue;
+                this->giveVoronoiVertex(i + 1)->giveCoordinates(coords);
+                int nid = periodic ? ( i + 1 ) : nodeIdMap.at(i + 1);
+                out << "node " << nid << " coords 3 " << std::scientific
+                    << coords.at(1) << " " << coords.at(2) << " " << coords.at(3);
+                if ( periodic && firstFlag == 0 ) {
+                    firstFlag = 1;
+                    out << " bc 1 1";
                 }
+                out << "\n";
             }
 
-            // write Voronoi elements (latticemt3D); cross-section is Delaunay vertices
+            // Periodic control node — 3 DOFs (IDs 1,2,3) with the Wong-style
+            // DOF-BC mapping "bc 3 1 1 2" (first two DOFs constrained by BC 1,
+            // the last by BC 2 — tuned to the percolation loading setup).
+            oofem::FloatArray bounds;
+            this->giveRegion(1)->defineBoundaries(bounds);
+            oofem::FloatArray specimenDim(3);
+            specimenDim.at(1) = bounds.at(2) - bounds.at(1);
+            specimenDim.at(2) = bounds.at(4) - bounds.at(3);
+            specimenDim.at(3) = bounds.at(6) - bounds.at(5);
+            if ( periodic ) {
+                out << "node " << ctlNode << " coords 3 " << std::scientific
+                    << specimenDim.at(1) << " " << specimenDim.at(2) << " " << specimenDim.at(3)
+                    << " ndofs 3 dofIDmask 3 1 2 3 bc 3 1 1 2\n";
+            }
+
+            // Voronoi elements: latticemt3D (inside) or latticemt3Dboundary
+            // (periodic crossing). Cross-section vertices are Delaunay
+            // vertices (dual mesh). Material is resolved via notch +
+            // inclusion directives using the endpoint coords.
             int elemCounter = 0;
+            oofem::FloatArray A(3), B(3);
             for ( int i = 0; i < this->giveNumberOfVoronoiLines(); i++ ) {
-                if ( this->giveVoronoiLine(i + 1)->giveOutsideFlag() == 0 ) {
-                    ++elemCounter;
-                    this->giveVoronoiLine(i + 1)->giveLocalVertices(nodes);
-                    this->giveVoronoiLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
-                    out << "latticemt3D " << elemCounter
-                        << " nodes 2 " << nodeIdMap.at(nodes.at(1))
-                        << " " << nodeIdMap.at(nodes.at(2))
-                        << " crossSect 1 mat 1 polycoords " << 3 * crossSectionNodes.giveSize();
+                int flag = this->giveVoronoiLine(i + 1)->giveOutsideFlag();
+                const bool emitInside = ( flag == 0 );
+                const bool emitBoundary = periodic && flag == 2;
+                if ( !emitInside && !emitBoundary ) continue;
+
+                this->giveVoronoiLine(i + 1)->giveLocalVertices(nodes);
+                this->giveVoronoiLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
+
+                // Pre-substitution endpoint coords for material resolution.
+                oofem::FloatArray cA(3), cB(3);
+                this->giveVoronoiVertex(nodes.at(1))->giveCoordinates(cA);
+                this->giveVoronoiVertex(nodes.at(2))->giveCoordinates(cB);
+                int mat = resolveNotchMaterial(cA, cB, 1);
+                mat = resolveInclusionMaterial(cA, cB, mat);
+                auto bodyloadIt = bodyloadByMaterial.find(mat);
+
+                if ( emitBoundary ) {
+                    location.zero();
+                    for ( int m = 0; m < 2; m++ ) {
+                        if ( this->giveVoronoiVertex(nodes.at(m + 1))->giveOutsideFlag() == 1 ) {
+                            location.at(m + 1) = this->giveVoronoiVertex(nodes.at(m + 1))->giveLocation();
+                            nodes.at(m + 1) = this->giveVoronoiVertex(nodes.at(m + 1))->givePeriodicNode();
+                        }
+                    }
+
+                    out << "latticemt3Dboundary " << ++elemCounter
+                        << " nodes 3 " << nodes.at(1) << " " << nodes.at(2) << " " << ctlNode
+                        << " crossSect " << mat << " mat " << mat
+                        << " polycoords " << 3 * crossSectionNodes.giveSize();
                     for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
                         this->giveDelaunayVertex(crossSectionNodes.at(m + 1))->giveCoordinates(coords);
                         out << " " << coords.at(1) << " " << coords.at(2) << " " << coords.at(3);
@@ -3433,8 +3520,37 @@ Grid::give3DTMOutput(const std::string &fileName)
                             out << " " << mapped;
                         }
                     }
-                    out << "\n";
+                    if ( bodyloadIt != bodyloadByMaterial.end() ) {
+                        out << " bodyloads 1 " << bodyloadIt->second;
+                    }
+                    out << " location 2 " << location.at(1) << " " << location.at(2) << "\n";
+                    continue;
                 }
+
+                out << "latticemt3D " << ++elemCounter
+                    << " nodes 2 " << mapId(nodes.at(1)) << " " << mapId(nodes.at(2))
+                    << " crossSect " << mat << " mat " << mat
+                    << " polycoords " << 3 * crossSectionNodes.giveSize();
+                for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
+                    this->giveDelaunayVertex(crossSectionNodes.at(m + 1))->giveCoordinates(coords);
+                    out << " " << coords.at(1) << " " << coords.at(2) << " " << coords.at(3);
+                }
+                if ( emitCouplingFlag ) {
+                    oofem::IntArray crossSectionElements;
+                    this->giveVoronoiLine(i + 1)->giveCrossSectionElements(crossSectionElements);
+                    out << " couplingflag 1 couplingnumber " << crossSectionElements.giveSize();
+                    for ( int m = 0; m < crossSectionElements.giveSize(); m++ ) {
+                        int did = crossSectionElements.at(m + 1);
+                        int mapped = ( this->giveDelaunayLine(did)->giveOutsideFlag() == 1 )
+                            ? this->giveDelaunayLine(did)->givePeriodicElement()
+                            : did;
+                        out << " " << mapped;
+                    }
+                }
+                if ( bodyloadIt != bodyloadByMaterial.end() ) {
+                    out << " bodyloads 1 " << bodyloadIt->second;
+                }
+                out << "\n";
             }
 
             injected = true;
@@ -3442,7 +3558,9 @@ Grid::give3DTMOutput(const std::string &fileName)
         }
 
         if ( !isConverterDirective(t) ) {
-            out << line_s << "\n";
+            std::string written = line_s;
+            substitute(written);
+            out << written << "\n";
         }
     }
 }

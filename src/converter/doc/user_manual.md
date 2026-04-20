@@ -100,7 +100,7 @@ Used when the converter is invoked with `mesh.nodes` (+ optional `mesh.delaunay`
 
 | Directive | Arguments | Purpose |
 |-----------|-----------|---------|
-| `#@grid` | `<type>` | Selects the output generator. The unified types are `3dSM` (covers plain, periodic, and fibre-bearing SM), `3dTM` (mass transport), and `3dCoupledSMTM` (staggered SM + TM). Other legacy values (e.g. `3dCylinder`) still exist; see `Grid::resolveGridType`. |
+| `#@grid` | `<type>` | Selects the output generator. The unified types are `3dSM` (covers plain, periodic, and fibre-bearing SM) and `3dTM` (mass transport, plain or periodic). A staggered SMTM coupled analysis is expressed as three separate templates — one per subproblem (SM, TM, and the `StaggeredProblem` control file) — each with its own `#@grid` directive. See `Grid::resolveGridType`. |
 | `#@mesher` | `t3d` \| `qhull` | Declares which mesher produced the input. Lets `main.C` dispatch without relying on the CLI `--mesher` flag. |
 | `#@diam` | `<d>` | Nominal grain diameter — must match the `diam` used when the mesh was generated. |
 | `#@perflag` | `3 <px> <py> <pz>` | Periodicity flags per axis (0 = non-periodic, 1 = periodic). For `3dSM`, any axis = 1 switches the writer into periodic mode (control node, `lattice3Dboundary` for boundary-crossing elements). |
@@ -151,6 +151,10 @@ For the fibre case the writer emits three classes of element, all of them `latti
 The counts header in `control.in` must read `ncrosssect 3 nmat 3 …` whenever fibres are present (drop to 1 for plain SM). The writer prepends `ndofman` and `nelem` automatically.
 
 Reinforcement-node ids are offset by the raw Delaunay-vertex count `N_DelV`: the i-th reinforcement node is written as `node (N_DelV + i)`. The periodic control node id is `N_DelV + N_reinf + 1`, available throughout the template via the `#@CTLNODE` placeholder.
+
+### Unified `3dTM` writer — plain and periodic
+
+`#@grid 3dTM` dispatches to `Grid::give3DTMOutput`, which handles plain and periodic mass transport on the Voronoi dual mesh. When `#@perflag` has any periodic axis, the writer pins the first emitted Voronoi vertex (`bc 1 1`), emits `latticemt3Dboundary` for lines whose endpoints straddle a periodic face (with image-side endpoints swapped for their mirror partners and a `location 2 …` suffix), and appends a control node with `ndofs 3 dofIDmask 3 1 2 3 bc 3 1 1 2` — available in the template via `#@CTLNODE`. Non-periodic behaviour is unchanged (compact 1..N vertex ids, no control node, no boundary elements). Per-element material is resolved through `#@notch` / `#@sphereinclusion` / `#@cylinderinclusion` just like the SM writer, and `#@bodyload` / `#@couplingflag` apply symmetrically.
 
 ### Adding a new analysis type
 
