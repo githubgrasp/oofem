@@ -119,7 +119,7 @@ private:
 
     /** Grid type. This determines the type of input to generate
      */
-    enum GridType { _3dSM, _3dTM, _3dSMTM, _3dPerSM, _3dPerTM, _3dPerSMTM, _3dCantSM, _3dCantTM, _3dCantExtraTM, _3dCantSMTM };
+    enum GridType { _3dSM, _3dTM, _3dSMTM, _3dPerSM, _3dPerTM, _3dPerSMTM };
 
     GridType gridType;
 
@@ -672,18 +672,6 @@ public:
     /// Shared by both ConverterTXTDataReader and qhull-template paths.
     void discretizeFibres();
 
-
-    //SM mesh for Cantilver benchmark of 3D Lattice paper
-    void give3DCantileverSMOutput(const std::string &fileName);
-
-    //TM mesh for Cantilver benchmark of 3D Lattice paper for CMAME
-    void give3DCantileverTMOutput(const std::string &fileName);
-
-    //TM mesh for extra Cantilver benchmark of 3D Lattice paper for CMAME
-    void give3DCantileverTMExtraOutput(const std::string &fileName);
-
-    //SMTM mesh for Cantilver benchmark of 3D Lattice paper for CMAME
-    void give3DCantileverSMTMOutput(const std::string &fileName);
 
     double  dpolyValue(int n, double a[], double x);
 
