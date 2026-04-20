@@ -119,7 +119,7 @@ private:
 
     /** Grid type. This determines the type of input to generate
      */
-    enum GridType { _3dSM, _3dTM, _3dSMTM, _3dPerSM, _3dPerTM, _3dPerSMTM, _3dWong, _3dCantSM, _3dCantTM, _3dCantExtraTM, _3dCantSMTM, _3dKupfer, _3dImran, _3dNotch };
+    enum GridType { _3dSM, _3dTM, _3dSMTM, _3dPerSM, _3dPerTM, _3dPerSMTM, _3dCantSM, _3dCantTM, _3dCantExtraTM, _3dCantSMTM };
 
     GridType gridType;
 
@@ -647,9 +647,6 @@ public:
     void discretizeFibres();
 
 
-    //Analysis for Concreep paper
-    void give3DWongOutput(const std::string &fileName);
-
     //SM mesh for Cantilver benchmark of 3D Lattice paper
     void give3DCantileverSMOutput(const std::string &fileName);
 
@@ -661,16 +658,6 @@ public:
 
     //SMTM mesh for Cantilver benchmark of 3D Lattice paper for CMAME
     void give3DCantileverSMTMOutput(const std::string &fileName);
-
-
-    //Random SM mesh for Kupfer experiment
-    void give3DKupferOutput(const std::string &fileName);
-
-    //Random SM mesh for Imran experiment
-    void give3DImranOutput(const std::string &fileName);
-
-    //Random SM mesh for Notch conference
-    void give3DNotchOutput(const std::string &fileName);
 
     double  dpolyValue(int n, double a[], double x);
 
