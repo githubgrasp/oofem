@@ -36,27 +36,33 @@ class BoundarySphere;
 class BoundaryCylinder;
 
 
+/// Raw T3D mesh node. `entType`/`entID` tag the geometric entity (vertex,
+/// curve, surface, region) the node belongs to, as emitted by T3D.
 struct Node {
     int id;
     double x, y, z;
 
-    int entType = 0;   // T3D geometric entity type
-    int entID   = 0;   // T3D geometric entity ID
+    int entType = 0;   ///< T3D geometric entity type
+    int entID   = 0;   ///< T3D geometric entity ID
 };
 
+/// T3D surface triangle. `entType` is 3/5/6 (curve/surface/region).
+/// `bndCurveId`/`bndCurveProp` per triangle edge are only populated when
+/// T3D was run with `outType & 8` (boundary-curve info requested).
 struct Tri {
     int id;
     int n1, n2, n3;
-    int entType = 0;  // 3,5,6
+    int entType = 0;  ///< 3=curve, 5=surface, 6=region
     int entID   = 0;
-    int entProp = 0; // <-- add this
+    int entProp = 0;
 
-
-    // only meaningful when (outType & 8)
-    int bndCurveId[ 3 ]   = { 0, 0, 0 };   // edge (n1-n2), (n2-n3), (n3-n1)
+    /// Edge→curve mapping; only meaningful when (outType & 8).
+    /// Indices: 0=(n1-n2), 1=(n2-n3), 2=(n3-n1).
+    int bndCurveId[ 3 ]   = { 0, 0, 0 };
     int bndCurveProp[ 3 ] = { 0, 0, 0 };
 };
 
+/// T3D tetrahedron with per-face geometric-entity tags for boundary lookup.
 struct Tet {
     int id;
     int n1, n2, n3, n4;
@@ -70,17 +76,22 @@ struct Tet {
     int faceEntProp[ 4 ];
 };
 
+/// Undirected mesh edge linking two nodes. Adjacent triangle/tetra indices
+/// are -1 until populated by `buildEdgeAdjacency3D`.
 struct Edge {
-    int n1, n2;     // node ids (sorted)
-    int tri1 = -1;  // adjacent triangle index
+    int n1, n2;     ///< node ids (sorted ascending)
+    int tri1 = -1;  ///< adjacent triangle index (-1 if none)
     int tri2 = -1;
-    int tet1 = -1;  // adjacent tetra index
+    int tet1 = -1;  ///< adjacent tetra index (-1 if none)
     int tet2 = -1;
 };
 
 
+/// Curve segment derived from a boundary triangle edge: the two endpoints
+/// and the T3D curve id the segment belongs to. Produced by
+/// `buildCurveSegsFromTris`.
 struct CurveSeg {
-    int n1, n2;     // sorted node ids
+    int n1, n2;     ///< sorted node ids
     int curveID;
 };
 
@@ -334,99 +345,162 @@ private:
 
 public:
 
+    /// Octree localiser over Delaunay vertices. Owned by Grid, used to answer
+    /// spatial queries (nearest-vertex, in-box) during control-file parsing
+    /// and during geometry→mesh resolution.
     GridLocalizer *delaunayLocalizer;
+    /// Octree localiser over Voronoi vertices (dual of the Delaunay mesh).
     GridLocalizer *voronoiLocalizer;
+    /// Octree localiser over reinforcement (fibre) nodes.
     GridLocalizer *reinforcementLocalizer;
 
-    /// constructor
+    /// Constructor. `n` is the grid number (in practice always 1).
     Grid(int n);
 
-    ///  Destructor
+    /// Destructor — deletes owned components and localisers.
     ~Grid();
 
 
+    /// Returns the coordinates of node `nid` from the raw T3D node list.
     oofem::FloatArray getX(int nid) const;
 
+    /// Returns the outward-pointing unit normal of the triangle at index
+    /// `triIndex` in the T3D triangle list.
     oofem::FloatArray triNormal(int triIndex) const;
 
+    /// Populate `edgeWidth` (size = edges.size()) with the width used to
+    /// derive 3D lattice cross-section areas. `thickness` is the default
+    /// shell thickness; per-entity overrides from `#@thickness` apply first.
     void computeEdgeWidths(double thickness);
 
+    /// Target cross-section area for edge `edgeIndex` given its length `Le`,
+    /// based on the stored widths and local geometry.
     double computeTargetArea(int edgeIndex, double Le) const;
 
-    //This function connects edges to t3d curves, so that later the curve numbering of t3d can be used to control the input.
+    /// Connect boundary-triangle edges to T3D curves so that the T3D curve
+    /// numbering can be referenced from control-file directives.
     void buildCurveSegsFromTris();
 
-    //This function connects triangles to t3d patches, so that patch number can be used to connect patch to triangles.
+    /// Connect surface triangles to T3D patches so that patch numbers can
+    /// reference triangles from control-file directives.
     void buildBoundaryTrisFromTets();
 
+    /// Populate `edges` with unique edges across tris/tets, recording the
+    /// adjacent triangle and tetra indices on each edge (Edge::tri1/2, tet1/2).
     void buildEdgeAdjacency3D();
 
+    /// Barycentre (coord average of 4 vertices) of tetrahedron `tetIndex`.
     oofem::FloatArray tetBarycentre(int tetIndex) const;
+    /// Barycentre (coord average of 3 vertices) of triangle `triIndex`.
     oofem::FloatArray faceBarycentre(int triIndex) const;
 
+    /// Rebuild the `entityTris` index after tri list changes (e.g. after
+    /// filtering). Maps (entType, entID) → list of triangle indices.
     void rebuildEntityTris();
 
+    /// Signed volume of tetrahedron `tetIndex`; sign depends on node order.
     double tetVolume(int tetIndex) const;
 
+    /// Area of the polygon `polycoords` projected onto the plane through
+    /// `xm` with orthonormal basis (r, s). Used to compute lattice cross-
+    /// section areas from 3D Voronoi polygons.
     double computePolygonAreaProjected(const oofem::FloatArray &polycoords,
                                        const oofem::FloatArray &xm,
                                        const oofem::FloatArray &r,
                                        const oofem::FloatArray &s) const;
 
 
+    /// Assemble the Voronoi polygon associated with edge `edgeIndex` and
+    /// return its vertices concatenated in `polycoords` (x1 y1 z1 x2 y2 z2 …).
     void buildEdgePolygon3D(int edgeIndex, oofem::FloatArray &polycoords) const;
+    /// Write one OOFEM element record for a 3D lattice edge, resolving its
+    /// cross-section, material and polygon. Increments `eid`.
     void write3DEdgeSection(std::ostream &out, int &eid, const Edge &e, int edgeIndex);
 
 
+    /// Euclidean distance between raw mesh nodes `n1` and `n2`.
     double segLength(int n1, int n2) const;
 
+    /// Fill `L` (size = nodes.size()) with the half-length each node
+    /// contributes on curve `curveID`. Used to convert per-unit-length
+    /// loads into per-node loads for `set`-based load emission.
     void computeNodalLengthsOnCurve(int curveID, std::vector< double > &L) const;
 
+    /// Barycentre of triangle `triIndex` (alias of `faceBarycentre`).
     oofem::FloatArray triBarycentre(int triIndex) const;
 
 
-    // function is used to read input from control file to convert mesh from mesh generation output to oofem input
+    /// Read the control file and dispatch directives into Grid state.
+    /// Used by the T3D pipeline (`instanciateYourselfFromT3d`). The qhull
+    /// pipeline uses `readQhullControlRecords` instead.
     void readControlRecords();
 
+    /// Resolve the node-id set targeted by a BC request (vertex → single
+    /// node; curve → nodes on curve; patch → nodes on surface patch).
     std::set< int >collectBCNodes(const BCRequest &bc) const;
 
+    /// Euclidean length of an Edge entry using the node coordinates.
     double edgeLength(const Edge &e) const;
 
+    /// Area of triangle `triIndex` in the T3D triangle list.
     double triArea(int triIndex) const;
 
+    /// Build per-load sets from `loadRequests`: one set per load entity,
+    /// populated with the nodes the load should distribute over.
     void prepareLiveLoadSets();
 
+    /// Thickness for a T3D (entType, entID) pair, falling back to
+    /// `defaultThickness` if no `#@thickness` directive targeted it.
     double giveThicknessForEntity(int entType, int entID) const;
 
+    /// True if `t` starts with `#@` (the converter directive prefix).
     bool isConverterDirective(const std::string &t) const
     {
         return t.rfind("#@", 0) == 0;
     }
 
+    /// Debug helper: sum shell-triangle areas against the sum of per-edge
+    /// contributions and abort if they disagree beyond tolerance.
     void checkAreaConservation() const;
 
 
+    /// A live-load request parsed from a `#@LOAD` directive. Targets a
+    /// geometric entity (vertex/curve/surface/shell) and carries the load
+    /// intensity `q` plus the load-time-function id `ltf`.
     struct LoadRequest {
-        int entType = -1; // 1 vertex, 2 curve, 3 surface, 5 patch, 6 shell
+        int entType = -1; ///< 1=vertex, 2=curve, 3=surface, 5=patch, 6=shell
         int entID   = -1;
-        double q    = 0.0;// N/m^2 for tri-entities, N/m for curves, N for vertexint setID   = -1;
+        double q    = 0.0;///< N/m² for surfaces, N/m for curves, N for vertices
         int setID   = -1;
-        int ltf     = 1; // default load time function
+        int ltf     = 1;  ///< default load-time function id
     };
     std::vector< LoadRequest >loadRequests;
 
+    /// Map a string entity keyword (e.g. "vertex", "curve", "surface",
+    /// "patch", "shell") to its integer T3D entType.
     int entityTypeFromString(const std::string &s) const;
 
 
+    /// Fill `A` (size = nodes.size()) with the area each node contributes
+    /// on a triangular entity (surface/patch/shell), distributing each
+    /// triangle's area 1/3 to each vertex. Used to convert surface loads
+    /// into per-node loads.
     void computeNodalAreasOnTriEntity(int entType, int entID, std::vector< double > &A) const;
-    //  void computeNodalAreas(std::vector<double> &A) const;
 
+    /// Grid number (in practice always 1).
     int giveNumber() { return this->number; }
 
+    /// Emit NodalLoad records for all live-load sets, using ids starting
+    /// at the caller-owned counter `bcID` (incremented per emission).
     void writeLiveLoads(std::ostream &out, int &bcID);
 
+    /// Materialise the sets referenced by `bcRequests` — populates
+    /// `bcRequests[i].setID` and appends the resolved set into
+    /// `generatedNodeSets`.
     void prepareBCSets();
 
+    /// Emit BoundaryCondition records (Dirichlet) for all BC requests,
+    /// referencing the sets previously built by `prepareBCSets`.
     void writeBCRecords(std::ostream &out, int &bcID) const;
 
     /// For a given edge, return the (entType, entID) of the most-specific T3D
@@ -456,66 +530,104 @@ public:
 
     void writeGeneratedSets(std::ostream &out) const;
 
+    /// Geometric tolerance (typically 1e-6 of bounding-box extent).
     double giveTol() { return this->TOL; }
 
+    /// Override the grid number. Rarely used (grids are always grid 1).
     void setNumber(int nn) { this->number = nn; }
 
+    /// Maximum iterations for the iterative mesh-generation algorithms.
     int giveMaximumIterations() { return this->maxIter; }
 
+    /// Nominal particle diameter (used by discrete-particle mesh generation).
     double giveDiameter() { return this->diameter; }
 
+    /// Copy the 3-entry periodicity flag into `answer` (per-axis: 0 none,
+    /// 1 full, 2 partial/surface).
     void givePeriodicityFlag(oofem::IntArray &answer) { answer = this->periodicityFlag; }
 
+    /// Seed for the random-number generator used during mesh generation.
     int giveRandomInteger() { return this->randomInteger; }
 
+    /// Write Voronoi lines as POV-Ray cylinders to `filename`.
     void giveVoronoiPOVOutput(const std::string &filename);
 
+    /// Write Delaunay lines as POV-Ray cylinders to `filename`.
     void giveDelaunayPOVOutput(const std::string &filename);
 
+    /// Write Voronoi cell geometry as VTK unstructured grid.
     void giveVoronoiCellVTKOutput(FILE *outputStream);
 
+    /// Write Delaunay elements (lattice lines) as VTK unstructured grid.
     void giveDelaunayElementVTKOutput(FILE *outputStream);
 
-    void giveDelaunayElementVTKOutput2(FILE *outputStream, int nb_mtx);// added to visualize only a selected material
+    /// Variant of `giveDelaunayElementVTKOutput` restricted to elements
+    /// whose material id equals `nb_mtx` — useful for per-material views.
+    void giveDelaunayElementVTKOutput2(FILE *outputStream, int nb_mtx);
 
+    /// Write Delaunay cross-section polygons as VTK unstructured grid.
     void giveDelaunayCrossSectionVTKOutput(FILE *outputStream);
 
+    /// Write Voronoi cross-section polygons as VTK unstructured grid.
     void giveVoronoiCrossSectionVTKOutput(FILE *outputStream);
 
+    /// Write Voronoi elements (dual lattice lines) as VTK unstructured grid.
     void giveVoronoiElementVTKOutput(FILE *outputStream);
 
+    /// Set `gridType` from a control-file keyword ("3dSM", "3dTM"). Aborts
+    /// on an unrecognised name.
     void resolveGridType(const std::string &name);
 
+    /// Returns the `n`-th Vertex (1-based) or nullptr if out of range.
     Vertex *giveVertex(int n);
 
+    /// Returns the `n`-th Curve (1-based) or nullptr if out of range.
     Curve *giveCurve(int n);
 
+    /// Returns the `n`-th Surface (1-based) or nullptr if out of range.
     Surface *giveSurface(int n);
 
+    /// Returns the `n`-th Region (1-based) or nullptr if out of range.
     Region *giveRegion(int n);
 
+    /// Returns the `n`-th Inclusion (1-based) or nullptr if out of range.
     Inclusion *giveInclusion(int n);
+    /// Returns the `n`-th Fibre (1-based) or nullptr if out of range.
     Fibre *giveFibre(int n);
 
 
+    /// Returns the `n`-th Delaunay vertex (1-based).
     Vertex *giveDelaunayVertex(int n);
 
+    /// Returns the `n`-th Voronoi vertex (1-based).
     Vertex *giveVoronoiVertex(int n);
 
+    /// Returns the `n`-th Delaunay line (1-based). Delaunay lines are the
+    /// lattice "beam" elements connecting neighbouring particles.
     Line *giveDelaunayLine(int n);
 
 
 
+    /// Returns the `n`-th Voronoi line (1-based). Voronoi lines carry the
+    /// dual (transport) mesh.
     Line *giveVoronoiLine(int n);
+    /// Returns the `n`-th fibre-coupling link (1-based).
     Line *giveLatticeLink(int n);
+    /// Returns the `n`-th lattice beam segment of a fibre (1-based).
     Line * giveLatticeBeam(int n);
+    /// Returns the `n`-th reinforcement (fibre) node (1-based).
     Vertex *giveReinforcementNode(int n);
+    /// Returns the `n`-th intermediate node (fibre↔matrix coupling helper).
     Vertex *giveInterNode(int n);
 
+    /// Main entry point used by the T3D pipeline. Runs geometry resolution
+    /// and writes the requested output files.
     int generateOutput();
 
+    /// In-place sort of `randomNumbers` into ascending `sortedRandomNumbers`.
     void sortRandomNumbers(oofem::FloatArray &sortedRandomNumbers, oofem::FloatArray &randomNumbers);
 
+    /// Build `rankVector[i]` = rank of `randomNumbers[i]` (1-based).
     void createRankTable(oofem::IntArray &rankVector, oofem::FloatArray &randomNumbers);
 
 
@@ -525,28 +637,44 @@ public:
     void orderDelaunayCrossSectionVertices(int elementNumber);
 
 
+    /// Qhull pipeline entry point. Reads the qhull `mesh.nodes` +
+    /// `mesh.voronoi` pair, parses the control template, and emits the
+    /// OOFEM input. Returns 0 on success.
     int instanciateYourselfFromQhull(const std::string &controlFile, const char *nodeFileName, const char *voronoiFileName);
 
+    /// Parse the qhull-pipeline control file: non-directive lines are
+    /// buffered verbatim; `#@...` directives populate Grid state (notch,
+    /// inclusions, rigidarm, material_around, couplingflag, …).
     void readQhullControlRecords(const std::string &controlFile);
 
 
+    /// Read a T3D mesh from file `fn` into `nodes`/`tris`/`tets`. Returns
+    /// false on parse error.
     bool readT3d(const std::string &fn,
                  std::vector< Node > &nodes,
                  std::vector< Tri > &tris,
                  std::vector< Tet > &tets);
 
+    /// Derive the unique undirected edge list for `tris` and `tets` into
+    /// `edges`, with adjacency indices filled in.
     void buildEdges(const std::vector< Tri > &tris,
                     const std::vector< Tet > &tets,
                     std::vector< Edge > &edges);
 
 
+    /// Write one OOFEM `node` record per T3D node to `out`.
     void writeT3dNodesOofem(std::ostream &out);
 
+    /// Write one OOFEM element record per T3D edge to `out`.
     void writeT3dElemsOofem(std::ostream &out);
 
-    //Main functions which converts T3D meshes into lattices
+    /// T3D pipeline entry point. Reads `t3dFileName`, parses control
+    /// directives from `controlFileName`, and emits the OOFEM input.
+    /// Returns 0 on success.
     int instanciateYourselfFromT3d(const std::string &t3dFileName, const std::string &controlFileName);
 
+    /// Numerical Recipes ran1 uniform random generator. `idum` is a
+    /// caller-owned seed state.
     double ran1(long *idum);
 
     /// Returns number of dof managers in grid.
@@ -577,9 +705,13 @@ public:
     int giveNumberOfFibres() { return converter::size1(fibreList); }
 
 
+    /// Resize the Delaunay vertex list to `_newSize` entries.
     void resizeDelaunayVertices(int _newSize);
+    /// Resize the Voronoi vertex list to `_newSize` entries.
     void resizeVoronoiVertices(int _newSize);
+    /// Resize the Delaunay line list to `_newSize` entries.
     void resizeDelaunayLines(int _newSize);
+    /// Resize the Voronoi line list to `_newSize` entries.
     void resizeVoronoiLines(int _newSize);
     //@{
     /// Resizes the internal data structure to accomodate space for _newSize dofManagers
@@ -594,9 +726,13 @@ public:
     void resizeInclusions(int _newSize);
 
 
+    /// Install `obj` as the `i`-th Delaunay vertex (1-based). Grid takes ownership.
     void setDelaunayVertex(int i, Vertex *obj);
+    /// Install `obj` as the `i`-th Voronoi vertex (1-based). Grid takes ownership.
     void setVoronoiVertex(int i, Vertex *obj);
+    /// Install `obj` as the `i`-th Delaunay line (1-based). Grid takes ownership.
     void setDelaunayLine(int i, Line *obj);
+    /// Install `obj` as the `i`-th Voronoi line (1-based). Grid takes ownership.
     void setVoronoiLine(int i, Line *obj);
 
 
@@ -612,27 +748,52 @@ public:
     /// Sets i-th componet. The component will be futher managed and maintained by grid object.
     void setInclusion(int i, Inclusion *obj);
 
+    /// Install `obj` as the `i`-th fibre (1-based). Grid takes ownership.
     void setFibre(int i, Fibre *obj);
+    /// Install `obj` as the `i`-th lattice link (1-based). Grid takes ownership.
     void setLatticeLink(int i, Line *obj);
+    /// Install `obj` as the `i`-th lattice beam (1-based). Grid takes ownership.
     void setLatticeBeam(int i, Line *obj);
+    /// Install `obj` as the `i`-th reinforcement node (1-based). Grid takes ownership.
     void setReinforcementNode(int i, Vertex *obj);
+    /// Install `obj` as the `i`-th intermediate node (1-based). Grid takes ownership.
     void setInterNode(int i, Vertex *obj);
 
 
+    /// Class name ("Grid") for debug/log output.
     const char *giveClassName() const { return "Grid"; }
 
+    /// Main dispatch for the qhull pipeline — switches on `gridType` and
+    /// calls the matching writer (`give3DSMOutput` / `give3DTMOutput`).
     void giveOutput(const std::string &fileName);
+    /// T3D pipeline dispatch — writes the OOFEM input generated from T3D
+    /// meshes to `fileName`.
     void giveOutputT3d(const std::string &fileName);
 
+    /// Write the full OOFEM `.in` input to `fileName` (header, counts,
+    /// nodes, elements, cross-sections, materials, BCs, load-time
+    /// functions, sets, extractor block).
     void giveOofemOutput(const std::string &fileName);
 
+    /// Write the Voronoi / Delaunay / cross-section VTK files alongside
+    /// `fileName` (base name for the .vtu outputs).
     void giveVtkOutput(const std::string &fileName);
-    void giveVtkOutput2(const std::string &fileName, int nb_of_mt); // alternative function to obtain VTK files for each material
+    /// Alternative VTK writer that emits one set of VTK files per material
+    /// (0 … nb_of_mt-1) for per-material visualisation.
+    void giveVtkOutput2(const std::string &fileName, int nb_of_mt);
 
+    /// Write the POV-Ray rendering files alongside `fileName`.
     void givePOVOutput(const std::string &fileName);
 
+    /// Qhull writer for 3D structural-mechanics analyses — emits lattice3D
+    /// lines (Delaunay edges) with cross-section polygons and materials
+    /// resolved from notch/inclusion/material_around directives. Also
+    /// handles rigidarm nodes and couplingflag emission.
     void give3DSMOutput(const std::string &fileName);
 
+    /// Qhull writer for 3D transport-mechanics analyses — emits
+    /// latticemt3D elements on the Voronoi dual of the Delaunay mesh,
+    /// with the same directive-driven material/inclusion handling.
     void give3DTMOutput(const std::string &fileName);
 
     /// Walk fibreList: discretise each fibre, build reinforcement nodes,
@@ -640,24 +801,37 @@ public:
     void discretizeFibres();
 
 
+    /// Evaluate a degree-n polynomial with coefficients `a[0..n]` at `x`.
     double  dpolyValue(int n, double a[], double x);
 
+    /// Numerical Recipes indexx: fill `indx[1..n]` with the 1-based indices
+    /// of `arr` in ascending-value order.
     void indexx(int n, double arr[], int indx[]);
 
+    /// Numerical Recipes integer vector allocator, range [nl..nh].
     int *ivector(int nl, int nh);
 
+    /// Numerical Recipes paired deallocator for `ivector`.
     void free_ivector(int *v, int nl, int nh);
 
-    // tool functions to enable fibre (subobjects) to create Nodes at the scale of the grid
+    /// Create a reinforcement (fibre) node at `coordR` and register it
+    /// with the grid. Used by Fibre during discretisation.
     Vertex *createReinfNode(oofem::FloatArray coordR);
+    /// Create an intermediate (fibre↔matrix coupling) node at `coordS`
+    /// and register it with the grid.
     Vertex *createInterNode(oofem::FloatArray coordS);
 
-    // VTK outputs for fibres
+    /// VTK writer for fibre lattice-beam segments.
     void giveBeamElementVTKOutput(FILE *outputStream);
+    /// VTK writer for fibre↔matrix lattice-link elements.
     void giveLinkElementVTKOutput(FILE *outputStream);
 
-    oofem::IntArray findDelaunayNodesWithinBox(oofem::FloatArray coord, double TOL); // function created to allow other objects to use the localizer
+    /// Localiser helper: return the 1-based ids of Delaunay vertices
+    /// inside the axis-aligned tolerance box centred at `coord`.
+    oofem::IntArray findDelaunayNodesWithinBox(oofem::FloatArray coord, double TOL);
 
+    /// Numerical Recipes Gaussian elimination solver (`n`×`n` system with
+    /// `rhs_num` right-hand sides, in-place on `a`).
     int r8mat_solve(int n, int rhs_num, double a[]);
 };
 
