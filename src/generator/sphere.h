@@ -15,6 +15,7 @@
 
 #ifndef __MAKEDEPEND
  #include <stdio.h>
+ #include <sstream>
 #endif
 
 #define _IFT_Sphere_centre "centre"
@@ -60,6 +61,9 @@ public:
 
 
     void initializeFrom(GeneratorInputRecord &ir);
+    /// Parse keyword/value tokens from an open istringstream positioned
+    /// after the `#@sphere <num>` prefix.
+    void initializeFromTokens(std::istringstream &iss);
 
     void printYourself();
 };

@@ -13,6 +13,7 @@
 
 #ifndef __MAKEDEPEND
  #include <stdio.h>
+ #include <sstream>
 #endif
 
 #define _IFT_Vertex_coords "coords"
@@ -72,6 +73,9 @@ public:
     const char *giveClassName() const { return "Vertex"; }
 
     void initializeFrom(GeneratorInputRecord &ir);
+    /// Parse keyword/value tokens from an open istringstream positioned
+    /// after the `#@vertex <num>` (or `#@controlvertex <num>`) prefix.
+    void initializeFromTokens(std::istringstream &iss);
     //virtual IntArray* ResolveDofIDArray (char* initString);
     /// prints receiver state on stdout. Usefull for debuging.
     void         printYourself();

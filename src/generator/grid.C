@@ -33,6 +33,7 @@
 
 #include <fstream>
 #include <iomanip>
+#include <sstream>
 
 
 
@@ -965,6 +966,149 @@ int Grid::instanciateYourself(GeneratorDataReader *dr)
 
 
 
+
+    this->giveGridLocalizer()->init(true);
+
+    return 1;
+}
+
+
+int Grid::readControlRecords(const std::string &controlFile)
+{
+    std::ifstream in(controlFile);
+    if ( !in ) {
+        generator::errorf("Grid::readControlRecords: cannot open control file '%s'", controlFile.c_str());
+    }
+
+    // Match legacy defaults from instanciateYourself().
+    maxIter       = 1000000;
+    aggregateFlag = 0;
+    regularFlag   = 0;
+    randomFlag    = 0;
+    vtkFlag       = 0;
+    randomInteger = 0;
+    periodicityFlag.resize(3);
+    periodicityFlag.zero();
+
+    std::string line;
+    while ( std::getline(in, line) ) {
+        std::istringstream iss(line);
+        std::string tag;
+        if ( !( iss >> tag ) ) {
+            continue;
+        }
+        if ( tag == "#@output" ) {
+            iss >> outputFileName;
+        } else if ( tag == "#@domain" ) {
+            iss >> dimension;
+        } else if ( tag == "#@diam" ) {
+            iss >> diameter;
+            TOL = 1.e-6 * diameter;
+        } else if ( tag == "#@maxiter" ) {
+            iss >> maxIter;
+        } else if ( tag == "#@ranint" ) {
+            iss >> randomInteger;
+            if ( randomInteger >= 0 ) {
+                randomInteger = -time(NULL);
+                printf("random integer is determined as %d\n", randomInteger);
+            }
+        } else if ( tag == "#@perflag" ) {
+            int n;
+            iss >> n;
+            periodicityFlag.resize(n);
+            for ( int i = 1; i <= n; ++i ) {
+                iss >> periodicityFlag.at(i);
+            }
+            if ( periodicityFlag.giveSize() != 3 ) {
+                generator::error("#@perflag must have three components");
+            }
+        } else if ( tag == "#@ranflag" ) {
+            iss >> randomFlag;
+            if ( randomFlag < 0 || randomFlag > 2 ) {
+                generator::error("#@ranflag must be 0, 1, or 2");
+            }
+        } else if ( tag == "#@vertex" ) {
+            int num;
+            iss >> num;
+            if ( num < 1 ) {
+                generator::errorf("#@vertex: invalid number %d", num);
+            }
+            auto *v = new Vertex(num, this);
+            v->initializeFromTokens(iss);
+            if ( ( int ) inputVertexList.size() < num ) {
+                inputVertexList.resize(num, nullptr);
+            }
+            setInputVertex(num, v);
+        } else if ( tag == "#@controlvertex" ) {
+            int num;
+            iss >> num;
+            if ( num < 1 ) {
+                generator::errorf("#@controlvertex: invalid number %d", num);
+            }
+            auto *v = new Vertex(num, this);
+            v->initializeFromTokens(iss);
+            if ( ( int ) controlVertexList.size() < num ) {
+                controlVertexList.resize(num, nullptr);
+            }
+            setControlVertex(num, v);
+        } else if ( tag == "#@prism" ) {
+            int num;
+            iss >> num;
+            auto *r = new Prism(num, this);
+            r->initializeFromTokens(iss);
+            if ( ( int ) regionList.size() < num ) {
+                regionList.resize(num, nullptr);
+            }
+            setRegion(num, r);
+        } else if ( tag == "#@cylinder" ) {
+            int num;
+            iss >> num;
+            auto *r = new Cylinder(num, this);
+            r->initializeFromTokens(iss);
+            if ( ( int ) regionList.size() < num ) {
+                regionList.resize(num, nullptr);
+            }
+            setRegion(num, r);
+        } else if ( tag == "#@sphere" ) {
+            int num;
+            iss >> num;
+            auto *r = new Sphere(num, this);
+            r->initializeFromTokens(iss);
+            if ( ( int ) regionList.size() < num ) {
+                regionList.resize(num, nullptr);
+            }
+            setRegion(num, r);
+        } else if ( tag == "#@intersphere" ) {
+            int num;
+            iss >> num;
+            auto *inc = new InterfaceSphere(num, this);
+            inc->initializeFromTokens(iss);
+            if ( ( int ) inclusionList.size() < num ) {
+                inclusionList.resize(num, nullptr);
+            }
+            setInclusion(num, inc);
+        } else if ( tag == "#@interfacecylinder" ) {
+            int num;
+            iss >> num;
+            auto *inc = new InterfaceCylinder(num, this);
+            inc->initializeFromTokens(iss);
+            if ( ( int ) inclusionList.size() < num ) {
+                inclusionList.resize(num, nullptr);
+            }
+            setInclusion(num, inc);
+        } else if ( tag.rfind("#@", 0) == 0 ) {
+            generator::errorf("Grid::readControlRecords: unknown directive '%s'", tag.c_str());
+        }
+        // Non-directive lines (blank, `#` comments, anything not starting
+        // with `#@`) are skipped silently.
+    }
+
+    if ( outputFileName.empty() ) {
+        generator::error("Grid::readControlRecords: no #@output directive found");
+    }
+    if ( diameter <= 0. ) {
+        generator::error("Grid::readControlRecords: missing or invalid #@diam");
+    }
 
     this->giveGridLocalizer()->init(true);
 

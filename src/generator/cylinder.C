@@ -2,6 +2,7 @@
 #include "curve.h"
 #include "vertex.h"
 #include "record.h"
+#include "generatorerror.h"
 
 
 #ifndef __MAKEDEPEND
@@ -287,6 +288,36 @@ Cylinder::initializeFrom(GeneratorInputRecord &ir)
     refinement = 1.;
     IR_GIVE_OPTIONAL_FIELD(ir, refinement, _IFT_Cylinder_refine); // Macro
     return;
+}
+
+
+void Cylinder::initializeFromTokens(std::istringstream &iss)
+{
+    refinement = 1.;
+
+    bool gotLine = false, gotRadius = false;
+    std::string tok;
+    while ( iss >> tok ) {
+        if ( tok == "line" ) {
+            int n;
+            iss >> n;
+            line.resize(n);
+            for ( int i = 1; i <= n; ++i ) {
+                iss >> line.at(i);
+            }
+            gotLine = true;
+        } else if ( tok == "radius" ) {
+            iss >> radius;
+            gotRadius = true;
+        } else if ( tok == "refine" ) {
+            iss >> refinement;
+        } else {
+            generator::errorf("Cylinder::initializeFromTokens: unknown keyword '%s'", tok.c_str());
+        }
+    }
+    if ( !gotLine || !gotRadius ) {
+        generator::error("Cylinder::initializeFromTokens: 'line' and 'radius' are required");
+    }
 }
 
 

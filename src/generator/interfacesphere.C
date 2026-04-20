@@ -2,6 +2,7 @@
 #include "curve.h"
 #include "vertex.h"
 #include "record.h"
+#include "generatorerror.h"
 
 
 #ifndef __MAKEDEPEND
@@ -101,4 +102,41 @@ InterfaceSphere::initializeFrom(GeneratorInputRecord &ir)
     itzThickness = refinement * diameter;
     IR_GIVE_OPTIONAL_FIELD(ir, itzThickness, _IFT_InterfaceSphere_itz); // Macro
     return;
+}
+
+
+void InterfaceSphere::initializeFromTokens(std::istringstream &iss)
+{
+    refinement = 1.;
+
+    bool gotCentre = false, gotRadius = false;
+    bool gotItz = false;
+    std::string tok;
+    while ( iss >> tok ) {
+        if ( tok == "centre" ) {
+            int n;
+            iss >> n;
+            centre.resize(n);
+            for ( int i = 1; i <= n; ++i ) {
+                iss >> centre.at(i);
+            }
+            gotCentre = true;
+        } else if ( tok == "radius" ) {
+            iss >> radius;
+            gotRadius = true;
+        } else if ( tok == "refine" ) {
+            iss >> refinement;
+        } else if ( tok == "itz" ) {
+            iss >> itzThickness;
+            gotItz = true;
+        } else {
+            generator::errorf("InterfaceSphere::initializeFromTokens: unknown keyword '%s'", tok.c_str());
+        }
+    }
+    if ( !gotCentre || !gotRadius ) {
+        generator::error("InterfaceSphere::initializeFromTokens: 'centre' and 'radius' are required");
+    }
+    if ( !gotItz ) {
+        itzThickness = refinement * diameter;
+    }
 }

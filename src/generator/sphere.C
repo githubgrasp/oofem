@@ -2,6 +2,7 @@
 #include "curve.h"
 #include "vertex.h"
 #include "record.h"
+#include "generatorerror.h"
 
 #ifndef __MAKEDEPEND
  #include <math.h>
@@ -128,4 +129,34 @@ Sphere::initializeFrom(GeneratorInputRecord &ir)
     IR_GIVE_OPTIONAL_FIELD(ir, refinement, _IFT_Sphere_refine);
 
     return;
+}
+
+
+void Sphere::initializeFromTokens(std::istringstream &iss)
+{
+    refinement = 1.;
+
+    bool gotCentre = false, gotRadius = false;
+    std::string tok;
+    while ( iss >> tok ) {
+        if ( tok == "centre" ) {
+            int n;
+            iss >> n;
+            centre.resize(n);
+            for ( int i = 1; i <= n; ++i ) {
+                iss >> centre.at(i);
+            }
+            gotCentre = true;
+        } else if ( tok == "radius" ) {
+            iss >> radius;
+            gotRadius = true;
+        } else if ( tok == "refine" ) {
+            iss >> refinement;
+        } else {
+            generator::errorf("Sphere::initializeFromTokens: unknown keyword '%s'", tok.c_str());
+        }
+    }
+    if ( !gotCentre || !gotRadius ) {
+        generator::error("Sphere::initializeFromTokens: 'centre' and 'radius' are required");
+    }
 }

@@ -16,6 +16,7 @@
 
 #ifndef __MAKEDEPEND
  #include <stdio.h>
+ #include <sstream>
 #endif
 
 #define _IFT_InterfaceCylinder_line "line"
@@ -62,6 +63,9 @@ public:
     const char *giveClassName() const { return "InterfaceCylinder"; }
 
     void initializeFrom(GeneratorInputRecord &ir);
+    /// Parse keyword/value tokens from an open istringstream positioned
+    /// after the `#@interfacecylinder <num>` prefix.
+    void initializeFromTokens(std::istringstream &iss);
 
     void         printYourself();
 };

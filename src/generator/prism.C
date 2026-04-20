@@ -4,6 +4,7 @@
 #include "vertex.h"
 #include "surface.h"
 #include "intarray.h"
+#include "generatorerror.h"
 
 
 #ifndef __MAKEDEPEND
@@ -583,6 +584,42 @@ Prism::initializeFrom(GeneratorInputRecord &ir)
     IR_GIVE_OPTIONAL_FIELD(ir, regionRefine, _IFT_Prism_regionRefine);
 
     return;
+}
+
+
+void Prism::initializeFromTokens(std::istringstream &iss)
+{
+    refinement    = 1.;
+    edgeRefine    = 1.;
+    surfaceRefine = 1.;
+    regionRefine  = 1.;
+
+    bool gotBox = false;
+    std::string tok;
+    while ( iss >> tok ) {
+        if ( tok == "box" ) {
+            int n;
+            iss >> n;
+            box.resize(n);
+            for ( int i = 1; i <= n; ++i ) {
+                iss >> box.at(i);
+            }
+            gotBox = true;
+        } else if ( tok == "refine" ) {
+            iss >> refinement;
+        } else if ( tok == "edgerefine" ) {
+            iss >> edgeRefine;
+        } else if ( tok == "surfacerefine" ) {
+            iss >> surfaceRefine;
+        } else if ( tok == "regionrefine" ) {
+            iss >> regionRefine;
+        } else {
+            generator::errorf("Prism::initializeFromTokens: unknown keyword '%s'", tok.c_str());
+        }
+    }
+    if ( !gotBox ) {
+        generator::error("Prism::initializeFromTokens: missing 'box' keyword");
+    }
 }
 
 

@@ -25,28 +25,21 @@ static inline void rtrim(std::string &s) {
         s.pop_back();
     }
 }
-static inline bool is_comment_or_empty(const std::string &s) {
-    for (unsigned char ch : s) {
-        if ( !std::isspace(ch) ) {
-            return ch == '#';
-        }
-    }
-    return true;
-}
-static std::string read_first_line_filename(const char *path) {
+/// Return true if the input file contains any `#@` directive line.
+/// Old-format files never contain `#@`; `#@`-format files start with them.
+static bool uses_directive_format(const char *path) {
     std::ifstream in(path);
     if ( !in ) {
         generator::errorf("Can't open input file (%s)", path);
     }
-
     std::string line;
     while ( std::getline(in, line) ) {
         rtrim(line);
-        if ( !is_comment_or_empty(line) ) {
-            return line;
+        if ( line.rfind("#@", 0) == 0 ) {
+            return true;
         }
     }
-    return {};
+    return false;
 }
 
 
@@ -60,19 +53,26 @@ int main(int argc, char *argv[])
 
     const char *inputFileName = argv [ 1 ];
 
-    GeneratorTXTDataReader dr(inputFileName);
     Grid grid(1);
+    std::string outputPath;
 
-    grid.instanciateYourself(& dr);
+    if ( uses_directive_format(inputFileName) ) {
+        grid.readControlRecords(inputFileName);
+        outputPath = grid.giveOutputFileName();
+    } else {
+        GeneratorTXTDataReader dr(inputFileName);
+        grid.instanciateYourself(& dr);
+        outputPath = dr.giveOutputFileName();
+    }
 
     grid.generatePoints();
     if ( grid.giveVtkFlag() ) {
         grid.exportVTK("points.vtk");
     }
 
-    FILE *outputStream = std::fopen(dr.giveOutputFileName().c_str(), "w");
+    FILE *outputStream = std::fopen(outputPath.c_str(), "w");
     if ( !outputStream ) {
-        std::perror( ( "Can't open output file: " + dr.giveOutputFileName() ).c_str() );
+        std::perror( ( "Can't open output file: " + outputPath ).c_str() );
         return EXIT_FAILURE;
     }
 

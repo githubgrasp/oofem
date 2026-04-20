@@ -114,6 +114,11 @@ private:
     /// Opt in to writing points.vtk alongside nodes.dat (default off).
     int vtkFlag = 0;
 
+    /// Output filename for the generated point list. Populated either by
+    /// the first non-directive line (legacy path) or by the `#@output`
+    /// directive (new `#@` path).
+    std::string outputFileName;
+
     GridLocalizer *gridLocalizer;
 
 public:
@@ -225,6 +230,16 @@ public:
 
 
     int instanciateYourself(GeneratorDataReader *dr);
+
+    /// Parse a `#@` directive control file into Grid state. Mirror of the
+    /// legacy `instanciateYourself` path, but driven directly from the
+    /// control file rather than via the OOFEM-style `GeneratorDataReader`.
+    /// Populates `outputFileName` from a `#@output` directive.
+    int readControlRecords(const std::string &controlFile);
+
+    /// The output path the generator should write `nodes.dat` to. Set by
+    /// either parser path before generation runs.
+    const std::string &giveOutputFileName() const { return outputFileName; }
 
     double ran1(int *idum);
 

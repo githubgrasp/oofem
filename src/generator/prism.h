@@ -15,6 +15,7 @@
 
 #ifndef __MAKEDEPEND
  #include <stdio.h>
+ #include <sstream>
 #endif
 
 #define _IFT_Prism_box "box"
@@ -91,6 +92,9 @@ public:
     int giveNumber() { return this->number; }
 
     void initializeFrom(GeneratorInputRecord &ir);
+    /// Parse keyword/value tokens from an open istringstream positioned
+    /// after the `#@prism <num>` prefix.
+    void initializeFromTokens(std::istringstream &iss);
     //virtual IntArray* ResolveDofIDArray (char* initString);
     /// prints receiver state on stdout. Usefull for debuging.
     void         printYourself();

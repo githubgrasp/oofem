@@ -2,6 +2,7 @@
 #include "curve.h"
 #include "vertex.h"
 #include "record.h"
+#include "generatorerror.h"
 
 
 #ifndef __MAKEDEPEND
@@ -214,6 +215,43 @@ InterfaceCylinder::initializeFrom(GeneratorInputRecord &ir)
     IR_GIVE_OPTIONAL_FIELD(ir, itzThickness, _IFT_InterfaceCylinder_itz); // Macro
 
     return;
+}
+
+
+void InterfaceCylinder::initializeFromTokens(std::istringstream &iss)
+{
+    refinement = 1.;
+
+    bool gotLine = false, gotRadius = false;
+    bool gotItz = false;
+    std::string tok;
+    while ( iss >> tok ) {
+        if ( tok == "line" ) {
+            int n;
+            iss >> n;
+            line.resize(n);
+            for ( int i = 1; i <= n; ++i ) {
+                iss >> line.at(i);
+            }
+            gotLine = true;
+        } else if ( tok == "radius" ) {
+            iss >> radius;
+            gotRadius = true;
+        } else if ( tok == "refine" ) {
+            iss >> refinement;
+        } else if ( tok == "itz" ) {
+            iss >> itzThickness;
+            gotItz = true;
+        } else {
+            generator::errorf("InterfaceCylinder::initializeFromTokens: unknown keyword '%s'", tok.c_str());
+        }
+    }
+    if ( !gotLine || !gotRadius ) {
+        generator::error("InterfaceCylinder::initializeFromTokens: 'line' and 'radius' are required");
+    }
+    if ( !gotItz ) {
+        itzThickness = refinement * diameter;
+    }
 }
 
 
