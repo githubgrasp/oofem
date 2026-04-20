@@ -430,9 +430,11 @@ public:
     oofem::FloatArray triBarycentre(int triIndex) const;
 
 
-    /// Read the control file and dispatch directives into Grid state.
-    /// Used by the T3D pipeline (`instanciateYourselfFromT3d`). The qhull
-    /// pipeline uses `readQhullControlRecords` instead.
+    /// Read the control file (`controlFileName`) and dispatch `#@…`
+    /// directives into Grid state. Shared by both the T3D and qhull
+    /// pipelines — each directive is consumed by whichever writers care
+    /// about it; the disjoint directive sets mean the two pipelines never
+    /// interfere with one another's state.
     void readControlRecords();
 
     /// Resolve the node-id set targeted by a BC request (vertex → single
@@ -641,11 +643,6 @@ public:
     /// `mesh.voronoi` pair, parses the control template, and emits the
     /// OOFEM input. Returns 0 on success.
     int instanciateYourselfFromQhull(const std::string &controlFile, const char *nodeFileName, const char *voronoiFileName);
-
-    /// Parse the qhull-pipeline control file: non-directive lines are
-    /// buffered verbatim; `#@...` directives populate Grid state (notch,
-    /// inclusions, rigidarm, material_around, couplingflag, …).
-    void readQhullControlRecords(const std::string &controlFile);
 
 
     /// Read a T3D mesh from file `fn` into `nodes`/`tris`/`tets`. Returns

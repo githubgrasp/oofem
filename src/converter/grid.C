@@ -733,7 +733,7 @@ void Grid::readControlRecords()
 {
     std::ifstream in(controlFileName);
     if ( !in ) {
-        converter::error("Cannot open control file in readControlRecords");
+        converter::errorf("Cannot open control file '%s'", controlFileName.c_str());
     }
 
     std::string line;
@@ -747,7 +747,7 @@ void Grid::readControlRecords()
         }
 
         // -----------------------
-        // #@BC
+        // #@BC  (T3D pipeline)
         // -----------------------
         if ( tag == "#@BC" ) {
             BCRequest bc;
@@ -792,19 +792,16 @@ void Grid::readControlRecords()
                 }
             }
 
-            // validate
             if ( bc.dofs.empty() || bc.values.empty() || bc.dofs.size() != bc.values.size() ) {
                 converter::error("Invalid #@BC: dofs/values missing or size mismatch");
             }
 
             bcRequests.push_back(std::move(bc) );
-            continue;
         }
-
         // -----------------------
-        // #@LOAD
+        // #@LOAD  (T3D pipeline)
         // -----------------------
-        if ( tag == "#@LOAD" ) {
+        else if ( tag == "#@LOAD" ) {
             LoadRequest lr;
 
             std::string typeStr;
@@ -821,52 +818,38 @@ void Grid::readControlRecords()
             }
 
             loadRequests.push_back(std::move(lr) );
-            continue;
         }
-
-        // ---- load direction ----
-        if ( tag == "#@DIR" ) {
+        // ---- load direction ----  (T3D pipeline)
+        else if ( tag == "#@DIR" ) {
             liveDir.resize(3);
             iss >> liveDir.at(1) >> liveDir.at(2) >> liveDir.at(3);
             liveDir.normalize();
-            continue;
         }
-
-
-
         // -----------------------
-        // #@THICKNESS
+        // #@THICKNESS  (T3D pipeline)
         // -----------------------
-        if ( tag == "#@THICKNESS" ) {
+        else if ( tag == "#@THICKNESS" ) {
             std::string next;
             if ( !( iss >> next ) ) {
                 converter::error("Invalid #@THICKNESS line");
             }
 
-            // Case 1: global thickness
             if ( std::isdigit(next [ 0 ]) || next [ 0 ] == '.' || next [ 0 ] == '-' ) {
+                // Case 1: global thickness
                 defaultThickness = std::stod(next);
-                continue;
+            } else {
+                // Case 2: entity-specific
+                int entType = entityTypeFromString(next);
+                if ( entType < 0 ) {
+                    converter::error("Unknown entity type in #@THICKNESS");
+                }
+                int entID;
+                double t;
+                iss >> entID >> t;
+                entityThickness [ entType ] [ entID ] = t;
             }
-
-            // Case 2: entity-specific
-            int entType = entityTypeFromString(next);
-            if ( entType < 0 ) {
-                converter::error("Unknown entity type in #@THICKNESS");
-            }
-
-            int entID;
-            double t;
-
-            iss >> entID >> t;
-
-            entityThickness [ entType ] [ entID ] = t;
-
-            continue;
-        }
-
-        if ( tag == "#@element" ) {
-            // #@element <entityKind> <entityID> <elementName> <crossSect> <mat>
+        } else if ( tag == "#@element" ) {
+            // (T3D) #@element <entityKind> <entityID> <elementName> <crossSect> <mat>
             std::string kind;
             iss >> kind;
             int entType = entityTypeFromString(kind);
@@ -880,23 +863,290 @@ void Grid::readControlRecords()
                 converter::error("Malformed #@element directive — expected: <kind> <id> <name> <cs> <mat>");
             }
             elementSpecsByEntity[ { entType, entID } ] = EdgeSpec{ elementName, crossSect, material };
-            continue;
-        }
-
-        if ( tag == "#@3DSECTION" ) {
+        } else if ( tag == "#@3DSECTION" ) {
+            // (T3D)
             std::string mode;
             iss >> mode;
-
-            if ( mode == "FRAME" ) {
-                use3DFrameSection = true;
-            } else {
-                use3DFrameSection = false;
-            }
-        }
-
-        if ( tag == "#@SHELLWIDTHSCALE" ) {
+            use3DFrameSection = ( mode == "FRAME" );
+        } else if ( tag == "#@SHELLWIDTHSCALE" ) {
+            // (T3D)
             iss >> shellWidthScale;
-            continue;
+        }
+        // -----------------------
+        // Qhull pipeline directives follow.
+        // -----------------------
+        else if ( tag == "#@grid" ) {
+            std::string typeName;
+            iss >> typeName;
+            for (char &c : typeName) {
+                c = std::tolower(static_cast< unsigned char >(c));
+            }
+            resolveGridType(typeName);
+        } else if ( tag == "#@diam" ) {
+            iss >> diameter;
+            TOL = 1.e-6 * diameter;
+        } else if ( tag == "#@perflag" ) {
+            int n;
+            iss >> n;
+            periodicityFlag.resize(n);
+            for (int i = 1; i <= n; ++i) {
+                iss >> periodicityFlag.at(i);
+            }
+        } else if ( tag == "#@ranint" ) {
+            iss >> randomInteger;
+            if ( randomInteger >= 0 ) {
+                randomInteger = -time(NULL);
+            }
+        } else if ( tag == "#@pov" ) {
+            // Opt in to writing the POV-Ray rendering files alongside oofem.in.
+            emitPovOutput = true;
+        } else if ( tag == "#@vtk" ) {
+            // Opt in to writing the ParaView .vtu files alongside oofem.in.
+            emitVtkOutput = true;
+        } else if ( tag == "#@prism" ) {
+            int num;
+            iss >> num;
+
+            std::string boxKw;
+            int boxSize;
+            iss >> boxKw >> boxSize;
+
+            oofem::FloatArray box(boxSize);
+            for (int i = 1; i <= boxSize; ++i) {
+                iss >> box.at(i);
+            }
+
+            auto *p = new Prism(num, this);
+            p->setBox(box);
+            regionList.resize(std::max(( int ) regionList.size(), num), nullptr);
+            setRegion(num, p);
+        } else if ( tag == "#@cylinder" ) {
+            int num;
+            iss >> num;
+
+            std::string lineKw;
+            int lineSize;
+            iss >> lineKw >> lineSize;
+
+            oofem::FloatArray lin(lineSize);
+            for (int i = 1; i <= lineSize; ++i) {
+                iss >> lin.at(i);
+            }
+
+            double rad = 0.0;
+            std::string radKw;
+            iss >> radKw >> rad;
+
+            auto *c = new Cylinder(num, this);
+            c->setLine(lin);
+            c->setRadius(rad);
+            regionList.resize(std::max(( int ) regionList.size(), num), nullptr);
+            setRegion(num, c);
+        } else if ( tag == "#@interfacecylinder" ) {
+            int num;
+            iss >> num;
+
+            std::string lineKw;
+            int lineSize;
+            iss >> lineKw >> lineSize;
+
+            oofem::FloatArray lin(lineSize);
+            for (int i = 1; i <= lineSize; ++i) {
+                iss >> lin.at(i);
+            }
+
+            double rad = 0.0;
+            std::string radKw;
+            iss >> radKw >> rad;
+
+            double itz = diameter;
+            std::string token;
+            while ( iss >> token ) {
+                if ( token == "itz" ) {
+                    iss >> itz;
+                }
+            }
+
+            auto *ic = new InterfaceCylinder(num, this);
+            ic->setLine(lin);
+            ic->setRadius(rad);
+            ic->setITZThickness(itz);
+            inclusionList.resize(std::max(( int ) inclusionList.size(), num), nullptr);
+            setInclusion(num, ic);
+        } else if ( tag == "#@fibre" ) {
+            int num;
+            iss >> num;
+
+            std::string kw;
+            int sz = 0;
+            iss >> kw >> sz;
+            oofem::FloatArray endpoints(sz);
+            for ( int i = 1; i <= sz; ++i ) {
+                iss >> endpoints.at(i);
+            }
+
+            iss >> kw;            // "diameter"
+            double diam = 0.0;
+            iss >> diam;
+
+            auto *f = new Fibre(num, this);
+            f->initializeFromCoords(endpoints, diam);
+            fibreList.resize(std::max(( int ) fibreList.size(), num), nullptr);
+            setFibre(num, f);
+        } else if ( tag == "#@controlvertex" ) {
+            // #@controlvertex <id> coords 3 x y z
+            int id;
+            iss >> id;
+            std::string kw;
+            int sz = 0;
+            iss >> kw >> sz;
+            if ( kw != "coords" || sz != 3 ) {
+                converter::error("Malformed #@controlvertex — expected 'coords 3 x y z'");
+            }
+            oofem::FloatArray c(3);
+            iss >> c.at(1) >> c.at(2) >> c.at(3);
+            controlVertexDefinitions.emplace_back(id, c);
+        } else if ( tag == "#@notch" ) {
+            // #@notch <id> box 6 xmin ymin zmin xmax ymax zmax material <m>
+            int num;
+            iss >> num;
+            std::string kw;
+            int sz = 0;
+            iss >> kw >> sz;              // "box" 6
+            if ( kw != "box" || sz != 6 ) {
+                converter::error("Malformed #@notch — expected 'box 6 xmin ymin zmin xmax ymax zmax material <m>'");
+            }
+            NotchSpec n;
+            iss >> n.xmin >> n.ymin >> n.zmin >> n.xmax >> n.ymax >> n.zmax;
+            iss >> kw;                    // "material"
+            iss >> n.material;
+            notchSpecs.push_back(n);
+        } else if ( tag == "#@sphereinclusion" ) {
+            // #@sphereinclusion <id> centre 3 x y z radius r itz t
+            //   inside <mi> interface <mif>
+            int num;
+            iss >> num;
+            std::string kw;
+            int sz = 0;
+            iss >> kw >> sz;              // "centre" 3
+            if ( kw != "centre" || sz != 3 ) {
+                converter::error("Malformed #@sphereinclusion — expected 'centre 3 x y z'");
+            }
+            SphereInclusionSpec s;
+            iss >> s.cx >> s.cy >> s.cz;
+            iss >> kw >> s.radius;        // "radius" r
+            if ( kw != "radius" ) {
+                converter::error("Malformed #@sphereinclusion — expected 'radius <r>'");
+            }
+            iss >> kw >> s.itz;           // "itz" t
+            if ( kw != "itz" ) {
+                converter::error("Malformed #@sphereinclusion — expected 'itz <t>'");
+            }
+            iss >> kw >> s.inside;        // "inside" mi
+            if ( kw != "inside" ) {
+                converter::error("Malformed #@sphereinclusion — expected 'inside <m>'");
+            }
+            iss >> kw >> s.interface_;    // "interface" mif
+            if ( kw != "interface" ) {
+                converter::error("Malformed #@sphereinclusion — expected 'interface <m>'");
+            }
+            sphereInclusionSpecs.push_back(s);
+        } else if ( tag == "#@cylinderinclusion" ) {
+            // #@cylinderinclusion <id> line 6 x1 y1 z1 x2 y2 z2
+            //   radius r itz t inside <mi> interface <mif>
+            int num;
+            iss >> num;
+            std::string kw;
+            int sz = 0;
+            iss >> kw >> sz;              // "line" 6
+            if ( kw != "line" || sz != 6 ) {
+                converter::error("Malformed #@cylinderinclusion — expected 'line 6 x1 y1 z1 x2 y2 z2'");
+            }
+            CylinderInclusionSpec c;
+            iss >> c.x1 >> c.y1 >> c.z1 >> c.x2 >> c.y2 >> c.z2;
+            iss >> kw >> c.radius;        // "radius" r
+            if ( kw != "radius" ) {
+                converter::error("Malformed #@cylinderinclusion — expected 'radius <r>'");
+            }
+            iss >> kw >> c.itz;           // "itz" t
+            if ( kw != "itz" ) {
+                converter::error("Malformed #@cylinderinclusion — expected 'itz <t>'");
+            }
+            iss >> kw >> c.inside;
+            if ( kw != "inside" ) {
+                converter::error("Malformed #@cylinderinclusion — expected 'inside <m>'");
+            }
+            iss >> kw >> c.interface_;
+            if ( kw != "interface" ) {
+                converter::error("Malformed #@cylinderinclusion — expected 'interface <m>'");
+            }
+            cylinderInclusionSpecs.push_back(c);
+        } else if ( tag == "#@bodyload" ) {
+            // #@bodyload <mat> <bc_id> — any element whose crossSect/mat
+            // resolves to <mat> gets "bodyloads 1 <bc_id>" appended. Decouples
+            // bodyload placement from inclusion directives: Wong uses
+            // `#@bodyload 1 2` (matrix only, eigenstrain), the corrosion
+            // cylinder test uses `#@bodyload 3 3` (interface only,
+            // eigendisplacement).
+            int mat = 0, bc = 0;
+            if ( !( iss >> mat >> bc ) ) {
+                converter::error("Malformed #@bodyload — expected '<mat> <bc_id>'");
+            }
+            bodyloadByMaterial[mat] = bc;
+        } else if ( tag == "#@couplingflag" ) {
+            // #@couplingflag — toggle. When present, emitters append
+            // "couplingflag 1 couplingnumber N <ids>" to each element record.
+            // Used by staggered SMTM analyses (e.g. Wong percolation) where
+            // the SM and TM subproblems exchange data element-by-element.
+            emitCouplingFlag = true;
+        } else if ( tag == "#@rigidarm" ) {
+            // #@rigidarm <master_ctl_id> face <axis> <side>
+            //   mastermask 6 m1..m6 doftype 6 d1..d6
+            // `<axis>` is 1|2|3 (x|y|z); `<side>` is min|max.
+            RigidArmSpec ra;
+            std::string kw, sideWord;
+            int axis = 0;
+            if ( !( iss >> ra.masterCtlId >> kw >> axis >> sideWord ) || kw != "face" ) {
+                converter::error("Malformed #@rigidarm — expected '<master_ctl_id> face <axis> <side> mastermask 6 … doftype 6 …'");
+            }
+            if ( axis < 1 || axis > 3 ) {
+                converter::error("#@rigidarm — axis must be 1, 2 or 3");
+            }
+            if ( sideWord != "min" && sideWord != "max" ) {
+                converter::error("#@rigidarm — side must be 'min' or 'max'");
+            }
+            ra.axis = axis;
+            ra.sideMax = ( sideWord == "max" );
+            iss >> kw;                // "mastermask"
+            if ( kw != "mastermask" ) {
+                converter::error("#@rigidarm — expected 'mastermask 6 …'");
+            }
+            int sz = 0;
+            iss >> sz;
+            if ( sz != 6 ) {
+                converter::error("#@rigidarm — mastermask must have size 6");
+            }
+            ra.mastermask.resize(6);
+            for ( int i = 1; i <= 6; ++i ) iss >> ra.mastermask.at(i);
+            iss >> kw;                // "doftype"
+            if ( kw != "doftype" ) {
+                converter::error("#@rigidarm — expected 'doftype 6 …' after mastermask");
+            }
+            iss >> sz;
+            if ( sz != 6 ) {
+                converter::error("#@rigidarm — doftype must have size 6");
+            }
+            ra.doftype.resize(6);
+            for ( int i = 1; i <= 6; ++i ) iss >> ra.doftype.at(i);
+            rigidArmSpecs.push_back(ra);
+        } else if ( tag == "#@material_around" ) {
+            // #@material_around <ctl_id> material <m>
+            MaterialAroundSpec m;
+            std::string kw;
+            if ( !( iss >> m.ctlId >> kw >> m.material ) || kw != "material" ) {
+                converter::error("Malformed #@material_around — expected '<ctl_id> material <m>'");
+            }
+            materialAroundSpecs.push_back(m);
         }
     }
 }
@@ -1346,303 +1596,6 @@ oofem::FloatArray Grid::triNormal(int triIndex) const
 }
 
 
-void Grid::readQhullControlRecords(const std::string &controlFile)
-{
-    std::ifstream in(controlFile);
-    if ( !in ) {
-        converter::errorf("Cannot open control file '%s'", controlFile.c_str());
-    }
-
-    std::string line;
-    while ( std::getline(in, line) ) {
-        std::istringstream iss(line);
-        std::string tag;
-        if ( !( iss >> tag ) ) {
-            continue;
-        }
-
-        if ( tag == "#@grid" ) {
-            std::string typeName;
-            iss >> typeName;
-            for (char &c : typeName) {
-                c = std::tolower(static_cast< unsigned char >(c));
-            }
-            resolveGridType(typeName);
-        } else if ( tag == "#@diam" ) {
-            iss >> diameter;
-            TOL = 1.e-6 * diameter;
-        } else if ( tag == "#@perflag" ) {
-            int n;
-            iss >> n;
-            periodicityFlag.resize(n);
-            for (int i = 1; i <= n; ++i) {
-                iss >> periodicityFlag.at(i);
-            }
-        } else if ( tag == "#@ranint" ) {
-            iss >> randomInteger;
-            if ( randomInteger >= 0 ) {
-                randomInteger = -time(NULL);
-            }
-        } else if ( tag == "#@pov" ) {
-            // Opt in to writing the POV-Ray rendering files alongside oofem.in.
-            emitPovOutput = true;
-        } else if ( tag == "#@vtk" ) {
-            // Opt in to writing the ParaView .vtu files alongside oofem.in.
-            emitVtkOutput = true;
-        } else if ( tag == "#@prism" ) {
-            int num;
-            iss >> num;
-
-            std::string boxKw;
-            int boxSize;
-            iss >> boxKw >> boxSize;
-
-            oofem::FloatArray box(boxSize);
-            for (int i = 1; i <= boxSize; ++i) {
-                iss >> box.at(i);
-            }
-
-            auto *p = new Prism(num, this);
-            p->setBox(box);
-            regionList.resize(std::max(( int ) regionList.size(), num), nullptr);
-            setRegion(num, p);
-        } else if ( tag == "#@cylinder" ) {
-            int num;
-            iss >> num;
-
-            std::string lineKw;
-            int lineSize;
-            iss >> lineKw >> lineSize;
-
-            oofem::FloatArray lin(lineSize);
-            for (int i = 1; i <= lineSize; ++i) {
-                iss >> lin.at(i);
-            }
-
-            double rad = 0.0;
-            std::string radKw;
-            iss >> radKw >> rad;
-
-            auto *c = new Cylinder(num, this);
-            c->setLine(lin);
-            c->setRadius(rad);
-            regionList.resize(std::max(( int ) regionList.size(), num), nullptr);
-            setRegion(num, c);
-        } else if ( tag == "#@interfacecylinder" ) {
-            int num;
-            iss >> num;
-
-            std::string lineKw;
-            int lineSize;
-            iss >> lineKw >> lineSize;
-
-            oofem::FloatArray lin(lineSize);
-            for (int i = 1; i <= lineSize; ++i) {
-                iss >> lin.at(i);
-            }
-
-            double rad = 0.0;
-            std::string radKw;
-            iss >> radKw >> rad;
-
-            double itz = diameter;
-            std::string token;
-            while ( iss >> token ) {
-                if ( token == "itz" ) {
-                    iss >> itz;
-                }
-            }
-
-            auto *ic = new InterfaceCylinder(num, this);
-            ic->setLine(lin);
-            ic->setRadius(rad);
-            ic->setITZThickness(itz);
-            inclusionList.resize(std::max(( int ) inclusionList.size(), num), nullptr);
-            setInclusion(num, ic);
-        } else if ( tag == "#@fibre" ) {
-            int num;
-            iss >> num;
-
-            std::string kw;
-            int sz = 0;
-            iss >> kw >> sz;
-            oofem::FloatArray endpoints(sz);
-            for ( int i = 1; i <= sz; ++i ) {
-                iss >> endpoints.at(i);
-            }
-
-            iss >> kw;            // "diameter"
-            double diam = 0.0;
-            iss >> diam;
-
-            auto *f = new Fibre(num, this);
-            f->initializeFromCoords(endpoints, diam);
-            fibreList.resize(std::max(( int ) fibreList.size(), num), nullptr);
-            setFibre(num, f);
-        } else if ( tag == "#@controlvertex" ) {
-            // #@controlvertex <id> coords 3 x y z
-            int id;
-            iss >> id;
-            std::string kw;
-            int sz = 0;
-            iss >> kw >> sz;
-            if ( kw != "coords" || sz != 3 ) {
-                converter::error("Malformed #@controlvertex — expected 'coords 3 x y z'");
-            }
-            oofem::FloatArray c(3);
-            iss >> c.at(1) >> c.at(2) >> c.at(3);
-            controlVertexDefinitions.emplace_back(id, c);
-        } else if ( tag == "#@notch" ) {
-            // #@notch <id> box 6 xmin ymin zmin xmax ymax zmax material <m>
-            int num;
-            iss >> num;
-            std::string kw;
-            int sz = 0;
-            iss >> kw >> sz;              // "box" 6
-            if ( kw != "box" || sz != 6 ) {
-                converter::error("Malformed #@notch — expected 'box 6 xmin ymin zmin xmax ymax zmax material <m>'");
-            }
-            NotchSpec n;
-            iss >> n.xmin >> n.ymin >> n.zmin >> n.xmax >> n.ymax >> n.zmax;
-            iss >> kw;                    // "material"
-            iss >> n.material;
-            notchSpecs.push_back(n);
-        } else if ( tag == "#@sphereinclusion" ) {
-            // #@sphereinclusion <id> centre 3 x y z radius r itz t
-            //   inside <mi> interface <mif>
-            int num;
-            iss >> num;
-            std::string kw;
-            int sz = 0;
-            iss >> kw >> sz;              // "centre" 3
-            if ( kw != "centre" || sz != 3 ) {
-                converter::error("Malformed #@sphereinclusion — expected 'centre 3 x y z'");
-            }
-            SphereInclusionSpec s;
-            iss >> s.cx >> s.cy >> s.cz;
-            iss >> kw >> s.radius;        // "radius" r
-            if ( kw != "radius" ) {
-                converter::error("Malformed #@sphereinclusion — expected 'radius <r>'");
-            }
-            iss >> kw >> s.itz;           // "itz" t
-            if ( kw != "itz" ) {
-                converter::error("Malformed #@sphereinclusion — expected 'itz <t>'");
-            }
-            iss >> kw >> s.inside;        // "inside" mi
-            if ( kw != "inside" ) {
-                converter::error("Malformed #@sphereinclusion — expected 'inside <m>'");
-            }
-            iss >> kw >> s.interface_;    // "interface" mif
-            if ( kw != "interface" ) {
-                converter::error("Malformed #@sphereinclusion — expected 'interface <m>'");
-            }
-            sphereInclusionSpecs.push_back(s);
-        } else if ( tag == "#@cylinderinclusion" ) {
-            // #@cylinderinclusion <id> line 6 x1 y1 z1 x2 y2 z2
-            //   radius r itz t inside <mi> interface <mif>
-            int num;
-            iss >> num;
-            std::string kw;
-            int sz = 0;
-            iss >> kw >> sz;              // "line" 6
-            if ( kw != "line" || sz != 6 ) {
-                converter::error("Malformed #@cylinderinclusion — expected 'line 6 x1 y1 z1 x2 y2 z2'");
-            }
-            CylinderInclusionSpec c;
-            iss >> c.x1 >> c.y1 >> c.z1 >> c.x2 >> c.y2 >> c.z2;
-            iss >> kw >> c.radius;        // "radius" r
-            if ( kw != "radius" ) {
-                converter::error("Malformed #@cylinderinclusion — expected 'radius <r>'");
-            }
-            iss >> kw >> c.itz;           // "itz" t
-            if ( kw != "itz" ) {
-                converter::error("Malformed #@cylinderinclusion — expected 'itz <t>'");
-            }
-            iss >> kw >> c.inside;
-            if ( kw != "inside" ) {
-                converter::error("Malformed #@cylinderinclusion — expected 'inside <m>'");
-            }
-            iss >> kw >> c.interface_;
-            if ( kw != "interface" ) {
-                converter::error("Malformed #@cylinderinclusion — expected 'interface <m>'");
-            }
-            cylinderInclusionSpecs.push_back(c);
-        } else if ( tag == "#@bodyload" ) {
-            // #@bodyload <mat> <bc_id> — any element whose crossSect/mat
-            // resolves to <mat> gets "bodyloads 1 <bc_id>" appended. Decouples
-            // bodyload placement from inclusion directives: Wong uses
-            // `#@bodyload 1 2` (matrix only, eigenstrain), the corrosion
-            // cylinder test uses `#@bodyload 3 3` (interface only,
-            // eigendisplacement).
-            int mat = 0, bc = 0;
-            if ( !( iss >> mat >> bc ) ) {
-                converter::error("Malformed #@bodyload — expected '<mat> <bc_id>'");
-            }
-            bodyloadByMaterial[mat] = bc;
-        } else if ( tag == "#@couplingflag" ) {
-            // #@couplingflag — toggle. When present, emitters append
-            // "couplingflag 1 couplingnumber N <ids>" to each element record.
-            // Used by staggered SMTM analyses (e.g. Wong percolation) where
-            // the SM and TM subproblems exchange data element-by-element.
-            emitCouplingFlag = true;
-        } else if ( tag == "#@rigidarm" ) {
-            // #@rigidarm <master_ctl_id> face <axis> <side>
-            //   mastermask 6 m1..m6 doftype 6 d1..d6
-            // `<axis>` is 1|2|3 (x|y|z); `<side>` is min|max.
-            RigidArmSpec ra;
-            std::string kw, sideWord;
-            int axis = 0;
-            if ( !( iss >> ra.masterCtlId >> kw >> axis >> sideWord ) || kw != "face" ) {
-                converter::error("Malformed #@rigidarm — expected '<master_ctl_id> face <axis> <side> mastermask 6 … doftype 6 …'");
-            }
-            if ( axis < 1 || axis > 3 ) {
-                converter::error("#@rigidarm — axis must be 1, 2 or 3");
-            }
-            if ( sideWord != "min" && sideWord != "max" ) {
-                converter::error("#@rigidarm — side must be 'min' or 'max'");
-            }
-            ra.axis = axis;
-            ra.sideMax = ( sideWord == "max" );
-            iss >> kw;                // "mastermask"
-            if ( kw != "mastermask" ) {
-                converter::error("#@rigidarm — expected 'mastermask 6 …'");
-            }
-            int sz = 0;
-            iss >> sz;
-            if ( sz != 6 ) {
-                converter::error("#@rigidarm — mastermask must have size 6");
-            }
-            ra.mastermask.resize(6);
-            for ( int i = 1; i <= 6; ++i ) iss >> ra.mastermask.at(i);
-            iss >> kw;                // "doftype"
-            if ( kw != "doftype" ) {
-                converter::error("#@rigidarm — expected 'doftype 6 …' after mastermask");
-            }
-            iss >> sz;
-            if ( sz != 6 ) {
-                converter::error("#@rigidarm — doftype must have size 6");
-            }
-            ra.doftype.resize(6);
-            for ( int i = 1; i <= 6; ++i ) iss >> ra.doftype.at(i);
-            rigidArmSpecs.push_back(ra);
-        } else if ( tag == "#@material_around" ) {
-            // #@material_around <ctl_id> material <m>
-            MaterialAroundSpec m;
-            std::string kw;
-            if ( !( iss >> m.ctlId >> kw >> m.material ) || kw != "material" ) {
-                converter::error("Malformed #@material_around — expected '<ctl_id> material <m>'");
-            }
-            materialAroundSpecs.push_back(m);
-        }
-    }
-
-    if ( periodicityFlag.giveSize() != 3 ) {
-        periodicityFlag.resize(3);
-        periodicityFlag.zero();
-    }
-}
-
-
 int Grid::instanciateYourselfFromQhull(const std::string &controlFile,
                                        const char *nodeFileName,
                                        const char *voronoiFileName)
@@ -1653,7 +1606,14 @@ int Grid::instanciateYourselfFromQhull(const std::string &controlFile,
     periodicityFlag.zero();
     gridType = _3dSM; // default; overridden by #@grid if present
 
-    readQhullControlRecords(controlFile);
+    readControlRecords();
+
+    // #@perflag may have resized periodicityFlag to a size ≠ 3; the qhull
+    // writers index it as at(1..3), so pad back out to 3 zeros if needed.
+    if ( periodicityFlag.giveSize() != 3 ) {
+        periodicityFlag.resize(3);
+        periodicityFlag.zero();
+    }
 
     if ( delaunayLocalizer == nullptr ) {
         delaunayLocalizer = new OctreeGridLocalizer(1, this, 0);
