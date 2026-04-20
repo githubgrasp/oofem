@@ -27,20 +27,6 @@
 #define _IFT_Grid_ranint "ranint"
 #define _IFT_Grid_regflag "regflag"
 #define _IFT_Grid_perflag "perflag"
-#define _IFT_Grid_macrotype "macrotype"
-#define _IFT_Grid_coupflag "coupflag"
-#define _IFT_Grid_meshtype "meshtype"
-#define _IFT_Grid_poremean "poremean"
-#define _IFT_Grid_porecov "porecov"
-#define _IFT_Grid_poremax "poremax"
-#define _IFT_Grid_poremin "poremin"
-#define _IFT_Grid_throatmean "throatmean"
-#define _IFT_Grid_throatcov "throatcov"
-#define _IFT_Grid_throatmax "throatmax"
-#define _IFT_Grid_throatmin "throatmin"
-
-#define _IFT_Grid_contactangle "contactangle"
-#define _IFT_Grid_surfacetension "surfacetension"
 
 #define _IFT_Grid_mechmean "mechmean"
 #define _IFT_Grid_mechcov "mechcov"
@@ -133,7 +119,7 @@ private:
 
     /** Grid type. This determines the type of input to generate
      */
-    enum GridType { _3dSM, _3dTM, _3dSMTM, _3dPerSM, _3dPerTM, _3dPerSMTM, _3dWong, _3dPerPoreTM, _3dPerPoreSM, _3dPerPoreSMTM, _3dCantSM, _3dCantTM, _3dCantExtraTM, _3dCantSMTM, _3dBentoniteSM, _3dBentoniteTM, _3dBentoniteSMTM, _3dKupfer, _3dImran, _3dNotch };
+    enum GridType { _3dSM, _3dTM, _3dSMTM, _3dPerSM, _3dPerTM, _3dPerSMTM, _3dWong, _3dCantSM, _3dCantTM, _3dCantExtraTM, _3dCantSMTM, _3dKupfer, _3dImran, _3dNotch };
 
     GridType gridType;
 
@@ -183,8 +169,6 @@ private:
     int number;
 
     // Determines the type of macroscopic element, so that a corresponding number of DOFs is created for the control node
-    enum MacroType { _Truss, _Membrane, _Beam, _Plate, _3dVoigt, _3d };
-    MacroType macroType;
     const char *boundElemName;
     const char *boundBeamElemName;
 
@@ -275,25 +259,7 @@ private:
 
     oofem::IntArray periodicityFlag;
 
-    int couplingFlag;
-
     int maxIter, randomInteger;
-
-    double throatMean, throatCOV, throatMax, throatMin;
-
-    double poreMean, poreCOV, poreMax, poreMin;
-
-    double mechMean, mechCOV, mechMax, mechMin;
-
-    double youngModulus, gammaOne, gammaTwo;
-
-    double tanBeta, tanPhi;
-
-    double confinement;
-
-    double deltarad;
-
-    double contactAngle, surfaceTension;
 
     int periodicNodeCounter;
 
@@ -504,9 +470,6 @@ public:
 
     void resolveGridType(const std::string &name);
 
-
-    void resolveMacroType(const std::string &name);
-
     Vertex *giveVertex(int n);
 
     Curve *giveCurve(int n);
@@ -664,18 +627,6 @@ public:
 
     void give3DPeriodicTMOutput(const std::string &fileName);
 
-    void give3DPeriodicPoreTMOutput(const std::string &fileName);
-
-    void give3DPeriodicPoreSMOutput(const std::string &fileName);
-
-    void give3DPeriodicPoreSMTMOutput(const std::string &fileName);
-
-    void give3DBentoniteSMOutput(const std::string &fileName);
-
-    void give3DBentoniteTMOutput(const std::string &fileName);
-
-    void give3DBentoniteCoupledOutput(const std::string &fileName);
-
     /// Walk fibreList: discretise each fibre, build reinforcement nodes,
     /// lattice beams (fibre segments), and lattice links (fibre↔matrix coupling).
     /// Shared by both ConverterTXTDataReader and qhull-template paths.
@@ -706,10 +657,6 @@ public:
 
     //Random SM mesh for Notch conference
     void give3DNotchOutput(const std::string &fileName);
-
-    double normalCdfInverse(double cdf, double a, double b);
-
-    double  normal01CdfInverse(double p);
 
     double  dpolyValue(int n, double a[], double x);
 
