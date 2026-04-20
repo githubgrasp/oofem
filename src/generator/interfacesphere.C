@@ -1,7 +1,6 @@
 #include "interfacesphere.h"
 #include "curve.h"
 #include "vertex.h"
-#include "record.h"
 #include "generatorerror.h"
 
 
@@ -89,20 +88,6 @@ int InterfaceSphere::generatePoints()
     return 1;
 }
 
-
-
-void
-InterfaceSphere::initializeFrom(GeneratorInputRecord &ir)
-// Gets from the source line from the data file all the data of the receiver.
-{
-    IR_GIVE_FIELD(ir, centre, _IFT_InterfaceSphere_centre);
-    IR_GIVE_FIELD(ir, radius, _IFT_InterfaceSphere_radius); // Macro
-    refinement = 1.;
-    IR_GIVE_OPTIONAL_FIELD(ir, refinement, _IFT_InterfaceSphere_refine); // Macro
-    itzThickness = refinement * diameter;
-    IR_GIVE_OPTIONAL_FIELD(ir, itzThickness, _IFT_InterfaceSphere_itz); // Macro
-    return;
-}
 
 
 void InterfaceSphere::initializeFromTokens(std::istringstream &iss)

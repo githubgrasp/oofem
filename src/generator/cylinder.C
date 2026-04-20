@@ -1,7 +1,6 @@
 #include "cylinder.h"
 #include "curve.h"
 #include "vertex.h"
-#include "record.h"
 #include "generatorerror.h"
 
 
@@ -277,19 +276,6 @@ int Cylinder::generatePoints()
 
     return 1;
 }
-
-void
-Cylinder::initializeFrom(GeneratorInputRecord &ir)
-// Gets from the source line from the data file all the data of the receiver.
-{
-    // IntArray *dofIDArry;
-    IR_GIVE_FIELD(ir, line, _IFT_Cylinder_line);
-    IR_GIVE_FIELD(ir, radius, _IFT_Cylinder_radius); // Macro
-    refinement = 1.;
-    IR_GIVE_OPTIONAL_FIELD(ir, refinement, _IFT_Cylinder_refine); // Macro
-    return;
-}
-
 
 void Cylinder::initializeFromTokens(std::istringstream &iss)
 {

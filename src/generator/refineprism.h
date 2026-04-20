@@ -8,19 +8,10 @@
 #include "floatarray.h"
 #include "intarray.h"
 
-#include "inputrecord.h"
-
-#include "datareader.h"
-#include "oofemtxtdatareader.h"
-#include "oofemtxtinputrecord.h"
-
 #ifndef __MAKEDEPEND
  #include <stdio.h>
+ #include <sstream>
 #endif
-
-
-#define _IFT_RefinePrism_box "box"
-#define _IFT_RefinePrism_refine "refine"
 
 
 class RefinePrism : public Refinement
@@ -51,7 +42,9 @@ public:
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "RefinePrism"; }
 
-    void initializeFrom(GeneratorInputRecord &ir) override;
+    /// Parse keyword/value tokens from an open istringstream positioned
+    /// after the `#@refineprism <num>` prefix.
+    void initializeFromTokens(std::istringstream &iss);
     //virtual IntArray* ResolveDofIDArray (char* initString);
     /// prints receiver state on stdout. Usefull for debuging.
     void         printYourself();

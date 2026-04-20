@@ -8,10 +8,6 @@
 #include "floatarray.h"
 #include "intarray.h"
 
-#include "datareader.h"
-#include "oofemtxtdatareader.h"
-#include "oofemtxtinputrecord.h"
-
 #ifndef __MAKEDEPEND
  #include <stdio.h>
 #endif

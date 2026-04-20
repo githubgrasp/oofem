@@ -9,12 +9,13 @@
 #include "refinement.h"
 #include "octreegridlocalizer.h"
 
-#include "generatordatareader.h"
 #include "domain.h"
 #include "sphere.h"
 #include "interfacesphere.h"
 #include "interfacecylinder.h"
 #include "refineprism.h"
+#include "interfaceplane.h"
+#include "interfacesurface.h"
 #include "cylinder.h"
 #include <iostream>
 #include "generatorerror.h"
@@ -625,354 +626,6 @@ int Grid::generateRegularPoints()
 }
 
 
-
-int Grid::instanciateYourself(GeneratorDataReader *dr)
-// Creates all objects mentioned in the data file.
-{
-    int i;
-    std::string name;
-
-    /* read type of Grid to be solved
-     * This information is currently not used, since we do not distinguish between different domain types.
-     * However, later we should have different domain types which are inherited from domain.
-     */
-
-
-    auto &irDomainRec = dr->giveInputRecord(GeneratorDataReader::GIR_domainRec, 1);
-    IR_GIVE_FIELD(irDomainRec, dimension, _IFT_Grid_domain);
-    irDomainRec.finish();
-
-
-    printf("And here and have read domain as dimension=%d\n", dimension);
-
-
-    // read
-    auto &irControlRec = dr->giveInputRecord(GeneratorDataReader::GIR_controlRec, 1);
-    printf("Now in control line here:\n");
-    irControlRec.printYourself();
-
-
-
-    IR_GIVE_FIELD(irControlRec, diameter, _IFT_Grid_diam); // Macro
-    TOL = 1.e-6 * diameter;
-
-
-    maxIter = 1.e6;
-    IR_GIVE_OPTIONAL_FIELD(irControlRec, maxIter, _IFT_Grid_maxiter); // Macro
-
-    //This will need to be removed later again, once the aggregate generator works
-    aggregateFlag = 0;
-    IR_GIVE_OPTIONAL_FIELD(irControlRec, aggregateFlag, _IFT_Grid_aggflag); // Macro
-
-    if ( aggregateFlag == 1 ) {
-        IR_GIVE_OPTIONAL_FIELD(irControlRec, targetAggregates, _IFT_Grid_aggflag); // Macro
-    }
-
-    // We need to write the generator so that it can be used for both periodic and normal meshes.
-    // Consequently, we should introduce two flags. One regular flag and one periodicity flag.
-    // The standard case should be an irregular generator without periodicity, which would correspond to
-    // regularFlag = periodicityFlag = 0
-
-    //when regularFlag=1 regular generator is used.
-    this->regularFlag = 0;
-    IR_GIVE_OPTIONAL_FIELD(irControlRec, this->regularFlag, _IFT_Grid_regflag); // Macro
-    if ( regularFlag < 0 || regularFlag > 1 ) {
-        printf("Error: Unknown regular flag. Should be 0 or 1.\n");
-        exit(0);
-    }
-
-    //Only needed for the regular generator, but then it should be mandatory
-    if ( this->regularFlag == 1 ) {
-        xyzEdges.resize(0);
-        IR_GIVE_FIELD(irControlRec, xyzEdges, _IFT_Grid_xyzedges); // Macro
-
-        regType = 0;
-        IR_GIVE_FIELD(irControlRec, regType, _IFT_Grid_regtype); // Macro
-    }
-
-
-    //when periodicityFlag=1 periodic cell generator is used.
-    periodicityFlag.zero();
-    IR_GIVE_OPTIONAL_FIELD(irControlRec, periodicityFlag, _IFT_Grid_perflag); // Macro
-    if ( periodicityFlag.giveSize() != 3 ) {
-        printf("Error: Unknown periodicity flag. Should have three components.\n");
-        exit(0);
-    }
-
-    //two types of random generator
-    //0 - Bolander's way of generating meshes. No nodes on boundary. This approach creates problems for coupled analyses, but works well for structural simulations.
-    //1 - Grassl's way of generating meshes. Nodes on boundaries. Better for coupled analyses.
-    //2 - Grassl's way of generating meshes, but periodic nodes on boundaries.
-    randomFlag = 0;
-    IR_GIVE_OPTIONAL_FIELD(irControlRec, randomFlag, _IFT_Grid_ranflag); // Macro
-    if ( randomFlag < 0 || randomFlag > 2 ) {
-        printf("Error: Unknown random flag. Should be 0, 1 or 2.\n");
-        exit(0);
-    }
-
-    vtkFlag = 0;
-    IR_GIVE_OPTIONAL_FIELD(irControlRec, vtkFlag, _IFT_Grid_vtk);
-
-
-    //This is useful to be able to regenerate the same mesh.
-    //Simply set it to a negative value and this is used to generate the random numbers.
-    //If it is not set, then time is used to generate the interger, which is used to generate the random numbers.
-    randomInteger = 0;
-    IR_GIVE_OPTIONAL_FIELD(irControlRec, randomInteger, _IFT_Grid_ranint); // Macro
-    if ( randomInteger >= 0 ) {
-        randomInteger = -time(NULL);
-        printf("random integer is determined as %d\n", randomInteger);
-    }
-
-    irControlRec.finish();
-
-    // read domain description
-    auto &irDomainCompRec = dr->giveInputRecord(GeneratorDataReader::GIR_domainCompRec, 1);
-    int nvertex = 0;
-    IR_GIVE_OPTIONAL_FIELD(irDomainCompRec, nvertex, _IFT_Grid_nvertex); // Macro
-    int ncontrolvertex = 0;
-    IR_GIVE_OPTIONAL_FIELD(irDomainCompRec, ncontrolvertex, _IFT_Grid_ncontrolvertex); // Macro
-    int ncurve = 0;
-    IR_GIVE_FIELD(irDomainCompRec, ncurve, _IFT_Grid_ncurve); // Macro
-    int nsurface = 0;
-    IR_GIVE_FIELD(irDomainCompRec, nsurface, _IFT_Grid_nsurface); // Macro
-    int nregion = 0;
-    IR_GIVE_OPTIONAL_FIELD(irDomainCompRec, nregion, _IFT_Grid_nregion); // Macro
-    int ninclusion = 0;
-    IR_GIVE_OPTIONAL_FIELD(irDomainCompRec, ninclusion, _IFT_Grid_ninclusion); // Macro
-    int nrefinement = 0;
-    IR_GIVE_OPTIONAL_FIELD(irDomainCompRec, nrefinement, _IFT_Grid_nrefinement); // Macro
-    irDomainCompRec.finish();
-
-    //read vertices
-    inputVertexList.resize(nvertex, nullptr);
-
-    for ( i = 0; i < nvertex; i++ ) {
-        auto &irVertexRec = dr->giveInputRecord(GeneratorDataReader::GIR_vertexRec, i + 1);
-
-        std::string name;
-        int num = 0;
-        IR_GIVE_RECORD_KEYWORD_FIELD(irVertexRec, name, num);
-
-        if ( num < 1 || num > nvertex ) {
-            std::cerr << "instanciateYourself: Invalid vertex number (num=" << num << ")\n";
-            std::exit(EXIT_FAILURE);
-        }
-
-        if ( generator::includes1(inputVertexList, num) ) {
-            std::cerr << "instanciateYourself: Vertex entry already exists (num=" << num << ")\n";
-            std::exit(EXIT_FAILURE);
-        }
-
-        Vertex *vertex = new Vertex(num, this);
-        vertex->initializeFrom(irVertexRec);
-        setInputVertex(num, vertex); // 1-based -> vector[num-1]
-
-        irVertexRec.finish();
-    }
-
-
-    //read control vertices
-    controlVertexList.resize(ncontrolvertex, nullptr);
-
-    for ( i = 0; i < ncontrolvertex; i++ ) {
-        auto &irControlVertexRec = dr->giveInputRecord(GeneratorDataReader::GIR_controlVertexRec, i + 1);
-
-        std::string name;
-        int num = 0;
-        IR_GIVE_RECORD_KEYWORD_FIELD(irControlVertexRec, name, num);
-
-        // 1) validate number BEFORE touching containers
-        if ( num < 1 || num > ncontrolvertex ) {
-            std::cerr << "instanciateYourself: Invalid vertex number (num=" << num << ")\n";
-            std::exit(EXIT_FAILURE);
-        }
-
-        // 2) duplicate check — control vertices have their own numbering space
-        if ( generator::includes1(controlVertexList, num) ) {
-            std::cerr << "instanciateYourself: Control vertex entry already exists (num=" << num << ")\n";
-            std::exit(EXIT_FAILURE);
-        }
-
-        // 3) create, init, and insert
-        Vertex *vertex = new Vertex(num, this);
-        vertex->initializeFrom(irControlVertexRec);
-        setControlVertex(num, vertex);
-
-        irControlVertexRec.finish();
-    }
-
-    // read curves
-    curveList.resize(ncurve, nullptr);
-    for ( i = 0; i < ncurve; i++ ) {
-        auto &irCurveRec = dr->giveInputRecord(GeneratorDataReader::GIR_curveRec, i + 1);
-
-        std::string name;
-        int num = 0;
-        IR_GIVE_RECORD_KEYWORD_FIELD(irCurveRec, name, num);
-
-        if ( num < 1 || num > ncurve ) {
-            std::cerr << "instanciateYourself: Invalid curve number (num=" << num << ")\n";
-            std::exit(EXIT_FAILURE);
-        }
-
-        if ( generator::includes1(curveList, num) ) {
-            std::cerr << "instanciateYourself: Curve entry already exists (num=" << num << ")\n";
-            std::exit(EXIT_FAILURE);
-        }
-
-        Curve *curve = new Curve(num, this);
-        curve->initializeFrom(irCurveRec);
-        setCurve(num, curve);
-        irCurveRec.finish();
-    }
-
-    surfaceList.resize(nsurface, nullptr);
-    for ( i = 0; i < nsurface; i++ ) {
-        auto &irSurfaceRec = dr->giveInputRecord(GeneratorDataReader::GIR_surfaceRec, i + 1);
-        std::string name;
-        int num = 0;
-        IR_GIVE_RECORD_KEYWORD_FIELD(irSurfaceRec, name, num);
-
-        if ( num < 1 || num > nsurface ) {
-            std::cerr << "instanciateYourself: Invalid curve number (num=" << num << ")\n";
-            std::exit(EXIT_FAILURE);
-        }
-
-        if ( generator::includes1(surfaceList, num) ) {
-            std::cerr << "instanciateYourself: Curve entry already exists (num=" << num << ")\n";
-            std::exit(EXIT_FAILURE);
-        }
-
-        Surface *surface = new Surface(num, this);
-        surface->initializeFrom(irSurfaceRec);
-        setSurface(num, surface);
-        irSurfaceRec.finish();
-    }
-
-
-    regionList.resize(nregion, nullptr);
-
-    for (int i = 0; i < nregion; ++i) {
-        auto &irRegionRec = dr->giveInputRecord(GeneratorDataReader::GIR_regionRec, i + 1);
-
-        std::string name;
-        int num = 0;
-        IR_GIVE_RECORD_KEYWORD_FIELD(irRegionRec, name, num);
-
-        if ( num < 1 || num > nregion ) {
-            std::cerr << "instanciateYourself: Invalid region number (num=" << num << ")\n";
-            std::exit(EXIT_FAILURE);
-        }
-        if ( generator::includes1(regionList, num) ) {
-            std::cerr << "instanciateYourself: Region entry already exists (num=" << num << ")\n";
-            std::exit(EXIT_FAILURE);
-        }
-
-        Region *r = nullptr;
-        if ( name == "prism" ) {
-            r = new Prism(num, this);
-        } else if ( name == "cylinder" ) {
-            r = new Cylinder(num, this);
-        } else if ( name == "sphere" ) {
-            r = new Sphere(num, this);
-        } else {
-            std::cerr << "instanciateYourself: Unknown region type '" << name << "'\n";
-            std::exit(EXIT_FAILURE);
-        }
-
-        r->initializeFrom(irRegionRec);
-        setRegion(num, r);
-        irRegionRec.finish();
-    }
-
-
-    inclusionList.resize(ninclusion, nullptr);
-
-    for (int i = 0; i < ninclusion; ++i) {
-        auto &irInclusionRec = dr->giveInputRecord(GeneratorDataReader::GIR_inclusionRec, i + 1);
-
-        std::string name;
-        int num = 0;
-        IR_GIVE_RECORD_KEYWORD_FIELD(irInclusionRec, name, num);
-
-        // 1) validate number
-        if ( num < 1 || num > ninclusion ) {
-            std::cerr << "instanciateYourself: Invalid inclusion number (num=" << num << ")\n";
-            std::exit(EXIT_FAILURE);
-        }
-
-        // 2) duplicate check
-        if ( generator::includes1(inclusionList, num) ) {
-            std::cerr << "instanciateYourself: Inclusion entry already exists (num=" << num << ")\n";
-            std::exit(EXIT_FAILURE);
-        }
-
-        // 3) create the right type
-        Inclusion *inc = nullptr;
-        if ( name == "intersphere" ) {
-            inc = new InterfaceSphere(num, this);
-        } else if ( name == "interfacecylinder" ) {
-            inc = new InterfaceCylinder(num, this);
-        } else {
-            std::cerr << "instanciateYourself: Unknown inclusion type '" << name << "'\n";
-            std::exit(EXIT_FAILURE);
-        }
-
-        // 4) init + store
-        inc->initializeFrom(irInclusionRec);
-        setInclusion(num, inc);
-
-        irInclusionRec.finish();
-    }
-
-    refinementList.resize(nrefinement, nullptr);
-
-    for (int i = 0; i < nrefinement; ++i) {
-        auto &irRefinementRec = dr->giveInputRecord(GeneratorDataReader::GIR_refinementRec, i + 1);
-
-        std::string name;
-        int num = 0;
-        IR_GIVE_RECORD_KEYWORD_FIELD(irRefinementRec, name, num);
-
-        // 1) validate number
-        if ( num < 1 || num > nrefinement ) {
-            std::cerr << "instanciateYourself: Invalid refinement number (num=" << num << ")\n";
-            std::exit(EXIT_FAILURE);
-        }
-
-        // 2) duplicate check
-        if ( generator::includes1(refinementList, num) ) {
-            std::cerr << "instanciateYourself: Refinement entry already exists (num=" << num << ")\n";
-            std::exit(EXIT_FAILURE);
-        }
-
-        // 3) construct by keyword
-        Refinement *ref = nullptr;
-        if ( name == "refineprism" ) {
-            ref = new RefinePrism(num, this);
-        } else {
-            std::cerr << "instanciateYourself: Unknown refinement type '" << name << "'\n";
-            std::exit(EXIT_FAILURE);
-        }
-
-        // 4) init + store
-        ref->initializeFrom(irRefinementRec);
-        setRefinement(num, ref);
-
-        irRefinementRec.finish();
-    }
-
-
-
-
-
-    this->giveGridLocalizer()->init(true);
-
-    return 1;
-}
-
-
 int Grid::readControlRecords(const std::string &controlFile)
 {
     std::ifstream in(controlFile);
@@ -1027,6 +680,9 @@ int Grid::readControlRecords(const std::string &controlFile)
             if ( randomFlag < 0 || randomFlag > 2 ) {
                 generator::error("#@ranflag must be 0, 1, or 2");
             }
+        } else if ( tag == "#@vtk" ) {
+            // Opt in to writing points.vtk alongside the nodes.dat output.
+            vtkFlag = 1;
         } else if ( tag == "#@vertex" ) {
             int num;
             iss >> num;
@@ -1114,6 +770,33 @@ int Grid::readControlRecords(const std::string &controlFile)
                 inclusionList.resize(num, nullptr);
             }
             setInclusion(num, inc);
+        } else if ( tag == "#@interfaceplane" ) {
+            int num;
+            iss >> num;
+            auto *inc = new InterfacePlane(num, this);
+            inc->initializeFromTokens(iss);
+            if ( ( int ) inclusionList.size() < num ) {
+                inclusionList.resize(num, nullptr);
+            }
+            setInclusion(num, inc);
+        } else if ( tag == "#@interfacesurface" ) {
+            int num;
+            iss >> num;
+            auto *inc = new InterfaceSurface(num, this);
+            inc->initializeFromTokens(iss);
+            if ( ( int ) inclusionList.size() < num ) {
+                inclusionList.resize(num, nullptr);
+            }
+            setInclusion(num, inc);
+        } else if ( tag == "#@refineprism" ) {
+            int num;
+            iss >> num;
+            auto *ref = new RefinePrism(num, this);
+            ref->initializeFromTokens(iss);
+            if ( ( int ) refinementList.size() < num ) {
+                refinementList.resize(num, nullptr);
+            }
+            setRefinement(num, ref);
         } else if ( tag.rfind("#@", 0) == 0 ) {
             generator::errorf("Grid::readControlRecords: unknown directive '%s'", tag.c_str());
         }

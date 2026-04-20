@@ -1,7 +1,7 @@
 #include "refineprism.h"
 #include "curve.h"
 #include "vertex.h"
-#include "record.h"
+#include "generatorerror.h"
 
 
 #ifndef __MAKEDEPEND
@@ -19,16 +19,30 @@ RefinePrism::RefinePrism(int n, Grid *aGrid) : Refinement(n, aGrid) //, coordina
 RefinePrism::~RefinePrism()
 {}
 
-void
-RefinePrism::initializeFrom(GeneratorInputRecord &ir)
-// Gets from the source line from the data file all the data of the receiver.
+void RefinePrism::initializeFromTokens(std::istringstream &iss)
 {
-    IR_GIVE_FIELD(ir, this->box, _IFT_RefinePrism_box);
-
     refinement = 1.;
-    IR_GIVE_OPTIONAL_FIELD(ir, refinement, _IFT_RefinePrism_refine); // Macro
 
-    return;
+    bool gotBox = false;
+    std::string tok;
+    while ( iss >> tok ) {
+        if ( tok == "box" ) {
+            int n;
+            iss >> n;
+            box.resize(n);
+            for ( int i = 1; i <= n; ++i ) {
+                iss >> box.at(i);
+            }
+            gotBox = true;
+        } else if ( tok == "refine" ) {
+            iss >> refinement;
+        } else {
+            generator::errorf("RefinePrism::initializeFromTokens: unknown keyword '%s'", tok.c_str());
+        }
+    }
+    if ( !gotBox ) {
+        generator::error("RefinePrism::initializeFromTokens: missing 'box' keyword");
+    }
 }
 
 double

@@ -1,7 +1,7 @@
 #include "interfacesurface.h"
 #include "curve.h"
 #include "vertex.h"
-#include "record.h"
+#include "generatorerror.h"
 
 
 #ifndef __MAKEDEPEND
@@ -24,15 +24,32 @@ int InterfaceSurface::generatePoints()
     return 1;
 }
 
-void
-InterfaceSurface::initializeFrom(GeneratorInputRecord &ir)
-// Gets from the source line from the data file all the data of the receiver.
+void InterfaceSurface::initializeFromTokens(std::istringstream &iss)
 {
-    IR_GIVE_FIELD(ir, curves, _IFT_InterfaceSurface_curves); // Macro
     refinement = 1.;
-    IR_GIVE_OPTIONAL_FIELD(ir, refinement, _IFT_InterfaceSurface_refine); // Macro
-    return;
+
+    bool gotCurves = false;
+    std::string tok;
+    while ( iss >> tok ) {
+        if ( tok == "curves" ) {
+            int n;
+            iss >> n;
+            curves.resize(n);
+            for ( int i = 1; i <= n; ++i ) {
+                iss >> curves.at(i);
+            }
+            gotCurves = true;
+        } else if ( tok == "refine" ) {
+            iss >> refinement;
+        } else {
+            generator::errorf("InterfaceSurface::initializeFromTokens: unknown keyword '%s'", tok.c_str());
+        }
+    }
+    if ( !gotCurves ) {
+        generator::error("InterfaceSurface::initializeFromTokens: missing 'curves' keyword");
+    }
 }
+
 
 InterfaceSurface *InterfaceSurface::ofType()
 {

@@ -5,10 +5,7 @@
 
 #include "floatarray.h"
 
-//#include "alist.h"
-#include "generatordatareader.h"
 #include "gridtype.h"
-//#include "statecountertype.h"
 #include "logger.h"
 #include <iostream>
 
@@ -18,26 +15,6 @@
  #include <time.h>
  #include <map>
 #endif
-
-#define _IFT_Grid_domain "domain"
-#define _IFT_Grid_diam            "diam"
-#define _IFT_Grid_maxiter         "maxiter"
-#define _IFT_Grid_ranint          "ranint"
-#define _IFT_Grid_perflag         "perflag"
-#define _IFT_Grid_regflag         "regflag"
-#define _IFT_Grid_regtype         "regtype"
-#define _IFT_Grid_xyzedges        "xyzedges"
-#define _IFT_Grid_aggflag         "aggflag"
-#define _IFT_Grid_target          "target"
-#define _IFT_Grid_nvertex         "nvertex"
-#define _IFT_Grid_ncontrolvertex  "ncontrolvertex"
-#define _IFT_Grid_ncurve          "ncurve"
-#define _IFT_Grid_nsurface        "nsurface"
-#define _IFT_Grid_nregion         "nregion"
-#define _IFT_Grid_ninclusion      "ninclusion"
-#define _IFT_Grid_nrefinement     "nrefinement"
-#define _IFT_Grid_ranflag     "ranflag"
-#define _IFT_Grid_vtk         "vtk"
 
 class Vertex;
 class Curve;
@@ -229,12 +206,8 @@ public:
     int generatePoints();
 
 
-    int instanciateYourself(GeneratorDataReader *dr);
-
-    /// Parse a `#@` directive control file into Grid state. Mirror of the
-    /// legacy `instanciateYourself` path, but driven directly from the
-    /// control file rather than via the OOFEM-style `GeneratorDataReader`.
-    /// Populates `outputFileName` from a `#@output` directive.
+    /// Parse a `#@` directive control file into Grid state. Populates
+    /// `outputFileName` from a `#@output` directive.
     int readControlRecords(const std::string &controlFile);
 
     /// The output path the generator should write `nodes.dat` to. Set by

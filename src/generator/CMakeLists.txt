@@ -17,9 +17,6 @@ set(GENERATOR_SOURCES
     prism.C
     refinement.C
     refineprism.C
-    generatorinputrecord.C
-    generatortxtdatareader.C
-    generatortxtinputrecord.C
    )
 
 add_library(generator STATIC ${GENERATOR_SOURCES})

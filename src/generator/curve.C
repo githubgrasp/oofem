@@ -31,20 +31,6 @@ Curve::giveLocalVertex(int i)
 }
 
 
-void
-Curve::initializeFrom(GeneratorInputRecord &ir)
-// Gets from the source line from the data file all the data of the receiver.
-{
-    IR_GIVE_FIELD(ir, vertices, _IFT_Curve_vertices); // Macro
-    refinement = 1.;
-    IR_GIVE_OPTIONAL_FIELD(ir, refinement, _IFT_Curve_refine); // Macro
-    normal.zero();
-    IR_GIVE_OPTIONAL_FIELD(ir, normal, _IFT_Curve_normal); // Macro
-
-    return;
-}
-
-
 void Curve::initializeFromTokens(std::istringstream &iss)
 {
     refinement = 1.;

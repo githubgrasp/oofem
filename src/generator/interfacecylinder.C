@@ -1,7 +1,6 @@
 #include "interfacecylinder.h"
 #include "curve.h"
 #include "vertex.h"
-#include "record.h"
 #include "generatorerror.h"
 
 
@@ -200,21 +199,6 @@ int InterfaceCylinder::generatePoints()
     printf("Completed inclusion loops\n");
 
     return 1;
-}
-
-
-void
-InterfaceCylinder::initializeFrom(GeneratorInputRecord &ir)
-// Gets from the source line from the data file all the data of the receiver.
-{
-    IR_GIVE_FIELD(ir, line, _IFT_InterfaceCylinder_line);
-    IR_GIVE_FIELD(ir, radius, _IFT_InterfaceCylinder_radius); // Macro
-    refinement = 1.;
-    IR_GIVE_OPTIONAL_FIELD(ir, refinement, _IFT_InterfaceCylinder_refine); // Macro
-    itzThickness = refinement * diameter;
-    IR_GIVE_OPTIONAL_FIELD(ir, itzThickness, _IFT_InterfaceCylinder_itz); // Macro
-
-    return;
 }
 
 

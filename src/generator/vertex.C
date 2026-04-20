@@ -31,23 +31,6 @@ double Vertex::giveCoordinate(int i)
 }
 
 
-void
-Vertex::initializeFrom(GeneratorInputRecord &ir)
-{
-    int j, size;
-    oofem::FloatArray triplets;
-
-    IR_GIVE_FIELD(ir, coordinates, _IFT_Vertex_coords); // Macro
-    refinement = 1.;
-    IR_GIVE_OPTIONAL_FIELD(ir, refinement, _IFT_Vertex_refine); // Macro
-    radius = 0.;
-    IR_GIVE_OPTIONAL_FIELD(ir, radius, _IFT_Vertex_radius); // Macro
-
-
-    return;
-}
-
-
 void Vertex::initializeFromTokens(std::istringstream &iss)
 {
     refinement = 1.;

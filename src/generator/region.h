@@ -8,16 +8,9 @@
 #include "floatarray.h"
 #include "intarray.h"
 
-#include "datareader.h"
-#include "oofemtxtdatareader.h"
-#include "oofemtxtinputrecord.h"
-
 #ifndef __MAKEDEPEND
  #include <stdio.h>
 #endif
-
-#define _IFT_Region_surfaces "surfaces"
-#define _IFT_Region_refine "refine"
 
 
 //class FloatArray;
@@ -82,8 +75,6 @@ public:
     const char *giveClassName() const { return "Region"; }
 
     int giveNumber() { return this->number; }
-
-    void initializeFrom(GeneratorInputRecord &ir);
 
     void printYourself();
 };

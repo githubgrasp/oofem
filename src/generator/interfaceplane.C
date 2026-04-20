@@ -1,7 +1,7 @@
 #include "interfaceplane.h"
 #include "curve.h"
 #include "vertex.h"
-#include "record.h"
+#include "generatorerror.h"
 
 
 #ifndef __MAKEDEPEND
@@ -111,17 +111,40 @@ int InterfacePlane::generatePoints()
 }
 
 
-void
-InterfacePlane::initializeFrom(GeneratorInputRecord &ir)
-// Gets from the source line from the data file all the data of the receiver.
+void InterfacePlane::initializeFromTokens(std::istringstream &iss)
 {
-    IR_GIVE_FIELD(ir, line, _IFT_InterfacePlane_line);
-    IR_GIVE_FIELD(ir, diameter, _IFT_InterfacePlane_diameter); // Macro
     refinement = 1.;
-    IR_GIVE_OPTIONAL_FIELD(ir, refinement, _IFT_InterfacePlane_refine); // Macro
-    itzThickness = refinement * diameter;
-    IR_GIVE_OPTIONAL_FIELD(ir, itzThickness, _IFT_InterfacePlane_itz); // Macro
-    return;
+
+    bool gotLine = false, gotDiameter = false;
+    bool gotItz = false;
+    std::string tok;
+    while ( iss >> tok ) {
+        if ( tok == "line" ) {
+            int n;
+            iss >> n;
+            line.resize(n);
+            for ( int i = 1; i <= n; ++i ) {
+                iss >> line.at(i);
+            }
+            gotLine = true;
+        } else if ( tok == "diameter" ) {
+            iss >> diameter;
+            gotDiameter = true;
+        } else if ( tok == "refine" ) {
+            iss >> refinement;
+        } else if ( tok == "itz" ) {
+            iss >> itzThickness;
+            gotItz = true;
+        } else {
+            generator::errorf("InterfacePlane::initializeFromTokens: unknown keyword '%s'", tok.c_str());
+        }
+    }
+    if ( !gotLine || !gotDiameter ) {
+        generator::error("InterfacePlane::initializeFromTokens: 'line' and 'diameter' are required");
+    }
+    if ( !gotItz ) {
+        itzThickness = refinement * diameter;
+    }
 }
 
 

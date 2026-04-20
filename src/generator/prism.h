@@ -9,20 +9,10 @@
 #include "floatarray.h"
 #include "intarray.h"
 
-#include "generatordatareader.h"
-#include "generatortxtdatareader.h"
-#include "generatortxtinputrecord.h"
-
 #ifndef __MAKEDEPEND
  #include <stdio.h>
  #include <sstream>
 #endif
-
-#define _IFT_Prism_box "box"
-#define _IFT_Prism_refine "refine"
-#define _IFT_Prism_edgeRefine "edgerefine"
-#define _IFT_Prism_surfaceRefine "surfacerefine"
-#define _IFT_Prism_regionRefine "regionrefine"
 
 class Prism : public Region
 {
@@ -91,7 +81,6 @@ public:
     ///Returns the number of region
     int giveNumber() { return this->number; }
 
-    void initializeFrom(GeneratorInputRecord &ir);
     /// Parse keyword/value tokens from an open istringstream positioned
     /// after the `#@prism <num>` prefix.
     void initializeFromTokens(std::istringstream &iss);

@@ -7,21 +7,10 @@
 #include "floatarray.h"
 #include "intarray.h"
 
-#include "inputrecord.h"
-
-#include "datareader.h"
-#include "oofemtxtdatareader.h"
-#include "oofemtxtinputrecord.h"
-
 #ifndef __MAKEDEPEND
  #include <stdio.h>
  #include <sstream>
 #endif
-
-
-#define _IFT_Cylinder_line "line"
-#define _IFT_Cylinder_radius "radius"
-#define _IFT_Cylinder_refine "refine"
 
 //class FloatArray;
 //class IntArray;
@@ -56,7 +45,6 @@ public:
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "Cylinder"; }
 
-    void initializeFrom(GeneratorInputRecord &ir);
     /// Parse keyword/value tokens from an open istringstream positioned
     /// after the `#@cylinder <num>` prefix.
     void initializeFromTokens(std::istringstream &iss);

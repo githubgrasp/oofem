@@ -1,7 +1,6 @@
 #include "sphere.h"
 #include "curve.h"
 #include "vertex.h"
-#include "record.h"
 #include "generatorerror.h"
 
 #ifndef __MAKEDEPEND
@@ -117,19 +116,6 @@ int Sphere::generatePeriodicPoints()
     return 1;
 }
 
-
-
-void
-Sphere::initializeFrom(GeneratorInputRecord &ir)
-// Gets from the source line from the data file all the data of the receiver.
-{
-    IR_GIVE_FIELD(ir, centre, _IFT_Sphere_centre);
-    IR_GIVE_FIELD(ir, radius, _IFT_Sphere_radius);
-    refinement = 1.;
-    IR_GIVE_OPTIONAL_FIELD(ir, refinement, _IFT_Sphere_refine);
-
-    return;
-}
 
 
 void Sphere::initializeFromTokens(std::istringstream &iss)

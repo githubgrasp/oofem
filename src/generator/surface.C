@@ -356,26 +356,6 @@ void Surface::defineBoundaries(oofem::FloatArray &boundaries)
 
 
 
-void Surface::initializeFrom(GeneratorInputRecord &ir)
-// Gets from the source line from the data file all the data of the receiver.
-{
-    IR_GIVE_FIELD(ir, curves, _IFT_Surface_curves); // Macro
-    refinement = 1.;
-    IR_GIVE_OPTIONAL_FIELD(ir, refinement, _IFT_Surface_refine); // Macro
-
-    normal.zero();
-    IR_GIVE_OPTIONAL_FIELD(ir, normal, _IFT_Surface_normal); //Macro
-
-    IR_GIVE_OPTIONAL_FIELD(ir, boundaryFlag, _IFT_Surface_boundaryflag); // Macro
-    this->boundaryShift.resize(3);
-    if ( this->boundaryFlag == 1 ) {
-        IR_GIVE_FIELD(ir, boundaryShift, _IFT_Surface_boundaryshift); // Macro
-    }
-
-    return;
-}
-
-
 void Surface::initializeFromTokens(std::istringstream &iss)
 {
     refinement   = 1.;

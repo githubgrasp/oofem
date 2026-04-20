@@ -6,20 +6,10 @@
 #include "floatarray.h"
 #include "intarray.h"
 
-
-#include "datareader.h"
-#include "oofemtxtdatareader.h"
-#include "oofemtxtinputrecord.h"
-
 #ifndef __MAKEDEPEND
  #include <stdio.h>
  #include <sstream>
 #endif
-
-
-#define _IFT_Curve_vertices "vertices"
-#define _IFT_Curve_refine "refine"
-#define _IFT_Curve_normal "normal"
 
 
 class Curve : public GridComponent
@@ -66,7 +56,6 @@ public:
     //Give normal of curve
     void giveNormal(oofem::FloatArray &answer) { answer = this->normal; }
 
-    void initializeFrom(GeneratorInputRecord &ir);
     /// Parse keyword/value tokens from an open istringstream positioned
     /// after the `#@curve <num>` prefix.
     void initializeFromTokens(std::istringstream &iss);

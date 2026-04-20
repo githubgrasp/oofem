@@ -208,18 +208,6 @@ void Region::defineBoundaries(oofem::FloatArray &boundaries)
 }
 
 
-void
-Region::initializeFrom(GeneratorInputRecord &ir)
-// Gets from the source line from the data file all the data of the receiver.
-{
-    IR_GIVE_FIELD(ir, surfaces, _IFT_Region_surfaces); // Macro
-    refinement = 1.;
-    IR_GIVE_OPTIONAL_FIELD(ir, refinement, _IFT_Region_refine); // Macro
-
-    return;
-}
-
-
 int Region::generateRegularPoints1()
 {
     Curve *curve;

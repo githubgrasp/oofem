@@ -7,20 +7,10 @@
 #include "floatarray.h"
 #include "intarray.h"
 
-#include "inputrecord.h"
-
-#include "datareader.h"
-#include "oofemtxtdatareader.h"
-#include "oofemtxtinputrecord.h"
-
 #ifndef __MAKEDEPEND
  #include <stdio.h>
  #include <sstream>
 #endif
-
-#define _IFT_Sphere_centre "centre"
-#define _IFT_Sphere_refine "refine"
-#define _IFT_Sphere_radius "radius"
 
 //class FloatArray;
 //class IntArray;
@@ -60,7 +50,6 @@ public:
     int giveNumber() { return this->number; }
 
 
-    void initializeFrom(GeneratorInputRecord &ir);
     /// Parse keyword/value tokens from an open istringstream positioned
     /// after the `#@sphere <num>` prefix.
     void initializeFromTokens(std::istringstream &iss);

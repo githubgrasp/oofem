@@ -6,12 +6,6 @@
 #include "floatarray.h"
 #include "intarray.h"
 
-#include "datareader.h"
-#include "oofemtxtdatareader.h"
-#include "oofemtxtinputrecord.h"
-
-#include "inputrecord.h"
-
 #ifndef __MAKEDEPEND
  #include <stdio.h>
 #endif
@@ -46,8 +40,6 @@ public:
     // miscellaneous
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "GridComponent"; }
-
-    virtual void initializeFrom(GeneratorInputRecord &ir) = 0; // pure virtual
 
     //virtual IntArray* ResolveDofIDArray (char* initString);
     /// prints receiver state on stdout. Usefull for debuging.

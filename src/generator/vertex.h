@@ -6,19 +6,12 @@
 #include "floatarray.h"
 #include "intarray.h"
 
-#include "generatordatareader.h"
-#include "generatortxtdatareader.h"
-#include "generatortxtinputrecord.h"
 #include "gridcomponent.h"
 
 #ifndef __MAKEDEPEND
  #include <stdio.h>
  #include <sstream>
 #endif
-
-#define _IFT_Vertex_coords "coords"
-#define _IFT_Vertex_refine "refine"
-#define _IFT_Vertex_radius "radius"
 
 
 //class FloatArray;
@@ -72,7 +65,6 @@ public:
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "Vertex"; }
 
-    void initializeFrom(GeneratorInputRecord &ir);
     /// Parse keyword/value tokens from an open istringstream positioned
     /// after the `#@vertex <num>` (or `#@controlvertex <num>`) prefix.
     void initializeFromTokens(std::istringstream &iss);

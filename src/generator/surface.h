@@ -8,22 +8,10 @@
 #include "floatarray.h"
 #include "intarray.h"
 
-#include "datareader.h"
-#include "oofemtxtdatareader.h"
-#include "oofemtxtinputrecord.h"
-
 #ifndef __MAKEDEPEND
  #include <stdio.h>
  #include <sstream>
 #endif
-
-
-#define _IFT_Surface_curves "curves"
-#define _IFT_Surface_refine "refine"
-#define _IFT_Surface_normal "normal"
-
-#define _IFT_Surface_boundaryflag "boundaryflag"
-#define _IFT_Surface_boundaryshift "boundaryshift"
 
 
 
@@ -78,7 +66,6 @@ public:
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "Surface"; }
 
-    void initializeFrom(GeneratorInputRecord &ir);
     /// Parse keyword/value tokens from an open istringstream positioned
     /// after the `#@surface <num>` prefix.
     void initializeFromTokens(std::istringstream &iss);

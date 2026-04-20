@@ -104,14 +104,6 @@ public:
      */
     virtual int init(bool force = false) { return 1; }
 
-    /** Initializes receiver acording to object description stored in input record.
-     * This function is called immediately after creating object using
-     * constructor. Input record can be imagined as data record in component database
-     * belonging to receiver. Receiver may use value-name extracting functions
-     * to extract particular field from record.
-     * @see readInteger, readDouble and similar functions */
-    void initializeFrom(GeneratorInputRecord &ir) override { return; }
-
 protected:
 };
 

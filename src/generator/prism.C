@@ -566,27 +566,6 @@ void Prism::mirrorShiftSurface(oofem::FloatArray &random, oofem::FloatArray &nor
 }
 
 
-void
-Prism::initializeFrom(GeneratorInputRecord &ir)
-// Gets from the source line from the data file all the data of the receiver.
-{
-    //two points to define prism
-    IR_GIVE_FIELD(ir, this->box, _IFT_Prism_box);
-
-    refinement = 1.;
-    IR_GIVE_OPTIONAL_FIELD(ir, refinement, _IFT_Prism_refine); // Macro
-
-    edgeRefine = 1.;
-    surfaceRefine = 1.;
-    regionRefine = 1.;
-    IR_GIVE_OPTIONAL_FIELD(ir, edgeRefine, _IFT_Prism_edgeRefine);
-    IR_GIVE_OPTIONAL_FIELD(ir, surfaceRefine, _IFT_Prism_surfaceRefine);
-    IR_GIVE_OPTIONAL_FIELD(ir, regionRefine, _IFT_Prism_regionRefine);
-
-    return;
-}
-
-
 void Prism::initializeFromTokens(std::istringstream &iss)
 {
     refinement    = 1.;
