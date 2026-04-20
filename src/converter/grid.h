@@ -119,7 +119,7 @@ private:
 
     /** Grid type. This determines the type of input to generate
      */
-    enum GridType { _3dSM, _3dTM, _3dSMTM, _3dPerSM, _3dPerTM, _3dPerSMTM };
+    enum GridType { _3dSM, _3dTM, _3dSMTM };
 
     GridType gridType;
 
@@ -659,13 +659,7 @@ public:
 
     void give3DSMTMOutput(const std::string &fileName);
 
-    void give3DPeriodicSMTMOutput(const std::string &fileName);
-
     void give3DTMOutput(const std::string &fileName);
-
-    void give3DPeriodicSMOutput(const std::string &fileName);
-
-    void give3DPeriodicTMOutput(const std::string &fileName);
 
     /// Walk fibreList: discretise each fibre, build reinforcement nodes,
     /// lattice beams (fibre segments), and lattice links (fibre↔matrix coupling).
