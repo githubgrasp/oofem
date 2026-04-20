@@ -1,6 +1,9 @@
-nodes.dat
-Coupled SMTM percolation cube with a spherical inclusion
-domain 3
-diam 0.0005 maxiter 10000 ranint -1 perflag 3 1 1 1 ranflag 2
-nvertex 0 ncurve 0 nsurface 0 nregion 1 ninclusion 0 ncontrolvertex 0
-prism 1 box 6 0. 0. 0. 0.00625 0.00625 0.00625 refine 1.
+# Coupled SMTM percolation cube with a spherical inclusion
+#@output nodes.dat
+#@domain 3
+#@diam 0.0005
+#@maxiter 10000
+#@ranint -1
+#@perflag 3 1 1 1
+#@ranflag 2
+#@prism 1 box 6 0. 0. 0. 0.00625 0.00625 0.00625 refine 1.

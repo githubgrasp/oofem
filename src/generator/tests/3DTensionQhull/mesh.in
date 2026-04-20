@@ -1,11 +1,14 @@
-nodes.dat
-3D direct tension specimen with elastic ends
-domain 3
-diam 0.008 maxiter 100000 perflag 3 0 0 0 ranint -1 ranflag 1
-nvertex 2 ncurve 0 nsurface 0 nregion 1 ninclusion 0 ncontrolvertex 2 nrefinement 0
+# 3D direct tension specimen with elastic ends
+#@output nodes.dat
+#@domain 3
+#@diam 0.008
+#@maxiter 100000
+#@perflag 3 0 0 0
+#@ranint -1
+#@ranflag 1
 # bounding-box corners widen the localiser
-vertex 1 coords 3 -0.01 -0.01 -0.01 refine 1. radius 0.
-vertex 2 coords 3  0.11  0.11  0.11 refine 1. radius 0.
-controlvertex 1 coords 3 0.025 0.0   0.025
-controlvertex 2 coords 3 0.025 0.075 0.025
-prism 1 box 6 0. 0. 0. 0.05 0.075 0.05 refine 1.
+#@vertex 1 coords 3 -0.01 -0.01 -0.01 refine 1. radius 0.
+#@vertex 2 coords 3  0.11  0.11  0.11 refine 1. radius 0.
+#@controlvertex 1 coords 3 0.025 0.0   0.025
+#@controlvertex 2 coords 3 0.025 0.075 0.025
+#@prism 1 box 6 0. 0. 0. 0.05 0.075 0.05 refine 1.

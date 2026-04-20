@@ -2,6 +2,7 @@
 #include "surface.h"
 #include "curve.h"
 #include "vertex.h"
+#include "generatorerror.h"
 #include <iostream>
 
 #ifndef __MAKEDEPEND
@@ -372,4 +373,56 @@ void Surface::initializeFrom(GeneratorInputRecord &ir)
     }
 
     return;
+}
+
+
+void Surface::initializeFromTokens(std::istringstream &iss)
+{
+    refinement   = 1.;
+    boundaryFlag = 0;
+    normal.resize(3);
+    normal.zero();
+    boundaryShift.resize(3);
+    boundaryShift.zero();
+
+    bool gotCurves = false, gotBoundaryShift = false;
+    std::string tok;
+    while ( iss >> tok ) {
+        if ( tok == "curves" ) {
+            int n;
+            iss >> n;
+            curves.resize(n);
+            for ( int i = 1; i <= n; ++i ) {
+                iss >> curves.at(i);
+            }
+            gotCurves = true;
+        } else if ( tok == "refine" ) {
+            iss >> refinement;
+        } else if ( tok == "normal" ) {
+            int n;
+            iss >> n;
+            normal.resize(n);
+            for ( int i = 1; i <= n; ++i ) {
+                iss >> normal.at(i);
+            }
+        } else if ( tok == "boundaryflag" ) {
+            iss >> boundaryFlag;
+        } else if ( tok == "boundaryshift" ) {
+            int n;
+            iss >> n;
+            boundaryShift.resize(n);
+            for ( int i = 1; i <= n; ++i ) {
+                iss >> boundaryShift.at(i);
+            }
+            gotBoundaryShift = true;
+        } else {
+            generator::errorf("Surface::initializeFromTokens: unknown keyword '%s'", tok.c_str());
+        }
+    }
+    if ( !gotCurves ) {
+        generator::error("Surface::initializeFromTokens: missing 'curves' keyword");
+    }
+    if ( boundaryFlag == 1 && !gotBoundaryShift ) {
+        generator::error("Surface::initializeFromTokens: boundaryflag 1 requires 'boundaryshift'");
+    }
 }

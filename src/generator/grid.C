@@ -1051,6 +1051,24 @@ int Grid::readControlRecords(const std::string &controlFile)
                 controlVertexList.resize(num, nullptr);
             }
             setControlVertex(num, v);
+        } else if ( tag == "#@curve" ) {
+            int num;
+            iss >> num;
+            auto *c = new Curve(num, this);
+            c->initializeFromTokens(iss);
+            if ( ( int ) curveList.size() < num ) {
+                curveList.resize(num, nullptr);
+            }
+            setCurve(num, c);
+        } else if ( tag == "#@surface" ) {
+            int num;
+            iss >> num;
+            auto *s = new Surface(num, this);
+            s->initializeFromTokens(iss);
+            if ( ( int ) surfaceList.size() < num ) {
+                surfaceList.resize(num, nullptr);
+            }
+            setSurface(num, s);
         } else if ( tag == "#@prism" ) {
             int num;
             iss >> num;

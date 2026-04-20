@@ -1,15 +1,18 @@
-nodes.dat
-3D GopSha specimen (direct tension with two notches)
-domain 3
-diam 0.01 maxiter 100000 perflag 3 0 0 0 ranint -1 ranflag 1
-nvertex 2 ncurve 0 nsurface 0 nregion 1 ninclusion 0 ncontrolvertex 6 nrefinement 0
+# 3D GopSha specimen (direct tension with two notches)
+#@output nodes.dat
+#@domain 3
+#@diam 0.01
+#@maxiter 100000
+#@perflag 3 0 0 0
+#@ranint -1
+#@ranflag 1
 # bounding-box corners widen the localiser
-vertex 1 coords 3 -0.03 -0.03 -0.03 refine 1. radius 0.
-vertex 2 coords 3  0.1   0.4   0.05 refine 1. radius 0.
-controlvertex 1 coords 3 0.038 0.0   0.019
-controlvertex 2 coords 3 0.038 0.305 0.019
-controlvertex 3 coords 3 0.0   0.146 0.019
-controlvertex 4 coords 3 0.0   0.159 0.019
-controlvertex 5 coords 3 0.076 0.146 0.019
-controlvertex 6 coords 3 0.076 0.159 0.019
-prism 1 box 6 0. 0. 0. 0.076 0.305 0.038 refine 1.
+#@vertex 1 coords 3 -0.03 -0.03 -0.03 refine 1. radius 0.
+#@vertex 2 coords 3  0.1   0.4   0.05 refine 1. radius 0.
+#@controlvertex 1 coords 3 0.038 0.0   0.019
+#@controlvertex 2 coords 3 0.038 0.305 0.019
+#@controlvertex 3 coords 3 0.0   0.146 0.019
+#@controlvertex 4 coords 3 0.0   0.159 0.019
+#@controlvertex 5 coords 3 0.076 0.146 0.019
+#@controlvertex 6 coords 3 0.076 0.159 0.019
+#@prism 1 box 6 0. 0. 0. 0.076 0.305 0.038 refine 1.

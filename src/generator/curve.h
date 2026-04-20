@@ -13,6 +13,7 @@
 
 #ifndef __MAKEDEPEND
  #include <stdio.h>
+ #include <sstream>
 #endif
 
 
@@ -66,6 +67,9 @@ public:
     void giveNormal(oofem::FloatArray &answer) { answer = this->normal; }
 
     void initializeFrom(GeneratorInputRecord &ir);
+    /// Parse keyword/value tokens from an open istringstream positioned
+    /// after the `#@curve <num>` prefix.
+    void initializeFromTokens(std::istringstream &iss);
 
     void printYourself();
 };

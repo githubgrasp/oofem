@@ -1,6 +1,7 @@
 #include "generatorlistutils.h"
 #include "curve.h"
 #include "vertex.h"
+#include "generatorerror.h"
 #ifndef __MAKEDEPEND
  #include <math.h>
  #include <stdlib.h>
@@ -41,6 +42,42 @@ Curve::initializeFrom(GeneratorInputRecord &ir)
     IR_GIVE_OPTIONAL_FIELD(ir, normal, _IFT_Curve_normal); // Macro
 
     return;
+}
+
+
+void Curve::initializeFromTokens(std::istringstream &iss)
+{
+    refinement = 1.;
+    normal.resize(3);
+    normal.zero();
+
+    bool gotVertices = false;
+    std::string tok;
+    while ( iss >> tok ) {
+        if ( tok == "vertices" ) {
+            int n;
+            iss >> n;
+            vertices.resize(n);
+            for ( int i = 1; i <= n; ++i ) {
+                iss >> vertices.at(i);
+            }
+            gotVertices = true;
+        } else if ( tok == "refine" ) {
+            iss >> refinement;
+        } else if ( tok == "normal" ) {
+            int n;
+            iss >> n;
+            normal.resize(n);
+            for ( int i = 1; i <= n; ++i ) {
+                iss >> normal.at(i);
+            }
+        } else {
+            generator::errorf("Curve::initializeFromTokens: unknown keyword '%s'", tok.c_str());
+        }
+    }
+    if ( !gotVertices ) {
+        generator::error("Curve::initializeFromTokens: missing 'vertices' keyword");
+    }
 }
 
 
