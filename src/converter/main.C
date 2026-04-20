@@ -7,13 +7,6 @@
 #include <cstdlib>
 #include <math.h>
 
-#include "converterdatareader.h"
-#include "convertertxtdatareader.h"
-#include "convertertxtinputrecord.h"
-#include "converterinputrecord.h"
-#include "convertererror.h"
-
-#include "vertex.h"
 #include "grid.h"
 
 
@@ -32,8 +25,7 @@ void printUsage(const char *prog)
                  "\n"
                  "Mesh-file expectations per mesher:\n"
                  "  t3d   : <mesh.t3d>\n"
-                 "  qhull : <mesh.nodes> <mesh.voronoi>\n"
-                 "        : <mesh.nodes> <mesh.delaunay> <mesh.voronoi>\n",
+                 "  qhull : <mesh.nodes> <mesh.voronoi>\n",
                  prog);
 }
 
@@ -108,32 +100,16 @@ int main(int argc, char *argv[])
         std::string outName = "oofem.in";
         grid->giveOutputT3d(outName);
     } else { // qhull
-        if ( npos == 4 ) {
-            const char *nodeFile = positional[2];
-            const char *vorFile  = positional[3];
-            grid->instanciateYourselfFromQhull(controlFile, nodeFile, vorFile);
-            grid->generateOutput();
-            grid->giveOutput("oofem.in");
-        } else if ( npos == 5 ) {
-            // 3-file qhull form for tetrahedral-element analyses. The
-            // mesh.delaunay file comes from `qdelaunay Qt i < mesh.nodes`.
-            // Requires `#@meshtype tetra` in control.in so the writer knows
-            // to emit ltrspace elements (and the pipeline knows to read the
-            // delaunay file rather than only the voronoi file).
-            const char *nodeFile = positional[2];
-            const char *delFile  = positional[3];
-            const char *vorFile  = positional[4];
-            grid->instanciateYourselfFromQhull(controlFile, nodeFile, vorFile, delFile);
-            grid->generateOutput();
-            grid->giveOutput("oofem.in");
-        } else {
-            std::fprintf(stderr,
-                         "error: qhull mesher expects 2 mesh files (nodes + voronoi)\n"
-                         "       or 3 (nodes + delaunay + voronoi), got %d.\n",
-                         npos - 2);
+        if ( npos != 4 ) {
+            std::fprintf(stderr, "error: qhull mesher expects 2 mesh files (nodes + voronoi), got %d.\n", npos - 2);
             printUsage(argv[0]);
             return EXIT_FAILURE;
         }
+        const char *nodeFile = positional[2];
+        const char *vorFile  = positional[3];
+        grid->instanciateYourselfFromQhull(controlFile, nodeFile, vorFile);
+        grid->generateOutput();
+        grid->giveOutput("oofem.in");
     }
 
     std::printf("Conversion complete\n");

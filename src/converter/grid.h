@@ -67,7 +67,6 @@ class Curve;
 class Surface;
 class Region;
 class Line;
-class Tetra;
 class Inclusion;
 class GridLocalizer;
 class Fibre;
@@ -134,7 +133,7 @@ private:
 
     /** Grid type. This determines the type of input to generate
      */
-    enum GridType { _3dSM, _3dTM, _3dSMTM, _3dPerSM, _3dPerTM, _3dPerSMTM, _3dWong, _3dPerPoreTM, _3dPerPoreSM, _3dPerPoreSMTM, _3dCantSM, _3dCantTM, _3dCantExtraTM, _3dCantSMTM, _3dBentoniteSM, _3dBentoniteTM, _3dBentoniteSMTM, _3dPerTetraSM, _3dRCPerSM, _3dRCPer2SM, _3dRCSM, _3dKupfer, _3dImran, _3dNotch };
+    enum GridType { _3dSM, _3dTM, _3dSMTM, _3dPerSM, _3dPerTM, _3dPerSMTM, _3dWong, _3dPerPoreTM, _3dPerPoreSM, _3dPerPoreSMTM, _3dCantSM, _3dCantTM, _3dCantExtraTM, _3dCantSMTM, _3dBentoniteSM, _3dBentoniteTM, _3dBentoniteSMTM, _3dKupfer, _3dImran, _3dNotch };
 
     GridType gridType;
 
@@ -276,10 +275,6 @@ private:
 
     oofem::IntArray periodicityFlag;
 
-    int meshType;
-
-    int regularFlag;
-
     int couplingFlag;
 
     int maxIter, randomInteger;
@@ -319,8 +314,6 @@ private:
     std::vector< Line * >voronoiLineList;
 
     std::vector< Fibre * >fibreList;
-
-    std::vector< Tetra * >delaunayTetraList;
 
     std::vector< Line * >latticeBeamList;
 
@@ -491,10 +484,6 @@ public:
 
     void givePeriodicityFlag(oofem::IntArray &answer) { answer = this->periodicityFlag; }
 
-    int giveRegularFlag() { return this->regularFlag; }
-
-    int giveMeshType() { return this->meshType; }
-
     int giveRandomInteger() { return this->randomInteger; }
 
     void giveVoronoiPOVOutput(const std::string &filename);
@@ -510,8 +499,6 @@ public:
     void giveDelaunayCrossSectionVTKOutput(FILE *outputStream);
 
     void giveVoronoiCrossSectionVTKOutput(FILE *outputStream);
-
-    void giveTetraElementVTKOutput(FILE *outputStream);
 
     void giveVoronoiElementVTKOutput(FILE *outputStream);
 
@@ -536,8 +523,6 @@ public:
 
     Vertex *giveVoronoiVertex(int n);
 
-    Tetra *giveDelaunayTetra(int n);
-
     Line *giveDelaunayLine(int n);
 
 
@@ -561,12 +546,7 @@ public:
     void orderDelaunayCrossSectionVertices(int elementNumber);
 
 
-    int instanciateYourself(ConverterDataReader *dr, const char nodeFileName[], const char delaunayFileName[], const char voronoiFileName[]);
-
-    int instanciateYourselfFromQhull(const std::string &controlFile,
-                                     const char *nodeFileName,
-                                     const char *voronoiFileName,
-                                     const char *delaunayFileName = nullptr);
+    int instanciateYourselfFromQhull(const std::string &controlFile, const char *nodeFileName, const char *voronoiFileName);
 
     void readQhullControlRecords(const std::string &controlFile);
 
@@ -617,8 +597,6 @@ public:
 
     int giveNumberOfFibres() { return converter::size1(fibreList); }
 
-    int giveNumberOfDelaunayTetras() {  return converter::size1(delaunayTetraList); }
-
 
     void resizeDelaunayVertices(int _newSize);
     void resizeVoronoiVertices(int _newSize);
@@ -636,15 +614,11 @@ public:
     /// Resizes the internal data structure to accomodate space for _newSize materials
     void resizeInclusions(int _newSize);
 
-    void resizeDelaunayTetras(int _newSize);
-
 
     void setDelaunayVertex(int i, Vertex *obj);
     void setVoronoiVertex(int i, Vertex *obj);
     void setDelaunayLine(int i, Line *obj);
     void setVoronoiLine(int i, Line *obj);
-
-    void setDelaunayTetra(int i, Tetra *obj);
 
 
     /// Sets i-th componet. The component will be futher managed and maintained by grid object.
@@ -675,8 +649,6 @@ public:
 
     void giveVtkOutput(const std::string &fileName);
     void giveVtkOutput2(const std::string &fileName, int nb_of_mt); // alternative function to obtain VTK files for each material
-
-    void giveVtkOutputTetra(const std::string &fileName, int nb_of_mt);
 
     void givePOVOutput(const std::string &fileName);
 
@@ -726,18 +698,6 @@ public:
     void give3DCantileverSMTMOutput(const std::string &fileName);
 
 
-    //Periodic SM mesh for tetrahedra
-    void give3DPeriodicTetraSMOutput(const std::string &fileName);
-
-    //Periodic SM mesh for reinforced concrete (concrete with tetrahedra, reinforcement with beams, bond with link elements)
-    void give3DRCPeriodicSMOutput(const std::string &fileName);
-
-    //Alternative periodic SM mesh for reinforced concrete (concrete with tetrahedra, reinforcement with beams, bond with link elements). Hanging nodes are used.
-    void give3DRCPeriodicSMOutput2(const std::string &fileName);
-
-    //Random SM mesh for reinforced concrete
-    void give3DRCSMOutput(const std::string &fileName);
-
     //Random SM mesh for Kupfer experiment
     void give3DKupferOutput(const std::string &fileName);
 
@@ -768,10 +728,6 @@ public:
     void giveLinkElementVTKOutput(FILE *outputStream);
 
     oofem::IntArray findDelaunayNodesWithinBox(oofem::FloatArray coord, double TOL); // function created to allow other objects to use the localizer
-
-    void giveTetrahedronBarycentres(oofem::FloatArray &centres, oofem::FloatArray &tetraCoords, oofem::FloatArray &pointCoords);
-
-    double * tetrahedron_barycentric(double tetra[ 3 * 4 ], double p[ 3 ]);
 
     int r8mat_solve(int n, int rhs_num, double a[]);
 };

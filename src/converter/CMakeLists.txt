@@ -37,7 +37,6 @@ enable_testing()
 # directive) and reference.in. Mesh files are picked from disk:
 #   mesh.t3d                                       → t3d
 #   mesh.nodes + mesh.voronoi                      → qhull
-#   mesh.nodes + mesh.delaunay + mesh.voronoi      → qhull (legacy 3-file form)
 # Output is always named oofem.in (standardised in test control files).
 
 set(CONVERTER_TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tests)
@@ -56,8 +55,6 @@ foreach(_entry ${_conv_test_entries})
 
     if(EXISTS ${_dir}/mesh.t3d)
         set(_mesh_args "${_dir}/mesh.t3d")
-    elseif(EXISTS ${_dir}/mesh.nodes AND EXISTS ${_dir}/mesh.delaunay AND EXISTS ${_dir}/mesh.voronoi)
-        set(_mesh_args "${_dir}/mesh.nodes;${_dir}/mesh.delaunay;${_dir}/mesh.voronoi")
     elseif(EXISTS ${_dir}/mesh.nodes AND EXISTS ${_dir}/mesh.voronoi)
         set(_mesh_args "${_dir}/mesh.nodes;${_dir}/mesh.voronoi")
     else()

@@ -1,6 +1,0 @@
-nodes.dat
-Cube mesh for tetrahedral-element test
-domain 3
-diam 0.3 maxiter 10000 perflag 3 0 0 0 ranint -1 ranflag 1
-nvertex 0 ncurve 0 nsurface 0 nregion 1 ninclusion 0 ncontrolvertex 0
-prism 1 box 6 0. 0. 0. 1. 1. 1. refine 1.

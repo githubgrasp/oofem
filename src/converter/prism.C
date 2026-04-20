@@ -7,7 +7,6 @@
 #include "fibre.h"
 #include "datareader.h"
 #include "octreegridlocalizer.h"
-#include "tetra.h"
 
 #ifndef __MAKEDEPEND
  #include <math.h>
@@ -726,32 +725,11 @@ void Prism::findOutsiders(oofem::FloatArray &boundaries)
         this->grid->giveReinforcementNode(i + 1)->setOutsideFlag(outsideFlag);
     }
 
-    int nodeFlag1 = 0, nodeFlag2 = 0, nodeFlag3 = 0, nodeFlag4 = 0;
-    if ( grid->giveRegularFlag() == 2 ) {
-        //Tetrahedral elements
-        for ( int i = 0; i < this->grid->giveNumberOfDelaunayTetras(); i++ ) {
-            outsideFlag = 0;
-            this->grid->giveDelaunayTetra(i + 1)->giveLocalVertices(nodes);
-            nodeFlag1 = this->grid->giveDelaunayVertex(nodes.at(1) )->giveOutsideFlag();
-            nodeFlag2 = this->grid->giveDelaunayVertex(nodes.at(2) )->giveOutsideFlag();
-            nodeFlag3 = this->grid->giveDelaunayVertex(nodes.at(3) )->giveOutsideFlag();
-            nodeFlag4 = this->grid->giveDelaunayVertex(nodes.at(4) )->giveOutsideFlag();
-
-            if ( ( nodeFlag1 == 0 || nodeFlag1 == 2 )  &&  ( nodeFlag2 == 0 || nodeFlag2 == 2 ) && ( nodeFlag3 == 0 || nodeFlag3 == 2 ) && ( nodeFlag4 == 0 || nodeFlag4 == 2 ) ) {
-                outsideFlag = 0;
-            } else if ( nodeFlag1 == 0 || nodeFlag2 == 0 || nodeFlag3 == 0 || nodeFlag4 == 0 )     {
-                outsideFlag = 2;
-            } else   {
-                outsideFlag = 1;
-            }
-            this->grid->giveDelaunayTetra(i + 1)->setOutsideFlag(outsideFlag);
-        }
-    }
-
+    int nodeFlag1 = 0, nodeFlag2 = 0;
     int boundaryNumber = -1;
     oofem::IntArray helpNodeFlag1(6);
     oofem::IntArray helpNodeFlag2(6);
-    if ( grid->giveRegularFlag() != 2 ) {
+    {
         //Delaunay elements
         for ( int i = 0; i < this->grid->giveNumberOfDelaunayLines(); i++ ) {
             outsideFlag = 0;
@@ -827,9 +805,15 @@ void Prism::findOutsiders(oofem::FloatArray &boundaries)
             }
             this->grid->giveVoronoiLine(i + 1)->setOutsideFlag(outsideFlag);
         }
+    } // end of `if (regularFlag != 2)` for Delaunay/Voronoi line flagging
 
+    {
+        //Beam/link flagging runs for both lattice and tetra modes because
+        //reinforcement-node topology is the same regardless of matrix
+        //element choice. The Delaunay-/Voronoi-line flagging above is
+        //lattice-only and stays guarded.
+        int boundaryNumber = -1;
         //Beam elements
-        boundaryNumber = -1;
         for ( int i = 0; i < this->grid->giveNumberOfLatticeBeams(); i++ ) {
             outsideFlag = 0;
             this->grid->giveLatticeBeam(i + 1)->giveLocalVertices(nodes);
@@ -1234,63 +1218,8 @@ void Prism::findOutsiders(oofem::FloatArray &boundaries)
         printf("Finished finding periodic info for link elements\n");
 
 
-        //Find periodic info for tetrahedral elements. Assume that nodes are on the surface.
-        //Extend this later to take into account the case of crossing surfaces.
-        oofem::FloatArray coords(3);
-
-        if ( grid->giveRegularFlag() == 2 ) {//Only implemented for nodes on surfaces
-            for ( int i = 0; i < this->grid->giveNumberOfDelaunayTetras(); i++ ) {
-                if ( this->grid->giveDelaunayTetra(i + 1)->giveOutsideFlag() == 0 ) {
-                    this->grid->giveDelaunayTetra(i + 1)->giveLocalVertices(nodes);
-
-                    for (int k = 0; k < nodes.giveSize(); k++) {
-                        location = 0;
-                        if ( grid->giveDelaunayVertex(nodes.at(k + 1) )->giveOutsideFlag() == 2 ) {//node on surface
-                            grid->giveDelaunayVertex(nodes.at(k + 1) )->giveCoordinates(coords);
-                            //compute number of coordinates at boundaries
-                            int nBoundCoord = 0;
-                            for ( int l = 1; l <= 3; l++ ) {
-                                if ( fabs(coords.at(l) - boundaries.at(2 * l - 1) ) < grid->giveTol() ) {
-                                    nBoundCoord++;
-                                } else if ( fabs(coords.at(l) - boundaries.at(2 * l) ) < grid->giveTol() ) {
-                                    nBoundCoord++;
-                                }
-                            }
-
-                            if ( nBoundCoord == 1 ) {
-                                //node located at face
-                                location = this->giveSwitches(switches, coords);
-                            } else if ( nBoundCoord == 2 ) {
-                                //node located on edge
-                                location = this->giveEdgeSwitches(switches, coords);
-                            } else if ( nBoundCoord == 3 ) {
-                                //corner
-                                location = this->giveCornerSwitches(switches, coords);
-                            }
-
-                            //new coords
-                            for ( int n = 0; n < 3; n++ ) {
-                                newCoords.at(n + 1) = coords.at(n + 1) - switches.at(n + 1) * specimenDimension.at(n + 1);
-                            }
-                            nodeSet.clear();
-                            grid->delaunayLocalizer->giveAllNodesWithinBox(nodeSet, newCoords, this->grid->giveTol(), 0);
-                            if ( nodeSet.size() == 1 ) { //Found nodes
-                                periodicNode = * nodeSet.begin();
-                            } else {
-                                converter::errorf("Could not find periodic node. Node set is %d", nodeSet.size() );
-                            }
-                            this->grid->giveDelaunayVertex(nodes.at(k + 1) )->setPeriodicNode(periodicNode);
-                            this->grid->giveDelaunayVertex(nodes.at(k + 1) )->setLocation(location);
-                        }
-                    }
-                }
-            }
-        }//end tetra
-
-
-
         //Voronoi Lines
-        if ( grid->giveRegularFlag() != 2 && ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 1 ) ) {//Does not work if nodes are on surface
+        if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 1 ) {//Does not work if nodes are on surface
             for ( int i = 0; i < this->grid->giveNumberOfVoronoiLines(); i++ ) {
                 if ( this->grid->giveVoronoiLine(i + 1)->giveOutsideFlag() != 1 ) {
                     //Do this for all elements which are not completely outside
