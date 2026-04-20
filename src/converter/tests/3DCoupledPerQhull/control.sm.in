@@ -1,0 +1,23 @@
+#@mesher qhull
+#@grid 3dSM
+#@diam 0.0005
+#@perflag 3 1 1 1
+oofem.sm.out
+Mechanical subproblem of the coupled SMTM percolation analysis
+NonLinearStatic nmsteps 1 nsteps 1 contextOutputStep 1000 nmodules 2 profileopt 1 lstype 3 smtype 7
+nsteps 100 rtolv 1.e-3 stiffMode 1 manrmsteps 10 maxiter 200 controllmode 1 minsteplength 1.e-10 maxrestarts 0 lstype 3 smtype 7
+vtkxml primvars 1 1 tstep_all domain_all
+gpexportmodule vars 5 59 90 84 85 78 tstep_all domain_all
+domain 3dLattice
+OutputManager tstep_all dofman_output {#@CTLNODE}
+ncrosssect 1 nmat 3 nbc 2 nic 0 nltf 2
+simplecs 1
+latticeplastdam 1 d 0 talpha -5.e-3 e 40.e9 ft 6.5e6 fc 65.e6 wf 15.4e-6 ahard 1.e-3
+latticeplastdam 2 d 0 talpha 0. e 100.e9 ft 1.e16 fc 30.e16 wf 15.4e+6 ahard 1.e-3
+latticeplastdam 3 d 0 talpha -5.e-3 e 57.1e9 a1 0.01 ft 3.25e6 fc 32.5e6 wf 15.4e-6 ahard 1.e-3
+BoundaryCondition 1 loadTimeFunction 1 prescribedvalue 0.0
+StructTemperatureLoad 2 loadTimeFunction 2 Components 1 1.0
+ConstantFunction 1 f(t) 1.
+PiecewiseLinFunction 2 nPoints 2 t 2 0. 101. f(t) 2 0. 1.
+#@prism 1 box 6 0. 0. 0. 0.00625 0.00625 0.00625
+#@sphereinclusion 1 centre 3 0.003125 0.003125 0.003125 radius 0.002 itz 1.e-5 inside 2 interface 3 bodyload 2

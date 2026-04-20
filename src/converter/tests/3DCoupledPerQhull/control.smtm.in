@@ -1,0 +1,11 @@
+#@mesher qhull
+#@grid 3dSM
+#@diam 0.0005
+#@perflag 3 1 1 1
+oofem.smtm.out
+Control file for coupled SMTM percolation analysis (staggered)
+StaggeredProblem nsteps 100 deltat 1. prob1 "oofem.tm.in" prob2 "oofem.sm.in" contextoutputstep 100 coupling 3 2 1 0
+##%BEGIN_CHECK%
+##INCLUDE oofem.tm.in
+##%END_CHECK%
+#@prism 1 box 6 0. 0. 0. 0.00625 0.00625 0.00625

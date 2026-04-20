@@ -216,16 +216,14 @@ private:
 
     /// A sphere inclusion: elements whose endpoints both fall inside get
     /// `inside` material; elements that straddle the sphere (one endpoint
-    /// inside, one outside — the ITZ zone) get `interface` material and an
-    /// optional `bodyload` id. Populated by the
-    /// `#@sphereinclusion <id> centre 3 x y z radius r itz t inside <mi>
-    ///   interface <mif> [bodyload <b>]` directive.
+    /// inside, one outside — the ITZ zone) get `interface` material.
+    /// Populated by the `#@sphereinclusion <id> centre 3 x y z radius r
+    /// itz t inside <mi> interface <mif>` directive.
     struct SphereInclusionSpec {
         double cx = 0., cy = 0., cz = 0.;
         double radius = 0., itz = 0.;
         int inside    = 2;
         int interface_ = 3;
-        int bodyload = -1;
     };
     std::vector< SphereInclusionSpec >sphereInclusionSpecs;
 
@@ -233,16 +231,24 @@ private:
     /// classification uses perpendicular distance from each endpoint to the
     /// (infinite) axis through the two line points. Populated by the
     /// `#@cylinderinclusion <id> line 6 x1 y1 z1 x2 y2 z2 radius r itz t
-    ///   inside <mi> interface <mif> [bodyload <b>]` directive.
+    ///   inside <mi> interface <mif>` directive.
     struct CylinderInclusionSpec {
         double x1 = 0., y1 = 0., z1 = 0.;
         double x2 = 0., y2 = 0., z2 = 0.;
         double radius = 0., itz = 0.;
         int inside    = 2;
         int interface_ = 3;
-        int bodyload = -1;
     };
     std::vector< CylinderInclusionSpec >cylinderInclusionSpecs;
+
+    /// Per-material bodyload map: material id → bc id. Populated by the
+    /// `#@bodyload <mat> <bc_id>` directive. When an element is emitted
+    /// with crossSect/mat equal to <mat>, the writer appends
+    /// " bodyloads 1 <bc_id>" to its record. Decouples bodyload placement
+    /// from inclusion directives: Wong sets bodyload on the matrix
+    /// material only; the corrosion cylinder sets it on the interface
+    /// material only.
+    std::map< int, int >bodyloadByMaterial;
 
     /// Control-vertex definitions from `#@controlvertex <id> coords 3 x y z`.
     /// Each entry declares a specific mesh coordinate whose nearest Delaunay
@@ -429,10 +435,9 @@ public:
     /// For a matrix lattice line with endpoint coords A/B, resolve the sphere-
     /// inclusion material. Returns the `inside` material if both endpoints fall
     /// within `radius + itz/2` of a sphere centre; the `interface` material
-    /// (and populates `bodyloadOut` if set, otherwise -1) if exactly one endpoint
-    /// does; otherwise returns `defaultMat`.
+    /// if exactly one endpoint does; otherwise returns `defaultMat`.
     int resolveInclusionMaterial(const oofem::FloatArray &A, const oofem::FloatArray &B,
-                                 int defaultMat, int &bodyloadOut) const;
+                                 int defaultMat) const;
 
     /// Match each `#@controlvertex` declaration to the nearest Delaunay vertex
     /// and populate `controlNodeIds`. Called after the Delaunay vertex list is loaded.

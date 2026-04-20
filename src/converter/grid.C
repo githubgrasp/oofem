@@ -1531,7 +1531,7 @@ void Grid::readQhullControlRecords(const std::string &controlFile)
             notchSpecs.push_back(n);
         } else if ( tag == "#@sphereinclusion" ) {
             // #@sphereinclusion <id> centre 3 x y z radius r itz t
-            //   inside <mi> interface <mif> [bodyload <b>]
+            //   inside <mi> interface <mif>
             int num;
             iss >> num;
             std::string kw;
@@ -1558,13 +1558,10 @@ void Grid::readQhullControlRecords(const std::string &controlFile)
             if ( kw != "interface" ) {
                 converter::error("Malformed #@sphereinclusion — expected 'interface <m>'");
             }
-            if ( iss >> kw && kw == "bodyload" ) {
-                iss >> s.bodyload;
-            }
             sphereInclusionSpecs.push_back(s);
         } else if ( tag == "#@cylinderinclusion" ) {
             // #@cylinderinclusion <id> line 6 x1 y1 z1 x2 y2 z2
-            //   radius r itz t inside <mi> interface <mif> [bodyload <b>]
+            //   radius r itz t inside <mi> interface <mif>
             int num;
             iss >> num;
             std::string kw;
@@ -1591,10 +1588,19 @@ void Grid::readQhullControlRecords(const std::string &controlFile)
             if ( kw != "interface" ) {
                 converter::error("Malformed #@cylinderinclusion — expected 'interface <m>'");
             }
-            if ( iss >> kw && kw == "bodyload" ) {
-                iss >> c.bodyload;
-            }
             cylinderInclusionSpecs.push_back(c);
+        } else if ( tag == "#@bodyload" ) {
+            // #@bodyload <mat> <bc_id> — any element whose crossSect/mat
+            // resolves to <mat> gets "bodyloads 1 <bc_id>" appended. Decouples
+            // bodyload placement from inclusion directives: Wong uses
+            // `#@bodyload 1 2` (matrix only, eigenstrain), the corrosion
+            // cylinder test uses `#@bodyload 3 3` (interface only,
+            // eigendisplacement).
+            int mat = 0, bc = 0;
+            if ( !( iss >> mat >> bc ) ) {
+                converter::error("Malformed #@bodyload — expected '<mat> <bc_id>'");
+            }
+            bodyloadByMaterial[mat] = bc;
         }
     }
 
@@ -2829,9 +2835,8 @@ Grid::resolveNotchMaterial(const oofem::FloatArray &A, const oofem::FloatArray &
 
 int
 Grid::resolveInclusionMaterial(const oofem::FloatArray &A, const oofem::FloatArray &B,
-                               int defaultMat, int &bodyloadOut) const
+                               int defaultMat) const
 {
-    bodyloadOut = -1;
     for ( const auto &s : sphereInclusionSpecs ) {
         const double effR = s.radius + 0.5 * s.itz;
         const double d1 = std::sqrt(( A.at(1) - s.cx ) * ( A.at(1) - s.cx ) +
@@ -2845,7 +2850,6 @@ Grid::resolveInclusionMaterial(const oofem::FloatArray &A, const oofem::FloatArr
         if ( in1 && in2 ) {
             return s.inside;
         } else if ( in1 != in2 ) {
-            bodyloadOut = s.bodyload;
             return s.interface_;
         }
     }
@@ -2866,7 +2870,6 @@ Grid::resolveInclusionMaterial(const oofem::FloatArray &A, const oofem::FloatArr
         if ( in1 && in2 ) {
             return c.inside;
         } else if ( in1 != in2 ) {
-            bodyloadOut = c.bodyload;
             return c.interface_;
         }
     }
@@ -3154,8 +3157,8 @@ Grid::give3DSMOutput(const std::string &fileName)
                 this->giveDelaunayVertex(lineNodes.at(1))->giveCoordinates(boundaryA);
                 this->giveDelaunayVertex(lineNodes.at(2))->giveCoordinates(boundaryB);
                 int matBoundary = resolveNotchMaterial(boundaryA, boundaryB, 1);
-                int boundaryBodyload = -1;
-                matBoundary = resolveInclusionMaterial(boundaryA, boundaryB, matBoundary, boundaryBodyload);
+                matBoundary = resolveInclusionMaterial(boundaryA, boundaryB, matBoundary);
+                auto boundaryBodyloadIt = bodyloadByMaterial.find(matBoundary);
 
                 if ( emitBoundary ) {
                     location.zero();
@@ -3174,8 +3177,8 @@ Grid::give3DSMOutput(const std::string &fileName)
                         this->giveVoronoiVertex(crossSectionNodes.at(m + 1))->giveCoordinates(coords);
                         out << " " << coords.at(1) << " " << coords.at(2) << " " << coords.at(3);
                     }
-                    if ( boundaryBodyload > 0 ) {
-                        out << " bodyloads 1 " << boundaryBodyload;
+                    if ( boundaryBodyloadIt != bodyloadByMaterial.end() ) {
+                        out << " bodyloads 1 " << boundaryBodyloadIt->second;
                     }
                     out << " location 2 " << location.at(1) << " " << location.at(2) << "\n";
                     continue;
@@ -3208,8 +3211,8 @@ Grid::give3DSMOutput(const std::string &fileName)
                 }
 
                 int matInside = resolveNotchMaterial(A, B, 1);
-                int insideBodyload = -1;
-                matInside = resolveInclusionMaterial(A, B, matInside, insideBodyload);
+                matInside = resolveInclusionMaterial(A, B, matInside);
+                auto insideBodyloadIt = bodyloadByMaterial.find(matInside);
                 out << "lattice3D " << ++elemCounter
                     << " nodes 2 " << mapId(lineNodes.at(1)) << " " << mapId(lineNodes.at(2))
                     << " crossSect " << matInside << " mat " << matInside
@@ -3217,8 +3220,8 @@ Grid::give3DSMOutput(const std::string &fileName)
                 for ( const auto &c : polyOut ) {
                     out << " " << c.at(1) << " " << c.at(2) << " " << c.at(3);
                 }
-                if ( insideBodyload > 0 ) {
-                    out << " bodyloads 1 " << insideBodyload;
+                if ( insideBodyloadIt != bodyloadByMaterial.end() ) {
+                    out << " bodyloads 1 " << insideBodyloadIt->second;
                 }
                 out << "\n";
             }

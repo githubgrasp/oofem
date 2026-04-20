@@ -28,5 +28,6 @@ Set 1 nodes 1 #@CTL1
 #@diam 12.e-3
 #@perflag 3 0 0 0
 #@prism 1 box 6 -58.e-3 -58.e-3 -58.e-3 58.e-3 58.e-3 58.e-3 refine 1.
-#@sphereinclusion 1 centre 3 0. 0. 0. radius 8.e-3 itz 0.5e-3 inside 2 interface 3 bodyload 2
+#@sphereinclusion 1 centre 3 0. 0. 0. radius 8.e-3 itz 0.5e-3 inside 2 interface 3
+#@bodyload 3 2
 #@controlvertex 1 coords 3 0. 0. 0.

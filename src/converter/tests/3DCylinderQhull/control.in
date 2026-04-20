@@ -32,6 +32,7 @@ Set 2 nodes 1 #@CTL2
 #@diam 4.e-3
 #@perflag 3 0 0 0
 #@prism 1 box 6 0. -0.075 -0.075 10.e-3 0.075 0.075 refine 1.
-#@cylinderinclusion 1 line 6 0. 0. 0. 10.e-3 0. 0. radius 8.e-3 itz 0.1e-3 inside 2 interface 3 bodyload 3
+#@cylinderinclusion 1 line 6 0. 0. 0. 10.e-3 0. 0. radius 8.e-3 itz 0.1e-3 inside 2 interface 3
+#@bodyload 3 3
 #@controlvertex 1 coords 3 0.     0. 0.
 #@controlvertex 2 coords 3 10.e-3 0. 0.
