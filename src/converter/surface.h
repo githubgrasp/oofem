@@ -8,16 +8,11 @@
 #include "floatarray.h"
 #include "intarray.h"
 
-#include "converterdatareader.h"
-#include "convertertxtdatareader.h"
-#include "convertertxtinputrecord.h"
 
 #ifndef __MAKEDEPEND
  #include <stdio.h>
 #endif
 
-#define _IFT_Surface_curves "curves"
-#define _IFT_Surface_refine "refine"
 
 class Surface : public GridComponent
 {
@@ -56,7 +51,6 @@ public:
     /// Returns class name of the receiver.
     const char *giveClassName() const override { return "Surface"; }
 
-    void initializeFrom(ConverterInputRecord &ir);
 
     /// prints receiver state on stdout. Usefull for debuging.
     void         printYourself();

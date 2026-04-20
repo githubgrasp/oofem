@@ -6,7 +6,6 @@
 #define grid_h
 
 #include "converterlistutils.h"
-#include "converterdatareader.h"
 #include "convertererror.h"
 #include "floatarray.h"
 #include "intarray.h"
@@ -21,32 +20,9 @@
  #include <list>
  #include <set>
 #endif
-#define _IFT_Grid_type "grid"
-#define _IFT_Grid_macrotype "macrotype"
-#define _IFT_Grid_diam "diam"
-#define _IFT_Grid_ranint "ranint"
-#define _IFT_Grid_regflag "regflag"
-#define _IFT_Grid_perflag "perflag"
 
-#define _IFT_Grid_mechmean "mechmean"
-#define _IFT_Grid_mechcov "mechcov"
-#define _IFT_Grid_mechmax "mechmax"
-#define _IFT_Grid_mechmin "mechmin"
 
-#define _IFT_Grid_young "young"
-#define _IFT_Grid_gamma1 "gamma1"
-#define _IFT_Grid_gamma2 "gamma2"
-#define _IFT_Grid_conf "conf"
-#define _IFT_Grid_tanbeta "tanbeta"
-#define _IFT_Grid_tanphi "tanphi"
-#define _IFT_Grid_deltarad "deltarad"
 
-#define _IFT_Grid_nvertex "nvertex"
-#define _IFT_Grid_ncurve "ncurve"
-#define _IFT_Grid_nsurface "nsurface"
-#define _IFT_Grid_nregion "nregion"
-#define _IFT_Grid_ninclusion "ninclusion"
-#define _IFT_Grid_nfiber "nfibre"
 
 class Vertex;
 class Curve;
@@ -119,7 +95,7 @@ private:
 
     /** Grid type. This determines the type of input to generate
      */
-    enum GridType { _3dSM, _3dTM, _3dSMTM };
+    enum GridType { _3dSM, _3dTM };
 
     GridType gridType;
 
@@ -657,13 +633,10 @@ public:
 
     void give3DSMOutput(const std::string &fileName);
 
-    void give3DSMTMOutput(const std::string &fileName);
-
     void give3DTMOutput(const std::string &fileName);
 
     /// Walk fibreList: discretise each fibre, build reinforcement nodes,
     /// lattice beams (fibre segments), and lattice links (fibre↔matrix coupling).
-    /// Shared by both ConverterTXTDataReader and qhull-template paths.
     void discretizeFibres();
 
 

@@ -29,16 +29,6 @@ Prism::giveLocalSurface(int i)
     return surfaces.at(i);
 }
 
-void
-Prism::initializeFrom(ConverterInputRecord &ir)
-// Gets from the source line from the data file all the data of the receiver.
-{
-    IR_GIVE_FIELD(ir, this->box, _IFT_Prism_box);
-
-    refinement = 1.;
-    IR_GIVE_OPTIONAL_FIELD(ir, refinement, _IFT_Prism_refine); // Macro
-    return;
-}
 
 Prism *Prism::ofType()
 // Returns a new DofManager, which has the same number than the receiver,

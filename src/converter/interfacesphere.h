@@ -10,18 +10,11 @@
 
 #include "inputrecord.h"
 
-#include "converterdatareader.h"
-#include "convertertxtdatareader.h"
-#include "convertertxtinputrecord.h"
 
 #ifndef __MAKEDEPEND
  #include <stdio.h>
 #endif
 
-#define _IFT_InterfaceSphere_centre "centre"
-#define _IFT_InterfaceSphere_diameter "radius"
-#define _IFT_InterfaceSphere_refine "refine"
-#define _IFT_InterfaceSphere_itz "itz"
 
 //class FloatArray;
 //class IntArray;
@@ -60,7 +53,6 @@ public:
     /// Returns class name of the receiver.
     const char *giveClassName() const override { return "InterfaceSphere"; }
 
-    void initializeFrom(ConverterInputRecord &ir) override;
     //virtual IntArray* ResolveDofIDArray (char* initString);
     /// prints receiver state on stdout. Usefull for debuging.
     void         printYourself();

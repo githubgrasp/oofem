@@ -8,22 +8,13 @@
 #include "intarray.h"
 #include "floatmatrix.h"
 
-#include "converterinputrecord.h"
 
-#include "converterdatareader.h"
-#include "convertertxtdatareader.h"
-#include "convertertxtinputrecord.h"
 
 #ifndef __MAKEDEPEND
  #include <stdio.h>
 #endif
 
 
-#define _IFT_Ellipsoid_centre "centre"
-#define _IFT_Ellipsoid_radii "radii"
-#define _IFT_Ellipsoid_angles "angles"
-#define _IFT_Ellipsoid_refine "refine"
-#define _IFT_Ellipsoid_itz "itz"
 
 
 
@@ -69,7 +60,6 @@ public:
     const char *giveClassName() const override { return "Ellipsoid"; }
 
 
-    void initializeFrom(ConverterInputRecord &ir) override;
 
     // to know whether a point is inside the ellipsoid
     // 1 means inside , 0 outisde , 2 in the ITZ (if specified)

@@ -31,15 +31,6 @@ int Surface :: giveNumberOfLocalCurves()
 }
 
 
-void
-Surface :: initializeFrom(ConverterInputRecord &ir)
-// Gets from the source line from the data file all the data of the receiver.
-{
-    IR_GIVE_FIELD(ir, curves, _IFT_Surface_curves); // Macro
-    refinement = 1.;
-    IR_GIVE_OPTIONAL_FIELD(ir, refinement, _IFT_Surface_refine); // Macro
-    return;
-}
 
 
 

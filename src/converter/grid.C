@@ -167,8 +167,6 @@ void Grid::resolveGridType(const std::string &name)
         gridType = _3dSM;
     } else if ( !strncasecmp(name.c_str(), "3dtm", 4) ) {
         gridType = _3dTM;
-    } else if ( !strncasecmp(name.c_str(), "3dcoupledsmtm", 13) ) {
-        gridType = _3dSMTM;
     } else {
         converter::errorf("Unknown grid type %s\n", name.c_str() );
     }
@@ -2214,8 +2212,6 @@ void Grid::giveOofemOutput(const std::string &fileName)
         give3DSMOutput(fileName);
     } else if ( gridType == _3dTM ) { //Base implementation
         give3DTMOutput(fileName);
-    } else if ( gridType == _3dSMTM ) { //Base implementation
-        give3DSMTMOutput(fileName);
     } else {
         converter::error("Unknown grid type\n");
     }
@@ -3629,159 +3625,6 @@ Grid::give3DTMOutput(const std::string &fileName)
 
 
 
-void
-Grid::give3DSMTMOutput(const std::string &fileName)
-{
-    //Template for irregular nonperiodic coupled mechanical transport models. Do not change for applications
-
-    FILE *outputStream = converter::fopen_or_die(fileName, "w");
-
-    const std::string fileName1 = fileName + ".sm";
-    FILE *outputStreamSM = converter::fopen_or_die(fileName1, "w");
-
-    const std::string fileName2 = fileName + ".tm";
-    FILE *outputStreamTM = converter::fopen_or_die(fileName2, "w");
-
-    int numberOfNodes, numberOfLines;
-    oofem::FloatArray coords;
-    int materialType = 1;
-
-    oofem::IntArray nodes;
-    oofem::IntArray crossSectionNodes;
-    oofem::IntArray crossSectionElements;
-
-    //Write the control file
-    fprintf(outputStream, "oofem.out\n");
-    fprintf(outputStream, "Control file for coupling of 3d lattice models\n");
-    fprintf(outputStream, "StaggeredProblem nsteps 5 deltat 1. prob1  \"oofem.in.tm\" prob2 \"oofem.in.sm\" contextoutputstep 100 coupling 3 2 1 0\n");
-    fprintf(outputStream, "##%%BEGIN_CHECK%%\n");
-    fprintf(outputStream, "##INCLUDE oofem.in.tm\n");
-    fprintf(outputStream, "##%%END_CHECK%%\n");
-
-
-    //Determine the number of Delaunay nodes in the domain
-    numberOfNodes = 0;
-    for ( int i = 0; i < this->giveNumberOfDelaunayVertices(); i++ ) {
-        if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0 ) {
-            numberOfNodes++;
-        }
-    }
-
-    //Determine the number of Delaunay lines in the domain
-    numberOfLines = 0;
-    for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
-        if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 0 ) {
-            numberOfLines++;
-        }
-    }
-
-    //Start with output file for the SM part
-    fprintf(outputStreamSM, "oofem.out\n");
-    fprintf(outputStreamSM, "Mechanical 3D model\n");
-    fprintf(outputStreamSM, "NonLinearStatic nmsteps 1 nsteps 1 contextOutputStep 1\n");
-    fprintf(outputStreamSM, "nsteps 1 rtolv 1.e-3 reqIterations 100 stiffMode 2 maxiter 2000 controllmode 1 stepLength 1. minsteplength 1.e-10 Psi 0.\n");
-    fprintf(outputStreamSM, "domain 3dLattice\n");
-    fprintf(outputStreamSM, "OutputManager tstep_all dofman_all element_all\n");
-    fprintf(outputStreamSM, "ndofman %d nelem %d ncrosssect 1 nmat 1 nbc 2 nic 0 nltf 2\n", numberOfNodes, numberOfLines);
-
-    for ( int i = 0; i < this->giveNumberOfDelaunayVertices(); i++ ) {
-        if ( this->giveDelaunayVertex(i + 1)->giveOutsideFlag() == 0 ) {
-            this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
-            fprintf(outputStreamSM, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
-        }
-    }
-
-    for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
-        if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() == 0 ) {
-            this->giveDelaunayLine(i + 1)->giveLocalVertices(nodes);
-            materialType = 1;
-            this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
-
-            fprintf(outputStreamSM, "lattice3D %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
-
-            for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                this->giveVoronoiVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-                fprintf(outputStreamSM, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
-            }
-            this->giveDelaunayLine(i + 1)->giveCrossSectionElements(crossSectionElements);
-            //I will need here to check if element exist in dual network. Not clear how this should be done with the output.
-            //Should I return as many elements as vertices and set the nonexistant elements to zero? I think that this is needed, as otherwise the geometry is not defined correctly. Anyway, it is not clear that crosssection nodes are set correctly for the transport elements.
-            fprintf(outputStreamSM, " couplingflag 1 couplingelements %d ", crossSectionElements.giveSize() );
-            for ( int m = 0; m < crossSectionElements.giveSize(); m++ ) {
-                if ( this->giveVoronoiLine(crossSectionElements.at(m + 1) )->giveOutsideFlag() == 0 ) {
-                    fprintf(outputStreamSM, "%d ", crossSectionElements.at(m + 1) );
-                } else {
-                    fprintf(outputStreamSM, "0 ");
-                }
-            }
-            fprintf(outputStreamSM, "\n");
-        }
-    }
-    fprintf(outputStreamSM, "simplecs 1\n");
-    fprintf(outputStreamSM, "latticedamage3d 1 talpha 0. d 0. e 1.56 e0 87.5e+6 stype 1 wf 40.e+6\n");
-    fprintf(outputStreamSM, "BoundaryCondition 1 loadTimeFunction 1 prescribedvalue 0.0\n");
-    fprintf(outputStreamSM, "NodalLoad 2 loadTimeFunction 1 Components 6 0. 0. 0. 0. 0. 0.\n");
-    fprintf(outputStreamSM, "ConstantFunction 1 f(t) 1.\n");
-    fprintf(outputStreamSM, "PiecewiseLinFunction 2 nPoints 2 t 2 0. 1. f(t) 2 1. 1.\n");
-    fprintf(outputStreamSM, "#%%BEGIN_CHECK%%\n");
-    fprintf(outputStreamSM, "#NODE number 3 dof 1 unknown d\n");
-    fprintf(outputStreamSM, "#LOADLEVEL\n");
-    fprintf(outputStreamSM, "##TIME\n");
-    fprintf(outputStreamSM, "#%%END_CHECK%%\n");
-
-    //Write the transport input file
-    fprintf(outputStreamTM, "oofem.out.tm\n");
-    fprintf(outputStreamTM, "Transport part of 3D model\n");
-    fprintf(outputStreamTM, "nltransienttransportproblem nsteps 5 deltat 1.0 rtol 0.001 alpha 1. nsmax 200 contextOutputStep 100 nmodules 0\n");
-    fprintf(outputStreamTM, "domain 2dMassLatticeTransport\n");
-    fprintf(outputStreamTM, "OutputManager tstep_all dofman_all element_all\n");
-    fprintf(outputStreamTM, "ndofman %d nelem %d ncrosssect 1 nmat 1 nbc 1 nic 0 nltf 2\n", numberOfNodes, numberOfLines);
-
-    for ( int i = 0; i < this->giveNumberOfVoronoiVertices(); i++ ) {
-        if ( this->giveVoronoiVertex(i + 1)->giveOutsideFlag() == 0 ) {
-            this->giveVoronoiVertex(i + 1)->giveCoordinates(coords);
-            fprintf(outputStreamTM, "node %d coords 3 %e %e %e\n", i + 1, coords.at(1), coords.at(2), coords.at(3) );
-        }
-    }
-
-    for ( int i = 0; i < this->giveNumberOfVoronoiLines(); i++ ) {
-        if ( this->giveVoronoiLine(i + 1)->giveOutsideFlag() == 0 ) {
-            this->giveVoronoiLine(i + 1)->giveLocalVertices(nodes);
-            this->giveVoronoiLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
-
-            fprintf(outputStreamTM, "latticemt3D %d nodes 2 %d %d crossSect 1 mat %d polycoords %d", i + 1, nodes.at(1), nodes.at(2), materialType, 3 * crossSectionNodes.giveSize() );
-
-            for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
-                this->giveVoronoiVertex(crossSectionNodes.at(m + 1) )->giveCoordinates(coords);
-                fprintf(outputStreamTM, " %e %e %e", coords.at(1), coords.at(2), coords.at(3) );
-            }
-            this->giveVoronoiLine(i + 1)->giveCrossSectionElements(crossSectionElements);
-            fprintf(outputStreamTM, " couplingflag 1 couplingelements %d ", crossSectionElements.giveSize() );
-            for ( int m = 0; m < crossSectionElements.giveSize(); m++ ) {
-                if ( this->giveDelaunayLine(crossSectionElements.at(m + 1) )->giveOutsideFlag() == 0 ) {
-                    fprintf(outputStreamTM, "%d ", crossSectionElements.at(m + 1) );
-                } else {
-                    fprintf(outputStreamTM, "0 ");
-                }
-            }
-
-            fprintf(outputStreamTM, "\n");
-        }
-    }
-
-    fprintf(outputStreamTM, "simplecs 1\n");
-    fprintf(outputStreamTM, "latticetransmat 1 d 1. k 1. vis 1. thetas 1. thetar 0. contype 0 c 0. \n");
-    fprintf(outputStreamTM, "BoundaryCondition 1 loadTimeFunction 1 prescribedvalue 0.\n");
-    fprintf(outputStreamTM, "BoundaryCondition 2 loadTimeFunction 1 prescribedvalue -1.\n");
-    fprintf(outputStreamTM, "ConstantFunction 1 f(t) 1.\n");
-
-    fprintf(outputStreamTM, "#%%BEGIN_CHECK%%\n");
-    fprintf(outputStreamTM, "#LOADLEVEL\n");
-    fprintf(outputStreamTM, "##TIME\n");
-    fprintf(outputStreamTM, "#%%END_CHECK%%\n");
-
-    return;
-}
 
 
 

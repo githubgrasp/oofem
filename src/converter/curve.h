@@ -7,16 +7,11 @@
 #include "floatarray.h"
 #include "intarray.h"
 
-#include "converterdatareader.h"
-#include "convertertxtdatareader.h"
-#include "convertertxtinputrecord.h"
 
 #ifndef __MAKEDEPEND
  #include <stdio.h>
 #endif
 
-#define _IFT_Curve_vertices "vertices"
-#define _IFT_Curve_refine "refine"
 
 
 class Curve : public GridComponent
@@ -47,7 +42,6 @@ public:
 
     const char *giveClassName() const override { return "Curve"; }
 
-    void initializeFrom(ConverterInputRecord &ir);
 
     void         printYourself();
 };

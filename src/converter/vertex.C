@@ -29,18 +29,6 @@ double Vertex::giveCoordinate(int i)
     return coordinates.at(i);
 }
 
-void
-Vertex::initializeFrom(ConverterInputRecord &ir)
-// Gets from the source line from the data file all the data of the receiver.
-{
-    IR_GIVE_FIELD(ir, coordinates, _IFT_Vertex_coords); // Macro
-    refinement = 1.;
-    IR_GIVE_OPTIONAL_FIELD(ir, refinement, _IFT_Vertex_refine); // Macro
-    radius = 0.;
-    IR_GIVE_OPTIONAL_FIELD(ir, radius, _IFT_Vertex_radius); // Macro
-
-    return;
-}
 
 Vertex *Vertex::ofType()
 // Returns a new DofManager, which has the same number than the receiver,
@@ -60,16 +48,6 @@ void Vertex::setLocalLine(int elem)
     localLines.at(size + 1) = elem;
     return;
 }
-
-void Vertex::setLocalTetra(int elem)
-{
-    int size = localTetras.giveSize();
-    localTetras.resizeWithValues(size + 1);
-    localTetras.at(size + 1) = elem;
-    return;
-}
-
-
 
 void Vertex::setLocalLink(int elem)
 {

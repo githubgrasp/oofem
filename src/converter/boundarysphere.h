@@ -8,18 +8,12 @@
 #include "floatarray.h"
 #include "intarray.h"
 
-#include "converterinputrecord.h"
 
-#include "converterdatareader.h"
-#include "convertertxtdatareader.h"
-#include "convertertxtinputrecord.h"
 
 #ifndef __MAKEDEPEND
  #include <stdio.h>
 #endif
 
-#define _IFT_BoundarySphere_centre "centre"
-#define _IFT_BoundarySphere_radius "radius"
 
 class BoundarySphere : public Region
 {
@@ -52,7 +46,6 @@ public:
 
     const char *giveClassName() const override { return "BoundarySphere"; }
 
-    void initializeFrom(ConverterInputRecord &ir) override;
 
     void printYourself();
 

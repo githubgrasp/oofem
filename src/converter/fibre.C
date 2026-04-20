@@ -17,26 +17,6 @@ Fibre::Fibre(int n, Grid *aGrid) : GridComponent(n, aGrid)
 }
 
 
-void
-Fibre::initializeFrom(ConverterInputRecord &ir)
-{
-    IR_GIVE_FIELD(ir, endpoints, _IFT_Fibre_endpoints);
-    IR_GIVE_FIELD(ir, diameter, _IFT_Fibre_diameter);
-    coordP.resize(3);
-    coordQ.resize(3);
-    coordP.at(1) = endpoints.at(1);
-    coordP.at(2) = endpoints.at(2);
-    coordP.at(3) = endpoints.at(3);
-    coordQ.at(1) = endpoints.at(4);
-    coordQ.at(2) = endpoints.at(5);
-    coordQ.at(3) = endpoints.at(6);
-
-    pointP = grid->createInterNode(coordP);
-    pointQ = grid->createInterNode(coordQ);
-
-    length          = computeDistance(coordP, coordQ);
-    directionVector = ( 1. / length ) * ( coordQ - coordP );
-}
 
 
 void

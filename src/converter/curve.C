@@ -22,12 +22,3 @@ Curve::giveLocalVertex(int i)
     return vertices.at(i);
 }
 
-void
-Curve::initializeFrom(ConverterInputRecord &ir)
-// Gets from the source line from the data file all the data of the receiver.
-{
-    IR_GIVE_FIELD(ir, vertices, _IFT_Curve_vertices); // Macro
-    refinement = 1.;
-    IR_GIVE_OPTIONAL_FIELD(ir, refinement, _IFT_Curve_refine); // Macro
-    return;
-}

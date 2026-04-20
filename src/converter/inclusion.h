@@ -8,9 +8,6 @@
 #include "floatarray.h"
 #include "intarray.h"
 
-#include "converterdatareader.h"
-#include "convertertxtdatareader.h"
-#include "convertertxtinputrecord.h"
 
 #ifndef __MAKEDEPEND
  #include <stdio.h>
@@ -37,7 +34,6 @@ public:
 
     virtual const char *giveClassName() const override = 0;
 
-    virtual void initializeFrom(ConverterInputRecord &ir) = 0;
 };
 
 

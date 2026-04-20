@@ -15,11 +15,7 @@ octreegridlocalizer.C
 prism.C
 region.C
 surface.C
-tetra.C
 vertex.C
-converterinputrecord.C
-convertertxtinputrecord.C
-convertertxtdatareader.C
 boundarysphere.C
 )
 

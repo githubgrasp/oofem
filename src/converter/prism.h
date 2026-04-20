@@ -8,17 +8,12 @@
 #include "floatarray.h"
 #include "intarray.h"
 
-#include "converterdatareader.h"
-#include "convertertxtdatareader.h"
-#include "convertertxtinputrecord.h"
 #include <list>
 
 #ifndef __MAKEDEPEND
  #include <stdio.h>
 #endif
 
-#define _IFT_Prism_box "box"
-#define _IFT_Prism_refine "refine"
 
 
 class GridLocalizer;
@@ -59,7 +54,6 @@ public:
     /// Returns class name of the receiver.
     const char *giveClassName() const override { return "Prism"; }
 
-    void initializeFrom(ConverterInputRecord &ir) override;
 
     /// prints receiver state on stdout. Usefull for debuging.
     void         printYourself();

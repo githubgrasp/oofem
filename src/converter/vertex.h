@@ -6,18 +6,12 @@
 #include "floatarray.h"
 #include "intarray.h"
 
-#include "converterdatareader.h"
-#include "convertertxtdatareader.h"
-#include "convertertxtinputrecord.h"
 #include "gridcomponent.h"
 
 #ifndef __MAKEDEPEND
  #include <stdio.h>
 #endif
 
-#define _IFT_Vertex_coords "coords"
-#define _IFT_Vertex_refine "refine"
-#define _IFT_Vertex_radius "radius"
 
 class Vertex : public GridComponent
 {
@@ -36,7 +30,7 @@ protected:
 
     oofem::FloatArray coordinates;
 
-    oofem::IntArray localLines, localTetras, localLinks;
+    oofem::IntArray localLines, localLinks;
     // localLines to stock elements linking elements of the same nature
     // localLink to stock elements linking elements of different natures
     // this distinction is set to avoid confusion between elements
@@ -91,13 +85,9 @@ public:
 
     void giveLocalLines(oofem::IntArray &elem) { elem = this->localLines; }
 
-    void giveLocalTetras(oofem::IntArray &elem) { elem = this->localTetras; }
-
     void giveLocalLinks(oofem::IntArray &elem) { elem = this->localLinks; }
 
     void setLocalLine(int elem);
-
-    void setLocalTetra(int elem);
 
     void setLocalLink(int elem);
 
@@ -131,7 +121,6 @@ public:
 
     const char *giveClassName() const override { return "Vertex"; }
 
-    void initializeFrom(ConverterInputRecord &ir);
 
     void  printYourself();
 };

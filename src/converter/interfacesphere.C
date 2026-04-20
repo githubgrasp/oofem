@@ -14,18 +14,6 @@ InterfaceSphere::InterfaceSphere(int n, Grid *aGrid) : Inclusion(n, aGrid) //, c
 }
 
 
-void
-InterfaceSphere::initializeFrom(ConverterInputRecord &ir)
-// Gets from the source line from the data file all the data of the receiver.
-{
-    IR_GIVE_FIELD(ir, centre, _IFT_InterfaceSphere_centre);
-    IR_GIVE_FIELD(ir, radius, _IFT_InterfaceSphere_diameter); // Macro
-    refinement = 1.;
-    IR_GIVE_OPTIONAL_FIELD(ir, refinement, _IFT_InterfaceSphere_refine); // Macro
-    itzThickness = 0.;
-    IR_GIVE_OPTIONAL_FIELD(ir, itzThickness, _IFT_InterfaceSphere_itz); // Macro
-    return;
-}
 
 
 InterfaceSphere *InterfaceSphere::ofType()

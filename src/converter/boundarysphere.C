@@ -14,13 +14,6 @@ BoundarySphere::BoundarySphere(int n, Grid *aGrid) : Region(n, aGrid)
 }
 
 
-void
-BoundarySphere::initializeFrom(ConverterInputRecord &ir)
-{
-    IR_GIVE_FIELD(ir, centre, _IFT_BoundarySphere_centre);
-    IR_GIVE_FIELD(ir, radius, _IFT_BoundarySphere_radius);
-    return;
-}
 
 
 void BoundarySphere::findOutsiders(oofem::FloatArray &boundaries)

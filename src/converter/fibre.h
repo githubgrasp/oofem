@@ -8,12 +8,7 @@
 #include "floatarray.h"
 #include "intarray.h"
 
-#include "converterdatareader.h"
-#include "convertertxtdatareader.h"
-#include "convertertxtinputrecord.h"
 
-#define _IFT_Fibre_endpoints "endpoints"
-#define _IFT_Fibre_diameter  "diameter"
 
 #ifndef __MAKEDEPEND
  #include <stdio.h>
@@ -56,7 +51,6 @@ public:
 
     Fibre *ofType();
 
-    void initializeFrom(ConverterInputRecord &ir);
     /// Initialise from already-parsed endpoints + diameter (qhull-template path).
     void initializeFromCoords(const oofem::FloatArray &endpoints, double diam);
 

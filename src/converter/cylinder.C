@@ -13,16 +13,6 @@ Cylinder::Cylinder(int n, Grid *aGrid) : Region(n, aGrid)
     this->number = n;
 }
 
-void
-Cylinder::initializeFrom(ConverterInputRecord &ir)
-// Gets from the source line from the data file all the data of the receiver.
-{
-    IR_GIVE_FIELD(ir, line, _IFT_Cylinder_line);
-    IR_GIVE_FIELD(ir, radius, _IFT_Cylinder_radius); // Macro
-    refinement = 1.;
-    IR_GIVE_OPTIONAL_FIELD(ir, refinement, _IFT_Cylinder_refine); // Macro
-    return;
-}
 
 
 void

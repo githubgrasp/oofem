@@ -8,20 +8,12 @@
 #include "floatarray.h"
 #include "intarray.h"
 
-#include "converterinputrecord.h"
 
-#include "converterdatareader.h"
-#include "convertertxtdatareader.h"
-#include "convertertxtinputrecord.h"
 
 #ifndef __MAKEDEPEND
  #include <stdio.h>
 #endif
 
-#define _IFT_InterfaceCylinder_line "line"
-#define _IFT_InterfaceCylinder_radius "radius"
-#define _IFT_InterfaceCylinder_refine "refine"
-#define _IFT_InterfaceCylinder_itz "itz"
 
 
 class InterfaceCylinder : public Inclusion
@@ -61,7 +53,6 @@ public:
     /// Returns class name of the receiver.
     const char *giveClassName() const override { return "InterfaceCylinder"; }
 
-    void initializeFrom(ConverterInputRecord &ir) override;
 
     /// prints receiver state on stdout. Usefull for debuging.
     void         printYourself();
