@@ -31,3 +31,33 @@ target_link_libraries(generator.exec PRIVATE generator liboofem)
 
 # Optional: don't build generator_exec by default with `make`
 #set_target_properties(generator.exec PROPERTIES EXCLUDE_FROM_ALL TRUE)
+
+enable_testing()
+
+# Generator tests — diff-based, one subdirectory per test case.
+# Each subdirectory must contain mesh.in and reference.nodes. The driver
+# runs generator.exec on mesh.in and diffs the resulting nodes.dat against
+# reference.nodes.
+
+set(GENERATOR_TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+set(GENERATOR_RUN_TEST ${GENERATOR_TEST_DIR}/run_test.cmake)
+
+file(GLOB _gen_test_entries RELATIVE ${GENERATOR_TEST_DIR} ${GENERATOR_TEST_DIR}/*)
+
+foreach(_entry ${_gen_test_entries})
+    set(_dir ${GENERATOR_TEST_DIR}/${_entry})
+    if(NOT IS_DIRECTORY ${_dir})
+        continue()
+    endif()
+    if(NOT EXISTS ${_dir}/mesh.in OR NOT EXISTS ${_dir}/reference.nodes)
+        continue()
+    endif()
+
+    add_test(
+        NAME test_generator_${_entry}
+        COMMAND ${CMAKE_COMMAND}
+            -DGENERATOR=$<TARGET_FILE:generator.exec>
+            -DTEST_DIR=${_dir}
+            -P ${GENERATOR_RUN_TEST}
+    )
+endforeach()
