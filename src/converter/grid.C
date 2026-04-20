@@ -1601,6 +1601,54 @@ void Grid::readQhullControlRecords(const std::string &controlFile)
             // Used by staggered SMTM analyses (e.g. Wong percolation) where
             // the SM and TM subproblems exchange data element-by-element.
             emitCouplingFlag = true;
+        } else if ( tag == "#@rigidarm" ) {
+            // #@rigidarm <master_ctl_id> face <axis> <side>
+            //   mastermask 6 m1..m6 doftype 6 d1..d6
+            // `<axis>` is 1|2|3 (x|y|z); `<side>` is min|max.
+            RigidArmSpec ra;
+            std::string kw, sideWord;
+            int axis = 0;
+            if ( !( iss >> ra.masterCtlId >> kw >> axis >> sideWord ) || kw != "face" ) {
+                converter::error("Malformed #@rigidarm — expected '<master_ctl_id> face <axis> <side> mastermask 6 … doftype 6 …'");
+            }
+            if ( axis < 1 || axis > 3 ) {
+                converter::error("#@rigidarm — axis must be 1, 2 or 3");
+            }
+            if ( sideWord != "min" && sideWord != "max" ) {
+                converter::error("#@rigidarm — side must be 'min' or 'max'");
+            }
+            ra.axis = axis;
+            ra.sideMax = ( sideWord == "max" );
+            iss >> kw;                // "mastermask"
+            if ( kw != "mastermask" ) {
+                converter::error("#@rigidarm — expected 'mastermask 6 …'");
+            }
+            int sz = 0;
+            iss >> sz;
+            if ( sz != 6 ) {
+                converter::error("#@rigidarm — mastermask must have size 6");
+            }
+            ra.mastermask.resize(6);
+            for ( int i = 1; i <= 6; ++i ) iss >> ra.mastermask.at(i);
+            iss >> kw;                // "doftype"
+            if ( kw != "doftype" ) {
+                converter::error("#@rigidarm — expected 'doftype 6 …' after mastermask");
+            }
+            iss >> sz;
+            if ( sz != 6 ) {
+                converter::error("#@rigidarm — doftype must have size 6");
+            }
+            ra.doftype.resize(6);
+            for ( int i = 1; i <= 6; ++i ) iss >> ra.doftype.at(i);
+            rigidArmSpecs.push_back(ra);
+        } else if ( tag == "#@material_around" ) {
+            // #@material_around <ctl_id> material <m>
+            MaterialAroundSpec m;
+            std::string kw;
+            if ( !( iss >> m.ctlId >> kw >> m.material ) || kw != "material" ) {
+                converter::error("Malformed #@material_around — expected '<ctl_id> material <m>'");
+            }
+            materialAroundSpecs.push_back(m);
         }
     }
 
@@ -3097,6 +3145,9 @@ Grid::give3DSMOutput(const std::string &fileName)
 
             // Delaunay nodes (inside or on boundary). In periodic mode, the
             // first inside vertex is pinned and raw vertex IDs are used.
+            // Vertices matching a #@rigidarm face are emitted as
+            // rigidarmnode slaved to the master controlvertex (except the
+            // master itself, which is kept as a regular node).
             int compactCounter = 0;
             int firstFlag = 0;
             for ( int i = 0; i < nDelV; i++ ) {
@@ -3105,6 +3156,34 @@ Grid::give3DSMOutput(const std::string &fileName)
 
                 this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
                 int nid = periodic ? ( i + 1 ) : ( ++compactCounter );
+
+                // Check whether this vertex lands on any #@rigidarm face.
+                const RigidArmSpec *raMatch = nullptr;
+                for ( const auto &ra : rigidArmSpecs ) {
+                    double faceCoord = ra.sideMax ? bounds.at(2 * ra.axis) : bounds.at(2 * ra.axis - 1);
+                    if ( std::abs(coords.at(ra.axis) - faceCoord) >= tol ) continue;
+                    auto it = controlNodeIds.find(ra.masterCtlId);
+                    if ( it == controlNodeIds.end() ) continue;
+                    int masterRaw = it->second;
+                    if ( masterRaw == i + 1 ) continue;  // the master itself stays a regular node
+                    raMatch = &ra;
+                    break;
+                }
+
+                if ( raMatch ) {
+                    auto it = controlNodeIds.find(raMatch->masterCtlId);
+                    int masterNid = mapId(it->second);
+                    out << "rigidarmnode " << nid << " coords 3 " << std::scientific
+                        << coords.at(1) << " " << coords.at(2) << " " << coords.at(3)
+                        << " master " << masterNid
+                        << " mastermask 6";
+                    for ( int k = 1; k <= 6; k++ ) out << " " << raMatch->mastermask.at(k);
+                    out << " doftype 6";
+                    for ( int k = 1; k <= 6; k++ ) out << " " << raMatch->doftype.at(k);
+                    out << "\n";
+                    continue;
+                }
+
                 out << "node " << nid << " coords 3 " << std::scientific
                     << coords.at(1) << " " << coords.at(2) << " " << coords.at(3);
                 if ( periodic && firstFlag == 0 ) {
@@ -3131,6 +3210,28 @@ Grid::give3DSMOutput(const std::string &fileName)
 
             int elemCounter = 0;
 
+            // Helper: starting from the default material 1, apply the
+            // #@material_around overrides (element touches a named
+            // controlvertex), then #@notch (midpoint inside a box), then
+            // #@sphere/cylinderinclusion. Later stages can override earlier
+            // ones.
+            auto resolveLineMaterial = [ & ](int endpoint1, int endpoint2,
+                                             const oofem::FloatArray &Acoord,
+                                             const oofem::FloatArray &Bcoord) -> int {
+                int mat = 1;
+                for ( const auto &ma : materialAroundSpecs ) {
+                    auto it = controlNodeIds.find(ma.ctlId);
+                    if ( it == controlNodeIds.end() ) continue;
+                    if ( endpoint1 == it->second || endpoint2 == it->second ) {
+                        mat = ma.material;
+                        break;
+                    }
+                }
+                mat = resolveNotchMaterial(Acoord, Bcoord, mat);
+                mat = resolveInclusionMaterial(Acoord, Bcoord, mat);
+                return mat;
+            };
+
             // Delaunay lines → lattice3D (inside) or lattice3Dboundary (periodic crossing).
             oofem::FloatArray A(3), B(3), M(3), cCurr(3), cNext(3);
             for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
@@ -3148,8 +3249,8 @@ Grid::give3DSMOutput(const std::string &fileName)
                 oofem::FloatArray boundaryA(3), boundaryB(3);
                 this->giveDelaunayVertex(lineNodes.at(1))->giveCoordinates(boundaryA);
                 this->giveDelaunayVertex(lineNodes.at(2))->giveCoordinates(boundaryB);
-                int matBoundary = resolveNotchMaterial(boundaryA, boundaryB, 1);
-                matBoundary = resolveInclusionMaterial(boundaryA, boundaryB, matBoundary);
+                int matBoundary = resolveLineMaterial(lineNodes.at(1), lineNodes.at(2),
+                                                      boundaryA, boundaryB);
                 auto boundaryBodyloadIt = bodyloadByMaterial.find(matBoundary);
 
                 if ( emitBoundary ) {
@@ -3214,8 +3315,7 @@ Grid::give3DSMOutput(const std::string &fileName)
                     }
                 }
 
-                int matInside = resolveNotchMaterial(A, B, 1);
-                matInside = resolveInclusionMaterial(A, B, matInside);
+                int matInside = resolveLineMaterial(lineNodes.at(1), lineNodes.at(2), A, B);
                 auto insideBodyloadIt = bodyloadByMaterial.find(matInside);
                 out << "lattice3D " << ++elemCounter
                     << " nodes 2 " << mapId(lineNodes.at(1)) << " " << mapId(lineNodes.at(2))

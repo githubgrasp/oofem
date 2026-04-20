@@ -250,6 +250,32 @@ private:
     /// material only.
     std::map< int, int >bodyloadByMaterial;
 
+    /// Emit any Delaunay vertex on a specified face of the region's bounding
+    /// box as a `rigidarmnode` slaved to a named control vertex. Populated by
+    /// `#@rigidarm <master_ctl_id> face <axis> <side> mastermask 6 m1..m6
+    /// doftype 6 d1..d6`. axis is 1|2|3 (x|y|z); side is min|max. The master
+    /// vertex itself is kept as a regular node. Use-case: cantilever ends
+    /// clamped as rigid bodies attached to support/load control nodes.
+    struct RigidArmSpec {
+        int masterCtlId = 0;
+        int axis = 1;       // 1=x, 2=y, 3=z
+        bool sideMax = false;
+        oofem::IntArray mastermask;   // 6 ints
+        oofem::IntArray doftype;      // 6 ints
+    };
+    std::vector< RigidArmSpec >rigidArmSpecs;
+
+    /// Any Delaunay line with either endpoint equal to the named control
+    /// vertex gets the specified material. Populated by `#@material_around
+    /// <ctl_id> material <m>`. Precedence: material_around < notch <
+    /// inclusion — notch/inclusion directives override. Use-case: cantilever
+    /// elastic elements attached to the support/load points.
+    struct MaterialAroundSpec {
+        int ctlId = 0;
+        int material = 1;
+    };
+    std::vector< MaterialAroundSpec >materialAroundSpecs;
+
     /// When true, emitters append `couplingflag 1 couplingnumber N <ids>`
     /// to each element record. For an SM lattice3D element (at a Delaunay
     /// line), the ids are the Voronoi-line cross-section elements; for a TM

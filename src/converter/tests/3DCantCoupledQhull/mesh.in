@@ -1,0 +1,8 @@
+nodes.dat
+Cantilever beam with notch at x=0.125, z<0.25
+domain 3
+diam 0.06 maxiter 10000 ranint -1 perflag 3 0 0 0 ranflag 2
+nvertex 0 ncurve 0 nsurface 0 nregion 1 ninclusion 0 ncontrolvertex 2
+controlvertex 1 coords 3 0.   0.125 0.25 refine 1. radius 0
+controlvertex 2 coords 3 0.25 0.125 0.25 refine 1. radius 0
+prism 1 box 6 0. 0. 0. 0.25 0.25 1. refine 1.
