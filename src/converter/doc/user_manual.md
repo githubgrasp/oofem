@@ -80,7 +80,11 @@ Output is always written to `oofem.in` in the working directory.
 
 The control file is an OOFEM `.in` template. The converter reads it line by line. Lines that start with `#@` are directives — they either configure the converter or mark an injection point for mesh-derived content, and are **not** written to the output. All other lines (including `#` comments and `#%` regression-check blocks) are passed through verbatim.
 
-The available directives differ by path. Use the directives in the table matching the mesh format you are feeding the converter.
+### Parsing vs consumption
+
+All directives go through a single parser (`Grid::readControlRecords`) regardless of which mesher produced the input. A directive's *applicability* is a property of the consumers — only the qhull writers (`give3DSMOutput`, `give3DTMOutput`) look at `#@notch` / `#@sphereinclusion` / etc., and only the T3D writers look at `#@BC` / `#@LOAD` / etc. A directive from the "wrong" pipeline is silently ignored at write time, not rejected at parse time.
+
+The two tables below split directives by the pipeline that consumes them. Directives in the qhull table have no effect in a T3D run, and vice versa.
 
 ### Shared directives (both paths)
 
@@ -94,9 +98,9 @@ These are injection markers, replaced in the output by content derived from the 
 
 The counts line (`ndofman … nelem … nset …`) is patched in place once the mesh is processed; it is not an `#@` directive but behaves like one.
 
-### Qhull path directives
+### Qhull-consumed directives
 
-Used when the converter is invoked with `mesh.nodes` (+ optional `mesh.delaunay`) and `mesh.voronoi`. Geometry directives set up the region and localiser; they are consumed, not written out.
+Consumed by `give3DSMOutput` / `give3DTMOutput` (the qhull writers) and by qhull-pipeline setup. Geometry directives set up the region and localiser; they are consumed, not written out. Parsed but not consumed when the mesher is T3D.
 
 | Directive | Arguments | Purpose |
 |-----------|-----------|---------|
@@ -122,9 +126,9 @@ Used when the converter is invoked with `mesh.nodes` (+ optional `mesh.delaunay`
 | `#@pov` | *(no arguments)* | Opt in to writing the auxiliary POV-Ray rendering files (`*.vor.line.pov`, `*.vor.cross.pov`, `*.del.line.pov`, `*.del.cross.pov`). Default off — POV files are not generated unless this directive is present. |
 | `#@vtk` | *(no arguments)* | Opt in to writing the ParaView `.vtu` files (`*.voronoielement.vtu`, `*.delaunayelement.*.vtu`, `*.fibre.beamElement.vtu`, etc.). Default off — VTK files are not generated unless this directive is present. |
 
-### T3D path directives
+### T3D-consumed directives
 
-Used when the converter is invoked with `mesh.t3d`. These directives describe BCs, loads, and section data attached to named T3D entities (vertices, curves, surfaces).
+Consumed by the T3D writers (`giveOutputT3d` / `writeT3dNodesOofem` / `writeT3dElemsOofem`). These directives describe BCs, loads, and section data attached to named T3D entities (vertices, curves, surfaces). Parsed but not consumed when the mesher is qhull.
 
 | Directive | Arguments | Purpose |
 |-----------|-----------|---------|
@@ -160,4 +164,10 @@ Reinforcement-node ids are offset by the raw Delaunay-vertex count `N_DelV`: the
 
 ### Adding a new analysis type
 
-The long-term goal is that supporting a new analysis type means writing a new `control.in`, not touching C++. When adding a directive, register it in the unified `Grid::readControlRecords` parser and add it to the table above. Keep `mesh.in` and the `#@prism`/`#@cylinder`/`#@fibre` etc. lines in `control.in` mirrored so that readers can see the mesh parameters in both files. Prefer extending `give3DSMOutput` / `give3DTMOutput` over adding a new grid type.
+The long-term goal is that supporting a new analysis type means writing a new `control.in`, not touching C++. When adding a directive:
+
+1. Register it in the unified `Grid::readControlRecords` parser. The parser is shared; there is no per-pipeline parser to edit.
+2. Wire it into the writer(s) that should consume it — one of the qhull writers (`give3DSMOutput` / `give3DTMOutput`), the T3D writers, or both.
+3. Add it to the qhull-consumed or T3D-consumed table above, depending on where you wired it up. A directive consumed by both pipelines goes in a shared row — none exist today, but nothing in the parser prevents that.
+
+Keep `mesh.in` and the `#@prism`/`#@cylinder`/`#@fibre` etc. lines in `control.in` mirrored so that readers can see the mesh parameters in both files. Prefer extending `give3DSMOutput` / `give3DTMOutput` over adding a new grid type.
