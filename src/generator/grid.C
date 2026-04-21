@@ -314,7 +314,7 @@ int Grid::generateRandomPoints()
 
         nsec = ( ec - start ) / CLOCKS_PER_SEC;
         printf("All points generated in %lds \n", nsec);
-    } else if ( this->randomFlag == 2 )    {//Generate periodic surfaces for Adam
+    } else if ( this->randomFlag == 2 ) {   //Generate periodic surfaces for Adam
         /*Each direction should be generated only once and then shifted by the specimen dimension*/
         oofem::IntArray lineCounter(3);
         oofem::FloatArray lineNormal(3);
@@ -331,11 +331,11 @@ int Grid::generateRandomPoints()
                 ( this->giveCurve(i + 1) )->generatePoints();
                 printf("numberOfVertices = %d\n", this->giveNumberOfVertices() );
                 lineCounter.at(1) = 1;
-            } else if ( lineNormal.at(1) == 0 && lineNormal.at(2) == 1 && lineNormal.at(3) == 0 && lineCounter.at(2) == 0 )      {
+            } else if ( lineNormal.at(1) == 0 && lineNormal.at(2) == 1 && lineNormal.at(3) == 0 && lineCounter.at(2) == 0 ) {
                 ( this->giveCurve(i + 1) )->generatePoints();
                 printf("numberOfVertices = %d\n", this->giveNumberOfVertices() );
                 lineCounter.at(2) = 1;
-            } else if ( lineNormal.at(1) == 0 && lineNormal.at(2) == 0 && lineNormal.at(3) == 1 && lineCounter.at(3) == 0 )      {
+            } else if ( lineNormal.at(1) == 0 && lineNormal.at(2) == 0 && lineNormal.at(3) == 1 && lineCounter.at(3) == 0 ) {
                 ( this->giveCurve(i + 1) )->generatePoints();
                 printf("numberOfVertices = %d\n", this->giveNumberOfVertices() );
                 lineCounter.at(3) = 1;
@@ -357,11 +357,11 @@ int Grid::generateRandomPoints()
                 ( this->giveSurface(i + 1) )->generatePoints();
                 printf("numberOfVertices = %d\n", this->giveNumberOfVertices() );
                 surfaceCounter.at(1) = 1;
-            } else if ( surfaceNormal.at(1) == 0 && surfaceNormal.at(2) == 1 && surfaceNormal.at(3) == 0 && surfaceCounter.at(2) == 0 )      {
+            } else if ( surfaceNormal.at(1) == 0 && surfaceNormal.at(2) == 1 && surfaceNormal.at(3) == 0 && surfaceCounter.at(2) == 0 ) {
                 ( this->giveSurface(i + 1) )->generatePoints();
                 printf("numberOfVertices = %d\n", this->giveNumberOfVertices() );
                 surfaceCounter.at(2) = 1;
-            } else if ( surfaceNormal.at(1) == 0 && surfaceNormal.at(2) == 0 && surfaceNormal.at(3) == 1 && surfaceCounter.at(3) == 0 )      {
+            } else if ( surfaceNormal.at(1) == 0 && surfaceNormal.at(2) == 0 && surfaceNormal.at(3) == 1 && surfaceCounter.at(3) == 0 ) {
                 ( this->giveSurface(i + 1) )->generatePoints();
                 printf("numberOfVertices = %d\n", this->giveNumberOfVertices() );
                 surfaceCounter.at(3) = 1;
@@ -383,7 +383,7 @@ int Grid::generateRandomPoints()
 
         nsec = ( ec - start ) / CLOCKS_PER_SEC;
         printf("All points generated in %lds \n", nsec);
-    } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 0 )     {
+    } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 0 && periodicityFlag.at(3) == 0 ) {
         //This is the case of a region with periodicity in x-direction, as is the case for a periodic beam
         sc = ::clock();
 
@@ -420,7 +420,7 @@ int Grid::generateRandomPoints()
         ec = ::clock();
         nsec = ( ec - sc ) / CLOCKS_PER_SEC;
         printf("Points in regions generated in %lds \n", nsec);
-    } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 0 )      {
+    } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 0 ) {
         //Region with periodicity in x and y directions. This could be the case of a slab.
 
         this->generateControlPoints(); //This should now include also periodic shifts
@@ -446,7 +446,7 @@ int Grid::generateRandomPoints()
         ec = ::clock();
         nsec = ( ec - sc ) / CLOCKS_PER_SEC;
         printf("Points in regions generated in %lds \n", nsec);
-    } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 1 )      {
+    } else if ( periodicityFlag.at(1) == 1 && periodicityFlag.at(2) == 1 && periodicityFlag.at(3) == 1 ) {
         //Region with periodicity in all directions.
 
         sc = ::clock();
@@ -474,7 +474,7 @@ int Grid::generateRandomPoints()
         ec = ::clock();
         nsec = ( ec - sc ) / CLOCKS_PER_SEC;
         printf("Points in regions generated in %lds \n", nsec);
-    } else   {//should not be here
+    } else {  //should not be here
         printf("Something wrong with mixed point generation and periodic flag in grid->generateRandomPoints\n");
     }
 
@@ -604,7 +604,7 @@ int Grid::readControlRecords(const std::string &controlFile)
 {
     std::ifstream in(controlFile);
     if ( !in ) {
-        generator::errorf("Grid::readControlRecords: cannot open control file '%s'", controlFile.c_str());
+        generator::errorf("Grid::readControlRecords: cannot open control file '%s'", controlFile.c_str() );
     }
 
     // Match legacy defaults from instanciateYourself().
@@ -771,7 +771,7 @@ int Grid::readControlRecords(const std::string &controlFile)
             }
             setRefinement(num, ref);
         } else if ( tag.rfind("#@", 0) == 0 ) {
-            generator::errorf("Grid::readControlRecords: unknown directive '%s'", tag.c_str());
+            generator::errorf("Grid::readControlRecords: unknown directive '%s'", tag.c_str() );
         }
         // Non-directive lines (blank, `#` comments, anything not starting
         // with `#@`) are skipped silently.
@@ -840,7 +840,7 @@ void Grid::defineBoundaries(oofem::FloatArray &boundaries)
             generator::error("Grid::defineBoundaries: cannot define boundaries for multiple regions yet");
         }
         this->giveRegion(1)->defineBoundaries(boundaries);
-    } else if ( this->giveNumberOfSurfaces() > 0 )       {
+    } else if ( this->giveNumberOfSurfaces() > 0 ) {
         if ( this->giveNumberOfSurfaces() != 1 ) {
             generator::error("Grid::defineBoundaries: cannot define boundaries for multiple surfaces yet");
         }
@@ -860,7 +860,6 @@ void Grid::giveOutput(FILE *outputStream)
     for ( int i = 0; i < this->giveNumberOfVertices(); i++ ) {
         fprintf(outputStream, "%.16e %.16e %.16e\n", ( this->giveVertex(i + 1) )->giveCoordinate(1), ( this->giveVertex(i + 1) )->giveCoordinate(2), ( this->giveVertex(i + 1) )->giveCoordinate(3) );
     }
-
 }
 
 

@@ -24,14 +24,7 @@ class Inclusion;
 class GridLocalizer;
 class Refinement;
 /**
- * Class and object Grid. Grid contains grid description, or if program runs in parrallel then it contains
- * description of grid associated to particular processor or thread of execution. Generally, it contain and
- * manages lists of Dof managers, elements, boundary conditions, cross sections and materials - these describe
- * the geometry of problem, its constitutive properties and applied boundary conditions. Services for accessing
- * these objects are provided. Grid is attribute of engineering model - which represent type of analysis
- * which should be performed.
- *
- * Grid also provides services for reading its description from
+ * Grid provides services for reading components description from
  * input stream and instantiating corresponding components acordingly. The basic Grid task are following
  * <UL>
  * <LI>
@@ -52,19 +45,10 @@ private:
 
     int vertexCount = 0;
 
-    /**
-     * Associated Engineering model. An abstraction for type of analysis which will be prformed.
-     * @see EngngModel
-     */
-    // EngngModel *engineeringModel;
-
     /// Grid number
     int number;
 
     double density;
-    //These are the number of edges that are going to be changes into an array
-    // xedges, yedges, zedges;
-    // Moved to public in order not to retype them in the input files
 
     //The type of grid used ( if BCC regType = 1, else if FCC regType = 2)
     int regType;
@@ -93,6 +77,7 @@ public:
     /// generators (BCC / FCC). Populated from `#@xyzedges` when present
     /// and `#@regflag 1`; unused in random-placement mode.
     oofem::IntArray xyzEdges;
+
     /// Geometric tolerance (typically `1e-6 * diameter`) used in all
     /// float-coordinate comparisons.
     double TOL;
@@ -100,35 +85,43 @@ public:
     /// Target nominal spacing between generated points. Set by `#@diam`.
     double diameter;
 
-
     /// Final, generated vertex list (the points the generator writes out).
     std::vector< Vertex * >vertexList;
+
     /// Input vertices read from `#@vertex` directives (bounding-box
     /// corners, explicit seed points).
     std::vector< Vertex * >inputVertexList;
+
     /// Control vertices read from `#@controlvertex` — named node locations
     /// the converter references for BCs / loads.
     std::vector< Vertex * >controlVertexList;
+
     /// Curves read from `#@curve`.
     std::vector< Curve * >curveList;
+
     /// Surfaces read from `#@surface`.
     std::vector< Surface * >surfaceList;
+
     /// Regions read from `#@prism` / `#@cylinder` / `#@sphere`.
     std::vector< Region * >regionList;
+
     /// Inclusions read from `#@intersphere` / `#@interfacecylinder` /
     /// `#@interfaceplane` / `#@interfacesurface`.
     std::vector< Inclusion * >inclusionList;
+
     /// Local refinement boxes read from `#@refineprism`.
     std::vector< Refinement * >refinementList;
 
 
     /// Constructor. Creates an empty `n`-th grid.
     Grid(int n);
+
     /// Destructor. Deletes owned components.
     ~Grid();
 
     /// Returns the grid number (1-based; currently always 1).
     int giveNumber() { return this->number; }
+
     /// Overrides the grid number.
     void setNumber(int nn) { this->number = nn; }
 
@@ -150,18 +143,25 @@ public:
 
     /// Returns the `n`-th (1-based) generated vertex, or nullptr.
     Vertex *giveVertex(int n);
+
     /// Returns the `n`-th (1-based) input vertex (from `#@vertex`).
     Vertex *giveInputVertex(int n);
+
     /// Returns the `n`-th (1-based) control vertex (from `#@controlvertex`).
     Vertex *giveControlVertex(int n);
+
     /// Returns the `n`-th (1-based) curve.
     Curve *giveCurve(int n);
+
     /// Returns the `n`-th (1-based) surface.
     Surface *giveSurface(int n);
+
     /// Returns the `n`-th (1-based) region.
     Region *giveRegion(int n);
+
     /// Returns the `n`-th (1-based) inclusion.
     Inclusion *giveInclusion(int n);
+
     /// Returns the `n`-th (1-based) refinement entry.
     Refinement *giveRefinement(int n);
 
@@ -264,6 +264,7 @@ public:
     //@{
     /// Resizes the internal data structure to accomodate space for _newSize dofManagers
     void resizeVertices(int _newSize);
+
     /// Resizes the internal data structure to accomodate space for _newSize dofManagers
     void resizeInputVertices(int _newSize);
 
@@ -272,8 +273,10 @@ public:
 
     /// Resizes the internal data structure to accomodate space for _newSize elements
     void resizeCurves(int _newSize);
+
     /// Resizes the internal data structure to accomodate space for _newSize cross section models
     void resizeSurfaces(int _newSize);
+
     /// Resizes the internal data structure to accomodate space for _newSize materials
     void resizeRegions(int _newSize);
 
@@ -287,14 +290,19 @@ public:
 
     /// Sets i-th componet. The component will be futher managed and maintained by grid object.
     void setVertex(int i, Vertex *obj);
+
     /// Sets i-th componet. The component will be futher managed and maintained by grid object.
     void setInputVertex(int i, Vertex *obj);
+
     /// Sets i-th componet. The component will be futher managed and maintained by grid object.
     void setControlVertex(int i, Vertex *obj);
+
     /// Sets i-th componet. The component will be futher managed and maintained by grid object.
     void setCurve(int i, Curve *obj);
+
     /// Sets i-th componet. The component will be futher managed and maintained by grid object.
     void setSurface(int i, Surface *obj);
+
     /// Sets i-th componet. The component will be futher managed and maintained by grid object.
     void setRegion(int i, Region *obj);
 
