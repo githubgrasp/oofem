@@ -12,7 +12,6 @@
 
 InterfaceCylinder::InterfaceCylinder(int n, Grid *aGrid) : Inclusion(n, aGrid) //, coordinates()
 {
-    this->number = n;
 }
 
 InterfaceCylinder::~InterfaceCylinder()
@@ -238,15 +237,3 @@ void InterfaceCylinder::initializeFromTokens(std::istringstream &iss)
     }
 }
 
-
-
-InterfaceCylinder *InterfaceCylinder::ofType()
-// Returns a new DofManager, which has the same number than the receiver,
-// but belongs to aClass (Node, ElementSide,..).
-{
-    InterfaceCylinder *cylinder;
-
-    cylinder = new InterfaceCylinder(number, grid);
-
-    return cylinder;
-}

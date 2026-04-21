@@ -21,62 +21,60 @@ class Region : public GridComponent
 protected:
     /// Array storing nodal coordinates.
     oofem::IntArray surfaces;
-    int number;
-    double refinement;
     double xlength, ylength, zlength;
 
 public:
 
     /**
-     * Constructor. Creates a node belonging to grid.
-     * @param n node number in grid aGrid
-     * @param aGrid grid to which node belongs
+     * Constructor. Creates a region belonging to `aGrid`.
+     * @param n region number in the grid
+     * @param aGrid grid to which the region belongs
      */
-    Region(int n, Grid *aGrid);                      // constructor
+    Region(int n, Grid *aGrid);
     /// Destructor.
-    virtual ~Region();                                           // destructor
+    virtual ~Region();
 
-    /// Returns i-th vertex of curve.
-    int      giveLocalSurface(int i);
-    /// Returns pointer to curve vertex array.
-
+    /// Returns the `i`-th (1-based) bounding-surface id of the region.
+    int giveLocalSurface(int i);
+    /// Copies the region's bounding-surface id array into `surf`.
     void giveLocalSurfaces(oofem::IntArray &surf) { surf = this->surfaces; }
 
-    /// Define boundaries
+    /// Fill `boundaries` with the region bounding box in
+    /// `[xmin xmax ymin ymax zmin zmax]` order.
     virtual void defineBoundaries(oofem::FloatArray &boundaries);
 
-    //generate regular points
+    /// Regular point-grid seeding, variant 1 (BCC-style).
     int generateRegularPoints1();
+    /// Regular point-grid seeding, variant 2 (FCC-style).
     int generateRegularPoints2();
 
-    //generate random points in periodic cell
+    /// Generate random points in the region treating it as fully
+    /// periodic on all active axes.
     int generatePeriodicPoints();
 
-    //generate random points
+    /// Generate random points in the region (non-periodic fallback).
+    /// Subclasses override to provide shape-specific acceptance tests.
     virtual int generatePoints();
 
-    //generate mixed points.
-    //This means that some direction are periodic and others are not
+    /// Generate random points in the region when some axes are periodic
+    /// and others are not.
     int generateMixedPoints();
 
-    ///Returns the x length
+    /// Returns the region's extent along x.
     double giveXLength() { return this->xlength; }
 
-    ///Returns the y length
+    /// Returns the region's extent along y.
     double giveYLength() { return this->ylength; }
 
-    ///Returns the z length
+    /// Returns the region's extent along z.
     double giveZLength() { return this->zlength; }
 
-    //    Region *ofType();
-
-    // miscellaneous
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "Region"; }
 
+    /// Returns the region number (1-based).
     int giveNumber() { return this->number; }
 
-    void printYourself();
 };
 
 

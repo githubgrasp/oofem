@@ -107,12 +107,8 @@ Vertex *Grid::giveVertex(int n)
 {
     if ( n >= 1 && n <= static_cast < int > ( generator::size1(vertexList) ) && vertexList [ n - 1 ] != nullptr ) {
         return vertexList [ n - 1 ];  // 1-based to 0-based
-    } else {
-        printf("giveVertex: undefined vertex (%d)\n", n);
-        exit(1);
     }
-
-    return nullptr;
+    generator::errorf("Grid::giveVertex: undefined vertex (%d)", n);
 }
 
 
@@ -120,11 +116,8 @@ Vertex *Grid::giveInputVertex(int n)
 {
     if ( n >= 1 && n <= static_cast < int > ( generator::size1(inputVertexList) ) && inputVertexList [ n - 1 ] != nullptr ) {
         return inputVertexList [ n - 1 ];  // 1-based to 0-based
-    } else {
-        printf("giveInputVertex: undefined inputVertex (%d)\n", n);
-        exit(1);
     }
-    return nullptr;
+    generator::errorf("Grid::giveInputVertex: undefined inputVertex (%d)", n);
 }
 
 
@@ -133,11 +126,8 @@ Vertex *Grid::giveControlVertex(int n)
 {
     if ( n >= 1 && n <= static_cast < int > ( generator::size1(controlVertexList) ) && controlVertexList [ n - 1 ] != nullptr ) {
         return controlVertexList [ n - 1 ];  // 1-based to 0-based
-    } else {
-        printf("giveControlVertex: undefined controlVertex (%d)\n", n);
-        exit(1);
     }
-    return nullptr;
+    generator::errorf("Grid::giveControlVertex: undefined controlVertex (%d)", n);
 }
 
 
@@ -146,22 +136,16 @@ Curve *Grid::giveCurve(int n)
 {
     if ( n >= 1 && n <= static_cast < int > ( generator::size1(curveList) ) && curveList [ n - 1 ] != nullptr ) {
         return curveList [ n - 1 ];  // 1-based to 0-based
-    } else {
-        printf("giveCurve: undefined curve (%d)\n", n);
-        exit(1);
     }
-    return nullptr;
+    generator::errorf("Grid::giveCurve: undefined curve (%d)", n);
 }
 
 Surface *Grid::giveSurface(int n)
 {
     if ( n >= 1 && n <= static_cast < int > ( generator::size1(surfaceList) ) && surfaceList [ n - 1 ] != nullptr ) {
         return surfaceList [ n - 1 ];  // 1-based to 0-based
-    } else {
-        printf("giveSurface: undefined surface (%d)\n", n);
-        exit(1);
     }
-    return nullptr;
+    generator::errorf("Grid::giveSurface: undefined surface (%d)", n);
 }
 
 double Grid::giveDiameter(oofem::FloatArray &coords) {
@@ -178,33 +162,24 @@ Region *Grid::giveRegion(int n)
 {
     if ( n >= 1 && n <= static_cast < int > ( generator::size1(regionList) ) && regionList [ n - 1 ] != nullptr ) {
         return regionList [ n - 1 ];  // 1-based to 0-based
-    } else {
-        printf("giveRegion: undefined region (%d)\n", n);
-        exit(1);
     }
-    return nullptr;
+    generator::errorf("Grid::giveRegion: undefined region (%d)", n);
 }
 
 Inclusion *Grid::giveInclusion(int n)
 {
     if ( n >= 1 && n <= static_cast < int > ( generator::size1(inclusionList) ) && inclusionList [ n - 1 ] != nullptr ) {
         return inclusionList [ n - 1 ];  // 1-based to 0-based
-    } else {
-        printf("giveInclusion: undefined inclusion (%d)\n", n);
-        exit(1);
     }
-    return nullptr;
+    generator::errorf("Grid::giveInclusion: undefined inclusion (%d)", n);
 }
 
 Refinement *Grid::giveRefinement(int n)
 {
     if ( n >= 1 && n <= static_cast < int > ( generator::size1(refinementList) ) && refinementList [ n - 1 ] != nullptr ) {
         return refinementList [ n - 1 ];  // 1-based to 0-based
-    } else {
-        printf("giveRefinement: undefined refinement (%d)\n", n);
-        exit(1);
     }
-    return nullptr;
+    generator::errorf("Grid::giveRefinement: undefined refinement (%d)", n);
 }
 
 
@@ -614,8 +589,7 @@ int Grid::generateRegularPoints()
         } else if ( regType == 2 ) {     //FCC
             ( this->giveRegion(i + 1) )->generateRegularPoints2();
         } else {
-            printf("Error: The regular grid type was not determined\n");
-            exit(0);
+            generator::error("Grid::generateRegularPoints: regular grid type was not determined");
         }
     }
     sc = ::clock();
@@ -635,7 +609,6 @@ int Grid::readControlRecords(const std::string &controlFile)
 
     // Match legacy defaults from instanciateYourself().
     maxIter       = 1000000;
-    aggregateFlag = 0;
     regularFlag   = 0;
     randomFlag    = 0;
     vtkFlag       = 0;
@@ -864,14 +837,12 @@ void Grid::defineBoundaries(oofem::FloatArray &boundaries)
 {
     if ( this->giveNumberOfRegions() > 0 ) {
         if ( this->giveNumberOfRegions() != 1 ) {
-            printf("Error. Cannot defined boundaries for multiple regions yet!\n");
-            exit(1);
+            generator::error("Grid::defineBoundaries: cannot define boundaries for multiple regions yet");
         }
         this->giveRegion(1)->defineBoundaries(boundaries);
     } else if ( this->giveNumberOfSurfaces() > 0 )       {
         if ( this->giveNumberOfSurfaces() != 1 ) {
-            printf("Error. Cannot defined boundaries for multiple surfaces yet!\n");
-            exit(1);
+            generator::error("Grid::defineBoundaries: cannot define boundaries for multiple surfaces yet");
         }
         this->giveSurface(1)->defineBoundaries(boundaries);
         return;
@@ -890,44 +861,6 @@ void Grid::giveOutput(FILE *outputStream)
         fprintf(outputStream, "%.16e %.16e %.16e\n", ( this->giveVertex(i + 1) )->giveCoordinate(1), ( this->giveVertex(i + 1) )->giveCoordinate(2), ( this->giveVertex(i + 1) )->giveCoordinate(3) );
     }
 
-    //@todo: temporary measure to be able to generate simple aggregate placement.
-    //Needs to be moved to aggregate generator later
-    if ( aggregateFlag == 1 ) {
-        oofem::FloatArray boundaries;
-        defineBoundaries(boundaries);
-        FILE *aggregateStream;
-        if ( ( aggregateStream = fopen("aggregate.dat", "w") ) == NULL ) {
-            printf("Can't open output file aggregate.dat");
-            exit(1);
-        }
-
-        int outsideFlag;
-        oofem::FloatArray coords;
-        int counter = 0;
-        for ( int i = 0; i < this->giveNumberOfVertices(); i++ ) {
-            if ( ( ( i ) / 27. ) >= targetAggregates ) {
-                break;
-            }
-            outsideFlag = 0;
-            this->giveVertex(i + 1)->giveCoordinates(coords);
-            for ( int k = 0; k < 3; k++ ) {
-                if ( ( coords.at(k + 1) + TOL + diameter / 2. ) < boundaries.at(2 * k + 1) ) {
-                    outsideFlag = 1;
-                    break;
-                } else if ( ( coords.at(k + 1) - TOL - diameter / 2. ) > boundaries.at(2 * k + 2) ) {
-                    outsideFlag = 1;
-                    break;
-                }
-            }
-            if ( outsideFlag != 1 ) {
-                counter++;
-                fprintf(aggregateStream, "sphere %d centre 3 %.8e %.8e %.8e diameter %.4e\n", counter, coords.at(1), coords.at(2), coords.at(3), this->diameter);
-            }
-        }
-    }
-
-
-    return;
 }
 
 

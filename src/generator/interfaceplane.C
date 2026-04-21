@@ -12,7 +12,6 @@
 
 InterfacePlane::InterfacePlane(int n, Grid *aGrid) : Inclusion(n, aGrid) //, coordinates()
 {
-    this->number = n;
 }
 
 InterfacePlane::~InterfacePlane()
@@ -147,15 +146,3 @@ void InterfacePlane::initializeFromTokens(std::istringstream &iss)
     }
 }
 
-
-
-InterfacePlane *InterfacePlane::ofType()
-// Returns a new DofManager, which has the same number than the receiver,
-// but belongs to aClass (Node, ElementSide,..).
-{
-    InterfacePlane *plane;
-
-    plane = new InterfacePlane(number, grid);
-
-    return plane;
-}

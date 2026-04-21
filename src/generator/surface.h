@@ -24,9 +24,6 @@ class Surface : public GridComponent
 protected:
     /// Array storing nodal coordinates.
     oofem::IntArray curves;
-    int number;
-    double refinement;
-    double xedges, yedges, zedges;
     int boundaryFlag;
     oofem::FloatArray boundaryShift;
     oofem::FloatArray normal;
@@ -34,35 +31,38 @@ protected:
 public:
 
     /**
-     * Constructor. Creates a node belonging to domain.
-     * @param n node number in domain aDomain
-     * @param aDomain domain to which node belongs
+     * Constructor. Creates a surface belonging to `aGrid`.
+     * @param n surface number in the grid
+     * @param aGrid grid to which the surface belongs
      */
-    Surface(int n, Grid *aGrid);                      // constructor
+    Surface(int n, Grid *aGrid);
     /// Destructor.
-    ~Surface();                                           // destructor
+    ~Surface();
 
-    /// Returns i-th vertex of curve.
-    int      giveLocalCurve(int i);
-    /// Returns pointer to curve vertex array.
+    /// Returns the `i`-th (1-based) bounding-curve id of the surface.
+    int giveLocalCurve(int i);
+    /// Returns a pointer to the surface's bounding-curve id array.
     oofem::IntArray *giveLocalCurves() { return & curves; }
 
+    /// Returns the number of bounding curves of the surface.
     int giveNumberOfLocalCurves();
 
-    /// Define boundaries
+    /// Fill `boundaries` with the surface bounding box in
+    /// `[xmin xmax ymin ymax zmin zmax]` order.
     void defineBoundaries(oofem::FloatArray &boundaries);
 
+    /// Copies the surface's normal vector into `answer`.
     void giveNormal(oofem::FloatArray &answer) { answer = this->normal; }
 
-    //Random approach to generate points on surfaces including period shift and mirroring
+    /// Generate random points on the surface, respecting periodic shifts
+    /// and mirroring when the grid is periodic. Returns 1 on success.
     int generatePoints();
 
-    //Shorten code by putting routine to shift and mirror point separately
+    /// Apply periodic mirror/shift to a candidate point. Used by the
+    /// surface point generator to reflect a proposed point across
+    /// periodic boundaries before final acceptance.
     void mirrorShift(oofem::FloatArray &random, oofem::FloatArray &normal, oofem::FloatArray &specimenDimension, oofem::FloatArray &boundaries, oofem::IntArray &periodicityFlag);
 
-    //  Surface *ofType();
-
-    // miscellaneous
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "Surface"; }
 
@@ -70,8 +70,6 @@ public:
     /// after the `#@surface <num>` prefix.
     void initializeFromTokens(std::istringstream &iss);
 
-    /// prints receiver state on stdout. Usefull for debuging.
-    void         printYourself();
 };
 
 

@@ -16,7 +16,6 @@
 
 Prism::Prism(int n, Grid *aGrid) : Region(n, aGrid)
 {
-    this->number = n;
 }
 
 Prism::~Prism()
@@ -602,17 +601,6 @@ void Prism::initializeFromTokens(std::istringstream &iss)
 }
 
 
-Prism *Prism::ofType()
-// Returns a new DofManager, which has the same number than the receiver,
-// but belongs to aClass (Node, ElementSide,..).
-{
-    Prism *region;
-
-    region = new Prism(number, grid);
-
-    return region;
-}
-
 
 int Prism::generateRegularPoints1()
 {
@@ -645,8 +633,7 @@ int Prism::generateRegularPoints1()
                          random.at(2) - grid->TOL > boundaries.at(4) ||
                          random.at(3) + grid->TOL < boundaries.at(5) ||
                          random.at(3) - grid->TOL > boundaries.at(6) ) {
-                        std::cout << "The nodes are located in the wrong position" << '\n';
-                        exit(0);
+                        generator::error("The nodes are located in the wrong position");
                     }
 
                     grid->addVertex(random);
@@ -664,8 +651,7 @@ int Prism::generateRegularPoints1()
                          random.at(2) - grid->TOL > boundaries.at(4) ||
                          random.at(3) + grid->TOL < boundaries.at(5) ||
                          random.at(3) - grid->TOL > boundaries.at(6) ) {
-                        std::cout << "The nodes are located in the wrong position" << '\n';
-                        exit(0);
+                        generator::error("The nodes are located in the wrong position");
                     }
 
                     grid->addVertex(random);
@@ -717,8 +703,7 @@ int Prism::generateRegularPoints2()
                              random.at(2) - grid->TOL > boundaries.at(4) ||
                              random.at(3) + grid->TOL <  boundaries.at(5) ||
                              random.at(3) - grid->TOL > boundaries.at(6) ) {
-                            std::cout << "The nodes are located in the wrong position" << '\n';
-                            exit(0);
+                            generator::error("The nodes are located in the wrong position");
                         }
                     }
                 } else {
@@ -736,8 +721,7 @@ int Prism::generateRegularPoints2()
                              random.at(2) - grid->TOL > boundaries.at(4) ||
                              random.at(3) + grid->TOL < boundaries.at(5) ||
                              random.at(3) - grid->TOL > boundaries.at(6) ) {
-                            std::cout << "The nodes are located in the wrong position" << '\n';
-                            exit(0);
+                            generator::error("The nodes are located in the wrong position");
                         }
                     }
                 }
@@ -758,8 +742,7 @@ int Prism::generateRegularPoints2()
                              random.at(2) - grid->TOL > boundaries.at(4) ||
                              random.at(3) + grid->TOL < boundaries.at(5) ||
                              random.at(3) - grid->TOL > boundaries.at(6) ) {
-                            std::cout << "The nodes are located in the wrong position" << '\n';
-                            exit(0);
+                            generator::error("The nodes are located in the wrong position");
                         }
                     }
                 } else {
@@ -775,8 +758,7 @@ int Prism::generateRegularPoints2()
                              random.at(2) - grid->TOL > boundaries.at(4) ||
                              random.at(3) + grid->TOL < boundaries.at(5) ||
                              random.at(3) - grid->TOL > boundaries.at(6) ) {
-                            std::cout << "The nodes are located in the wrong position \n";
-                            exit(0);
+                            generator::error("The nodes are located in the wrong position ");
                         }
                     }
                 }

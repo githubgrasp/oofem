@@ -10,7 +10,6 @@
 
 Refinement::Refinement(int n, Grid *aGrid) : GridComponent(n, aGrid) //, coordinates()
 {
-    this->number = n;
 }
 
 Refinement::~Refinement()

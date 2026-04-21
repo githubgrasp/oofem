@@ -30,20 +30,15 @@ public:
      * @param n node number in grid aGrid
      * @param aGrid grid to which node belongs
      */
-    GridComponent(int n, Grid *aGrid);                      // constructor
+    GridComponent(int n, Grid *aGrid);
     /// Destructor.
     virtual ~GridComponent() = default;
 
 
-    GridComponent *ofType();
 
-    // miscellaneous
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "GridComponent"; }
 
-    //virtual IntArray* ResolveDofIDArray (char* initString);
-    /// prints receiver state on stdout. Usefull for debuging.
-    void         printYourself();
 };
 
 

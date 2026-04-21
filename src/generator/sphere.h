@@ -20,41 +20,38 @@ class Sphere : public Region
 protected:
     /// Array storing nodal coordinates.
     oofem::FloatArray centre;
-    double radius;
-    int number;
-    double refinement;
 
 
 public:
 
     /**
-     * Constructor. Creates a node belonging to domain.
-     * @param n node number in domain aDomain
-     * @param aDomain domain to which node belongs
+     * Constructor. Creates a spherical region.
+     * @param n region number in the grid
+     * @param aGrid grid to which the region belongs
      */
-    Sphere(int n, Grid *aGrid);                      // constructor
+    Sphere(int n, Grid *aGrid);
     /// Destructor.
-    ~Sphere();                                           // destructor
+    ~Sphere();
 
+    /// Returns the sphere radius.
     double giveRadius() { return this->radius; }
 
+    /// Generate random points inside the sphere.
     virtual int generatePoints();
 
+    /// Generate periodic-image points when the grid is periodic.
     int generatePeriodicPoints();
 
-    // miscellaneous
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "Sphere"; }
 
-    ///Returns the number of region
+    /// Returns the region number (1-based).
     int giveNumber() { return this->number; }
-
 
     /// Parse keyword/value tokens from an open istringstream positioned
     /// after the `#@sphere <num>` prefix.
     void initializeFromTokens(std::istringstream &iss);
 
-    void printYourself();
 };
 
 #endif // sphere_h

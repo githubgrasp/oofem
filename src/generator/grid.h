@@ -22,13 +22,7 @@ class Surface;
 class Region;
 class Inclusion;
 class GridLocalizer;
-class TimeStep;
 class Refinement;
-
-#ifdef __PARALLEL_MODE
-class ProcessCommunicator;
-class LoadBalancer;
-#endif
 /**
  * Class and object Grid. Grid contains grid description, or if program runs in parrallel then it contains
  * description of grid associated to particular processor or thread of execution. Generally, it contain and
@@ -77,14 +71,9 @@ private:
 
     int maxIter, randomInteger;
 
-    int aggregateFlag;
-    int targetAggregates;
-
     int regularFlag;
 
     oofem::IntArray periodicityFlag;
-
-    int couplingFlag;
 
     int randomFlag;
 
@@ -100,109 +89,116 @@ private:
 
 public:
 
+    /// Number of cells along each axis used by the regular-grid point
+    /// generators (BCC / FCC). Populated from `#@xyzedges` when present
+    /// and `#@regflag 1`; unused in random-placement mode.
     oofem::IntArray xyzEdges;
+    /// Geometric tolerance (typically `1e-6 * diameter`) used in all
+    /// float-coordinate comparisons.
     double TOL;
 
+    /// Target nominal spacing between generated points. Set by `#@diam`.
     double diameter;
 
 
+    /// Final, generated vertex list (the points the generator writes out).
     std::vector< Vertex * >vertexList;
+    /// Input vertices read from `#@vertex` directives (bounding-box
+    /// corners, explicit seed points).
     std::vector< Vertex * >inputVertexList;
+    /// Control vertices read from `#@controlvertex` — named node locations
+    /// the converter references for BCs / loads.
     std::vector< Vertex * >controlVertexList;
+    /// Curves read from `#@curve`.
     std::vector< Curve * >curveList;
+    /// Surfaces read from `#@surface`.
     std::vector< Surface * >surfaceList;
+    /// Regions read from `#@prism` / `#@cylinder` / `#@sphere`.
     std::vector< Region * >regionList;
+    /// Inclusions read from `#@intersphere` / `#@interfacecylinder` /
+    /// `#@interfaceplane` / `#@interfacesurface`.
     std::vector< Inclusion * >inclusionList;
+    /// Local refinement boxes read from `#@refineprism`.
     std::vector< Refinement * >refinementList;
 
 
-    // /// Vertex list
-    // AList< Vertex > *vertexList;
+    /// Constructor. Creates an empty `n`-th grid.
+    Grid(int n);
+    /// Destructor. Deletes owned components.
+    ~Grid();
 
-    // /// Input Vertex list
-    // AList< Vertex > *inputVertexList;
+    /// Returns the grid number (1-based; currently always 1).
+    int giveNumber() { return this->number; }
+    /// Overrides the grid number.
+    void setNumber(int nn) { this->number = nn; }
 
-    // /// Control Vertex list
-    // AList< Vertex > *controlVertexList;
-
-    // /// Curve list
-    // AList< Curve > *curveList;
-
-
-    // /// Surface list
-    // AList< Surface > *surfaceList;
-
-    // /// Region list
-    // AList< Region > *regionList;
-
-
-    // /// Inclusion list
-    // AList< Inclusion > *inclusionList;
-
-
-    // /// Inclusion list
-    // AList< Refinement > *refinementList;
-
-
-    /**
-     * Constructor. Creates empty n-th grid belonging to given ProblemManager
-     */
-    Grid(int n);  // constructors
-    ///  Destructor
-    ~Grid();                            // destructor
-
-    /// Returns grid number
-    int               giveNumber() { return this->number; }
-    /// Returns grid number
-    void               setNumber(int nn) { this->number = nn; }
-
-    int Iterations() { return this->maxIter; }
-
-
+    /// Returns the current RNG seed (always negative once the grid is
+    /// fully initialised; see `#@ranint` in the user manual).
     int giveRandomInteger() { return this->randomInteger; }
 
+    /// Maximum number of random-placement attempts before aborting.
     int giveMaximumIterations() { return this->maxIter; }
 
+    /// Append a point to `vertexList` at the given coordinates. Used
+    /// internally by the per-region / per-surface / per-curve point
+    /// generators.
     void addVertex(const oofem::FloatArray &coords);
 
+    /// Dump the generated vertex list as an ASCII VTK PolyData file at
+    /// `path`. Triggered by the `#@vtk` directive.
     void exportVTK(const std::string &path);
 
+    /// Returns the `n`-th (1-based) generated vertex, or nullptr.
     Vertex *giveVertex(int n);
-
+    /// Returns the `n`-th (1-based) input vertex (from `#@vertex`).
     Vertex *giveInputVertex(int n);
-
+    /// Returns the `n`-th (1-based) control vertex (from `#@controlvertex`).
     Vertex *giveControlVertex(int n);
-
+    /// Returns the `n`-th (1-based) curve.
     Curve *giveCurve(int n);
-
+    /// Returns the `n`-th (1-based) surface.
     Surface *giveSurface(int n);
-
+    /// Returns the `n`-th (1-based) region.
     Region *giveRegion(int n);
-
+    /// Returns the `n`-th (1-based) inclusion.
     Inclusion *giveInclusion(int n);
-
+    /// Returns the `n`-th (1-based) refinement entry.
     Refinement *giveRefinement(int n);
 
-    /**
-     * Returns receiver's associated spatial localizer.
-     */
+    /// Returns the receiver's associated spatial localiser (octree).
     GridLocalizer *giveGridLocalizer();
 
+    /// Seed `vertexList` with the `inputVertexList` entries (corner /
+    /// bounding-box points). Called before region point generation.
     void generateInputPoints();
 
+    /// Seed `vertexList` with the `controlVertexList` entries (named
+    /// support / load points).
     void generateControlPoints();
 
+    /// Emit periodic-image partners of the control vertices that lie on
+    /// a periodic boundary. No-op when the grid is non-periodic.
     void generatePeriodicControlPoints();
 
+    /// Drive the per-region periodic point generators. Returns 1 on
+    /// success.
     int generatePeriodicPoints();
 
+    /// Drive the per-region regular-grid point generators (BCC / FCC,
+    /// selected by `regType`). Returns 1 on success.
     int generateRegularPoints();
 
+    /// Drive the per-region random-placement point generators. Returns
+    /// 1 on success.
     int generateRandomPoints();
 
-    //some directions are with mirroring others with shift. Ideally, this should be the only function later on.
+    /// Drive the per-region mixed-periodic point generators (some axes
+    /// periodic, others not).
     int generateMixedPoints();
 
+    /// Top-level point-generation entry point. Runs input / control /
+    /// region / inclusion / refinement passes in the right order for
+    /// the active periodicity and randomness flags.
     int generatePoints();
 
 
@@ -210,10 +206,11 @@ public:
     /// `outputFileName` from a `#@output` directive.
     int readControlRecords(const std::string &controlFile);
 
-    /// The output path the generator should write `nodes.dat` to. Set by
-    /// either parser path before generation runs.
+    /// The output path the generator should write `nodes.dat` to.
     const std::string &giveOutputFileName() const { return outputFileName; }
 
+    /// Numerical Recipes `ran1` uniform RNG. `idum` is a caller-owned
+    /// seed state; negative values reinitialise the generator state.
     double ran1(int *idum);
 
     /// Returns number of vertices.
@@ -241,21 +238,26 @@ public:
     int                giveNumberOfRefinements() { return generator::size1(refinementList); }
 
 
-    /// Returns flag to indicate if mesh generation should be regular
-    int                giveRegularFlag() { return this->regularFlag; }
+    /// Returns 1 iff mesh generation should use the regular-grid path
+    /// (`#@regflag 1`), 0 for random placement.
+    int giveRegularFlag() { return this->regularFlag; }
+
+    /// Copies the 3-entry periodicity flag into `answer` (one entry per
+    /// axis: 0 non-periodic, 1 periodic).
+    void givePeriodicityFlag(oofem::IntArray &answer) { answer = this->periodicityFlag; }
+
+    /// Returns the random-placement strategy: 0 Bolander, 1 Grassl
+    /// (points on boundary), 2 Grassl with periodic partners.
+    int giveRandomFlag() { return this->randomFlag; }
+    /// Returns 1 iff `#@vtk` was set (opt in to `points.vtk` output).
+    int giveVtkFlag() { return this->vtkFlag; }
 
 
-    /// Returns flag to indicate if mesh generation should be regular
-    void                givePeriodicityFlag(oofem::IntArray &answer) { answer = this->periodicityFlag; }
+    /// Map a direction index into the corresponding coordinate index.
+    /// Used by the periodic-mesh generators to walk axes in a fixed
+    /// order.
+    int giveCorrespondingCoordinateIndex(int);
 
-
-    /// Returns flag to indicate if mesh generation should be regular
-    int                giveRandomFlag() { return this->randomFlag; }
-    int                giveVtkFlag() { return this->vtkFlag; }
-
-
-
-    int                giveCorrespondingCoordinateIndex(int);
     /**
      *@name Advanced grid manipulation methods.
      */
@@ -303,15 +305,25 @@ public:
     void setRefinement(int i, Refinement *obj);
 
 
-    int         giveGridType()        { return this->dimension; }
+    /// Returns the grid's spatial dimension (stored in `dimension`, set
+    /// via `#@domain`).
+    int giveGridType() { return this->dimension; }
 
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "Grid"; }
 
+    /// Fill `boundaries` with the global bounding box of all regions in
+    /// `[xmin xmax ymin ymax zmin zmax]` order.
     void defineBoundaries(oofem::FloatArray &boundaries);
 
+    /// Returns the local target diameter at point `coords`, taking any
+    /// active `#@refineprism` entry into account (else returns the
+    /// grid-wide `diameter`).
     double giveDiameter(oofem::FloatArray &coords);
 
+    /// Write one `x y z` coordinate triple per generated vertex to
+    /// `outputStream`, prefixed with a `3` (dimension) and the vertex
+    /// count — the format consumed by `qvoronoi p Fv`.
     void giveOutput(FILE *outputStream);
 };
 

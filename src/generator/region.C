@@ -16,7 +16,6 @@
 
 Region::Region(int n, Grid *aGrid) : GridComponent(n, aGrid)
 {
-    this->number = n;
 }
 
 Region::~Region()

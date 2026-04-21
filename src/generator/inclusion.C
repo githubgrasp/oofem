@@ -10,7 +10,6 @@
 
 Inclusion::Inclusion(int n, Grid *aGrid) : GridComponent(n, aGrid) //, coordinates()
 {
-    this->number = n;
 }
 
 Inclusion::~Inclusion()

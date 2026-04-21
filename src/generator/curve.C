@@ -11,7 +11,6 @@
 
 Curve::Curve(int n, Grid *aGrid) : GridComponent(n, aGrid)   //, coordinates()
 {
-    this->number = n;
 }
 
 Curve::~Curve()
@@ -272,8 +271,7 @@ int Curve::generatePoints()
 
                     mirrorShift(newRandom, normal, specimenDimension, boundaries, periodicityFlag);
                 } else   {
-                    printf("Error: Unknown direction.\n");
-                    exit(1);
+                    generator::error("Error: Unknown direction.");
                 }
             }
         }

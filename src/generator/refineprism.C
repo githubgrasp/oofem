@@ -13,7 +13,6 @@
 
 RefinePrism::RefinePrism(int n, Grid *aGrid) : Refinement(n, aGrid) //, coordinates()
 {
-    this->number = n;
 }
 
 RefinePrism::~RefinePrism()
@@ -57,16 +56,4 @@ RefinePrism::giveDiameter(oofem::FloatArray &coord) {
     }
 
     return diam;
-}
-
-RefinePrism *
-RefinePrism::ofType()
-// Returns a new DofManager, which has the same number than the receiver,
-// but belongs to aClass (Node, ElementSide,..).
-{
-    RefinePrism *prism;
-
-    prism = new RefinePrism(number, grid);
-
-    return prism;
 }

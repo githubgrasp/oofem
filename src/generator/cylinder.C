@@ -12,7 +12,6 @@
 
 Cylinder::Cylinder(int n, Grid *aGrid) : Region(n, aGrid) //, coordinates()
 {
-    this->number = n;
 }
 
 Cylinder::~Cylinder()
@@ -306,15 +305,3 @@ void Cylinder::initializeFromTokens(std::istringstream &iss)
     }
 }
 
-
-
-Cylinder *Cylinder::ofType()
-// Returns a new DofManager, which has the same number than the receiver,
-// but belongs to aClass (Node, ElementSide,..).
-{
-    Cylinder *cylinder;
-
-    cylinder = new Cylinder(number, grid);
-
-    return cylinder;
-}

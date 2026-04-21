@@ -78,29 +78,32 @@ public:
     typedef std::list< int >nodeContainerType;
 
 
-    /// Constructor
+    /// Constructor.
     GridLocalizer(int n, Grid *g) : GridComponent(n, g) { }
 
+    /// Destructor.
     virtual ~GridLocalizer() = default;
 
     /**
-     * Returns container (list) of all domain nodes within given box.
-     * @param NODESet answer containing the list of nodes meeting the criteria
-     * @param coords center of box of interest
-     * @param radius radius of bounding sphere
+     * Returns the list of grid nodes within an axis-aligned box.
+     * @param nodeList output container populated with the matching node ids
+     * @param coords centre of the query box
+     * @param radius half-width of the box (bounding sphere radius in the
+     *        default implementation)
      */
     virtual void giveAllNodesWithinBox(nodeContainerType &nodeList, const oofem::FloatArray &coords, const double radius) = 0;
 
-
+    /// Returns nonzero if any grid node lies within the given box.
     virtual int checkNodesWithinBox(const oofem::FloatArray &coords, const double radius) = 0;
 
+    /// Insert a new node with the given number and coordinates into the
+    /// localiser in sequence (no rebalancing).
     virtual void insertSequentialNode(int nodeNum, const oofem::FloatArray &coords) = 0;
 
-
     /**
-     * Initialize receiver data structure if not done previously
-     * If force is set to true, the initialization is enforced (useful if domain geometry has changed)
-     * Returns nonzero if successful.
+     * Initialise the localiser data structure if not done previously.
+     * If `force` is true, the initialisation is enforced (useful when the
+     * grid geometry has changed). Returns nonzero on success.
      */
     virtual int init(bool force = false) { return 1; }
 

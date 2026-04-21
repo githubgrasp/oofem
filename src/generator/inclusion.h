@@ -20,22 +20,25 @@ class Inclusion : public GridComponent
 protected:
     /// Array storing nodal coordinates.
 
-    int number;
 
 
 public:
 
     /**
-     * Constructor. Creates a node belonging to domain.
-     * @param n node number in domain aDomain
-     * @param aDomain domain to which node belongs
+     * Constructor. Creates an inclusion belonging to `aGrid`.
+     * @param n inclusion number in the grid
+     * @param aGrid grid to which the inclusion belongs
      */
-    Inclusion(int n, Grid *aGrid);                      // constructor
+    Inclusion(int n, Grid *aGrid);
     /// Destructor.
-    virtual ~Inclusion();                                           // destructor
+    virtual ~Inclusion();
 
+    /// Generate points on the inclusion surface (and ITZ halo, if any).
+    /// Pure virtual — each concrete inclusion implements its own shape.
     virtual int generatePoints() = 0;
 
+    /// Generate periodic-image points for the inclusion when the grid
+    /// is periodic. Default implementation is a no-op (returns 0).
     virtual int generatePeriodicPoints() { return 0; }
 };
 

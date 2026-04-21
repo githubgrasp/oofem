@@ -19,25 +19,21 @@ InterfaceSurface : public Inclusion
 protected:
     /// Array storing nodal coordinates.
     oofem::IntArray curves;
-    int number;
-    double refinement;
 
 public:
 
     /**
-     * Constructor. Creates a interface surfacec belonging to grid.
-     * @param n node number in grid aGrid
-     * @param aGrid grid to which node belongs
+     * Constructor. Creates a curve-bounded interface surface.
+     * @param n inclusion number in the grid
+     * @param aGrid grid to which the inclusion belongs
      */
-
-    InterfaceSurface(int n, Grid *aGrid);                      // constructor
-
+    InterfaceSurface(int n, Grid *aGrid);
     /// Destructor.
-    ~InterfaceSurface();                                           // destructor
+    ~InterfaceSurface();
 
+    /// Place points on the interface surface. Returns 1 on success.
     int generatePoints();
 
-    InterfaceSurface *ofType();
 
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "InterfaceSurface"; }
@@ -46,8 +42,6 @@ public:
     /// after the `#@interfacesurface <num>` prefix.
     void initializeFromTokens(std::istringstream &iss);
 
-    /// prints receiver state on stdout. Usefull for debuging.
-    void         printYourself();
 };
 
 #endif // node_h

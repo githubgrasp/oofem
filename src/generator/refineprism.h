@@ -18,36 +18,29 @@ class RefinePrism : public Refinement
 {
 protected:
     /// Array storing nodal coordinates.
-    int number;
-    double refinement;
     oofem::FloatArray box;
 
 
 public:
 
     /**
-     * Constructor. Creates a node belonging to domain.
-     * @param n node number in domain aDomain
-     * @param aDomain domain to which node belongs
+     * Constructor. Creates a box-shaped local refinement region.
+     * @param n refinement number in the grid
+     * @param aGrid grid to which the refinement belongs
      */
-    RefinePrism(int n, Grid *aGrid);                      // constructor
+    RefinePrism(int n, Grid *aGrid);
     /// Destructor.
-    ~RefinePrism();                                           // destructor
+    ~RefinePrism();
 
     virtual double giveDiameter(oofem::FloatArray &coord) override;
 
-    RefinePrism * ofType();
 
-    // miscellaneous
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "RefinePrism"; }
 
     /// Parse keyword/value tokens from an open istringstream positioned
     /// after the `#@refineprism <num>` prefix.
     void initializeFromTokens(std::istringstream &iss);
-    //virtual IntArray* ResolveDofIDArray (char* initString);
-    /// prints receiver state on stdout. Usefull for debuging.
-    void         printYourself();
 };
 
 #endif // refineprism_h

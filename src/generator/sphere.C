@@ -12,7 +12,6 @@
 
 Sphere::Sphere(int n, Grid *aGrid) : Region(n, aGrid)
 {
-    this->number = n;
 }
 
 Sphere::~Sphere()

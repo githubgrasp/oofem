@@ -19,58 +19,46 @@
 
 class Vertex : public GridComponent
 {
-protected:
-    /// Array storing nodal coordinates.
-    oofem::FloatArray coordinates;
-    int number;
-    double refinement;
-    double radius;
-    int randomswitch;
 public:
 
 
 
 
     /**
-     * Constructor. Creates a node belonging to domain.
-     * @param n node number in grid aGrid
-     * @param aGrid grid to which node belongs
+     * Constructor. Creates a vertex belonging to `aGrid`.
+     * @param n vertex number in the grid
+     * @param aGrid grid to which the vertex belongs
      */
-    Vertex(int n, Grid *aGrid);                      // constructor
+    Vertex(int n, Grid *aGrid);
     /// Destructor.
-    virtual ~Vertex();                                           // destructor
+    virtual ~Vertex();
 
-    // coordinates
-    bool        hasCoordinates() { return true; }
-    /// Returns i-th coordinate of node.
-    double      giveCoordinate(int i);
+    /// Always true — vertices carry coordinates by construction.
+    bool hasCoordinates() { return true; }
+    /// Returns the `i`-th (1-based) coordinate of the vertex.
+    double giveCoordinate(int i);
 
-
+    /// Local refinement factor (multiplier on `Grid::diameter`).
     double giveRefinement() { return this->refinement; }
 
+    /// Exclusion radius around the vertex during random placement.
     double giveRadius() { return this->radius; }
 
-    /// Returns pointer to node coordinate array
+    /// Copies the vertex coordinates into `coord`.
     void giveCoordinates(oofem::FloatArray &coord) { coord = this->coordinates; }
+    /// Returns a pointer to the internal coordinate array.
     oofem::FloatArray *giveCoordinates() { return & coordinates; }
 
+    /// Overwrites the vertex coordinates.
     void setCoordinates(const oofem::FloatArray &coords) { this->coordinates = coords; }
 
-    /// Sets i-th componet. The component will be futher managed and maintained by grid object.
 
-
-    Vertex *ofType();
-
-    // miscellaneous
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "Vertex"; }
 
     /// Parse keyword/value tokens from an open istringstream positioned
     /// after the `#@vertex <num>` (or `#@controlvertex <num>`) prefix.
     void initializeFromTokens(std::istringstream &iss);
-    //virtual IntArray* ResolveDofIDArray (char* initString);
-    /// prints receiver state on stdout. Usefull for debuging.
-    void         printYourself();
 };
 
 

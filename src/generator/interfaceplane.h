@@ -23,39 +23,35 @@ protected:
     /// Array storing nodal coordinates.
     oofem::FloatArray line; //Storing start and end point of axis of plane
     double diameter;
-    int number;
-    double refinement;
     double itzThickness;
 
 public:
 
     /**
-     * Constructor. Creates a node belonging to domain.
-     * @param n node number in domain aDomain
-     * @param aDomain domain to which node belongs
+     * Constructor. Creates a planar interface inclusion.
+     * @param n inclusion number in the grid
+     * @param aGrid grid to which the inclusion belongs
      */
-    InterfacePlane(int n, Grid *aGrid);                      // constructor
+    InterfacePlane(int n, Grid *aGrid);
     /// Destructor.
-    ~InterfacePlane();                                           // destructor
+    ~InterfacePlane();
 
-
+    /// Returns the inclusion diameter.
     double giveDiameter() { return this->diameter; }
+    /// Returns the thickness of the ITZ halo around the inclusion.
     double giveITZThickness() { return this->itzThickness; }
 
+    /// Place points on the interface plane plus an ITZ halo of thickness
+    /// `itzThickness`. Returns 1 on success.
     int generatePoints();
 
-    InterfacePlane *ofType();
 
-    // miscellaneous
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "InterfacePlane"; }
 
     /// Parse keyword/value tokens from an open istringstream positioned
     /// after the `#@interfaceplane <num>` prefix.
     void initializeFromTokens(std::istringstream &iss);
-    //virtual IntArray* ResolveDofIDArray (char* initString);
-    /// prints receiver state on stdout. Usefull for debuging.
-    void         printYourself();
 };
 
 

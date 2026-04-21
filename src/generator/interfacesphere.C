@@ -12,7 +12,6 @@
 
 InterfaceSphere::InterfaceSphere(int n, Grid *aGrid) : Inclusion(n, aGrid) //, coordinates()
 {
-    this->number = n;
 }
 
 InterfaceSphere::~InterfaceSphere()

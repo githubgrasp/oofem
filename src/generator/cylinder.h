@@ -21,26 +21,24 @@ protected:
     /// Array storing nodal coordinates.
     oofem::FloatArray line; //Storing start and end point of axis of cylinder
     double diameter;
-    int number;
-    double refinement;
 
 public:
 
     /**
-     * Constructor. Creates a node belonging to domain.
-     * @param n node number in domain aDomain
-     * @param aDomain domain to which node belongs
+     * Constructor. Creates a cylindrical region.
+     * @param n region number in the grid
+     * @param aGrid grid to which the region belongs
      */
-    Cylinder(int n, Grid *aGrid);                      // constructor
+    Cylinder(int n, Grid *aGrid);
     /// Destructor.
-    ~Cylinder();                                           // destructor
+    ~Cylinder();
 
-
+    /// Returns the cylinder diameter.
     double giveDiameter() { return this->diameter; }
 
+    /// Generate random points inside the cylinder.
     virtual int generatePoints();
 
-    Cylinder *ofType();
 
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "Cylinder"; }
@@ -49,8 +47,6 @@ public:
     /// after the `#@cylinder <num>` prefix.
     void initializeFromTokens(std::istringstream &iss);
 
-    /// prints receiver state on stdout. Usefull for debuging.
-    void         printYourself();
 };
 
 

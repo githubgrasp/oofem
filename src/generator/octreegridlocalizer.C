@@ -340,8 +340,7 @@ OctreeGridLocalizer::buildOctreeDataStructure()
         oofem::FloatArray boundaries;
         grid->defineBoundaries(boundaries);
         if ( boundaries.giveSize() < 6 ) {
-            printf("OctreeGridLocalizer: no input vertices and no region boundaries — cannot initialize octree.\n");
-            exit(1);
+            generator::error("OctreeGridLocalizer: no input vertices and no region boundaries — cannot initialize octree.");
         }
         double dx = boundaries.at(2) - boundaries.at(1);
         double dy = boundaries.at(4) - boundaries.at(3);

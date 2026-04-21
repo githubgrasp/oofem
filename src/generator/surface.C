@@ -13,7 +13,6 @@
 
 Surface::Surface(int n, Grid *aGrid) : GridComponent(n, aGrid)   //, coordinates()
 {
-    this->number = n;
     this->boundaryFlag = 0;
     boundaryShift.zero();
 }
@@ -122,8 +121,7 @@ Surface::generatePoints()
                     } else if ( boundaries.at(1) == globalBoundaries.at(2) )      {
                         shift = -1;
                     } else   {
-                        printf("Surface not part of global boundary\n");
-                        exit(1);
+                        generator::error("Surface not part of global boundary");
                     }
 
                     newRandom.at(1) = random.at(1) + shift * globalDimension.at(1);
@@ -140,8 +138,7 @@ Surface::generatePoints()
                     } else if ( boundaries.at(3) == globalBoundaries.at(4) )      {
                         shift = -1;
                     } else   {
-                        printf("Surface not part of global boundary\n");
-                        exit(1);
+                        generator::error("Surface not part of global boundary");
                     }
 
                     //Shift in y-direction
@@ -158,8 +155,7 @@ Surface::generatePoints()
                     } else if ( boundaries.at(5) == globalBoundaries.at(6) )      {
                         shift = -1;
                     } else   {
-                        printf("Surface not part of global boundary\n");
-                        exit(1);
+                        generator::error("Surface not part of global boundary");
                     }
 
                     //Shift in z-direction
@@ -172,8 +168,7 @@ Surface::generatePoints()
 
                     mirrorShift(newRandom, normal, specimenDimension, boundaries, periodicityFlag);
                 } else   {
-                    printf("Error: Unknown direction.\n");
-                    exit(1);
+                    generator::error("Error: Unknown direction.");
                 }
             }
         }

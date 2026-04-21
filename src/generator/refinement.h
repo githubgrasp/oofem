@@ -17,20 +17,22 @@ class Refinement : public GridComponent
 protected:
     /// Array storing nodal coordinates.
 
-    int number;
 
 
 public:
 
     /**
-     * Constructor. Creates a node belonging to domain.
-     * @param n node number in domain aDomain
-     * @param aDomain domain to which node belongs
+     * Constructor. Creates a refinement entry belonging to `aGrid`.
+     * @param n refinement number in the grid
+     * @param aGrid grid to which the refinement belongs
      */
-    Refinement(int n, Grid *aGrid);                      // constructor
+    Refinement(int n, Grid *aGrid);
     /// Destructor.
-    virtual ~Refinement();                                           // destructor
+    virtual ~Refinement();
 
+    /// Returns the target diameter at point `coord`. Default implementation
+    /// returns 0 (i.e. no override); subclasses override to return a local
+    /// target spacing inside their region of influence.
     virtual double giveDiameter(oofem::FloatArray &coord) { return 0.; }
 };
 

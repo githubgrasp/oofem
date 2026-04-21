@@ -18,75 +18,67 @@ class Prism : public Region
 {
 protected:
     /// Array storing nodal coordinates.
-    int number;
-    double refinement;
     // per-stage spacing ratios applied to grid->diameter; default 1.
     double edgeRefine;
     double surfaceRefine;
     double regionRefine;
     oofem::FloatArray box;
-    double xlength, ylength, zlength;
 
 public:
 
     /**
-     * Constructor. Creates a node belonging to grid.
-     * @param n node number in grid aGrid
-     * @param aGrid grid to which node belongs
+     * Constructor. Creates an axis-aligned box region.
+     * @param n region number in the grid
+     * @param aGrid grid to which the region belongs
      */
-    Prism(int n, Grid *aGrid);                      // constructor
+    Prism(int n, Grid *aGrid);
     /// Destructor.
-    ~Prism();                                           // destructor
+    ~Prism();
 
-    /// Returns i-th vertex of curve.
-    int      giveLocalSurface(int i);
-    /// Returns pointer to curve vertex array.
-
+    /// Returns the `i`-th (1-based) bounding-surface id.
+    int giveLocalSurface(int i);
+    /// Copies the bounding-surface id array into `surf`.
     void giveLocalSurfaces(oofem::IntArray &surf) { surf = this->surfaces; }
 
-    /// Define boundaries
     void defineBoundaries(oofem::FloatArray &boundaries) override;
 
-    //generate regular points
+    /// Regular point-grid seeding, variant 1 (BCC-style).
     int generateRegularPoints1();
+    /// Regular point-grid seeding, variant 2 (FCC-style).
     int generateRegularPoints2();
 
-    //generate random points in periodic cell
+    /// Generate random points in the box treating it as fully periodic.
     int generatePeriodicPoints();
 
+    /// Apply periodic mirror/shift to a candidate point on the box
+    /// boundary. Used by the periodic point generator to reflect a
+    /// proposed point across periodic faces before final acceptance.
     void mirrorShiftSurface(oofem::FloatArray &random, oofem::FloatArray &normal, oofem::FloatArray &specimenDimension, oofem::FloatArray &boundaries, oofem::IntArray &periodicityFlag);
 
-    //generate random points
+    /// Generate random points in the box (non-periodic fallback).
     int generatePoints();
 
-    //generate mixed points.
-    //This means that some direction are periodic and others are not
+    /// Generate random points when some axes are periodic and others
+    /// are not.
     int generateMixedPoints();
 
-    ///Returns the x length
+    /// Returns the extent of the prism along x.
     double giveXLength() { return this->xlength; }
-
-    ///Returns the y length
+    /// Returns the extent of the prism along y.
     double giveYLength() { return this->ylength; }
-
-    ///Returns the z length
+    /// Returns the extent of the prism along z.
     double giveZLength() { return this->zlength; }
 
-    Prism *ofType();
 
-    // miscellaneous
     /// Returns class name of the receiver.
     const char *giveClassName() const { return "Prism"; }
 
-    ///Returns the number of region
+    /// Returns the region number (1-based).
     int giveNumber() { return this->number; }
 
     /// Parse keyword/value tokens from an open istringstream positioned
     /// after the `#@prism <num>` prefix.
     void initializeFromTokens(std::istringstream &iss);
-    //virtual IntArray* ResolveDofIDArray (char* initString);
-    /// prints receiver state on stdout. Usefull for debuging.
-    void         printYourself();
 };
 
 

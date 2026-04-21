@@ -12,7 +12,6 @@
 
 InterfaceSurface::InterfaceSurface(int n, Grid *aGrid) : Inclusion(n, aGrid) //, coordinates()
 {
-    this->number = n;
 }
 
 InterfaceSurface::~InterfaceSurface()
@@ -50,12 +49,3 @@ void InterfaceSurface::initializeFromTokens(std::istringstream &iss)
     }
 }
 
-
-InterfaceSurface *InterfaceSurface::ofType()
-{
-    InterfaceSurface *surface;
-
-    surface = new InterfaceSurface(number, grid);
-
-    return surface;
-}
