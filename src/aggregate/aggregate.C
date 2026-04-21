@@ -73,7 +73,8 @@ int main(int argc, char *argv[])
         aggregate::GradingCurve gc(grading.dmin,
                                    grading.dmax,
                                    grading.aggregateFraction,
-                                   rveVolume);
+                                   rveVolume,
+                                   grading.shape);
         const auto sizes = gc.generate(rng);
 
         const double dlimValue =

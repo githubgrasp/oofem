@@ -23,16 +23,28 @@ namespace aggregate {
  * processes the large aggregates first, optionally splitting at the
  * threshold returned by `dlim()` so the smallest sit at the end.
  */
+/// Aggregate shape selector. Spherical aggregates collapse `sx = sy = sz`,
+/// which downstream tools (notably the generator) can handle without an
+/// arbitrary-orientation ellipsoid implementation.
+enum class GradingShape
+{
+    Ellipsoid,
+    Sphere
+};
+
 class GradingCurve
 {
 public:
     /// Construct a grading curve targeting `aggregateFraction` of `rveVolume`,
     /// with sieve diameters bounded below by `minSieve` and above by `maxSieve`.
     /// `maxSieve` must be at least `2·minSieve` (one full sieve octave).
+    /// `shape` selects between general anisotropic ellipsoids (default) and
+    /// degenerate spheres (`sx = sy = sz = r`).
     GradingCurve(double minSieve,
                  double maxSieve,
                  double aggregateFraction,
-                 double rveVolume);
+                 double rveVolume,
+                 GradingShape shape = GradingShape::Ellipsoid);
 
     /// Sample sizes (sx, sy, sz) using the supplied engine, sorted by volume desc.
     std::vector<Eigen::Vector3d> generate(std::mt19937 &rng) const;
@@ -45,6 +57,7 @@ private:
     double dmax;
     double volumeFraction;
     double rveVolume;
+    GradingShape shape;
 };
 
 } // namespace aggregate

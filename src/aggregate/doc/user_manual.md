@@ -130,7 +130,7 @@ and descriptive text — are ignored. Directive order is irrelevant.
 | `#@periodicity` | `3 <px> <py> <pz>` | Per-axis periodicity flag. `1` = periodic (the placer generates ghosts and allows boundary crossings); `0` = real boundary (candidates that touch the boundary are rejected). |
 | `#@seed` | `<n>` | Seed passed to `std::mt19937`. The same seed always produces the same packing. |
 | `#@maxiter` | `<n>` | Maximum number of trial placements per inclusion before giving up. Defaults to 10000. |
-| `#@grading` | `dmin <d>  dmax <d>  fraction <f>` | Aggregate sieve curve parameters. Optional — omit if no aggregates are wanted. |
+| `#@grading` | `dmin <d>  dmax <d>  fraction <f>  [shape sphere\|ellipsoid]` | Aggregate sieve curve parameters. Optional — omit if no aggregates are wanted. `shape ellipsoid` (default) samples random aspect-ratio ellipsoids; `shape sphere` collapses each aggregate to `sx = sy = sz = r`, written as `sphere` lines in `packing.dat`. |
 | `#@fibres` | `fraction <f>  length <l>  diameter <d>` | Fibre placement parameters. Optional — omit if no fibres are wanted. The number of fibres is computed as `floor(box_volume · fraction / (π · (d/2)² · l))`. |
 
 ### `#@grading` semantics
@@ -144,7 +144,13 @@ placed-aggregate volume is, e.g., 50–70% of `fraction · box_volume`.
 
 `dmax` must be at least `2·dmin` (one full sieve octave). Each ellipsoid
 sampled inside an interval respects `sx ≤ sy ≤ sz` and an aspect ratio
-`sx/sz ∈ [0.5, 1]`.
+`sx/sz ∈ [0.5, 1]`. With `shape sphere` the constraints collapse to a
+single radius `r ∈ [n/2, m/2]` per sieve interval `[n, m]`, and the
+output line becomes `sphere <id> centre 3 ... radius <r>` instead of the
+six-parameter ellipsoid form. Spherical aggregates are particularly
+useful when the downstream consumer (typically the generator) only
+implements surface seeding for spheres — see `tests/SmallRVEsphere/`
+for an example.
 
 ### `#@fibres` semantics
 
@@ -180,19 +186,32 @@ the remaining lines are inclusion records.
 # periodicity <px> <py> <pz>
 ellipsoid <id> centre 3 <cx> <cy> <cz> angles 3 <phix> <phiy> <phiz> radii 3 <sx> <sy> <sz>
 ellipsoid <id> ...
+sphere <id> centre 3 <cx> <cy> <cz> radius <r>
+sphere <id> ...
 fibre <id> endpointcoords 6 <ax> <ay> <az> <bx> <by> <bz> diameter <d>
 ...
 ```
 
-Each inclusion line starts with its type keyword (`ellipsoid`, `fibre`)
-and a per-type sequential id. The remaining tokens follow OOFEM's
-`keyword count v1 v2 ...` convention, parseable by the same machinery
-the generator and converter already use.
+Each inclusion line starts with its type keyword (`ellipsoid`, `sphere`,
+`fibre`) and a per-type sequential id. The remaining tokens follow
+OOFEM's `keyword count v1 v2 ...` convention, parseable by the same
+machinery the generator and converter already use. `sphere` lines are
+written automatically when `Ellipsoid::writeTo` detects three equal
+semi-axes — the typical case under `#@grading shape sphere`.
 
-This format is shared with the converter and the generator — the
-converter can ingest it directly via an `#@inclusionfile <packing.dat>`
-directive (planned), and the generator can place interface nodes on the
-ellipsoid surfaces via `#@interfaceellipsoid` (planned).
+This format is shared with the generator and the converter:
+
+- The **generator** consumes it via `#@inclusionfile <path> [itz <t>] [refine <r>]` —
+  each `sphere` line becomes an `InterfaceSphere` (surface plus ITZ halo
+  seeded with points). `ellipsoid` lines trigger a warning (the generator
+  does not yet implement arbitrary-orientation ellipsoid surface seeding);
+  `fibre` lines are silently ignored (handled by the converter, not the
+  generator).
+- The **converter** consumes it via `#@inclusionfile <path> itz <t> inside <m> interface <m>` —
+  each `sphere` line becomes a `SphereInclusionSpec` driving material
+  classification of every Voronoi/Delaunay edge whose endpoints fall
+  inside or straddle the sphere+ITZ boundary; each `fibre` line becomes
+  a `Fibre` for beam-and-link generation.
 
 ### `packing.vtu`
 

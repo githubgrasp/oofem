@@ -206,6 +206,14 @@ public:
     /// `outputFileName` from a `#@output` directive.
     int readControlRecords(const std::string &controlFile);
 
+    /// Read a packing-format file (as produced by `src/aggregate/`) and
+    /// instantiate one `InterfaceSphere` per `sphere` line. `itz` and
+    /// `refinement` are applied uniformly to every inclusion read.
+    /// Ellipsoid lines are unsupported by the generator and trigger a
+    /// warning; fibre lines are silently ignored (they belong to the
+    /// converter, not the generator).
+    void readInclusionFile(const std::string &path, double itz, double refinement);
+
     /// The output path the generator should write `nodes.dat` to.
     const std::string &giveOutputFileName() const { return outputFileName; }
 

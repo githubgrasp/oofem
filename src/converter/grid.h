@@ -437,6 +437,19 @@ public:
     /// interfere with one another's state.
     void readControlRecords();
 
+    /// Read a packing-format file (as produced by `src/aggregate/`) and
+    /// populate inclusion specs. Each `sphere` line contributes a
+    /// `SphereInclusionSpec` whose centre and radius come from the line
+    /// while `itz` and the inside/interface material ids come from the
+    /// `#@inclusionfile` directive. Each `fibre` line is appended to
+    /// `fibreList` (renumbered to avoid collision with `#@fibre` ids).
+    /// Ellipsoid lines are unsupported by the converter's material-
+    /// classification logic and trigger a warning.
+    void readInclusionFile(const std::string &path,
+                           double itz,
+                           int insideMaterial,
+                           int interfaceMaterial);
+
     /// Resolve the node-id set targeted by a BC request (vertex → single
     /// node; curve → nodes on curve; patch → nodes on surface patch).
     std::set< int >collectBCNodes(const BCRequest &bc) const;

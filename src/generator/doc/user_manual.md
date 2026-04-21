@@ -96,6 +96,7 @@ components if present).
 | `#@perflag` | `3 <px> <py> <pz>` | Periodicity flags per axis (0 = non-periodic, 1 = periodic). Must have three components. |
 | `#@ranflag` | `<n>` | Random-placement strategy. `0` Bolander (no points on boundary, best for pure SM), `1` Grassl (points on boundary, needed for coupled analyses), `2` Grassl with periodic boundary pairing. |
 | `#@vtk` | *(no arguments)* | Opt in to writing `points.vtk` alongside `nodes.dat` for ParaView inspection. Default off. |
+| `#@inclusionfile` | `<path> [itz <t>] [refine <r>]` | Bulk-load spherical inclusions from a packing file produced by `src/aggregate/`. Each `sphere` line becomes an `InterfaceSphere` with the supplied `itz` and `refine` applied uniformly. Inclusions are renumbered automatically to avoid collisions with other directives. `ellipsoid` lines trigger a warning (arbitrary-orientation ellipsoid seeding is not implemented); `fibre` lines are silently ignored (handled by the converter, not the generator). |
 
 ### Geometry directives
 
@@ -141,6 +142,29 @@ Typical use with regions:
 A periodic region normally also needs `#@vertex` entries at the widened
 bounding-box corners so the octree localiser can find cross-boundary
 neighbours.
+
+### Loading inclusions from a packing file
+
+For mesoscale specimens with many inclusions it is often impractical to
+declare each one with an inline `#@intersphere`. Instead, run the
+aggregate placer (see `src/aggregate/`) to produce a `packing.dat` and
+reference it from the generator's control file:
+
+```text
+#@inclusionfile packing.dat itz 0.5e-3 refine 0.5
+```
+
+Per-line semantics:
+
+| Packing-file keyword | Generator action |
+|----------------------|------------------|
+| `sphere`     | Instantiate an `InterfaceSphere` with the line's centre and radius and the directive's `itz` and `refine`. |
+| `ellipsoid`  | Print a warning and skip — the generator does not yet implement arbitrary-orientation ellipsoid surface seeding. Generate spheres in aggregate via `#@grading shape sphere` to avoid this. |
+| `fibre`      | Silently ignored; fibres are read by the converter (for beam/link element generation), not by the generator. |
+
+A self-contained example lives in `src/generator/tests/3DInclusionFile/`,
+which uses a small hand-written `packing.dat` so the test does not
+depend on the aggregate binary.
 
 ## Example
 

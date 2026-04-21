@@ -48,13 +48,26 @@ Eigen::Vector3d sampleEllipsoid(double lower, double upper, std::mt19937 &rng)
     return Eigen::Vector3d(sx, sy, sz);
 }
 
+/// Sample a sphere radius uniformly in the half-sieve range [lower/2, upper/2]
+/// and return it as a degenerate (sx = sy = sz = r) ellipsoid triple.
+Eigen::Vector3d sampleSphere(double lower, double upper, std::mt19937 &rng)
+{
+    const double r = uniform(rng, 0.5 * lower, 0.5 * upper);
+    return Eigen::Vector3d(r, r, r);
+}
+
 } // namespace
 
 GradingCurve::GradingCurve(double minSieve,
                            double maxSieve,
                            double aggregateFraction,
-                           double rveVol)
-    : dmin(minSieve), dmax(maxSieve), volumeFraction(aggregateFraction), rveVolume(rveVol)
+                           double rveVol,
+                           GradingShape shapeChoice)
+    : dmin(minSieve),
+      dmax(maxSieve),
+      volumeFraction(aggregateFraction),
+      rveVolume(rveVol),
+      shape(shapeChoice)
 {
     if ( minSieve <= 0.0 || maxSieve <= 0.0 || rveVol <= 0.0 ) {
         errorf("GradingCurve: non-positive input (dmin=%.3e dmax=%.3e V=%.3e)",
@@ -93,7 +106,9 @@ std::vector<Eigen::Vector3d> GradingCurve::generate(std::mt19937 &rng) const
         const double budget = wriggersIntervalVolume(n, m) + carryover;
         double placed = 0.0;
         while ( true ) {
-            Eigen::Vector3d s = sampleEllipsoid(n, m, rng);
+            Eigen::Vector3d s = ( shape == GradingShape::Sphere )
+                                ? sampleSphere(n, m, rng)
+                                : sampleEllipsoid(n, m, rng);
             const double v = ellipsoidVolume(s);
             if ( placed + v > budget ) {
                 carryover = budget - placed;

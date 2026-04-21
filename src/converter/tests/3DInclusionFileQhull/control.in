@@ -1,0 +1,33 @@
+oofem.out
+Mechanical 3D sphere with elastic inclusion (loaded from #@inclusionfile)
+NonLinearStatic nmsteps 1 nsteps 1 contextOutputStep 2000 nmodules 2 profileopt 1 lstype 3 smtype 7
+nsteps 1 rtolv 1.e-3 stiffMode 2 manrmsteps 10 maxiter 200 controllmode 1 lstype 3 smtype 7
+vtkxmllattice primvars 1 1 tstep_all domain_all cross 1
+gpexportmodule vars 5 59 90 84 85 78 tstep_all domain_all
+domain 3dLattice
+OutputManager tstep_all dofman_output { #@CTL1 }
+ncrosssect 3 nmat 3 nbc 2 nic 0 nltf 2 nset 1
+latticecs 1 material 1 shape 2
+latticecs 2 material 2 shape 2
+latticecs 3 material 3 shape 2
+latticeplastdam 1 d 0 talpha 0. calpha 0. e 30.e9 ft 3.e6 fc 30.e6 wf 50.e-6 ahard 1.e-3
+latticeplastdam 2 d 0 talpha 0. calpha 0. e 300.e9 ft 1.e16 fc 30.e16 wf 15.4e+6 ahard 1.e-3
+latticeplastdam 3 d 0 talpha 0. calpha 0.15e-3 e 30.e9 a1 0.001 ft 3.e6 fc 30.e6 wf 50.e-6 ahard 1.e-3
+BoundaryCondition 1 loadTimeFunction 1 dofs 6 1 2 3 4 5 6 values 6 0 0 0 0 0 0 set 1
+StructTemperatureLoad 2 loadTimeFunction 2 Components 1 1.0
+ConstantFunction 1 f(t) 1.
+PiecewiseLinFunction 2 nPoints 2 t 2 0. 1. f(t) 2 0. 1.
+Set 1 nodes 1 #@CTL1
+#%BEGIN_CHECK%
+#NODE number #@CTL1 dof 2 unknown d
+#LOADLEVEL
+#TIME
+#%END_CHECK%
+#@grid 3dSM
+#@mesher qhull
+#@diam 12.e-3
+#@perflag 3 0 0 0
+#@prism 1 box 6 -58.e-3 -58.e-3 -58.e-3 58.e-3 58.e-3 58.e-3 refine 1.
+#@inclusionfile packing.dat itz 0.5e-3 inside 2 interface 3
+#@bodyload 3 2
+#@controlvertex 1 coords 3 0. 0. 0.

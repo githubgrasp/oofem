@@ -1,0 +1,4 @@
+# packing v1
+# box 0.116 0.116 0.116
+# periodicity 0 0 0
+sphere 1 centre 3 0. 0. 0. radius 8.e-3

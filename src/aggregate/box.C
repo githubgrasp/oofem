@@ -74,6 +74,17 @@ void Box::applyDirective(const std::string &line)
                 iss >> grading.dmax;
             } else if ( sub == "fraction" ) {
                 iss >> grading.aggregateFraction;
+            } else if ( sub == "shape" ) {
+                std::string shapeName;
+                iss >> shapeName;
+                if ( shapeName == "sphere" ) {
+                    grading.shape = GradingShape::Sphere;
+                } else if ( shapeName == "ellipsoid" ) {
+                    grading.shape = GradingShape::Ellipsoid;
+                } else {
+                    errorf("Box::applyDirective: '#@grading shape' must be 'sphere' or 'ellipsoid', got '%s'",
+                           shapeName.c_str());
+                }
             } else {
                 errorf("Box::applyDirective: '#@grading' unknown sub-keyword '%s'", sub.c_str());
             }

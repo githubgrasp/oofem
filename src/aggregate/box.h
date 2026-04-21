@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include "gradingcurve.h"
 #include "inclusion.h"
 
 namespace aggregate {
@@ -16,6 +17,7 @@ struct GradingParameters
     double dmin = 0.0;
     double dmax = 0.0;
     double aggregateFraction = 0.0;
+    GradingShape shape = GradingShape::Ellipsoid;
 };
 
 /// Parameters captured by the optional `#@fibres` directive.

@@ -1,0 +1,15 @@
+# Generator test that consumes a packing.dat file produced (or hand-written
+# in the same format) by aggregate. Each `sphere` line becomes an
+# InterfaceSphere with the directive's itz/refine.
+#@output nodes.dat
+#@domain 3
+#@diam 4.e-3
+#@maxiter 1000
+#@ranint -1
+#@perflag 3 1 1 1
+#@ranflag 2
+# bounding-box corners widen the localiser for periodic neighbour lookup
+#@vertex 1 coords 3 -0.025 -0.025 -0.025
+#@vertex 2 coords 3  0.075  0.075  0.075
+#@prism 1 box 6 0. 0. 0. 0.05 0.05 0.05 refine 1.
+#@inclusionfile packing.dat itz 0.5e-3 refine 0.5

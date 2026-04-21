@@ -770,6 +770,22 @@ int Grid::readControlRecords(const std::string &controlFile)
                 refinementList.resize(num, nullptr);
             }
             setRefinement(num, ref);
+        } else if ( tag == "#@inclusionfile" ) {
+            std::string path;
+            iss >> path;
+            double itz = 0.0;
+            double refine = 1.0;
+            std::string sub;
+            while ( iss >> sub ) {
+                if ( sub == "itz" ) {
+                    iss >> itz;
+                } else if ( sub == "refine" ) {
+                    iss >> refine;
+                } else {
+                    generator::errorf("Grid::readControlRecords: '#@inclusionfile' unknown sub-keyword '%s'", sub.c_str());
+                }
+            }
+            this->readInclusionFile(path, itz, refine);
         } else if ( tag.rfind("#@", 0) == 0 ) {
             generator::errorf("Grid::readControlRecords: unknown directive '%s'", tag.c_str() );
         }
@@ -790,6 +806,62 @@ int Grid::readControlRecords(const std::string &controlFile)
 }
 
 
+void Grid::readInclusionFile(const std::string &path, double itz, double refine)
+{
+    std::ifstream in(path);
+    if ( !in ) {
+        generator::errorf("Grid::readInclusionFile: cannot open '%s'", path.c_str());
+    }
+
+    int sphereCount = 0;
+    int ellipsoidCount = 0;
+    int fibreCount = 0;
+    std::string line;
+    while ( std::getline(in, line) ) {
+        if ( line.empty() || line[0] == '#' ) {
+            continue; // skip metadata comments
+        }
+        std::istringstream iss(line);
+        std::string keyword;
+        if ( !( iss >> keyword ) ) {
+            continue;
+        }
+        if ( keyword == "sphere" ) {
+            int packingId;
+            iss >> packingId;
+            // Append the directive's refine/itz so the existing
+            // InterfaceSphere parser sees one well-formed token stream.
+            std::string remainder;
+            std::getline(iss, remainder);
+            std::ostringstream merged;
+            merged << remainder << " refine " << refine << " itz " << itz;
+            std::istringstream mergedStream(merged.str());
+
+            // Renumber to avoid collisions with any inclusions added by
+            // other directives (`#@intersphere`, etc.).
+            const int newNumber = static_cast<int>(inclusionList.size()) + 1;
+            auto *inc = new InterfaceSphere(newNumber, this);
+            inc->initializeFromTokens(mergedStream);
+            inclusionList.resize(newNumber, nullptr);
+            setInclusion(newNumber, inc);
+            ++sphereCount;
+        } else if ( keyword == "ellipsoid" ) {
+            ++ellipsoidCount;
+        } else if ( keyword == "fibre" ) {
+            ++fibreCount; // intentionally not loaded — converter handles fibres
+        }
+        // Unknown keywords are ignored to stay forward-compatible.
+    }
+
+    if ( ellipsoidCount > 0 ) {
+        std::fprintf(stderr,
+                     "Warning: Grid::readInclusionFile: %d ellipsoid line(s) in '%s' ignored "
+                     "(generator only handles spheres from packing files)\n",
+                     ellipsoidCount, path.c_str());
+    }
+    std::printf("readInclusionFile('%s'): %d sphere(s) loaded, %d fibre(s) skipped\n",
+                path.c_str(), sphereCount, fibreCount);
+}
 
 
 

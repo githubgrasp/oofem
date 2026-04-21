@@ -65,6 +65,16 @@ void Ellipsoid::initializeFromTokens(std::istringstream &iss)
 
 void Ellipsoid::writeTo(std::ostream &os) const
 {
+    // Degenerate ellipsoid (sx == sy == sz) is a sphere — emit the simpler
+    // form so downstream tools that only know how to seed sphere surfaces
+    // (e.g. the generator's InterfaceSphere) can consume it directly.
+    if ( semiAxes(0) == semiAxes(1) && semiAxes(1) == semiAxes(2) ) {
+        os << "sphere " << number
+           << " centre 3 " << centre(0) << ' ' << centre(1) << ' ' << centre(2)
+           << " radius " << semiAxes(0)
+           << '\n';
+        return;
+    }
     os << "ellipsoid " << number
        << " centre 3 " << centre(0) << ' ' << centre(1) << ' ' << centre(2)
        << " angles 3 " << eulerAngles(0) << ' ' << eulerAngles(1) << ' ' << eulerAngles(2)

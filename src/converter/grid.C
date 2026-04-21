@@ -1147,9 +1147,110 @@ void Grid::readControlRecords()
                 converter::error("Malformed #@material_around — expected '<ctl_id> material <m>'");
             }
             materialAroundSpecs.push_back(m);
+        } else if ( tag == "#@inclusionfile" ) {
+            // #@inclusionfile <path> itz <t> inside <m> interface <m>
+            std::string path;
+            iss >> path;
+            double itz = 0.0;
+            int insideMat = 2;
+            int interfaceMat = 3;
+            std::string sub;
+            while ( iss >> sub ) {
+                if ( sub == "itz" ) {
+                    iss >> itz;
+                } else if ( sub == "inside" ) {
+                    iss >> insideMat;
+                } else if ( sub == "interface" ) {
+                    iss >> interfaceMat;
+                } else {
+                    converter::errorf("readControlRecords: '#@inclusionfile' unknown sub-keyword '%s'",
+                                      sub.c_str());
+                }
+            }
+            this->readInclusionFile(path, itz, insideMat, interfaceMat);
         }
     }
 }
+
+
+void Grid::readInclusionFile(const std::string &path,
+                             double itz, int insideMaterial, int interfaceMaterial)
+{
+    std::ifstream in(path);
+    if ( !in ) {
+        converter::errorf("Grid::readInclusionFile: cannot open '%s'", path.c_str());
+    }
+
+    int sphereCount = 0;
+    int ellipsoidCount = 0;
+    int fibreCount = 0;
+    std::string line;
+    while ( std::getline(in, line) ) {
+        if ( line.empty() || line[0] == '#' ) {
+            continue;
+        }
+        std::istringstream iss(line);
+        std::string keyword;
+        if ( !( iss >> keyword ) ) {
+            continue;
+        }
+
+        if ( keyword == "sphere" ) {
+            int packingId;
+            iss >> packingId;
+            std::string kw;
+            int sz = 0;
+            iss >> kw >> sz;            // "centre" 3
+            if ( kw != "centre" || sz != 3 ) {
+                converter::errorf("Grid::readInclusionFile: sphere line malformed in '%s'", path.c_str());
+            }
+            SphereInclusionSpec s;
+            iss >> s.cx >> s.cy >> s.cz;
+            iss >> kw >> s.radius;       // "radius" r
+            if ( kw != "radius" ) {
+                converter::errorf("Grid::readInclusionFile: sphere line malformed (missing radius) in '%s'", path.c_str());
+            }
+            s.itz = itz;
+            s.inside = insideMaterial;
+            s.interface_ = interfaceMaterial;
+            sphereInclusionSpecs.push_back(s);
+            ++sphereCount;
+        } else if ( keyword == "ellipsoid" ) {
+            ++ellipsoidCount;
+        } else if ( keyword == "fibre" ) {
+            int packingId;
+            iss >> packingId;
+            std::string kw;
+            int sz = 0;
+            iss >> kw >> sz;            // "endpointcoords" 6
+            oofem::FloatArray endpoints(sz);
+            for ( int i = 1; i <= sz; ++i ) {
+                iss >> endpoints.at(i);
+            }
+            iss >> kw;                  // "diameter"
+            double diam = 0.0;
+            iss >> diam;
+            // Renumber to avoid collisions with `#@fibre`-declared fibres.
+            const int newId = static_cast<int>( fibreList.size() ) + 1;
+            auto *f = new Fibre(newId, this);
+            f->initializeFromCoords(endpoints, diam);
+            fibreList.resize(newId, nullptr);
+            setFibre(newId, f);
+            ++fibreCount;
+        }
+        // Unknown keywords are ignored to stay forward-compatible.
+    }
+
+    if ( ellipsoidCount > 0 ) {
+        std::fprintf(stderr,
+                     "Warning: Grid::readInclusionFile: %d ellipsoid line(s) in '%s' ignored "
+                     "(converter only handles sphere inclusions for material assignment)\n",
+                     ellipsoidCount, path.c_str());
+    }
+    std::printf("readInclusionFile('%s'): %d sphere(s), %d fibre(s) loaded\n",
+                path.c_str(), sphereCount, fibreCount);
+}
+
 
 void Grid::rebuildEntityTris()
 {
