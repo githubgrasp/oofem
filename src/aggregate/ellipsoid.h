@@ -20,6 +20,9 @@ namespace aggregate {
 class Ellipsoid : public Inclusion
 {
 public:
+    /// Construct a fully-specified ellipsoid. `centre` is in world
+    /// coordinates, `eulerAngles` are the (phix, phiy, phiz) triple for
+    /// the Rz·Ry·Rx convention, `semiAxes` are positive (sx, sy, sz).
     Ellipsoid(int n,
               const Eigen::Vector3d &centre,
               const Eigen::Vector3d &eulerAngles,
@@ -34,8 +37,13 @@ public:
     std::string typeName() const override { return "ellipsoid"; }
     void writeTo(std::ostream &os) const override;
 
+    /// World-coordinate centre of the ellipsoid.
     const Eigen::Vector3d &giveCentre() const { return centre; }
+
+    /// Euler angles (phix, phiy, phiz) for the Rz·Ry·Rx rotation convention.
     const Eigen::Vector3d &giveEulerAngles() const { return eulerAngles; }
+
+    /// Principal semi-axis lengths (sx, sy, sz) in the ellipsoid's local frame.
     const Eigen::Vector3d &giveSemiAxes() const { return semiAxes; }
 
     /// Largest semi-axis — used as a cheap separation pre-check.

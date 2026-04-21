@@ -26,6 +26,9 @@ namespace aggregate {
 class GradingCurve
 {
 public:
+    /// Construct a grading curve targeting `aggregateFraction` of `rveVolume`,
+    /// with sieve diameters bounded below by `minSieve` and above by `maxSieve`.
+    /// `maxSieve` must be at least `2·minSieve` (one full sieve octave).
     GradingCurve(double minSieve,
                  double maxSieve,
                  double aggregateFraction,

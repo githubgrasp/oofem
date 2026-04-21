@@ -11,13 +11,14 @@ class Ellipsoid;
 class Fibre;
 
 /**
- * Sequential trial-and-error placer for ellipsoidal inclusions.
+ * Sequential trial-and-error placer for ellipsoidal and fibrous inclusions.
  *
- * Faithful re-implementation of `placement_aggregates_periodic.m`:
+ * Re-implementation of `placement_aggregates_periodic.m` and
+ * `fiber_generation_and_placement_periodic.m`:
  *
  *   - Random centre uniformly in [0, lx]×[0, ly]×[0, lz]
- *   - Random Euler angles via Matlab's mixed convention: phix, phiz uniform
- *     in [0, 2π); phiy = acos(2u−1) − π/2, giving uniform y-axis cosine
+ *   - Random ellipsoid orientation via Shoemake's quaternion sampler
+ *     (uniform on SO(3)); fibre direction via Marsaglia (uniform on S²)
  *   - Boundary detection per axis: if the candidate intersects either side
  *     of a non-periodic boundary, reject; otherwise mark and (when needed)
  *     shift the centre by −lx_i so the primary representation extends
@@ -27,7 +28,8 @@ class Fibre;
  *     never written to the packing file
  *   - Pairwise overlap: cheap inscribed/bounding sphere bounds first, then
  *     the Alfano-Greer eigenvalue test (`ellipsoidsIntersect`) only when
- *     the bounds are inconclusive
+ *     the bounds are inconclusive. Fibre-fibre crossings are permitted
+ *     (matching the Matlab convention) — only fibre-vs-ellipsoid is checked.
  *
  * The placer leaves all inclusions previously stored on `Box` untouched —
  * existing aggregates and fibres are treated as fixed obstacles. New
@@ -36,6 +38,9 @@ class Fibre;
 class Placer
 {
 public:
+    /// Bind the placer to a `box` (which receives accepted inclusions and
+    /// supplies dimensions, periodicity, and the iteration cap) and an `rng`
+    /// (used for centre, orientation, and direction sampling).
     Placer(Box &box, std::mt19937 &rng);
 
     /// Try to place a single ellipsoid of the given semi-axes.

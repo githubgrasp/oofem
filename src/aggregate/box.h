@@ -40,6 +40,8 @@ struct FibreParameters
 class Box
 {
 public:
+    /// Construct an empty box. Dimensions, periodicity, and inclusion lists
+    /// are zero-initialised; populate via `readControlRecords` or accessors.
     Box();
 
     /// Parse a control file of `#@`-directives and populate the box.

@@ -15,12 +15,14 @@ namespace aggregate {
  * behaviour stays bit-reproducible across compilers — required for the
  * diff-based ctest workflow.
  */
+/// Uniform sample in [0, 1) — see file docstring for the portability rationale.
 inline double uniform(std::mt19937 &rng)
 {
     constexpr double divisor = static_cast<double>(std::mt19937::max()) + 1.0;
     return static_cast<double>(rng()) / divisor;
 }
 
+/// Uniform sample in `[lo, hi)`.
 inline double uniform(std::mt19937 &rng, double lo, double hi)
 {
     return lo + ( hi - lo ) * uniform(rng);
