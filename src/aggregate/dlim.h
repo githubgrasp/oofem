@@ -4,6 +4,7 @@ namespace aggregate {
 
 /**
  * Diameter threshold separating aggregates placed before and after fibres.
+ * See paper DOI 10.2514/2.5020
  *
  * Replaces the symbolic Matlab solver from Vandewalle (`d_lim.m`) with a
  * companion-matrix root finder using Eigen. Solves
