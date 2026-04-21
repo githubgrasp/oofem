@@ -83,6 +83,9 @@ public:
     /// Fibre placement parameters (may be absent, see `present`).
     const FibreParameters &giveFibreParameters() const { return fibres; }
 
+    /// Optional VTU output path (empty if `#@vtu` was not specified).
+    const std::string &giveVtuFileName() const { return vtuFileName; }
+
 private:
     /// Apply one `#@`-directive line. Splits off the keyword and dispatches.
     void applyDirective(const std::string &line);
@@ -95,6 +98,7 @@ private:
 
     GradingParameters grading;
     FibreParameters fibres;
+    std::string vtuFileName;
 
     std::vector<std::unique_ptr<Inclusion>> realInclusions;
     std::vector<std::unique_ptr<Inclusion>> ghostInclusions;

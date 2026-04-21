@@ -10,6 +10,7 @@
 #include "dlim.h"
 #include "gradingcurve.h"
 #include "placer.h"
+#include "vtu.h"
 
 namespace {
 
@@ -111,5 +112,9 @@ int main(int argc, char *argv[])
 
     box.writePackingFile();
     std::cout << "Packing written to " << box.giveOutputFileName() << "\n";
+    if ( !box.giveVtuFileName().empty() ) {
+        aggregate::writeVtu(box, box.giveVtuFileName());
+        std::cout << "VTU written to " << box.giveVtuFileName() << "\n";
+    }
     return EXIT_SUCCESS;
 }

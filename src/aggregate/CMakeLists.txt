@@ -8,6 +8,7 @@ set(AGGREGATE_SOURCES
     dlim.C
     gradingcurve.C
     placer.C
+    vtu.C
    )
 
 add_library(aggregate STATIC ${AGGREGATE_SOURCES})

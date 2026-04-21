@@ -63,6 +63,8 @@ void Box::applyDirective(const std::string &line)
         iss >> randomSeed;
     } else if ( keyword == "maxiter" ) {
         iss >> maximumIterations;
+    } else if ( keyword == "vtu" ) {
+        iss >> vtuFileName;
     } else if ( keyword == "grading" ) {
         std::string sub;
         while ( iss >> sub ) {
