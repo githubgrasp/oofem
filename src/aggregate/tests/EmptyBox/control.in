@@ -1,0 +1,5 @@
+#@output packing.dat
+#@box 3 0.1 0.1 0.1
+#@periodicity 3 1 1 1
+#@seed -1
+#@maxiter 10000

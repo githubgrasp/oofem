@@ -149,6 +149,7 @@ option (USE_HDF5 "HDF5 support" OFF)
 option (USE_MPM "Enable experimental multiphysics module" OFF)
 option (USE_GENERATOR "Enable vertex generator" OFF)
 option (USE_CONVERTER "Enable mesh converter" OFF)
+option (USE_AGGREGATE "Enable aggregate/inclusion packing generator (requires Eigen3)" OFF)
 
 
 if (USE_PARALLEL)
@@ -290,6 +291,12 @@ if (USE_CONVERTER)
     include_directories ("${oofem_SOURCE_DIR}/src/converter")
     add_subdirectory("${oofem_SOURCE_DIR}/src/converter")
     list (APPEND MODULE_LIST "converter")
+endif ()
+
+if (USE_AGGREGATE)
+    include_directories ("${oofem_SOURCE_DIR}/src/aggregate")
+    add_subdirectory("${oofem_SOURCE_DIR}/src/aggregate")
+    list (APPEND MODULE_LIST "aggregate")
 endif ()
 
 
