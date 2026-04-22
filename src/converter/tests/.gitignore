@@ -1,0 +1,4 @@
+# Random-field data files referenced by OOFEM solver-level
+# `InterpolatingFunction`. Generated/used downstream; not consumed by
+# the converter itself, so not needed for ctest diff comparisons.
+random.dat
