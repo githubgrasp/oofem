@@ -50,9 +50,24 @@ void FEI2dLineQuad :: evalN(FloatArray &answer, const FloatArray &lcoords, const
 
 double FEI2dLineQuad :: evaldNdx(FloatMatrix &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
 {
-    // Not meaningful to return anything.
-    answer.clear();
-    return 0.;
+    // Not meaningful to return anything. Just dNds would make sense if the caller defines a local coordinate system.
+    double xi = lcoords(0);
+    answer.resize(3,1);
+    answer(0,0) = -0.5 + xi;
+    answer(1,0) =  0.5 + xi;
+    answer(2,0) = -2.0 * xi;
+
+    double es1 = answer(0,0) * cellgeo.giveVertexCoordinates(1).at(xind) +
+                 answer(1,0) * cellgeo.giveVertexCoordinates(2).at(xind) +
+                 answer(2,0) * cellgeo.giveVertexCoordinates(3).at(xind);
+
+    double es2 = answer(0,0) * cellgeo.giveVertexCoordinates(1).at(yind) +
+                 answer(1,0) * cellgeo.giveVertexCoordinates(2).at(yind) +
+                 answer(2,0) * cellgeo.giveVertexCoordinates(3).at(yind);
+
+    double J = sqrt(es1 * es1 + es2 * es2);
+    answer.times(1 / J);
+    return J;
 }
 
 void
