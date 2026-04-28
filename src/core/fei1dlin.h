@@ -69,6 +69,8 @@ public:
     double giveTransformationJacobian(const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override;
 
     int giveNumberOfNodes(Element_Geometry_Type) const override { return 2; }
+    void giveCellDofMans(IntArray& nodes, IntArray& internalDofMans, Element* elem) const override {nodes={1,2};internalDofMans={};}
+
 
     IntArray boundaryEdgeGiveNodes(int boundary,Element_Geometry_Type, bool includeHierarchical=false) const override;
     void boundaryEdgeEvalN(FloatArray &answer, int boundary, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const override;
