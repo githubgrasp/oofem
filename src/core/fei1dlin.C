@@ -65,19 +65,19 @@ FEI1dLin :: evalN(FloatArray &answer, const FloatArray &lcoords, const FEICellGe
 std::pair<double, FloatMatrixF<1,2>>
 FEI1dLin :: evaldNdx(const FEICellGeometry &cellgeo) const
 {
-    double l = cellgeo.giveVertexCoordinates(2).at(cindx) - cellgeo.giveVertexCoordinates(1).at(cindx);
-    return {0.5 * l, {-1.0 / l, 1.0 / l}};
+    double dxidx = 2.0 / ( cellgeo.giveVertexCoordinates(2).at(cindx) - cellgeo.giveVertexCoordinates(1).at(cindx) );
+    return {dxidx, {-0.5*dxidx, 0.5*dxidx}};
 }
 
 double
 FEI1dLin :: evaldNdx(FloatMatrix &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
 {
-    double l = cellgeo.giveVertexCoordinates(2).at(cindx) - cellgeo.giveVertexCoordinates(1).at(cindx);
+    double dxidx = 2.0 / ( cellgeo.giveVertexCoordinates(2).at(cindx) - cellgeo.giveVertexCoordinates(1).at(cindx) );
     answer.resize(2, 1);
 
-    answer.at(1, 1) = -1.0 / l;
-    answer.at(2, 1) =  1.0 / l;
-    return 0.5 * l;
+    answer.at(1, 1) = -0.5*dxidx;
+    answer.at(2, 1) =  0.5*dxidx;
+    return dxidx;
 }
 
 void
@@ -106,7 +106,7 @@ FEI1dLin :: global2local(FloatArray &answer, const Coordinates &coords, const FE
 double
 FEI1dLin :: giveTransformationJacobian(const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
 {
-    return 0.5 * ( cellgeo.giveVertexCoordinates(2).at(cindx) - cellgeo.giveVertexCoordinates(1).at(cindx) );
+    return fabs( cellgeo.giveVertexCoordinates(2).at(cindx) - cellgeo.giveVertexCoordinates(1).at(cindx) ) / 2.0;
 }
 
 IntArray FEI1dLin :: boundaryEdgeGiveNodes(int boundary, Element_Geometry_Type egt, bool includeHierarchical) const
