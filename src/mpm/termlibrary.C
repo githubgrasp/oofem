@@ -110,6 +110,11 @@ void BTSigTerm::grad(FloatMatrix& answer, const Variable *v, const FEInterpolati
             answer(5, i*ndofs+0) = dndx(i, 1);
             answer(5, i*ndofs+1) = dndx(i, 0);
         }
+    } else if (mmode == _1dUP) {
+        answer.resize(6, nnodes*ndofs);
+        for (int i = 0; i< nnodes; i++) {
+            answer(0, i*ndofs+0) = dndx(i, 0);
+        }
     }
 }
 
@@ -213,6 +218,11 @@ void BTamNTerm::grad(FloatMatrix& answer, const Variable *v, const FEInterpolati
             answer(5, i*ndofs+0) = dndx(i, 1);
             answer(5, i*ndofs+1) = dndx(i, 0);
         }
+    } else if (mmode == _1dUP) {
+        answer.resize(6, nnodes*ndofs);
+        for (int i = 0; i< nnodes; i++) {
+            answer(0, i*ndofs+0) = dndx(i, 0);
+        }
     }
 }
 
@@ -278,6 +288,11 @@ void NTamTBTerm::grad(FloatMatrix& answer, const Variable *v, const FEInterpolat
 
             answer(5, i*ndofs+0) = dndx(i, 1);
             answer(5, i*ndofs+1) = dndx(i, 0);
+        }
+    } else if (mmode == _1dUP) {
+        answer.resize(6, nnodes*ndofs);
+        for (int i = 0; i< nnodes; i++) {
+            answer(0, i*ndofs+0) = dndx(i, 0);
         }
     }
 }
