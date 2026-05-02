@@ -1,0 +1,16 @@
+# Stage 1 test: 2D rectangular specimen using #@rect.
+# Coordinates are 2D (`coords 2 x y`); the generator writes a 2-line
+# header to nodes.dat so qvoronoi sees a 2D point set.
+#@output nodes.dat
+#@domain 2
+#@diam 0.008
+#@maxiter 100000
+#@perflag 2 0 0
+#@ranint -1
+#@ranflag 1
+# bounding-box corners widen the localiser
+#@vertex 1 coords 2 -0.01 -0.01 refine 1. radius 0.
+#@vertex 2 coords 2  0.11  0.06 refine 1. radius 0.
+#@controlvertex 1 coords 2 0.0  0.025
+#@controlvertex 2 coords 2 0.10 0.025
+#@rect 1 box 4 0. 0. 0.10 0.05 refine 1.

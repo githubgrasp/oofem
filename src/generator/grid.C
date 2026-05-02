@@ -18,6 +18,7 @@
 #include "interfacesurface.h"
 #include "cylinder.h"
 #include "notch.h"
+#include "rect.h"
 #include <iostream>
 #include "generatorerror.h"
 
@@ -689,8 +690,14 @@ int Grid::readControlRecords(const std::string &controlFile)
             for ( int i = 1; i <= n; ++i ) {
                 iss >> periodicityFlag.at(i);
             }
-            if ( periodicityFlag.giveSize() != 3 ) {
-                generator::error("#@perflag must have three components");
+            if ( periodicityFlag.giveSize() != 2 && periodicityFlag.giveSize() != 3 ) {
+                generator::error("#@perflag must have two (2D) or three (3D) components");
+            }
+            // Pad 2D form to 3 entries (z always non-periodic) so all
+            // downstream code can address `at(3)` safely.
+            if ( periodicityFlag.giveSize() == 2 ) {
+                periodicityFlag.resize(3);
+                periodicityFlag.at(3) = 0;
             }
         } else if ( tag == "#@ranflag" ) {
             iss >> randomFlag;
@@ -746,6 +753,15 @@ int Grid::readControlRecords(const std::string &controlFile)
             int num;
             iss >> num;
             auto *r = new Prism(num, this);
+            r->initializeFromTokens(iss);
+            if ( ( int ) regionList.size() < num ) {
+                regionList.resize(num, nullptr);
+            }
+            setRegion(num, r);
+        } else if ( tag == "#@rect" ) {
+            int num;
+            iss >> num;
+            auto *r = new Rect(num, this);
             r->initializeFromTokens(iss);
             if ( ( int ) regionList.size() < num ) {
                 regionList.resize(num, nullptr);
@@ -977,13 +993,21 @@ void Grid::defineBoundaries(oofem::FloatArray &boundaries)
 
 void Grid::giveOutput(FILE *outputStream)
 {
-    int dimension = 3;
-    fprintf(outputStream, "%d\n", dimension);
+    // Use the parsed `#@domain` value so `nodes.dat` matches the dimension
+    // qvoronoi/qhull is invoked at: 2 lines for 2D points, 3 for 3D.
+    const int dim = ( this->dimension == 2 ) ? 2 : 3;
+    fprintf(outputStream, "%d\n", dim);
 
     fprintf(outputStream, "%d\n", this->giveNumberOfVertices() );
 
     for ( int i = 0; i < this->giveNumberOfVertices(); i++ ) {
-        fprintf(outputStream, "%.16e %.16e %.16e\n", ( this->giveVertex(i + 1) )->giveCoordinate(1), ( this->giveVertex(i + 1) )->giveCoordinate(2), ( this->giveVertex(i + 1) )->giveCoordinate(3) );
+        Vertex *v = this->giveVertex(i + 1);
+        if ( dim == 2 ) {
+            fprintf(outputStream, "%.16e %.16e\n", v->giveCoordinate(1), v->giveCoordinate(2) );
+        } else {
+            fprintf(outputStream, "%.16e %.16e %.16e\n",
+                    v->giveCoordinate(1), v->giveCoordinate(2), v->giveCoordinate(3) );
+        }
     }
 }
 

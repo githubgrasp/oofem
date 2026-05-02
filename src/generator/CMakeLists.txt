@@ -18,6 +18,7 @@ set(GENERATOR_SOURCES
     refinement.C
     refineprism.C
     notch.C
+    rect.C
    )
 
 add_library(generator STATIC ${GENERATOR_SOURCES})
