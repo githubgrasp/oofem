@@ -9,6 +9,7 @@ namespace aggregate {
 class Box;
 class Ellipsoid;
 class Fibre;
+class Disk;
 
 /**
  * Sequential trial-and-error placer for ellipsoidal and fibrous inclusions.
@@ -60,6 +61,18 @@ public:
     /// Place `count` fibres in sequence. Returns the number that failed to
     /// place within `box.giveMaximumIterations()` attempts each.
     int placeFibreBatch(int count, double length, double diameter);
+
+    /// 2D path: try to place a single disk of the given radius. Centre is
+    /// drawn uniformly in `[0, lx] × [0, ly]`; periodic ghosts are emitted
+    /// when the disk crosses a periodic boundary; non-periodic crossings
+    /// reject. Overlap test is the analytic distance check between disk
+    /// centres.
+    bool placeOneDisk(double radius);
+
+    /// 2D path: place the supplied list of radii in order. Returns the
+    /// number that failed to place within `box.giveMaximumIterations()`
+    /// attempts each.
+    int placeDiskBatch(const std::vector<double> &radii);
 
 private:
     bool detectBoundaries(Eigen::Vector3d &centre,

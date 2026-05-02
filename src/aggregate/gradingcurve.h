@@ -49,6 +49,11 @@ public:
     /// Sample sizes (sx, sy, sz) using the supplied engine, sorted by volume desc.
     std::vector<Eigen::Vector3d> generate(std::mt19937 &rng) const;
 
+    /// 2D variant: sample disk radii sorted by area desc. Interprets the
+    /// constructor's `rveVolume` argument as RVE area; same Fuller-curve
+    /// sieve logic, with disk area `π·r²` substituted for ellipsoid volume.
+    std::vector<double> generateDisks(std::mt19937 &rng) const;
+
     /// Volume associated with the sieve interval (lower, upper) — Wriggers' formula.
     double wriggersIntervalVolume(double lower, double upper) const;
 

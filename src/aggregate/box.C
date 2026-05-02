@@ -48,17 +48,28 @@ void Box::applyDirective(const std::string &line)
     } else if ( keyword == "box" ) {
         int n;
         iss >> n;
-        if ( n != 3 ) {
-            errorf("Box::applyDirective: '#@box' expects 3 components, got %d", n);
+        if ( n != 2 && n != 3 ) {
+            errorf("Box::applyDirective: '#@box' expects 2 (2D) or 3 (3D) components, got %d", n);
         }
-        iss >> dimensions(0) >> dimensions(1) >> dimensions(2);
+        dim = n;
+        if ( n == 2 ) {
+            iss >> dimensions(0) >> dimensions(1);
+            dimensions(2) = 0.;
+        } else {
+            iss >> dimensions(0) >> dimensions(1) >> dimensions(2);
+        }
     } else if ( keyword == "periodicity" ) {
         int n;
         iss >> n;
-        if ( n != 3 ) {
-            errorf("Box::applyDirective: '#@periodicity' expects 3 flags, got %d", n);
+        if ( n != 2 && n != 3 ) {
+            errorf("Box::applyDirective: '#@periodicity' expects 2 (2D) or 3 (3D) flags, got %d", n);
         }
-        iss >> periodicityFlag(0) >> periodicityFlag(1) >> periodicityFlag(2);
+        if ( n == 2 ) {
+            iss >> periodicityFlag(0) >> periodicityFlag(1);
+            periodicityFlag(2) = 0;
+        } else {
+            iss >> periodicityFlag(0) >> periodicityFlag(1) >> periodicityFlag(2);
+        }
     } else if ( keyword == "seed" ) {
         iss >> randomSeed;
     } else if ( keyword == "maxiter" ) {
@@ -129,12 +140,18 @@ void Box::writePackingFile() const
     // of doubles for diff-based regression tests, regardless of locale.
     out << std::scientific << std::setprecision(std::numeric_limits<double>::max_digits10);
     out << "# packing v1\n";
-    out << "# box " << dimensions(0) << ' '
-        << dimensions(1) << ' '
-        << dimensions(2) << '\n';
-    out << "# periodicity " << periodicityFlag(0) << ' '
-        << periodicityFlag(1) << ' '
-        << periodicityFlag(2) << '\n';
+    if ( dim == 2 ) {
+        out << "# box " << dimensions(0) << ' ' << dimensions(1) << '\n';
+        out << "# periodicity " << periodicityFlag(0) << ' '
+            << periodicityFlag(1) << '\n';
+    } else {
+        out << "# box " << dimensions(0) << ' '
+            << dimensions(1) << ' '
+            << dimensions(2) << '\n';
+        out << "# periodicity " << periodicityFlag(0) << ' '
+            << periodicityFlag(1) << ' '
+            << periodicityFlag(2) << '\n';
+    }
     for ( const auto &inc : realInclusions ) {
         inc->writeTo(out);
     }

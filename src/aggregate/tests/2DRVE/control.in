@@ -1,0 +1,8 @@
+# 2D RVE: 50x50 mm periodic box, fully periodic, disks via Fuller grading.
+# Aggregate fraction is interpreted as area fraction in 2D mode.
+#@output packing.dat
+#@box 2 0.05 0.05
+#@periodicity 2 1 1
+#@seed 42
+#@maxiter 1000
+#@grading dmin 0.005 dmax 0.020 fraction 0.3

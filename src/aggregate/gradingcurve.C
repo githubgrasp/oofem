@@ -127,4 +127,39 @@ std::vector<Eigen::Vector3d> GradingCurve::generate(std::mt19937 &rng) const
     return sizes;
 }
 
+
+std::vector<double> GradingCurve::generateDisks(std::mt19937 &rng) const
+{
+    // Reuses the same Fuller-curve sieve schedule as the 3D path, but the
+    // per-sieve "budget" is interpreted as area rather than volume, and
+    // disks are sampled with a single radius drawn uniformly in
+    // [lower/2, upper/2] (matching `sampleSphere`).
+    std::vector<double> radii;
+    if ( volumeFraction == 0.0 ) {
+        return radii;
+    }
+
+    double carryover = 0.0;
+    double n = 0.5 * dmax;
+    while ( n >= dmin ) {
+        const double m = 2.0 * n;
+        const double budget = wriggersIntervalVolume(n, m) + carryover;
+        double placed = 0.0;
+        while ( true ) {
+            const double r = uniform(rng, 0.5 * n, 0.5 * m);
+            const double a = M_PI * r * r;
+            if ( placed + a > budget ) {
+                carryover = budget - placed;
+                break;
+            }
+            radii.push_back(r);
+            placed += a;
+        }
+        n *= 0.5;
+    }
+
+    std::sort(radii.begin(), radii.end(), std::greater<double>());
+    return radii;
+}
+
 } // namespace aggregate

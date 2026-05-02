@@ -60,13 +60,37 @@ int main(int argc, char *argv[])
     aggregate::Box box;
     box.readControlRecords(argv[1]);
 
-    const Eigen::Vector3d &dims = box.giveDimensions();
-    const double rveVolume = dims(0) * dims(1) * dims(2);
     std::mt19937 rng(box.giveRandomSeed());
     aggregate::Placer placer(box, rng);
 
     const auto &grading = box.giveGradingParameters();
     const auto &fibres = box.giveFibreParameters();
+    const double rveMeasure = box.giveMeasure();
+
+    if ( box.giveDim() == 2 ) {
+        if ( fibres.present ) {
+            std::cerr << "aggregate: '#@fibres' is not supported in 2D mode\n";
+            return EXIT_FAILURE;
+        }
+        if ( grading.present ) {
+            aggregate::GradingCurve gc(grading.dmin,
+                                       grading.dmax,
+                                       grading.aggregateFraction,
+                                       rveMeasure,
+                                       grading.shape);
+            const auto radii = gc.generateDisks(rng);
+            if ( !radii.empty() ) {
+                const int failed = placer.placeDiskBatch(radii);
+                std::cout << "Disks: placed " << ( radii.size() - failed )
+                          << " / " << radii.size() << "\n";
+            }
+        }
+        box.writePackingFile();
+        std::cout << "Packing written to " << box.giveOutputFileName() << "\n";
+        return EXIT_SUCCESS;
+    }
+
+    const double rveVolume = rveMeasure;
 
     std::vector<Eigen::Vector3d> group1, group2;
     if ( grading.present ) {

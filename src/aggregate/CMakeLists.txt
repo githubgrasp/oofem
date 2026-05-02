@@ -2,6 +2,7 @@ find_package(Eigen3 REQUIRED NO_MODULE)
 
 set(AGGREGATE_SOURCES
     box.C
+    disk.C
     ellipsoid.C
     fibre.C
     intersection.C

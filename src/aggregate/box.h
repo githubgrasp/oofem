@@ -55,11 +55,24 @@ public:
     /// Path of the packing file declared by `#@output`.
     const std::string &giveOutputFileName() const { return outputFileName; }
 
-    /// RVE side lengths in x, y, z.
+    /// RVE side lengths. In 2D the z entry is 0.
     const Eigen::Vector3d &giveDimensions() const { return dimensions; }
 
-    /// Per-axis periodicity flag (1 = periodic, 0 = real boundary).
+    /// Per-axis periodicity flag (1 = periodic, 0 = real boundary). In 2D
+    /// the z entry is 0.
     const Eigen::Vector3i &givePeriodicityFlag() const { return periodicityFlag; }
+
+    /// Spatial dimension (2 or 3). Determined by the arity of `#@box`.
+    int giveDim() const { return dim; }
+
+    /// Area (2D) or volume (3D) of the RVE — the natural measure for
+    /// converting volume / area fractions into target inclusion counts.
+    double giveMeasure() const
+    {
+        return ( dim == 2 )
+            ? dimensions(0) * dimensions(1)
+            : dimensions(0) * dimensions(1) * dimensions(2);
+    }
 
     /// Maximum trial-and-error attempts for placing one inclusion.
     int giveMaximumIterations() const { return maximumIterations; }
@@ -97,6 +110,7 @@ private:
     std::string outputFileName;
     Eigen::Vector3d dimensions;
     Eigen::Vector3i periodicityFlag;
+    int dim = 3;
     unsigned int randomSeed = 1;
     int maximumIterations = 10000;
 

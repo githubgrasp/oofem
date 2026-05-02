@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "box.h"
+#include "disk.h"
 #include "ellipsoid.h"
 #include "fibre.h"
 #include "intersection.h"
@@ -182,6 +183,91 @@ int Placer::placeBatch(const std::vector<Eigen::Vector3d> &sizes)
     int failed = 0;
     for ( const auto &s : sizes ) {
         if ( !placeOne(s) ) {
+            ++failed;
+        }
+    }
+    return failed;
+}
+
+bool Placer::placeOneDisk(double radius)
+{
+    const Eigen::Vector3d &boxDims = box.giveDimensions();
+    const Eigen::Vector3i &periodic = box.givePeriodicityFlag();
+    const int maxIter = box.giveMaximumIterations();
+
+    auto disksOverlap = [](const Eigen::Vector2d &c1, double r1,
+                           const Eigen::Vector2d &c2, double r2) {
+        return ( c1 - c2 ).norm() < r1 + r2;
+    };
+
+    auto candidateOverlapsList = [&]( const Eigen::Vector2d &centre,
+                                      const std::vector<Eigen::Vector3d> &shifts,
+                                      const std::vector<std::unique_ptr<Inclusion>> &list ) {
+        for ( const auto &incPtr : list ) {
+            const auto *d = dynamic_cast<const Disk *>( incPtr.get() );
+            if ( !d ) {
+                continue;
+            }
+            if ( disksOverlap(centre, radius, d->giveCentre(), d->giveRadius()) ) {
+                return true;
+            }
+            for ( const auto &shift : shifts ) {
+                const Eigen::Vector2d shifted(centre(0) + shift(0), centre(1) + shift(1));
+                if ( disksOverlap(shifted, radius, d->giveCentre(), d->giveRadius()) ) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
+
+    for ( int iter = 0; iter < maxIter; ++iter ) {
+        Eigen::Vector2d centre(uniform(rng, 0.0, boxDims(0)),
+                               uniform(rng, 0.0, boxDims(1)));
+
+        // Boundary detection — disk crosses an axis if centre±radius leaves
+        // [0, boxDim]. Reject on non-periodic crossings; mark a periodic
+        // crossing in the bitmask and shift the canonical representation
+        // back into the box if it spilled past the upper face.
+        int bitmask = 0;
+        bool ok = true;
+        for ( int axis = 0; axis < 2; ++axis ) {
+            if ( centre(axis) - radius < 0.0 ) {
+                if ( periodic(axis) == 0 ) { ok = false; break; }
+                bitmask |= ( 1 << axis );
+            } else if ( centre(axis) + radius > boxDims(axis) ) {
+                if ( periodic(axis) == 0 ) { ok = false; break; }
+                bitmask |= ( 1 << axis );
+                centre(axis) -= boxDims(axis);
+            }
+        }
+        if ( !ok ) {
+            continue;
+        }
+
+        const std::vector<Eigen::Vector3d> shifts = ghostShifts(boxDims, bitmask);
+
+        if ( candidateOverlapsList(centre, shifts, box.giveRealInclusions()) ||
+             candidateOverlapsList(centre, shifts, box.giveGhostInclusions()) ) {
+            continue;
+        }
+
+        const int id = static_cast<int>( box.giveRealInclusions().size() ) + 1;
+        box.addReal(std::make_unique<Disk>(id, centre, radius));
+        for ( const auto &shift : shifts ) {
+            const Eigen::Vector2d shifted(centre(0) + shift(0), centre(1) + shift(1));
+            box.addGhost(std::make_unique<Disk>(id, shifted, radius));
+        }
+        return true;
+    }
+    return false;
+}
+
+int Placer::placeDiskBatch(const std::vector<double> &radii)
+{
+    int failed = 0;
+    for ( double r : radii ) {
+        if ( !placeOneDisk(r) ) {
             ++failed;
         }
     }
