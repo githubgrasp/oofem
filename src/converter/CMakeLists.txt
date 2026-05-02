@@ -13,6 +13,7 @@ lognormalGenerator.C
 main.C
 octreegridlocalizer.C
 prism.C
+rect.C
 region.C
 surface.C
 vertex.C

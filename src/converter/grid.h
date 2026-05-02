@@ -106,9 +106,16 @@ private:
 
     /** Grid type. This determines the type of input to generate
      */
-    enum GridType { _3dSM, _3dTM };
+    enum GridType { _3dSM, _3dTM, _2dSM };
 
     GridType gridType;
+
+    /// Out-of-plane thickness for 2D lattice elements (`thick` field of the
+    /// `lattice2D` directive). Set by `#@thickness <t>`; defaults to 1.0.
+    double latticeThickness = 1.0;
+
+    /// Spatial dimension parsed from the `mesh.nodes` header (2 or 3).
+    int spatialDim = 3;
 
     std::vector< std::vector< int > >edgeToTets;
     std::vector< std::vector< int > >edgeToBoundaryTris;
@@ -811,6 +818,15 @@ public:
     /// resolved from notch/inclusion/material_around directives. Also
     /// handles rigidarm nodes and couplingflag emission.
     void give3DSMOutput(const std::string &fileName);
+
+    /// 2D structural-mechanics writer for the qhull pipeline. Emits one
+    /// `lattice2D` line per Delaunay edge whose midpoint is inside the
+    /// rectangle (Stage 6 MVP — periodicity, inclusions, notch deletion,
+    /// and Voronoi-cross-section clipping are not yet implemented). Each
+    /// element is parameterised with `gpCoords 2 gx gy` (segment midpoint),
+    /// `width <w>` (length of the dual Voronoi edge), and
+    /// `thick <t>` (the `#@thickness` directive value).
+    void give2DSMOutput(const std::string &fileName);
 
     /// Qhull writer for 3D transport-mechanics analyses — emits
     /// latticemt3D elements on the Voronoi dual of the Delaunay mesh,

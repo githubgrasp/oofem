@@ -16,6 +16,7 @@
 #include "error.h"
 #include "floatarray.h"
 #include "prism.h"
+#include "rect.h"
 #include "convertererror.h"
 #include <sstream>
 
@@ -167,6 +168,8 @@ void Grid::resolveGridType(const std::string &name)
         gridType = _3dSM;
     } else if ( !strncasecmp(name.c_str(), "3dtm", 4) ) {
         gridType = _3dTM;
+    } else if ( !strncasecmp(name.c_str(), "2dsm", 4) ) {
+        gridType = _2dSM;
     } else {
         converter::errorf("Unknown grid type %s\n", name.c_str() );
     }
@@ -920,6 +923,25 @@ void Grid::readControlRecords()
             p->setBox(box);
             regionList.resize(std::max(( int ) regionList.size(), num), nullptr);
             setRegion(num, p);
+        } else if ( tag == "#@rect" ) {
+            int num;
+            iss >> num;
+            std::string boxKw;
+            int boxSize;
+            iss >> boxKw >> boxSize;
+            if ( boxKw != "box" || boxSize != 4 ) {
+                converter::error("Malformed #@rect — expected 'box 4 xmin ymin xmax ymax'");
+            }
+            oofem::FloatArray box(4);
+            for (int i = 1; i <= 4; ++i) {
+                iss >> box.at(i);
+            }
+            auto *r = new Rect(num, this);
+            r->setBox(box);
+            regionList.resize(std::max(( int ) regionList.size(), num), nullptr);
+            setRegion(num, r);
+        } else if ( tag == "#@thickness" ) {
+            iss >> latticeThickness;
         } else if ( tag == "#@cylinder" ) {
             int num;
             iss >> num;
@@ -994,17 +1016,22 @@ void Grid::readControlRecords()
             fibreList.resize(std::max(( int ) fibreList.size(), num), nullptr);
             setFibre(num, f);
         } else if ( tag == "#@controlvertex" ) {
-            // #@controlvertex <id> coords 3 x y z
+            // #@controlvertex <id> coords {2|3} x y [z]
             int id;
             iss >> id;
             std::string kw;
             int sz = 0;
             iss >> kw >> sz;
-            if ( kw != "coords" || sz != 3 ) {
-                converter::error("Malformed #@controlvertex — expected 'coords 3 x y z'");
+            if ( kw != "coords" || ( sz != 2 && sz != 3 ) ) {
+                converter::error("Malformed #@controlvertex — expected 'coords 2 x y' (2D) or 'coords 3 x y z' (3D)");
             }
             oofem::FloatArray c(3);
-            iss >> c.at(1) >> c.at(2) >> c.at(3);
+            c.zero();
+            if ( sz == 3 ) {
+                iss >> c.at(1) >> c.at(2) >> c.at(3);
+            } else {
+                iss >> c.at(1) >> c.at(2);
+            }
             controlVertexDefinitions.emplace_back(id, c);
         } else if ( tag == "#@notch" ) {
             // #@notch <id> box 6 xmin ymin zmin xmax ymax zmax (material <m> | delete)
@@ -1740,14 +1767,28 @@ int Grid::instanciateYourselfFromQhull(const std::string &controlFile,
     }
     vertexField.precision(16);
 
-    int junk, nDelaunayVertices;
+    // The first integer in mesh.nodes is the spatial dimension qhull was
+    // invoked with. We respect it so 2D point sets (`#@domain 2` on the
+    // generator side) round-trip cleanly: vertices are stored internally as
+    // 3D with z = 0, and only `give2DSMOutput` strips the z column.
+    int nDelaunayVertices;
+    vertexField >> spatialDim >> nDelaunayVertices;
+    if ( spatialDim != 2 && spatialDim != 3 ) {
+        converter::errorf("instanciateYourselfFromQhull: mesh.nodes header dim must be 2 or 3, got %d", spatialDim);
+    }
     oofem::FloatArray coords(3);
-    vertexField >> junk >> nDelaunayVertices;
+    coords.zero();
 
     delaunayVertexList.resize(nDelaunayVertices, nullptr);
     for (int i = 0; i < nDelaunayVertices; ++i) {
-        if ( !( vertexField >> coords.at(1) >> coords.at(2) >> coords.at(3) ) ) {
+        bool ok = (spatialDim == 3)
+            ? static_cast<bool>( vertexField >> coords.at(1) >> coords.at(2) >> coords.at(3) )
+            : static_cast<bool>( vertexField >> coords.at(1) >> coords.at(2) );
+        if ( !ok ) {
             converter::errorf("instanciateYourselfFromQhull: failed to read coordinates for vertex %d", i + 1);
+        }
+        if ( spatialDim == 2 ) {
+            coords.at(3) = 0.;
         }
         auto *v = new Vertex(i + 1, this);
         v->setCoordinates(coords);
@@ -1765,12 +1806,19 @@ int Grid::instanciateYourselfFromQhull(const std::string &controlFile,
     voronoiField.precision(16);
 
     int nVoronoiVertices = 0;
-    voronoiField >> junk >> nVoronoiVertices;
+    int voronoiDim;
+    voronoiField >> voronoiDim >> nVoronoiVertices;
 
     voronoiVertexList.resize(nVoronoiVertices, nullptr);
     for (int i = 0; i < nVoronoiVertices; ++i) {
-        if ( !( voronoiField >> coords.at(1) >> coords.at(2) >> coords.at(3) ) ) {
+        bool ok = (spatialDim == 3)
+            ? static_cast<bool>( voronoiField >> coords.at(1) >> coords.at(2) >> coords.at(3) )
+            : static_cast<bool>( voronoiField >> coords.at(1) >> coords.at(2) );
+        if ( !ok ) {
             converter::errorf("Voronoi file: unexpected EOF reading vertex %d/%d", i + 1, nVoronoiVertices);
+        }
+        if ( spatialDim == 2 ) {
+            coords.at(3) = 0.;
         }
         auto *v = new Vertex(i + 1, this);
         v->setCoordinates(coords);
@@ -2280,6 +2328,8 @@ void Grid::giveOofemOutput(const std::string &fileName)
         give3DSMOutput(fileName);
     } else if ( gridType == _3dTM ) { //Base implementation
         give3DTMOutput(fileName);
+    } else if ( gridType == _2dSM ) {
+        give2DSMOutput(fileName);
     } else {
         converter::error("Unknown grid type\n");
     }
@@ -4905,6 +4955,169 @@ int Grid::r8mat_solve(int n, int rhs_num, double a[])
     }
 
     return 0;
+}
+
+
+void Grid::give2DSMOutput(const std::string &fileName)
+{
+    // Stage 6 MVP — non-periodic, no inclusions, no notch deletion, no
+    // boundary-clipping of cross-sections. Every Delaunay vertex is emitted
+    // as a node and every Delaunay edge is emitted as a `lattice2D` element.
+    // Material is fixed at 1 and cross-section at 1; the user's `control.in`
+    // is responsible for declaring `latticecs 1` / `latticeXxx 1` etc.
+
+    if ( regionList.empty() || regionList[0] == nullptr ) {
+        converter::error("give2DSMOutput: at least one #@rect region is required");
+    }
+
+    const auto *rect = dynamic_cast< Rect * >( this->giveRegion(1) );
+    if ( !rect ) {
+        converter::error("give2DSMOutput: region 1 must be a #@rect");
+    }
+
+    oofem::FloatArray bounds;
+    this->giveRegion(1)->defineBoundaries(bounds);
+
+    const int nDelV = this->giveNumberOfDelaunayVertices();
+    const int nDelL = this->giveNumberOfDelaunayLines();
+    const double tol = this->giveTol();
+
+    // Pre-pass: count emittable nodes and elements. A node is emittable if
+    // it lies inside the rectangle (with `tol` margin); an edge is emittable
+    // if both endpoints are inside AND its dual Voronoi segment is finite
+    // (no qhull "at-infinity" marker). Build a compact node-id remap so the
+    // emitted node ids form a contiguous 1..nNodesEmitted block.
+    std::vector< int > nodeMap( nDelV + 1, 0 );
+    int emittedNodes = 0;
+    {
+        oofem::FloatArray c(3);
+        for ( int i = 0; i < nDelV; ++i ) {
+            this->giveDelaunayVertex(i + 1)->giveCoordinates(c);
+            if ( rect->contains(c.at(1), c.at(2), tol) ) {
+                nodeMap[ i + 1 ] = ++emittedNodes;
+            }
+        }
+    }
+
+    int emittedElems = 0;
+    {
+        oofem::IntArray ep, cs;
+        for ( int i = 0; i < nDelL; ++i ) {
+            this->giveDelaunayLine(i + 1)->giveLocalVertices(ep);
+            if ( nodeMap[ ep.at(1) ] == 0 || nodeMap[ ep.at(2) ] == 0 ) continue;
+            this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(cs);
+            if ( cs.giveSize() != 2 ) continue;
+            if ( cs.at(1) == 0 || cs.at(2) == 0 ) continue;
+            ++emittedElems;
+        }
+    }
+
+    // #@CTL<id> placeholder substitution — translate raw Delaunay ids
+    // through the compact `nodeMap` so the placeholders refer to the
+    // ids the OOFEM input actually contains.
+    std::vector< std::pair< std::string, int > > sortedCtlTokens;
+    sortedCtlTokens.reserve(controlNodeIds.size());
+    for ( const auto &kv : controlNodeIds ) {
+        sortedCtlTokens.emplace_back("#@CTL" + std::to_string(kv.first), nodeMap[ kv.second ]);
+    }
+    std::sort(sortedCtlTokens.begin(), sortedCtlTokens.end(),
+              [](const auto &a, const auto &b) { return a.first.size() > b.first.size(); });
+
+    auto replaceAll = [](std::string &s, const std::string &needle, const std::string &replacement) {
+        if ( needle.empty() ) return;
+        size_t pos = 0;
+        while ( ( pos = s.find(needle, pos) ) != std::string::npos ) {
+            s.replace(pos, needle.size(), replacement);
+            pos += replacement.size();
+        }
+    };
+
+    auto substitute = [ & ](std::string &s) {
+        for ( const auto &tok : sortedCtlTokens ) {
+            replaceAll(s, tok.first, std::to_string(tok.second));
+        }
+    };
+
+    std::ifstream ctrl(controlFileName);
+    std::ofstream out(fileName);
+    if ( !ctrl ) {
+        converter::error("give2DSMOutput: Cannot open control file");
+    }
+    if ( !out ) {
+        converter::error("give2DSMOutput: Cannot open output file");
+    }
+
+    std::string line;
+    bool injected = false;
+
+    while ( std::getline(ctrl, line) ) {
+        std::string t = line;
+        size_t pos = t.find_first_not_of(" \t");
+        if ( pos != std::string::npos ) {
+            t.erase(0, pos);
+        } else {
+            t.clear();
+        }
+
+        if ( !injected && t.rfind("ncrosssect", 0) == 0 ) {
+            std::istringstream iss(t);
+            std::string token;
+            out << "ndofman " << emittedNodes
+                << " nelem " << emittedElems << " ";
+            while ( iss >> token ) {
+                out << token << " ";
+            }
+            out << "\n";
+
+            // Delaunay vertices → 2D nodes (compact ids via `nodeMap`).
+            oofem::FloatArray coords(3);
+            for ( int i = 0; i < nDelV; i++ ) {
+                if ( nodeMap[ i + 1 ] == 0 ) continue;
+                this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
+                out << "node " << nodeMap[ i + 1 ]
+                    << " coords 2 " << std::scientific
+                    << coords.at(1) << " " << coords.at(2) << "\n";
+            }
+
+            // Delaunay edges → lattice2D elements (must match the pre-count).
+            oofem::IntArray endpoints, crossSectionNodes;
+            oofem::FloatArray cA(3), cB(3), vA(3), vB(3);
+            int elemCounter = 0;
+            for ( int i = 0; i < nDelL; ++i ) {
+                this->giveDelaunayLine(i + 1)->giveLocalVertices(endpoints);
+                if ( nodeMap[ endpoints.at(1) ] == 0 || nodeMap[ endpoints.at(2) ] == 0 ) continue;
+
+                this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
+                if ( crossSectionNodes.giveSize() != 2 ) continue;
+                if ( crossSectionNodes.at(1) == 0 || crossSectionNodes.at(2) == 0 ) continue;
+
+                this->giveDelaunayVertex(endpoints.at(1))->giveCoordinates(cA);
+                this->giveDelaunayVertex(endpoints.at(2))->giveCoordinates(cB);
+                this->giveVoronoiVertex(crossSectionNodes.at(1))->giveCoordinates(vA);
+                this->giveVoronoiVertex(crossSectionNodes.at(2))->giveCoordinates(vB);
+
+                const double dvx = vA.at(1) - vB.at(1);
+                const double dvy = vA.at(2) - vB.at(2);
+                const double width = std::sqrt(dvx * dvx + dvy * dvy);
+                const double gx = 0.5 * ( cA.at(1) + cB.at(1) );
+                const double gy = 0.5 * ( cA.at(2) + cB.at(2) );
+
+                out << "lattice2D " << ++elemCounter
+                    << " nodes 2 " << nodeMap[ endpoints.at(1) ]
+                    << " " << nodeMap[ endpoints.at(2) ]
+                    << " crossSect 1 mat 1"
+                    << " gpCoords 2 " << gx << " " << gy
+                    << " width " << width
+                    << " thick " << latticeThickness
+                    << "\n";
+            }
+            injected = true;
+            continue;
+        }
+
+        substitute(line);
+        out << line << "\n";
+    }
 }
 
 //#endif
