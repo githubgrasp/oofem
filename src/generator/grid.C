@@ -19,6 +19,8 @@
 #include "cylinder.h"
 #include "notch.h"
 #include "rect.h"
+#include "disk.h"
+#include "interfacedisk.h"
 #include <iostream>
 #include "generatorerror.h"
 
@@ -767,6 +769,24 @@ int Grid::readControlRecords(const std::string &controlFile)
                 regionList.resize(num, nullptr);
             }
             setRegion(num, r);
+        } else if ( tag == "#@disk" ) {
+            int num;
+            iss >> num;
+            auto *r = new Disk(num, this);
+            r->initializeFromTokens(iss);
+            if ( ( int ) regionList.size() < num ) {
+                regionList.resize(num, nullptr);
+            }
+            setRegion(num, r);
+        } else if ( tag == "#@interfacedisk" ) {
+            int num;
+            iss >> num;
+            auto *inc = new InterfaceDisk(num, this);
+            inc->initializeFromTokens(iss);
+            if ( ( int ) inclusionList.size() < num ) {
+                inclusionList.resize(num, nullptr);
+            }
+            setInclusion(num, inc);
         } else if ( tag == "#@cylinder" ) {
             int num;
             iss >> num;

@@ -1,0 +1,16 @@
+# Stage 2 test: 2D rectangle containing one #@interfacedisk (aggregate
+# inclusion: a ring on the circle plus a sister ring at radius+itz).
+#@output nodes.dat
+#@domain 2
+#@diam 0.004
+#@maxiter 100000
+#@perflag 2 0 0
+#@ranint -1
+#@ranflag 1
+# bounding-box corners widen the localiser
+#@vertex 1 coords 2 -0.005 -0.005 refine 1. radius 0.
+#@vertex 2 coords 2  0.055  0.035 refine 1. radius 0.
+#@controlvertex 1 coords 2 0.0  0.015
+#@controlvertex 2 coords 2 0.05 0.015
+#@rect 1 box 4 0. 0. 0.05 0.03 refine 1.
+#@interfacedisk 1 centre 2 0.025 0.015 radius 0.008 refine 0.5 itz 0.001

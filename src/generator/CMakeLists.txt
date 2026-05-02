@@ -19,6 +19,8 @@ set(GENERATOR_SOURCES
     refineprism.C
     notch.C
     rect.C
+    disk.C
+    interfacedisk.C
    )
 
 add_library(generator STATIC ${GENERATOR_SOURCES})
