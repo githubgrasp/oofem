@@ -903,6 +903,7 @@ void Grid::readInclusionFile(const std::string &path, double itz, double refine)
     }
 
     int sphereCount = 0;
+    int diskCount = 0;
     int ellipsoidCount = 0;
     int fibreCount = 0;
     std::string line;
@@ -934,6 +935,22 @@ void Grid::readInclusionFile(const std::string &path, double itz, double refine)
             inclusionList.resize(newNumber, nullptr);
             setInclusion(newNumber, inc);
             ++sphereCount;
+        } else if ( keyword == "disk" ) {
+            // 2D analog: each `disk` line instantiates an InterfaceDisk.
+            int packingId;
+            iss >> packingId;
+            std::string remainder;
+            std::getline(iss, remainder);
+            std::ostringstream merged;
+            merged << remainder << " refine " << refine << " itz " << itz;
+            std::istringstream mergedStream(merged.str());
+
+            const int newNumber = static_cast<int>(inclusionList.size()) + 1;
+            auto *inc = new InterfaceDisk(newNumber, this);
+            inc->initializeFromTokens(mergedStream);
+            inclusionList.resize(newNumber, nullptr);
+            setInclusion(newNumber, inc);
+            ++diskCount;
         } else if ( keyword == "ellipsoid" ) {
             ++ellipsoidCount;
         } else if ( keyword == "fibre" ) {
@@ -945,11 +962,11 @@ void Grid::readInclusionFile(const std::string &path, double itz, double refine)
     if ( ellipsoidCount > 0 ) {
         std::fprintf(stderr,
                      "Warning: Grid::readInclusionFile: %d ellipsoid line(s) in '%s' ignored "
-                     "(generator only handles spheres from packing files)\n",
+                     "(generator only handles spheres / disks from packing files)\n",
                      ellipsoidCount, path.c_str());
     }
-    std::printf("readInclusionFile('%s'): %d sphere(s) loaded, %d fibre(s) skipped\n",
-                path.c_str(), sphereCount, fibreCount);
+    std::printf("readInclusionFile('%s'): %d sphere(s) + %d disk(s) loaded, %d fibre(s) skipped\n",
+                path.c_str(), sphereCount, diskCount, fibreCount);
 }
 
 
