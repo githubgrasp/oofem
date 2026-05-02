@@ -839,6 +839,14 @@ public:
     /// drives the out-of-plane thickness.
     void give2DTMOutput(const std::string &fileName);
 
+    /// Snap Voronoi vertices that fall outside the 2D `#@rect` region to
+    /// the nearest rectangle face by clamping coordinates, and snap
+    /// Voronoi vertices that fall strictly inside any 2D `#@notch` box to
+    /// the nearest notch face. Mirrors the 3D `Prism::modifyVoronoiCross`
+    /// projection step so transport nodes (Voronoi vertices) sit on the
+    /// physical boundaries. Idempotent — call once after qhull parsing.
+    void project2DVoronoiVerticesToBoundaries();
+
     /// Qhull writer for 3D transport-mechanics analyses — emits
     /// latticemt3D elements on the Voronoi dual of the Delaunay mesh,
     /// with the same directive-driven material/inclusion handling.

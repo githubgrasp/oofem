@@ -2374,8 +2374,10 @@ void Grid::giveOofemOutput(const std::string &fileName)
     } else if ( gridType == _3dTM ) { //Base implementation
         give3DTMOutput(fileName);
     } else if ( gridType == _2dSM ) {
+        project2DVoronoiVerticesToBoundaries();
         give2DSMOutput(fileName);
     } else if ( gridType == _2dTM ) {
+        project2DVoronoiVerticesToBoundaries();
         give2DTMOutput(fileName);
     } else {
         converter::error("Unknown grid type\n");
@@ -5180,6 +5182,139 @@ void Grid::give2DSMOutput(const std::string &fileName)
 
         substitute(line);
         out << line << "\n";
+    }
+}
+
+
+void Grid::project2DVoronoiVerticesToBoundaries()
+{
+    // Mirror of 3D `Prism::modifyVoronoiCrossSection`: project Voronoi
+    // vertices that bound a *crossing* Voronoi edge onto the nearest
+    // rect / notch face. Voronoi vertices that are deep outside the
+    // specimen (no Voronoi edge connects them to an inside vertex) are
+    // left at their qhull-computed position — they will not be emitted
+    // anyway because both endpoints of every Voronoi edge incident on
+    // them are also outside.
+    //
+    // Selectivity matters: a blanket "clamp all outside vertices" pass
+    // collapses many far-out qhull vertices onto the same rect corner,
+    // creating coincident TM nodes. The 3D code avoids this by only
+    // projecting vertices in the cross-section of a boundary Delaunay
+    // line (i.e. those that bound a "crossing" Voronoi edge). We do the
+    // same here: a crossing edge is one Voronoi edge with one endpoint
+    // inside the domain and one outside.
+    //
+    // Idempotent: a vertex projected onto a face is on-the-face for
+    // subsequent passes, no further snapping happens.
+    if ( regionList.empty() || regionList[0] == nullptr ) {
+        return;
+    }
+    const auto *rect = dynamic_cast< const Rect * >( this->giveRegion(1) );
+    if ( !rect ) {
+        return;
+    }
+    const auto &box = rect->giveBox();
+    const double xmin = box.at(1), ymin = box.at(2);
+    const double xmax = box.at(3), ymax = box.at(4);
+    const double tol = this->giveTol();
+
+    auto outsideRect = [&]( const oofem::FloatArray &c ) {
+        return c.at(1) < xmin - tol || c.at(1) > xmax + tol ||
+               c.at(2) < ymin - tol || c.at(2) > ymax + tol;
+    };
+    auto insideNotch = [&]( const oofem::FloatArray &c, const NotchSpec &n ) {
+        return c.at(1) > n.xmin + tol && c.at(1) < n.xmax - tol &&
+               c.at(2) > n.ymin + tol && c.at(2) < n.ymax - tol;
+    };
+    auto insideAnyNotch = [&]( const oofem::FloatArray &c ) {
+        for ( const auto &n : notchSpecs ) {
+            if ( insideNotch(c, n) ) return true;
+        }
+        return false;
+    };
+
+    auto clampToRect = [&]( oofem::FloatArray &c ) {
+        if ( c.at(1) < xmin ) c.at(1) = xmin;
+        if ( c.at(1) > xmax ) c.at(1) = xmax;
+        if ( c.at(2) < ymin ) c.at(2) = ymin;
+        if ( c.at(2) > ymax ) c.at(2) = ymax;
+    };
+    auto snapOutOfNotch = [&]( oofem::FloatArray &c, const NotchSpec &n ) {
+        const double dxL = c.at(1) - n.xmin;
+        const double dxR = n.xmax - c.at(1);
+        const double dyB = c.at(2) - n.ymin;
+        const double dyT = n.ymax - c.at(2);
+        double minDist = dxL;
+        int which = 0;
+        if ( dxR < minDist ) { minDist = dxR; which = 1; }
+        if ( dyB < minDist ) { minDist = dyB; which = 2; }
+        if ( dyT < minDist ) { minDist = dyT; which = 3; }
+        switch ( which ) {
+        case 0: c.at(1) = n.xmin; break;
+        case 1: c.at(1) = n.xmax; break;
+        case 2: c.at(2) = n.ymin; break;
+        case 3: c.at(2) = n.ymax; break;
+        }
+    };
+
+    const int nVorV = this->giveNumberOfVoronoiVertices();
+    const int nVorL = this->giveNumberOfVoronoiLines();
+
+    // Pre-pass: classify every Voronoi vertex (inside / outside / inside-notch).
+    // We use the *original* qhull coordinates for this — projection is
+    // applied only after classification.
+    std::vector< oofem::FloatArray > origCoords( nVorV + 1 );
+    std::vector< int > vertClass( nVorV + 1, 0 );  // 0=inside, 1=outside-rect, 2=inside-notch
+    for ( int i = 1; i <= nVorV; ++i ) {
+        oofem::FloatArray c(3);
+        this->giveVoronoiVertex(i)->giveCoordinates(c);
+        origCoords[i] = c;
+        if ( outsideRect(c) ) {
+            vertClass[i] = 1;
+        } else if ( insideAnyNotch(c) ) {
+            vertClass[i] = 2;
+        }
+    }
+
+    // For each Voronoi line, if it's a crossing edge (one endpoint inside,
+    // one outside the rect, OR one outside and one inside any notch), mark
+    // the outside endpoint as "to-project". We also remember which side of
+    // the boundary the projection should snap to.
+    std::vector< char > projectToRect( nVorV + 1, 0 );
+    std::vector< char > projectOutOfNotch( nVorV + 1, 0 );
+
+    oofem::IntArray ep;
+    for ( int i = 1; i <= nVorL; ++i ) {
+        this->giveVoronoiLine(i)->giveLocalVertices(ep);
+        if ( ep.giveSize() != 2 ) continue;
+        const int a = ep.at(1), b = ep.at(2);
+        if ( a == 0 || b == 0 ) continue;   // qhull at-infinity marker
+        const int ca = vertClass[a], cb = vertClass[b];
+        // Mixed inside / outside-rect → project the outside-rect end.
+        if ( ca == 0 && cb == 1 ) projectToRect[b] = 1;
+        else if ( ca == 1 && cb == 0 ) projectToRect[a] = 1;
+        // Mixed inside / inside-notch → project the inside-notch end out.
+        if ( ca == 0 && cb == 2 ) projectOutOfNotch[b] = 1;
+        else if ( ca == 2 && cb == 0 ) projectOutOfNotch[a] = 1;
+    }
+
+    // Apply the marked projections.
+    for ( int i = 1; i <= nVorV; ++i ) {
+        if ( !projectToRect[i] && !projectOutOfNotch[i] ) continue;
+        oofem::FloatArray c = origCoords[i];
+        if ( projectToRect[i] ) {
+            clampToRect(c);
+        }
+        if ( projectOutOfNotch[i] ) {
+            // Find which notch the original vertex was inside.
+            for ( const auto &n : notchSpecs ) {
+                if ( insideNotch(origCoords[i], n) ) {
+                    snapOutOfNotch(c, n);
+                    break;
+                }
+            }
+        }
+        this->giveVoronoiVertex(i)->setCoordinates(c);
     }
 }
 
