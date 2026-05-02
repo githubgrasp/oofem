@@ -1,0 +1,17 @@
+# 2D mass-transport test (Stage 8): same 100x50 mm rectangle as
+# 2DRectQhull. The converter pipeline emits latticemt2D elements (one
+# per Voronoi edge inside the rect) instead of lattice2D. Identical
+# generator-side mesh is reused; the TM-vs-SM split happens in the
+# converter via the `#@grid 2dTM` directive in the matching control.in.
+#@output nodes.dat
+#@domain 2
+#@diam 0.008
+#@maxiter 100000
+#@perflag 2 0 0
+#@ranint -1
+#@ranflag 1
+#@vertex 1 coords 2 -0.01 -0.01 refine 1. radius 0.
+#@vertex 2 coords 2  0.11  0.06 refine 1. radius 0.
+#@controlvertex 1 coords 2 0.0  0.025
+#@controlvertex 2 coords 2 0.10 0.025
+#@rect 1 box 4 0. 0. 0.10 0.05 refine 1.

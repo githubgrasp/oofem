@@ -170,6 +170,8 @@ void Grid::resolveGridType(const std::string &name)
         gridType = _3dTM;
     } else if ( !strncasecmp(name.c_str(), "2dsm", 4) ) {
         gridType = _2dSM;
+    } else if ( !strncasecmp(name.c_str(), "2dtm", 4) ) {
+        gridType = _2dTM;
     } else {
         converter::errorf("Unknown grid type %s\n", name.c_str() );
     }
@@ -2373,6 +2375,8 @@ void Grid::giveOofemOutput(const std::string &fileName)
         give3DTMOutput(fileName);
     } else if ( gridType == _2dSM ) {
         give2DSMOutput(fileName);
+    } else if ( gridType == _2dTM ) {
+        give2DTMOutput(fileName);
     } else {
         converter::error("Unknown grid type\n");
     }
@@ -5168,6 +5172,171 @@ void Grid::give2DSMOutput(const std::string &fileName)
                     << " gpCoords 2 " << gx << " " << gy
                     << " width " << width
                     << " thick " << latticeThickness
+                    << "\n";
+            }
+            injected = true;
+            continue;
+        }
+
+        substitute(line);
+        out << line << "\n";
+    }
+}
+
+
+void Grid::give2DTMOutput(const std::string &fileName)
+{
+    // Stage 8 — 2D mass-transport variant of `give2DSMOutput`. Iterates
+    // Voronoi lines instead of Delaunay; element nodes are Voronoi
+    // vertices, cross-section width is the length of the dual Delaunay
+    // edge. Geometry handling mirrors the SM path: pre-pass counts
+    // emittable nodes/elements with a compact id remap; non-periodic
+    // only (periodicity comes in Stage 9); no notch / inclusion
+    // material resolution (transport materials live on regions, not
+    // individual lines, so per-element overrides aren't standard here).
+
+    if ( regionList.empty() || regionList[0] == nullptr ) {
+        converter::error("give2DTMOutput: at least one #@rect region is required");
+    }
+    const auto *rect = dynamic_cast< Rect * >( this->giveRegion(1) );
+    if ( !rect ) {
+        converter::error("give2DTMOutput: region 1 must be a #@rect");
+    }
+
+    const int nVorV = this->giveNumberOfVoronoiVertices();
+    const int nVorL = this->giveNumberOfVoronoiLines();
+    const double tol = this->giveTol();
+
+    // Pre-pass: emittable Voronoi vertices = those strictly inside the rect.
+    // Voronoi vertex 0 (qhull's at-infinity marker) is excluded by virtue
+    // of being out of range below.
+    std::vector< int > nodeMap( nVorV + 1, 0 );
+    int emittedNodes = 0;
+    {
+        oofem::FloatArray c(3);
+        for ( int i = 0; i < nVorV; ++i ) {
+            this->giveVoronoiVertex(i + 1)->giveCoordinates(c);
+            if ( rect->contains(c.at(1), c.at(2), tol) ) {
+                nodeMap[ i + 1 ] = ++emittedNodes;
+            }
+        }
+    }
+
+    int emittedElems = 0;
+    {
+        oofem::IntArray ep, cs;
+        for ( int i = 0; i < nVorL; ++i ) {
+            this->giveVoronoiLine(i + 1)->giveLocalVertices(ep);
+            if ( ep.giveSize() != 2 ) continue;
+            if ( ep.at(1) == 0 || ep.at(2) == 0 ) continue;
+            if ( nodeMap[ ep.at(1) ] == 0 || nodeMap[ ep.at(2) ] == 0 ) continue;
+            this->giveVoronoiLine(i + 1)->giveCrossSectionVertices(cs);
+            if ( cs.giveSize() != 2 ) continue;
+            ++emittedElems;
+        }
+    }
+
+    // #@CTL substitution. Note: for transport, control vertices remain
+    // Delaunay vertex ids — they correspond to the original input sites,
+    // not Voronoi vertices. Periodic emission would also remap; for now
+    // we leave them as raw Delaunay ids since transport BCs typically
+    // reference Voronoi nodes (the temperature DOFs live there). Users
+    // can keep #@controlvertex referring to a Delaunay site for source/
+    // sink boundary conditions if their model needs it; otherwise they
+    // can just reference Voronoi node ids directly in the control file.
+    std::vector< std::pair< std::string, int > > sortedCtlTokens;
+    sortedCtlTokens.reserve(controlNodeIds.size());
+    for ( const auto &kv : controlNodeIds ) {
+        sortedCtlTokens.emplace_back("#@CTL" + std::to_string(kv.first), kv.second);
+    }
+    std::sort(sortedCtlTokens.begin(), sortedCtlTokens.end(),
+              [](const auto &a, const auto &b) { return a.first.size() > b.first.size(); });
+
+    auto replaceAll = [](std::string &s, const std::string &needle, const std::string &replacement) {
+        if ( needle.empty() ) return;
+        size_t pos = 0;
+        while ( ( pos = s.find(needle, pos) ) != std::string::npos ) {
+            s.replace(pos, needle.size(), replacement);
+            pos += replacement.size();
+        }
+    };
+    auto substitute = [ & ](std::string &s) {
+        for ( const auto &tok : sortedCtlTokens ) {
+            replaceAll(s, tok.first, std::to_string(tok.second));
+        }
+    };
+
+    std::ifstream ctrl(controlFileName);
+    std::ofstream out(fileName);
+    if ( !ctrl ) {
+        converter::error("give2DTMOutput: Cannot open control file");
+    }
+    if ( !out ) {
+        converter::error("give2DTMOutput: Cannot open output file");
+    }
+
+    std::string line;
+    bool injected = false;
+    while ( std::getline(ctrl, line) ) {
+        std::string t = line;
+        size_t pos = t.find_first_not_of(" \t");
+        if ( pos != std::string::npos ) {
+            t.erase(0, pos);
+        } else {
+            t.clear();
+        }
+
+        if ( !injected && t.rfind("ncrosssect", 0) == 0 ) {
+            std::istringstream iss(t);
+            std::string token;
+            out << "ndofman " << emittedNodes
+                << " nelem " << emittedElems << " ";
+            while ( iss >> token ) {
+                out << token << " ";
+            }
+            out << "\n";
+
+            // Voronoi vertices → 2D nodes.
+            oofem::FloatArray coords(3);
+            for ( int i = 0; i < nVorV; ++i ) {
+                if ( nodeMap[ i + 1 ] == 0 ) continue;
+                this->giveVoronoiVertex(i + 1)->giveCoordinates(coords);
+                out << "node " << nodeMap[ i + 1 ]
+                    << " coords 2 " << std::scientific
+                    << coords.at(1) << " " << coords.at(2) << "\n";
+            }
+
+            // Voronoi lines → latticemt2D elements.
+            oofem::IntArray endpoints, crossSectionNodes;
+            oofem::FloatArray vA(3), vB(3), dA(3), dB(3);
+            int elemCounter = 0;
+            for ( int i = 0; i < nVorL; ++i ) {
+                this->giveVoronoiLine(i + 1)->giveLocalVertices(endpoints);
+                if ( endpoints.giveSize() != 2 ) continue;
+                if ( endpoints.at(1) == 0 || endpoints.at(2) == 0 ) continue;
+                if ( nodeMap[ endpoints.at(1) ] == 0 || nodeMap[ endpoints.at(2) ] == 0 ) continue;
+
+                this->giveVoronoiLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
+                if ( crossSectionNodes.giveSize() != 2 ) continue;
+
+                this->giveVoronoiVertex(endpoints.at(1))->giveCoordinates(vA);
+                this->giveVoronoiVertex(endpoints.at(2))->giveCoordinates(vB);
+                this->giveDelaunayVertex(crossSectionNodes.at(1))->giveCoordinates(dA);
+                this->giveDelaunayVertex(crossSectionNodes.at(2))->giveCoordinates(dB);
+
+                const double ddx = dA.at(1) - dB.at(1);
+                const double ddy = dA.at(2) - dB.at(2);
+                const double width = std::sqrt(ddx * ddx + ddy * ddy);
+                const double gx = 0.5 * ( vA.at(1) + vB.at(1) );
+                const double gy = 0.5 * ( vA.at(2) + vB.at(2) );
+
+                out << "latticemt2D " << ++elemCounter
+                    << " nodes 2 " << nodeMap[ endpoints.at(1) ]
+                    << " " << nodeMap[ endpoints.at(2) ]
+                    << " mat 1 dim 1"
+                    << " thick " << latticeThickness
+                    << " width " << width
+                    << " gpCoords 2 " << gx << " " << gy
                     << "\n";
             }
             injected = true;

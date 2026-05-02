@@ -1,0 +1,15 @@
+oofem.out
+2D mass-transport on a 100x50 mm rectangle (Stage 8)
+TransientTransport nsteps 1 deltat 1 alpha 1. rtolf 1e-6 nmodules 1
+errorcheck
+domain 2dMassLatticeTransport
+OutputManager tstep_all dofman_all
+ncrosssect 0 nmat 1 nbc 0 nic 0 nltf 1 nset 0
+latticetransmat 1 d 1.e-9 k 1.e-13 vis 1.e-9 thetas 0.0924 thetar 0. ctor 0.001
+ConstantFunction 1 f(t) 1.
+#@grid 2dTM
+#@mesher qhull
+#@diam 0.008
+#@perflag 2 0 0
+#@thickness 1.0
+#@rect 1 box 4 0. 0. 0.10 0.05

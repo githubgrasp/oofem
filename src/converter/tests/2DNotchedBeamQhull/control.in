@@ -1,6 +1,6 @@
 oofem.out
 2D notched beam, midspan notch deleted via #@notch ... delete (Stage 7)
-StaticStructural nsteps 1 nmodules 1 solverType "calm" rtolf 1.e-5 maxiter 10 steplength 1.e-5 minsteplength 1.e-5 hpcmode 2 hpc 2 2 1 hpcw 1 1.
+LinearStatic nsteps 1 nmodules 1
 errorcheck
 domain 2dLattice
 OutputManager tstep_all dofman_output { #@CTL1 #@CTL2 #@CTL3 }

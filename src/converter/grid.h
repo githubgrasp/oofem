@@ -106,7 +106,7 @@ private:
 
     /** Grid type. This determines the type of input to generate
      */
-    enum GridType { _3dSM, _3dTM, _2dSM };
+    enum GridType { _3dSM, _3dTM, _2dSM, _2dTM };
 
     GridType gridType;
 
@@ -821,12 +821,23 @@ public:
 
     /// 2D structural-mechanics writer for the qhull pipeline. Emits one
     /// `lattice2D` line per Delaunay edge whose midpoint is inside the
-    /// rectangle (Stage 6 MVP — periodicity, inclusions, notch deletion,
-    /// and Voronoi-cross-section clipping are not yet implemented). Each
+    /// rectangle (Stage 6 MVP — periodicity is not yet implemented). Each
     /// element is parameterised with `gpCoords 2 gx gy` (segment midpoint),
     /// `width <w>` (length of the dual Voronoi edge), and
-    /// `thick <t>` (the `#@thickness` directive value).
+    /// `thick <t>` (the `#@thickness` directive value). Notch deletion and
+    /// `#@diskinclusion` material resolution are applied via the same
+    /// `notchDeletes` / `resolveNotchMaterial` / `resolveInclusionMaterial`
+    /// pipeline as the 3D writer.
     void give2DSMOutput(const std::string &fileName);
+
+    /// 2D mass-transport writer for the qhull pipeline. Emits one
+    /// `latticemt2D` line per Voronoi edge whose endpoints are both inside
+    /// the rectangle. The "nodes" of a transport element are Voronoi
+    /// vertices (the dual mesh); the cross-section width is the length of
+    /// the Delaunay edge that the Voronoi edge is dual to. gpCoords is the
+    /// midpoint of the Voronoi-edge segment. Same `#@thickness` directive
+    /// drives the out-of-plane thickness.
+    void give2DTMOutput(const std::string &fileName);
 
     /// Qhull writer for 3D transport-mechanics analyses — emits
     /// latticemt3D elements on the Voronoi dual of the Delaunay mesh,
