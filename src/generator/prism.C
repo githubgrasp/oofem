@@ -364,10 +364,10 @@ int Prism::generatePoints()
         flag = 0;
         flag = grid->giveGridLocalizer()->checkNodesWithinBox(random, regionRefine * grid->giveDiameter(random) );
 
-        if ( flag == 0 ) {
-            grid->addVertex(random);
-
-
+        // addVertex may silently reject a point that falls strictly inside a
+        // #@notch box; gating `i = 0` on its return value prevents the loop
+        // from spinning forever inside notch volumes.
+        if ( flag == 0 && grid->addVertex(random) ) {
             i = 0;
 
             //Do now the mirroring and shifting.

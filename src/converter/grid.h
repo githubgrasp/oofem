@@ -192,12 +192,17 @@ private:
     };
     std::map< std::pair< int, int >, EdgeSpec >elementSpecsByEntity;
 
-    /// A notch is an axis-aligned box within which matrix elements whose midpoint
-    /// falls inside get a softened/alternative material. Populated by the
-    /// `#@notch <id> box 6 xmin ymin zmin xmax ymax zmax material <m>` directive.
+    /// A notch is an axis-aligned box. By default (`material <m>`) matrix
+    /// elements whose midpoint falls inside have their material reassigned to
+    /// `<m>`. With the `delete` keyword the element is omitted entirely —
+    /// useful for sharp notches and small voids (the dual mesh effectively
+    /// gains a hole). Populated by either of:
+    ///   `#@notch <id> box 6 xmin ymin zmin xmax ymax zmax material <m>`
+    ///   `#@notch <id> box 6 xmin ymin zmin xmax ymax zmax delete`
     struct NotchSpec {
         double xmin, ymin, zmin, xmax, ymax, zmax;
         int material = 3;
+        bool deleteFlag = false;
     };
     std::vector< NotchSpec >notchSpecs;
 
@@ -528,9 +533,15 @@ public:
     EdgeSpec resolveEdgeSpec(const Edge &e, const EdgeSpec &defaultSpec) const;
 
     /// For a matrix lattice line with endpoint coords A/B, return the notch
-    /// material if the midpoint is inside any `#@notch` box, else `defaultMat`.
+    /// material if the midpoint is inside any `#@notch ... material <m>` box,
+    /// else `defaultMat`. Delete-mode notches are ignored here — see
+    /// `notchDeletes` for that path.
     int resolveNotchMaterial(const oofem::FloatArray &A, const oofem::FloatArray &B,
                              int defaultMat) const;
+
+    /// True iff the midpoint of segment A-B lies inside any delete-mode
+    /// `#@notch` box. The caller skips emission of the corresponding element.
+    bool notchDeletes(const oofem::FloatArray &A, const oofem::FloatArray &B) const;
 
     /// For a matrix lattice line with endpoint coords A/B, resolve the sphere-
     /// inclusion material. Returns the `inside` material if both endpoints fall

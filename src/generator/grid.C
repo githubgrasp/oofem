@@ -17,6 +17,7 @@
 #include "interfaceplane.h"
 #include "interfacesurface.h"
 #include "cylinder.h"
+#include "notch.h"
 #include <iostream>
 #include "generatorerror.h"
 
@@ -85,6 +86,9 @@ Grid::~Grid()
     }
     for (auto r : refinementList) {
         delete r;
+    }
+    for (auto n : notchList) {
+        delete n;
     }
 
     delete gridLocalizer;
@@ -180,6 +184,29 @@ Refinement *Grid::giveRefinement(int n)
         return refinementList [ n - 1 ];  // 1-based to 0-based
     }
     generator::errorf("Grid::giveRefinement: undefined refinement (%d)", n);
+}
+
+
+Notch *Grid::giveNotch(int n)
+{
+    if ( n >= 1 && n <= static_cast < int > ( generator::size1(notchList) ) && notchList [ n - 1 ] != nullptr ) {
+        return notchList [ n - 1 ];
+    }
+    generator::errorf("Grid::giveNotch: undefined notch (%d)", n);
+}
+
+
+int Grid::giveNumberOfNotches() const { return generator::size1(notchList); }
+
+
+bool Grid::insideAnyNotch(const oofem::FloatArray &coord) const
+{
+    for ( const auto *n : notchList ) {
+        if ( n != nullptr && n->containsStrictly(coord, this->TOL) ) {
+            return true;
+        }
+    }
+    return false;
 }
 
 
@@ -482,7 +509,14 @@ int Grid::generateRandomPoints()
 }
 
 // grid.C
-void Grid::addVertex(const oofem::FloatArray &coords) {
+bool Grid::addVertex(const oofem::FloatArray &coords) {
+    // Suppress placement strictly inside any #@notch box. Boundary points
+    // (within TOL of a face) are kept so the dual mesh can partition cleanly
+    // along the notch surface.
+    if ( insideAnyNotch(coords) ) {
+        return false;
+    }
+
     if ( vertexList.capacity() < static_cast < size_t > ( vertexCount + 1 ) ) {
         vertexList.reserve(vertexCount + 10000); // choose a chunk size that fits your cases
     }
@@ -497,7 +531,7 @@ void Grid::addVertex(const oofem::FloatArray &coords) {
     if ( auto *loc = giveGridLocalizer() ) {
         loc->insertSequentialNode(num, coords);
     }
-    return;
+    return true;
 }
 
 
@@ -770,6 +804,15 @@ int Grid::readControlRecords(const std::string &controlFile)
                 refinementList.resize(num, nullptr);
             }
             setRefinement(num, ref);
+        } else if ( tag == "#@notch" ) {
+            int num;
+            iss >> num;
+            auto *nh = new Notch(num, this);
+            nh->initializeFromTokens(iss);
+            if ( ( int ) notchList.size() < num ) {
+                notchList.resize(num, nullptr);
+            }
+            notchList [ num - 1 ] = nh;
         } else if ( tag == "#@inclusionfile" ) {
             std::string path;
             iss >> path;

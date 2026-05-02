@@ -1007,19 +1007,26 @@ void Grid::readControlRecords()
             iss >> c.at(1) >> c.at(2) >> c.at(3);
             controlVertexDefinitions.emplace_back(id, c);
         } else if ( tag == "#@notch" ) {
-            // #@notch <id> box 6 xmin ymin zmin xmax ymax zmax material <m>
+            // #@notch <id> box 6 xmin ymin zmin xmax ymax zmax (material <m> | delete)
             int num;
             iss >> num;
             std::string kw;
             int sz = 0;
             iss >> kw >> sz;              // "box" 6
             if ( kw != "box" || sz != 6 ) {
-                converter::error("Malformed #@notch — expected 'box 6 xmin ymin zmin xmax ymax zmax material <m>'");
+                converter::error("Malformed #@notch — expected 'box 6 xmin ymin zmin xmax ymax zmax (material <m> | delete)'");
             }
             NotchSpec n;
             iss >> n.xmin >> n.ymin >> n.zmin >> n.xmax >> n.ymax >> n.zmax;
-            iss >> kw;                    // "material"
-            iss >> n.material;
+            iss >> kw;
+            if ( kw == "delete" ) {
+                n.deleteFlag = true;
+            } else if ( kw == "material" ) {
+                iss >> n.material;
+            } else {
+                converter::errorf("Malformed #@notch — expected 'material <m>' or 'delete', got '%s'",
+                                  kw.c_str() );
+            }
             notchSpecs.push_back(n);
         } else if ( tag == "#@sphereinclusion" ) {
             // #@sphereinclusion <id> centre 3 x y z radius r itz t
@@ -2896,6 +2903,7 @@ Grid::resolveNotchMaterial(const oofem::FloatArray &A, const oofem::FloatArray &
     const double my = 0.5 * ( A.at(2) + B.at(2) );
     const double mz = 0.5 * ( A.at(3) + B.at(3) );
     for ( const auto &n : notchSpecs ) {
+        if ( n.deleteFlag ) continue;
         if ( mx >= n.xmin && mx <= n.xmax &&
              my >= n.ymin && my <= n.ymax &&
              mz >= n.zmin && mz <= n.zmax ) {
@@ -2903,6 +2911,25 @@ Grid::resolveNotchMaterial(const oofem::FloatArray &A, const oofem::FloatArray &
         }
     }
     return defaultMat;
+}
+
+
+bool
+Grid::notchDeletes(const oofem::FloatArray &A, const oofem::FloatArray &B) const
+{
+    if ( notchSpecs.empty() ) return false;
+    const double mx = 0.5 * ( A.at(1) + B.at(1) );
+    const double my = 0.5 * ( A.at(2) + B.at(2) );
+    const double mz = 0.5 * ( A.at(3) + B.at(3) );
+    for ( const auto &n : notchSpecs ) {
+        if ( !n.deleteFlag ) continue;
+        if ( mx >= n.xmin && mx <= n.xmax &&
+             my >= n.ymin && my <= n.ymax &&
+             mz >= n.zmin && mz <= n.zmax ) {
+            return true;
+        }
+    }
+    return false;
 }
 
 
@@ -3048,13 +3075,22 @@ Grid::give3DSMOutput(const std::string &fileName)
 
     for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
         int flag = this->giveDelaunayLine(i + 1)->giveOutsideFlag();
+        bool emit;
         if ( periodic ) {
-            if ( flag == 0 || flag == 2 || flag == 3 ) numberOfLines++;
+            emit = ( flag == 0 || flag == 2 || flag == 3 );
         } else {
-            if ( ( flag == 0 || flag == 3 ) && this->giveDelaunayLine(i + 1)->delaunayAreaCheck() == 1 ) {
-                numberOfLines++;
-            }
+            emit = ( flag == 0 || flag == 3 ) && this->giveDelaunayLine(i + 1)->delaunayAreaCheck() == 1;
         }
+        if ( !emit ) continue;
+        if ( !notchSpecs.empty() ) {
+            oofem::IntArray endpoints;
+            this->giveDelaunayLine(i + 1)->giveLocalVertices(endpoints);
+            oofem::FloatArray cA(3), cB(3);
+            this->giveDelaunayVertex(endpoints.at(1))->giveCoordinates(cA);
+            this->giveDelaunayVertex(endpoints.at(2))->giveCoordinates(cB);
+            if ( notchDeletes(cA, cB) ) continue;
+        }
+        numberOfLines++;
     }
 
     // Fibre beam segments (lattice3D / lattice3Dboundary, circular cross-section).
@@ -3282,6 +3318,7 @@ Grid::give3DSMOutput(const std::string &fileName)
                 oofem::FloatArray boundaryA(3), boundaryB(3);
                 this->giveDelaunayVertex(lineNodes.at(1))->giveCoordinates(boundaryA);
                 this->giveDelaunayVertex(lineNodes.at(2))->giveCoordinates(boundaryB);
+                if ( notchDeletes(boundaryA, boundaryB) ) continue;
                 int matBoundary = resolveLineMaterial(lineNodes.at(1), lineNodes.at(2),
                                                       boundaryA, boundaryB);
                 auto boundaryBodyloadIt = bodyloadByMaterial.find(matBoundary);
@@ -3498,11 +3535,17 @@ Grid::give3DTMOutput(const std::string &fileName)
     int numberOfLines = 0;
     for ( int i = 0; i < this->giveNumberOfVoronoiLines(); i++ ) {
         int flag = this->giveVoronoiLine(i + 1)->giveOutsideFlag();
-        if ( flag == 0 ) {
-            numberOfLines++;
-        } else if ( periodic && flag == 2 ) {
-            numberOfLines++;
+        const bool emit = ( flag == 0 ) || ( periodic && flag == 2 );
+        if ( !emit ) continue;
+        if ( !notchSpecs.empty() ) {
+            oofem::IntArray endpoints;
+            this->giveVoronoiLine(i + 1)->giveLocalVertices(endpoints);
+            oofem::FloatArray cA(3), cB(3);
+            this->giveVoronoiVertex(endpoints.at(1))->giveCoordinates(cA);
+            this->giveVoronoiVertex(endpoints.at(2))->giveCoordinates(cB);
+            if ( notchDeletes(cA, cB) ) continue;
         }
+        numberOfLines++;
     }
 
     // Periodic control node id: one past the last raw Voronoi vertex.
@@ -3606,6 +3649,7 @@ Grid::give3DTMOutput(const std::string &fileName)
                 oofem::FloatArray cA(3), cB(3);
                 this->giveVoronoiVertex(nodes.at(1))->giveCoordinates(cA);
                 this->giveVoronoiVertex(nodes.at(2))->giveCoordinates(cB);
+                if ( notchDeletes(cA, cB) ) continue;
                 int mat = resolveNotchMaterial(cA, cB, 1);
                 mat = resolveInclusionMaterial(cA, cB, mat);
                 auto bodyloadIt = bodyloadByMaterial.find(mat);

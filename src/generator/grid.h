@@ -23,6 +23,7 @@ class Region;
 class Inclusion;
 class GridLocalizer;
 class Refinement;
+class Notch;
 /**
  * Grid provides services for reading components description from
  * input stream and instantiating corresponding components acordingly. The basic Grid task are following
@@ -112,6 +113,11 @@ public:
     /// Local refinement boxes read from `#@refineprism`.
     std::vector< Refinement * >refinementList;
 
+    /// Notches (rectangular voids) read from `#@notch`. The notch box
+    /// suppresses point placement strictly inside; the converter-side
+    /// `#@notch ... delete` companion drops elements with midpoint inside.
+    std::vector< Notch * >notchList;
+
 
     /// Constructor. Creates an empty `n`-th grid.
     Grid(int n);
@@ -134,8 +140,11 @@ public:
 
     /// Append a point to `vertexList` at the given coordinates. Used
     /// internally by the per-region / per-surface / per-curve point
-    /// generators.
-    void addVertex(const oofem::FloatArray &coords);
+    /// generators. Returns true on success; false if the point was
+    /// suppressed (currently: strictly inside a `#@notch` box). Random-
+    /// placement loops MUST check the return value before resetting their
+    /// iteration counter, otherwise rejection-by-notch causes a spin-loop.
+    bool addVertex(const oofem::FloatArray &coords);
 
     /// Dump the generated vertex list as an ASCII VTK PolyData file at
     /// `path`. Triggered by the `#@vtk` directive.
@@ -164,6 +173,17 @@ public:
 
     /// Returns the `n`-th (1-based) refinement entry.
     Refinement *giveRefinement(int n);
+
+    /// Returns the `n`-th (1-based) notch entry.
+    Notch *giveNotch(int n);
+
+    /// Returns the number of `#@notch` entries.
+    int giveNumberOfNotches() const;
+
+    /// True iff `coord` lies strictly inside any `#@notch` box (with `TOL`
+    /// margin). Used by `addVertex` to suppress placement inside notches
+    /// while leaving boundary points intact.
+    bool insideAnyNotch(const oofem::FloatArray &coord) const;
 
     /// Returns the receiver's associated spatial localiser (octree).
     GridLocalizer *giveGridLocalizer();
