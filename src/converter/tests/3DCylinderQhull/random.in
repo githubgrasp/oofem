@@ -1,0 +1,40 @@
+# Genran input for the 3D random field consumed by the
+# `InterpolatingFunction 4 name random.dat dim 3` directive in
+# `control.in`. Field covers the specimen bounding box with a small
+# margin (origin slightly outside, N samples chosen so the domain just
+# encloses the specimen at a ~0.6 mm step ≈ diameter/7).
+#
+# Run via `mesh.sh` — calls `genran.exe` to produce `random.dat` before
+# the converter runs.
+numberOfDimensions = 3
+
+# Deterministic seed for reproducible test runs.
+ranint = -1
+
+# Origin is just outside the specimen prism (which spans
+#   x ∈ [0, 0.01], y ∈ [-0.075, 0.075], z ∈ [-0.075, 0.075])
+# so the OOFEM `InterpolatingFunction` lookup is always interior to the
+# random field grid.
+xOrigin = -0.01
+yOrigin = -0.08
+zOrigin = -0.08
+
+# Powers of two — radix-2 FFT requirement.
+realNumber1 = 64
+realNumber2 = 256
+realNumber3 = 256
+
+# Autocorrelation length ~= half the lattice diameter (4 mm). Tunes the
+# spatial smoothness of the random material parameter map.
+autoLength1 = 0.002
+autoLength2 = 0.002
+autoLength3 = 0.002
+
+# Spatial step = 1 / converter ≈ 0.6 mm (≈ diameter / 7).
+converter = 1640
+
+# Gaussian marginal with mean 1 and CoV 20% — the field acts as a
+# multiplicative random factor on the lattice stiffness/strength.
+typeOfCDF = 1
+mean = 1.
+cov  = 0.2

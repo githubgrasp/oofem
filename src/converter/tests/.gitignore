@@ -2,3 +2,7 @@
 # `InterpolatingFunction`. Generated/used downstream; not consumed by
 # the converter itself, so not needed for ctest diff comparisons.
 random.dat
+
+# Single-line `mean sdev/mean` summary that genran writes alongside
+# random.dat. Build artefact; regenerated each `mesh.sh` run.
+stat.dat
