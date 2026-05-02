@@ -2370,8 +2370,10 @@ void Grid::giveOofemOutput(const std::string &fileName)
     //Start with oofem output
     printf("Writing OOFEM input file\n");
     if ( gridType == _3dSM ) { //Base implementation
+        project3DVoronoiVerticesToNotches();
         give3DSMOutput(fileName);
     } else if ( gridType == _3dTM ) { //Base implementation
+        project3DVoronoiVerticesToNotches();
         give3DTMOutput(fileName);
     } else if ( gridType == _2dSM ) {
         project2DVoronoiVerticesToBoundaries();
@@ -3014,6 +3016,14 @@ Grid::resolveNotchMaterial(const oofem::FloatArray &A, const oofem::FloatArray &
 
 
 bool
+Grid::wasVoronoiOriginallyInsideDeletingNotch(int id) const
+{
+    if ( id < 1 || id >= ( int ) voronoiOrigInsideDeletingNotch.size() ) return false;
+    return voronoiOrigInsideDeletingNotch[ id ] != 0;
+}
+
+
+bool
 Grid::notchDeletes(const oofem::FloatArray &A, const oofem::FloatArray &B) const
 {
     if ( notchSpecs.empty() ) return false;
@@ -3636,13 +3646,16 @@ Grid::give3DTMOutput(const std::string &fileName)
         int flag = this->giveVoronoiLine(i + 1)->giveOutsideFlag();
         const bool emit = ( flag == 0 ) || ( periodic && flag == 2 );
         if ( !emit ) continue;
+        // Drop TM elements *entirely* inside a delete-mode notch — both
+        // Voronoi endpoints were originally (pre-projection) inside the
+        // notch box. Crossing edges (one inside, one outside) have already
+        // had their inside endpoint snapped to the notch face by
+        // `project3DVoronoiVerticesToNotches` and are kept.
         if ( !notchSpecs.empty() ) {
             oofem::IntArray endpoints;
             this->giveVoronoiLine(i + 1)->giveLocalVertices(endpoints);
-            oofem::FloatArray cA(3), cB(3);
-            this->giveVoronoiVertex(endpoints.at(1))->giveCoordinates(cA);
-            this->giveVoronoiVertex(endpoints.at(2))->giveCoordinates(cB);
-            if ( notchDeletes(cA, cB) ) continue;
+            if ( wasVoronoiOriginallyInsideDeletingNotch(endpoints.at(1)) &&
+                 wasVoronoiOriginallyInsideDeletingNotch(endpoints.at(2)) ) continue;
         }
         numberOfLines++;
     }
@@ -3744,11 +3757,15 @@ Grid::give3DTMOutput(const std::string &fileName)
                 this->giveVoronoiLine(i + 1)->giveLocalVertices(nodes);
                 this->giveVoronoiLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
 
+                // Drop TM elements *entirely* inside a delete-mode notch
+                // (must mirror the pre-pass count above).
+                if ( wasVoronoiOriginallyInsideDeletingNotch(nodes.at(1)) &&
+                     wasVoronoiOriginallyInsideDeletingNotch(nodes.at(2)) ) continue;
+
                 // Pre-substitution endpoint coords for material resolution.
                 oofem::FloatArray cA(3), cB(3);
                 this->giveVoronoiVertex(nodes.at(1))->giveCoordinates(cA);
                 this->giveVoronoiVertex(nodes.at(2))->giveCoordinates(cB);
-                if ( notchDeletes(cA, cB) ) continue;
                 int mat = resolveNotchMaterial(cA, cB, 1);
                 mat = resolveInclusionMaterial(cA, cB, mat);
                 auto bodyloadIt = bodyloadByMaterial.find(mat);
@@ -5051,13 +5068,22 @@ void Grid::give2DSMOutput(const std::string &fileName)
     int emittedElems = 0;
     {
         oofem::IntArray ep, cs;
-        oofem::FloatArray cA(3), cB(3);
+        oofem::FloatArray cA(3), cB(3), vA(3), vB(3);
         for ( int i = 0; i < nDelL; ++i ) {
             this->giveDelaunayLine(i + 1)->giveLocalVertices(ep);
             if ( nodeMap[ ep.at(1) ] == 0 || nodeMap[ ep.at(2) ] == 0 ) continue;
             this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(cs);
             if ( cs.giveSize() != 2 ) continue;
             if ( cs.at(1) == 0 || cs.at(2) == 0 ) continue;
+            // Drop SM elements whose cross-section Voronoi edge is
+            // entirely outside the rect (mirrors the 3D
+            // `Prism::modifyVoronoiCrossSection` "outsideFlag == 1" path).
+            // After projection, crossing edges have one Voronoi vertex
+            // snapped onto the rect — those pass the contains check.
+            this->giveVoronoiVertex(cs.at(1))->giveCoordinates(vA);
+            this->giveVoronoiVertex(cs.at(2))->giveCoordinates(vB);
+            if ( !rect->contains(vA.at(1), vA.at(2), tol) &&
+                 !rect->contains(vB.at(1), vB.at(2), tol) ) continue;
             // Skip elements deleted by a `#@notch ... delete` box.
             this->giveDelaunayVertex(ep.at(1))->giveCoordinates(cA);
             this->giveDelaunayVertex(ep.at(2))->giveCoordinates(cB);
@@ -5151,12 +5177,15 @@ void Grid::give2DSMOutput(const std::string &fileName)
                 if ( crossSectionNodes.giveSize() != 2 ) continue;
                 if ( crossSectionNodes.at(1) == 0 || crossSectionNodes.at(2) == 0 ) continue;
 
+                this->giveVoronoiVertex(crossSectionNodes.at(1))->giveCoordinates(vA);
+                this->giveVoronoiVertex(crossSectionNodes.at(2))->giveCoordinates(vB);
+                // Drop elements with cross-section entirely outside the rect.
+                if ( !rect->contains(vA.at(1), vA.at(2), tol) &&
+                     !rect->contains(vB.at(1), vB.at(2), tol) ) continue;
+
                 this->giveDelaunayVertex(endpoints.at(1))->giveCoordinates(cA);
                 this->giveDelaunayVertex(endpoints.at(2))->giveCoordinates(cB);
                 if ( notchDeletes(cA, cB) ) continue;
-
-                this->giveVoronoiVertex(crossSectionNodes.at(1))->giveCoordinates(vA);
-                this->giveVoronoiVertex(crossSectionNodes.at(2))->giveCoordinates(vB);
 
                 const double dvx = vA.at(1) - vB.at(1);
                 const double dvy = vA.at(2) - vB.at(2);
@@ -5226,8 +5255,15 @@ void Grid::project2DVoronoiVerticesToBoundaries()
         return c.at(1) > n.xmin + tol && c.at(1) < n.xmax - tol &&
                c.at(2) > n.ymin + tol && c.at(2) < n.ymax - tol;
     };
-    auto insideAnyNotch = [&]( const oofem::FloatArray &c ) {
+    // Only delete-mode notches participate in projection: those represent
+    // physical voids (the user is expected to discretise them on the
+    // generator side). Material-mode notches are pure material overrides
+    // — projecting Voronoi vertices for them would distort polygons
+    // without any matching boundary discretisation, since the generator
+    // hasn't placed surface vertices.
+    auto insideAnyDeletingNotch = [&]( const oofem::FloatArray &c ) {
         for ( const auto &n : notchSpecs ) {
+            if ( !n.deleteFlag ) continue;
             if ( insideNotch(c, n) ) return true;
         }
         return false;
@@ -5262,7 +5298,9 @@ void Grid::project2DVoronoiVerticesToBoundaries()
 
     // Pre-pass: classify every Voronoi vertex (inside / outside / inside-notch).
     // We use the *original* qhull coordinates for this — projection is
-    // applied only after classification.
+    // applied only after classification. Also record the "originally
+    // inside any delete-mode notch" flag for later use by the TM emitter.
+    voronoiOrigInsideDeletingNotch.assign( nVorV + 1, 0 );
     std::vector< oofem::FloatArray > origCoords( nVorV + 1 );
     std::vector< int > vertClass( nVorV + 1, 0 );  // 0=inside, 1=outside-rect, 2=inside-notch
     for ( int i = 1; i <= nVorV; ++i ) {
@@ -5271,8 +5309,9 @@ void Grid::project2DVoronoiVerticesToBoundaries()
         origCoords[i] = c;
         if ( outsideRect(c) ) {
             vertClass[i] = 1;
-        } else if ( insideAnyNotch(c) ) {
+        } else if ( insideAnyDeletingNotch(c) ) {
             vertClass[i] = 2;
+            voronoiOrigInsideDeletingNotch[ i ] = 1;
         }
     }
 
@@ -5306,12 +5345,113 @@ void Grid::project2DVoronoiVerticesToBoundaries()
             clampToRect(c);
         }
         if ( projectOutOfNotch[i] ) {
-            // Find which notch the original vertex was inside.
+            // Find which delete-mode notch the original vertex was inside.
             for ( const auto &n : notchSpecs ) {
+                if ( !n.deleteFlag ) continue;
                 if ( insideNotch(origCoords[i], n) ) {
                     snapOutOfNotch(c, n);
                     break;
                 }
+            }
+        }
+        this->giveVoronoiVertex(i)->setCoordinates(c);
+    }
+}
+
+
+void Grid::project3DVoronoiVerticesToNotches()
+{
+    // Only delete-mode notches participate in projection — see the
+    // matching note in `project2DVoronoiVerticesToBoundaries`. A
+    // material-mode notch is a pure material override; the generator
+    // hasn't placed surface vertices, so projecting Voronoi vertices for
+    // it would distort cross-section polygons without a coherent
+    // boundary.
+    bool anyDeleting = false;
+    for ( const auto &n : notchSpecs ) {
+        if ( n.deleteFlag ) { anyDeleting = true; break; }
+    }
+    if ( !anyDeleting ) return;
+
+    const double tol = this->giveTol();
+
+    auto insideNotch = [&]( const oofem::FloatArray &c, const NotchSpec &n ) {
+        return c.at(1) > n.xmin + tol && c.at(1) < n.xmax - tol &&
+               c.at(2) > n.ymin + tol && c.at(2) < n.ymax - tol &&
+               c.at(3) > n.zmin + tol && c.at(3) < n.zmax - tol;
+    };
+    auto insideAnyDeletingNotch = [&]( const oofem::FloatArray &c ) {
+        for ( const auto &n : notchSpecs ) {
+            if ( !n.deleteFlag ) continue;
+            if ( insideNotch(c, n) ) return true;
+        }
+        return false;
+    };
+    auto snapOutOfNotch = [&]( oofem::FloatArray &c, const NotchSpec &n ) {
+        const double dxL = c.at(1) - n.xmin;
+        const double dxR = n.xmax - c.at(1);
+        const double dyB = c.at(2) - n.ymin;
+        const double dyT = n.ymax - c.at(2);
+        const double dzD = c.at(3) - n.zmin;
+        const double dzU = n.zmax - c.at(3);
+        double minDist = dxL;
+        int which = 0;
+        if ( dxR < minDist ) { minDist = dxR; which = 1; }
+        if ( dyB < minDist ) { minDist = dyB; which = 2; }
+        if ( dyT < minDist ) { minDist = dyT; which = 3; }
+        if ( dzD < minDist ) { minDist = dzD; which = 4; }
+        if ( dzU < minDist ) { minDist = dzU; which = 5; }
+        switch ( which ) {
+        case 0: c.at(1) = n.xmin; break;
+        case 1: c.at(1) = n.xmax; break;
+        case 2: c.at(2) = n.ymin; break;
+        case 3: c.at(2) = n.ymax; break;
+        case 4: c.at(3) = n.zmin; break;
+        case 5: c.at(3) = n.zmax; break;
+        }
+    };
+
+    const int nVorV = this->giveNumberOfVoronoiVertices();
+    const int nVorL = this->giveNumberOfVoronoiLines();
+
+    // Pre-pass: classify each Voronoi vertex (inside-notch / not). Also
+    // record the "originally inside any delete-mode notch" flag for later
+    // use by the TM emitter.
+    voronoiOrigInsideDeletingNotch.assign( nVorV + 1, 0 );
+    std::vector< oofem::FloatArray > origCoords( nVorV + 1 );
+    std::vector< char > insideNotchFlag( nVorV + 1, 0 );
+    for ( int i = 1; i <= nVorV; ++i ) {
+        oofem::FloatArray c(3);
+        this->giveVoronoiVertex(i)->giveCoordinates(c);
+        origCoords[i] = c;
+        if ( insideAnyDeletingNotch(c) ) {
+            insideNotchFlag[i] = 1;
+            voronoiOrigInsideDeletingNotch[ i ] = 1;
+        }
+    }
+
+    // Mark inside-notch endpoints of crossing Voronoi edges for projection.
+    std::vector< char > projectOutOfNotch( nVorV + 1, 0 );
+    oofem::IntArray ep;
+    for ( int i = 1; i <= nVorL; ++i ) {
+        this->giveVoronoiLine(i)->giveLocalVertices(ep);
+        if ( ep.giveSize() != 2 ) continue;
+        const int a = ep.at(1), b = ep.at(2);
+        if ( a == 0 || b == 0 ) continue;   // qhull at-infinity marker
+        const int ia = insideNotchFlag[a], ib = insideNotchFlag[b];
+        if ( ia && !ib ) projectOutOfNotch[a] = 1;
+        else if ( !ia && ib ) projectOutOfNotch[b] = 1;
+    }
+
+    // Apply projections.
+    for ( int i = 1; i <= nVorV; ++i ) {
+        if ( !projectOutOfNotch[i] ) continue;
+        oofem::FloatArray c = origCoords[i];
+        for ( const auto &n : notchSpecs ) {
+            if ( !n.deleteFlag ) continue;
+            if ( insideNotch(origCoords[i], n) ) {
+                snapOutOfNotch(c, n);
+                break;
             }
         }
         this->giveVoronoiVertex(i)->setCoordinates(c);
@@ -5375,7 +5515,6 @@ void Grid::give2DTMOutput(const std::string &fileName)
     int emittedElems = 0;
     {
         oofem::IntArray ep, cs;
-        oofem::FloatArray dA(3), dB(3);
         for ( int i = 0; i < nVorL; ++i ) {
             this->giveVoronoiLine(i + 1)->giveLocalVertices(ep);
             if ( ep.giveSize() != 2 ) continue;
@@ -5383,10 +5522,14 @@ void Grid::give2DTMOutput(const std::string &fileName)
             if ( nodeMap[ ep.at(1) ] == 0 || nodeMap[ ep.at(2) ] == 0 ) continue;
             this->giveVoronoiLine(i + 1)->giveCrossSectionVertices(cs);
             if ( cs.giveSize() != 2 ) continue;
-            // Mirror SM deletion via the dual Delaunay-edge midpoint.
-            this->giveDelaunayVertex(cs.at(1))->giveCoordinates(dA);
-            this->giveDelaunayVertex(cs.at(2))->giveCoordinates(dB);
-            if ( notchDeletes(dA, dB) ) continue;
+            // TM elements *entirely* inside a delete-mode notch get
+            // dropped — both Voronoi endpoints were originally inside the
+            // notch (i.e. the edge does not cross the notch surface; if
+            // it did, one endpoint would be outside). Crossing edges are
+            // kept and have already had their inside endpoint snapped to
+            // the notch face by `project2DVoronoiVerticesToBoundaries`.
+            if ( wasVoronoiOriginallyInsideDeletingNotch(ep.at(1)) &&
+                 wasVoronoiOriginallyInsideDeletingNotch(ep.at(2)) ) continue;
             ++emittedElems;
         }
     }
@@ -5477,9 +5620,13 @@ void Grid::give2DTMOutput(const std::string &fileName)
                 this->giveVoronoiLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
                 if ( crossSectionNodes.giveSize() != 2 ) continue;
 
+                // Drop TM elements entirely inside a delete-mode notch
+                // (must mirror the pre-pass count).
+                if ( wasVoronoiOriginallyInsideDeletingNotch(endpoints.at(1)) &&
+                     wasVoronoiOriginallyInsideDeletingNotch(endpoints.at(2)) ) continue;
+
                 this->giveDelaunayVertex(crossSectionNodes.at(1))->giveCoordinates(dA);
                 this->giveDelaunayVertex(crossSectionNodes.at(2))->giveCoordinates(dB);
-                if ( notchDeletes(dA, dB) ) continue;
 
                 this->giveVoronoiVertex(endpoints.at(1))->giveCoordinates(vA);
                 this->giveVoronoiVertex(endpoints.at(2))->giveCoordinates(vB);

@@ -117,6 +117,11 @@ private:
     /// Spatial dimension parsed from the `mesh.nodes` header (2 or 3).
     int spatialDim = 3;
 
+    /// Per-Voronoi-vertex flag: true if the vertex was strictly inside
+    /// any delete-mode `#@notch` box before the projection step. Indexed
+    /// 1..nVoronoiVertices; entry 0 is unused (qhull at-infinity sentinel).
+    std::vector< char > voronoiOrigInsideDeletingNotch;
+
     std::vector< std::vector< int > >edgeToTets;
     std::vector< std::vector< int > >edgeToBoundaryTris;
 
@@ -846,6 +851,24 @@ public:
     /// projection step so transport nodes (Voronoi vertices) sit on the
     /// physical boundaries. Idempotent — call once after qhull parsing.
     void project2DVoronoiVerticesToBoundaries();
+
+    /// 3D notch counterpart of the 2D projection: Voronoi vertices that
+    /// fall strictly inside any 3D `#@notch` box AND bound a crossing
+    /// Voronoi edge (one endpoint inside the notch, one outside) get
+    /// snapped to the nearest notch face. The 3D *outer* boundary
+    /// projection is handled separately by `Prism::modifyVoronoiCross`;
+    /// this method only adds the inner-boundary (notch) projection so 3D
+    /// matches the behaviour now active in 2D. Idempotent.
+    void project3DVoronoiVerticesToNotches();
+
+    /// True iff Voronoi vertex `id` was strictly inside any delete-mode
+    /// `#@notch` box BEFORE the projection step ran. Used by the TM
+    /// writers to delete elements whose two Voronoi endpoints were both
+    /// originally inside a void — distinct from "midpoint inside notch"
+    /// because crossing edges have one endpoint snapped to the surface
+    /// after projection, yet should be kept (snapped) rather than
+    /// deleted. Populated alongside the projection passes.
+    bool wasVoronoiOriginallyInsideDeletingNotch(int id) const;
 
     /// Qhull writer for 3D transport-mechanics analyses — emits
     /// latticemt3D elements on the Voronoi dual of the Delaunay mesh,
