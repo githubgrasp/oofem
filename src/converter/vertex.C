@@ -13,6 +13,7 @@ Vertex::Vertex(int n, Grid *aGrid) : GridComponent(n, aGrid)
     this->outsideFlag = 0;
     this->helpOutsideFlag.zero();
     this->location = 0;
+    this->periodicNode = 0;
     this->boundaryFlag = -1;
     this->cellVertices.zero();
     this->cellElements.zero();

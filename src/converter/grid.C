@@ -1788,11 +1788,19 @@ int Grid::instanciateYourselfFromQhull(const std::string &controlFile,
 
     readControlRecords();
 
-    // #@perflag may have resized periodicityFlag to a size ≠ 3; the qhull
-    // writers index it as at(1..3), so pad back out to 3 zeros if needed.
+    // #@perflag may have resized periodicityFlag to a size ≠ 3 (the 2D
+    // form `#@perflag 2 px py` produces a size-2 array). The qhull writers
+    // index periodicityFlag as at(1..3), so pad to 3 entries — preserving
+    // the existing values (`oofem::IntArray::resize` does not preserve
+    // entries in this codebase, so we copy them out and back in).
     if ( periodicityFlag.giveSize() != 3 ) {
+        const int oldSize = periodicityFlag.giveSize();
+        oofem::IntArray copy(oldSize);
+        for ( int i = 1; i <= oldSize; ++i ) copy.at(i) = periodicityFlag.at(i);
         periodicityFlag.resize(3);
-        periodicityFlag.zero();
+        for ( int i = 1; i <= 3; ++i ) {
+            periodicityFlag.at(i) = ( i <= oldSize ) ? copy.at(i) : 0;
+        }
     }
 
     if ( delaunayLocalizer == nullptr ) {
@@ -5026,11 +5034,15 @@ int Grid::r8mat_solve(int n, int rhs_num, double a[])
 
 void Grid::give2DSMOutput(const std::string &fileName)
 {
-    // Stage 6 MVP — non-periodic, no inclusions, no notch deletion, no
-    // boundary-clipping of cross-sections. Every Delaunay vertex is emitted
-    // as a node and every Delaunay edge is emitted as a `lattice2D` element.
-    // Material is fixed at 1 and cross-section at 1; the user's `control.in`
-    // is responsible for declaring `latticecs 1` / `latticeXxx 1` etc.
+    // 2D structural-mechanics writer. Handles non-periodic and periodic
+    // modes. In periodic mode (any axis of `#@perflag` is 1) Delaunay
+    // edges that cross the periodic boundary are emitted as
+    // `latticeboundary2d` elements, with the outside endpoint replaced by
+    // its periodic-partner id, an extra control node (CTLNODE) whose
+    // coordinates are the specimen dimensions and whose DOFs hold the
+    // macro strains, and a `location` code (1..8 around the rect) that
+    // tells the OOFEM element which axis-shift to apply. Inside edges
+    // (both endpoints inside) emit normal `lattice2D` lines.
 
     if ( regionList.empty() || regionList[0] == nullptr ) {
         converter::error("give2DSMOutput: at least one #@rect region is required");
@@ -5043,6 +5055,9 @@ void Grid::give2DSMOutput(const std::string &fileName)
 
     oofem::FloatArray bounds;
     this->giveRegion(1)->defineBoundaries(bounds);
+
+    const bool periodic = ( periodicityFlag.giveSize() >= 2 ) &&
+                          ( periodicityFlag.at(1) == 1 || periodicityFlag.at(2) == 1 );
 
     const int nDelV = this->giveNumberOfDelaunayVertices();
     const int nDelL = this->giveNumberOfDelaunayLines();
@@ -5065,32 +5080,49 @@ void Grid::give2DSMOutput(const std::string &fileName)
         }
     }
 
+    // In periodic mode, an outside Delaunay vertex is "addressable" via
+    // its periodic partner. For the inside-vs-crossing classification of
+    // a Delaunay edge:
+    //   - both endpoints inside (nodeMap > 0): inside edge → lattice2D
+    //   - one inside, one outside-but-with-partner: crossing → latticeboundary2d
+    //   - one inside, one outside-no-partner: drop
+    //   - both outside: drop
+    auto delaunayHasPartner = [&]( int rawId ) {
+        return periodic &&
+               this->giveDelaunayVertex(rawId)->giveOutsideFlag() == 1 &&
+               this->giveDelaunayVertex(rawId)->givePeriodicNode() != 0;
+    };
+
     int emittedElems = 0;
+    int emittedBoundaryElems = 0;
     {
         oofem::IntArray ep, cs;
         oofem::FloatArray cA(3), cB(3), vA(3), vB(3);
         for ( int i = 0; i < nDelL; ++i ) {
             this->giveDelaunayLine(i + 1)->giveLocalVertices(ep);
-            if ( nodeMap[ ep.at(1) ] == 0 || nodeMap[ ep.at(2) ] == 0 ) continue;
+            const bool in1 = nodeMap[ ep.at(1) ] != 0;
+            const bool in2 = nodeMap[ ep.at(2) ] != 0;
+            const bool partner1 = !in1 && delaunayHasPartner(ep.at(1));
+            const bool partner2 = !in2 && delaunayHasPartner(ep.at(2));
+            const bool emitInside   = in1 && in2;
+            const bool emitBoundary = ( in1 && partner2 ) || ( in2 && partner1 );
+            if ( !emitInside && !emitBoundary ) continue;
             this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(cs);
             if ( cs.giveSize() != 2 ) continue;
             if ( cs.at(1) == 0 || cs.at(2) == 0 ) continue;
-            // Drop SM elements whose cross-section Voronoi edge is
-            // entirely outside the rect (mirrors the 3D
-            // `Prism::modifyVoronoiCrossSection` "outsideFlag == 1" path).
-            // After projection, crossing edges have one Voronoi vertex
-            // snapped onto the rect — those pass the contains check.
             this->giveVoronoiVertex(cs.at(1))->giveCoordinates(vA);
             this->giveVoronoiVertex(cs.at(2))->giveCoordinates(vB);
             if ( !rect->contains(vA.at(1), vA.at(2), tol) &&
                  !rect->contains(vB.at(1), vB.at(2), tol) ) continue;
-            // Skip elements deleted by a `#@notch ... delete` box.
             this->giveDelaunayVertex(ep.at(1))->giveCoordinates(cA);
             this->giveDelaunayVertex(ep.at(2))->giveCoordinates(cB);
             if ( notchDeletes(cA, cB) ) continue;
             ++emittedElems;
+            if ( emitBoundary ) ++emittedBoundaryElems;
         }
     }
+    const int totalNodes = emittedNodes + ( periodic ? 1 : 0 );
+    const int ctlNode = emittedNodes + 1;
 
     // #@CTL<id> placeholder substitution — translate raw Delaunay ids
     // through the compact `nodeMap` so the placeholders refer to the
@@ -5113,6 +5145,9 @@ void Grid::give2DSMOutput(const std::string &fileName)
     };
 
     auto substitute = [ & ](std::string &s) {
+        if ( periodic ) {
+            replaceAll(s, "#@CTLNODE", std::to_string(ctlNode));
+        }
         for ( const auto &tok : sortedCtlTokens ) {
             replaceAll(s, tok.first, std::to_string(tok.second));
         }
@@ -5142,7 +5177,7 @@ void Grid::give2DSMOutput(const std::string &fileName)
         if ( !injected && t.rfind("ncrosssect", 0) == 0 ) {
             std::istringstream iss(t);
             std::string token;
-            out << "ndofman " << emittedNodes
+            out << "ndofman " << totalNodes
                 << " nelem " << emittedElems << " ";
             while ( iss >> token ) {
                 out << token << " ";
@@ -5159,19 +5194,33 @@ void Grid::give2DSMOutput(const std::string &fileName)
                     << coords.at(1) << " " << coords.at(2) << "\n";
             }
 
-            // Delaunay edges → lattice2D elements (must match the pre-count).
-            // Material is resolved through the existing 3D pipeline:
-            //   1. default material 1
-            //   2. `#@notch ... material <m>` box override (midpoint test)
-            //   3. `#@diskinclusion / #@sphereinclusion` override (endpoint
-            //      / straddle test). Inclusions emit `inside` if both
-            //      endpoints are inside the disk, `interface` if straddling.
+            // Periodic control node — coords are the specimen dimensions
+            // (Lattice2dBoundary reads them from giveNode(3)). DOFs 31/32/42
+            // hold the macro strains Exx, Eyy, Gxy.
+            if ( periodic ) {
+                const double specX = bounds.at(2) - bounds.at(1);
+                const double specY = bounds.at(4) - bounds.at(3);
+                out << "node " << ctlNode << " coords 2 " << std::scientific
+                    << specX << " " << specY
+                    << " dofidmask 3 31 32 42\n";
+            }
+
+            // Delaunay edges → lattice2D / latticeboundary2d elements.
+            // Material resolution and width / gpCoords computation are
+            // identical to the non-periodic path — only the node references
+            // and element type change for periodic-crossing edges.
             oofem::IntArray endpoints, crossSectionNodes;
             oofem::FloatArray cA(3), cB(3), vA(3), vB(3);
             int elemCounter = 0;
             for ( int i = 0; i < nDelL; ++i ) {
                 this->giveDelaunayLine(i + 1)->giveLocalVertices(endpoints);
-                if ( nodeMap[ endpoints.at(1) ] == 0 || nodeMap[ endpoints.at(2) ] == 0 ) continue;
+                const bool in1 = nodeMap[ endpoints.at(1) ] != 0;
+                const bool in2 = nodeMap[ endpoints.at(2) ] != 0;
+                const bool partner1 = !in1 && delaunayHasPartner(endpoints.at(1));
+                const bool partner2 = !in2 && delaunayHasPartner(endpoints.at(2));
+                const bool emitInside   = in1 && in2;
+                const bool emitBoundary = ( in1 && partner2 ) || ( in2 && partner1 );
+                if ( !emitInside && !emitBoundary ) continue;
 
                 this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
                 if ( crossSectionNodes.giveSize() != 2 ) continue;
@@ -5179,7 +5228,6 @@ void Grid::give2DSMOutput(const std::string &fileName)
 
                 this->giveVoronoiVertex(crossSectionNodes.at(1))->giveCoordinates(vA);
                 this->giveVoronoiVertex(crossSectionNodes.at(2))->giveCoordinates(vB);
-                // Drop elements with cross-section entirely outside the rect.
                 if ( !rect->contains(vA.at(1), vA.at(2), tol) &&
                      !rect->contains(vB.at(1), vB.at(2), tol) ) continue;
 
@@ -5196,14 +5244,53 @@ void Grid::give2DSMOutput(const std::string &fileName)
                 int mat = resolveNotchMaterial(cA, cB, 1);
                 mat = resolveInclusionMaterial(cA, cB, mat);
 
-                out << "lattice2D " << ++elemCounter
-                    << " nodes 2 " << nodeMap[ endpoints.at(1) ]
-                    << " " << nodeMap[ endpoints.at(2) ]
-                    << " crossSect " << mat << " mat " << mat
-                    << " gpCoords 2 " << gx << " " << gy
-                    << " width " << width
-                    << " thick " << latticeThickness
-                    << "\n";
+                if ( emitBoundary ) {
+                    int n1, n2, location;
+                    int partnerId;
+                    if ( in1 ) {
+                        partnerId = this->giveDelaunayVertex(endpoints.at(2))->givePeriodicNode();
+                        if ( partnerId < 1 || partnerId > nDelV ) {
+                            std::fprintf(stderr, "BUG: partner %d out of range (max %d) for outside vertex %d\n",
+                                         partnerId, nDelV, endpoints.at(2));
+                            continue;
+                        }
+                        n1 = nodeMap[ endpoints.at(1) ];
+                        n2 = nodeMap[ partnerId ];
+                        location = this->giveDelaunayVertex(endpoints.at(2))->giveLocation();
+                    } else {
+                        partnerId = this->giveDelaunayVertex(endpoints.at(1))->givePeriodicNode();
+                        if ( partnerId < 1 || partnerId > nDelV ) {
+                            std::fprintf(stderr, "BUG: partner %d out of range (max %d) for outside vertex %d\n",
+                                         partnerId, nDelV, endpoints.at(1));
+                            continue;
+                        }
+                        n1 = nodeMap[ partnerId ];
+                        n2 = nodeMap[ endpoints.at(2) ];
+                        location = this->giveDelaunayVertex(endpoints.at(1))->giveLocation();
+                    }
+                    if ( n1 == 0 || n2 == 0 ) {
+                        std::fprintf(stderr, "BUG: emit boundary line with n1=%d n2=%d (partner=%d)\n",
+                                     n1, n2, partnerId);
+                        continue;
+                    }
+                    out << "latticeboundary2d " << ++elemCounter
+                        << " nodes 3 " << n1 << " " << n2 << " " << ctlNode
+                        << " crossSect " << mat << " mat " << mat
+                        << " gpCoords 2 " << gx << " " << gy
+                        << " width " << width
+                        << " thick " << latticeThickness
+                        << " location " << location
+                        << "\n";
+                } else {
+                    out << "lattice2D " << ++elemCounter
+                        << " nodes 2 " << nodeMap[ endpoints.at(1) ]
+                        << " " << nodeMap[ endpoints.at(2) ]
+                        << " crossSect " << mat << " mat " << mat
+                        << " gpCoords 2 " << gx << " " << gy
+                        << " width " << width
+                        << " thick " << latticeThickness
+                        << "\n";
+                }
             }
             injected = true;
             continue;

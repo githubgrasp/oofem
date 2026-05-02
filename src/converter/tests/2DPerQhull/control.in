@@ -1,0 +1,17 @@
+oofem.out
+2D doubly-periodic lattice test (Stage 10)
+LinearStatic nsteps 1 nmodules 1
+errorcheck
+domain 2dlattice
+OutputManager tstep_all dofman_all
+ncrosssect 1 nmat 1 nbc 1 nic 0 nltf 1 nset 0
+latticecs 1 material 1
+latticedamage 1 d 0 talpha 0. e 30.e9 e0 100.e-6 wf 100.e-4 coh 2. ec 10. stype 1
+BoundaryCondition 1 loadTimeFunction 1 dofs 3 31 32 42 values 3 1.e-4 0. 0. set 0
+ConstantFunction 1 f(t) 1.
+#@grid 2dSM
+#@mesher qhull
+#@diam 0.005
+#@perflag 2 1 1
+#@thickness 1.0
+#@rect 1 box 4 0. 0. 0.05 0.05

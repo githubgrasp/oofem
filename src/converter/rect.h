@@ -46,9 +46,15 @@ public:
     /// convention as the 3D regions, with zero z extent.
     void defineBoundaries(oofem::FloatArray &boundaries) override;
 
-    /// No-op for the MVP — boundary handling defers to the inside-rect
-    /// midpoint test in the emitter.
-    void findOutsiders(oofem::FloatArray &boundaries) override {}
+    /// 2D analog of `Prism::findOutsiders`. Sets `outsideFlag` on every
+    /// Delaunay / Voronoi vertex and line based on position vs the rect
+    /// boundary (0=inside, 1=outside, 2=on-boundary for vertices;
+    /// 0=inside, 1=both-outside, 2=crossing, 3=on-boundary for lines).
+    /// In periodic mode also looks up each outside vertex's periodic
+    /// partner via the localiser and stores the partner id + location
+    /// code (1..8 around the rect, encoding the per-axis shift sign) so
+    /// the SM emitter can write `latticeboundary2d` lines.
+    void findOutsiders(oofem::FloatArray &boundaries) override;
 
     /// True iff `(x, y)` lies inside the rectangle (with `tol` margin).
     bool contains(double x, double y, double tol) const;
