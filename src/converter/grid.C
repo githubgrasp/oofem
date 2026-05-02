@@ -1034,17 +1034,25 @@ void Grid::readControlRecords()
             }
             controlVertexDefinitions.emplace_back(id, c);
         } else if ( tag == "#@notch" ) {
-            // #@notch <id> box 6 xmin ymin zmin xmax ymax zmax (material <m> | delete)
+            // #@notch <id> box {4|6} <coords> (material <m> | delete)
+            //   box 4 xmin ymin xmax ymax              (2D form, z slot = 0)
+            //   box 6 xmin ymin zmin xmax ymax zmax    (3D form)
             int num;
             iss >> num;
             std::string kw;
             int sz = 0;
-            iss >> kw >> sz;              // "box" 6
-            if ( kw != "box" || sz != 6 ) {
-                converter::error("Malformed #@notch — expected 'box 6 xmin ymin zmin xmax ymax zmax (material <m> | delete)'");
+            iss >> kw >> sz;
+            if ( kw != "box" || ( sz != 4 && sz != 6 ) ) {
+                converter::error("Malformed #@notch — expected 'box 4 xmin ymin xmax ymax' (2D) or 'box 6 xmin ymin zmin xmax ymax zmax' (3D), then (material <m> | delete)");
             }
             NotchSpec n;
-            iss >> n.xmin >> n.ymin >> n.zmin >> n.xmax >> n.ymax >> n.zmax;
+            if ( sz == 6 ) {
+                iss >> n.xmin >> n.ymin >> n.zmin >> n.xmax >> n.ymax >> n.zmax;
+            } else {
+                iss >> n.xmin >> n.ymin >> n.xmax >> n.ymax;
+                n.zmin = 0.;
+                n.zmax = 0.;
+            }
             iss >> kw;
             if ( kw == "delete" ) {
                 n.deleteFlag = true;
@@ -1083,6 +1091,41 @@ void Grid::readControlRecords()
             iss >> kw >> s.interface_;    // "interface" mif
             if ( kw != "interface" ) {
                 converter::error("Malformed #@sphereinclusion — expected 'interface <m>'");
+            }
+            sphereInclusionSpecs.push_back(s);
+        } else if ( tag == "#@diskinclusion" ) {
+            // #@diskinclusion <id> centre 2 cx cy radius r itz t
+            //   inside <mi> interface <mif>
+            // 2D analog of #@sphereinclusion. Internally stored as a
+            // SphereInclusionSpec with `cz = 0` — the existing 3D
+            // midpoint test then evaluates correctly in 2D where every
+            // vertex has z = 0.
+            int num;
+            iss >> num;
+            std::string kw;
+            int sz = 0;
+            iss >> kw >> sz;              // "centre" 2
+            if ( kw != "centre" || sz != 2 ) {
+                converter::error("Malformed #@diskinclusion — expected 'centre 2 cx cy'");
+            }
+            SphereInclusionSpec s;
+            iss >> s.cx >> s.cy;
+            s.cz = 0.;
+            iss >> kw >> s.radius;        // "radius" r
+            if ( kw != "radius" ) {
+                converter::error("Malformed #@diskinclusion — expected 'radius <r>'");
+            }
+            iss >> kw >> s.itz;           // "itz" t
+            if ( kw != "itz" ) {
+                converter::error("Malformed #@diskinclusion — expected 'itz <t>'");
+            }
+            iss >> kw >> s.inside;        // "inside" mi
+            if ( kw != "inside" ) {
+                converter::error("Malformed #@diskinclusion — expected 'inside <m>'");
+            }
+            iss >> kw >> s.interface_;    // "interface" mif
+            if ( kw != "interface" ) {
+                converter::error("Malformed #@diskinclusion — expected 'interface <m>'");
             }
             sphereInclusionSpecs.push_back(s);
         } else if ( tag == "#@cylinderinclusion" ) {
@@ -5002,12 +5045,17 @@ void Grid::give2DSMOutput(const std::string &fileName)
     int emittedElems = 0;
     {
         oofem::IntArray ep, cs;
+        oofem::FloatArray cA(3), cB(3);
         for ( int i = 0; i < nDelL; ++i ) {
             this->giveDelaunayLine(i + 1)->giveLocalVertices(ep);
             if ( nodeMap[ ep.at(1) ] == 0 || nodeMap[ ep.at(2) ] == 0 ) continue;
             this->giveDelaunayLine(i + 1)->giveCrossSectionVertices(cs);
             if ( cs.giveSize() != 2 ) continue;
             if ( cs.at(1) == 0 || cs.at(2) == 0 ) continue;
+            // Skip elements deleted by a `#@notch ... delete` box.
+            this->giveDelaunayVertex(ep.at(1))->giveCoordinates(cA);
+            this->giveDelaunayVertex(ep.at(2))->giveCoordinates(cB);
+            if ( notchDeletes(cA, cB) ) continue;
             ++emittedElems;
         }
     }
@@ -5080,6 +5128,12 @@ void Grid::give2DSMOutput(const std::string &fileName)
             }
 
             // Delaunay edges → lattice2D elements (must match the pre-count).
+            // Material is resolved through the existing 3D pipeline:
+            //   1. default material 1
+            //   2. `#@notch ... material <m>` box override (midpoint test)
+            //   3. `#@diskinclusion / #@sphereinclusion` override (endpoint
+            //      / straddle test). Inclusions emit `inside` if both
+            //      endpoints are inside the disk, `interface` if straddling.
             oofem::IntArray endpoints, crossSectionNodes;
             oofem::FloatArray cA(3), cB(3), vA(3), vB(3);
             int elemCounter = 0;
@@ -5093,6 +5147,8 @@ void Grid::give2DSMOutput(const std::string &fileName)
 
                 this->giveDelaunayVertex(endpoints.at(1))->giveCoordinates(cA);
                 this->giveDelaunayVertex(endpoints.at(2))->giveCoordinates(cB);
+                if ( notchDeletes(cA, cB) ) continue;
+
                 this->giveVoronoiVertex(crossSectionNodes.at(1))->giveCoordinates(vA);
                 this->giveVoronoiVertex(crossSectionNodes.at(2))->giveCoordinates(vB);
 
@@ -5102,10 +5158,13 @@ void Grid::give2DSMOutput(const std::string &fileName)
                 const double gx = 0.5 * ( cA.at(1) + cB.at(1) );
                 const double gy = 0.5 * ( cA.at(2) + cB.at(2) );
 
+                int mat = resolveNotchMaterial(cA, cB, 1);
+                mat = resolveInclusionMaterial(cA, cB, mat);
+
                 out << "lattice2D " << ++elemCounter
                     << " nodes 2 " << nodeMap[ endpoints.at(1) ]
                     << " " << nodeMap[ endpoints.at(2) ]
-                    << " crossSect 1 mat 1"
+                    << " crossSect " << mat << " mat " << mat
                     << " gpCoords 2 " << gx << " " << gy
                     << " width " << width
                     << " thick " << latticeThickness

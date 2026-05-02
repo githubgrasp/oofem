@@ -1,0 +1,26 @@
+oofem.out
+2D notched beam, midspan notch deleted via #@notch ... delete (Stage 7)
+StaticStructural nsteps 1 nmodules 1 solverType "calm" rtolf 1.e-5 maxiter 10 steplength 1.e-5 minsteplength 1.e-5 hpcmode 2 hpc 2 2 1 hpcw 1 1.
+errorcheck
+domain 2dLattice
+OutputManager tstep_all dofman_output { #@CTL1 #@CTL2 #@CTL3 }
+ncrosssect 1 nmat 1 nbc 3 nic 0 nltf 1 nset 3
+latticecs 1 material 1
+latticedamage 1 d 0 talpha 0. e 30.e9 e0 100.e-6 wf 100.e-4 coh 2. ec 10. stype 1
+BoundaryCondition 1 loadTimeFunction 1 dofs 3 1 2 6 values 3 0. 0. 0. set 1
+BoundaryCondition 2 loadTimeFunction 1 dofs 3 1 2 6 values 3 0. 0. 0. set 2
+BoundaryCondition 3 loadTimeFunction 1 dofs 3 1 2 6 values 3 0. -1.e-4 0. set 3
+ConstantFunction 1 f(t) 1.
+Set 1 nodes 1 #@CTL1
+Set 2 nodes 1 #@CTL2
+Set 3 nodes 1 #@CTL3
+#@grid 2dSM
+#@mesher qhull
+#@diam 0.004
+#@perflag 2 0 0
+#@thickness 1.0
+#@rect 1 box 4 0. 0. 0.10 0.05
+#@notch 1 box 4 0.046 0.0 0.054 0.025 delete
+#@controlvertex 1 coords 2 0.005 0.0
+#@controlvertex 2 coords 2 0.095 0.0
+#@controlvertex 3 coords 2 0.05  0.05
