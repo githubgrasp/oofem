@@ -601,6 +601,16 @@ void Grid::generateInputPoints()
         this->giveInputVertex(i + 1)->giveCoordinates(coords);
         this->addVertex(coords);
     }
+
+    // Seed notch box boundaries (corners + edges + faces) at edgeRefine /
+    // surfaceRefine spacing so the dual mesh partitions cleanly along the
+    // notch surface. Done after input vertices so the spatial localiser is
+    // already built around the bounding box, and before regions/inclusions
+    // run so their distance checks see these as existing neighbours.
+    for ( int i = 0; i < this->giveNumberOfNotches(); ++i ) {
+        this->giveNotch(i + 1)->generateBoundaryPoints();
+    }
+
     printf("At the end of generateInputPoints = %d\n", this->giveNumberOfVertices() );
     return;
 }

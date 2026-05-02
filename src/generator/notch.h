@@ -53,6 +53,14 @@ public:
     /// `tol` away from every face). Boundary points return false.
     bool containsStrictly(const oofem::FloatArray &coord, double tol) const;
 
+    /// Seed vertices on the notch box boundary: corners, edges, and faces
+    /// (3D) or corners and edges (2D). Edge spacing is `edgeRefine *
+    /// grid->diameter`; face spacing is `surfaceRefine * grid->diameter`.
+    /// Called from `Grid::generateInputPoints` so the seeded points enter
+    /// the spatial localiser before any region / inclusion fill, ensuring
+    /// subsequent placement keeps a buffer around the notch surface.
+    void generateBoundaryPoints();
+
     /// Returns the receiver's box as `[xmin ymin zmin xmax ymax zmax]`.
     const oofem::FloatArray &giveBox() const { return box; }
 
