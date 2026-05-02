@@ -1,0 +1,1054 @@
+oofem.out
+2D notched beam, transport, midspan notch deleted via dual-edge midpoint test
+TransientTransport nsteps 1 deltat 1 alpha 1. rtolf 1e-6 nmodules 1
+errorcheck
+domain 2dMassLatticeTransport
+OutputManager tstep_all dofman_all
+ndofman 449 nelem 589 ncrosssect 0 nmat 1 nbc 0 nic 0 nltf 1 nset 0 
+node 1 coords 2 5.246175e-02 3.482151e-02
+node 2 coords 2 5.259856e-02 3.491879e-02
+node 3 coords 2 9.179452e-02 2.483049e-02
+node 4 coords 2 5.607097e-02 3.383651e-02
+node 5 coords 2 9.198292e-02 2.652157e-02
+node 6 coords 2 8.695566e-02 2.805539e-02
+node 7 coords 2 8.644356e-02 3.050217e-02
+node 8 coords 2 2.158955e-03 2.500000e-02
+node 9 coords 2 2.412800e-03 2.884615e-02
+node 10 coords 2 4.362231e-02 2.841611e-02
+node 11 coords 2 9.410655e-02 4.713668e-02
+node 12 coords 2 9.304351e-02 4.206726e-02
+node 13 coords 2 9.210347e-02 4.137988e-02
+node 14 coords 2 8.814699e-02 2.127795e-02
+node 15 coords 2 8.488429e-02 2.483946e-02
+node 16 coords 2 3.022995e-02 1.357443e-02
+node 17 coords 2 3.812361e-02 8.257541e-03
+node 18 coords 2 7.344247e-02 2.348204e-02
+node 19 coords 2 7.000000e-02 2.015027e-03
+node 20 coords 2 5.700000e-02 9.615385e-04
+node 21 coords 2 1.045384e-02 4.253007e-02
+node 22 coords 2 1.423934e-02 3.967804e-02
+node 23 coords 2 3.090654e-03 3.653846e-02
+node 24 coords 2 1.000000e-02 4.788726e-02
+node 25 coords 2 1.251964e-02 4.649140e-02
+node 26 coords 2 3.237585e-03 2.975157e-02
+node 27 coords 2 2.720769e-03 3.269231e-02
+node 28 coords 2 3.541302e-03 3.442929e-02
+node 29 coords 2 8.844714e-03 3.347343e-02
+node 30 coords 2 7.892297e-03 2.884016e-02
+node 31 coords 2 7.436977e-03 2.863302e-02
+node 32 coords 2 6.849081e-03 1.389387e-02
+node 33 coords 2 5.235987e-03 1.091860e-02
+node 34 coords 2 3.086323e-03 1.032112e-02
+node 35 coords 2 1.561919e-03 1.346154e-02
+node 36 coords 2 1.809002e-02 7.990940e-03
+node 37 coords 2 1.838986e-02 1.019586e-02
+node 38 coords 2 1.929913e-02 3.202062e-02
+node 39 coords 2 2.647287e-03 9.615385e-03
+node 40 coords 2 2.454430e-03 1.730769e-02
+node 41 coords 2 3.828469e-03 1.666202e-02
+node 42 coords 2 3.072890e-03 1.669829e-02
+node 43 coords 2 7.011439e-03 1.942301e-02
+node 44 coords 2 1.958758e-03 2.115385e-02
+node 45 coords 2 3.534120e-03 2.323459e-02
+node 46 coords 2 6.555096e-03 2.263166e-02
+node 47 coords 2 5.893645e-03 2.316178e-02
+node 48 coords 2 4.398797e-02 3.175907e-02
+node 49 coords 2 4.748698e-02 3.228569e-02
+node 50 coords 2 4.849095e-02 3.545745e-02
+node 51 coords 2 4.761079e-02 3.689787e-02
+node 52 coords 2 4.373692e-02 2.403846e-02
+node 53 coords 2 4.427395e-02 2.767869e-02
+node 54 coords 2 3.938194e-02 1.917163e-02
+node 55 coords 2 4.294177e-02 2.273641e-02
+node 56 coords 2 3.347409e-02 1.941712e-02
+node 57 coords 2 2.994546e-02 1.899421e-02
+node 58 coords 2 3.511436e-02 1.675909e-02
+node 59 coords 2 3.842721e-02 1.674310e-02
+node 60 coords 2 4.007109e-02 1.431118e-02
+node 61 coords 2 3.679259e-02 1.100011e-02
+node 62 coords 2 3.369317e-02 1.211142e-02
+node 63 coords 2 3.340572e-02 1.255466e-02
+node 64 coords 2 4.290221e-02 2.009603e-02
+node 65 coords 2 5.673259e-02 3.158758e-02
+node 66 coords 2 9.342236e-02 2.778585e-02
+node 67 coords 2 9.647107e-02 2.743869e-02
+node 68 coords 2 9.776121e-02 2.884615e-02
+node 69 coords 2 9.697758e-02 4.701361e-02
+node 70 coords 2 9.800000e-02 4.807692e-02
+node 71 coords 2 8.975986e-02 4.756117e-02
+node 72 coords 2 9.000000e-02 4.772525e-02
+node 73 coords 2 9.400000e-02 4.723557e-02
+node 74 coords 2 7.807213e-02 3.858459e-02
+node 75 coords 2 8.524464e-02 3.097871e-02
+node 76 coords 2 8.086201e-02 2.967889e-02
+node 77 coords 2 5.800000e-02 4.643051e-02
+node 78 coords 2 5.318333e-02 3.762663e-02
+node 79 coords 2 5.191597e-02 4.260975e-02
+node 80 coords 2 4.818228e-02 3.973297e-02
+node 81 coords 2 5.059562e-02 4.044562e-02
+node 82 coords 2 8.157658e-02 2.518846e-02
+node 83 coords 2 8.225231e-02 2.445929e-02
+node 84 coords 2 7.504225e-02 2.304111e-02
+node 85 coords 2 7.711798e-02 2.577804e-02
+node 86 coords 2 9.836253e-02 1.730769e-02
+node 87 coords 2 9.652513e-02 2.079718e-02
+node 88 coords 2 9.529474e-02 2.063325e-02
+node 89 coords 2 8.826376e-02 1.978260e-02
+node 90 coords 2 9.233911e-02 1.806027e-02
+node 91 coords 2 9.275408e-02 1.569087e-02
+node 92 coords 2 9.692148e-02 1.370791e-02
+node 93 coords 2 9.506419e-02 1.368958e-02
+node 94 coords 2 9.750000e-02 1.923077e-03
+node 95 coords 2 1.800000e-02 2.262297e-03
+node 96 coords 2 3.654245e-02 5.455609e-03
+node 97 coords 2 3.148410e-02 6.961943e-03
+node 98 coords 2 3.079050e-02 6.617055e-03
+node 99 coords 2 2.974254e-02 3.274352e-03
+node 100 coords 2 3.000000e-02 2.935432e-03
+node 101 coords 2 7.286905e-02 3.630406e-02
+node 102 coords 2 7.673400e-02 3.667181e-02
+node 103 coords 2 7.219485e-02 2.704889e-02
+node 104 coords 2 7.104852e-02 3.240932e-02
+node 105 coords 2 7.194771e-02 3.247627e-02
+node 106 coords 2 8.200000e-02 1.808636e-03
+node 107 coords 2 6.939180e-02 2.447853e-03
+node 108 coords 2 7.400000e-02 2.673496e-03
+node 109 coords 2 7.429871e-02 2.984415e-03
+node 110 coords 2 7.779207e-02 3.352051e-03
+node 111 coords 2 7.800000e-02 3.097909e-03
+node 112 coords 2 6.200000e-02 1.640632e-03
+node 113 coords 2 6.458193e-02 2.770539e-03
+node 114 coords 2 6.600000e-02 1.693987e-03
+node 115 coords 2 5.300000e-02 9.615385e-04
+node 116 coords 2 5.115089e-02 2.884615e-03
+node 117 coords 2 8.808646e-03 4.207272e-02
+node 118 coords 2 8.113650e-03 3.856385e-02
+node 119 coords 2 3.619843e-03 3.800591e-02
+node 120 coords 2 2.766565e-03 4.038462e-02
+node 121 coords 2 1.404036e-02 3.844901e-02
+node 122 coords 2 1.618353e-02 3.555815e-02
+node 123 coords 2 9.530335e-03 3.401782e-02
+node 124 coords 2 9.915414e-03 3.658773e-02
+node 125 coords 2 1.474574e-02 3.164452e-02
+node 126 coords 2 1.610392e-02 3.287513e-02
+node 127 coords 2 2.025897e-02 3.768122e-02
+node 128 coords 2 1.217581e-02 2.313181e-02
+node 129 coords 2 1.183556e-02 2.330895e-02
+node 130 coords 2 1.011942e-02 2.800603e-02
+node 131 coords 2 1.444054e-02 3.008339e-02
+node 132 coords 2 1.602946e-02 2.681474e-02
+node 133 coords 2 8.802407e-03 1.427480e-02
+node 134 coords 2 1.196670e-02 1.060905e-02
+node 135 coords 2 1.519373e-02 1.329115e-02
+node 136 coords 2 1.016952e-02 1.736143e-02
+node 137 coords 2 1.568593e-02 7.158004e-03
+node 138 coords 2 1.430894e-02 3.264994e-03
+node 139 coords 2 1.400000e-02 3.133217e-03
+node 140 coords 2 1.195461e-02 1.054918e-02
+node 141 coords 2 2.616743e-02 2.813188e-03
+node 142 coords 2 2.600000e-02 2.629627e-03
+node 143 coords 2 2.047716e-02 5.953433e-03
+node 144 coords 2 2.008786e-02 3.293298e-03
+node 145 coords 2 2.200000e-02 1.897162e-03
+node 146 coords 2 2.761461e-02 8.951920e-03
+node 147 coords 2 2.436441e-02 7.298057e-03
+node 148 coords 2 2.351253e-02 7.553953e-03
+node 149 coords 2 2.773134e-02 1.255045e-02
+node 150 coords 2 1.759042e-02 2.625056e-02
+node 151 coords 2 1.887318e-02 2.320773e-02
+node 152 coords 2 2.067350e-02 2.840159e-02
+node 153 coords 2 2.565577e-02 1.362365e-02
+node 154 coords 2 2.169267e-02 1.196541e-02
+node 155 coords 2 2.223857e-02 1.178888e-02
+node 156 coords 2 8.500000e-03 1.523068e-03
+node 157 coords 2 1.205998e-02 3.456153e-03
+node 158 coords 2 8.600185e-03 8.307633e-03
+node 159 coords 2 1.018653e-02 8.590710e-03
+node 160 coords 2 3.926921e-02 3.309426e-02
+node 161 coords 2 4.280033e-02 3.325237e-02
+node 162 coords 2 4.357676e-02 3.591952e-02
+node 163 coords 2 3.346970e-02 2.941976e-02
+node 164 coords 2 3.839223e-02 3.224325e-02
+node 165 coords 2 2.922038e-02 2.800292e-02
+node 166 coords 2 2.341520e-02 2.773445e-02
+node 167 coords 2 2.469395e-02 3.232702e-02
+node 168 coords 2 2.851616e-02 3.111963e-02
+node 169 coords 2 4.309390e-02 2.211538e-02
+node 170 coords 2 4.294110e-02 2.019231e-02
+node 171 coords 2 4.358057e-02 1.634615e-02
+node 172 coords 2 4.360714e-02 1.826923e-02
+node 173 coords 2 5.000000e-02 1.826923e-02
+node 174 coords 2 5.891075e-02 3.214839e-03
+node 175 coords 2 5.760690e-02 2.855070e-03
+node 176 coords 2 5.757445e-02 2.884615e-03
+node 177 coords 2 5.980078e-02 3.135132e-02
+node 178 coords 2 2.000000e-03 4.807692e-02
+node 179 coords 2 9.411370e-02 3.676132e-02
+node 180 coords 2 9.271727e-02 3.102444e-02
+node 181 coords 2 8.929219e-02 3.473066e-02
+node 182 coords 2 8.924521e-02 3.321927e-02
+node 183 coords 2 9.687495e-02 2.115385e-02
+node 184 coords 2 9.775146e-02 2.500000e-02
+node 185 coords 2 8.600000e-02 4.823927e-02
+node 186 coords 2 9.035117e-02 4.143013e-02
+node 187 coords 2 8.884879e-02 4.315973e-02
+node 188 coords 2 8.755013e-02 3.736330e-02
+node 189 coords 2 7.193917e-02 4.658871e-02
+node 190 coords 2 7.996173e-02 3.033641e-02
+node 191 coords 2 7.958390e-02 3.236569e-02
+node 192 coords 2 7.709150e-02 3.376349e-02
+node 193 coords 2 7.628465e-02 2.862905e-02
+node 194 coords 2 7.419213e-02 2.967563e-02
+node 195 coords 2 7.371159e-02 3.117392e-02
+node 196 coords 2 6.106818e-02 3.275101e-02
+node 197 coords 2 6.459902e-02 3.260214e-02
+node 198 coords 2 6.827570e-02 4.250278e-02
+node 199 coords 2 7.113911e-02 3.859301e-02
+node 200 coords 2 6.440696e-02 3.815122e-02
+node 201 coords 2 6.669143e-02 3.557536e-02
+node 202 coords 2 6.621199e-02 3.558055e-02
+node 203 coords 2 6.524655e-02 4.679032e-02
+node 204 coords 2 6.534983e-02 4.512137e-02
+node 205 coords 2 6.200000e-02 4.822370e-02
+node 206 coords 2 5.802488e-02 4.640641e-02
+node 207 coords 2 6.600000e-02 4.764457e-02
+node 208 coords 2 7.000000e-02 4.822477e-02
+node 209 coords 2 9.722527e-02 1.346154e-02
+node 210 coords 2 9.639630e-02 3.357893e-03
+node 211 coords 2 7.672973e-02 2.025632e-02
+node 212 coords 2 8.839366e-02 1.259240e-02
+node 213 coords 2 6.464326e-02 4.828051e-03
+node 214 coords 2 6.143014e-02 7.527301e-03
+node 215 coords 2 5.000000e-02 4.003077e-03
+node 216 coords 2 4.900000e-02 2.963077e-03
+node 217 coords 2 5.100000e-02 2.963077e-03
+node 218 coords 2 1.560220e-02 1.482797e-02
+node 219 coords 2 1.959210e-02 1.575329e-02
+node 220 coords 2 2.081221e-02 1.767711e-02
+node 221 coords 2 1.780911e-02 2.114088e-02
+node 222 coords 2 2.453636e-02 2.622624e-02
+node 223 coords 2 3.056421e-02 2.482436e-02
+node 224 coords 2 2.898080e-02 2.747583e-02
+node 225 coords 2 2.488741e-02 1.714140e-02
+node 226 coords 2 2.288699e-02 1.825639e-02
+node 227 coords 2 2.915006e-02 1.946266e-02
+node 228 coords 2 2.861714e-02 2.112911e-02
+node 229 coords 2 2.365080e-02 2.339640e-02
+node 230 coords 2 2.404812e-02 2.376639e-02
+node 231 coords 2 6.443925e-03 5.548444e-03
+node 232 coords 2 7.147775e-03 2.578820e-03
+node 233 coords 2 1.967012e-03 5.769231e-03
+node 234 coords 2 2.849949e-03 6.795196e-03
+node 235 coords 2 2.211547e-03 1.923077e-03
+node 236 coords 2 2.500000e-03 1.631047e-03
+node 237 coords 2 3.978460e-02 2.414211e-02
+node 238 coords 2 3.959772e-02 2.770929e-02
+node 239 coords 2 3.870816e-02 2.831070e-02
+node 240 coords 2 3.533956e-02 2.724701e-02
+node 241 coords 2 3.440580e-02 2.409329e-02
+node 242 coords 2 3.695425e-02 2.226716e-02
+node 243 coords 2 3.526836e-02 2.246618e-02
+node 244 coords 2 5.642066e-02 1.442308e-02
+node 245 coords 2 5.631259e-02 1.634615e-02
+node 246 coords 2 5.000000e-02 1.634615e-02
+node 247 coords 2 4.278536e-02 1.442308e-02
+node 248 coords 2 4.240049e-02 1.394979e-02
+node 249 coords 2 5.000000e-02 1.442308e-02
+node 250 coords 2 4.236942e-02 8.107137e-03
+node 251 coords 2 4.268670e-02 8.653846e-03
+node 252 coords 2 5.717172e-02 1.280361e-02
+node 253 coords 2 6.146349e-02 1.406087e-02
+node 254 coords 2 6.270351e-02 9.680137e-03
+node 255 coords 2 6.136705e-02 8.016332e-03
+node 256 coords 2 5.472878e-02 2.881658e-02
+node 257 coords 2 5.183304e-02 3.160753e-02
+node 258 coords 2 4.906477e-02 3.067872e-02
+node 259 coords 2 4.884911e-02 2.211538e-02
+node 260 coords 2 4.700000e-02 2.403846e-02
+node 261 coords 2 4.700000e-02 2.732730e-02
+node 262 coords 2 4.872341e-02 2.781846e-02
+node 263 coords 2 4.900000e-02 2.203692e-02
+node 264 coords 2 5.100000e-02 2.703048e-02
+node 265 coords 2 4.900000e-02 2.760921e-02
+node 266 coords 2 5.623469e-02 1.826923e-02
+node 267 coords 2 5.669524e-02 1.743515e-02
+node 268 coords 2 6.073289e-02 2.758408e-02
+node 269 coords 2 6.009401e-02 2.647758e-02
+node 270 coords 2 6.701991e-02 2.818530e-02
+node 271 coords 2 6.562396e-02 2.924406e-02
+node 272 coords 2 5.776026e-02 2.556494e-02
+node 273 coords 2 5.473146e-02 2.850276e-02
+node 274 coords 2 5.300000e-02 2.738606e-02
+node 275 coords 2 7.005835e-02 1.808105e-02
+node 276 coords 2 6.651759e-02 1.456978e-02
+node 277 coords 2 3.186570e-03 4.194447e-02
+node 278 coords 2 1.624965e-03 4.423077e-02
+node 279 coords 2 6.645688e-03 4.361421e-02
+node 280 coords 2 2.535278e-03 4.752023e-02
+node 281 coords 2 6.628626e-03 4.701890e-02
+node 282 coords 2 6.000000e-03 4.752541e-02
+node 283 coords 2 9.830750e-02 4.423077e-02
+node 284 coords 2 9.723554e-02 4.171830e-02
+node 285 coords 2 9.801746e-02 4.038462e-02
+node 286 coords 2 9.788530e-02 3.269231e-02
+node 287 coords 2 9.637893e-02 3.446010e-02
+node 288 coords 2 9.625904e-02 3.577824e-02
+node 289 coords 2 9.707667e-02 3.653846e-02
+node 290 coords 2 8.573439e-02 4.354880e-02
+node 291 coords 2 8.477929e-02 4.727116e-02
+node 292 coords 2 8.580733e-02 3.759183e-02
+node 293 coords 2 8.285459e-02 3.526376e-02
+node 294 coords 2 8.228795e-02 3.528424e-02
+node 295 coords 2 7.885889e-02 3.862613e-02
+node 296 coords 2 8.217534e-02 4.168687e-02
+node 297 coords 2 8.337004e-02 4.154143e-02
+node 298 coords 2 7.182213e-02 4.546564e-02
+node 299 coords 2 6.889181e-02 4.244930e-02
+node 300 coords 2 7.120097e-02 3.925870e-02
+node 301 coords 2 7.563298e-02 4.150272e-02
+node 302 coords 2 7.563220e-02 4.209129e-02
+node 303 coords 2 6.275249e-02 3.877446e-02
+node 304 coords 2 5.633906e-02 3.888156e-02
+node 305 coords 2 5.785503e-02 3.599283e-02
+node 306 coords 2 5.988348e-02 3.574676e-02
+node 307 coords 2 4.198511e-02 3.861520e-02
+node 308 coords 2 3.818238e-02 3.760701e-02
+node 309 coords 2 9.834507e-02 9.615385e-03
+node 310 coords 2 9.704635e-02 5.769231e-03
+node 311 coords 2 9.664567e-02 7.003843e-03
+node 312 coords 2 3.400000e-02 1.596279e-03
+node 313 coords 2 3.691306e-02 3.480483e-03
+node 314 coords 2 3.800000e-02 2.662375e-03
+node 315 coords 2 4.884911e-02 2.884615e-03
+node 316 coords 2 4.700000e-02 9.615385e-04
+node 317 coords 2 4.300000e-02 9.615385e-04
+node 318 coords 2 4.258451e-02 2.884615e-03
+node 319 coords 2 4.245619e-02 2.658217e-03
+node 320 coords 2 8.165853e-02 2.299544e-02
+node 321 coords 2 7.683410e-02 2.024439e-02
+node 322 coords 2 7.271012e-02 1.249735e-02
+node 323 coords 2 7.054522e-02 1.781093e-02
+node 324 coords 2 7.518111e-02 1.838638e-02
+node 325 coords 2 7.602077e-02 1.377172e-02
+node 326 coords 2 7.592003e-02 1.358864e-02
+node 327 coords 2 7.802966e-02 1.058162e-02
+node 328 coords 2 8.178718e-02 1.068287e-02
+node 329 coords 2 7.837375e-02 5.306533e-03
+node 330 coords 2 7.681102e-02 8.230589e-03
+node 331 coords 2 8.862034e-02 1.111642e-02
+node 332 coords 2 9.291072e-02 9.491023e-03
+node 333 coords 2 9.322725e-02 8.721001e-03
+node 334 coords 2 6.778199e-02 1.093993e-02
+node 335 coords 2 6.745906e-02 1.027533e-02
+node 336 coords 2 7.255820e-02 1.227816e-02
+node 337 coords 2 6.888466e-02 6.755137e-03
+node 338 coords 2 6.822452e-02 7.299448e-03
+node 339 coords 2 7.271263e-02 6.819321e-03
+node 340 coords 2 7.372788e-02 8.349130e-03
+node 341 coords 2 1.029558e-02 1.741152e-02
+node 342 coords 2 1.509290e-02 1.565569e-02
+node 343 coords 2 1.267097e-02 2.208085e-02
+node 344 coords 2 1.565857e-02 2.050880e-02
+node 345 coords 2 4.316422e-02 1.057692e-02
+node 346 coords 2 4.300323e-02 1.250000e-02
+node 347 coords 2 4.305762e-02 4.807692e-03
+node 348 coords 2 4.291384e-02 6.730769e-03
+node 349 coords 2 5.732681e-02 2.285528e-02
+node 350 coords 2 5.732339e-02 2.403846e-02
+node 351 coords 2 5.300000e-02 2.403846e-02
+node 352 coords 2 6.379760e-02 2.314456e-02
+node 353 coords 2 6.750142e-02 2.724608e-02
+node 354 coords 2 6.736406e-02 2.733763e-02
+node 355 coords 2 6.987442e-02 2.164817e-02
+node 356 coords 2 6.919856e-02 2.026948e-02
+node 357 coords 2 6.236511e-02 1.558630e-02
+node 358 coords 2 6.335332e-02 1.584049e-02
+node 359 coords 2 6.017564e-02 1.785252e-02
+node 360 coords 2 6.045452e-02 2.066596e-02
+node 361 coords 2 6.383769e-02 2.222045e-02
+node 362 coords 2 6.522531e-02 2.070789e-02
+node 363 coords 2 8.200000e-02 4.766612e-02
+node 364 coords 2 7.892645e-02 4.620128e-02
+node 365 coords 2 7.955583e-02 4.610862e-02
+node 366 coords 2 6.232711e-02 4.282030e-02
+node 367 coords 2 6.207825e-02 3.984584e-02
+node 368 coords 2 5.811132e-02 4.587757e-02
+node 369 coords 2 5.648880e-02 4.183731e-02
+node 370 coords 2 5.695635e-02 4.053526e-02
+node 371 coords 2 3.666367e-02 3.840842e-02
+node 372 coords 2 2.685142e-02 3.614400e-02
+node 373 coords 2 2.138167e-02 3.723887e-02
+node 374 coords 2 2.405511e-02 3.365041e-02
+node 375 coords 2 2.274238e-02 3.415343e-02
+node 376 coords 2 8.053919e-02 1.569455e-02
+node 377 coords 2 8.072423e-02 1.665430e-02
+node 378 coords 2 8.227286e-02 1.266499e-02
+node 379 coords 2 8.312211e-02 1.841475e-02
+node 380 coords 2 8.635144e-02 1.796867e-02
+node 381 coords 2 8.664469e-02 1.423682e-02
+node 382 coords 2 9.118797e-02 5.864605e-03
+node 383 coords 2 9.265506e-02 2.371835e-03
+node 384 coords 2 9.150000e-02 8.560372e-04
+node 385 coords 2 8.731133e-02 9.188123e-03
+node 386 coords 2 8.300013e-02 7.866964e-03
+node 387 coords 2 8.309064e-02 8.169812e-03
+node 388 coords 2 8.873637e-02 6.125518e-03
+node 389 coords 2 8.463274e-02 3.329342e-03
+node 390 coords 2 8.600000e-02 2.804951e-03
+node 391 coords 2 8.664742e-02 2.972461e-03
+node 392 coords 2 2.200000e-02 4.819975e-02
+node 393 coords 2 2.216670e-02 4.299118e-02
+node 394 coords 2 2.392774e-02 4.693903e-02
+node 395 coords 2 2.600000e-02 4.722258e-02
+node 396 coords 2 2.508405e-02 4.050625e-02
+node 397 coords 2 2.595270e-02 4.044807e-02
+node 398 coords 2 1.364799e-02 4.668770e-02
+node 399 coords 2 1.400000e-02 4.707442e-02
+node 400 coords 2 1.651251e-02 4.194040e-02
+node 401 coords 2 1.899102e-02 4.740335e-02
+node 402 coords 2 1.800000e-02 4.802236e-02
+node 403 coords 2 1.853546e-02 4.208179e-02
+node 404 coords 2 1.932096e-02 4.276584e-02
+node 405 coords 2 5.634324e-02 4.807692e-03
+node 406 coords 2 5.599313e-02 6.730769e-03
+node 407 coords 2 5.000000e-02 4.807692e-03
+node 408 coords 2 5.000000e-02 6.730769e-03
+node 409 coords 2 5.705958e-02 1.250000e-02
+node 410 coords 2 5.000000e-02 1.250000e-02
+node 411 coords 2 5.604528e-02 2.019231e-02
+node 412 coords 2 5.672833e-02 2.211538e-02
+node 413 coords 2 5.000000e-02 2.099692e-02
+node 414 coords 2 5.100000e-02 2.203692e-02
+node 415 coords 2 5.115089e-02 2.211538e-02
+node 416 coords 2 5.000000e-02 2.019231e-02
+node 417 coords 2 7.400000e-02 4.793638e-02
+node 418 coords 2 7.800000e-02 4.716462e-02
+node 419 coords 2 5.300000e-02 4.775322e-02
+node 420 coords 2 5.115419e-02 4.629278e-02
+node 421 coords 2 3.510678e-02 3.813775e-02
+node 422 coords 2 3.232167e-02 3.950617e-02
+node 423 coords 2 3.413984e-02 3.274284e-02
+node 424 coords 2 3.396334e-02 3.262947e-02
+node 425 coords 2 3.040104e-02 3.363667e-02
+node 426 coords 2 2.970144e-02 3.531868e-02
+node 427 coords 2 5.652413e-02 8.653846e-03
+node 428 coords 2 5.722634e-02 9.610145e-03
+node 429 coords 2 5.696468e-02 1.057692e-02
+node 430 coords 2 5.000000e-02 8.653846e-03
+node 431 coords 2 5.000000e-02 1.057692e-02
+node 432 coords 2 4.200000e-02 4.689611e-02
+node 433 coords 2 4.601755e-02 4.149948e-02
+node 434 coords 2 4.304027e-02 4.146137e-02
+node 435 coords 2 4.794924e-02 4.682177e-02
+node 436 coords 2 4.700000e-02 4.771967e-02
+node 437 coords 2 3.157919e-02 4.084728e-02
+node 438 coords 2 2.721751e-02 4.127803e-02
+node 439 coords 2 2.699412e-02 4.669475e-02
+node 440 coords 2 3.000000e-02 4.741091e-02
+node 441 coords 2 4.179266e-02 4.303569e-02
+node 442 coords 2 4.167701e-02 4.660376e-02
+node 443 coords 2 3.787223e-02 4.209520e-02
+node 444 coords 2 3.800000e-02 4.752144e-02
+node 445 coords 2 3.241859e-02 4.291032e-02
+node 446 coords 2 3.123835e-02 4.685219e-02
+node 447 coords 2 3.400000e-02 4.828066e-02
+node 448 coords 2 3.701522e-02 4.706458e-02
+node 449 coords 2 3.615316e-02 4.408869e-02
+latticemt2D 1 nodes 2 52 53 mat 1 dim 1 thick 1.000000e+00 width 4.197030e-03 gpCoords 2 4.400544e-02 2.585857e-02
+latticemt2D 2 nodes 2 53 261 mat 1 dim 1 thick 1.000000e+00 width 4.872086e-03 gpCoords 2 4.563698e-02 2.750299e-02
+latticemt2D 3 nodes 2 272 350 mat 1 dim 1 thick 1.000000e+00 width 6.919359e-03 gpCoords 2 5.754183e-02 2.480170e-02
+latticemt2D 4 nodes 2 272 273 mat 1 dim 1 thick 1.000000e+00 width 6.047143e-03 gpCoords 2 5.624586e-02 2.703385e-02
+latticemt2D 5 nodes 2 273 274 mat 1 dim 1 thick 1.000000e+00 width 5.094384e-03 gpCoords 2 5.386573e-02 2.794441e-02
+latticemt2D 6 nodes 2 262 265 mat 1 dim 1 thick 1.000000e+00 width 5.368322e-03 gpCoords 2 4.886170e-02 2.771384e-02
+latticemt2D 7 nodes 2 261 262 mat 1 dim 1 thick 1.000000e+00 width 5.024518e-03 gpCoords 2 4.786170e-02 2.757288e-02
+latticemt2D 8 nodes 2 264 265 mat 1 dim 1 thick 1.000000e+00 width 4.456849e-03 gpCoords 2 5.000000e-02 2.731985e-02
+latticemt2D 9 nodes 2 264 274 mat 1 dim 1 thick 1.000000e+00 width 4.348348e-03 gpCoords 2 5.200000e-02 2.720827e-02
+latticemt2D 10 nodes 2 317 319 mat 1 dim 1 thick 1.000000e+00 width 6.300653e-03 gpCoords 2 4.272810e-02 1.809878e-03
+latticemt2D 11 nodes 2 318 319 mat 1 dim 1 thick 1.000000e+00 width 6.891038e-03 gpCoords 2 4.252035e-02 2.771416e-03
+latticemt2D 12 nodes 2 318 347 mat 1 dim 1 thick 1.000000e+00 width 6.173787e-03 gpCoords 2 4.282107e-02 3.846154e-03
+latticemt2D 13 nodes 2 347 348 mat 1 dim 1 thick 1.000000e+00 width 6.011767e-03 gpCoords 2 4.298573e-02 5.769231e-03
+latticemt2D 14 nodes 2 250 251 mat 1 dim 1 thick 1.000000e+00 width 6.696645e-03 gpCoords 2 4.252806e-02 8.380492e-03
+latticemt2D 15 nodes 2 250 348 mat 1 dim 1 thick 1.000000e+00 width 6.446975e-03 gpCoords 2 4.264163e-02 7.418953e-03
+latticemt2D 16 nodes 2 251 345 mat 1 dim 1 thick 1.000000e+00 width 5.967854e-03 gpCoords 2 4.292546e-02 9.615385e-03
+latticemt2D 17 nodes 2 345 346 mat 1 dim 1 thick 1.000000e+00 width 5.812226e-03 gpCoords 2 4.308372e-02 1.153846e-02
+latticemt2D 18 nodes 2 247 248 mat 1 dim 1 thick 1.000000e+00 width 6.201442e-03 gpCoords 2 4.259293e-02 1.418643e-02
+latticemt2D 19 nodes 2 248 346 mat 1 dim 1 thick 1.000000e+00 width 6.272567e-03 gpCoords 2 4.270186e-02 1.322490e-02
+latticemt2D 20 nodes 2 171 247 mat 1 dim 1 thick 1.000000e+00 width 5.206495e-03 gpCoords 2 4.318297e-02 1.538462e-02
+latticemt2D 21 nodes 2 171 172 mat 1 dim 1 thick 1.000000e+00 width 4.811834e-03 gpCoords 2 4.359385e-02 1.730769e-02
+latticemt2D 22 nodes 2 64 170 mat 1 dim 1 thick 1.000000e+00 width 6.392789e-03 gpCoords 2 4.292165e-02 2.014417e-02
+latticemt2D 23 nodes 2 64 172 mat 1 dim 1 thick 1.000000e+00 width 5.157165e-03 gpCoords 2 4.325467e-02 1.918263e-02
+latticemt2D 24 nodes 2 169 170 mat 1 dim 1 thick 1.000000e+00 width 5.946259e-03 gpCoords 2 4.301750e-02 2.115385e-02
+latticemt2D 25 nodes 2 55 169 mat 1 dim 1 thick 1.000000e+00 width 6.102842e-03 gpCoords 2 4.301784e-02 2.242590e-02
+latticemt2D 26 nodes 2 52 55 mat 1 dim 1 thick 1.000000e+00 width 4.865106e-03 gpCoords 2 4.333934e-02 2.338744e-02
+latticemt2D 27 nodes 2 20 175 mat 1 dim 1 thick 1.000000e+00 width 6.300653e-03 gpCoords 2 5.730345e-02 1.908304e-03
+latticemt2D 28 nodes 2 175 176 mat 1 dim 1 thick 1.000000e+00 width 6.234716e-03 gpCoords 2 5.759067e-02 2.869843e-03
+latticemt2D 29 nodes 2 176 405 mat 1 dim 1 thick 1.000000e+00 width 4.983777e-03 gpCoords 2 5.695884e-02 3.846154e-03
+latticemt2D 30 nodes 2 405 406 mat 1 dim 1 thick 1.000000e+00 width 4.266245e-03 gpCoords 2 5.616818e-02 5.769231e-03
+latticemt2D 31 nodes 2 406 427 mat 1 dim 1 thick 1.000000e+00 width 4.354320e-03 gpCoords 2 5.625863e-02 7.692308e-03
+latticemt2D 32 nodes 2 427 428 mat 1 dim 1 thick 1.000000e+00 width 5.207285e-03 gpCoords 2 5.687523e-02 9.131995e-03
+latticemt2D 33 nodes 2 428 429 mat 1 dim 1 thick 1.000000e+00 width 6.225843e-03 gpCoords 2 5.709551e-02 1.009353e-02
+latticemt2D 34 nodes 2 409 429 mat 1 dim 1 thick 1.000000e+00 width 6.016941e-03 gpCoords 2 5.701213e-02 1.153846e-02
+latticemt2D 35 nodes 2 244 252 mat 1 dim 1 thick 1.000000e+00 width 5.201076e-03 gpCoords 2 5.679619e-02 1.361334e-02
+latticemt2D 36 nodes 2 252 409 mat 1 dim 1 thick 1.000000e+00 width 6.406441e-03 gpCoords 2 5.711565e-02 1.265180e-02
+latticemt2D 37 nodes 2 244 245 mat 1 dim 1 thick 1.000000e+00 width 4.725798e-03 gpCoords 2 5.636663e-02 1.538462e-02
+latticemt2D 38 nodes 2 245 267 mat 1 dim 1 thick 1.000000e+00 width 5.001158e-03 gpCoords 2 5.650392e-02 1.689065e-02
+latticemt2D 39 nodes 2 266 267 mat 1 dim 1 thick 1.000000e+00 width 4.842118e-03 gpCoords 2 5.646497e-02 1.785219e-02
+latticemt2D 40 nodes 2 266 411 mat 1 dim 1 thick 1.000000e+00 width 4.259359e-03 gpCoords 2 5.613998e-02 1.923077e-02
+latticemt2D 41 nodes 2 411 412 mat 1 dim 1 thick 1.000000e+00 width 4.498290e-03 gpCoords 2 5.638681e-02 2.115385e-02
+latticemt2D 42 nodes 2 349 412 mat 1 dim 1 thick 1.000000e+00 width 5.451930e-03 gpCoords 2 5.702757e-02 2.248533e-02
+latticemt2D 43 nodes 2 349 350 mat 1 dim 1 thick 1.000000e+00 width 6.652308e-03 gpCoords 2 5.732510e-02 2.344687e-02
+latticemt2D 44 nodes 2 156 232 mat 1 dim 1 thick 1.000000e+00 width 6.708810e-03 gpCoords 2 7.823887e-03 2.050944e-03
+latticemt2D 45 nodes 2 232 236 mat 1 dim 1 thick 1.000000e+00 width 4.195353e-03 gpCoords 2 4.823887e-03 2.104933e-03
+latticemt2D 46 nodes 2 94 210 mat 1 dim 1 thick 1.000000e+00 width 6.308161e-03 gpCoords 2 9.694815e-02 2.640485e-03
+latticemt2D 47 nodes 2 210 383 mat 1 dim 1 thick 1.000000e+00 width 5.782292e-03 gpCoords 2 9.452568e-02 2.864864e-03
+latticemt2D 48 nodes 2 383 384 mat 1 dim 1 thick 1.000000e+00 width 6.605417e-03 gpCoords 2 9.207753e-02 1.613936e-03
+latticemt2D 49 nodes 2 420 435 mat 1 dim 1 thick 1.000000e+00 width 6.939543e-03 gpCoords 2 4.955171e-02 4.655727e-02
+latticemt2D 50 nodes 2 419 420 mat 1 dim 1 thick 1.000000e+00 width 7.246848e-03 gpCoords 2 5.207709e-02 4.702300e-02
+latticemt2D 51 nodes 2 435 436 mat 1 dim 1 thick 1.000000e+00 width 7.436359e-03 gpCoords 2 4.747462e-02 4.727072e-02
+latticemt2D 52 nodes 2 235 236 mat 1 dim 1 thick 1.000000e+00 width 5.849645e-03 gpCoords 2 2.355774e-03 1.777062e-03
+latticemt2D 53 nodes 2 139 157 mat 1 dim 1 thick 1.000000e+00 width 6.838183e-03 gpCoords 2 1.302999e-02 3.294685e-03
+latticemt2D 54 nodes 2 156 157 mat 1 dim 1 thick 1.000000e+00 width 6.017283e-03 gpCoords 2 1.027999e-02 2.489610e-03
+latticemt2D 55 nodes 2 95 138 mat 1 dim 1 thick 1.000000e+00 width 5.414969e-03 gpCoords 2 1.615447e-02 2.763645e-03
+latticemt2D 56 nodes 2 138 139 mat 1 dim 1 thick 1.000000e+00 width 7.333353e-03 gpCoords 2 1.415447e-02 3.199106e-03
+latticemt2D 57 nodes 2 95 144 mat 1 dim 1 thick 1.000000e+00 width 5.827984e-03 gpCoords 2 1.904393e-02 2.777797e-03
+latticemt2D 58 nodes 2 144 145 mat 1 dim 1 thick 1.000000e+00 width 5.423164e-03 gpCoords 2 2.104393e-02 2.595230e-03
+latticemt2D 59 nodes 2 142 145 mat 1 dim 1 thick 1.000000e+00 width 4.452750e-03 gpCoords 2 2.400000e-02 2.263394e-03
+latticemt2D 60 nodes 2 99 100 mat 1 dim 1 thick 1.000000e+00 width 6.736516e-03 gpCoords 2 2.987127e-02 3.104892e-03
+latticemt2D 61 nodes 2 141 142 mat 1 dim 1 thick 1.000000e+00 width 6.499482e-03 gpCoords 2 2.608371e-02 2.721407e-03
+latticemt2D 62 nodes 2 99 141 mat 1 dim 1 thick 1.000000e+00 width 6.049036e-03 gpCoords 2 2.795498e-02 3.043770e-03
+latticemt2D 63 nodes 2 100 312 mat 1 dim 1 thick 1.000000e+00 width 4.297280e-03 gpCoords 2 3.200000e-02 2.265856e-03
+latticemt2D 64 nodes 2 313 314 mat 1 dim 1 thick 1.000000e+00 width 6.659799e-03 gpCoords 2 3.745653e-02 3.071429e-03
+latticemt2D 65 nodes 2 312 313 mat 1 dim 1 thick 1.000000e+00 width 4.853100e-03 gpCoords 2 3.545653e-02 2.538381e-03
+latticemt2D 66 nodes 2 314 319 mat 1 dim 1 thick 1.000000e+00 width 5.321015e-03 gpCoords 2 4.022810e-02 2.660296e-03
+latticemt2D 67 nodes 2 112 174 mat 1 dim 1 thick 1.000000e+00 width 4.739672e-03 gpCoords 2 6.045537e-02 2.427736e-03
+latticemt2D 68 nodes 2 174 175 mat 1 dim 1 thick 1.000000e+00 width 6.777515e-03 gpCoords 2 5.825882e-02 3.034955e-03
+latticemt2D 69 nodes 2 112 113 mat 1 dim 1 thick 1.000000e+00 width 4.609667e-03 gpCoords 2 6.329097e-02 2.205586e-03
+latticemt2D 70 nodes 2 113 114 mat 1 dim 1 thick 1.000000e+00 width 5.117112e-03 gpCoords 2 6.529097e-02 2.232263e-03
+latticemt2D 71 nodes 2 19 107 mat 1 dim 1 thick 1.000000e+00 width 5.602739e-03 gpCoords 2 6.969590e-02 2.231440e-03
+latticemt2D 72 nodes 2 107 114 mat 1 dim 1 thick 1.000000e+00 width 4.175137e-03 gpCoords 2 6.769590e-02 2.070920e-03
+latticemt2D 73 nodes 2 19 108 mat 1 dim 1 thick 1.000000e+00 width 4.626260e-03 gpCoords 2 7.200000e-02 2.344262e-03
+latticemt2D 74 nodes 2 108 109 mat 1 dim 1 thick 1.000000e+00 width 6.588920e-03 gpCoords 2 7.414935e-02 2.828956e-03
+latticemt2D 75 nodes 2 109 110 mat 1 dim 1 thick 1.000000e+00 width 6.292165e-03 gpCoords 2 7.604539e-02 3.168233e-03
+latticemt2D 76 nodes 2 110 111 mat 1 dim 1 thick 1.000000e+00 width 7.019230e-03 gpCoords 2 7.789604e-02 3.224980e-03
+latticemt2D 77 nodes 2 106 111 mat 1 dim 1 thick 1.000000e+00 width 4.669958e-03 gpCoords 2 8.000000e-02 2.453272e-03
+latticemt2D 78 nodes 2 106 389 mat 1 dim 1 thick 1.000000e+00 width 5.132975e-03 gpCoords 2 8.331637e-02 2.568989e-03
+latticemt2D 79 nodes 2 389 390 mat 1 dim 1 thick 1.000000e+00 width 6.670271e-03 gpCoords 2 8.531637e-02 3.067147e-03
+latticemt2D 80 nodes 2 384 391 mat 1 dim 1 thick 1.000000e+00 width 4.367738e-03 gpCoords 2 8.907371e-02 1.914249e-03
+latticemt2D 81 nodes 2 390 391 mat 1 dim 1 thick 1.000000e+00 width 6.433004e-03 gpCoords 2 8.632371e-02 2.888706e-03
+latticemt2D 82 nodes 2 178 280 mat 1 dim 1 thick 1.000000e+00 width 5.549135e-03 gpCoords 2 2.267639e-03 4.779858e-02
+latticemt2D 83 nodes 2 280 282 mat 1 dim 1 thick 1.000000e+00 width 4.955151e-03 gpCoords 2 4.267639e-03 4.752282e-02
+latticemt2D 84 nodes 2 24 281 mat 1 dim 1 thick 1.000000e+00 width 5.089642e-03 gpCoords 2 8.314313e-03 4.745308e-02
+latticemt2D 85 nodes 2 281 282 mat 1 dim 1 thick 1.000000e+00 width 6.363514e-03 gpCoords 2 6.314313e-03 4.727215e-02
+latticemt2D 86 nodes 2 24 25 mat 1 dim 1 thick 1.000000e+00 width 5.634575e-03 gpCoords 2 1.125982e-02 4.718933e-02
+latticemt2D 87 nodes 2 25 398 mat 1 dim 1 thick 1.000000e+00 width 7.091489e-03 gpCoords 2 1.308382e-02 4.658955e-02
+latticemt2D 88 nodes 2 398 399 mat 1 dim 1 thick 1.000000e+00 width 6.896723e-03 gpCoords 2 1.382399e-02 4.688106e-02
+latticemt2D 89 nodes 2 399 402 mat 1 dim 1 thick 1.000000e+00 width 4.771072e-03 gpCoords 2 1.600000e-02 4.754839e-02
+latticemt2D 90 nodes 2 392 401 mat 1 dim 1 thick 1.000000e+00 width 4.504106e-03 gpCoords 2 2.049551e-02 4.780155e-02
+latticemt2D 91 nodes 2 401 402 mat 1 dim 1 thick 1.000000e+00 width 5.473708e-03 gpCoords 2 1.849551e-02 4.771286e-02
+latticemt2D 92 nodes 2 392 394 mat 1 dim 1 thick 1.000000e+00 width 5.202649e-03 gpCoords 2 2.296387e-02 4.756939e-02
+latticemt2D 93 nodes 2 394 395 mat 1 dim 1 thick 1.000000e+00 width 6.045832e-03 gpCoords 2 2.496387e-02 4.708080e-02
+latticemt2D 94 nodes 2 439 440 mat 1 dim 1 thick 1.000000e+00 width 5.964246e-03 gpCoords 2 2.849706e-02 4.705283e-02
+latticemt2D 95 nodes 2 395 439 mat 1 dim 1 thick 1.000000e+00 width 6.781978e-03 gpCoords 2 2.649706e-02 4.695866e-02
+latticemt2D 96 nodes 2 446 447 mat 1 dim 1 thick 1.000000e+00 width 4.892004e-03 gpCoords 2 3.261918e-02 4.756643e-02
+latticemt2D 97 nodes 2 440 446 mat 1 dim 1 thick 1.000000e+00 width 6.365041e-03 gpCoords 2 3.061918e-02 4.713155e-02
+latticemt2D 98 nodes 2 447 448 mat 1 dim 1 thick 1.000000e+00 width 4.685230e-03 gpCoords 2 3.550761e-02 4.767262e-02
+latticemt2D 99 nodes 2 444 448 mat 1 dim 1 thick 1.000000e+00 width 6.180129e-03 gpCoords 2 3.750761e-02 4.729301e-02
+latticemt2D 100 nodes 2 432 442 mat 1 dim 1 thick 1.000000e+00 width 7.286706e-03 gpCoords 2 4.183851e-02 4.674994e-02
+latticemt2D 101 nodes 2 442 444 mat 1 dim 1 thick 1.000000e+00 width 5.778169e-03 gpCoords 2 3.983851e-02 4.706260e-02
+latticemt2D 102 nodes 2 432 436 mat 1 dim 1 thick 1.000000e+00 width 5.475164e-03 gpCoords 2 4.450000e-02 4.730789e-02
+latticemt2D 103 nodes 2 77 419 mat 1 dim 1 thick 1.000000e+00 width 5.878592e-03 gpCoords 2 5.550000e-02 4.709186e-02
+latticemt2D 104 nodes 2 77 206 mat 1 dim 1 thick 1.000000e+00 width 7.911081e-03 gpCoords 2 5.801244e-02 4.641846e-02
+latticemt2D 105 nodes 2 205 206 mat 1 dim 1 thick 1.000000e+00 width 4.894082e-03 gpCoords 2 6.001244e-02 4.731506e-02
+latticemt2D 106 nodes 2 203 205 mat 1 dim 1 thick 1.000000e+00 width 4.865518e-03 gpCoords 2 6.362328e-02 4.750701e-02
+latticemt2D 107 nodes 2 203 207 mat 1 dim 1 thick 1.000000e+00 width 6.115976e-03 gpCoords 2 6.562328e-02 4.721745e-02
+latticemt2D 108 nodes 2 207 208 mat 1 dim 1 thick 1.000000e+00 width 4.087876e-03 gpCoords 2 6.800000e-02 4.793467e-02
+latticemt2D 109 nodes 2 189 208 mat 1 dim 1 thick 1.000000e+00 width 5.293042e-03 gpCoords 2 7.096959e-02 4.740674e-02
+latticemt2D 110 nodes 2 189 417 mat 1 dim 1 thick 1.000000e+00 width 5.643445e-03 gpCoords 2 7.296959e-02 4.726254e-02
+latticemt2D 111 nodes 2 417 418 mat 1 dim 1 thick 1.000000e+00 width 4.810277e-03 gpCoords 2 7.600000e-02 4.755050e-02
+latticemt2D 112 nodes 2 363 365 mat 1 dim 1 thick 1.000000e+00 width 6.086041e-03 gpCoords 2 8.077791e-02 4.688737e-02
+latticemt2D 113 nodes 2 364 418 mat 1 dim 1 thick 1.000000e+00 width 6.813887e-03 gpCoords 2 7.846322e-02 4.668295e-02
+latticemt2D 114 nodes 2 364 365 mat 1 dim 1 thick 1.000000e+00 width 7.829153e-03 gpCoords 2 7.924114e-02 4.615495e-02
+latticemt2D 115 nodes 2 291 363 mat 1 dim 1 thick 1.000000e+00 width 5.184108e-03 gpCoords 2 8.338965e-02 4.746864e-02
+latticemt2D 116 nodes 2 185 291 mat 1 dim 1 thick 1.000000e+00 width 5.244621e-03 gpCoords 2 8.538965e-02 4.775521e-02
+latticemt2D 117 nodes 2 71 72 mat 1 dim 1 thick 1.000000e+00 width 6.012994e-03 gpCoords 2 8.987993e-02 4.764321e-02
+latticemt2D 118 nodes 2 71 185 mat 1 dim 1 thick 1.000000e+00 width 4.175505e-03 gpCoords 2 8.787993e-02 4.790022e-02
+latticemt2D 119 nodes 2 72 73 mat 1 dim 1 thick 1.000000e+00 width 5.001843e-03 gpCoords 2 9.200000e-02 4.748041e-02
+latticemt2D 120 nodes 2 69 70 mat 1 dim 1 thick 1.000000e+00 width 5.549135e-03 gpCoords 2 9.748879e-02 4.754526e-02
+latticemt2D 121 nodes 2 11 69 mat 1 dim 1 thick 1.000000e+00 width 5.883573e-03 gpCoords 2 9.554206e-02 4.707514e-02
+latticemt2D 122 nodes 2 11 73 mat 1 dim 1 thick 1.000000e+00 width 6.773536e-03 gpCoords 2 9.405327e-02 4.718612e-02
+latticemt2D 123 nodes 2 233 235 mat 1 dim 1 thick 1.000000e+00 width 4.170139e-03 gpCoords 2 2.089280e-03 3.846154e-03
+latticemt2D 124 nodes 2 39 234 mat 1 dim 1 thick 1.000000e+00 width 5.556634e-03 gpCoords 2 2.748618e-03 8.205291e-03
+latticemt2D 125 nodes 2 233 234 mat 1 dim 1 thick 1.000000e+00 width 5.490681e-03 gpCoords 2 2.408480e-03 6.282214e-03
+latticemt2D 126 nodes 2 34 35 mat 1 dim 1 thick 1.000000e+00 width 4.489809e-03 gpCoords 2 2.324121e-03 1.189133e-02
+latticemt2D 127 nodes 2 34 39 mat 1 dim 1 thick 1.000000e+00 width 6.527282e-03 gpCoords 2 2.866805e-03 9.968252e-03
+latticemt2D 128 nodes 2 35 42 mat 1 dim 1 thick 1.000000e+00 width 4.457519e-03 gpCoords 2 2.317405e-03 1.507991e-02
+latticemt2D 129 nodes 2 40 42 mat 1 dim 1 thick 1.000000e+00 width 6.185019e-03 gpCoords 2 2.763660e-03 1.700299e-02
+latticemt2D 130 nodes 2 40 44 mat 1 dim 1 thick 1.000000e+00 width 4.376990e-03 gpCoords 2 2.206594e-03 1.923077e-02
+latticemt2D 131 nodes 2 8 45 mat 1 dim 1 thick 1.000000e+00 width 5.769941e-03 gpCoords 2 2.846537e-03 2.411730e-02
+latticemt2D 132 nodes 2 44 45 mat 1 dim 1 thick 1.000000e+00 width 5.444946e-03 gpCoords 2 2.746439e-03 2.219422e-02
+latticemt2D 133 nodes 2 8 9 mat 1 dim 1 thick 1.000000e+00 width 4.561830e-03 gpCoords 2 2.285877e-03 2.692308e-02
+latticemt2D 134 nodes 2 9 26 mat 1 dim 1 thick 1.000000e+00 width 6.157448e-03 gpCoords 2 2.825193e-03 2.929886e-02
+latticemt2D 135 nodes 2 26 27 mat 1 dim 1 thick 1.000000e+00 width 6.025136e-03 gpCoords 2 2.979177e-03 3.122194e-02
+latticemt2D 136 nodes 2 23 28 mat 1 dim 1 thick 1.000000e+00 width 6.848505e-03 gpCoords 2 3.315978e-03 3.548387e-02
+latticemt2D 137 nodes 2 27 28 mat 1 dim 1 thick 1.000000e+00 width 6.562994e-03 gpCoords 2 3.131036e-03 3.356080e-02
+latticemt2D 138 nodes 2 119 120 mat 1 dim 1 thick 1.000000e+00 width 6.506830e-03 gpCoords 2 3.193204e-03 3.919526e-02
+latticemt2D 139 nodes 2 23 119 mat 1 dim 1 thick 1.000000e+00 width 7.119517e-03 gpCoords 2 3.355249e-03 3.727218e-02
+latticemt2D 140 nodes 2 120 277 mat 1 dim 1 thick 1.000000e+00 width 6.342837e-03 gpCoords 2 2.976568e-03 4.116454e-02
+latticemt2D 141 nodes 2 277 278 mat 1 dim 1 thick 1.000000e+00 width 4.852971e-03 gpCoords 2 2.405768e-03 4.308762e-02
+latticemt2D 142 nodes 2 278 280 mat 1 dim 1 thick 1.000000e+00 width 4.158020e-03 gpCoords 2 2.080122e-03 4.587550e-02
+latticemt2D 143 nodes 2 210 310 mat 1 dim 1 thick 1.000000e+00 width 6.704792e-03 gpCoords 2 9.672132e-02 4.563562e-03
+latticemt2D 144 nodes 2 309 311 mat 1 dim 1 thick 1.000000e+00 width 4.871967e-03 gpCoords 2 9.749537e-02 8.309614e-03
+latticemt2D 145 nodes 2 310 311 mat 1 dim 1 thick 1.000000e+00 width 6.806069e-03 gpCoords 2 9.684601e-02 6.386537e-03
+latticemt2D 146 nodes 2 209 309 mat 1 dim 1 thick 1.000000e+00 width 4.253069e-03 gpCoords 2 9.778517e-02 1.153846e-02
+latticemt2D 147 nodes 2 86 92 mat 1 dim 1 thick 1.000000e+00 width 4.469770e-03 gpCoords 2 9.764201e-02 1.550780e-02
+latticemt2D 148 nodes 2 92 209 mat 1 dim 1 thick 1.000000e+00 width 6.482818e-03 gpCoords 2 9.707338e-02 1.358473e-02
+latticemt2D 149 nodes 2 86 87 mat 1 dim 1 thick 1.000000e+00 width 4.689734e-03 gpCoords 2 9.744383e-02 1.905244e-02
+latticemt2D 150 nodes 2 87 183 mat 1 dim 1 thick 1.000000e+00 width 7.155254e-03 gpCoords 2 9.670004e-02 2.097551e-02
+latticemt2D 151 nodes 2 183 184 mat 1 dim 1 thick 1.000000e+00 width 5.239260e-03 gpCoords 2 9.731321e-02 2.307692e-02
+latticemt2D 152 nodes 2 67 184 mat 1 dim 1 thick 1.000000e+00 width 5.769561e-03 gpCoords 2 9.711126e-02 2.621935e-02
+latticemt2D 153 nodes 2 67 68 mat 1 dim 1 thick 1.000000e+00 width 5.899608e-03 gpCoords 2 9.711614e-02 2.814242e-02
+latticemt2D 154 nodes 2 68 286 mat 1 dim 1 thick 1.000000e+00 width 4.351224e-03 gpCoords 2 9.782326e-02 3.076923e-02
+latticemt2D 155 nodes 2 286 287 mat 1 dim 1 thick 1.000000e+00 width 5.713732e-03 gpCoords 2 9.713211e-02 3.357620e-02
+latticemt2D 156 nodes 2 287 288 mat 1 dim 1 thick 1.000000e+00 width 7.240507e-03 gpCoords 2 9.631899e-02 3.511917e-02
+latticemt2D 157 nodes 2 288 289 mat 1 dim 1 thick 1.000000e+00 width 6.797900e-03 gpCoords 2 9.666786e-02 3.615835e-02
+latticemt2D 158 nodes 2 285 289 mat 1 dim 1 thick 1.000000e+00 width 4.765379e-03 gpCoords 2 9.754707e-02 3.846154e-02
+latticemt2D 159 nodes 2 283 284 mat 1 dim 1 thick 1.000000e+00 width 4.622813e-03 gpCoords 2 9.777152e-02 4.297453e-02
+latticemt2D 160 nodes 2 284 285 mat 1 dim 1 thick 1.000000e+00 width 5.365821e-03 gpCoords 2 9.762650e-02 4.105146e-02
+latticemt2D 161 nodes 2 69 283 mat 1 dim 1 thick 1.000000e+00 width 4.712582e-03 gpCoords 2 9.764254e-02 4.562219e-02
+latticemt2D 162 nodes 2 437 445 mat 1 dim 1 thick 1.000000e+00 width 6.595507e-03 gpCoords 2 3.199889e-02 4.187880e-02
+latticemt2D 163 nodes 2 422 437 mat 1 dim 1 thick 1.000000e+00 width 7.683630e-03 gpCoords 2 3.195043e-02 4.017672e-02
+latticemt2D 164 nodes 2 443 449 mat 1 dim 1 thick 1.000000e+00 width 4.105804e-03 gpCoords 2 3.701269e-02 4.309194e-02
+latticemt2D 165 nodes 2 371 443 mat 1 dim 1 thick 1.000000e+00 width 4.286134e-03 gpCoords 2 3.726795e-02 4.025181e-02
+latticemt2D 166 nodes 2 421 422 mat 1 dim 1 thick 1.000000e+00 width 6.756029e-03 gpCoords 2 3.371422e-02 3.882196e-02
+latticemt2D 167 nodes 2 371 421 mat 1 dim 1 thick 1.000000e+00 width 6.911975e-03 gpCoords 2 3.588522e-02 3.827308e-02
+latticemt2D 168 nodes 2 445 449 mat 1 dim 1 thick 1.000000e+00 width 4.133993e-03 gpCoords 2 3.428588e-02 4.349950e-02
+latticemt2D 169 nodes 2 4 305 mat 1 dim 1 thick 1.000000e+00 width 4.124617e-03 gpCoords 2 5.696300e-02 3.491467e-02
+latticemt2D 170 nodes 2 2 4 mat 1 dim 1 thick 1.000000e+00 width 4.110212e-03 gpCoords 2 5.433476e-02 3.437765e-02
+latticemt2D 171 nodes 2 2 78 mat 1 dim 1 thick 1.000000e+00 width 4.850749e-03 gpCoords 2 5.289095e-02 3.627271e-02
+latticemt2D 172 nodes 2 78 304 mat 1 dim 1 thick 1.000000e+00 width 4.238614e-03 gpCoords 2 5.476120e-02 3.825409e-02
+latticemt2D 173 nodes 2 304 305 mat 1 dim 1 thick 1.000000e+00 width 4.217674e-03 gpCoords 2 5.709704e-02 3.743720e-02
+latticemt2D 174 nodes 2 255 428 mat 1 dim 1 thick 1.000000e+00 width 5.045282e-03 gpCoords 2 5.929669e-02 8.813238e-03
+latticemt2D 175 nodes 2 214 255 mat 1 dim 1 thick 1.000000e+00 width 6.666969e-03 gpCoords 2 6.139859e-02 7.771816e-03
+latticemt2D 176 nodes 2 174 214 mat 1 dim 1 thick 1.000000e+00 width 4.580095e-03 gpCoords 2 6.017044e-02 5.371070e-03
+latticemt2D 177 nodes 2 333 382 mat 1 dim 1 thick 1.000000e+00 width 4.123774e-03 gpCoords 2 9.220761e-02 7.292803e-03
+latticemt2D 178 nodes 2 311 333 mat 1 dim 1 thick 1.000000e+00 width 5.324794e-03 gpCoords 2 9.493646e-02 7.862422e-03
+latticemt2D 179 nodes 2 382 383 mat 1 dim 1 thick 1.000000e+00 width 4.100137e-03 gpCoords 2 9.192151e-02 4.118220e-03
+latticemt2D 180 nodes 2 50 51 mat 1 dim 1 thick 1.000000e+00 width 5.482807e-03 gpCoords 2 4.805087e-02 3.617766e-02
+latticemt2D 181 nodes 2 51 80 mat 1 dim 1 thick 1.000000e+00 width 5.761560e-03 gpCoords 2 4.789654e-02 3.831542e-02
+latticemt2D 182 nodes 2 1 2 mat 1 dim 1 thick 1.000000e+00 width 6.071379e-03 gpCoords 2 5.253016e-02 3.487015e-02
+latticemt2D 183 nodes 2 1 50 mat 1 dim 1 thick 1.000000e+00 width 4.182941e-03 gpCoords 2 5.047635e-02 3.513948e-02
+latticemt2D 184 nodes 2 78 81 mat 1 dim 1 thick 1.000000e+00 width 4.310112e-03 gpCoords 2 5.188948e-02 3.903612e-02
+latticemt2D 185 nodes 2 80 81 mat 1 dim 1 thick 1.000000e+00 width 6.170735e-03 gpCoords 2 4.938895e-02 4.008930e-02
+latticemt2D 186 nodes 2 154 219 mat 1 dim 1 thick 1.000000e+00 width 4.380006e-03 gpCoords 2 2.064238e-02 1.385935e-02
+latticemt2D 187 nodes 2 37 154 mat 1 dim 1 thick 1.000000e+00 width 4.150975e-03 gpCoords 2 2.004127e-02 1.108064e-02
+latticemt2D 188 nodes 2 135 218 mat 1 dim 1 thick 1.000000e+00 width 7.164248e-03 gpCoords 2 1.539796e-02 1.405956e-02
+latticemt2D 189 nodes 2 37 135 mat 1 dim 1 thick 1.000000e+00 width 4.172845e-03 gpCoords 2 1.679180e-02 1.174350e-02
+latticemt2D 190 nodes 2 218 219 mat 1 dim 1 thick 1.000000e+00 width 5.480414e-03 gpCoords 2 1.759715e-02 1.529063e-02
+latticemt2D 191 nodes 2 398 400 mat 1 dim 1 thick 1.000000e+00 width 4.537173e-03 gpCoords 2 1.508025e-02 4.431405e-02
+latticemt2D 192 nodes 2 400 403 mat 1 dim 1 thick 1.000000e+00 width 6.735644e-03 gpCoords 2 1.752399e-02 4.201109e-02
+latticemt2D 193 nodes 2 401 404 mat 1 dim 1 thick 1.000000e+00 width 4.062464e-03 gpCoords 2 1.915599e-02 4.508459e-02
+latticemt2D 194 nodes 2 403 404 mat 1 dim 1 thick 1.000000e+00 width 6.825779e-03 gpCoords 2 1.892821e-02 4.242381e-02
+latticemt2D 195 nodes 2 153 225 mat 1 dim 1 thick 1.000000e+00 width 5.466257e-03 gpCoords 2 2.527159e-02 1.538252e-02
+latticemt2D 196 nodes 2 149 153 mat 1 dim 1 thick 1.000000e+00 width 6.373006e-03 gpCoords 2 2.669355e-02 1.308705e-02
+latticemt2D 197 nodes 2 57 227 mat 1 dim 1 thick 1.000000e+00 width 7.145777e-03 gpCoords 2 2.954776e-02 1.922844e-02
+latticemt2D 198 nodes 2 16 57 mat 1 dim 1 thick 1.000000e+00 width 4.342986e-03 gpCoords 2 3.008771e-02 1.628432e-02
+latticemt2D 199 nodes 2 16 149 mat 1 dim 1 thick 1.000000e+00 width 6.304401e-03 gpCoords 2 2.898065e-02 1.306244e-02
+latticemt2D 200 nodes 2 225 227 mat 1 dim 1 thick 1.000000e+00 width 4.846491e-03 gpCoords 2 2.701873e-02 1.830203e-02
+latticemt2D 201 nodes 2 109 339 mat 1 dim 1 thick 1.000000e+00 width 4.429156e-03 gpCoords 2 7.350567e-02 4.901868e-03
+latticemt2D 202 nodes 2 107 337 mat 1 dim 1 thick 1.000000e+00 width 4.183115e-03 gpCoords 2 6.913823e-02 4.601495e-03
+latticemt2D 203 nodes 2 337 339 mat 1 dim 1 thick 1.000000e+00 width 4.459274e-03 gpCoords 2 7.079864e-02 6.787229e-03
+latticemt2D 204 nodes 2 121 124 mat 1 dim 1 thick 1.000000e+00 width 5.063459e-03 gpCoords 2 1.197789e-02 3.751837e-02
+latticemt2D 205 nodes 2 121 122 mat 1 dim 1 thick 1.000000e+00 width 5.895993e-03 gpCoords 2 1.511194e-02 3.700358e-02
+latticemt2D 206 nodes 2 122 126 mat 1 dim 1 thick 1.000000e+00 width 6.671590e-03 gpCoords 2 1.614373e-02 3.421664e-02
+latticemt2D 207 nodes 2 123 124 mat 1 dim 1 thick 1.000000e+00 width 6.204636e-03 gpCoords 2 9.722874e-03 3.530277e-02
+latticemt2D 208 nodes 2 123 125 mat 1 dim 1 thick 1.000000e+00 width 4.755189e-03 gpCoords 2 1.213804e-02 3.283117e-02
+latticemt2D 209 nodes 2 125 126 mat 1 dim 1 thick 1.000000e+00 width 7.729221e-03 gpCoords 2 1.542483e-02 3.225983e-02
+latticemt2D 210 nodes 2 327 330 mat 1 dim 1 thick 1.000000e+00 width 4.247111e-03 gpCoords 2 7.742034e-02 9.406106e-03
+latticemt2D 211 nodes 2 327 328 mat 1 dim 1 thick 1.000000e+00 width 4.516167e-03 gpCoords 2 7.990842e-02 1.063225e-02
+latticemt2D 212 nodes 2 329 330 mat 1 dim 1 thick 1.000000e+00 width 4.452071e-03 gpCoords 2 7.759239e-02 6.768561e-03
+latticemt2D 213 nodes 2 328 387 mat 1 dim 1 thick 1.000000e+00 width 6.615262e-03 gpCoords 2 8.243891e-02 9.426342e-03
+latticemt2D 214 nodes 2 329 386 mat 1 dim 1 thick 1.000000e+00 width 4.470365e-03 gpCoords 2 8.068694e-02 6.586748e-03
+latticemt2D 215 nodes 2 386 387 mat 1 dim 1 thick 1.000000e+00 width 7.431893e-03 gpCoords 2 8.304538e-02 8.018388e-03
+latticemt2D 216 nodes 2 223 224 mat 1 dim 1 thick 1.000000e+00 width 5.373608e-03 gpCoords 2 2.977250e-02 2.615010e-02
+latticemt2D 217 nodes 2 165 224 mat 1 dim 1 thick 1.000000e+00 width 6.785920e-03 gpCoords 2 2.910059e-02 2.773938e-02
+latticemt2D 218 nodes 2 163 240 mat 1 dim 1 thick 1.000000e+00 width 4.823788e-03 gpCoords 2 3.440463e-02 2.833339e-02
+latticemt2D 219 nodes 2 163 165 mat 1 dim 1 thick 1.000000e+00 width 4.120916e-03 gpCoords 2 3.134504e-02 2.871134e-02
+latticemt2D 220 nodes 2 223 241 mat 1 dim 1 thick 1.000000e+00 width 4.798027e-03 gpCoords 2 3.248500e-02 2.445882e-02
+latticemt2D 221 nodes 2 240 241 mat 1 dim 1 thick 1.000000e+00 width 5.349504e-03 gpCoords 2 3.487268e-02 2.567015e-02
+latticemt2D 222 nodes 2 179 181 mat 1 dim 1 thick 1.000000e+00 width 4.136000e-03 gpCoords 2 9.170295e-02 3.574599e-02
+latticemt2D 223 nodes 2 181 188 mat 1 dim 1 thick 1.000000e+00 width 6.511047e-03 gpCoords 2 8.842116e-02 3.604698e-02
+latticemt2D 224 nodes 2 13 186 mat 1 dim 1 thick 1.000000e+00 width 7.266903e-03 gpCoords 2 9.122732e-02 4.140501e-02
+latticemt2D 225 nodes 2 13 179 mat 1 dim 1 thick 1.000000e+00 width 4.566641e-03 gpCoords 2 9.310858e-02 3.907060e-02
+latticemt2D 226 nodes 2 186 188 mat 1 dim 1 thick 1.000000e+00 width 5.522358e-03 gpCoords 2 8.895065e-02 3.939672e-02
+latticemt2D 227 nodes 2 179 288 mat 1 dim 1 thick 1.000000e+00 width 6.197606e-03 gpCoords 2 9.518637e-02 3.626978e-02
+latticemt2D 228 nodes 2 180 182 mat 1 dim 1 thick 1.000000e+00 width 5.038924e-03 gpCoords 2 9.098124e-02 3.212185e-02
+latticemt2D 229 nodes 2 181 182 mat 1 dim 1 thick 1.000000e+00 width 7.038667e-03 gpCoords 2 8.926870e-02 3.397496e-02
+latticemt2D 230 nodes 2 180 287 mat 1 dim 1 thick 1.000000e+00 width 4.182408e-03 gpCoords 2 9.454810e-02 3.274227e-02
+latticemt2D 231 nodes 2 117 118 mat 1 dim 1 thick 1.000000e+00 width 4.716075e-03 gpCoords 2 8.461148e-03 4.031828e-02
+latticemt2D 232 nodes 2 117 279 mat 1 dim 1 thick 1.000000e+00 width 5.418618e-03 gpCoords 2 7.727167e-03 4.284346e-02
+latticemt2D 233 nodes 2 118 119 mat 1 dim 1 thick 1.000000e+00 width 4.647625e-03 gpCoords 2 5.866747e-03 3.828488e-02
+latticemt2D 234 nodes 2 277 279 mat 1 dim 1 thick 1.000000e+00 width 4.870580e-03 gpCoords 2 4.916129e-03 4.277934e-02
+latticemt2D 235 nodes 2 253 254 mat 1 dim 1 thick 1.000000e+00 width 4.333364e-03 gpCoords 2 6.208350e-02 1.187050e-02
+latticemt2D 236 nodes 2 254 335 mat 1 dim 1 thick 1.000000e+00 width 5.074997e-03 gpCoords 2 6.508128e-02 9.977733e-03
+latticemt2D 237 nodes 2 253 357 mat 1 dim 1 thick 1.000000e+00 width 6.343358e-03 gpCoords 2 6.191430e-02 1.482358e-02
+latticemt2D 238 nodes 2 334 335 mat 1 dim 1 thick 1.000000e+00 width 7.776606e-03 gpCoords 2 6.762052e-02 1.060763e-02
+latticemt2D 239 nodes 2 276 358 mat 1 dim 1 thick 1.000000e+00 width 5.728776e-03 gpCoords 2 6.493546e-02 1.520514e-02
+latticemt2D 240 nodes 2 276 334 mat 1 dim 1 thick 1.000000e+00 width 5.829506e-03 gpCoords 2 6.714979e-02 1.275486e-02
+latticemt2D 241 nodes 2 357 358 mat 1 dim 1 thick 1.000000e+00 width 7.032659e-03 gpCoords 2 6.285922e-02 1.571340e-02
+latticemt2D 242 nodes 2 143 148 mat 1 dim 1 thick 1.000000e+00 width 5.321817e-03 gpCoords 2 2.199485e-02 6.753693e-03
+latticemt2D 243 nodes 2 36 143 mat 1 dim 1 thick 1.000000e+00 width 5.077256e-03 gpCoords 2 1.928359e-02 6.972187e-03
+latticemt2D 244 nodes 2 36 37 mat 1 dim 1 thick 1.000000e+00 width 4.908080e-03 gpCoords 2 1.823994e-02 9.093401e-03
+latticemt2D 245 nodes 2 148 155 mat 1 dim 1 thick 1.000000e+00 width 4.472952e-03 gpCoords 2 2.287555e-02 9.671417e-03
+latticemt2D 246 nodes 2 154 155 mat 1 dim 1 thick 1.000000e+00 width 6.077944e-03 gpCoords 2 2.196562e-02 1.187715e-02
+latticemt2D 247 nodes 2 372 397 mat 1 dim 1 thick 1.000000e+00 width 4.509760e-03 gpCoords 2 2.640206e-02 3.829604e-02
+latticemt2D 248 nodes 2 372 426 mat 1 dim 1 thick 1.000000e+00 width 4.614890e-03 gpCoords 2 2.827643e-02 3.573134e-02
+latticemt2D 249 nodes 2 397 438 mat 1 dim 1 thick 1.000000e+00 width 7.199295e-03 gpCoords 2 2.658511e-02 4.086305e-02
+latticemt2D 250 nodes 2 422 426 mat 1 dim 1 thick 1.000000e+00 width 4.415270e-03 gpCoords 2 3.101155e-02 3.741242e-02
+latticemt2D 251 nodes 2 437 438 mat 1 dim 1 thick 1.000000e+00 width 6.237487e-03 gpCoords 2 2.939835e-02 4.106265e-02
+latticemt2D 252 nodes 2 51 162 mat 1 dim 1 thick 1.000000e+00 width 4.113127e-03 gpCoords 2 4.559378e-02 3.640870e-02
+latticemt2D 253 nodes 2 162 307 mat 1 dim 1 thick 1.000000e+00 width 4.893955e-03 gpCoords 2 4.278094e-02 3.726736e-02
+latticemt2D 254 nodes 2 80 433 mat 1 dim 1 thick 1.000000e+00 width 6.169084e-03 gpCoords 2 4.709991e-02 4.061623e-02
+latticemt2D 255 nodes 2 307 434 mat 1 dim 1 thick 1.000000e+00 width 5.764635e-03 gpCoords 2 4.251269e-02 4.003828e-02
+latticemt2D 256 nodes 2 433 434 mat 1 dim 1 thick 1.000000e+00 width 6.224659e-03 gpCoords 2 4.452891e-02 4.148042e-02
+latticemt2D 257 nodes 2 56 57 mat 1 dim 1 thick 1.000000e+00 width 5.972025e-03 gpCoords 2 3.170977e-02 1.920566e-02
+latticemt2D 258 nodes 2 56 243 mat 1 dim 1 thick 1.000000e+00 width 6.129028e-03 gpCoords 2 3.437122e-02 2.094165e-02
+latticemt2D 259 nodes 2 227 228 mat 1 dim 1 thick 1.000000e+00 width 6.240723e-03 gpCoords 2 2.888360e-02 2.029589e-02
+latticemt2D 260 nodes 2 223 228 mat 1 dim 1 thick 1.000000e+00 width 4.200935e-03 gpCoords 2 2.959067e-02 2.297673e-02
+latticemt2D 261 nodes 2 241 243 mat 1 dim 1 thick 1.000000e+00 width 6.820805e-03 gpCoords 2 3.483708e-02 2.327973e-02
+latticemt2D 262 nodes 2 438 439 mat 1 dim 1 thick 1.000000e+00 width 4.566581e-03 gpCoords 2 2.710581e-02 4.398639e-02
+latticemt2D 263 nodes 2 445 446 mat 1 dim 1 thick 1.000000e+00 width 5.078628e-03 gpCoords 2 3.182847e-02 4.488125e-02
+latticemt2D 264 nodes 2 368 369 mat 1 dim 1 thick 1.000000e+00 width 5.545529e-03 gpCoords 2 5.730006e-02 4.385744e-02
+latticemt2D 265 nodes 2 79 369 mat 1 dim 1 thick 1.000000e+00 width 4.226272e-03 gpCoords 2 5.420239e-02 4.222353e-02
+latticemt2D 266 nodes 2 79 420 mat 1 dim 1 thick 1.000000e+00 width 5.745797e-03 gpCoords 2 5.153508e-02 4.445126e-02
+latticemt2D 267 nodes 2 206 368 mat 1 dim 1 thick 1.000000e+00 width 7.638292e-03 gpCoords 2 5.806810e-02 4.614199e-02
+latticemt2D 268 nodes 2 122 127 mat 1 dim 1 thick 1.000000e+00 width 4.182368e-03 gpCoords 2 1.822125e-02 3.661969e-02
+latticemt2D 269 nodes 2 22 121 mat 1 dim 1 thick 1.000000e+00 width 6.907719e-03 gpCoords 2 1.413985e-02 3.906352e-02
+latticemt2D 270 nodes 2 22 400 mat 1 dim 1 thick 1.000000e+00 width 6.172752e-03 gpCoords 2 1.537593e-02 4.080922e-02
+latticemt2D 271 nodes 2 127 403 mat 1 dim 1 thick 1.000000e+00 width 4.309847e-03 gpCoords 2 1.939721e-02 3.988150e-02
+latticemt2D 272 nodes 2 150 152 mat 1 dim 1 thick 1.000000e+00 width 4.669125e-03 gpCoords 2 1.913196e-02 2.732608e-02
+latticemt2D 273 nodes 2 150 151 mat 1 dim 1 thick 1.000000e+00 width 5.192429e-03 gpCoords 2 1.823180e-02 2.472915e-02
+latticemt2D 274 nodes 2 151 229 mat 1 dim 1 thick 1.000000e+00 width 4.576865e-03 gpCoords 2 2.126199e-02 2.330207e-02
+latticemt2D 275 nodes 2 152 166 mat 1 dim 1 thick 1.000000e+00 width 5.492740e-03 gpCoords 2 2.204435e-02 2.806802e-02
+latticemt2D 276 nodes 2 166 222 mat 1 dim 1 thick 1.000000e+00 width 6.949125e-03 gpCoords 2 2.397578e-02 2.698034e-02
+latticemt2D 277 nodes 2 222 230 mat 1 dim 1 thick 1.000000e+00 width 7.280440e-03 gpCoords 2 2.429224e-02 2.499631e-02
+latticemt2D 278 nodes 2 229 230 mat 1 dim 1 thick 1.000000e+00 width 7.210104e-03 gpCoords 2 2.384946e-02 2.358140e-02
+latticemt2D 279 nodes 2 1 257 mat 1 dim 1 thick 1.000000e+00 width 4.259120e-03 gpCoords 2 5.214740e-02 3.321452e-02
+latticemt2D 280 nodes 2 49 50 mat 1 dim 1 thick 1.000000e+00 width 4.213482e-03 gpCoords 2 4.798897e-02 3.387157e-02
+latticemt2D 281 nodes 2 49 258 mat 1 dim 1 thick 1.000000e+00 width 4.671139e-03 gpCoords 2 4.827587e-02 3.148220e-02
+latticemt2D 282 nodes 2 257 258 mat 1 dim 1 thick 1.000000e+00 width 4.032955e-03 gpCoords 2 5.044890e-02 3.114312e-02
+latticemt2D 283 nodes 2 61 62 mat 1 dim 1 thick 1.000000e+00 width 6.444044e-03 gpCoords 2 3.524288e-02 1.155577e-02
+latticemt2D 284 nodes 2 62 97 mat 1 dim 1 thick 1.000000e+00 width 4.701184e-03 gpCoords 2 3.258864e-02 9.536684e-03
+latticemt2D 285 nodes 2 17 96 mat 1 dim 1 thick 1.000000e+00 width 6.163312e-03 gpCoords 2 3.733303e-02 6.856575e-03
+latticemt2D 286 nodes 2 17 61 mat 1 dim 1 thick 1.000000e+00 width 6.192100e-03 gpCoords 2 3.745810e-02 9.628825e-03
+latticemt2D 287 nodes 2 96 97 mat 1 dim 1 thick 1.000000e+00 width 4.460568e-03 gpCoords 2 3.401328e-02 6.208776e-03
+latticemt2D 288 nodes 2 41 43 mat 1 dim 1 thick 1.000000e+00 width 4.054333e-03 gpCoords 2 5.419954e-03 1.804251e-02
+latticemt2D 289 nodes 2 43 136 mat 1 dim 1 thick 1.000000e+00 width 4.529184e-03 gpCoords 2 8.590479e-03 1.839222e-02
+latticemt2D 290 nodes 2 32 41 mat 1 dim 1 thick 1.000000e+00 width 4.379092e-03 gpCoords 2 5.338775e-03 1.527795e-02
+latticemt2D 291 nodes 2 32 133 mat 1 dim 1 thick 1.000000e+00 width 5.505681e-03 gpCoords 2 7.825744e-03 1.408434e-02
+latticemt2D 292 nodes 2 133 136 mat 1 dim 1 thick 1.000000e+00 width 5.286744e-03 gpCoords 2 9.485963e-03 1.581811e-02
+latticemt2D 293 nodes 2 103 194 mat 1 dim 1 thick 1.000000e+00 width 4.798501e-03 gpCoords 2 7.319349e-02 2.836226e-02
+latticemt2D 294 nodes 2 18 103 mat 1 dim 1 thick 1.000000e+00 width 4.238199e-03 gpCoords 2 7.281866e-02 2.526547e-02
+latticemt2D 295 nodes 2 18 84 mat 1 dim 1 thick 1.000000e+00 width 6.200358e-03 gpCoords 2 7.424236e-02 2.326158e-02
+latticemt2D 296 nodes 2 84 85 mat 1 dim 1 thick 1.000000e+00 width 4.580255e-03 gpCoords 2 7.608012e-02 2.440958e-02
+latticemt2D 297 nodes 2 85 193 mat 1 dim 1 thick 1.000000e+00 width 4.351615e-03 gpCoords 2 7.670131e-02 2.720354e-02
+latticemt2D 298 nodes 2 193 194 mat 1 dim 1 thick 1.000000e+00 width 5.499322e-03 gpCoords 2 7.523839e-02 2.915234e-02
+latticemt2D 299 nodes 2 372 374 mat 1 dim 1 thick 1.000000e+00 width 4.704204e-03 gpCoords 2 2.545326e-02 3.489720e-02
+latticemt2D 300 nodes 2 373 375 mat 1 dim 1 thick 1.000000e+00 width 5.303557e-03 gpCoords 2 2.206202e-02 3.569615e-02
+latticemt2D 301 nodes 2 374 375 mat 1 dim 1 thick 1.000000e+00 width 6.599085e-03 gpCoords 2 2.339874e-02 3.390192e-02
+latticemt2D 302 nodes 2 373 396 mat 1 dim 1 thick 1.000000e+00 width 4.189108e-03 gpCoords 2 2.323286e-02 3.887256e-02
+latticemt2D 303 nodes 2 396 397 mat 1 dim 1 thick 1.000000e+00 width 6.956453e-03 gpCoords 2 2.551838e-02 4.047716e-02
+latticemt2D 304 nodes 2 5 66 mat 1 dim 1 thick 1.000000e+00 width 7.265981e-03 gpCoords 2 9.270264e-02 2.715371e-02
+latticemt2D 305 nodes 2 3 5 mat 1 dim 1 thick 1.000000e+00 width 6.286813e-03 gpCoords 2 9.188872e-02 2.567603e-02
+latticemt2D 306 nodes 2 66 67 mat 1 dim 1 thick 1.000000e+00 width 6.711573e-03 gpCoords 2 9.494671e-02 2.761227e-02
+latticemt2D 307 nodes 2 3 88 mat 1 dim 1 thick 1.000000e+00 width 4.002238e-03 gpCoords 2 9.354463e-02 2.273187e-02
+latticemt2D 308 nodes 2 87 88 mat 1 dim 1 thick 1.000000e+00 width 7.258872e-03 gpCoords 2 9.590993e-02 2.071522e-02
+latticemt2D 309 nodes 2 21 25 mat 1 dim 1 thick 1.000000e+00 width 4.450276e-03 gpCoords 2 1.148674e-02 4.451073e-02
+latticemt2D 310 nodes 2 21 22 mat 1 dim 1 thick 1.000000e+00 width 4.095696e-03 gpCoords 2 1.234659e-02 4.110405e-02
+latticemt2D 311 nodes 2 441 442 mat 1 dim 1 thick 1.000000e+00 width 6.292291e-03 gpCoords 2 4.173484e-02 4.481973e-02
+latticemt2D 312 nodes 2 441 443 mat 1 dim 1 thick 1.000000e+00 width 4.130408e-03 gpCoords 2 3.983244e-02 4.256545e-02
+latticemt2D 313 nodes 2 448 449 mat 1 dim 1 thick 1.000000e+00 width 4.532278e-03 gpCoords 2 3.658419e-02 4.557663e-02
+latticemt2D 314 nodes 2 320 321 mat 1 dim 1 thick 1.000000e+00 width 4.326199e-03 gpCoords 2 7.924631e-02 2.161992e-02
+latticemt2D 315 nodes 2 320 379 mat 1 dim 1 thick 1.000000e+00 width 4.182236e-03 gpCoords 2 8.239032e-02 2.070510e-02
+latticemt2D 316 nodes 2 321 377 mat 1 dim 1 thick 1.000000e+00 width 4.329244e-03 gpCoords 2 7.877917e-02 1.844934e-02
+latticemt2D 317 nodes 2 377 379 mat 1 dim 1 thick 1.000000e+00 width 5.415645e-03 gpCoords 2 8.192317e-02 1.753452e-02
+latticemt2D 318 nodes 2 7 182 mat 1 dim 1 thick 1.000000e+00 width 6.237958e-03 gpCoords 2 8.784438e-02 3.186072e-02
+latticemt2D 319 nodes 2 188 292 mat 1 dim 1 thick 1.000000e+00 width 6.783063e-03 gpCoords 2 8.667873e-02 3.747756e-02
+latticemt2D 320 nodes 2 7 75 mat 1 dim 1 thick 1.000000e+00 width 6.322834e-03 gpCoords 2 8.584410e-02 3.074044e-02
+latticemt2D 321 nodes 2 75 293 mat 1 dim 1 thick 1.000000e+00 width 4.006761e-03 gpCoords 2 8.404962e-02 3.312124e-02
+latticemt2D 322 nodes 2 292 293 mat 1 dim 1 thick 1.000000e+00 width 5.295138e-03 gpCoords 2 8.433096e-02 3.642779e-02
+latticemt2D 323 nodes 2 128 129 mat 1 dim 1 thick 1.000000e+00 width 7.128758e-03 gpCoords 2 1.200569e-02 2.322038e-02
+latticemt2D 324 nodes 2 46 129 mat 1 dim 1 thick 1.000000e+00 width 4.931223e-03 gpCoords 2 9.195328e-03 2.297030e-02
+latticemt2D 325 nodes 2 43 46 mat 1 dim 1 thick 1.000000e+00 width 5.184079e-03 gpCoords 2 6.783268e-03 2.102733e-02
+latticemt2D 326 nodes 2 128 343 mat 1 dim 1 thick 1.000000e+00 width 7.115334e-03 gpCoords 2 1.242339e-02 2.260633e-02
+latticemt2D 327 nodes 2 136 341 mat 1 dim 1 thick 1.000000e+00 width 6.384964e-03 gpCoords 2 1.023255e-02 1.738648e-02
+latticemt2D 328 nodes 2 341 343 mat 1 dim 1 thick 1.000000e+00 width 4.284455e-03 gpCoords 2 1.148327e-02 1.974619e-02
+latticemt2D 329 nodes 2 88 90 mat 1 dim 1 thick 1.000000e+00 width 6.141310e-03 gpCoords 2 9.381693e-02 1.934676e-02
+latticemt2D 330 nodes 2 90 91 mat 1 dim 1 thick 1.000000e+00 width 6.567213e-03 gpCoords 2 9.254660e-02 1.687557e-02
+latticemt2D 331 nodes 2 91 93 mat 1 dim 1 thick 1.000000e+00 width 6.102909e-03 gpCoords 2 9.390914e-02 1.469022e-02
+latticemt2D 332 nodes 2 92 93 mat 1 dim 1 thick 1.000000e+00 width 6.696544e-03 gpCoords 2 9.599284e-02 1.369874e-02
+latticemt2D 333 nodes 2 212 381 mat 1 dim 1 thick 1.000000e+00 width 6.191716e-03 gpCoords 2 8.751918e-02 1.341461e-02
+latticemt2D 334 nodes 2 212 331 mat 1 dim 1 thick 1.000000e+00 width 6.792723e-03 gpCoords 2 8.850700e-02 1.185441e-02
+latticemt2D 335 nodes 2 378 381 mat 1 dim 1 thick 1.000000e+00 width 4.317487e-03 gpCoords 2 8.445878e-02 1.345091e-02
+latticemt2D 336 nodes 2 331 385 mat 1 dim 1 thick 1.000000e+00 width 6.079254e-03 gpCoords 2 8.796584e-02 1.015227e-02
+latticemt2D 337 nodes 2 328 378 mat 1 dim 1 thick 1.000000e+00 width 6.171325e-03 gpCoords 2 8.203002e-02 1.167393e-02
+latticemt2D 338 nodes 2 385 387 mat 1 dim 1 thick 1.000000e+00 width 5.322448e-03 gpCoords 2 8.520099e-02 8.678967e-03
+latticemt2D 339 nodes 2 131 132 mat 1 dim 1 thick 1.000000e+00 width 5.846024e-03 gpCoords 2 1.523500e-02 2.844907e-02
+latticemt2D 340 nodes 2 132 150 mat 1 dim 1 thick 1.000000e+00 width 6.216443e-03 gpCoords 2 1.680994e-02 2.653265e-02
+latticemt2D 341 nodes 2 38 126 mat 1 dim 1 thick 1.000000e+00 width 5.724227e-03 gpCoords 2 1.770153e-02 3.244787e-02
+latticemt2D 342 nodes 2 38 152 mat 1 dim 1 thick 1.000000e+00 width 4.246930e-03 gpCoords 2 1.998631e-02 3.021110e-02
+latticemt2D 343 nodes 2 125 131 mat 1 dim 1 thick 1.000000e+00 width 7.294831e-03 gpCoords 2 1.459314e-02 3.086396e-02
+latticemt2D 344 nodes 2 98 99 mat 1 dim 1 thick 1.000000e+00 width 6.432708e-03 gpCoords 2 3.026652e-02 4.945704e-03
+latticemt2D 345 nodes 2 141 147 mat 1 dim 1 thick 1.000000e+00 width 4.341495e-03 gpCoords 2 2.526592e-02 5.055622e-03
+latticemt2D 346 nodes 2 98 146 mat 1 dim 1 thick 1.000000e+00 width 5.217984e-03 gpCoords 2 2.920256e-02 7.784488e-03
+latticemt2D 347 nodes 2 146 147 mat 1 dim 1 thick 1.000000e+00 width 4.910628e-03 gpCoords 2 2.598951e-02 8.124988e-03
+latticemt2D 348 nodes 2 143 144 mat 1 dim 1 thick 1.000000e+00 width 5.839957e-03 gpCoords 2 2.028251e-02 4.623366e-03
+latticemt2D 349 nodes 2 147 148 mat 1 dim 1 thick 1.000000e+00 width 6.260681e-03 gpCoords 2 2.393847e-02 7.426005e-03
+latticemt2D 350 nodes 2 203 204 mat 1 dim 1 thick 1.000000e+00 width 6.564493e-03 gpCoords 2 6.529819e-02 4.595585e-02
+latticemt2D 351 nodes 2 198 204 mat 1 dim 1 thick 1.000000e+00 width 5.558998e-03 gpCoords 2 6.681277e-02 4.381208e-02
+latticemt2D 352 nodes 2 198 299 mat 1 dim 1 thick 1.000000e+00 width 6.931310e-03 gpCoords 2 6.858375e-02 4.247604e-02
+latticemt2D 353 nodes 2 189 298 mat 1 dim 1 thick 1.000000e+00 width 6.537125e-03 gpCoords 2 7.188065e-02 4.602717e-02
+latticemt2D 354 nodes 2 298 299 mat 1 dim 1 thick 1.000000e+00 width 5.322363e-03 gpCoords 2 7.035697e-02 4.395747e-02
+latticemt2D 355 nodes 2 275 276 mat 1 dim 1 thick 1.000000e+00 width 4.786282e-03 gpCoords 2 6.828797e-02 1.632542e-02
+latticemt2D 356 nodes 2 322 323 mat 1 dim 1 thick 1.000000e+00 width 4.214122e-03 gpCoords 2 7.162767e-02 1.515414e-02
+latticemt2D 357 nodes 2 275 323 mat 1 dim 1 thick 1.000000e+00 width 6.906090e-03 gpCoords 2 7.030178e-02 1.794599e-02
+latticemt2D 358 nodes 2 322 336 mat 1 dim 1 thick 1.000000e+00 width 7.072859e-03 gpCoords 2 7.263416e-02 1.238775e-02
+latticemt2D 359 nodes 2 334 336 mat 1 dim 1 thick 1.000000e+00 width 5.520984e-03 gpCoords 2 7.017009e-02 1.160905e-02
+latticemt2D 360 nodes 2 82 83 mat 1 dim 1 thick 1.000000e+00 width 6.935462e-03 gpCoords 2 8.191444e-02 2.482387e-02
+latticemt2D 361 nodes 2 82 85 mat 1 dim 1 thick 1.000000e+00 width 4.023357e-03 gpCoords 2 7.934728e-02 2.548325e-02
+latticemt2D 362 nodes 2 83 320 mat 1 dim 1 thick 1.000000e+00 width 6.611704e-03 gpCoords 2 8.195542e-02 2.372737e-02
+latticemt2D 363 nodes 2 84 211 mat 1 dim 1 thick 1.000000e+00 width 6.193496e-03 gpCoords 2 7.588599e-02 2.164872e-02
+latticemt2D 364 nodes 2 211 321 mat 1 dim 1 thick 1.000000e+00 width 6.984763e-03 gpCoords 2 7.678191e-02 2.025035e-02
+latticemt2D 365 nodes 2 296 297 mat 1 dim 1 thick 1.000000e+00 width 6.579277e-03 gpCoords 2 8.277269e-02 4.161415e-02
+latticemt2D 366 nodes 2 290 297 mat 1 dim 1 thick 1.000000e+00 width 5.199621e-03 gpCoords 2 8.455221e-02 4.254512e-02
+latticemt2D 367 nodes 2 290 291 mat 1 dim 1 thick 1.000000e+00 width 4.117479e-03 gpCoords 2 8.525684e-02 4.540998e-02
+latticemt2D 368 nodes 2 296 365 mat 1 dim 1 thick 1.000000e+00 width 5.126885e-03 gpCoords 2 8.086558e-02 4.389775e-02
+latticemt2D 369 nodes 2 29 30 mat 1 dim 1 thick 1.000000e+00 width 5.032816e-03 gpCoords 2 8.368505e-03 3.115680e-02
+latticemt2D 370 nodes 2 29 123 mat 1 dim 1 thick 1.000000e+00 width 6.700565e-03 gpCoords 2 9.187525e-03 3.374563e-02
+latticemt2D 371 nodes 2 30 130 mat 1 dim 1 thick 1.000000e+00 width 5.752903e-03 gpCoords 2 9.005859e-03 2.842310e-02
+latticemt2D 372 nodes 2 130 131 mat 1 dim 1 thick 1.000000e+00 width 4.388805e-03 gpCoords 2 1.227998e-02 2.904471e-02
+latticemt2D 373 nodes 2 5 6 mat 1 dim 1 thick 1.000000e+00 width 4.979928e-03 gpCoords 2 8.946929e-02 2.728848e-02
+latticemt2D 374 nodes 2 6 7 mat 1 dim 1 thick 1.000000e+00 width 6.822988e-03 gpCoords 2 8.669961e-02 2.927878e-02
+latticemt2D 375 nodes 2 66 180 mat 1 dim 1 thick 1.000000e+00 width 5.684351e-03 gpCoords 2 9.306981e-02 2.940514e-02
+latticemt2D 376 nodes 2 366 368 mat 1 dim 1 thick 1.000000e+00 width 4.074795e-03 gpCoords 2 6.021921e-02 4.434893e-02
+latticemt2D 377 nodes 2 366 367 mat 1 dim 1 thick 1.000000e+00 width 5.255177e-03 gpCoords 2 6.220268e-02 4.133307e-02
+latticemt2D 378 nodes 2 367 370 mat 1 dim 1 thick 1.000000e+00 width 4.116140e-03 gpCoords 2 5.951730e-02 4.019055e-02
+latticemt2D 379 nodes 2 369 370 mat 1 dim 1 thick 1.000000e+00 width 6.215719e-03 gpCoords 2 5.672257e-02 4.118628e-02
+latticemt2D 380 nodes 2 330 340 mat 1 dim 1 thick 1.000000e+00 width 4.055968e-03 gpCoords 2 7.526945e-02 8.289860e-03
+latticemt2D 381 nodes 2 326 327 mat 1 dim 1 thick 1.000000e+00 width 4.457473e-03 gpCoords 2 7.697485e-02 1.208513e-02
+latticemt2D 382 nodes 2 322 326 mat 1 dim 1 thick 1.000000e+00 width 5.935053e-03 gpCoords 2 7.431508e-02 1.304299e-02
+latticemt2D 383 nodes 2 336 340 mat 1 dim 1 thick 1.000000e+00 width 4.511016e-03 gpCoords 2 7.314304e-02 1.031365e-02
+latticemt2D 384 nodes 2 58 63 mat 1 dim 1 thick 1.000000e+00 width 4.910371e-03 gpCoords 2 3.426004e-02 1.465688e-02
+latticemt2D 385 nodes 2 58 59 mat 1 dim 1 thick 1.000000e+00 width 4.669895e-03 gpCoords 2 3.677078e-02 1.675109e-02
+latticemt2D 386 nodes 2 59 60 mat 1 dim 1 thick 1.000000e+00 width 5.282366e-03 gpCoords 2 3.924915e-02 1.552714e-02
+latticemt2D 387 nodes 2 60 61 mat 1 dim 1 thick 1.000000e+00 width 4.778735e-03 gpCoords 2 3.843184e-02 1.265565e-02
+latticemt2D 388 nodes 2 62 63 mat 1 dim 1 thick 1.000000e+00 width 7.741781e-03 gpCoords 2 3.354945e-02 1.233304e-02
+latticemt2D 389 nodes 2 352 354 mat 1 dim 1 thick 1.000000e+00 width 4.489675e-03 gpCoords 2 6.558083e-02 2.524110e-02
+latticemt2D 390 nodes 2 352 361 mat 1 dim 1 thick 1.000000e+00 width 6.288918e-03 gpCoords 2 6.381764e-02 2.268251e-02
+latticemt2D 391 nodes 2 356 362 mat 1 dim 1 thick 1.000000e+00 width 5.664634e-03 gpCoords 2 6.721193e-02 2.048869e-02
+latticemt2D 392 nodes 2 355 356 mat 1 dim 1 thick 1.000000e+00 width 6.792847e-03 gpCoords 2 6.953649e-02 2.095883e-02
+latticemt2D 393 nodes 2 353 354 mat 1 dim 1 thick 1.000000e+00 width 7.080656e-03 gpCoords 2 6.743274e-02 2.729185e-02
+latticemt2D 394 nodes 2 353 355 mat 1 dim 1 thick 1.000000e+00 width 4.069045e-03 gpCoords 2 6.868792e-02 2.444712e-02
+latticemt2D 395 nodes 2 361 362 mat 1 dim 1 thick 1.000000e+00 width 6.117652e-03 gpCoords 2 6.453150e-02 2.146417e-02
+latticemt2D 396 nodes 2 89 380 mat 1 dim 1 thick 1.000000e+00 width 7.153797e-03 gpCoords 2 8.730760e-02 1.887564e-02
+latticemt2D 397 nodes 2 14 89 mat 1 dim 1 thick 1.000000e+00 width 7.382007e-03 gpCoords 2 8.820538e-02 2.053027e-02
+latticemt2D 398 nodes 2 15 83 mat 1 dim 1 thick 1.000000e+00 width 7.274154e-03 gpCoords 2 8.356830e-02 2.464938e-02
+latticemt2D 399 nodes 2 14 15 mat 1 dim 1 thick 1.000000e+00 width 5.675834e-03 gpCoords 2 8.651564e-02 2.305870e-02
+latticemt2D 400 nodes 2 379 380 mat 1 dim 1 thick 1.000000e+00 width 5.691877e-03 gpCoords 2 8.473677e-02 1.819171e-02
+latticemt2D 401 nodes 2 385 388 mat 1 dim 1 thick 1.000000e+00 width 4.170807e-03 gpCoords 2 8.802385e-02 7.656821e-03
+latticemt2D 402 nodes 2 386 389 mat 1 dim 1 thick 1.000000e+00 width 5.267011e-03 gpCoords 2 8.381643e-02 5.598153e-03
+latticemt2D 403 nodes 2 388 391 mat 1 dim 1 thick 1.000000e+00 width 4.027493e-03 gpCoords 2 8.769190e-02 4.548990e-03
+latticemt2D 404 nodes 2 376 377 mat 1 dim 1 thick 1.000000e+00 width 6.254171e-03 gpCoords 2 8.063171e-02 1.617442e-02
+latticemt2D 405 nodes 2 376 378 mat 1 dim 1 thick 1.000000e+00 width 5.223045e-03 gpCoords 2 8.140603e-02 1.417977e-02
+latticemt2D 406 nodes 2 380 381 mat 1 dim 1 thick 1.000000e+00 width 5.719630e-03 gpCoords 2 8.649807e-02 1.610275e-02
+latticemt2D 407 nodes 2 65 177 mat 1 dim 1 thick 1.000000e+00 width 4.253634e-03 gpCoords 2 5.826669e-02 3.146945e-02
+latticemt2D 408 nodes 2 65 256 mat 1 dim 1 thick 1.000000e+00 width 5.028086e-03 gpCoords 2 5.573068e-02 3.020208e-02
+latticemt2D 409 nodes 2 177 268 mat 1 dim 1 thick 1.000000e+00 width 4.053736e-03 gpCoords 2 6.026684e-02 2.946770e-02
+latticemt2D 410 nodes 2 268 269 mat 1 dim 1 thick 1.000000e+00 width 6.125909e-03 gpCoords 2 6.041345e-02 2.703083e-02
+latticemt2D 411 nodes 2 269 272 mat 1 dim 1 thick 1.000000e+00 width 6.705047e-03 gpCoords 2 5.892714e-02 2.602126e-02
+latticemt2D 412 nodes 2 256 273 mat 1 dim 1 thick 1.000000e+00 width 6.971688e-03 gpCoords 2 5.473012e-02 2.865967e-02
+latticemt2D 413 nodes 2 137 140 mat 1 dim 1 thick 1.000000e+00 width 4.058456e-03 gpCoords 2 1.382027e-02 8.853590e-03
+latticemt2D 414 nodes 2 137 138 mat 1 dim 1 thick 1.000000e+00 width 4.557586e-03 gpCoords 2 1.499744e-02 5.211499e-03
+latticemt2D 415 nodes 2 140 159 mat 1 dim 1 thick 1.000000e+00 width 6.832188e-03 gpCoords 2 1.107057e-02 9.569943e-03
+latticemt2D 416 nodes 2 157 159 mat 1 dim 1 thick 1.000000e+00 width 4.251807e-03 gpCoords 2 1.112325e-02 6.023432e-03
+latticemt2D 417 nodes 2 110 329 mat 1 dim 1 thick 1.000000e+00 width 6.355215e-03 gpCoords 2 7.808291e-02 4.329292e-03
+latticemt2D 418 nodes 2 339 340 mat 1 dim 1 thick 1.000000e+00 width 5.001943e-03 gpCoords 2 7.322025e-02 7.584225e-03
+latticemt2D 419 nodes 2 26 31 mat 1 dim 1 thick 1.000000e+00 width 5.370411e-03 gpCoords 2 5.337281e-03 2.919229e-02
+latticemt2D 420 nodes 2 31 47 mat 1 dim 1 thick 1.000000e+00 width 4.461812e-03 gpCoords 2 6.665311e-03 2.589740e-02
+latticemt2D 421 nodes 2 45 47 mat 1 dim 1 thick 1.000000e+00 width 6.835677e-03 gpCoords 2 4.713882e-03 2.319819e-02
+latticemt2D 422 nodes 2 301 302 mat 1 dim 1 thick 1.000000e+00 width 6.455337e-03 gpCoords 2 7.563259e-02 4.179700e-02
+latticemt2D 423 nodes 2 302 364 mat 1 dim 1 thick 1.000000e+00 width 4.832749e-03 gpCoords 2 7.727932e-02 4.414628e-02
+latticemt2D 424 nodes 2 295 296 mat 1 dim 1 thick 1.000000e+00 width 5.331484e-03 gpCoords 2 8.051712e-02 4.015650e-02
+latticemt2D 425 nodes 2 74 301 mat 1 dim 1 thick 1.000000e+00 width 5.915515e-03 gpCoords 2 7.685255e-02 4.004366e-02
+latticemt2D 426 nodes 2 74 295 mat 1 dim 1 thick 1.000000e+00 width 7.246261e-03 gpCoords 2 7.846551e-02 3.860536e-02
+latticemt2D 427 nodes 2 433 435 mat 1 dim 1 thick 1.000000e+00 width 4.234084e-03 gpCoords 2 4.698339e-02 4.416063e-02
+latticemt2D 428 nodes 2 434 441 mat 1 dim 1 thick 1.000000e+00 width 6.794953e-03 gpCoords 2 4.241647e-02 4.224853e-02
+latticemt2D 429 nodes 2 11 12 mat 1 dim 1 thick 1.000000e+00 width 4.450553e-03 gpCoords 2 9.357503e-02 4.460197e-02
+latticemt2D 430 nodes 2 12 13 mat 1 dim 1 thick 1.000000e+00 width 6.740962e-03 gpCoords 2 9.257349e-02 4.172357e-02
+latticemt2D 431 nodes 2 71 187 mat 1 dim 1 thick 1.000000e+00 width 4.220926e-03 gpCoords 2 8.930433e-02 4.536045e-02
+latticemt2D 432 nodes 2 186 187 mat 1 dim 1 thick 1.000000e+00 width 6.300135e-03 gpCoords 2 8.959998e-02 4.229493e-02
+latticemt2D 433 nodes 2 213 338 mat 1 dim 1 thick 1.000000e+00 width 4.022542e-03 gpCoords 2 6.643389e-02 6.063749e-03
+latticemt2D 434 nodes 2 213 214 mat 1 dim 1 thick 1.000000e+00 width 4.131523e-03 gpCoords 2 6.303670e-02 6.177676e-03
+latticemt2D 435 nodes 2 254 255 mat 1 dim 1 thick 1.000000e+00 width 6.156518e-03 gpCoords 2 6.203528e-02 8.848235e-03
+latticemt2D 436 nodes 2 335 338 mat 1 dim 1 thick 1.000000e+00 width 6.571541e-03 gpCoords 2 6.784179e-02 8.787388e-03
+latticemt2D 437 nodes 2 32 33 mat 1 dim 1 thick 1.000000e+00 width 4.564239e-03 gpCoords 2 6.042534e-03 1.240624e-02
+latticemt2D 438 nodes 2 33 158 mat 1 dim 1 thick 1.000000e+00 width 4.092557e-03 gpCoords 2 6.918086e-03 9.613116e-03
+latticemt2D 439 nodes 2 133 134 mat 1 dim 1 thick 1.000000e+00 width 4.993491e-03 gpCoords 2 1.038455e-02 1.244193e-02
+latticemt2D 440 nodes 2 134 140 mat 1 dim 1 thick 1.000000e+00 width 7.958274e-03 gpCoords 2 1.196066e-02 1.057911e-02
+latticemt2D 441 nodes 2 158 159 mat 1 dim 1 thick 1.000000e+00 width 6.131037e-03 gpCoords 2 9.393355e-03 8.449172e-03
+latticemt2D 442 nodes 2 89 90 mat 1 dim 1 thick 1.000000e+00 width 6.258641e-03 gpCoords 2 9.030144e-02 1.892143e-02
+latticemt2D 443 nodes 2 91 212 mat 1 dim 1 thick 1.000000e+00 width 4.268856e-03 gpCoords 2 9.057387e-02 1.414163e-02
+latticemt2D 444 nodes 2 222 224 mat 1 dim 1 thick 1.000000e+00 width 5.778838e-03 gpCoords 2 2.675858e-02 2.685104e-02
+latticemt2D 445 nodes 2 228 230 mat 1 dim 1 thick 1.000000e+00 width 4.455997e-03 gpCoords 2 2.633263e-02 2.244775e-02
+latticemt2D 446 nodes 2 104 270 mat 1 dim 1 thick 1.000000e+00 width 4.077122e-03 gpCoords 2 6.903421e-02 3.029731e-02
+latticemt2D 447 nodes 2 104 201 mat 1 dim 1 thick 1.000000e+00 width 4.229353e-03 gpCoords 2 6.886998e-02 3.399234e-02
+latticemt2D 448 nodes 2 201 202 mat 1 dim 1 thick 1.000000e+00 width 6.975109e-03 gpCoords 2 6.645171e-02 3.557795e-02
+latticemt2D 449 nodes 2 197 202 mat 1 dim 1 thick 1.000000e+00 width 6.329106e-03 gpCoords 2 6.540550e-02 3.409134e-02
+latticemt2D 450 nodes 2 197 271 mat 1 dim 1 thick 1.000000e+00 width 6.029312e-03 gpCoords 2 6.511149e-02 3.092310e-02
+latticemt2D 451 nodes 2 270 271 mat 1 dim 1 thick 1.000000e+00 width 7.275577e-03 gpCoords 2 6.632193e-02 2.871468e-02
+latticemt2D 452 nodes 2 357 359 mat 1 dim 1 thick 1.000000e+00 width 5.157156e-03 gpCoords 2 6.127037e-02 1.671941e-02
+latticemt2D 453 nodes 2 358 362 mat 1 dim 1 thick 1.000000e+00 width 4.164288e-03 gpCoords 2 6.428932e-02 1.827419e-02
+latticemt2D 454 nodes 2 359 360 mat 1 dim 1 thick 1.000000e+00 width 4.208955e-03 gpCoords 2 6.031508e-02 1.925924e-02
+latticemt2D 455 nodes 2 360 361 mat 1 dim 1 thick 1.000000e+00 width 4.251332e-03 gpCoords 2 6.214610e-02 2.144320e-02
+latticemt2D 456 nodes 2 54 64 mat 1 dim 1 thick 1.000000e+00 width 4.394802e-03 gpCoords 2 4.114207e-02 1.963383e-02
+latticemt2D 457 nodes 2 54 242 mat 1 dim 1 thick 1.000000e+00 width 4.114471e-03 gpCoords 2 3.816810e-02 2.071939e-02
+latticemt2D 458 nodes 2 55 237 mat 1 dim 1 thick 1.000000e+00 width 4.365104e-03 gpCoords 2 4.136319e-02 2.343926e-02
+latticemt2D 459 nodes 2 237 242 mat 1 dim 1 thick 1.000000e+00 width 4.515042e-03 gpCoords 2 3.836943e-02 2.320463e-02
+latticemt2D 460 nodes 2 165 168 mat 1 dim 1 thick 1.000000e+00 width 4.997084e-03 gpCoords 2 2.886827e-02 2.956128e-02
+latticemt2D 461 nodes 2 168 425 mat 1 dim 1 thick 1.000000e+00 width 4.573018e-03 gpCoords 2 2.945860e-02 3.237815e-02
+latticemt2D 462 nodes 2 163 424 mat 1 dim 1 thick 1.000000e+00 width 5.018035e-03 gpCoords 2 3.371652e-02 3.102462e-02
+latticemt2D 463 nodes 2 424 425 mat 1 dim 1 thick 1.000000e+00 width 5.021257e-03 gpCoords 2 3.218219e-02 3.313307e-02
+latticemt2D 464 nodes 2 134 135 mat 1 dim 1 thick 1.000000e+00 width 6.290639e-03 gpCoords 2 1.358022e-02 1.195010e-02
+latticemt2D 465 nodes 2 218 342 mat 1 dim 1 thick 1.000000e+00 width 6.675834e-03 gpCoords 2 1.534755e-02 1.524183e-02
+latticemt2D 466 nodes 2 341 342 mat 1 dim 1 thick 1.000000e+00 width 4.249829e-03 gpCoords 2 1.269424e-02 1.653361e-02
+latticemt2D 467 nodes 2 292 297 mat 1 dim 1 thick 1.000000e+00 width 4.888749e-03 gpCoords 2 8.458868e-02 3.956663e-02
+latticemt2D 468 nodes 2 293 294 mat 1 dim 1 thick 1.000000e+00 width 6.113894e-03 gpCoords 2 8.257127e-02 3.527400e-02
+latticemt2D 469 nodes 2 294 295 mat 1 dim 1 thick 1.000000e+00 width 4.633447e-03 gpCoords 2 8.057342e-02 3.695518e-02
+latticemt2D 470 nodes 2 393 396 mat 1 dim 1 thick 1.000000e+00 width 4.991637e-03 gpCoords 2 2.362537e-02 4.174871e-02
+latticemt2D 471 nodes 2 393 394 mat 1 dim 1 thick 1.000000e+00 width 4.015492e-03 gpCoords 2 2.304722e-02 4.496510e-02
+latticemt2D 472 nodes 2 128 132 mat 1 dim 1 thick 1.000000e+00 width 4.551528e-03 gpCoords 2 1.410264e-02 2.497327e-02
+latticemt2D 473 nodes 2 151 221 mat 1 dim 1 thick 1.000000e+00 width 5.584631e-03 gpCoords 2 1.834114e-02 2.217431e-02
+latticemt2D 474 nodes 2 221 344 mat 1 dim 1 thick 1.000000e+00 width 5.699073e-03 gpCoords 2 1.673384e-02 2.082484e-02
+latticemt2D 475 nodes 2 343 344 mat 1 dim 1 thick 1.000000e+00 width 5.622068e-03 gpCoords 2 1.416477e-02 2.129483e-02
+latticemt2D 476 nodes 2 323 324 mat 1 dim 1 thick 1.000000e+00 width 4.483041e-03 gpCoords 2 7.286317e-02 1.809866e-02
+latticemt2D 477 nodes 2 324 325 mat 1 dim 1 thick 1.000000e+00 width 4.016481e-03 gpCoords 2 7.560094e-02 1.607905e-02
+latticemt2D 478 nodes 2 325 326 mat 1 dim 1 thick 1.000000e+00 width 6.345507e-03 gpCoords 2 7.597040e-02 1.368018e-02
+latticemt2D 479 nodes 2 17 250 mat 1 dim 1 thick 1.000000e+00 width 5.736169e-03 gpCoords 2 4.024652e-02 8.182339e-03
+latticemt2D 480 nodes 2 60 248 mat 1 dim 1 thick 1.000000e+00 width 6.396182e-03 gpCoords 2 4.123579e-02 1.413049e-02
+latticemt2D 481 nodes 2 160 161 mat 1 dim 1 thick 1.000000e+00 width 5.443396e-03 gpCoords 2 4.103477e-02 3.317331e-02
+latticemt2D 482 nodes 2 160 308 mat 1 dim 1 thick 1.000000e+00 width 4.196566e-03 gpCoords 2 3.872580e-02 3.535064e-02
+latticemt2D 483 nodes 2 161 162 mat 1 dim 1 thick 1.000000e+00 width 5.398796e-03 gpCoords 2 4.318854e-02 3.458594e-02
+latticemt2D 484 nodes 2 307 308 mat 1 dim 1 thick 1.000000e+00 width 4.647302e-03 gpCoords 2 4.008374e-02 3.811111e-02
+latticemt2D 485 nodes 2 298 302 mat 1 dim 1 thick 1.000000e+00 width 4.048831e-03 gpCoords 2 7.372716e-02 4.377846e-02
+latticemt2D 486 nodes 2 299 300 mat 1 dim 1 thick 1.000000e+00 width 5.452333e-03 gpCoords 2 7.004639e-02 4.085400e-02
+latticemt2D 487 nodes 2 300 301 mat 1 dim 1 thick 1.000000e+00 width 4.242802e-03 gpCoords 2 7.341697e-02 4.038071e-02
+latticemt2D 488 nodes 2 54 59 mat 1 dim 1 thick 1.000000e+00 width 4.678138e-03 gpCoords 2 3.890457e-02 1.795736e-02
+latticemt2D 489 nodes 2 56 58 mat 1 dim 1 thick 1.000000e+00 width 5.372021e-03 gpCoords 2 3.429422e-02 1.808810e-02
+latticemt2D 490 nodes 2 242 243 mat 1 dim 1 thick 1.000000e+00 width 6.346914e-03 gpCoords 2 3.611131e-02 2.236667e-02
+latticemt2D 491 nodes 2 190 191 mat 1 dim 1 thick 1.000000e+00 width 5.200463e-03 gpCoords 2 7.977282e-02 3.135105e-02
+latticemt2D 492 nodes 2 190 193 mat 1 dim 1 thick 1.000000e+00 width 4.076726e-03 gpCoords 2 7.812319e-02 2.948273e-02
+latticemt2D 493 nodes 2 191 192 mat 1 dim 1 thick 1.000000e+00 width 4.292112e-03 gpCoords 2 7.833770e-02 3.306459e-02
+latticemt2D 494 nodes 2 192 195 mat 1 dim 1 thick 1.000000e+00 width 4.012974e-03 gpCoords 2 7.540154e-02 3.246870e-02
+latticemt2D 495 nodes 2 194 195 mat 1 dim 1 thick 1.000000e+00 width 6.594776e-03 gpCoords 2 7.395186e-02 3.042477e-02
+latticemt2D 496 nodes 2 75 76 mat 1 dim 1 thick 1.000000e+00 width 4.092877e-03 gpCoords 2 8.305333e-02 3.032880e-02
+latticemt2D 497 nodes 2 76 82 mat 1 dim 1 thick 1.000000e+00 width 4.616878e-03 gpCoords 2 8.121930e-02 2.743367e-02
+latticemt2D 498 nodes 2 6 15 mat 1 dim 1 thick 1.000000e+00 width 6.215069e-03 gpCoords 2 8.591997e-02 2.644742e-02
+latticemt2D 499 nodes 2 187 290 mat 1 dim 1 thick 1.000000e+00 width 5.025809e-03 gpCoords 2 8.729159e-02 4.335427e-02
+latticemt2D 500 nodes 2 93 332 mat 1 dim 1 thick 1.000000e+00 width 4.565336e-03 gpCoords 2 9.398746e-02 1.159030e-02
+latticemt2D 501 nodes 2 331 332 mat 1 dim 1 thick 1.000000e+00 width 4.753947e-03 gpCoords 2 9.076553e-02 1.030372e-02
+latticemt2D 502 nodes 2 74 102 mat 1 dim 1 thick 1.000000e+00 width 6.005321e-03 gpCoords 2 7.740306e-02 3.762820e-02
+latticemt2D 503 nodes 2 102 192 mat 1 dim 1 thick 1.000000e+00 width 4.574281e-03 gpCoords 2 7.691275e-02 3.521765e-02
+latticemt2D 504 nodes 2 191 294 mat 1 dim 1 thick 1.000000e+00 width 4.107573e-03 gpCoords 2 8.093593e-02 3.382496e-02
+latticemt2D 505 nodes 2 103 353 mat 1 dim 1 thick 1.000000e+00 width 4.307481e-03 gpCoords 2 6.984813e-02 2.714748e-02
+latticemt2D 506 nodes 2 105 195 mat 1 dim 1 thick 1.000000e+00 width 6.463282e-03 gpCoords 2 7.282965e-02 3.182509e-02
+latticemt2D 507 nodes 2 104 105 mat 1 dim 1 thick 1.000000e+00 width 6.252621e-03 gpCoords 2 7.149811e-02 3.244280e-02
+latticemt2D 508 nodes 2 270 354 mat 1 dim 1 thick 1.000000e+00 width 7.929513e-03 gpCoords 2 6.719199e-02 2.776146e-02
+latticemt2D 509 nodes 2 48 161 mat 1 dim 1 thick 1.000000e+00 width 6.312019e-03 gpCoords 2 4.339415e-02 3.250572e-02
+latticemt2D 510 nodes 2 160 164 mat 1 dim 1 thick 1.000000e+00 width 6.208215e-03 gpCoords 2 3.883072e-02 3.266876e-02
+latticemt2D 511 nodes 2 10 238 mat 1 dim 1 thick 1.000000e+00 width 4.908725e-03 gpCoords 2 4.161001e-02 2.806270e-02
+latticemt2D 512 nodes 2 10 48 mat 1 dim 1 thick 1.000000e+00 width 5.657596e-03 gpCoords 2 4.380514e-02 3.008759e-02
+latticemt2D 513 nodes 2 164 239 mat 1 dim 1 thick 1.000000e+00 width 4.908780e-03 gpCoords 2 3.855019e-02 3.027698e-02
+latticemt2D 514 nodes 2 238 239 mat 1 dim 1 thick 1.000000e+00 width 6.105953e-03 gpCoords 2 3.915294e-02 2.801000e-02
+latticemt2D 515 nodes 2 166 167 mat 1 dim 1 thick 1.000000e+00 width 4.441103e-03 gpCoords 2 2.405457e-02 3.003073e-02
+latticemt2D 516 nodes 2 167 168 mat 1 dim 1 thick 1.000000e+00 width 4.029599e-03 gpCoords 2 2.660505e-02 3.172333e-02
+latticemt2D 517 nodes 2 211 324 mat 1 dim 1 thick 1.000000e+00 width 5.847781e-03 gpCoords 2 7.595542e-02 1.932135e-02
+latticemt2D 518 nodes 2 18 355 mat 1 dim 1 thick 1.000000e+00 width 5.147457e-03 gpCoords 2 7.165845e-02 2.256511e-02
+latticemt2D 519 nodes 2 275 356 mat 1 dim 1 thick 1.000000e+00 width 7.220718e-03 gpCoords 2 6.962845e-02 1.917527e-02
+latticemt2D 520 nodes 2 21 117 mat 1 dim 1 thick 1.000000e+00 width 5.531045e-03 gpCoords 2 9.631245e-03 4.230139e-02
+latticemt2D 521 nodes 2 279 281 mat 1 dim 1 thick 1.000000e+00 width 5.262168e-03 gpCoords 2 6.637157e-03 4.531655e-02
+latticemt2D 522 nodes 2 337 338 mat 1 dim 1 thick 1.000000e+00 width 6.412819e-03 gpCoords 2 6.855459e-02 7.027293e-03
+latticemt2D 523 nodes 2 101 105 mat 1 dim 1 thick 1.000000e+00 width 4.426212e-03 gpCoords 2 7.240838e-02 3.439017e-02
+latticemt2D 524 nodes 2 101 199 mat 1 dim 1 thick 1.000000e+00 width 4.916977e-03 gpCoords 2 7.200408e-02 3.744854e-02
+latticemt2D 525 nodes 2 199 201 mat 1 dim 1 thick 1.000000e+00 width 4.293888e-03 gpCoords 2 6.891527e-02 3.708419e-02
+latticemt2D 526 nodes 2 219 220 mat 1 dim 1 thick 1.000000e+00 width 6.001982e-03 gpCoords 2 2.020215e-02 1.671520e-02
+latticemt2D 527 nodes 2 220 221 mat 1 dim 1 thick 1.000000e+00 width 4.444594e-03 gpCoords 2 1.931066e-02 1.940900e-02
+latticemt2D 528 nodes 2 342 344 mat 1 dim 1 thick 1.000000e+00 width 4.253651e-03 gpCoords 2 1.537573e-02 1.808225e-02
+latticemt2D 529 nodes 2 28 29 mat 1 dim 1 thick 1.000000e+00 width 4.302443e-03 gpCoords 2 6.193008e-03 3.395136e-02
+latticemt2D 530 nodes 2 118 124 mat 1 dim 1 thick 1.000000e+00 width 5.485537e-03 gpCoords 2 9.014532e-03 3.757579e-02
+latticemt2D 531 nodes 2 231 232 mat 1 dim 1 thick 1.000000e+00 width 5.104472e-03 gpCoords 2 6.795850e-03 4.063632e-03
+latticemt2D 532 nodes 2 231 234 mat 1 dim 1 thick 1.000000e+00 width 4.212497e-03 gpCoords 2 4.646937e-03 6.171820e-03
+latticemt2D 533 nodes 2 96 313 mat 1 dim 1 thick 1.000000e+00 width 6.756601e-03 gpCoords 2 3.672776e-02 4.468046e-03
+latticemt2D 534 nodes 2 97 98 mat 1 dim 1 thick 1.000000e+00 width 6.844285e-03 gpCoords 2 3.113730e-02 6.789499e-03
+latticemt2D 535 nodes 2 237 238 mat 1 dim 1 thick 1.000000e+00 width 4.274825e-03 gpCoords 2 3.969116e-02 2.592570e-02
+latticemt2D 536 nodes 2 239 240 mat 1 dim 1 thick 1.000000e+00 width 4.892347e-03 gpCoords 2 3.702386e-02 2.777886e-02
+latticemt2D 537 nodes 2 167 374 mat 1 dim 1 thick 1.000000e+00 width 6.098554e-03 gpCoords 2 2.437453e-02 3.298871e-02
+latticemt2D 538 nodes 2 38 375 mat 1 dim 1 thick 1.000000e+00 width 4.731227e-03 gpCoords 2 2.102075e-02 3.308702e-02
+latticemt2D 539 nodes 2 269 352 mat 1 dim 1 thick 1.000000e+00 width 4.280050e-03 gpCoords 2 6.194580e-02 2.481107e-02
+latticemt2D 540 nodes 2 349 360 mat 1 dim 1 thick 1.000000e+00 width 4.208623e-03 gpCoords 2 5.889066e-02 2.176062e-02
+latticemt2D 541 nodes 2 16 63 mat 1 dim 1 thick 1.000000e+00 width 6.366011e-03 gpCoords 2 3.181784e-02 1.306455e-02
+latticemt2D 542 nodes 2 220 226 mat 1 dim 1 thick 1.000000e+00 width 6.360385e-03 gpCoords 2 2.184960e-02 1.796675e-02
+latticemt2D 543 nodes 2 153 155 mat 1 dim 1 thick 1.000000e+00 width 5.101453e-03 gpCoords 2 2.394717e-02 1.270627e-02
+latticemt2D 544 nodes 2 225 226 mat 1 dim 1 thick 1.000000e+00 width 6.208238e-03 gpCoords 2 2.388720e-02 1.769889e-02
+latticemt2D 545 nodes 2 198 200 mat 1 dim 1 thick 1.000000e+00 width 4.158534e-03 gpCoords 2 6.634133e-02 4.032700e-02
+latticemt2D 546 nodes 2 200 303 mat 1 dim 1 thick 1.000000e+00 width 7.185046e-03 gpCoords 2 6.357972e-02 3.846284e-02
+latticemt2D 547 nodes 2 204 366 mat 1 dim 1 thick 1.000000e+00 width 4.696395e-03 gpCoords 2 6.383847e-02 4.397084e-02
+latticemt2D 548 nodes 2 303 367 mat 1 dim 1 thick 1.000000e+00 width 6.836364e-03 gpCoords 2 6.241537e-02 3.931015e-02
+latticemt2D 549 nodes 2 226 229 mat 1 dim 1 thick 1.000000e+00 width 4.784911e-03 gpCoords 2 2.326889e-02 2.082639e-02
+latticemt2D 550 nodes 2 196 197 mat 1 dim 1 thick 1.000000e+00 width 4.778299e-03 gpCoords 2 6.283360e-02 3.267657e-02
+latticemt2D 551 nodes 2 177 196 mat 1 dim 1 thick 1.000000e+00 width 4.868001e-03 gpCoords 2 6.043448e-02 3.205116e-02
+latticemt2D 552 nodes 2 268 271 mat 1 dim 1 thick 1.000000e+00 width 4.262904e-03 gpCoords 2 6.317843e-02 2.841407e-02
+latticemt2D 553 nodes 2 199 300 mat 1 dim 1 thick 1.000000e+00 width 6.360752e-03 gpCoords 2 7.117004e-02 3.892586e-02
+latticemt2D 554 nodes 2 101 102 mat 1 dim 1 thick 1.000000e+00 width 4.018548e-03 gpCoords 2 7.480153e-02 3.648794e-02
+latticemt2D 555 nodes 2 79 81 mat 1 dim 1 thick 1.000000e+00 width 5.766650e-03 gpCoords 2 5.125580e-02 4.152769e-02
+latticemt2D 556 nodes 2 421 423 mat 1 dim 1 thick 1.000000e+00 width 4.229543e-03 gpCoords 2 3.462331e-02 3.544030e-02
+latticemt2D 557 nodes 2 423 424 mat 1 dim 1 thick 1.000000e+00 width 6.649331e-03 gpCoords 2 3.405159e-02 3.268616e-02
+latticemt2D 558 nodes 2 425 426 mat 1 dim 1 thick 1.000000e+00 width 5.444035e-03 gpCoords 2 3.005124e-02 3.447767e-02
+latticemt2D 559 nodes 2 200 202 mat 1 dim 1 thick 1.000000e+00 width 6.892442e-03 gpCoords 2 6.530947e-02 3.686588e-02
+latticemt2D 560 nodes 2 196 306 mat 1 dim 1 thick 1.000000e+00 width 4.096880e-03 gpCoords 2 6.047583e-02 3.424889e-02
+latticemt2D 561 nodes 2 303 306 mat 1 dim 1 thick 1.000000e+00 width 4.481607e-03 gpCoords 2 6.131798e-02 3.726061e-02
+latticemt2D 562 nodes 2 164 423 mat 1 dim 1 thick 1.000000e+00 width 4.881789e-03 gpCoords 2 3.626604e-02 3.249305e-02
+latticemt2D 563 nodes 2 252 253 mat 1 dim 1 thick 1.000000e+00 width 4.593126e-03 gpCoords 2 5.931761e-02 1.343224e-02
+latticemt2D 564 nodes 2 146 149 mat 1 dim 1 thick 1.000000e+00 width 5.320610e-03 gpCoords 2 2.767297e-02 1.075118e-02
+latticemt2D 565 nodes 2 3 14 mat 1 dim 1 thick 1.000000e+00 width 4.549773e-03 gpCoords 2 8.997076e-02 2.305422e-02
+latticemt2D 566 nodes 2 12 284 mat 1 dim 1 thick 1.000000e+00 width 4.543688e-03 gpCoords 2 9.513952e-02 4.189278e-02
+latticemt2D 567 nodes 2 129 130 mat 1 dim 1 thick 1.000000e+00 width 4.172745e-03 gpCoords 2 1.097749e-02 2.565749e-02
+latticemt2D 568 nodes 2 46 47 mat 1 dim 1 thick 1.000000e+00 width 7.203643e-03 gpCoords 2 6.224370e-03 2.289672e-02
+latticemt2D 569 nodes 2 30 31 mat 1 dim 1 thick 1.000000e+00 width 7.032054e-03 gpCoords 2 7.664637e-03 2.873659e-02
+latticemt2D 570 nodes 2 325 376 mat 1 dim 1 thick 1.000000e+00 width 4.106040e-03 gpCoords 2 7.827998e-02 1.473313e-02
+latticemt2D 571 nodes 2 256 257 mat 1 dim 1 thick 1.000000e+00 width 4.174656e-03 gpCoords 2 5.328091e-02 3.021205e-02
+latticemt2D 572 nodes 2 258 262 mat 1 dim 1 thick 1.000000e+00 width 4.648740e-03 gpCoords 2 4.889409e-02 2.924859e-02
+latticemt2D 573 nodes 2 48 49 mat 1 dim 1 thick 1.000000e+00 width 4.595299e-03 gpCoords 2 4.573747e-02 3.202238e-02
+latticemt2D 574 nodes 2 127 373 mat 1 dim 1 thick 1.000000e+00 width 5.676093e-03 gpCoords 2 2.082032e-02 3.746004e-02
+latticemt2D 575 nodes 2 158 231 mat 1 dim 1 thick 1.000000e+00 width 4.551466e-03 gpCoords 2 7.522055e-03 6.928038e-03
+latticemt2D 576 nodes 2 33 34 mat 1 dim 1 thick 1.000000e+00 width 5.613531e-03 gpCoords 2 4.161155e-03 1.061986e-02
+latticemt2D 577 nodes 2 36 137 mat 1 dim 1 thick 1.000000e+00 width 4.786957e-03 gpCoords 2 1.688798e-02 7.574472e-03
+latticemt2D 578 nodes 2 332 333 mat 1 dim 1 thick 1.000000e+00 width 6.212915e-03 gpCoords 2 9.306899e-02 9.106012e-03
+latticemt2D 579 nodes 2 41 42 mat 1 dim 1 thick 1.000000e+00 width 6.298374e-03 gpCoords 2 3.450680e-03 1.668015e-02
+latticemt2D 580 nodes 2 393 404 mat 1 dim 1 thick 1.000000e+00 width 5.452848e-03 gpCoords 2 2.074383e-02 4.287851e-02
+latticemt2D 581 nodes 2 113 213 mat 1 dim 1 thick 1.000000e+00 width 4.944396e-03 gpCoords 2 6.461260e-02 3.799295e-03
+latticemt2D 582 nodes 2 304 370 mat 1 dim 1 thick 1.000000e+00 width 5.658179e-03 gpCoords 2 5.664770e-02 3.970841e-02
+latticemt2D 583 nodes 2 308 371 mat 1 dim 1 thick 1.000000e+00 width 6.190190e-03 gpCoords 2 3.742303e-02 3.800772e-02
+latticemt2D 584 nodes 2 4 65 mat 1 dim 1 thick 1.000000e+00 width 4.587466e-03 gpCoords 2 5.640178e-02 3.271205e-02
+latticemt2D 585 nodes 2 305 306 mat 1 dim 1 thick 1.000000e+00 width 4.622838e-03 gpCoords 2 5.886925e-02 3.586980e-02
+latticemt2D 586 nodes 2 10 53 mat 1 dim 1 thick 1.000000e+00 width 6.372191e-03 gpCoords 2 4.394813e-02 2.804740e-02
+latticemt2D 587 nodes 2 267 359 mat 1 dim 1 thick 1.000000e+00 width 4.027146e-03 gpCoords 2 5.843544e-02 1.764384e-02
+latticemt2D 588 nodes 2 382 388 mat 1 dim 1 thick 1.000000e+00 width 4.006434e-03 gpCoords 2 8.996217e-02 5.995062e-03
+latticemt2D 589 nodes 2 76 190 mat 1 dim 1 thick 1.000000e+00 width 5.757495e-03 gpCoords 2 8.041187e-02 3.000765e-02
+latticetransmat 1 d 1.e-9 k 1.e-13 vis 1.e-9 thetas 0.0924 thetar 0. ctor 0.001
+ConstantFunction 1 f(t) 1.
+#@grid 2dTM
+#@mesher qhull
+#@diam 0.004
+#@perflag 2 0 0
+#@thickness 1.0
+#@rect 1 box 4 0. 0. 0.10 0.05
+#@notch 1 box 4 0.046 0.0 0.054 0.025 delete

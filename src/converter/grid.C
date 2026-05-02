@@ -5191,9 +5191,24 @@ void Grid::give2DTMOutput(const std::string &fileName)
     // vertices, cross-section width is the length of the dual Delaunay
     // edge. Geometry handling mirrors the SM path: pre-pass counts
     // emittable nodes/elements with a compact id remap; non-periodic
-    // only (periodicity comes in Stage 9); no notch / inclusion
-    // material resolution (transport materials live on regions, not
-    // individual lines, so per-element overrides aren't standard here).
+    // only (periodicity comes in Stage 9).
+    //
+    // Notch + inclusion resolution mirrors SM via duality. For a TM
+    // element (Voronoi edge), its cross-section is the dual Delaunay
+    // edge — the same edge that a SM `lattice2D` element would represent
+    // were the dual mesh emitted. So we delete / reassign material on a
+    // TM element using the SAME midpoint test, applied to the Delaunay
+    // cross-section endpoints. A `#@notch ... delete` box that removes
+    // an SM element therefore also removes the corresponding TM element.
+    //
+    // Geometric note: when a TM element's dual Delaunay edge straddles
+    // the notch surface (one endpoint inside, one outside the notch), a
+    // strict implementation would project the cross-section onto the
+    // notch surface and use only the exterior portion as the transport
+    // width. That projection / clipping is not yet implemented (same
+    // limitation as the SM Voronoi-edge clipping at the rectangle
+    // boundary). For now the dual-edge length is used as-is, and the
+    // midpoint test decides delete-or-keep without partial overlap.
 
     if ( regionList.empty() || regionList[0] == nullptr ) {
         converter::error("give2DTMOutput: at least one #@rect region is required");
@@ -5225,6 +5240,7 @@ void Grid::give2DTMOutput(const std::string &fileName)
     int emittedElems = 0;
     {
         oofem::IntArray ep, cs;
+        oofem::FloatArray dA(3), dB(3);
         for ( int i = 0; i < nVorL; ++i ) {
             this->giveVoronoiLine(i + 1)->giveLocalVertices(ep);
             if ( ep.giveSize() != 2 ) continue;
@@ -5232,6 +5248,10 @@ void Grid::give2DTMOutput(const std::string &fileName)
             if ( nodeMap[ ep.at(1) ] == 0 || nodeMap[ ep.at(2) ] == 0 ) continue;
             this->giveVoronoiLine(i + 1)->giveCrossSectionVertices(cs);
             if ( cs.giveSize() != 2 ) continue;
+            // Mirror SM deletion via the dual Delaunay-edge midpoint.
+            this->giveDelaunayVertex(cs.at(1))->giveCoordinates(dA);
+            this->giveDelaunayVertex(cs.at(2))->giveCoordinates(dB);
+            if ( notchDeletes(dA, dB) ) continue;
             ++emittedElems;
         }
     }
@@ -5306,7 +5326,10 @@ void Grid::give2DTMOutput(const std::string &fileName)
                     << coords.at(1) << " " << coords.at(2) << "\n";
             }
 
-            // Voronoi lines → latticemt2D elements.
+            // Voronoi lines → latticemt2D elements. Material is resolved
+            // through the same `notch` / `inclusion` pipeline as SM, but
+            // applied to the DUAL Delaunay-edge endpoints (so the per-edge
+            // override matches the corresponding SM element).
             oofem::IntArray endpoints, crossSectionNodes;
             oofem::FloatArray vA(3), vB(3), dA(3), dB(3);
             int elemCounter = 0;
@@ -5319,10 +5342,12 @@ void Grid::give2DTMOutput(const std::string &fileName)
                 this->giveVoronoiLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
                 if ( crossSectionNodes.giveSize() != 2 ) continue;
 
-                this->giveVoronoiVertex(endpoints.at(1))->giveCoordinates(vA);
-                this->giveVoronoiVertex(endpoints.at(2))->giveCoordinates(vB);
                 this->giveDelaunayVertex(crossSectionNodes.at(1))->giveCoordinates(dA);
                 this->giveDelaunayVertex(crossSectionNodes.at(2))->giveCoordinates(dB);
+                if ( notchDeletes(dA, dB) ) continue;
+
+                this->giveVoronoiVertex(endpoints.at(1))->giveCoordinates(vA);
+                this->giveVoronoiVertex(endpoints.at(2))->giveCoordinates(vB);
 
                 const double ddx = dA.at(1) - dB.at(1);
                 const double ddy = dA.at(2) - dB.at(2);
@@ -5330,10 +5355,13 @@ void Grid::give2DTMOutput(const std::string &fileName)
                 const double gx = 0.5 * ( vA.at(1) + vB.at(1) );
                 const double gy = 0.5 * ( vA.at(2) + vB.at(2) );
 
+                int mat = resolveNotchMaterial(dA, dB, 1);
+                mat = resolveInclusionMaterial(dA, dB, mat);
+
                 out << "latticemt2D " << ++elemCounter
                     << " nodes 2 " << nodeMap[ endpoints.at(1) ]
                     << " " << nodeMap[ endpoints.at(2) ]
-                    << " mat 1 dim 1"
+                    << " mat " << mat << " dim 1"
                     << " thick " << latticeThickness
                     << " width " << width
                     << " gpCoords 2 " << gx << " " << gy
