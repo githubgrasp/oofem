@@ -2108,6 +2108,33 @@ in Table~\ref{latticemt3dsummary}.
 \elementDescription{Status}{Reliable}
 \end{elementsummary}
 
+\subsubsection{latticemt3dboundary element}
+Three-noded 3D lattice mass-transport element for boundaries of 3D periodic
+cells. The first two nodes carry the single pressure / moisture dof as in
+\element{latticemt3d}; the third is a control node that supplies the macro
+gradients driving the periodic cell. The dof of the node that lies outside the
+periodic cell is reconstructed from its periodic image inside the cell plus the
+control-node dofs, using the same translation pattern as
+\element{lattice3dboundary} (Figure~\ref{lattice3dboundaryfig}).
+The element features are summarised in Table~\ref{latticemt3dboundarysummary}.
+
+\begin{elementsummary}{latticemt3dboundary}{3d lattice mass-transport boundary element}{\field{polycoords}{ra} \field{location}{ia} \optField{dim}{rn} \optField{area}{rn} \optField{mlength}{rn} \optField{crackwidths}{ra} \optField{couplingflag}{in} \optField{couplingnumber}{ia} \optField{lumpedcapacity}{in}}{latticemt3dboundary element summary}{latticemt3dboundarysummary}
+\elementParam{\param{polycoords}: coordinates of the mid-cross-section (Voronoi facet) vertices in the global system.}
+\elementParam{\param{location}: array of two integers between 1 and 26 specifying the location of the two transport nodes with respect to the 3D periodic cell — same encoding as \element{lattice3dboundary}.}
+\elementParam{\param{dim}: dimension factor (optional, default 3).}
+\elementParam{\param{area}: prescribed cross-section area (optional; otherwise computed from \param{polycoords}).}
+\elementParam{\param{mlength}: minimum element length threshold (optional).}
+\elementParam{\param{crackwidths}: per-vertex crack widths used in conductivity scaling (optional).}
+\elementParam{\param{couplingflag}: flag (optional, default 0) activating coupling with a mechanical lattice element.}
+\elementParam{\param{couplingnumber}: array of coupled mechanical element numbers.}
+\elementParam{\param{lumpedcapacity}: flag (optional, default 0). Replaces the capacity matrix with its diagonal lumped form for monotone TPFA-equivalent behaviour.}
+\elementDescription{Unknowns}{Single dof (P\_f) per transport node. The third (control) node carries the periodic-cell dofs as for \element{lattice3dboundary} but reduced to the transport-relevant components.}
+\elementDescription{Approximation}{Linear pressure along the element.}
+\elementDescription{Integration}{One Gauss point at the element midpoint.}
+\elementDescription{CS properties}{simplecs.}
+\elementDescription{Status}{Reliable}
+\end{elementsummary}
+
 
 %-----------------------------------------------------------------------------------------------
 \clearpage

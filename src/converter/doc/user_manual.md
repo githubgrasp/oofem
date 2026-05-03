@@ -35,7 +35,8 @@ Test directories are named `<Case><Mesher>` so the mesher path is obvious from t
 | `reference.in` | Committed golden output to diff against |
 | `mesh.nodes` + `mesh.voronoi` | Qhull mesh input (qhull path) |
 | `mesh.t3d` | T3D mesh input (t3d path) |
-| `mesh.sh` | Shell script showing how the mesh was generated (informational) |
+| `mesh.sh` | Shell script that runs the full mesh / random-field pipeline (informational, not invoked by ctest) |
+| `random.in` *(optional)* | Genran control file. Present in tests whose `control.in` references a `random.dat` random field via `InterpolatingFunction`. `mesh.sh` invokes `genran.exe random.in random.dat` before the converter so the OOFEM-side solve can read the field. `random.dat` and `stat.dat` are gitignored — regenerate locally. |
 
 ### Updating a reference file
 
@@ -104,24 +105,27 @@ Consumed by `give3DSMOutput` / `give3DTMOutput` (the qhull writers) and by qhull
 
 | Directive | Arguments | Purpose |
 |-----------|-----------|---------|
-| `#@grid` | `<type>` | Selects the output generator. The unified types are `3dSM` (covers plain, periodic, and fibre-bearing SM) and `3dTM` (mass transport, plain or periodic). A staggered SMTM coupled analysis is expressed as three separate templates — one per subproblem (SM, TM, and the `StaggeredProblem` control file) — each with its own `#@grid` directive. See `Grid::resolveGridType`. |
+| `#@grid` | `<type>` | Selects the output generator. Available types: `3dSM`, `3dTM`, `2dSM`, `2dTM`. The 3D writers cover plain, periodic, and (3D-SM only) fibre-bearing analyses; the 2D writers cover plain SM (with optional periodicity via `latticeboundary2d`) and plain TM. A staggered SMTM coupled analysis is expressed as separate templates — one per subproblem — each with its own `#@grid` directive. See `Grid::resolveGridType`. |
 | `#@mesher` | `t3d` \| `qhull` | Declares which mesher produced the input. Lets `main.C` dispatch without relying on the CLI `--mesher` flag. |
 | `#@diam` | `<d>` | Nominal grain diameter — must match the `diam` used when the mesh was generated. |
-| `#@perflag` | `3 <px> <py> <pz>` | Periodicity flags per axis (0 = non-periodic, 1 = periodic). For `3dSM`, any axis = 1 switches the writer into periodic mode (control node, `lattice3Dboundary` for boundary-crossing elements). |
+| `#@perflag` | `2 <px> <py>` (2D) or `3 <px> <py> <pz>` (3D) | Periodicity flags per axis (0 = non-periodic, 1 = periodic). For `3dSM` / `2dSM`, any axis = 1 switches the writer into periodic mode (CTLNODE, `lattice3Dboundary` / `latticeboundary2d` for boundary-crossing elements). For `3dTM`, any axis = 1 emits `latticemt3dboundary` for boundary-crossing Voronoi edges (requires the OOFEM-side `Lattice3dboundary_mt` element to be registered). 2D TM has no periodic OOFEM element and so cannot be made periodic. |
+| `#@thickness` | `<t>` | Out-of-plane thickness for 2D `lattice2D` / `latticemt2D` / `latticeboundary2d` elements (`thick` field of the OOFEM input). Defaults to 1.0. Ignored for 3D writers. |
 | `#@ranint` | `<seed>` | Random integer seed. Non-negative values are replaced with `-time(NULL)`. |
-| `#@prism` | `<id> box 6 <xmin> <ymin> <zmin> <xmax> <ymax> <zmax> [refine <r>] [edgerefine <re>] [surfacerefine <rs>] [regionrefine <rr>]` | Defines a box-shaped region. The `*refine` tokens exist for mirroring the generator's `mesh.in` — the converter ignores them, but keeping them in sync keeps the two files readable as a pair. |
+| `#@prism` | `<id> box 6 <xmin> <ymin> <zmin> <xmax> <ymax> <zmax> [refine <r>] [edgerefine <re>] [surfacerefine <rs>] [regionrefine <rr>]` | Defines a 3D box-shaped region. The `*refine` tokens exist for mirroring the generator's `mesh.in` — the converter ignores them, but keeping them in sync keeps the two files readable as a pair. |
+| `#@rect` | `<id> box 4 <xmin> <ymin> <xmax> <ymax>` | 2D analog of `#@prism` — axis-aligned rectangle. Required for `#@grid 2dSM` / `#@grid 2dTM`; the converter uses it for boundary tests, Voronoi-vertex projection, and the inside-rect element filter. The generator's `#@disk` (solid 2D disk region) has no converter analog — for circular inclusions on the converter side use `#@diskinclusion`. |
 | `#@cylinder` | `<id> line 6 <x1> <y1> <z1> <x2> <y2> <z2> radius <r>` | Defines a cylindrical region with axis from `(x1,y1,z1)` to `(x2,y2,z2)` and the given `<r>`. Used alongside (or instead of) `#@prism` to scope the domain for the Voronoi dual. |
 | `#@interfacecylinder` | `<id> line 6 <x1> <y1> <z1> <x2> <y2> <z2> radius <r> [itz <t>]` | Cylindrical inclusion with ITZ halo (axis as for `#@cylinder`). Material classification works as for `#@sphereinclusion`: endpoints both inside → `inside` material; endpoints straddle the `radius + t/2` boundary → `interface` material. The `itz` token is optional; if omitted, ITZ defaults to `#@diam`. Use `#@cylinderinclusion` instead when you need to specify `inside`/`interface` material ids directly. |
 | `#@fibre` | `<id> endpoints 6 <x1> <y1> <z1> <x2> <y2> <z2> diameter <d>` | Declares a straight fibre. The converter discretises it into reinforcement nodes at intersections with matrix Voronoi cells, builds `lattice3D` segments along the fibre, and adds `latticelink3D` couplings to the surrounding matrix vertices. |
-| `#@notch` | `<id> box 6 <xmin> <ymin> <zmin> <xmax> <ymax> <zmax> material <m>` | Axis-aligned box describing a notch slit. Matrix `lattice3D` / `lattice3Dboundary` elements whose midpoint falls inside the box are written with `crossSect <m> mat <m>` instead of the default `1 1`. Multiple `#@notch` directives may be given; the first matching one wins. The control file is expected to declare a matching `latticecs <m>` / material `<m>` pair. |
+| `#@notch` | `<id> box {4\|6} <coords> (material <m> \| delete)` | Axis-aligned notch box. 2D form `box 4 xmin ymin xmax ymax`; 3D form `box 6 xmin ymin zmin xmax ymax zmax`. Two modes: <br>• `material <m>` — material-reassignment mode. Matrix elements whose midpoint falls inside get `crossSect <m> mat <m>` instead of the default. The notch is just a region of softened/alternative material; no boundary discretisation needed on the generator side. <br>• `delete` — element-deletion mode. Matrix elements with midpoint inside the box are dropped entirely (the notch is a physical void). Pair with the generator-side `#@notch` directive so the dual mesh has a clean cell partition along the notch surface. Delete-mode notches also trigger Voronoi-vertex projection: vertices that bound a Voronoi edge crossing the notch surface get snapped onto the nearest notch face, so cross-section polygons (3D SM) and TM nodes hug the boundary. <br>Multiple `#@notch` directives may be given; the first matching one wins. |
 | `#@sphereinclusion` | `<id> centre 3 <x> <y> <z> radius <r> itz <t> inside <mi> interface <mif>` | Spherical inclusion with ITZ halo. Effective radius is `r + t/2`. An element whose endpoints both fall inside gets `crossSect mi mat mi`; an element whose endpoints straddle the sphere boundary (one inside, one outside — the ITZ zone) gets `crossSect mif mat mif`. Applied after `#@notch` on the inherited default material. The control file is expected to declare matching `latticecs` / material pairs for both `mi` and `mif`. Use `#@bodyload` to attach a body load to any of the resulting materials. |
+| `#@diskinclusion` | `<id> centre 2 <cx> <cy> radius <r> itz <t> inside <mi> interface <mif>` | 2D analog of `#@sphereinclusion` — circular inclusion with ITZ halo. Internally stored as `SphereInclusionSpec` with `cz = 0`; the existing 3D midpoint / straddle classification works for 2D points unchanged because every 2D vertex has `z = 0`. |
 | `#@cylinderinclusion` | `<id> line 6 <x1> <y1> <z1> <x2> <y2> <z2> radius <r> itz <t> inside <mi> interface <mif>` | Straight-axis cylindrical inclusion with ITZ halo. The classification uses perpendicular distance from each endpoint to the infinite axis through the two line points; inclusion semantics match `#@sphereinclusion`. Use-case: rebar + ITZ + matrix partitioning for corrosion-cracking studies. |
 | `#@inclusionfile` | `<path> itz <t> inside <mi> interface <mif>` | Bulk-load inclusions from a packing file produced by `src/aggregate/`. Each `sphere` line in the file becomes a `SphereInclusionSpec` (semantics identical to `#@sphereinclusion`, sharing the directive's `itz` / `inside` / `interface`); each `fibre` line becomes a `Fibre` (semantics identical to `#@fibre`, renumbered to avoid collisions). `ellipsoid` lines trigger a warning — the converter's material-classification logic only handles spheres. Use this directive instead of dozens of inline `#@sphereinclusion` declarations when the packing comes from aggregate. |
 | `#@bodyload` | `<mat> <bc_id>` | Per-material body load. Any element whose `crossSect` / `mat` resolves to `<mat>` gets `bodyloads 1 <bc_id>` appended. Decoupled from inclusion directives so each test can place its `StructTemperatureLoad` (or similar BC) on the material it needs — e.g. on the matrix for an eigenstrain load (Wong), or on the interface for an eigendisplacement load (corrosion cylinder). Multiple entries allowed (one per material). |
 | `#@couplingflag` | *(no arguments)* | Toggle. When present, each emitted element gets `couplingflag 1 couplingnumber <N> <ids…>` appended after the polycoords block. For SM lattice3D / lattice3Dboundary (at Delaunay lines), the ids are the Voronoi-line cross-section elements; for TM latticemt3D (at Voronoi lines), they are the Delaunay-line cross-section elements. Image-side entries (`outsideFlag == 1`) are swapped for their periodic partner via `givePeriodicElement()`. Used by staggered SMTM analyses (e.g. Wong percolation) where SM and TM subproblems exchange per-element data. |
 | `#@rigidarm` | `<master_ctl_id> face <axis> <side> mastermask 6 <m1>..<m6> doftype 6 <d1>..<d6>` | SM-only. Any inside Delaunay vertex on the specified face of the region's bounding box (`axis` ∈ 1,2,3 for x/y/z; `side` ∈ `min`/`max`) is emitted as `rigidarmnode … master <N> mastermask … doftype …` instead of a regular `node`, slaved to the controlvertex referenced by `<master_ctl_id>`. The master controlvertex itself is kept as a regular node. Multiple `#@rigidarm` directives may be given (one per face); the first matching one wins. Use-case: cantilever ends clamped as rigid bodies attached to support/load control points. |
 | `#@material_around` | `<ctl_id> material <m>` | SM-only. Any Delaunay line with either endpoint equal to the named controlvertex gets material `<m>`. Precedence: `#@material_around` < `#@notch` < `#@sphereinclusion` / `#@cylinderinclusion` — later rules override earlier ones. Use-case: cantilever lattice lines attached to the support/load points pick up the elastic material rather than the default matrix material. |
-| `#@controlvertex` | `<id> coords 3 <x> <y> <z>` | Declares a specific mesh-node location whose nearest Delaunay-vertex id is exposed at write time via the inline placeholder `#@CTL<id>`. Must also appear as a `controlvertex` entry in the generator's `mesh.in` so the mesher seeds a node at that coordinate. Typical use: naming support/load/monitor nodes whose ids feed into `hpc`, `OutputManager`, BC sets, and check rules. |
+| `#@controlvertex` | `<id> coords {2\|3} <x> <y> [<z>]` | Declares a specific mesh-node location whose nearest Delaunay-vertex id is exposed at write time via the inline placeholder `#@CTL<id>`. Must also appear as a `controlvertex` entry in the generator's `mesh.in` so the mesher seeds a node at that coordinate. The coord arity matches the grid's dimension. Typical use: naming support/load/monitor nodes whose ids feed into `hpc`, `OutputManager`, BC sets, and check rules. |
 | `#@CTL<id>` | *(inline placeholder)* | Substituted on each non-directive line with the mapped OOFEM node id (compact in non-periodic mode, raw in periodic mode). Longer ids substitute first so that e.g. `#@CTL12` isn't shadowed by `#@CTL1`. |
 | `#@CTLNODE` | *(inline placeholder, not a line directive)* | Substituted with the numeric id of the periodic control node before each non-directive line is written. Use anywhere the OOFEM template needs that id (e.g. `hpc 2 #@CTLNODE 2 hpcw 1 1.`, `OutputManager tstep_all dofman_output {#@CTLNODE}`, `#NODE number #@CTLNODE dof 2 unknown d`). Inert when `perflag` is fully non-periodic. |
 | `#@pov` | *(no arguments)* | Opt in to writing the auxiliary POV-Ray rendering files (`*.vor.line.pov`, `*.vor.cross.pov`, `*.del.line.pov`, `*.del.cross.pov`). Default off — POV files are not generated unless this directive is present. |
@@ -142,6 +146,115 @@ Consumed by the T3D writers (`giveOutputT3d` / `writeT3dNodesOofem` / `writeT3dE
 | `#@element` | `<entityKind> <entityID> <elementName> <crossSect> <mat>` | Per-region element override for the T3D writer. `<entityKind>` is one of `vertex`, `curve`, `surface`, `patch`, `shell`. Edges classified to the given entity emit `<elementName>` instead of the writer's hardcoded default (`lattice3D`, `lattice3d`, or `lattice3Dnl` depending on geometry). Edges that don't match any directive use the default. Resolution priority for an edge that touches multiple entities: curve > surface > region. |
 
 `<entType>` uses the numeric codes from `Grid::entityTypeFromString`: 1 vertex, 2 curve, 3 surface, 5 patch, 6 shell.
+
+### `2dSM` writer — 2D structural mechanics
+
+`#@grid 2dSM` dispatches to `Grid::give2DSMOutput`, which emits one
+`lattice2D` element per Delaunay edge inside the rect (or
+`latticeboundary2d` for periodic-crossing edges). The OOFEM line
+format is
+
+```text
+lattice2D <id> nodes 2 <n1> <n2> crossSect <m> mat <m>
+          gpCoords 2 <gx> <gy> width <w> thick <t>
+```
+
+with `gpCoords` the midpoint of the lattice element, `width` the
+length of the dual Voronoi cross-section edge, and `thick` the
+out-of-plane thickness from `#@thickness`. The companion test domain
+type is `domain 2dlattice` (or `2dLattice`).
+
+Periodic mode (any axis of `#@perflag` set) appends a CTLNODE whose
+coordinates are the specimen dimensions and whose DOFs hold the macro
+strains:
+
+```text
+node <ctlNode> coords 2 <lx> <ly> dofidmask 3 31 32 42
+```
+
+Boundary-crossing Delaunay edges are emitted as
+
+```text
+latticeboundary2d <id> nodes 3 <inside> <partner> <ctlNode>
+                  crossSect <m> mat <m> gpCoords 2 <gx> <gy>
+                  width <w> thick <t> location <code>
+```
+
+where `<partner>` is the periodic partner of the outside endpoint and
+`<code>` is the 1..8 compass-direction shift code consumed by
+`Lattice2dBoundary::giveSwitches`.
+
+### `2dTM` writer — 2D mass transport
+
+`#@grid 2dTM` dispatches to `Grid::give2DTMOutput`. Mirrors `2dSM`
+with Voronoi/Delaunay roles swapped: nodes are Voronoi vertices, each
+`latticemt2D` element is a Voronoi edge, the cross-section width is
+the length of the dual Delaunay edge:
+
+```text
+latticemt2D <id> nodes 2 <n1> <n2> mat <m> dim 1
+            thick <t> width <w> gpCoords 2 <gx> <gy>
+```
+
+The companion domain type is `domain 2dMassLatticeTransport`. 2D TM
+periodicity is **not implemented** — OOFEM has no `Lattice2dBoundary_mt`
+element. Setting `#@perflag` periodic with `#@grid 2dTM` still emits
+`latticemt2D` for inside edges; boundary-crossing edges are dropped.
+
+### Voronoi-vertex projection at boundaries
+
+For 2D and for delete-mode 3D notches, the converter projects Voronoi
+vertices that bound a *crossing* Voronoi edge onto the nearest face of
+the rect / notch (`Grid::project2DVoronoiVerticesToBoundaries` and
+`project3DVoronoiVerticesToNotches`). This serves two purposes:
+
+- **Transport nodes land on the surface.** TM elements that cross a
+  boundary become elements with one inside endpoint and one
+  on-the-boundary endpoint, matching the 3D outer-boundary behaviour
+  of `Prism::modifyVoronoiCrossSection`.
+- **SM cross-sections are clipped at the surface.** The dual Voronoi
+  edge length used as `lattice2D` `width` reflects the part inside
+  the specimen rather than extending past it.
+
+Selectivity matters: only Voronoi vertices that bound a crossing edge
+are projected. Vertices "deep outside" (only connected to other
+outside vertices) keep their qhull positions and are filtered out at
+emission time. A blanket "clamp every outside vertex" pass would
+collapse far-out vertices onto the same rect corner and create
+coincident TM nodes.
+
+For notches, projection only fires for `#@notch ... delete` boxes —
+material-mode notches are pure material overrides and don't represent
+a physical surface, so projecting Voronoi vertices for them would
+distort polygons without a coherent boundary to snap to.
+
+### 3D periodic mass transport — `latticemt3dboundary`
+
+`#@grid 3dTM` with `#@perflag` periodic emits `latticemt3dboundary`
+elements for boundary-crossing Voronoi edges. This requires the
+OOFEM-side `Lattice3dboundary_mt` element registered under the
+`latticemt3dboundary` keyword (in `src/tm/Elements/LatticeElements/`).
+The converter test `tests/3DPerQhullTM/` exercises the full pipeline.
+
+### Random-field pipeline (`mesh.sh` + genran)
+
+OOFEM `InterpolatingFunction` records can read a regular-grid random
+field from `random.dat`. To keep the full pipeline reproducible from
+the test directory, tests that consume `random.dat` ship a `random.in`
+genran control file, and `mesh.sh` runs genran between the qhull and
+converter steps:
+
+```bash
+~/build/oofem/src/generator/generator.exec mesh.in
+mv nodes.dat mesh.nodes
+qvoronoi p Fv < mesh.nodes > mesh.voronoi
+~/Software/genran.git/genran.exe random.in random.dat
+~/build/oofem/src/converter/converter.exec control.in mesh.nodes mesh.voronoi
+```
+
+Both `random.dat` and the `stat.dat` summary genran writes are
+gitignored — they're build artefacts, regenerated from `random.in`
+each run. See `tests/3DCylinderQhull/` for the canonical example.
 
 ### Unified `3dSM` writer — conventions for matrix, fibres, and links
 

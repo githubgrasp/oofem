@@ -56,3 +56,5 @@ tests/sm/crack1Step0.vtk
 tests/sm/crack2Step0.vtk
 tests/sm/t3d.bmf
 CLAUDE.md
+
+stat.dat

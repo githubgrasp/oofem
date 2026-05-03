@@ -126,12 +126,12 @@ and descriptive text — are ignored. Directive order is irrelevant.
 |-----------|-----------|---------|
 | `#@output` | `<filename>` | Packing-file output path. Required. |
 | `#@vtu` | `<filename>` | Optional VTU output path. Omit to skip ParaView export. |
-| `#@box` | `3 <lx> <ly> <lz>` | RVE side lengths along x, y, z. Required. |
-| `#@periodicity` | `3 <px> <py> <pz>` | Per-axis periodicity flag. `1` = periodic (the placer generates ghosts and allows boundary crossings); `0` = real boundary (candidates that touch the boundary are rejected). |
+| `#@box` | `2 <lx> <ly>` (2D) or `3 <lx> <ly> <lz>` (3D) | RVE side lengths. The leading count selects the dimension — 2D mode places disks, 3D mode places ellipsoids/spheres and (optionally) fibres. Required. |
+| `#@periodicity` | `2 <px> <py>` (2D) or `3 <px> <py> <pz>` (3D) | Per-axis periodicity flag. `1` = periodic (the placer generates ghosts and allows boundary crossings); `0` = real boundary (candidates that touch the boundary are rejected). The arity must match `#@box`. |
 | `#@seed` | `<n>` | Seed passed to `std::mt19937`. The same seed always produces the same packing. |
 | `#@maxiter` | `<n>` | Maximum number of trial placements per inclusion before giving up. Defaults to 10000. |
-| `#@grading` | `dmin <d>  dmax <d>  fraction <f>  [shape sphere\|ellipsoid]` | Aggregate sieve curve parameters. Optional — omit if no aggregates are wanted. `shape ellipsoid` (default) samples random aspect-ratio ellipsoids; `shape sphere` collapses each aggregate to `sx = sy = sz = r`, written as `sphere` lines in `packing.dat`. |
-| `#@fibres` | `fraction <f>  length <l>  diameter <d>` | Fibre placement parameters. Optional — omit if no fibres are wanted. The number of fibres is computed as `floor(box_volume · fraction / (π · (d/2)² · l))`. |
+| `#@grading` | `dmin <d>  dmax <d>  fraction <f>  [shape sphere\|ellipsoid]` | Aggregate sieve curve parameters. Optional — omit if no aggregates are wanted. In 3D, `shape ellipsoid` (default) samples random aspect-ratio ellipsoids; `shape sphere` collapses each aggregate to `sx = sy = sz = r`. In 2D the `shape` token is ignored and disks are sampled (single radius per aggregate, written as `disk` lines in `packing.dat`). |
+| `#@fibres` | `fraction <f>  length <l>  diameter <d>` | Fibre placement parameters. Optional — omit if no fibres are wanted. **3D only** — fibres are not supported in 2D (a 2D textile cross-section is a circle, modelled via `#@grading` disks). The number of fibres is computed as `floor(box_volume · fraction / (π · (d/2)² · l))`. |
 
 ### `#@grading` semantics
 
@@ -151,6 +151,28 @@ six-parameter ellipsoid form. Spherical aggregates are particularly
 useful when the downstream consumer (typically the generator) only
 implements surface seeding for spheres — see `tests/SmallRVEsphere/`
 for an example.
+
+### 2D mode
+
+`#@box 2 lx ly` switches the module into 2D-disk mode. The grading curve
+samples a single radius per inclusion (uniform in `[lower/2, upper/2]`
+per sieve interval), the placer uses an analytic distance-based overlap
+test instead of the 3×3 Alfano-Greer eigenvalue path, and the packing
+file writes `disk` lines:
+
+```text
+# packing v1
+# box 0.05 0.05
+# periodicity 1 1
+disk 1 centre 2 0.0298 0.0078 radius 0.00687
+disk 2 centre 2 0.0050 0.0029 radius 0.00488
+...
+```
+
+The 2D path is the typical entry point for textile-reinforced concrete
+modelling (where the textile cross-sections are circular). See
+`tests/2DRVE/` for a 50×50 mm doubly-periodic example and the matching
+generator-side `#@inclusionfile` consumer.
 
 ### `#@fibres` semantics
 
@@ -180,6 +202,8 @@ analytically from `aggregateFraction`, `fibreFraction`, `fibreDiameter`,
 A line-oriented text file. The first three lines are metadata comments;
 the remaining lines are inclusion records.
 
+3D form:
+
 ```text
 # packing v1
 # box <lx> <ly> <lz>
@@ -192,26 +216,40 @@ fibre <id> endpointcoords 6 <ax> <ay> <az> <bx> <by> <bz> diameter <d>
 ...
 ```
 
-Each inclusion line starts with its type keyword (`ellipsoid`, `sphere`,
-`fibre`) and a per-type sequential id. The remaining tokens follow
-OOFEM's `keyword count v1 v2 ...` convention, parseable by the same
-machinery the generator and converter already use. `sphere` lines are
-written automatically when `Ellipsoid::writeTo` detects three equal
-semi-axes — the typical case under `#@grading shape sphere`.
+2D form (no `z` column in the header, no `fibre` lines):
+
+```text
+# packing v1
+# box <lx> <ly>
+# periodicity <px> <py>
+disk <id> centre 2 <cx> <cy> radius <r>
+...
+```
+
+Each inclusion line starts with its type keyword (`disk`, `ellipsoid`,
+`sphere`, `fibre`) and a per-type sequential id. The remaining tokens
+follow OOFEM's `keyword count v1 v2 ...` convention, parseable by the
+same machinery the generator and converter already use. `sphere` lines
+are written automatically when `Ellipsoid::writeTo` detects three equal
+semi-axes — the typical case under `#@grading shape sphere`. `disk`
+lines are the 2D analog.
 
 This format is shared with the generator and the converter:
 
 - The **generator** consumes it via `#@inclusionfile <path> [itz <t>] [refine <r>]` —
-  each `sphere` line becomes an `InterfaceSphere` (surface plus ITZ halo
-  seeded with points). `ellipsoid` lines trigger a warning (the generator
-  does not yet implement arbitrary-orientation ellipsoid surface seeding);
+  each `sphere` line becomes an `InterfaceSphere`, each `disk` line
+  becomes an `InterfaceDisk` (both seed surface points plus an ITZ
+  halo). `ellipsoid` lines trigger a warning (the generator does not
+  yet implement arbitrary-orientation ellipsoid surface seeding);
   `fibre` lines are silently ignored (handled by the converter, not the
   generator).
 - The **converter** consumes it via `#@inclusionfile <path> itz <t> inside <m> interface <m>` —
   each `sphere` line becomes a `SphereInclusionSpec` driving material
   classification of every Voronoi/Delaunay edge whose endpoints fall
   inside or straddle the sphere+ITZ boundary; each `fibre` line becomes
-  a `Fibre` for beam-and-link generation.
+  a `Fibre` for beam-and-link generation. (`disk` lines for the 2D path
+  are handled via `#@diskinclusion` rather than `#@inclusionfile` —
+  `#@inclusionfile` consumption on the converter side is currently 3D-only.)
 
 ### `packing.vtu`
 
