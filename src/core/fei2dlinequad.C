@@ -51,22 +51,23 @@ void FEI2dLineQuad :: evalN(FloatArray &answer, const FloatArray &lcoords, const
 double FEI2dLineQuad :: evaldNdx(FloatMatrix &answer, const FloatArray &lcoords, const FEICellGeometry &cellgeo) const
 {
     // Not meaningful to return anything. Just dNds would make sense if the caller defines a local coordinate system.
-    double xi = lcoords(0);
-    answer.resize(3,1);
-    answer(0,0) = -0.5 + xi;
-    answer(1,0) =  0.5 + xi;
-    answer(2,0) = -2.0 * xi;
+    FloatMatrix dNdxi;
+    this->evaldNdxi(dNdxi, lcoords, cellgeo);
+    answer.resize(3, 2);
+    answer.zero();
 
-    double es1 = answer(0,0) * cellgeo.giveVertexCoordinates(1).at(xind) +
-                 answer(1,0) * cellgeo.giveVertexCoordinates(2).at(xind) +
-                 answer(2,0) * cellgeo.giveVertexCoordinates(3).at(xind);
+    double dxdxi = 0.0, dydxi = 0.0;
+    for ( int i = 0; i < 3; i++ ) {
+        dxdxi += dNdxi(i, 0) * cellgeo.giveVertexCoordinates(i + 1).at(xind);
+        dydxi += dNdxi(i, 0) * cellgeo.giveVertexCoordinates(i + 1).at(yind);
+    }
+    double J = sqrt(dxdxi * dxdxi + dydxi * dydxi);
 
-    double es2 = answer(0,0) * cellgeo.giveVertexCoordinates(1).at(yind) +
-                 answer(1,0) * cellgeo.giveVertexCoordinates(2).at(yind) +
-                 answer(2,0) * cellgeo.giveVertexCoordinates(3).at(yind);
+    for ( int i = 0; i < 3; i++ ) {
+        answer(i, 0) = (dNdxi(i, 0) / J) * dxdxi/J; // dN1/ds * cos(alpha) = dN1/dxi * dx / ds 
+        answer(i, 1) = (dNdxi(i, 0) / J) * dydxi/J; // dN1/ds * sin(alpha) = dN1/dxi * dy / ds 
+    }
 
-    double J = sqrt(es1 * es1 + es2 * es2);
-    answer.times(1 / J);
     return J;
 }
 
