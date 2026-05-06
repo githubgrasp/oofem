@@ -3397,17 +3397,23 @@ Grid::give3DSMOutput(const std::string &fileName)
                 }
 
                 // Check whether this vertex lands on any #@slaveside face.
+                // Skip every named control vertex — they stay as regular masters
+                // regardless of which face they sit on.
+                bool isAnyControlVertex = false;
+                for ( const auto &kv : controlNodeIds ) {
+                    if ( kv.second == i + 1 ) { isAnyControlVertex = true; break; }
+                }
                 const SlaveSideSpec *ssMatch = nullptr;
-                for ( const auto &ss : slaveSideSpecs ) {
-                    if ( ss.axis < 1 || ss.axis > 3 ) continue;
-                    const double faceCoord = ss.sideMax ? bounds.at(2 * ss.axis)
-                                                        : bounds.at(2 * ss.axis - 1);
-                    if ( std::abs(coords.at(ss.axis) - faceCoord) >= tol ) continue;
-                    auto it = controlNodeIds.find(ss.masterCtlId);
-                    if ( it == controlNodeIds.end() ) continue;
-                    if ( it->second == i + 1 ) continue;  // master itself stays a regular node
-                    ssMatch = &ss;
-                    break;
+                if ( !isAnyControlVertex ) {
+                    for ( const auto &ss : slaveSideSpecs ) {
+                        if ( ss.axis < 1 || ss.axis > 3 ) continue;
+                        const double faceCoord = ss.sideMax ? bounds.at(2 * ss.axis)
+                                                            : bounds.at(2 * ss.axis - 1);
+                        if ( std::abs(coords.at(ss.axis) - faceCoord) >= tol ) continue;
+                        if ( controlNodeIds.find(ss.masterCtlId) == controlNodeIds.end() ) continue;
+                        ssMatch = &ss;
+                        break;
+                    }
                 }
 
                 if ( ssMatch ) {
@@ -5250,17 +5256,23 @@ void Grid::give2DSMOutput(const std::string &fileName)
                 this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
 
                 // Match against #@slaveside specs (axis must be in-plane for 2D).
+                // Skip every named control vertex — they stay as regular masters
+                // regardless of which face they sit on.
+                bool isAnyControlVertex = false;
+                for ( const auto &kv : controlNodeIds ) {
+                    if ( kv.second == i + 1 ) { isAnyControlVertex = true; break; }
+                }
                 const SlaveSideSpec *ssMatch = nullptr;
-                for ( const auto &ss : slaveSideSpecs ) {
-                    if ( ss.axis < 1 || ss.axis > 2 ) continue;
-                    const double faceCoord = ss.sideMax ? bounds.at(2 * ss.axis)
-                                                        : bounds.at(2 * ss.axis - 1);
-                    if ( std::abs(coords.at(ss.axis) - faceCoord) >= tol ) continue;
-                    auto it = controlNodeIds.find(ss.masterCtlId);
-                    if ( it == controlNodeIds.end() ) continue;
-                    if ( it->second == i + 1 ) continue;  // master itself stays a regular node
-                    ssMatch = &ss;
-                    break;
+                if ( !isAnyControlVertex ) {
+                    for ( const auto &ss : slaveSideSpecs ) {
+                        if ( ss.axis < 1 || ss.axis > 2 ) continue;
+                        const double faceCoord = ss.sideMax ? bounds.at(2 * ss.axis)
+                                                            : bounds.at(2 * ss.axis - 1);
+                        if ( std::abs(coords.at(ss.axis) - faceCoord) >= tol ) continue;
+                        if ( controlNodeIds.find(ss.masterCtlId) == controlNodeIds.end() ) continue;
+                        ssMatch = &ss;
+                        break;
+                    }
                 }
 
                 out << "node " << nodeMap[ i + 1 ]
@@ -5351,8 +5363,12 @@ void Grid::give2DSMOutput(const std::string &fileName)
                                          partnerId, nDelV, endpoints.at(1));
                             continue;
                         }
-                        n1 = nodeMap[ partnerId ];
-                        n2 = nodeMap[ endpoints.at(2) ];
+                        // Lattice2dBoundary always shifts node(2) by switches·specDim.
+                        // node(2) must therefore be the partner of the outside ghost
+                        // (the inside vertex on the *opposite* side of the cell). Keep
+                        // node(1) as the inside endpoint of this Delaunay edge.
+                        n1 = nodeMap[ endpoints.at(2) ];
+                        n2 = nodeMap[ partnerId ];
                         location = this->giveDelaunayVertex(endpoints.at(1))->giveLocation();
                     }
                     if ( n1 == 0 || n2 == 0 ) {
