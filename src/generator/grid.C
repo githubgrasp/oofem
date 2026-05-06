@@ -688,19 +688,16 @@ int Grid::readControlRecords(const std::string &controlFile)
         } else if ( tag == "#@perflag" ) {
             int n;
             iss >> n;
+            if ( n != 2 && n != 3 ) {
+                generator::error("#@perflag must have two (2D) or three (3D) components");
+            }
             periodicityFlag.resize(n);
             for ( int i = 1; i <= n; ++i ) {
                 iss >> periodicityFlag.at(i);
             }
-            if ( periodicityFlag.giveSize() != 2 && periodicityFlag.giveSize() != 3 ) {
-                generator::error("#@perflag must have two (2D) or three (3D) components");
-            }
-            // Pad 2D form to 3 entries (z always non-periodic) so all
-            // downstream code can address `at(3)` safely.
-            if ( periodicityFlag.giveSize() == 2 ) {
-                periodicityFlag.resize(3);
-                periodicityFlag.at(3) = 0;
-            }
+            // Pad 2D form to 3 entries (z always non-periodic). resizeWithValues
+            // preserves the parsed entries (plain resize zeroes them).
+            periodicityFlag.resizeWithValues(3);
         } else if ( tag == "#@ranflag" ) {
             iss >> randomFlag;
             if ( randomFlag < 0 || randomFlag > 2 ) {

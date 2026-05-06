@@ -354,6 +354,30 @@ OctreeGridLocalizer::buildOctreeDataStructure()
         maxc.at(3) = boundaries.at(6) + margin;
     }
 
+    // For periodic axes, ghosts placed by region generators land at
+    // coords ± domain extent. Expand the candidate bbox to cover them so
+    // insertNodeIntoOctree never sees a point outside the root cell.
+    {
+        oofem::IntArray periodicityFlag;
+        grid->givePeriodicityFlag(periodicityFlag);
+        if ( periodicityFlag.giveSize() > 0 ) {
+            oofem::FloatArray boundaries;
+            grid->defineBoundaries(boundaries);
+            if ( boundaries.giveSize() >= 6 ) {
+                for ( int axis = 1; axis <= std::min(3, periodicityFlag.giveSize()); ++axis ) {
+                    if ( periodicityFlag.at(axis) != 1 ) {
+                        continue;
+                    }
+                    const double lo  = boundaries.at(2 * axis - 1);
+                    const double hi  = boundaries.at(2 * axis);
+                    const double dim = hi - lo;
+                    minc.at(axis) = std::min(minc.at(axis), lo - dim);
+                    maxc.at(axis) = std::max(maxc.at(axis), hi + dim);
+                }
+            }
+        }
+    }
+
     //Extend cell in all three directions by plus/minus its size
 
     oofem::FloatArray distances(3);

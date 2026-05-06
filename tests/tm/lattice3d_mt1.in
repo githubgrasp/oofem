@@ -74,3 +74,4 @@ ConstantFunction 1 f(t) 1.
 #%BEGIN_CHECK%
 #NODE tStep 1 number 2 dof 11 unknown d value -0.5
 #%END_CHECK%
+	

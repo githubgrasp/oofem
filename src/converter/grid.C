@@ -1789,18 +1789,11 @@ int Grid::instanciateYourselfFromQhull(const std::string &controlFile,
     readControlRecords();
 
     // #@perflag may have resized periodicityFlag to a size ≠ 3 (the 2D
-    // form `#@perflag 2 px py` produces a size-2 array). The qhull writers
-    // index periodicityFlag as at(1..3), so pad to 3 entries — preserving
-    // the existing values (`oofem::IntArray::resize` does not preserve
-    // entries in this codebase, so we copy them out and back in).
+    // form `#@perflag 2 px py` produces a size-2 array). Pad to 3 entries
+    // for the qhull writers; resizeWithValues preserves the parsed entries
+    // (plain resize zeroes them).
     if ( periodicityFlag.giveSize() != 3 ) {
-        const int oldSize = periodicityFlag.giveSize();
-        oofem::IntArray copy(oldSize);
-        for ( int i = 1; i <= oldSize; ++i ) copy.at(i) = periodicityFlag.at(i);
-        periodicityFlag.resize(3);
-        for ( int i = 1; i <= 3; ++i ) {
-            periodicityFlag.at(i) = ( i <= oldSize ) ? copy.at(i) : 0;
-        }
+        periodicityFlag.resizeWithValues(3);
     }
 
     if ( delaunayLocalizer == nullptr ) {
