@@ -341,9 +341,3 @@ latticemt2D 187 nodes 2 78 136 mat 1 dim 1 thick 1.000000e+00 width 8.624777e-03
 latticemt2D 188 nodes 2 77 144 mat 1 dim 1 thick 1.000000e+00 width 1.144203e-02 gpCoords 2 2.255316e-02 7.812994e-03
 latticetransmat 1 d 1.e-9 k 1.e-13 vis 1.e-9 thetas 0.0924 thetar 0. ctor 0.001
 ConstantFunction 1 f(t) 1.
-#@grid 2dTM
-#@mesher qhull
-#@diam 0.008
-#@perflag 2 0 0
-#@thickness 1.0
-#@rect 1 box 4 0. 0. 0.10 0.05

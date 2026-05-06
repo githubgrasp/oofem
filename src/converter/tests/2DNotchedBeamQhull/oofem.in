@@ -940,13 +940,3 @@ ConstantFunction 1 f(t) 1.
 Set 1 nodes 1 35
 Set 2 nodes 1 36
 Set 3 nodes 1 37
-#@grid 2dSM
-#@mesher qhull
-#@diam 0.004
-#@perflag 2 0 0
-#@thickness 1.0
-#@rect 1 box 4 0. 0. 0.10 0.05
-#@notch 1 box 4 0.046 0.0 0.054 0.025 delete
-#@controlvertex 1 coords 2 0.005 0.0
-#@controlvertex 2 coords 2 0.095 0.0
-#@controlvertex 3 coords 2 0.05  0.05

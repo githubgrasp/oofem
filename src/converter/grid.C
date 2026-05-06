@@ -1218,6 +1218,39 @@ void Grid::readControlRecords()
             ra.doftype.resize(6);
             for ( int i = 1; i <= 6; ++i ) iss >> ra.doftype.at(i);
             rigidArmSpecs.push_back(ra);
+        } else if ( tag == "#@slaveside" ) {
+            // #@slaveside <master_ctl_id> face <axis> <min|max> dofs <list>
+            // Slaves the listed DOFs of every Delaunay vertex on the chosen
+            // face plane to the named control vertex via DT_simpleSlave.
+            SlaveSideSpec ss;
+            std::string kw, sideWord;
+            int axis = 0;
+            if ( !( iss >> ss.masterCtlId >> kw >> axis >> sideWord ) || kw != "face" ) {
+                converter::error("Malformed #@slaveside — expected '<master_ctl_id> face <axis> <min|max> dofs <list>'");
+            }
+            if ( axis < 1 || axis > 3 ) {
+                converter::error("#@slaveside — axis must be 1, 2 or 3");
+            }
+            if ( sideWord != "min" && sideWord != "max" ) {
+                converter::error("#@slaveside — side must be 'min' or 'max'");
+            }
+            ss.axis = axis;
+            ss.sideMax = ( sideWord == "max" );
+            iss >> kw;
+            if ( kw != "dofs" ) {
+                converter::error("#@slaveside — expected 'dofs <list>' after side");
+            }
+            int dofId;
+            while ( iss >> dofId ) {
+                if ( dofId < 1 || dofId > 6 ) {
+                    converter::errorf("#@slaveside — dof id %d out of range (1..6)", dofId);
+                }
+                ss.slavedDofs.followedBy(dofId);
+            }
+            if ( ss.slavedDofs.giveSize() == 0 ) {
+                converter::error("#@slaveside — at least one DOF id required after 'dofs'");
+            }
+            slaveSideSpecs.push_back(ss);
         } else if ( tag == "#@material_around" ) {
             // #@material_around <ctl_id> material <m>
             MaterialAroundSpec m;
@@ -3363,6 +3396,37 @@ Grid::give3DSMOutput(const std::string &fileName)
                     continue;
                 }
 
+                // Check whether this vertex lands on any #@slaveside face.
+                const SlaveSideSpec *ssMatch = nullptr;
+                for ( const auto &ss : slaveSideSpecs ) {
+                    if ( ss.axis < 1 || ss.axis > 3 ) continue;
+                    const double faceCoord = ss.sideMax ? bounds.at(2 * ss.axis)
+                                                        : bounds.at(2 * ss.axis - 1);
+                    if ( std::abs(coords.at(ss.axis) - faceCoord) >= tol ) continue;
+                    auto it = controlNodeIds.find(ss.masterCtlId);
+                    if ( it == controlNodeIds.end() ) continue;
+                    if ( it->second == i + 1 ) continue;  // master itself stays a regular node
+                    ssMatch = &ss;
+                    break;
+                }
+
+                if ( ssMatch ) {
+                    auto it = controlNodeIds.find(ssMatch->masterCtlId);
+                    const int masterNid = mapId(it->second);
+                    out << "node " << nid << " coords 3 " << std::scientific
+                        << coords.at(1) << " " << coords.at(2) << " " << coords.at(3)
+                        << " dofidmask 6 1 2 3 4 5 6 doftype 6";
+                    for ( int k = 1; k <= 6; ++k ) {
+                        out << " " << ( ssMatch->slavedDofs.contains(k) ? 1 : 0 );
+                    }
+                    out << " mastermask 6";
+                    for ( int k = 1; k <= 6; ++k ) {
+                        out << " " << ( ssMatch->slavedDofs.contains(k) ? masterNid : 0 );
+                    }
+                    out << "\n";
+                    continue;
+                }
+
                 out << "node " << nid << " coords 3 " << std::scientific
                     << coords.at(1) << " " << coords.at(2) << " " << coords.at(3);
                 if ( periodic && firstFlag == 0 ) {
@@ -5179,12 +5243,42 @@ void Grid::give2DSMOutput(const std::string &fileName)
 
             // Delaunay vertices → 2D nodes (compact ids via `nodeMap`).
             oofem::FloatArray coords(3);
+            // 2D lattice nodes carry DOFs {D_u=1, D_v=2, R_w=6}.
+            const oofem::IntArray latticeDofIds = { 1, 2, 6 };
             for ( int i = 0; i < nDelV; i++ ) {
                 if ( nodeMap[ i + 1 ] == 0 ) continue;
                 this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
+
+                // Match against #@slaveside specs (axis must be in-plane for 2D).
+                const SlaveSideSpec *ssMatch = nullptr;
+                for ( const auto &ss : slaveSideSpecs ) {
+                    if ( ss.axis < 1 || ss.axis > 2 ) continue;
+                    const double faceCoord = ss.sideMax ? bounds.at(2 * ss.axis)
+                                                        : bounds.at(2 * ss.axis - 1);
+                    if ( std::abs(coords.at(ss.axis) - faceCoord) >= tol ) continue;
+                    auto it = controlNodeIds.find(ss.masterCtlId);
+                    if ( it == controlNodeIds.end() ) continue;
+                    if ( it->second == i + 1 ) continue;  // master itself stays a regular node
+                    ssMatch = &ss;
+                    break;
+                }
+
                 out << "node " << nodeMap[ i + 1 ]
                     << " coords 2 " << std::scientific
-                    << coords.at(1) << " " << coords.at(2) << "\n";
+                    << coords.at(1) << " " << coords.at(2);
+                if ( ssMatch ) {
+                    auto it = controlNodeIds.find(ssMatch->masterCtlId);
+                    const int masterNid = nodeMap[ it->second ];
+                    out << " dofidmask 3 1 2 6 doftype 3";
+                    for ( int k = 1; k <= 3; ++k ) {
+                        out << " " << ( ssMatch->slavedDofs.contains(latticeDofIds.at(k)) ? 1 : 0 );
+                    }
+                    out << " mastermask 3";
+                    for ( int k = 1; k <= 3; ++k ) {
+                        out << " " << ( ssMatch->slavedDofs.contains(latticeDofIds.at(k)) ? masterNid : 0 );
+                    }
+                }
+                out << "\n";
             }
 
             // Periodic control node — coords are the specimen dimensions
@@ -5289,8 +5383,10 @@ void Grid::give2DSMOutput(const std::string &fileName)
             continue;
         }
 
-        substitute(line);
-        out << line << "\n";
+        if ( !isConverterDirective(t) ) {
+            substitute(line);
+            out << line << "\n";
+        }
     }
 }
 
@@ -5733,8 +5829,10 @@ void Grid::give2DTMOutput(const std::string &fileName)
             continue;
         }
 
-        substitute(line);
-        out << line << "\n";
+        if ( !isConverterDirective(t) ) {
+            substitute(line);
+            out << line << "\n";
+        }
     }
 }
 

@@ -1,5 +1,5 @@
 oofem.out
-2D lattice tension on a 100x50 mm rectangle (Stage 6 MVP)
+2D lattice direct tension via #@slaveside (left anchored, right pulled)
 LinearStatic nsteps 1 nmodules 1
 errorcheck
 domain 2dLattice
@@ -7,7 +7,7 @@ OutputManager tstep_all dofman_output { 1 2 }
 ndofman 74 nelem 181 ncrosssect 1 nmat 1 nbc 2 nic 0 nltf 1 nset 2 
 node 1 coords 2 0.000000e+00 2.500000e-02
 node 2 coords 2 1.000000e-01 2.500000e-02
-node 3 coords 2 0.000000e+00 0.000000e+00
+node 3 coords 2 0.000000e+00 0.000000e+00 dofidmask 3 1 2 6 doftype 3 1 0 0 mastermask 3 1 0 0
 node 4 coords 2 7.692308e-03 0.000000e+00
 node 5 coords 2 1.538462e-02 0.000000e+00
 node 6 coords 2 2.307692e-02 0.000000e+00
@@ -20,8 +20,8 @@ node 12 coords 2 6.923077e-02 0.000000e+00
 node 13 coords 2 7.692308e-02 0.000000e+00
 node 14 coords 2 8.461538e-02 0.000000e+00
 node 15 coords 2 9.230769e-02 0.000000e+00
-node 16 coords 2 1.000000e-01 0.000000e+00
-node 17 coords 2 0.000000e+00 5.000000e-02
+node 16 coords 2 1.000000e-01 0.000000e+00 dofidmask 3 1 2 6 doftype 3 1 0 0 mastermask 3 2 0 0
+node 17 coords 2 0.000000e+00 5.000000e-02 dofidmask 3 1 2 6 doftype 3 1 0 0 mastermask 3 1 0 0
 node 18 coords 2 7.692308e-03 5.000000e-02
 node 19 coords 2 1.538462e-02 5.000000e-02
 node 20 coords 2 2.307692e-02 5.000000e-02
@@ -34,15 +34,15 @@ node 26 coords 2 6.923077e-02 5.000000e-02
 node 27 coords 2 7.692308e-02 5.000000e-02
 node 28 coords 2 8.461538e-02 5.000000e-02
 node 29 coords 2 9.230769e-02 5.000000e-02
-node 30 coords 2 1.000000e-01 5.000000e-02
-node 31 coords 2 0.000000e+00 7.142857e-03
-node 32 coords 2 0.000000e+00 1.428571e-02
-node 33 coords 2 0.000000e+00 3.571429e-02
-node 34 coords 2 0.000000e+00 4.285714e-02
-node 35 coords 2 1.000000e-01 7.142857e-03
-node 36 coords 2 1.000000e-01 1.428571e-02
-node 37 coords 2 1.000000e-01 3.571429e-02
-node 38 coords 2 1.000000e-01 4.285714e-02
+node 30 coords 2 1.000000e-01 5.000000e-02 dofidmask 3 1 2 6 doftype 3 1 0 0 mastermask 3 2 0 0
+node 31 coords 2 0.000000e+00 7.142857e-03 dofidmask 3 1 2 6 doftype 3 1 0 0 mastermask 3 1 0 0
+node 32 coords 2 0.000000e+00 1.428571e-02 dofidmask 3 1 2 6 doftype 3 1 0 0 mastermask 3 1 0 0
+node 33 coords 2 0.000000e+00 3.571429e-02 dofidmask 3 1 2 6 doftype 3 1 0 0 mastermask 3 1 0 0
+node 34 coords 2 0.000000e+00 4.285714e-02 dofidmask 3 1 2 6 doftype 3 1 0 0 mastermask 3 1 0 0
+node 35 coords 2 1.000000e-01 7.142857e-03 dofidmask 3 1 2 6 doftype 3 1 0 0 mastermask 3 2 0 0
+node 36 coords 2 1.000000e-01 1.428571e-02 dofidmask 3 1 2 6 doftype 3 1 0 0 mastermask 3 2 0 0
+node 37 coords 2 1.000000e-01 3.571429e-02 dofidmask 3 1 2 6 doftype 3 1 0 0 mastermask 3 2 0 0
+node 38 coords 2 1.000000e-01 4.285714e-02 dofidmask 3 1 2 6 doftype 3 1 0 0 mastermask 3 2 0 0
 node 39 coords 2 3.675310e-02 3.852913e-02
 node 40 coords 2 5.489293e-02 3.407562e-02
 node 41 coords 2 5.748445e-02 1.005082e-02
@@ -263,7 +263,7 @@ lattice2D 181 nodes 2 72 74 crossSect 1 mat 1 gpCoords 2 2.246757e-02 8.717635e-
 latticecs 1 material 1
 latticedamage 1 d 0 talpha 0. e 30.e9 e0 100.e-6 wf 100.e-4 coh 2. ec 10. stype 1
 BoundaryCondition 1 loadTimeFunction 1 dofs 3 1 2 6 values 3 0. 0. 0. set 1
-BoundaryCondition 2 loadTimeFunction 1 dofs 3 1 2 6 values 3 1.e-4 0. 0. set 2
+BoundaryCondition 2 loadTimeFunction 1 dofs 1 1 values 1 1.e-4 set 2
 ConstantFunction 1 f(t) 1.
 Set 1 nodes 1 1
 Set 2 nodes 1 2

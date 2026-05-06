@@ -269,6 +269,20 @@ private:
     };
     std::vector< RigidArmSpec >rigidArmSpecs;
 
+    /// Slave the chosen DOFs of every Delaunay vertex on the named face of
+    /// the rect/prism box to a control vertex via `DT_simpleSlave` — the
+    /// slave's DOF value is identical to the master's, with no rigid-arm
+    /// rotation kinematics. Populated by `#@slaveside <master_ctl_id> face
+    /// <axis> <side> dofs <list>`. Use-case: pulling one face of a non-
+    /// periodic specimen uniformly without coupling rotation.
+    struct SlaveSideSpec {
+        int masterCtlId = 0;
+        int axis = 1;                  // 1=x, 2=y, 3=z
+        bool sideMax = false;
+        oofem::IntArray slavedDofs;    // subset of {D_u=1, D_v=2, D_w=3, R_u=4, R_v=5, R_w=6}
+    };
+    std::vector< SlaveSideSpec >slaveSideSpecs;
+
     /// Any Delaunay line with either endpoint equal to the named control
     /// vertex gets the specified material. Populated by `#@material_around
     /// <ctl_id> material <m>`. Precedence: material_around < notch <
