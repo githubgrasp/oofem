@@ -557,6 +557,11 @@ LatticeDamage :: giveIPValue(FloatArray &answer,
         answer.zero();
         answer.at(1) = static_cast< LatticeStructuralElement * >( gp->giveElement() )->giveLength();
         return 1;
+    } else if ( type == IST_TensileStrength ) {
+        answer.resize(1);
+        answer.zero();
+        answer.at(1) = this->give(e0_ID, gp) * this->e0Mean;
+        return 1;
     } else {
         return LatticeLinearElastic :: giveIPValue(answer, gp, type, atTime);
     }
