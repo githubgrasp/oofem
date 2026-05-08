@@ -259,6 +259,44 @@ namespace oofem {
         out.type = VarSlot::Type::MATRIX;
     };
 
+    auto MPMfunctor_MVec = [](const std::vector<const VarSlot*>& args, VarSlot& out) {
+        // Compute the constitutive variable/property  
+        // ARGS: args[0] - pointer to GaussPoint (as a user pointer)
+        //       args[1] - pointer to TimeStep (as a user pointer)
+        //       args[2] - property ID (as a double, to be casted to MaterialResponseMode enum)
+        //       args[3] - generalized flux (vector)
+        // OUTPUT: out - VarSlot to store the resulting characteristic vector (e.g. stress, etc depending on property ID)
+        OOFEM_LOG_DEBUG("    [C++ Callback] Called MVec functor with %ld arguments\n", args.size());
+        if (args.size() != 4) {
+            OOFEM_ERROR("MPMfunctor_MVec functor expects exactly 4 arguments: GaussPoint, TimeStep, PropertyID and GeneralizedFlux.");
+        }
+        // 1. Retrieve the generic pointers to arguments
+        void* raw_ptr0 = std::get<void*>(args[0]->value);
+        void* raw_ptr1 = std::get<void*>(args[1]->value);
+        double raw_val2 = std::get<double>(args[2]->value);
+        const FloatMatrix& fluxMat = std::get<FloatMatrix>(args[3]->value);
+        // 2. Cast back to your specific application type (Variable class)
+        GaussPoint* gp = static_cast<GaussPoint*>(raw_ptr0);
+        TimeStep* tstep = static_cast<TimeStep*>(raw_ptr1);
+        MatResponseMode propertyID = static_cast<MatResponseMode>(raw_val2);
+        FloatArray fluxVec;
+        fluxMat.copyColumn(fluxVec, 1);
+
+        // functor logic
+        MPElement* cell = static_cast<MPElement*>(gp->giveElement());
+        StructuralCrossSection* cs = static_cast<StructuralCrossSection*>(cell->giveCrossSection());
+
+        FloatArray charVec;
+
+        cs->giveMaterial(gp)->giveCharacteristicVector(charVec, fluxVec, propertyID, gp, tstep);
+        
+        out.value = FloatMatrix::fromArray(charVec);
+        out.type = VarSlot::Type::MATRIX;
+        std::ostringstream oss;
+        oss << "MVec result: " << std::get<FloatMatrix>(out.value)  << "\n\n";
+        OOFEM_LOG_DEBUG("%s", oss.str().c_str());
+    };
+
     auto MPMfunctor_MDer = [](const std::vector<const VarSlot*>& args, VarSlot& out) {
         // Compute the constitutive derivative of the given property 
         // ARGS: args[0] - pointer to GaussPoint (as a user pointer)
@@ -457,6 +495,7 @@ class SymbolicTerm : public GenericCellTerm {
         compiler.register_function("Sig");
         compiler.register_function("Sig_dev");
         compiler.register_function("MDer");
+        compiler.register_function("MVec"); // characteristic vector (e.g. stress) from material response
 
 
         compiler.register_function("ru");
@@ -509,6 +548,7 @@ class SymbolicTerm : public GenericCellTerm {
             vm.register_functor("Sig", MPMfunctor_Sig);
             vm.register_functor("Sig_dev", MPMfunctor_Sig_dev);
             vm.register_functor("MDer", MPMfunctor_MDer);
+            vm.register_functor("MVec", MPMfunctor_MVec);
 
             
             vm.register_functor("ru", MPMfunctor_FieldNodalValues);
