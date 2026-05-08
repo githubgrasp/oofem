@@ -31,7 +31,7 @@ protected:
 
 public:
     PythonMaterialStatus(GaussPoint * gp);
-    ~PythonMaterialStatus() override = default;
+    ~PythonMaterialStatus() override;
 
     void initTempStatus() override;
     void updateYourself(TimeStep *tStep) override;
@@ -53,14 +53,29 @@ protected:
     std::string moduleName;
     std::string objectName;
 
+#ifdef _USE_NANOBIND
+    nb::object pyObject;
+    nb::object pyHasMaterialModeCapability;
+    nb::object pyGiveCharacteristicMatrix;
+    nb::object pyGiveCharacteristicVector;
+    nb::object pyGiveCharacteristicValue;
+#elif defined(_PYBIND_BINDINGS)
+    py::object pyObject;
+    py::object pyHasMaterialModeCapability;
+    py::object pyGiveCharacteristicMatrix;
+    py::object pyGiveCharacteristicVector;
+    py::object pyGiveCharacteristicValue;
+#endif
+
 public:
     PythonMaterial(int n, Domain *d);
-    ~PythonMaterial() override = default;
+    ~PythonMaterial() override;
 
     const char *giveClassName() const override { return "PythonMaterial"; }
     const char *giveInputRecordName() const override { return "PythonMaterial"; }
 
     void initializeFrom(const std::shared_ptr<InputRecord> &ir) override;
+    void postInitialize() override;
     
     std::unique_ptr<MaterialStatus> CreateStatus(GaussPoint *gp) const override;
     int giveIPValue(FloatArray &answer, GaussPoint *gp, InternalStateType type, TimeStep *tStep) override;
