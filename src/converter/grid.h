@@ -283,6 +283,27 @@ private:
     };
     std::vector< SlaveSideSpec >slaveSideSpecs;
 
+    /// Tag every node lying on the chosen face plane of region 1's bounding
+    /// box with `bc <n> <id1> <id2> …` so OOFEM applies the listed
+    /// `BoundaryCondition` records to those nodes. Populated by
+    /// `#@nodebc <bc_id> face <axis> <min|max>`. Multiple specs may name the
+    /// same face (each contributes one BC id) or different faces.
+    /// Use-case: prescribing saturation on top/bottom of a transport mesh
+    /// without a post-process script.
+    struct NodeBCSpec {
+        int bcId = 0;
+        int axis = 1;       // 1=x, 2=y, 3=z
+        bool sideMax = false;
+    };
+    std::vector< NodeBCSpec >nodeBCSpecs;
+
+    /// When true, TM element emitters append `lumpedcapacity 1` to every
+    /// `latticemt2D` / `latticemt3D` line. Enabled by `#@lumpedcapacity 1`.
+    /// Switches the element capacity matrix from the consistent (coupled)
+    /// form to a TPFA-monotone diagonal form — needed for nonlinear c(p)
+    /// like Richards-style unsaturated flow.
+    bool emitLumpedCapacity = false;
+
     /// Any Delaunay line with either endpoint equal to the named control
     /// vertex gets the specified material. Populated by `#@material_around
     /// <ctl_id> material <m>`. Precedence: material_around < notch <

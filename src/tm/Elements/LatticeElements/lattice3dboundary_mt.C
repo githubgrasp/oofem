@@ -141,25 +141,60 @@ Lattice3dboundary_mt :: computeFlow(FloatArray &answer, GaussPoint *gp, TimeStep
 
 
 
-//@todo: What should this be for the boundary element?
 void
 Lattice3dboundary_mt :: computeCapacityMatrix(FloatMatrix &answer, TimeStep *tStep)
 {
-    double dV, c;
-    FloatMatrix n;
-
+    // The 5x5 dof layout is {P_f node1, P_f node2, 3 macro-gradient dofs on
+    // the control node}. Mirroring computeConductivityMatrix and computeFlow,
+    // the effective endpoint pressure on the periodic-image side is
+    //     p̃_i = p_i + ∇p · shift_i,
+    // so storage rate ∂p̃/∂t couples through the gradient DOFs. The capacity
+    // is therefore C = T^T M T, where M is the standard 2-node mass matrix
+    // and T = [I_2 | S] carries the periodic-shift switches in S. Without
+    // this projection the gradient DOFs would receive no time term while
+    // contributing to the spatial flow — inconsistent with conductivity.
     GaussPoint *gp = integrationRulesArray [ 0 ]->getIntegrationPoint(0);
+    const double c = static_cast< TransportMaterial * >( this->giveMaterial() )->giveCharacteristicValue(Capacity, gp, tStep);
+    const double V = this->computeVolumeAround(gp);
 
-    answer.resize(5, 5);
-    answer.zero();
-    answer.at(1, 1) = 2.;
-    answer.at(1, 2) = 1.;
-    answer.at(2, 1) = 1.;
-    answer.at(2, 2) = 2.;
-    c = static_cast< TransportMaterial * >( this->giveMaterial() )->giveCharacteristicValue(Capacity, gp, tStep);
-    dV = this->computeVolumeAround(gp) / ( 6.0 * this->dimension );
-    answer.times(c * dV);
-    return;
+    FloatMatrix M(2, 2);
+    if ( this->lumpedCapacity ) {
+        // Strut-level lumping: each endpoint carries c·V/(2·dim).
+        M.at(1, 1) = 1.;
+        M.at(2, 2) = 1.;
+        M.times(c * V / ( 2.0 * this->dimension ));
+    } else {
+        M.at(1, 1) = 2.;
+        M.at(1, 2) = 1.;
+        M.at(2, 1) = 1.;
+        M.at(2, 2) = 2.;
+        M.times(c * V / ( 6.0 * this->dimension ));
+    }
+
+    IntArray sw1(3), sw2(3);
+    sw1.zero();
+    sw2.zero();
+    if ( location.at(1) != 0 ) {
+        giveSwitches(sw1, location.at(1));
+    }
+    if ( location.at(2) != 0 ) {
+        giveSwitches(sw2, location.at(2));
+    }
+
+    FloatMatrix T(2, 5);
+    T.zero();
+    T.at(1, 1) = 1.;
+    T.at(2, 2) = 1.;
+    T.at(1, 3) = sw1.at(1);
+    T.at(1, 4) = sw1.at(2);
+    T.at(1, 5) = sw1.at(3);
+    T.at(2, 3) = sw2.at(1);
+    T.at(2, 4) = sw2.at(2);
+    T.at(2, 5) = sw2.at(3);
+
+    FloatMatrix MT;
+    MT.beProductOf(M, T);          // 2x5
+    answer.beTProductOf(T, MT);    // 5x5  =  T^T (M T)
 }
 
 

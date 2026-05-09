@@ -1251,6 +1251,36 @@ void Grid::readControlRecords()
                 converter::error("#@slaveside — at least one DOF id required after 'dofs'");
             }
             slaveSideSpecs.push_back(ss);
+        } else if ( tag == "#@nodebc" ) {
+            // #@nodebc <bc_id> face <axis> <min|max>
+            // Tags every emitted node on the chosen face plane with that
+            // BoundaryCondition id. Multiple directives stack on the same
+            // node (axes/sides may overlap, e.g. a corner).
+            NodeBCSpec nb;
+            std::string kw, sideWord;
+            int axis = 0;
+            if ( !( iss >> nb.bcId >> kw >> axis >> sideWord ) || kw != "face" ) {
+                converter::error("Malformed #@nodebc — expected '<bc_id> face <axis> <min|max>'");
+            }
+            if ( axis < 1 || axis > 3 ) {
+                converter::error("#@nodebc — axis must be 1, 2 or 3");
+            }
+            if ( sideWord != "min" && sideWord != "max" ) {
+                converter::error("#@nodebc — side must be 'min' or 'max'");
+            }
+            if ( nb.bcId < 1 ) {
+                converter::error("#@nodebc — bc_id must be >= 1");
+            }
+            nb.axis = axis;
+            nb.sideMax = ( sideWord == "max" );
+            nodeBCSpecs.push_back(nb);
+        } else if ( tag == "#@lumpedcapacity" ) {
+            // #@lumpedcapacity <0|1>
+            int v = 0;
+            if ( !( iss >> v ) || ( v != 0 && v != 1 ) ) {
+                converter::error("Malformed #@lumpedcapacity — expected '0' or '1'");
+            }
+            emitLumpedCapacity = ( v == 1 );
         } else if ( tag == "#@material_around" ) {
             // #@material_around <ctl_id> material <m>
             MaterialAroundSpec m;
@@ -1294,6 +1324,7 @@ void Grid::readInclusionFile(const std::string &path,
     }
 
     int sphereCount = 0;
+    int diskCount = 0;
     int ellipsoidCount = 0;
     int fibreCount = 0;
     std::string line;
@@ -1307,7 +1338,31 @@ void Grid::readInclusionFile(const std::string &path,
             continue;
         }
 
-        if ( keyword == "sphere" ) {
+        if ( keyword == "disk" ) {
+            // 2D packing-file analog of `sphere` — stored as a SphereInclusionSpec
+            // with cz = 0, since the existing in/out classification works for 2D
+            // points unchanged (every 2D vertex has z = 0).
+            int packingId;
+            iss >> packingId;
+            std::string kw;
+            int sz = 0;
+            iss >> kw >> sz;            // "centre" 2
+            if ( kw != "centre" || sz != 2 ) {
+                converter::errorf("Grid::readInclusionFile: disk line malformed in '%s'", path.c_str());
+            }
+            SphereInclusionSpec s;
+            iss >> s.cx >> s.cy;
+            s.cz = 0.0;
+            iss >> kw >> s.radius;       // "radius" r
+            if ( kw != "radius" ) {
+                converter::errorf("Grid::readInclusionFile: disk line malformed (missing radius) in '%s'", path.c_str());
+            }
+            s.itz = itz;
+            s.inside = insideMaterial;
+            s.interface_ = interfaceMaterial;
+            sphereInclusionSpecs.push_back(s);
+            ++diskCount;
+        } else if ( keyword == "sphere" ) {
             int packingId;
             iss >> packingId;
             std::string kw;
@@ -1359,8 +1414,8 @@ void Grid::readInclusionFile(const std::string &path,
                      "(converter only handles sphere inclusions for material assignment)\n",
                      ellipsoidCount, path.c_str());
     }
-    std::printf("readInclusionFile('%s'): %d sphere(s), %d fibre(s) loaded\n",
-                path.c_str(), sphereCount, fibreCount);
+    std::printf("readInclusionFile('%s'): %d sphere(s), %d disk(s), %d fibre(s) loaded\n",
+                path.c_str(), sphereCount, diskCount, fibreCount);
 }
 
 
@@ -3435,9 +3490,26 @@ Grid::give3DSMOutput(const std::string &fileName)
 
                 out << "node " << nid << " coords 3 " << std::scientific
                     << coords.at(1) << " " << coords.at(2) << " " << coords.at(3);
+                bool wrotePeriodicPin = false;
                 if ( periodic && firstFlag == 0 ) {
                     firstFlag = 1;
                     out << " bc 6 1 1 1 1 1 1";
+                    wrotePeriodicPin = true;
+                }
+                if ( !wrotePeriodicPin && !nodeBCSpecs.empty() ) {
+                    std::vector< int > bcIds;
+                    for ( const auto &nb : nodeBCSpecs ) {
+                        if ( nb.axis < 1 || nb.axis > 3 ) continue;
+                        const double faceCoord = nb.sideMax ? bounds.at(2 * nb.axis)
+                                                            : bounds.at(2 * nb.axis - 1);
+                        if ( std::abs(coords.at(nb.axis) - faceCoord) < tol ) {
+                            bcIds.push_back(nb.bcId);
+                        }
+                    }
+                    if ( !bcIds.empty() ) {
+                        out << " bc " << bcIds.size();
+                        for ( int id : bcIds ) out << " " << id;
+                    }
                 }
                 out << "\n";
             }
@@ -3759,6 +3831,13 @@ Grid::give3DTMOutput(const std::string &fileName)
         converter::error("give3DTMOutput: Cannot open output file");
     }
 
+    // Bounds for #@nodebc face matching (region 1's bounding box). Tagging
+    // is inlined in the node loop so it can merge with the periodic pin
+    // (`bc 1 1`) into a single `bc <n> …` suffix.
+    const double nbTol = this->giveTol();
+    oofem::FloatArray nbBounds;
+    this->giveRegion(1)->defineBoundaries(nbBounds);
+
     std::string line_s;
     bool injected = false;
 
@@ -3783,6 +3862,8 @@ Grid::give3DTMOutput(const std::string &fileName)
 
             // write Voronoi nodes. In periodic mode the first emitted vertex
             // is pinned (bc 1 1) to remove the transport rigid-body mode.
+            // #@nodebc tags merge with the periodic pin into a combined
+            // `bc <n> …` suffix on the first node.
             int firstFlag = 0;
             for ( int i = 0; i < nVorV; i++ ) {
                 int flag = this->giveVoronoiVertex(i + 1)->giveOutsideFlag();
@@ -3791,9 +3872,22 @@ Grid::give3DTMOutput(const std::string &fileName)
                 int nid = periodic ? ( i + 1 ) : nodeIdMap.at(i + 1);
                 out << "node " << nid << " coords 3 " << std::scientific
                     << coords.at(1) << " " << coords.at(2) << " " << coords.at(3);
+                std::vector< int > bcIds;
                 if ( periodic && firstFlag == 0 ) {
                     firstFlag = 1;
-                    out << " bc 1 1";
+                    bcIds.push_back(1);
+                }
+                for ( const auto &nb : nodeBCSpecs ) {
+                    if ( nb.axis < 1 || nb.axis > 3 ) continue;
+                    const double faceCoord = nb.sideMax ? nbBounds.at(2 * nb.axis)
+                                                        : nbBounds.at(2 * nb.axis - 1);
+                    if ( std::abs(coords.at(nb.axis) - faceCoord) < nbTol ) {
+                        bcIds.push_back(nb.bcId);
+                    }
+                }
+                if ( !bcIds.empty() ) {
+                    out << " bc " << bcIds.size();
+                    for ( int id : bcIds ) out << " " << id;
                 }
                 out << "\n";
             }
@@ -3873,6 +3967,9 @@ Grid::give3DTMOutput(const std::string &fileName)
                     if ( bodyloadIt != bodyloadByMaterial.end() ) {
                         out << " bodyloads 1 " << bodyloadIt->second;
                     }
+                    if ( emitLumpedCapacity ) {
+                        out << " lumpedcapacity 1";
+                    }
                     out << " location 2 " << location.at(1) << " " << location.at(2) << "\n";
                     continue;
                 }
@@ -3899,6 +3996,9 @@ Grid::give3DTMOutput(const std::string &fileName)
                 }
                 if ( bodyloadIt != bodyloadByMaterial.end() ) {
                     out << " bodyloads 1 " << bodyloadIt->second;
+                }
+                if ( emitLumpedCapacity ) {
+                    out << " lumpedcapacity 1";
                 }
                 out << "\n";
             }
@@ -5290,6 +5390,25 @@ void Grid::give2DSMOutput(const std::string &fileName)
                         out << " " << ( ssMatch->slavedDofs.contains(latticeDofIds.at(k)) ? masterNid : 0 );
                     }
                 }
+                // #@nodebc tagging — applies to plain (non-slaved) nodes only.
+                // Mixing `bc` with `mastermask` is ill-defined in OOFEM, so a
+                // node selected by both is reported via slaveside and skipped
+                // by the BC tagger.
+                if ( !ssMatch && !nodeBCSpecs.empty() ) {
+                    std::vector< int > bcIds;
+                    for ( const auto &nb : nodeBCSpecs ) {
+                        if ( nb.axis < 1 || nb.axis > 2 ) continue;
+                        const double faceCoord = nb.sideMax ? bounds.at(2 * nb.axis)
+                                                            : bounds.at(2 * nb.axis - 1);
+                        if ( std::abs(coords.at(nb.axis) - faceCoord) < tol ) {
+                            bcIds.push_back(nb.bcId);
+                        }
+                    }
+                    if ( !bcIds.empty() ) {
+                        out << " bc " << bcIds.size();
+                        for ( int id : bcIds ) out << " " << id;
+                    }
+                }
                 out << "\n";
             }
 
@@ -5765,6 +5884,26 @@ void Grid::give2DTMOutput(const std::string &fileName)
         converter::error("give2DTMOutput: Cannot open output file");
     }
 
+    // Bounds for #@nodebc face matching (region 1's bounding box — same
+    // box used by #@slaveside).
+    oofem::FloatArray nbBounds;
+    this->giveRegion(1)->defineBoundaries(nbBounds);
+    auto appendNodeBCs = [ & ](std::ostream &os, const oofem::FloatArray &c) {
+        if ( nodeBCSpecs.empty() ) return;
+        std::vector< int > ids;
+        for ( const auto &nb : nodeBCSpecs ) {
+            if ( nb.axis < 1 || nb.axis > 2 ) continue;
+            const double faceCoord = nb.sideMax ? nbBounds.at(2 * nb.axis)
+                                                : nbBounds.at(2 * nb.axis - 1);
+            if ( std::abs(c.at(nb.axis) - faceCoord) < tol ) {
+                ids.push_back(nb.bcId);
+            }
+        }
+        if ( ids.empty() ) return;
+        os << " bc " << ids.size();
+        for ( int id : ids ) os << " " << id;
+    };
+
     std::string line;
     bool injected = false;
     while ( std::getline(ctrl, line) ) {
@@ -5793,7 +5932,9 @@ void Grid::give2DTMOutput(const std::string &fileName)
                 this->giveVoronoiVertex(i + 1)->giveCoordinates(coords);
                 out << "node " << nodeMap[ i + 1 ]
                     << " coords 2 " << std::scientific
-                    << coords.at(1) << " " << coords.at(2) << "\n";
+                    << coords.at(1) << " " << coords.at(2);
+                appendNodeBCs(out, coords);
+                out << "\n";
             }
 
             // Voronoi lines → latticemt2D elements. Material is resolved
@@ -5838,8 +5979,11 @@ void Grid::give2DTMOutput(const std::string &fileName)
                     << " mat " << mat << " dim 1"
                     << " thick " << latticeThickness
                     << " width " << width
-                    << " gpCoords 2 " << gx << " " << gy
-                    << "\n";
+                    << " gpCoords 2 " << gx << " " << gy;
+                if ( emitLumpedCapacity ) {
+                    out << " lumpedcapacity 1";
+                }
+                out << "\n";
             }
             injected = true;
             continue;
