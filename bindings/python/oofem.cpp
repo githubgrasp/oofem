@@ -1965,6 +1965,8 @@ PYBIND11_MODULE(oofempy, m) {
         .value("IntSource_hh", oofem::MatResponseMode::IntSource_hh)
         .value("IntSource_hw", oofem::MatResponseMode::IntSource_hw)
         .value("IntSource_wh", oofem::MatResponseMode::IntSource_wh)
+        .value("Stress", oofem::MatResponseMode::Stress)
+        .value("DeviatoricStress", oofem::MatResponseMode::DeviatoricStress)
     ;
 
     py::enum_<oofem::MaterialMode>(m, "MaterialMode")
