@@ -324,7 +324,7 @@ namespace oofem {
         if (propertyID == MatResponseMode::DeviatoricStiffness) {
             cs->giveMaterial(gp)->giveCharacteristicMatrix(D, propertyID, gp, tstep);
         } else {
-            cs->giveCharMaterialStiffnessMatrix(D, propertyID, gp, tstep);
+            cs->giveMaterial(gp)->giveCharacteristicMatrix(D, propertyID, gp, tstep);
         }
         out.value = D;
         out.type = VarSlot::Type::MATRIX;
