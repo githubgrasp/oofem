@@ -1967,6 +1967,11 @@ PYBIND11_MODULE(oofempy, m) {
         .value("IntSource_wh", oofem::MatResponseMode::IntSource_wh)
         .value("Stress", oofem::MatResponseMode::Stress)
         .value("DeviatoricStress", oofem::MatResponseMode::DeviatoricStress)
+        .value("EffectiveStressParameter", oofem::MatResponseMode::EffectiveStressParameter)
+        .value("Permeability", oofem::MatResponseMode::Permeability)
+        .value("StorageCoeff", oofem::MatResponseMode::StorageCoeff)
+        .value("CrossCouplingStorageCoeff", oofem::MatResponseMode::CrossCouplingStorageCoeff)
+        .value("CompressibilityCoefficient", oofem::MatResponseMode::CompressibilityCoefficient)
     ;
 
     py::enum_<oofem::MaterialMode>(m, "MaterialMode")
