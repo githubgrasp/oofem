@@ -452,6 +452,89 @@ namespace oofem {
         out.value = answer;
         out.type = VarSlot::Type::MATRIX;
     }; 
+
+    // define functor to evaluate field variable at given integration point
+    auto MPMfunctor_Eval = [](const std::vector<const VarSlot*>& args, VarSlot& out) {
+        // Compute the field value at Gauss point.
+        // ARGS: args[0] - pointer to Variable (as a user pointer)
+        //       args[1] - GaussPoint (as a user pointer)
+        //       args[2] - time step (as a user pointer)
+        // OUTPUT: out - VarSlot to store the resulting field value as a column matrix
+        OOFEM_LOG_DEBUG("    [C++ Callback] Called EvalField functor with %ld arguments\n", args.size());
+        if (args.size() != 3) {
+            OOFEM_ERROR("MPMfunctor_Eval functor expects exactly 3 arguments: Variable, GaussPoint, and TimeStep.");
+        }
+        
+        void* raw_ptr0 = std::get<void*>(args[0]->value);
+        void* raw_ptr1 = std::get<void*>(args[1]->value);
+        void* raw_ptr2 = std::get<void*>(args[2]->value);
+        
+        const Variable* v = static_cast<const Variable*>(raw_ptr0);
+        GaussPoint* gp = static_cast<GaussPoint*>(raw_ptr1);
+        TimeStep* tstep = static_cast<TimeStep*>(raw_ptr2);
+        MPElement* cell = static_cast<MPElement*>(gp->giveElement());
+
+        FloatArray u, nvec;
+        FloatMatrix N, uMat, answer;
+        
+        cell->getUnknownVector(u, v, VM_TotalIntrinsic, tstep);
+        v->interpolation->evalN(nvec, gp->giveNaturalCoordinates(), FEIElementGeometryWrapper(cell));
+        N.beNMatrixOf(nvec, v->size);
+        
+        uMat = FloatMatrix::fromArray(u);
+        answer.beProductOf(N, uMat);
+
+        out.value = answer;
+        out.type = VarSlot::Type::MATRIX;
+    };
+
+    // define functor to concatenate vectors and scalars vertically
+    auto MPMfunctor_vcat = [](const std::vector<const VarSlot*>& args, VarSlot& out) {
+        OOFEM_LOG_DEBUG("    [C++ Callback] Called Concat functor with %ld arguments\n", args.size());
+        if (args.empty()) {
+            OOFEM_ERROR("MPMfunctor_vcat functor expects at least 1 argument.");
+        }
+        
+        int total_rows = 0;
+        int num_cols = -1;
+        
+        for (const auto& arg : args) {
+            if (arg->type == VarSlot::Type::MATRIX) {
+                const auto& m = std::get<FloatMatrix>(arg->value);
+                total_rows += m.rows();
+                if (num_cols == -1) num_cols = m.cols();
+                else if (num_cols != m.cols()) OOFEM_ERROR("MPMfunctor_vcat: Matrix column count mismatch.");
+            } else if (arg->type == VarSlot::Type::SCALAR) {
+                total_rows += 1;
+                if (num_cols == -1) num_cols = 1;
+                else if (num_cols != 1) OOFEM_ERROR("MPMfunctor_vcat: Scalar cannot be concatenated with matrix having cols != 1.");
+            } else {
+                OOFEM_ERROR("MPMfunctor_vcat: Unsupported argument type.");
+            }
+        }
+        
+        if (num_cols == -1) num_cols = 1;
+        FloatMatrix answer(total_rows, num_cols);
+        int current_row = 0;
+        
+        for (const auto& arg : args) {
+            if (arg->type == VarSlot::Type::MATRIX) {
+                const auto& m = std::get<FloatMatrix>(arg->value);
+                for (int r = 0; r < m.rows(); ++r) {
+                    for (int c = 0; c < num_cols; ++c) {
+                        answer(current_row + r, c) = m(r, c);
+                    }
+                }
+                current_row += m.rows();
+            } else if (arg->type == VarSlot::Type::SCALAR) {
+                answer(current_row++, 0) = std::get<double>(arg->value);
+            }
+        }
+        
+        out.value = answer;
+        out.type = VarSlot::Type::MATRIX;
+    };
+
 /**
  * @brief Symbolic term allowing to parse and evaluate user defined expressions
  * 
@@ -496,6 +579,8 @@ class SymbolicTerm : public GenericCellTerm {
         compiler.register_function("Sig_dev");
         compiler.register_function("MDer");
         compiler.register_function("MVec"); // characteristic vector (e.g. stress) from material response
+        compiler.register_function("vcat"); // matrix/vector vertical concatenation
+        compiler.register_function("eval"); 
 
 
         compiler.register_function("ru");
@@ -549,6 +634,8 @@ class SymbolicTerm : public GenericCellTerm {
             vm.register_functor("Sig_dev", MPMfunctor_Sig_dev);
             vm.register_functor("MDer", MPMfunctor_MDer);
             vm.register_functor("MVec", MPMfunctor_MVec);
+            vm.register_functor("vcat", MPMfunctor_vcat);
+            vm.register_functor("eval", MPMfunctor_Eval);
 
             
             vm.register_functor("ru", MPMfunctor_FieldNodalValues);
