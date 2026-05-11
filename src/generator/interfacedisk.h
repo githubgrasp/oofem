@@ -45,6 +45,9 @@ public:
     /// Returns the inclusion radius.
     double giveRadius() { return this->radius; }
 
+    /// Returns the disk centre `[cx cy]`.
+    const oofem::FloatArray &giveCentre() const { return this->centre; }
+
     /// Returns the thickness of the ITZ halo around the inclusion.
     double giveITZThickness() { return this->itzThickness; }
 

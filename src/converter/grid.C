@@ -5807,40 +5807,86 @@ void Grid::give2DTMOutput(const std::string &fileName)
     const int nVorV = this->giveNumberOfVoronoiVertices();
     const int nVorL = this->giveNumberOfVoronoiLines();
     const double tol = this->giveTol();
+    const auto &rectBox = rect->giveBox();
+    const double xmin = rectBox.at(1), ymin = rectBox.at(2);
+    const double xmax = rectBox.at(3), ymax = rectBox.at(4);
 
-    // Pre-pass: emittable Voronoi vertices = those strictly inside the rect.
-    // Voronoi vertex 0 (qhull's at-infinity marker) is excluded by virtue
-    // of being out of range below.
+    auto strictlyInside = [&](const oofem::FloatArray &c) {
+        return c.at(1) > xmin + tol && c.at(1) < xmax - tol &&
+               c.at(2) > ymin + tol && c.at(2) < ymax - tol;
+    };
+    auto onRectBoundary = [&](const oofem::FloatArray &c) {
+        return ( std::abs(c.at(1) - xmin) < tol || std::abs(c.at(1) - xmax) < tol ||
+                 std::abs(c.at(2) - ymin) < tol || std::abs(c.at(2) - ymax) < tol ) &&
+               c.at(1) > xmin - tol && c.at(1) < xmax + tol &&
+               c.at(2) > ymin - tol && c.at(2) < ymax + tol;
+    };
+
+    // Pre-pass 1: interior Voronoi vertices (strictly inside the rect; excludes
+    // boundary-band vertices, including those that `project2DVoronoiVerticesToBoundaries`
+    // axis-clamped onto a rect face — those would be misplaced as TM nodes).
     std::vector< int > nodeMap( nVorV + 1, 0 );
     int emittedNodes = 0;
     {
         oofem::FloatArray c(3);
         for ( int i = 0; i < nVorV; ++i ) {
             this->giveVoronoiVertex(i + 1)->giveCoordinates(c);
-            if ( rect->contains(c.at(1), c.at(2), tol) ) {
+            if ( strictlyInside(c) ) {
                 nodeMap[ i + 1 ] = ++emittedNodes;
             }
         }
     }
 
+    // Pre-pass 2: boundary Voronoi rays. Restores the Triangle-era behaviour:
+    // for every crossing Voronoi edge (one endpoint interior, the other
+    // either qhull's at-infinity marker or any non-interior vertex), allocate
+    // a per-edge boundary node at the *midpoint of the dual Delaunay edge*.
+    // Because the dual is a convex-hull Delaunay edge with both endpoints on
+    // the rect (`#@rect` seeds nodes there), the midpoint lies on-boundary by
+    // construction and the truncated Voronoi edge meets the face at right
+    // angles — the perpendicular bisector property of the Voronoi/Delaunay
+    // duality. Per-edge allocation (not per-shared-vertex) ensures every
+    // crossing edge gets its own perpendicular foot, even when several rays
+    // emanate from the same outside circumcenter.
+    std::vector< int > boundaryNodeForLine( nVorL + 1, 0 );
+    std::vector< oofem::FloatArray > boundaryNodeCoords;  // 1-indexed by sequential alloc
     int emittedElems = 0;
     {
         oofem::IntArray ep, cs;
+        oofem::FloatArray dA(3), dB(3);
         for ( int i = 0; i < nVorL; ++i ) {
             this->giveVoronoiLine(i + 1)->giveLocalVertices(ep);
             if ( ep.giveSize() != 2 ) continue;
-            if ( ep.at(1) == 0 || ep.at(2) == 0 ) continue;
-            if ( nodeMap[ ep.at(1) ] == 0 || nodeMap[ ep.at(2) ] == 0 ) continue;
+            const int a = ep.at(1), b = ep.at(2);
+            const bool inA = ( a != 0 && nodeMap[ a ] != 0 );
+            const bool inB = ( b != 0 && nodeMap[ b ] != 0 );
+
+            // Drop TM elements *entirely* inside a delete-mode notch
+            // (must mirror the emission loop).
+            if ( a != 0 && b != 0 &&
+                 wasVoronoiOriginallyInsideDeletingNotch(a) &&
+                 wasVoronoiOriginallyInsideDeletingNotch(b) ) continue;
+
+            if ( inA && inB ) {
+                ++emittedElems;
+                continue;
+            }
+            if ( !inA && !inB ) continue;
+
+            // Crossing edge: check whether the dual Delaunay edge sits on
+            // the rect boundary. If yes, allocate a per-edge boundary node
+            // at the midpoint and count one more element.
             this->giveVoronoiLine(i + 1)->giveCrossSectionVertices(cs);
             if ( cs.giveSize() != 2 ) continue;
-            // TM elements *entirely* inside a delete-mode notch get
-            // dropped — both Voronoi endpoints were originally inside the
-            // notch (i.e. the edge does not cross the notch surface; if
-            // it did, one endpoint would be outside). Crossing edges are
-            // kept and have already had their inside endpoint snapped to
-            // the notch face by `project2DVoronoiVerticesToBoundaries`.
-            if ( wasVoronoiOriginallyInsideDeletingNotch(ep.at(1)) &&
-                 wasVoronoiOriginallyInsideDeletingNotch(ep.at(2)) ) continue;
+            this->giveDelaunayVertex(cs.at(1))->giveCoordinates(dA);
+            this->giveDelaunayVertex(cs.at(2))->giveCoordinates(dB);
+            if ( !onRectBoundary(dA) || !onRectBoundary(dB) ) continue;
+
+            oofem::FloatArray mid(3);
+            mid.at(1) = 0.5 * ( dA.at(1) + dB.at(1) );
+            mid.at(2) = 0.5 * ( dA.at(2) + dB.at(2) );
+            boundaryNodeForLine[ i + 1 ] = ++emittedNodes;
+            boundaryNodeCoords.push_back(mid);
             ++emittedElems;
         }
     }
@@ -5925,7 +5971,7 @@ void Grid::give2DTMOutput(const std::string &fileName)
             }
             out << "\n";
 
-            // Voronoi vertices → 2D nodes.
+            // Interior Voronoi vertices → 2D nodes.
             oofem::FloatArray coords(3);
             for ( int i = 0; i < nVorV; ++i ) {
                 if ( nodeMap[ i + 1 ] == 0 ) continue;
@@ -5937,32 +5983,79 @@ void Grid::give2DTMOutput(const std::string &fileName)
                 out << "\n";
             }
 
+            // Per-edge boundary nodes (one per crossing Voronoi ray, placed
+            // at the midpoint of its dual Delaunay boundary edge). #@nodebc
+            // tagging applies the same way as for interior nodes.
+            // Allocation order in the pre-pass walked Voronoi lines low → high
+            // and assigned strictly increasing ids, so emitting in the same
+            // walk order produces an in-order id sequence.
+            {
+                int allocIdx = 0;
+                for ( int i = 0; i < nVorL; ++i ) {
+                    if ( boundaryNodeForLine[ i + 1 ] == 0 ) continue;
+                    const auto &c = boundaryNodeCoords[ allocIdx++ ];
+                    out << "node " << boundaryNodeForLine[ i + 1 ]
+                        << " coords 2 " << std::scientific
+                        << c.at(1) << " " << c.at(2);
+                    appendNodeBCs(out, c);
+                    out << "\n";
+                }
+            }
+
             // Voronoi lines → latticemt2D elements. Material is resolved
             // through the same `notch` / `inclusion` pipeline as SM, but
             // applied to the DUAL Delaunay-edge endpoints (so the per-edge
-            // override matches the corresponding SM element).
+            // override matches the corresponding SM element). Boundary-
+            // crossing rays use the per-edge boundary node id allocated in
+            // the pre-pass.
             oofem::IntArray endpoints, crossSectionNodes;
             oofem::FloatArray vA(3), vB(3), dA(3), dB(3);
             int elemCounter = 0;
             for ( int i = 0; i < nVorL; ++i ) {
                 this->giveVoronoiLine(i + 1)->giveLocalVertices(endpoints);
                 if ( endpoints.giveSize() != 2 ) continue;
-                if ( endpoints.at(1) == 0 || endpoints.at(2) == 0 ) continue;
-                if ( nodeMap[ endpoints.at(1) ] == 0 || nodeMap[ endpoints.at(2) ] == 0 ) continue;
+                const int a = endpoints.at(1), b = endpoints.at(2);
+                const bool inA = ( a != 0 && nodeMap[ a ] != 0 );
+                const bool inB = ( b != 0 && nodeMap[ b ] != 0 );
+
+                if ( a != 0 && b != 0 &&
+                     wasVoronoiOriginallyInsideDeletingNotch(a) &&
+                     wasVoronoiOriginallyInsideDeletingNotch(b) ) continue;
+
+                int n1 = 0, n2 = 0;
+                if ( inA && inB ) {
+                    n1 = nodeMap[ a ];
+                    n2 = nodeMap[ b ];
+                } else if ( inA != inB ) {
+                    const int bnd = boundaryNodeForLine[ i + 1 ];
+                    if ( bnd == 0 ) continue;  // crossing ray that didn't qualify
+                    n1 = inA ? nodeMap[ a ] : bnd;
+                    n2 = inA ? bnd          : nodeMap[ b ];
+                } else {
+                    continue;
+                }
 
                 this->giveVoronoiLine(i + 1)->giveCrossSectionVertices(crossSectionNodes);
                 if ( crossSectionNodes.giveSize() != 2 ) continue;
 
-                // Drop TM elements entirely inside a delete-mode notch
-                // (must mirror the pre-pass count).
-                if ( wasVoronoiOriginallyInsideDeletingNotch(endpoints.at(1)) &&
-                     wasVoronoiOriginallyInsideDeletingNotch(endpoints.at(2)) ) continue;
-
                 this->giveDelaunayVertex(crossSectionNodes.at(1))->giveCoordinates(dA);
                 this->giveDelaunayVertex(crossSectionNodes.at(2))->giveCoordinates(dB);
 
-                this->giveVoronoiVertex(endpoints.at(1))->giveCoordinates(vA);
-                this->giveVoronoiVertex(endpoints.at(2))->giveCoordinates(vB);
+                // Endpoint coords for gauss-point centroid: use the actual
+                // emitted node positions (boundary node coord for the snapped
+                // end), so gpCoords lies on the truncated strut.
+                if ( inA ) {
+                    this->giveVoronoiVertex(a)->giveCoordinates(vA);
+                } else {
+                    vA.at(1) = 0.5 * ( dA.at(1) + dB.at(1) );
+                    vA.at(2) = 0.5 * ( dA.at(2) + dB.at(2) );
+                }
+                if ( inB ) {
+                    this->giveVoronoiVertex(b)->giveCoordinates(vB);
+                } else {
+                    vB.at(1) = 0.5 * ( dA.at(1) + dB.at(1) );
+                    vB.at(2) = 0.5 * ( dA.at(2) + dB.at(2) );
+                }
 
                 const double ddx = dA.at(1) - dB.at(1);
                 const double ddy = dA.at(2) - dB.at(2);
@@ -5974,8 +6067,7 @@ void Grid::give2DTMOutput(const std::string &fileName)
                 mat = resolveInclusionMaterial(dA, dB, mat);
 
                 out << "latticemt2D " << ++elemCounter
-                    << " nodes 2 " << nodeMap[ endpoints.at(1) ]
-                    << " " << nodeMap[ endpoints.at(2) ]
+                    << " nodes 2 " << n1 << " " << n2
                     << " mat " << mat << " dim 1"
                     << " thick " << latticeThickness
                     << " width " << width

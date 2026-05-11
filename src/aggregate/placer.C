@@ -195,9 +195,18 @@ bool Placer::placeOneDisk(double radius)
     const Eigen::Vector3i &periodic = box.givePeriodicityFlag();
     const int maxIter = box.giveMaximumIterations();
 
-    auto disksOverlap = [](const Eigen::Vector2d &c1, double r1,
-                           const Eigen::Vector2d &c2, double r2) {
-        return ( c1 - c2 ).norm() < r1 + r2;
+    // Surface-gap clearance: disks must be far enough apart that the
+    // downstream mesher can fit both ITZ rings plus a `diam` mesh-spacing
+    // buffer between them. ITZ rings live at radius `r + itz` outside
+    // each disk's perimeter, so two ITZ rings need `2 * itz` between
+    // disk surfaces, plus `boundaryClearance` (= diam) of matrix nodes.
+    // With both knobs zero this reduces to the classic touching-allowed
+    // test (centres separated by `r1 + r2`).
+    const double diskGap = box.giveBoundaryClearance()
+                           + 2.0 * box.giveItzThickness();
+    auto disksOverlap = [diskGap](const Eigen::Vector2d &c1, double r1,
+                                  const Eigen::Vector2d &c2, double r2) {
+        return ( c1 - c2 ).norm() < r1 + r2 + diskGap;
     };
 
     auto candidateOverlapsList = [&]( const Eigen::Vector2d &centre,
@@ -228,14 +237,22 @@ bool Placer::placeOneDisk(double radius)
         // Boundary detection — disk crosses an axis if centre±radius leaves
         // [0, boxDim]. Reject on non-periodic crossings; mark a periodic
         // crossing in the bitmask and shift the canonical representation
-        // back into the box if it spilled past the upper face.
+        // back into the box if it spilled past the upper face. On non-
+        // periodic faces a wall-clearance band of `boundaryClearance` is
+        // also required (set via `#@diam`), so the downstream mesher's
+        // boundary nodes and the inclusion's perimeter / ITZ ring don't
+        // collide. Periodic faces use no clearance — wrapping handles them.
+        const double clearance = box.giveBoundaryClearance();
         int bitmask = 0;
         bool ok = true;
         for ( int axis = 0; axis < 2; ++axis ) {
-            if ( centre(axis) - radius < 0.0 ) {
+            const double effLow  = ( periodic(axis) == 0 ) ? clearance : 0.0;
+            const double effHigh = ( periodic(axis) == 0 ) ? boxDims(axis) - clearance
+                                                           : boxDims(axis);
+            if ( centre(axis) - radius < effLow ) {
                 if ( periodic(axis) == 0 ) { ok = false; break; }
                 bitmask |= ( 1 << axis );
-            } else if ( centre(axis) + radius > boxDims(axis) ) {
+            } else if ( centre(axis) + radius > effHigh ) {
                 if ( periodic(axis) == 0 ) { ok = false; break; }
                 bitmask |= ( 1 << axis );
                 centre(axis) -= boxDims(axis);

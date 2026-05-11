@@ -73,15 +73,44 @@ int InterfaceDisk::generatePoints()
         random.at(1) = cx + radius * cos(theta);
         random.at(2) = cy + radius * sin(theta);
 
+        // Skip perimeter points that fall outside the meshing region — a
+        // disk centred near a non-periodic face may extend past it, and
+        // those slices have no mesh to discretise. The boundary-crossing
+        // anchors (placed earlier by Grid::generateInclusionBoundaryAnchors)
+        // already cover the surviving part of the disk surface at the face.
+        if ( !grid->isPointInsideMeshingRegion(random) ) {
+            continue;
+        }
+
         const int flag = grid->giveGridLocalizer()->checkNodesWithinBox(random,
                              refinement * grid->giveDiameter(random) );
         if ( flag == 0 && grid->addVertex(random) ) {
             i = 0;
+            const int innerId = grid->giveNumberOfVertices();
 
-            // Sister point on the outer ITZ ring.
+            // Sister point on the outer ITZ ring. The inner-ring point and
+            // sister are intentionally `itz` apart so qhull's Voronoi places
+            // a cell wall exactly on the disk surface (the perpendicular
+            // bisector of the close pair). Distance-checking the sister
+            // against the inner ring would always reject it for small `itz`,
+            // destroying that mechanism — so the inner ring is excluded from
+            // the sister's neighbour check while every other vertex (notably
+            // region-boundary points placed earlier in the pipeline) still
+            // counts. This stops the sister from punching through the
+            // boundary discretisation when an inclusion sits close to a
+            // rect/prism face.
             random.at(1) = cx + ( radius + itzThickness ) * cos(theta);
             random.at(2) = cy + ( radius + itzThickness ) * sin(theta);
-            grid->addVertex(random);
+            GridLocalizer::nodeContainerType nbrs;
+            grid->giveGridLocalizer()->giveAllNodesWithinBox(nbrs, random,
+                                          refinement * grid->giveDiameter(random) );
+            bool hasOtherNeighbour = false;
+            for ( int id : nbrs ) {
+                if ( id != innerId ) { hasOtherNeighbour = true; break; }
+            }
+            if ( !hasOtherNeighbour ) {
+                grid->addVertex(random);
+            }
         }
     }
 

@@ -77,6 +77,24 @@ public:
     /// Maximum trial-and-error attempts for placing one inclusion.
     int giveMaximumIterations() const { return maximumIterations; }
 
+    /// Boundary clearance — minimum distance any inclusion must keep from a
+    /// non-periodic face of the box. Set via `#@diam <d>` (matches the
+    /// generator's target nodal spacing). When > 0 the placer rejects any
+    /// candidate whose inclusion surface comes within this distance of a
+    /// non-periodic face, leaving room for the downstream mesher's boundary
+    /// nodes and an inclusion-perimeter ITZ ring without overlap. Default 0
+    /// (no clearance, classic behaviour).
+    double giveBoundaryClearance() const { return boundaryClearance; }
+
+    /// ITZ thickness — width of the interface band placed by the downstream
+    /// mesher around each inclusion (the radial offset between the inner
+    /// perimeter ring and its sister). Set via `#@itz <t>` to match the
+    /// generator's `#@inclusionfile … itz <t>`. The placer's disk-disk
+    /// overlap check requires a centre-to-centre gap of
+    /// `r1 + r2 + boundaryClearance + 2 * itzThickness` so the two ITZ
+    /// rings can be discretised without colliding. Default 0.
+    double giveItzThickness() const { return itzThickness; }
+
     /// Seed for the std::mt19937 RNG used by the grading curve and placer.
     unsigned int giveRandomSeed() const { return randomSeed; }
 
@@ -113,6 +131,8 @@ private:
     int dim = 3;
     unsigned int randomSeed = 1;
     int maximumIterations = 10000;
+    double boundaryClearance = 0.;
+    double itzThickness = 0.;
 
     GradingParameters grading;
     FibreParameters fibres;

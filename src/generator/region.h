@@ -56,6 +56,14 @@ public:
     /// Subclasses override to provide shape-specific acceptance tests.
     virtual int generatePoints();
 
+    /// Place only the region's *boundary* discretisation (face/edge points).
+    /// Called before inclusions in the random-point pipeline so the boundary
+    /// owns its target spacing and inclusion perimeter points later yield to
+    /// pre-existing boundary nodes (instead of the other way round). Default
+    /// is a no-op for shapes without a separable boundary phase (Disk,
+    /// Sphere, Cylinder); Rect / Prism override.
+    virtual int generateBoundaryPoints() { return 0; }
+
     /// Generate random points in the region when some axes are periodic
     /// and others are not.
     int generateMixedPoints();

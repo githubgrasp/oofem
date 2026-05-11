@@ -293,19 +293,6 @@ int Grid::generateRandomPoints()
         }
 
 
-        //generate inclusions
-        sc = ::clock();
-        //Inclusions
-        //@todo: Inclusions need to have a random and regular point generation
-        for ( int i = 0; i < this->giveNumberOfInclusions(); i++ ) {
-            ( this->giveInclusion(i + 1) )->generatePoints();
-            printf("numberOfVertices = %d\n", this->giveNumberOfVertices() );
-        }
-        ec = ::clock();
-        nsec = ( ec - sc ) / CLOCKS_PER_SEC;
-        printf("Points for inclusions generated in %lds \n", nsec);
-
-
         //Control vertices
         this->generateControlPoints(); //This should now include also periodic shifts
 
@@ -332,7 +319,41 @@ int Grid::generateRandomPoints()
             printf("Points on surfaces generated in %lds \n", nsec);
         }
 
-        //Regions
+        // Inclusion-boundary anchors: place pair-of-close-nodes ON each
+        // non-periodic rect face wherever an inclusion's circle crosses
+        // the face. Done BEFORE the boundary edges so they respect these
+        // anchors; allows aggregate `#@periodicity 1 1` to be combined
+        // with a non-periodic generator (clipped disks at the boundary).
+        this->generateInclusionBoundaryAnchors();
+
+        // Three-phase placement so the boundary owns its target spacing
+        // without the interior fill stealing perimeter slots from inclusions:
+        //   1) region BOUNDARY points (edges/faces of rect/prism)
+        //   2) inclusions (perimeter + ITZ + interior), checking against (1)
+        //   3) region INTERIOR fill (random), checking against (1) and (2)
+        // Region shapes without a meaningful boundary phase (Disk, Sphere,
+        // Cylinder) inherit the no-op default for generateBoundaryPoints().
+        sc = ::clock();
+        for ( int i = 0; i < this->giveNumberOfRegions(); i++ ) {
+            ( this->giveRegion(i + 1) )->generateBoundaryPoints();
+            printf("numberOfVertices = %d\n", this->giveNumberOfVertices() );
+        }
+        ec = ::clock();
+        nsec = ( ec - sc ) / CLOCKS_PER_SEC;
+        printf("Region-boundary points generated in %lds \n", nsec);
+
+        //Inclusions
+        sc = ::clock();
+        //@todo: Inclusions need to have a random and regular point generation
+        for ( int i = 0; i < this->giveNumberOfInclusions(); i++ ) {
+            ( this->giveInclusion(i + 1) )->generatePoints();
+            printf("numberOfVertices = %d\n", this->giveNumberOfVertices() );
+        }
+        ec = ::clock();
+        nsec = ( ec - sc ) / CLOCKS_PER_SEC;
+        printf("Points for inclusions generated in %lds \n", nsec);
+
+        //Region interior fill
         sc = ::clock();
         for ( int i = 0; i < this->giveNumberOfRegions(); i++ ) {
             ( this->giveRegion(i + 1) )->generatePoints();
@@ -340,7 +361,7 @@ int Grid::generateRandomPoints()
         }
         ec = ::clock();
         nsec = ( ec - sc ) / CLOCKS_PER_SEC;
-        printf("Points in regions generated in %lds \n", nsec);
+        printf("Region-interior points generated in %lds \n", nsec);
 
         nsec = ( ec - start ) / CLOCKS_PER_SEC;
         printf("All points generated in %lds \n", nsec);
@@ -535,6 +556,109 @@ bool Grid::addVertex(const oofem::FloatArray &coords) {
         loc->insertSequentialNode(num, coords);
     }
     return true;
+}
+
+
+bool Grid::isPointInsideMeshingRegion(const oofem::FloatArray &coords) const
+{
+    if ( regionList.empty() ) return true;
+    const auto *rect = dynamic_cast< const Rect * >( regionList[0] );
+    if ( !rect ) return true;
+    oofem::FloatArray b;
+    const_cast< Rect * >( rect )->defineBoundaries(b);
+
+    oofem::IntArray pf;
+    const_cast< Grid * >( this )->givePeriodicityFlag(pf);
+    if ( pf.giveSize() < 3 ) { pf.resize(3); pf.at(3) = 0; }
+
+    if ( pf.at(1) == 0 &&
+         ( coords.at(1) < b.at(1) - TOL || coords.at(1) > b.at(2) + TOL ) ) return false;
+    if ( pf.at(2) == 0 &&
+         ( coords.at(2) < b.at(3) - TOL || coords.at(2) > b.at(4) + TOL ) ) return false;
+    return true;
+}
+
+
+void Grid::generateInclusionBoundaryAnchors()
+{
+    // For every InterfaceDisk whose circle intersects a non-periodic face
+    // of region 1's box, drop a pair of close nodes on the face at the
+    // intersection. The pair lies along the face tangent so the dual
+    // Voronoi cell wall is perpendicular to the face there — approximating
+    // the disk surface at the crossing (exact when the disk is cut in half
+    // by the face). Run BEFORE the regular boundary edges so they respect
+    // the anchors via the standard distance check.
+    if ( regionList.empty() ) return;
+    auto *rect = dynamic_cast< Rect * >( this->giveRegion(1) );
+    if ( !rect ) return;
+
+    oofem::FloatArray b;
+    rect->defineBoundaries(b);
+    const double xmin = b.at(1), xmax = b.at(2);
+    const double ymin = b.at(3), ymax = b.at(4);
+
+    oofem::IntArray pf;
+    this->givePeriodicityFlag(pf);
+    if ( pf.giveSize() < 3 ) { pf.resize(3); pf.at(3) = 0; }
+
+    oofem::FloatArray p1(3), p2(3);
+    p1.at(3) = 0.;
+    p2.at(3) = 0.;
+
+    int anchorPairs = 0;
+    const int nInc = this->giveNumberOfInclusions();
+    for ( int i = 0; i < nInc; ++i ) {
+        auto *disk = dynamic_cast< InterfaceDisk * >( this->giveInclusion(i + 1) );
+        if ( !disk ) continue;
+        const double cx = disk->giveCentre().at(1);
+        const double cy = disk->giveCentre().at(2);
+        const double r  = disk->giveRadius();
+        const double itz = disk->giveITZThickness();
+        const double half = 0.5 * itz;
+
+        // Faces normal to x — left/right. Boundary tangent is y.
+        if ( pf.at(1) == 0 ) {
+            for ( int side = 0; side < 2; ++side ) {
+                const double xf = ( side == 0 ) ? xmin : xmax;
+                const double dx = xf - cx;
+                const double d2 = r * r - dx * dx;
+                if ( d2 <= 0. ) continue;
+                const double dy = std::sqrt(d2);
+                for ( int s = -1; s <= 1; s += 2 ) {
+                    const double yp = cy + s * dy;
+                    if ( yp < ymin + TOL || yp > ymax - TOL ) continue;
+                    p1.at(1) = xf;  p1.at(2) = yp - half;
+                    p2.at(1) = xf;  p2.at(2) = yp + half;
+                    this->addVertex(p1);
+                    this->addVertex(p2);
+                    ++anchorPairs;
+                }
+            }
+        }
+
+        // Faces normal to y — bottom/top. Boundary tangent is x.
+        if ( pf.at(2) == 0 ) {
+            for ( int side = 0; side < 2; ++side ) {
+                const double yf = ( side == 0 ) ? ymin : ymax;
+                const double dy = yf - cy;
+                const double d2 = r * r - dy * dy;
+                if ( d2 <= 0. ) continue;
+                const double dx = std::sqrt(d2);
+                for ( int s = -1; s <= 1; s += 2 ) {
+                    const double xp = cx + s * dx;
+                    if ( xp < xmin + TOL || xp > xmax - TOL ) continue;
+                    p1.at(1) = xp - half;  p1.at(2) = yf;
+                    p2.at(1) = xp + half;  p2.at(2) = yf;
+                    this->addVertex(p1);
+                    this->addVertex(p2);
+                    ++anchorPairs;
+                }
+            }
+        }
+    }
+    if ( anchorPairs > 0 ) {
+        std::printf("Placed %d inclusion-boundary anchor pair(s)\n", anchorPairs);
+    }
 }
 
 

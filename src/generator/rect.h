@@ -50,7 +50,16 @@ public:
     /// kept zero so the (3D-internal) localiser sees a degenerate z axis.
     void defineBoundaries(oofem::FloatArray &boundaries) override;
 
-    /// Generate edge + interior random vertices in the rectangle.
+    /// Place edge vertices along the rectangle's faces (uniform spacing
+    /// `edgeRefine * grid->diameter`). Called separately and earlier than
+    /// `generatePoints()` so that the boundary discretisation is laid down
+    /// before inclusions and interior fill.
+    int generateBoundaryPoints() override;
+
+    /// Random interior fill. Edge vertices are assumed to already exist
+    /// (`generateBoundaryPoints()` is invoked beforehand by the pipeline);
+    /// any duplicate edge placements here would be rejected by the
+    /// neighbour-distance check anyway.
     int generatePoints() override;
 
     /// Returns class name of the receiver.

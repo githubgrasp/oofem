@@ -63,46 +63,28 @@ void Rect::defineBoundaries(oofem::FloatArray &boundaries)
 }
 
 
-int Rect::generatePoints()
+int Rect::generateBoundaryPoints()
 {
-    printf("Generating points for rect\n");
+    printf("Generating edge points for rect\n");
 
     const double xmin = box.at(1), ymin = box.at(2);
     const double xmax = box.at(3), ymax = box.at(4);
     const double dx = xmax - xmin, dy = ymax - ymin;
 
-    int randomIntegerOne = grid->giveRandomInteger() - 1;
-    int randomIntegerTwo = grid->giveRandomInteger() - 2;
-
     oofem::IntArray periodicityFlag;
     grid->givePeriodicityFlag(periodicityFlag);
-    // Pad to 3 entries (always treat z as non-periodic in 2D).
     if ( periodicityFlag.giveSize() < 3 ) {
         periodicityFlag.resize(3);
         periodicityFlag.at(3) = 0;
     }
 
-    const int randomFlag = grid->giveRandomFlag();
     const double diam = grid->diameter;
-
-    // Border margin: ranflag 0 keeps vertices off the boundary (TOL margin),
-    // ranflag 1 leaves a full edge-spacing buffer so the regular edge points
-    // fall on the boundary cleanly.
-    double borderX = 0., borderY = 0.;
-    if ( randomFlag == 0 ) {
-        borderX = grid->TOL;
-        borderY = grid->TOL;
-    } else {
-        borderX = ( periodicityFlag.at(1) == 1 ) ? grid->TOL : edgeRefine * diam;
-        borderY = ( periodicityFlag.at(2) == 1 ) ? grid->TOL : edgeRefine * diam;
-    }
 
     oofem::FloatArray random(3);
     random.at(3) = 0.;
     oofem::FloatArray newRandom(3);
     newRandom.at(3) = 0.;
 
-    // ---- Edge placement (regular spacing along each edge) ----
     // Edges parallel to x — bottom (y = ymin) and top (y = ymax).
     if ( periodicityFlag.at(2) == 0 ) {
         int nTarget = std::max(1, (int) std::ceil(dx / ( edgeRefine * diam )));
@@ -179,6 +161,47 @@ int Rect::generatePoints()
     }
 
     printf("Finished edges. Current number of points are %d\n", grid->giveNumberOfVertices() );
+    return 1;
+}
+
+
+int Rect::generatePoints()
+{
+    printf("Generating interior points for rect\n");
+
+    const double xmin = box.at(1), ymin = box.at(2);
+    const double xmax = box.at(3), ymax = box.at(4);
+    const double dx = xmax - xmin, dy = ymax - ymin;
+
+    int randomIntegerOne = grid->giveRandomInteger() - 1;
+    int randomIntegerTwo = grid->giveRandomInteger() - 2;
+
+    oofem::IntArray periodicityFlag;
+    grid->givePeriodicityFlag(periodicityFlag);
+    if ( periodicityFlag.giveSize() < 3 ) {
+        periodicityFlag.resize(3);
+        periodicityFlag.at(3) = 0;
+    }
+
+    const int randomFlag = grid->giveRandomFlag();
+    const double diam = grid->diameter;
+
+    // Border margin: ranflag 0 keeps vertices off the boundary (TOL margin),
+    // ranflag 1 leaves a full edge-spacing buffer so the regular edge points
+    // fall on the boundary cleanly.
+    double borderX = 0., borderY = 0.;
+    if ( randomFlag == 0 ) {
+        borderX = grid->TOL;
+        borderY = grid->TOL;
+    } else {
+        borderX = ( periodicityFlag.at(1) == 1 ) ? grid->TOL : edgeRefine * diam;
+        borderY = ( periodicityFlag.at(2) == 1 ) ? grid->TOL : edgeRefine * diam;
+    }
+
+    oofem::FloatArray random(3);
+    random.at(3) = 0.;
+    oofem::FloatArray newRandom(3);
+    newRandom.at(3) = 0.;
 
     // ---- Interior random fill ----
     const double maxIter = grid->giveMaximumIterations();

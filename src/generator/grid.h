@@ -200,6 +200,22 @@ public:
     /// a periodic boundary. No-op when the grid is non-periodic.
     void generatePeriodicControlPoints();
 
+    /// For every `InterfaceDisk` whose circle intersects a non-periodic
+    /// region-1 (rect) face, place a pair of close nodes on that face at
+    /// the intersection. The pair lies along the face tangent and `itz`
+    /// apart, so the dual Voronoi cell wall between them is perpendicular
+    /// to the face — approximating the disk surface at the crossing
+    /// (exact when the disk is cut in half by the face). Run *before* the
+    /// region boundary edges so the regular edge discretisation respects
+    /// these anchors via the usual distance check.
+    void generateInclusionBoundaryAnchors();
+
+    /// True if `coords` lies inside region 1's bounding box on all
+    /// non-periodic axes (boundary band included, within TOL). Used by
+    /// inclusion-perimeter loops to skip points that fell outside the
+    /// meshing region (e.g. a disk that pokes past the rect floor).
+    bool isPointInsideMeshingRegion(const oofem::FloatArray &coords) const;
+
     /// Drive the per-region periodic point generators. Returns 1 on
     /// success.
     int generatePeriodicPoints();

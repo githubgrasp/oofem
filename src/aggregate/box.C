@@ -74,6 +74,16 @@ void Box::applyDirective(const std::string &line)
         iss >> randomSeed;
     } else if ( keyword == "maxiter" ) {
         iss >> maximumIterations;
+    } else if ( keyword == "diam" ) {
+        iss >> boundaryClearance;
+        if ( boundaryClearance < 0. ) {
+            errorf("Box::applyDirective: '#@diam' must be >= 0, got %g", boundaryClearance);
+        }
+    } else if ( keyword == "itz" ) {
+        iss >> itzThickness;
+        if ( itzThickness < 0. ) {
+            errorf("Box::applyDirective: '#@itz' must be >= 0, got %g", itzThickness);
+        }
     } else if ( keyword == "vtu" ) {
         iss >> vtuFileName;
     } else if ( keyword == "grading" ) {
