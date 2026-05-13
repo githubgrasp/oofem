@@ -535,6 +535,33 @@ namespace oofem {
         out.type = VarSlot::Type::MATRIX;
     };
 
+    auto MPMfunctor_print =[](const std::vector<const VarSlot*>& args, VarSlot& out) {
+        
+        std::cout << "[Debug Output: ";
+        
+        for (size_t i = 0; i < args.size(); ++i) {
+            const VarSlot& slot = *args[i];
+            
+            if (slot.type == VarSlot::Type::SCALAR) {
+                std::cout << "Scalar: " << std::get<double>(slot.value);
+            } 
+            else if (slot.type == VarSlot::Type::MATRIX) {
+                // Add a newline for matrices so they format nicely
+                std::cout << "Matrix:" << std::get<FloatMatrix>(slot.value);
+            } 
+            else if (slot.type == VarSlot::Type::USER_PTR) {
+                std::cout << "<C++ Object at " << std::get<void*>(slot.value) << ">";
+            }
+            
+            if (i < args.size() - 1) std::cout << ", ";
+        }
+        
+        std::cout << "]" << std::endl;
+
+        // --- CRITICAL: Satisfy the VM by returning a dummy scalar ---
+        out.value = 0.0;
+        out.type = VarSlot::Type::SCALAR;
+    };
 /**
  * @brief Symbolic term allowing to parse and evaluate user defined expressions
  * 
@@ -581,6 +608,7 @@ class SymbolicTerm : public GenericCellTerm {
         compiler.register_function("MVec"); // characteristic vector (e.g. stress) from material response
         compiler.register_function("vcat"); // matrix/vector vertical concatenation
         compiler.register_function("eval"); 
+        compiler.register_function("print");
 
 
         compiler.register_function("ru");
@@ -636,8 +664,8 @@ class SymbolicTerm : public GenericCellTerm {
             vm.register_functor("MVec", MPMfunctor_MVec);
             vm.register_functor("vcat", MPMfunctor_vcat);
             vm.register_functor("eval", MPMfunctor_Eval);
+            vm.register_functor("print", MPMfunctor_print);
 
-            
             vm.register_functor("ru", MPMfunctor_FieldNodalValues);
             vm.register_functor("rv", MPMfunctor_FieldNodalVelocities);
 
