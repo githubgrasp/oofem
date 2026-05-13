@@ -1970,8 +1970,10 @@ PYBIND11_MODULE(oofempy, m) {
         .value("EffectiveStressParameter_1", oofem::MatResponseMode::EffectiveStressParameter_1)
         .value("EffectiveStressParameter_2", oofem::MatResponseMode::EffectiveStressParameter_2)
         .value("Permeability", oofem::MatResponseMode::Permeability)
-        .value("CompressibilityCoefficient", oofem::MatResponseMode::CompressibilityCoefficient)
-        .value("CompressibilityCoefficient_2", oofem::MatResponseMode::CompressibilityCoefficient_2)
+        .value("CompressibilityCoefficient_11", oofem::MatResponseMode::CompressibilityCoefficient_11)
+        .value("CompressibilityCoefficient_12", oofem::MatResponseMode::CompressibilityCoefficient_12)
+        .value("CompressibilityCoefficient_21", oofem::MatResponseMode::CompressibilityCoefficient_21)
+        .value("CompressibilityCoefficient_22", oofem::MatResponseMode::CompressibilityCoefficient_22)
         .value("Permeability_2", oofem::MatResponseMode::Permeability_2)
     ;
 
