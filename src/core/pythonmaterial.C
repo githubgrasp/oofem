@@ -1,6 +1,7 @@
 #include "pythonmaterial.h"
 #include "floatmatrix.h"
 #include "floatarray.h"
+#include "crosssection.h"
 #include "gausspoint.h"
 #include "timestep.h"
 #include "error.h"
@@ -109,6 +110,7 @@ PythonMaterial::~PythonMaterial()
     pyGiveCharacteristicMatrix.reset();
     pyGiveCharacteristicVector.reset();
     pyGiveCharacteristicValue.reset();
+    pyPrintOutputAt.reset();
 #elif defined(_PYBIND_BINDINGS)
     py::gil_scoped_acquire gil;
     pyObject.release().dec_ref();
@@ -116,6 +118,7 @@ PythonMaterial::~PythonMaterial()
     pyGiveCharacteristicMatrix.release().dec_ref();
     pyGiveCharacteristicVector.release().dec_ref();
     pyGiveCharacteristicValue.release().dec_ref();
+    pyPrintOutputAt.release().dec_ref();
 #endif
 }
 
@@ -152,6 +155,9 @@ void PythonMaterial::postInitialize()
         pyGiveCharacteristicMatrix = pyObject.attr("giveCharacteristicMatrix");
         pyGiveCharacteristicVector = pyObject.attr("giveCharacteristicVector");
         pyGiveCharacteristicValue = pyObject.attr("giveCharacteristicValue");
+        if (nb::hasattr(pyObject, "printOutputAt")) {
+            pyPrintOutputAt = pyObject.attr("printOutputAt");
+        }
     } catch (const std::exception &e) {
         OOFEM_ERROR("PythonMaterial: initialization failed: %s", e.what());
     }
@@ -175,6 +181,9 @@ void PythonMaterial::postInitialize()
         pyGiveCharacteristicMatrix = pyObject.attr("giveCharacteristicMatrix");
         pyGiveCharacteristicVector = pyObject.attr("giveCharacteristicVector");
         pyGiveCharacteristicValue = pyObject.attr("giveCharacteristicValue");
+        if (py::hasattr(pyObject, "printOutputAt")) {
+            pyPrintOutputAt = pyObject.attr("printOutputAt");
+        }
     } catch (const std::exception &e) {
         OOFEM_ERROR("PythonMaterial: initialization failed: %s", e.what());
     }
@@ -308,6 +317,42 @@ double PythonMaterial::giveCharacteristicValue(MatResponseMode type, GaussPoint*
     OOFEM_ERROR("Not compiled with python support.");
     return 0.0;
 #endif
+}
+
+void PythonMaterial::printOutputAt(FILE *file, TimeStep *tStep, const PythonMaterialStatus *status) const
+{
+#if defined(_USE_NANOBIND) || defined(_PYBIND_BINDINGS)
+    if (pyPrintOutputAt) {
+        // Flush the C++ stream buffer to ensure output order is maintained
+        // before the Python part writes to the same file descriptor.
+        fflush(file);
+
+#ifdef _USE_NANOBIND
+        nb::gil_scoped_acquire gil;
+        int fd = fileno(file);
+        try {
+            pyPrintOutputAt(fd, nb::cast(tStep), status->giveStateDictionary());
+        } catch (const std::exception &e) {
+            OOFEM_ERROR("PythonMaterial::printOutputAt failed: %s", e.what());
+        }
+#elif defined(_PYBIND_BINDINGS)
+        py::gil_scoped_acquire gil;
+        int fd = fileno(file);
+        try {
+            pyPrintOutputAt(fd, tStep, status->giveStateDictionary());
+        } catch (const std::exception &e) {
+            OOFEM_ERROR("PythonMaterial::printOutputAt failed: %s", e.what());
+        }
+#endif
+    }
+#endif
+}
+
+void PythonMaterialStatus::printOutputAt(FILE *file, TimeStep *tStep) const
+{
+    const Material *mat_base = gp->giveCrossSection()->giveMaterial(gp);
+    const PythonMaterial *mat = static_cast<const PythonMaterial *>(mat_base);
+    mat->printOutputAt(file, tStep, this);
 }
 
 } // end namespace oofem

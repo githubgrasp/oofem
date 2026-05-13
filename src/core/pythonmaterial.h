@@ -33,15 +33,17 @@ public:
     PythonMaterialStatus(GaussPoint * gp);
     ~PythonMaterialStatus() override;
 
+    void printOutputAt(FILE *file, TimeStep *tStep) const override;
+
     void initTempStatus() override;
     void updateYourself(TimeStep *tStep) override;
 
 #ifdef _USE_NANOBIND
-    nb::dict giveStateDictionary() { return stateDict; }
-    nb::dict giveTempStateDictionary() { return tempStateDict; }
+    nb::dict giveStateDictionary() const { return stateDict; }
+    nb::dict giveTempStateDictionary() const { return tempStateDict; }
 #elif defined(_PYBIND_BINDINGS)
-    py::dict giveStateDictionary() { return stateDict; }
-    py::dict giveTempStateDictionary() { return tempStateDict; }
+    py::dict giveStateDictionary() const { return stateDict; }
+    py::dict giveTempStateDictionary() const { return tempStateDict; }
 #endif
 
     const char *giveClassName() const override { return "PythonMaterialStatus"; }
@@ -59,12 +61,14 @@ protected:
     nb::object pyGiveCharacteristicMatrix;
     nb::object pyGiveCharacteristicVector;
     nb::object pyGiveCharacteristicValue;
+    nb::object pyPrintOutputAt;
 #elif defined(_PYBIND_BINDINGS)
     py::object pyObject;
     py::object pyHasMaterialModeCapability;
     py::object pyGiveCharacteristicMatrix;
     py::object pyGiveCharacteristicVector;
     py::object pyGiveCharacteristicValue;
+    py::object pyPrintOutputAt;
 #endif
 
 public:
@@ -85,6 +89,8 @@ public:
     void giveCharacteristicMatrix(FloatMatrix &answer, MatResponseMode type, GaussPoint* gp, TimeStep *tStep) const override;
     void giveCharacteristicVector(FloatArray &answer, FloatArray& flux, MatResponseMode type, GaussPoint* gp, TimeStep *tStep) const override;
     double giveCharacteristicValue(MatResponseMode type, GaussPoint* gp, TimeStep *tStep) const override;
+
+    void printOutputAt(FILE *file, TimeStep *tStep, const PythonMaterialStatus *status) const;
 };
 
 } // end namespace oofem
