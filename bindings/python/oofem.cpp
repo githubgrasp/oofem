@@ -1975,6 +1975,8 @@ PYBIND11_MODULE(oofempy, m) {
         .value("CompressibilityCoefficient_21", oofem::MatResponseMode::CompressibilityCoefficient_21)
         .value("CompressibilityCoefficient_22", oofem::MatResponseMode::CompressibilityCoefficient_22)
         .value("Permeability_2", oofem::MatResponseMode::Permeability_2)
+        .value("MassDensity_1", oofem::MatResponseMode::MassDensity_1)
+        .value("MassDensity_2", oofem::MatResponseMode::MassDensity_2)
     ;
 
     py::enum_<oofem::MaterialMode>(m, "MaterialMode")
