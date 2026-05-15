@@ -259,6 +259,40 @@ namespace oofem {
         out.type = VarSlot::Type::MATRIX;
     };
 
+auto MPMfunctor_MProp = [](const std::vector<const VarSlot*>& args, VarSlot& out) {
+        // Compute the constitutive property  
+        // ARGS: args[0] - pointer to GaussPoint (as a user pointer)
+        //       args[1] - pointer to TimeStep (as a user pointer)
+        //       args[2] - property ID (as a double, to be casted to MaterialResponseMode enum)
+        // OUTPUT: out - VarSlot to store the resulting property (e.g. stress, etc depending on property ID)
+        OOFEM_LOG_DEBUG("    [C++ Callback] Called MProp functor with %ld arguments\n", args.size());
+        if (args.size() != 3) {
+            OOFEM_ERROR("MPMfunctor_MProp functor expects exactly 3 arguments: GaussPoint, TimeStep and PropertyID.");
+        }
+        // 1. Retrieve the generic pointers to arguments
+        void* raw_ptr0 = std::get<void*>(args[0]->value);
+        void* raw_ptr1 = std::get<void*>(args[1]->value);
+        double raw_val2 = std::get<double>(args[2]->value);
+        // 2. Cast back to your specific application type (Variable class)
+        GaussPoint* gp = static_cast<GaussPoint*>(raw_ptr0);
+        TimeStep* tstep = static_cast<TimeStep*>(raw_ptr1);
+        MatResponseMode propertyID = static_cast<MatResponseMode>(raw_val2);
+
+        // functor logic
+        MPElement* cell = static_cast<MPElement*>(gp->giveElement());
+        StructuralCrossSection* cs = static_cast<StructuralCrossSection*>(cell->giveCrossSection());
+
+        FloatArray charVec;
+
+        double property = cs->giveMaterial(gp)->giveCharacteristicValue(propertyID, gp, tstep);
+        
+        out.value = property;
+        out.type = VarSlot::Type::SCALAR;
+        std::ostringstream oss;
+        //oss << "MProp result: " << std::get<double>(out.value)  << "\n\n";
+        OOFEM_LOG_DEBUG("%s", oss.str().c_str());
+    };
+
     auto MPMfunctor_MVec = [](const std::vector<const VarSlot*>& args, VarSlot& out) {
         // Compute the constitutive variable/property  
         // ARGS: args[0] - pointer to GaussPoint (as a user pointer)
