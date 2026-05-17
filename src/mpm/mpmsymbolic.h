@@ -569,6 +569,56 @@ auto MPMfunctor_MProp = [](const std::vector<const VarSlot*>& args, VarSlot& out
         out.type = VarSlot::Type::MATRIX;
     };
 
+
+    auto MPMfunctor_LumpMatrix = [](const std::vector<const VarSlot*>& args, VarSlot& out) {
+        /*
+        HRZ Lumping (Hintz-Rock-Zienkiewicz)
+        Instead of summing the rows, HRZ lumping preserves only the diagonal terms of the consistent matrix 
+        and scales them so that their total sum equals the total mass of the element.
+        */
+
+        // 1. Validation
+        if (args.size() != 2) {
+            throw std::runtime_error("LumpMatrix requires 2 arguments: (ConsistentMatrix, TargetTotalMass)");
+        }
+        if (args[0]->type != VarSlot::Type::MATRIX || args[1]->type != VarSlot::Type::SCALAR) {
+            throw std::runtime_error("LumpMatrix inputs must be (Matrix, Scalar).");
+        }
+
+        const FloatMatrix& M_c = std::get<FloatMatrix>(args[0]->value);
+        double target_mass = std::get<double>(args[1]->value);
+
+        if (M_c.rows() != M_c.cols()) {
+            throw std::runtime_error("LumpMatrix requires a square consistent mass matrix.");
+        }
+
+        // 2. Calculate the sum of the diagonal
+        double diag_sum = 0.0;
+        for (int i = 0; i < M_c.rows(); ++i) {
+            diag_sum += M_c(i, i);
+        }
+
+        // Prevent division by zero if the matrix is empty/invalid
+        if (std::abs(diag_sum) < 1e-14) {
+            throw std::runtime_error("LumpMatrix failed: Sum of diagonal is practically zero.");
+        }
+
+        // 3. Calculate the HRZ scaling factor
+        double scale_factor = target_mass / diag_sum;
+
+        // 4. Create the lumped matrix by scaling the diagonal
+        FloatMatrix M_lumped(M_c.rows(), M_c.cols());
+        M_lumped.zero();
+        for (int i = 0; i < M_c.rows(); ++i) {
+            M_lumped(i, i) = M_c(i, i) * scale_factor;
+        }
+
+        // 5. Output to VM
+        out.value = M_lumped;
+        out.type = VarSlot::Type::MATRIX;
+    };
+
+
     auto MPMfunctor_print =[](const std::vector<const VarSlot*>& args, VarSlot& out) {
         
         std::cout << "[Debug Output: ";
@@ -640,7 +690,9 @@ class SymbolicTerm : public GenericCellTerm {
         compiler.register_function("Sig_dev");
         compiler.register_function("MDer");
         compiler.register_function("MVec"); // characteristic vector (e.g. stress) from material response
+        compiler.register_function("MProp"); // material property
         compiler.register_function("vcat"); // matrix/vector vertical concatenation
+        compiler.register_function("LumpMatrix"); // HRZ lumping of consistent mass matrix
         compiler.register_function("eval"); 
         compiler.register_function("print");
 
@@ -696,8 +748,10 @@ class SymbolicTerm : public GenericCellTerm {
             vm.register_functor("Sig_dev", MPMfunctor_Sig_dev);
             vm.register_functor("MDer", MPMfunctor_MDer);
             vm.register_functor("MVec", MPMfunctor_MVec);
+            vm.register_functor("MProp", MPMfunctor_MProp);
             vm.register_functor("vcat", MPMfunctor_vcat);
             vm.register_functor("eval", MPMfunctor_Eval);
+            vm.register_functor("LumpMatrix", MPMfunctor_LumpMatrix);
             vm.register_functor("print", MPMfunctor_print);
 
             vm.register_functor("ru", MPMfunctor_FieldNodalValues);
