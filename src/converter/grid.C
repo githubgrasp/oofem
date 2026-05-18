@@ -6068,7 +6068,7 @@ void Grid::give2DTMOutput(const std::string &fileName)
 
                 out << "latticemt2D " << ++elemCounter
                     << " nodes 2 " << n1 << " " << n2
-                    << " mat " << mat << " dim 1"
+                    << " mat " << mat << " dim 2"
                     << " thick " << latticeThickness
                     << " width " << width
                     << " gpCoords 2 " << gx << " " << gy;
