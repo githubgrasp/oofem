@@ -117,6 +117,7 @@ NonStationaryMPMSProblem :: initializeFrom(const std::shared_ptr<InputRecord> &i
             }
         }
     }
+    IR_GIVE_OPTIONAL_FIELD(ir, this->debug, "debug");
 }
 
 double NonStationaryMPMSProblem :: giveUnknownComponent(ValueModeType mode, TimeStep *tStep, Domain *d, Dof *dof)
@@ -153,18 +154,8 @@ NonStationaryMPMSProblem :: giveDiscreteTime(int iStep)
 
 TimeStep *NonStationaryMPMSProblem :: giveNextStep()
 {
-    if ( !currentStep ) {
-        // first step -> generate initial step
-        currentStep = std::make_unique<TimeStep>( *giveSolutionStepWhenIcApply() );
-    }
-
-    double dt = this->giveDeltaT(currentStep->giveNumber()+1);
-    previousStep = std :: move(currentStep);
-    currentStep = std::make_unique<TimeStep>(*previousStep, dt);
-    currentStep->setIntrinsicTime(previousStep->giveTargetTime() + alpha * dt);
-    return currentStep.get();
+    return this->timeStepController->giveNextStep();
 }
-
 
 TimeStep *NonStationaryMPMSProblem :: giveSolutionStepWhenIcApply(bool force)
 {
@@ -239,6 +230,10 @@ void NonStationaryMPMSProblem :: solveYourselfAt(TimeStep *tStep)
                                                   SparseNonLinearSystemNM :: rlm_total, // ignore
                                                   currentIterations, // ignore
                                                   tStep);
+    if (status != CR_CONVERGED) {
+      OOFEM_WARNING("No success in solving problem at step %d", tStep->giveNumber());
+    }
+
     tStep->numberOfIterations = currentIterations;
     tStep->convergedReason = status;
 }
@@ -404,6 +399,26 @@ NonStationaryMPMSProblem :: printOutputAt(FILE *file, TimeStep *tStep)
     }
 
     EngngModel :: printOutputAt(file, tStep);
+
+    if (this->debug) {
+        /* custom export */
+        // plot profile of the pressure fields vs x
+        Domain *d = this->giveDomain(1);
+        double t = tStep->giveTargetTime();
+        char filename[256];
+        sprintf(filename, "time_%lf.csv", t);
+        FILE *file1 = fopen(filename, "w");
+        fprintf(file1, "t=%lf[s]\nx, pw, pa\n", t);
+        for ( int i =1; i<= 21; i++) {
+            DofManager *dm = d->giveDofManager(i);
+            double x = dm->giveCoordinate(1);
+            FloatArray pw,pa;
+            dm->giveUnknownVector(pw, {P_f}, VM_Total, tStep);
+            dm->giveUnknownVector(pa, {P_f2}, VM_Total, tStep);
+            fprintf(file1, "%le, %le, %le\n", x, pw[0], pa[0]);
+        }
+        fclose(file1);
+    }
 
 }
 

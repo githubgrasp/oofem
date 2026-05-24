@@ -280,6 +280,8 @@ namespace oofem {
         IntArray lhsdotIntegrals;  // terms involving time derivative of unknowns at current time step
         IntArray rhsIntegrals;
 
+        bool debug = false;
+
     public:
         NonStationaryMPMSProblem(int i, EngngModel * _master) : EngngModel(i, _master), nMethod(nullptr) { ndomains = 1;}
         void initializeFrom(const std::shared_ptr<InputRecord> &ir) override ;
@@ -315,14 +317,18 @@ namespace oofem {
         }
         void updateDomainLinks() override;
 
+        /*
         Function *giveDtFunction();
+        */
+        TimeStep *giveSolutionStepWhenIcApply(bool force = false) override;
         double giveDeltaT(int n);
         double giveDiscreteTime(int iStep);
-
         TimeStep *giveNextStep() override;
-        TimeStep *giveSolutionStepWhenIcApply(bool force = false) override;
+        TimeStep *giveCurrentStep(bool force = false) override { return timeStepController->giveCurrentStep(); }
+        TimeStep *givePreviousStep(bool force = false) override { return timeStepController->givePreviousStep(); }
 
-        
+
+
 
         bool requiresEquationRenumbering(TimeStep *tStep) override;
         int forceEquationNumbering() override;
@@ -342,11 +348,7 @@ namespace oofem {
      */
     double giveFinalTime() override
     {
-        if(prescribedTimes.giveSize()) {
-        return prescribedTimes.at(prescribedTimes.giveSize());
-        } else {
-        return deltaT * numberOfSteps;
-        }
+        return this->timeStepController->giveFinalTime();
     }
 
     }; // end class NonStationaryMPMSProblem
