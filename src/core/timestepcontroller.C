@@ -87,9 +87,10 @@ TimeStepController :: giveNextStep()
 
     auto mStepNum = currentStep->giveMetaStepNumber();
     previousStep = std :: move(currentStep);    
+    istep =  previousStep->giveNumber() + 1;
     dt = this->giveCurrentMetaStep()->giveDeltaT(istep, previousStep);
     totalTime = previousStep->giveTargetTime() +  dt;
-    istep =  previousStep->giveNumber() + 1;      
+        
     counter = previousStep->giveSolutionStateCounter() + 1;
 
     //
@@ -118,9 +119,6 @@ TimeStepController :: instanciateMetaSteps(DataReader &dr)
     auto mrecs=dr.giveGroupRecords(DataReader::IR_mstepRec,this->numberOfMetaSteps);
     int i=0;
     for(const std::shared_ptr<InputRecord>& mrec: mrecs){
-        if(i > 0) {
-            metaStepList[i].setPreviousMetaStepFinalTime(metaStepList[i-1].giveFinalTime());
-        }
         metaStepList[i].initializeFrom(mrec);
         totalNumberOfSteps += metaStepList[i].giveNumberOfSteps();
         i++;
@@ -183,8 +181,14 @@ void
 TimeStepController :: postInitialize()
 {
     int istep = eModel->giveNumberOfFirstStep(true);
+    int i=0;
     for ( auto &metaStep: metaStepList ) {
         istep = metaStep.setStepBounds(istep);
+        if(i > 0) {
+          metaStepList[i].setPreviousMetaStepFinalTime(metaStepList[i-1].giveFinalTime());
+        }
+        metaStepList[i].postInitialize();
+        i++;
     }
 
 
