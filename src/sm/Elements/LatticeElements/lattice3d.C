@@ -443,6 +443,13 @@ double Lattice3d :: giveArea(GaussPoint *gp) {
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
     }
+    // Multi-IP shell mode: tributary area of GP's layer = b * (t/N).
+    LatticeCrossSection *lcs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );
+    if ( lcs != nullptr && lcs->giveShape() == 2 && lcs->giveNLayers() > 1
+         && this->shellThicknessAxis != 0 ) {
+        const int n = lcs->giveNLayers();
+        return this->shellB * ( this->shellH / static_cast< double >( n ) );
+    }
     return this->area;
 }
 
@@ -1014,6 +1021,14 @@ double Lattice3d :: giveI1(GaussPoint *gp) {
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
     }
+    // Multi-IP shell: I1 (the larger principal inertia, in-plane bending) gets
+    // a uniform area-fraction split.  Steiner contribution is zero because the
+    // layers do not shift in the in-plane direction (only across thickness).
+    LatticeCrossSection *lcs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );
+    if ( lcs != nullptr && lcs->giveShape() == 2 && lcs->giveNLayers() > 1
+         && this->shellThicknessAxis != 0 ) {
+        return this->I1 / static_cast< double >( lcs->giveNLayers() );
+    }
     return this->I1;
 }
 
@@ -1021,7 +1036,24 @@ double Lattice3d :: giveI2(GaussPoint *gp) {
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
     }
-
+    // Multi-IP shell: I2 (smaller principal inertia, through-thickness bending)
+    // decomposes via parallel-axis (Steiner) using the GP's layer offset along
+    // the thickness direction:  I2_layer = b * dh^3 / 12  +  b * dh * z_layer^2.
+    LatticeCrossSection *lcs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );
+    if ( lcs != nullptr && lcs->giveShape() == 2 && lcs->giveNLayers() > 1
+         && this->shellThicknessAxis != 0 ) {
+        const int n = lcs->giveNLayers();
+        const double dh = this->shellH / static_cast< double >( n );
+        const double b  = this->shellB;
+        double layerOffset = 0.0;
+        if ( gp != nullptr ) {
+            const FloatArray &nc = gp->giveNaturalCoordinates();
+            if ( nc.giveSize() >= 3 ) {
+                layerOffset = ( this->shellThicknessAxis == 2 ) ? nc.at(2) : nc.at(3);
+            }
+        }
+        return b * dh * dh * dh / 12.0 + b * dh * layerOffset * layerOffset;
+    }
     return this->I2;
 }
 
@@ -1029,6 +1061,14 @@ double Lattice3d :: giveI2(GaussPoint *gp) {
 double Lattice3d :: giveJ(GaussPoint *gp) {
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
+    }
+    // Multi-IP shell: J split uniformly (J_full / N).  Saint-Venant torsion does
+    // not decompose by layer; the uniform split is a bookkeeping convention that
+    // preserves the total torsional stiffness in the linear case.
+    LatticeCrossSection *lcs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );
+    if ( lcs != nullptr && lcs->giveShape() == 2 && lcs->giveNLayers() > 1
+         && this->shellThicknessAxis != 0 ) {
+        return this->J / static_cast< double >( lcs->giveNLayers() );
     }
     return this->J;
 }
@@ -1039,6 +1079,12 @@ double Lattice3d :: giveShearArea1(GaussPoint *gp) {
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
     }
+    // Multi-IP shell: shear area split with the cross-section area (per-layer).
+    LatticeCrossSection *lcs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );
+    if ( lcs != nullptr && lcs->giveShape() == 2 && lcs->giveNLayers() > 1
+         && this->shellThicknessAxis != 0 ) {
+        return this->shearArea1 / static_cast< double >( lcs->giveNLayers() );
+    }
     //Temporary assumption. Ideally, shear area should be less than area.
     return this->shearArea1;
 }
@@ -1046,6 +1092,12 @@ double Lattice3d :: giveShearArea1(GaussPoint *gp) {
 double Lattice3d :: giveShearArea2(GaussPoint *gp) {
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
+    }
+    // Multi-IP shell: shear area split with the cross-section area (per-layer).
+    LatticeCrossSection *lcs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );
+    if ( lcs != nullptr && lcs->giveShape() == 2 && lcs->giveNLayers() > 1
+         && this->shellThicknessAxis != 0 ) {
+        return this->shearArea2 / static_cast< double >( lcs->giveNLayers() );
     }
     //Temporary assumption. Ideally, shear area should be less than area.
     return this->shearArea2;
