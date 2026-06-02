@@ -88,13 +88,23 @@ Lattice3d :: computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, int 
     // eccS, eccT are the offsets of the cross-section centroid from the
     // element axis (the line between the two nodes); nonzero when the
     // axis does not pass through the centroid, e.g. shell-mode rectangles.
-    // For multi-IP through-thickness GPs, this is the place to add the
-    // GP's local in-section offset from the centroid to l1.at(2/3) and
-    // subtract it from l2.at(2/3).
+    // For multi-IP shell GPs, the GP's natural coordinates carry an additional
+    // in-section (s, t) offset of the GP from the centroid (set in
+    // computeGaussPoints).  The offset adds to l1's transverse components and
+    // subtracts from l2's.  For the single-GP-at-centroid case the offset is
+    // zero and this reduces to the legacy form.
+    double gpY = 0.0, gpZ = 0.0;
+    if ( aGaussPoint != nullptr ) {
+        const FloatArray &nc = aGaussPoint->giveNaturalCoordinates();
+        if ( nc.giveSize() >= 3 ) {
+            gpY = nc.at(2);
+            gpZ = nc.at(3);
+        }
+    }
     FloatArray l1(3), l2(3);
-    l1.at(1) =  this->length / 2.;   l2.at(1) =  this->length / 2.;
-    l1.at(2) =  this->eccS;          l2.at(2) = -this->eccS;
-    l1.at(3) =  this->eccT;          l2.at(3) = -this->eccT;
+    l1.at(1) =  this->length / 2.;        l2.at(1) =  this->length / 2.;
+    l1.at(2) =  this->eccS + gpY;         l2.at(2) = -this->eccS - gpY;
+    l1.at(3) =  this->eccT + gpZ;         l2.at(3) = -this->eccT - gpZ;
 
     //Normal displacement jump in x-direction
     //First node
@@ -233,12 +243,39 @@ Lattice3d :: computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, int 
 void
 Lattice3d :: giveGPCoordinates(FloatArray &coords)
 {
+    // Legacy overload: returns centroid only (used by old callers that don't pass a gp).
+    this->giveGPCoordinates(nullptr, coords);
+}
+
+
+void
+Lattice3d :: giveGPCoordinates(GaussPoint *gp, FloatArray &coords)
+{
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
     }
     coords.resize(3);
+
+    if ( gp == nullptr ) {
+        coords = this->globalCentroid;
+        return;
+    }
+
+    // The GP's natural coordinates carry the in-section (axial, local-y, local-z)
+    // offset from the centroid (set in computeGaussPoints).  Rotate that local
+    // offset into global coordinates using the transpose of localCoordinateSystem
+    // (localCoordinateSystem is the global -> local rotation), then add to the centroid.
+    const FloatArray &nc = gp->giveNaturalCoordinates();
+    FloatArray localOffset(3);
+    localOffset.at(1) = nc.at(1);
+    localOffset.at(2) = nc.at(2);
+    localOffset.at(3) = nc.at(3);
+
+    FloatArray globalOffset(3);
+    globalOffset.beTProductOf(this->localCoordinateSystem, localOffset);
+
     coords = this->globalCentroid;
-    return;
+    coords.add(globalOffset);
 }
 
 

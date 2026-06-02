@@ -127,6 +127,15 @@ public:
     virtual void giveGPCoordinates(FloatArray &coords);
 
     /**
+     * Return the global coordinates of the given GP. For the legacy single-GP-at-centroid
+     * case this is the element centroid (same as the no-argument overload). For multi-IP
+     * shell mode the GP's natural coordinates store the in-section (s, t) offset from the
+     * centroid (set in computeGaussPoints); this method rotates that offset from the local
+     * cross-section frame to global and adds it to the centroid.
+     */
+    virtual void giveGPCoordinates(GaussPoint *gp, FloatArray &coords);
+
+    /**
      * Compute integration-layer positions in the element-local cross-section frame.
      * For each layer fills the local-y and local-z offsets from the centroid and the
      * tributary area. In shell mode (shape == 2, nLayers > 1) produces nLayers equally-
