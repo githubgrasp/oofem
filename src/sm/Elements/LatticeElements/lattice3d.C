@@ -83,53 +83,48 @@ Lattice3d :: computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, int 
     answer.resize(6, 12);
     answer.zero();
 
+    // Rigid-arm vectors in the element-local frame.
+    // l1 = vector node-1 -> GP, l2 = vector GP -> node-2.
+    // eccS, eccT are the offsets of the cross-section centroid from the
+    // element axis (the line between the two nodes); nonzero when the
+    // axis does not pass through the centroid, e.g. shell-mode rectangles.
+    // For multi-IP through-thickness GPs, this is the place to add the
+    // GP's local in-section offset from the centroid to l1.at(2/3) and
+    // subtract it from l2.at(2/3).
+    FloatArray l1(3), l2(3);
+    l1.at(1) =  this->length / 2.;   l2.at(1) =  this->length / 2.;
+    l1.at(2) =  this->eccS;          l2.at(2) = -this->eccS;
+    l1.at(3) =  this->eccT;          l2.at(3) = -this->eccT;
+
     //Normal displacement jump in x-direction
     //First node
-    answer.at(1, 1) = -1.;
-    answer.at(1, 2) = 0.;
-    answer.at(1, 3) = 0.;
-    answer.at(1, 4) = 0.;
-    answer.at(1, 5) = -this->eccT;
-    answer.at(1, 6) = this->eccS;
+    answer.at(1, 1)  = -1.;
+    answer.at(1, 5)  = -l1.at(3);
+    answer.at(1, 6)  =  l1.at(2);
     //Second node
-    answer.at(1, 7) = 1.;
-    answer.at(1, 8) = 0.;
-    answer.at(1, 9) = 0.;
-    answer.at(1, 10) = 0.;
-    answer.at(1, 11) = this->eccT;
-    answer.at(1, 12) = -this->eccS;
+    answer.at(1, 7)  =  1.;
+    answer.at(1, 11) = -l2.at(3);
+    answer.at(1, 12) =  l2.at(2);
 
     //Shear displacement jump in y-plane
     //first node
-    answer.at(2, 1) = 0.;
-    answer.at(2, 2) = -1.;
-    answer.at(2, 3) =  0.;
-    answer.at(2, 4) = this->eccT;
-    answer.at(2, 5) = 0;
-    answer.at(2, 6) = -this->length / 2.;
+    answer.at(2, 2)  = -1.;
+    answer.at(2, 4)  =  l1.at(3);
+    answer.at(2, 6)  = -l1.at(1);
     //Second node
-    answer.at(2, 7) = 0.;
-    answer.at(2, 8) = 1.;
-    answer.at(2, 9) =  0.;
-    answer.at(2, 10) = -this->eccT;
-    answer.at(2, 11) = 0;
-    answer.at(2, 12) = -this->length / 2.;
+    answer.at(2, 8)  =  1.;
+    answer.at(2, 10) =  l2.at(3);
+    answer.at(2, 12) = -l2.at(1);
 
     //Shear displacement jump in z-plane
     //first node
-    answer.at(3, 1) = 0.;
-    answer.at(3, 2) = 0.;
-    answer.at(3, 3) = -1.;
-    answer.at(3, 4) = -this->eccS;
-    answer.at(3, 5) = this->length / 2.;
-    answer.at(3, 6) = 0.;
+    answer.at(3, 3)  = -1.;
+    answer.at(3, 4)  = -l1.at(2);
+    answer.at(3, 5)  =  l1.at(1);
     //Second node
-    answer.at(3, 7) = 0.;
-    answer.at(3, 8) = 0.;
-    answer.at(3, 9) =  1.;
-    answer.at(3, 10) = this->eccS;
-    answer.at(3, 11) = this->length / 2.;
-    answer.at(3, 12) = 0.;
+    answer.at(3, 9)  =  1.;
+    answer.at(3, 10) = -l2.at(2);
+    answer.at(3, 11) =  l2.at(1);
 
     //Rotation around x-axis
     //First node

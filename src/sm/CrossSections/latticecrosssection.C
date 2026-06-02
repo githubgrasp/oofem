@@ -121,7 +121,19 @@ LatticeCrossSection::initializeFrom(InputRecord &ir)
     
     this->radius = 0.0;
     IR_GIVE_OPTIONAL_FIELD(ir, this->radius, _IFT_LatticeCrossSection_radius);
-    
+
+    // Number of through-thickness layers (only meaningful when shape == 2, i.e. shell mode).
+    // Default 1 = single material point at centroid (preserves legacy single-IP behaviour).
+    this->nLayers = 1;
+    IR_GIVE_OPTIONAL_FIELD(ir, this->nLayers, _IFT_LatticeCrossSection_nLayers);
+    if ( this->nLayers < 1 ) {
+        throw ValueInputException(ir, _IFT_LatticeCrossSection_nLayers,
+                                  "nLayers must be >= 1");
+    }
+    if ( this->nLayers > 1 && this->shape != 2 ) {
+        OOFEM_WARNING("LatticeCrossSection: nLayers > 1 only takes effect for shell-mode "
+                      "rectangles (shape == 2); ignored for shape = %d", this->shape);
+    }
 }
 
 double LatticeCrossSection::giveLatticeStress1d(double strain, GaussPoint *gp, TimeStep *tStep) const

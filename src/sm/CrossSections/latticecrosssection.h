@@ -54,6 +54,7 @@
 #define _IFT_LatticeCrossSection_shearareaz "shearareaz"
 #define _IFT_LatticeCrossSection_shape "shape"
 #define _IFT_LatticeCrossSection_radius "radius"
+#define _IFT_LatticeCrossSection_nLayers "nlayers"
 
 //@}
 
@@ -82,6 +83,7 @@ protected:
     double shearareaz = 0.;
   int shape = 0;
   double radius = 0.;
+  int nLayers = 1;   ///< Number of through-thickness layers (shell mode, shape=2). 1 = single material point at centroid (default).
 
 public:
     /**
@@ -157,6 +159,7 @@ public:
 
   int giveShape() const { return shape; }
   double giveRadius() const { return radius; }
+  int giveNLayers() const { return nLayers; }
   
     //    void giveCharMaterialStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode, GaussPoint *gp, TimeStep *tStep);
 
