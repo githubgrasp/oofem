@@ -71,6 +71,14 @@ protected:
     FloatArray pressures;
     double thickness;
 
+    // Shell-mode rectangle dimensions (set in computeGeometryProperties when shape == 2):
+    //   shellH = thickness extent in local frame (= this->giveThickness())
+    //   shellB = in-plane width extent in local frame
+    //   shellThicknessAxis = 2 if thickness is along local y, 3 if along local z, 0 if not shell mode
+    double shellH = 0.;
+    double shellB = 0.;
+    int shellThicknessAxis = 0;
+
 public:
     Lattice3d(int n, Domain *);
     virtual ~Lattice3d();
@@ -117,6 +125,15 @@ public:
     void giveCrossSectionCoordinates(FloatArray &coords) override { coords = polygonCoords; }
 
     virtual void giveGPCoordinates(FloatArray &coords);
+
+    /**
+     * Compute integration-layer positions in the element-local cross-section frame.
+     * For each layer fills the local-y and local-z offsets from the centroid and the
+     * tributary area. In shell mode (shape == 2, nLayers > 1) produces nLayers equally-
+     * spaced strips through the thickness direction. Otherwise produces a single layer
+     * at (0, 0) with the full cross-section area (= legacy single-IP-at-centroid).
+     */
+    virtual void computeLayerPositions(FloatArray &yOffset, FloatArray &zOffset, FloatArray &areas);
 
     virtual void computeGeometryProperties();
 

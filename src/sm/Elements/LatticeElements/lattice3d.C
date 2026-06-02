@@ -241,7 +241,47 @@ Lattice3d :: giveGPCoordinates(FloatArray &coords)
     return;
 }
 
- 
+
+void
+Lattice3d :: computeLayerPositions(FloatArray &yOffset, FloatArray &zOffset, FloatArray &areas)
+{
+    if ( geometryFlag == 0 ) {
+        computeGeometryProperties();
+    }
+
+    int n = 1;
+    LatticeCrossSection *lcs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );
+    if ( lcs != nullptr && lcs->giveShape() == 2 && this->shellThicknessAxis != 0 ) {
+        n = lcs->giveNLayers();
+    }
+
+    yOffset.resize(n); yOffset.zero();
+    zOffset.resize(n); zOffset.zero();
+    areas.resize(n);
+
+    if ( n == 1 ) {
+        // Default: single layer at centroid, tributary area = whole cross-section.
+        areas.at(1) = this->area;
+        return;
+    }
+
+    // Multi-layer shell: n equal strips through the thickness.
+    const double h = this->shellH;
+    const double b = this->shellB;
+    const double dh = h / static_cast< double >( n );
+    const double aStrip = b * dh;
+    for ( int k = 1; k <= n; ++k ) {
+        const double offset = -h / 2.0 + ( static_cast< double >( k ) - 0.5 ) * dh;
+        if ( this->shellThicknessAxis == 2 ) {
+            yOffset.at(k) = offset;
+        } else {                // shellThicknessAxis == 3
+            zOffset.at(k) = offset;
+        }
+        areas.at(k) = aStrip;
+    }
+}
+
+
 double
 Lattice3d :: giveLength()
 {
@@ -329,13 +369,35 @@ Lattice3d :: computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode,
 }
 
 void Lattice3d :: computeGaussPoints()
-// Sets up the array of Gauss Points of the receiver.
+// Sets up the array of integration / material points of the receiver.
+// In shell mode (LatticeCS shape == 2) with nLayers > 1, creates nLayers
+// material points through the thickness, each with its local (s, t)
+// in-section offset stored in the GP's natural coordinates and the
+// per-layer tributary area in the GP's weight.  In all other cases
+// (solid lattice or shell with nLayers = 1) creates a single material
+// point at the centroid -- identical to the legacy behaviour.
 {
-    this->numberOfGaussPoints = 1;
+    FloatArray yOff, zOff, areas;
+    this->computeLayerPositions(yOff, zOff, areas);
+    const int n = areas.giveSize();
 
+    this->numberOfGaussPoints = n;
     integrationRulesArray.resize(1);
-    integrationRulesArray [ 0 ].reset(new GaussIntegrationRule(1, this, 1, 3) );
-    integrationRulesArray [ 0 ]->SetUpPointsOnLine(1, _3dLattice);
+    integrationRulesArray [ 0 ].reset( new GaussIntegrationRule(1, this, 1, 3) );
+    integrationRulesArray [ 0 ]->SetUpPointsOnLine(n, _3dLattice);
+
+    // Overwrite each material point's natural coords + weight with the
+    // per-layer in-section offset and tributary area.  natCoords are stored
+    // as (axial = 0, yOffset, zOffset) in the element-local frame.
+    for ( int k = 1; k <= n; ++k ) {
+        GaussPoint *gp = integrationRulesArray [ 0 ]->getIntegrationPoint(k - 1);
+        FloatArray nc(3);
+        nc.at(1) = 0.0;             // GPs sit at the element axial midpoint
+        nc.at(2) = yOff.at(k);      // local-y offset from centroid
+        nc.at(3) = zOff.at(k);      // local-z offset from centroid
+        gp->setNaturalCoordinates(nc);
+        gp->setWeight(areas.at(k));
+    }
 }
 
 
@@ -763,16 +825,29 @@ if (cs->giveShape() == 2) {
     double b = 0.0;
     double h = 0.0;
 
+    // Edge directions in local (y, z), used to identify which local axis is
+    // the thickness direction.
+    const double dy12 = lpc.at(3*(2-1)+2) - lpc.at(3*(1-1)+2);
+    const double dz12 = lpc.at(3*(2-1)+3) - lpc.at(3*(1-1)+3);
+    const double dy23 = lpc.at(3*(3-1)+2) - lpc.at(3*(2-1)+2);
+    const double dz23 = lpc.at(3*(3-1)+3) - lpc.at(3*(2-1)+3);
+
     if (std::fabs(d1 - t) < thickTol) {
         h = d1;
         b = d2;
+        // Thickness lies along edge 1-2; pick the local axis whose component dominates.
+        this->shellThicknessAxis = (std::fabs(dy12) > std::fabs(dz12)) ? 2 : 3;
     } else if (std::fabs(d2 - t) < thickTol) {
         h = d2;
         b = d1;
+        // Thickness lies along edge 2-3.
+        this->shellThicknessAxis = (std::fabs(dy23) > std::fabs(dz23)) ? 2 : 3;
     } else {
         OOFEM_ERROR("Rectangle cross-section does not match element thickness.");
     }
 
+    this->shellH = h;
+    this->shellB = b;
     this->J = b * h * h * h / 6.0;
 
       /* if (b <= 0.0 || h <= 0.0) { */

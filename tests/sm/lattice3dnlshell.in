@@ -1,0 +1,25 @@
+lattice3dnlshell.out
+Shell-mode lattice3dnl (shape 2 rectangle, large rotations): tension + axial twist; exercises J = b*t^3/6.
+StaticStructural nsteps 3 rtolv 1.e-6 ddm 4 2 1 2 4 ddv 2 1.e-4 1.e-3 ddltf 2
+domain 3dLattice
+OutputManager tstep_all dofman_all element_all
+ndofman 2 nelem 1 ncrosssect 1 nmat 1 nbc 1 nic 0 nltf 2
+node 1 coords 3 0.000000e+00 0.000000e+00 0.000000e+00 bc 6 1 1 1 1 1 1
+node 2 coords 3 1.000000e+00 0.000000e+00 0.000000e+00 bc 6 0 0 0 0 0 0
+lattice3Dnl 1 nodes 2 1 2 crossSect 1 mat 1 thickness 0.01 polycoords 12 0.5 -0.05 -0.005   0.5 0.05 -0.005   0.5 0.05 0.005   0.5 -0.05 0.005
+latticecs 1 material 1 shape 2 thickness 0.01
+latticeframeelastic 1 d 2400. tAlpha 0.0 E 30.e9 n 0.0
+BoundaryCondition 1 loadTimeFunction 1 prescribedvalue 0.0
+ConstantFunction 1 f(t) 1.
+PiecewiseLinFunction 2 nPoints 2 t 2 1. 4. f(t) 2 0. 1.
+#%BEGIN_CHECK% tolerance 1.e-3
+# Step 3: load factor = 2/3, prescribed disp = 6.667e-5 m, prescribed twist = 6.667e-4 rad.
+# Reaction at clamped node 1, dof 1 = axial force        = -E*eps*A    = -2.0e3   N
+# Reaction at clamped node 1, dof 4 = torsion moment     = -G*J*twist  = -0.1667  N*m
+# The dof-4 reaction pins down the shape-2 J = b*t^3/6 formula;
+# the generic-polygon fallback (J = Ip) would yield ~50x larger.
+# Large-rotation form (lattice3dnl) at this prescribed magnitude is numerically
+# indistinguishable from the small-rotation form (lattice3dshell.in twin).
+#REACTION tStep 3 number 1 dof 1 value -2.0000e+3
+#REACTION tStep 3 number 1 dof 4 value -1.6667e-1
+#%END_CHECK%
