@@ -35,8 +35,8 @@ if (NOT CMAKE_BUILD_TYPE)
 endif ()
 
 # AddressSanitizer support (macOS M1-safe)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fno-omit-frame-pointer -g")
-set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fsanitize=address")
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fno-omit-frame-pointer -g")
+# set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fsanitize=address")
 
 function(add_git_submodule dir)
 # add a Git submodule directory to CMake, assuming the

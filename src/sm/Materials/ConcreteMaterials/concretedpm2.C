@@ -1791,13 +1791,13 @@ namespace oofem {
         double yieldHardOne = computeHardeningOne(tempKappa);
         double yieldHardTwo = computeHardeningTwo(tempKappa);
 
-        //Compute dilation parameter
-        double AGParam = this->ft * yieldHardTwo * 3 / this->fc + m / 2;
+        //Compute dilation parameter (mQ = dmg/dsig with mg per eq.(23), generalised with qh1 factors)
+        double AGParam = 3. * this->ft * yieldHardOne * yieldHardTwo / this->fc + this->m * yieldHardOne * yieldHardOne / 2.;
         double BGParam =
-            yieldHardTwo / 3. * ( 1. + this->ft / this->fc ) /
-            ( log(AGParam) + log(this->dilationConst + 1.) - log(2 * this->dilationConst - 1.) - log(3. * yieldHardTwo + this->m / 2) );
+            yieldHardOne * yieldHardTwo * ( 1. + this->ft / this->fc ) / 3. /
+            ( log(AGParam) + log(this->dilationConst + 1.) - log(2. * this->dilationConst - 1.) - log(3. * yieldHardOne * yieldHardTwo + this->m * yieldHardOne * yieldHardOne / 2.) );
 
-        double R = ( sig - ft / 3. * yieldHardTwo ) / fc / BGParam;
+        double R = ( sig - this->ft * yieldHardOne * yieldHardTwo / 3. ) / ( this->fc * BGParam );
         double mQ = AGParam * exp(R);
 
         double Bl = sig / fc + rho / ( fc * sqrt(6.) );
@@ -1877,6 +1877,8 @@ namespace oofem {
 
             normOfResiduals = norm(residualsNorm);
 
+	    //	    printf("normOfResiduals: %e\n", normOfResiduals);
+	    
             if ( std::isnan(normOfResiduals) ) {
                 returnResult = RR_NotConverged;
                 return kappaP;
@@ -2256,13 +2258,13 @@ namespace oofem {
         double yieldHardOne = computeHardeningOne(tempKappa);
         double yieldHardTwo = computeHardeningTwo(tempKappa);
 
-        //Compute dilation parameter
-        double AGParam = this->ft * yieldHardTwo * 3 / this->fc + m / 2;
+        //Compute dilation parameter (mQ = dmg/dsig with mg per eq.(23), generalised with qh1 factors)
+        double AGParam = 3. * this->ft * yieldHardOne * yieldHardTwo / this->fc + this->m * yieldHardOne * yieldHardOne / 2.;
         double BGParam =
-            yieldHardTwo / 3. * ( 1. + this->ft / this->fc ) /
-            ( log(AGParam) + log(this->dilationConst + 1.) - log(2 * this->dilationConst - 1.) - log(3. * yieldHardTwo + this->m / 2) );
+            yieldHardOne * yieldHardTwo * ( 1. + this->ft / this->fc ) / 3. /
+            ( log(AGParam) + log(this->dilationConst + 1.) - log(2. * this->dilationConst - 1.) - log(3. * yieldHardOne * yieldHardTwo + this->m * yieldHardOne * yieldHardOne / 2.) );
 
-        double R = ( sig - ft / 3. * yieldHardTwo ) / fc / BGParam;
+        double R = ( sig - this->ft * yieldHardOne * yieldHardTwo / 3. ) / ( this->fc * BGParam );
         double mQ = AGParam * exp(R);
 
         double Bl = sig / fc + rho / ( fc * sqrt(6.) );
@@ -2469,8 +2471,6 @@ namespace oofem {
                                        double rho,
                                        double tempKappa) const
     {
-        //Compute dilation parameter
-
         //compute yieldHard and yieldSoft
         double yieldHardOne = computeHardeningOne(tempKappa);
         double yieldHardTwo = computeHardeningTwo(tempKappa);
@@ -2478,52 +2478,50 @@ namespace oofem {
         double dYieldHardOneDKappa = computeHardeningOnePrime(tempKappa);
         double dYieldHardTwoDKappa = computeHardeningTwoPrime(tempKappa);
 
-        //Compute dilation parameter
-        double AGParam = this->ft * yieldHardTwo * 3 / this->fc + m / 2;
-        double BGParam =
-            yieldHardTwo / 3. * ( 1. + this->ft / this->fc ) /
-            ( log(AGParam) + log(this->dilationConst + 1.) - log(2 * this->dilationConst - 1.) - log(3. * yieldHardTwo + this->m / 2) );
+        //Compute dilation parameter (mQ = dmg/dsig with mg per eq.(23), generalised with qh1 factors)
+        double AGParam = 3. * this->ft * yieldHardOne * yieldHardTwo / this->fc + this->m * yieldHardOne * yieldHardOne / 2.;
+        double BGParamTop = yieldHardOne * yieldHardTwo * ( 1. + this->ft / this->fc ) / 3.;
+        double BGParamBottom = log(AGParam) + log(this->dilationConst + 1.) - log(2. * this->dilationConst - 1.) - log(3. * yieldHardOne * yieldHardTwo + this->m * yieldHardOne * yieldHardOne / 2.);
+        double BGParam = BGParamTop / BGParamBottom;
 
-        double R = ( sig - ft / 3. * yieldHardTwo ) / ( fc * BGParam );
+        double R = ( sig - this->ft * yieldHardOne * yieldHardTwo / 3. ) / ( this->fc * BGParam );
         double mQ = AGParam * exp(R);
 
-        //Compute the derivative of mQ with respect to kappa
+        //d(qh1*qh2)/dkappa appears in several places
+        double dQh1Qh2DKappa = yieldHardOne * dYieldHardTwoDKappa + yieldHardTwo * dYieldHardOneDKappa;
 
-        //Derivative of AGParam
-        double dAGParamDKappa = dYieldHardTwoDKappa * 3. * this->ft / this->fc;
+        //Derivative of AGParam = 3*ft*qh1*qh2/fc + m*qh1^2/2
+        double dAGParamDKappa = 3. * this->ft / this->fc * dQh1Qh2DKappa + this->m * yieldHardOne * dYieldHardOneDKappa;
 
         //Derivative of BGParam
-        double BGParamTop = yieldHardTwo / 3. * ( 1. + this->ft / this->fc );
-        double BGParamBottom = ( log(AGParam) + log(this->dilationConst + 1.) - log(2 * this->dilationConst - 1.) - log(3. * yieldHardTwo + this->m / 2) );
-
-        double dBGParamTopDKappa = dYieldHardTwoDKappa / 3. * ( 1. + this->ft / this->fc );
-        double dBGParamBottomDKappa = 1. / AGParam * dAGParamDKappa - 3. * dYieldHardTwoDKappa / ( 3 * yieldHardTwo + m / 2. );
+        double dBGParamTopDKappa = ( 1. + this->ft / this->fc ) / 3. * dQh1Qh2DKappa;
+        double denomLog = 3. * yieldHardOne * yieldHardTwo + this->m * yieldHardOne * yieldHardOne / 2.;
+        double dDenomLogDKappa = 3. * dQh1Qh2DKappa + this->m * yieldHardOne * dYieldHardOneDKappa;
+        double dBGParamBottomDKappa = dAGParamDKappa / AGParam - dDenomLogDKappa / denomLog;
         double dBGParamDKappa = ( dBGParamTopDKappa * BGParamBottom - BGParamTop * dBGParamBottomDKappa ) / pow(BGParamBottom, 2.);
 
         //Derivative of R
-        double RTop = ( sig - ft / 3. * yieldHardTwo );
-        double RBottom = fc * BGParam;
-        double dRTopDKappa = -this->ft / 3. * dYieldHardTwoDKappa;
+        double RTop = sig - this->ft * yieldHardOne * yieldHardTwo / 3.;
+        double RBottom = this->fc * BGParam;
+        double dRTopDKappa = -this->ft / 3. * dQh1Qh2DKappa;
         double dRBottomDKappa = this->fc * dBGParamDKappa;
         double dRDKappa = ( dRTopDKappa * RBottom - RTop * dRBottomDKappa ) / pow(RBottom, 2.);
 
-        double dMQDKappa = dAGParamDKappa * exp(R) + AGParam * dRDKappa * exp(R);
+        double dMQDKappa = ( dAGParamDKappa + AGParam * dRDKappa ) * exp(R);
 
-        double Bl = sig / fc + rho / ( fc * sqrt(6.) );
+        double Bl = sig / this->fc + rho / ( this->fc * sqrt(6.) );
 
-        double Al = ( 1. - yieldHardOne ) * pow(Bl, 2.) + sqrt(3. / 2.) * rho / fc;
+        double Al = ( 1. - yieldHardOne ) * pow(Bl, 2.) + sqrt(3. / 2.) * rho / this->fc;
 
         double dAlDYieldHard = -pow(Bl, 2.);
 
         const double dDGDSigDKappa =
-            ( -4. * Al * Bl / fc + 4. * ( 1 - yieldHardOne ) / fc * dAlDYieldHard * Bl ) * dYieldHardOneDKappa +
-            dYieldHardOneDKappa * 2 * yieldHardOne * mQ / fc + pow(yieldHardOne, 2.) * dMQDKappa / fc;
-
-        //dDGDSigDKappa = 0.;
+            ( -4. * Al * Bl / this->fc + 4. * ( 1. - yieldHardOne ) / this->fc * dAlDYieldHard * Bl ) * dYieldHardOneDKappa +
+            dYieldHardOneDKappa * 2. * yieldHardOne * mQ / this->fc + pow(yieldHardOne, 2.) * dMQDKappa / this->fc;
 
         const double dDGDRhoDKappa =
-            ( dAlDYieldHard / ( sqrt(6.) * fc ) * ( 4. * ( 1. - yieldHardOne ) * Bl + 6. ) -
-              4. * Al / ( sqrt(6.) * fc ) * Bl + m / ( sqrt(6.) * fc ) * 2 * yieldHardOne ) * dYieldHardOneDKappa;
+            ( dAlDYieldHard / ( sqrt(6.) * this->fc ) * ( 4. * ( 1. - yieldHardOne ) * Bl + 6. ) -
+              4. * Al / ( sqrt(6.) * this->fc ) * Bl + this->m / ( sqrt(6.) * this->fc ) * 2. * yieldHardOne ) * dYieldHardOneDKappa;
 
         return {
                    dDGDSigDKappa, dDGDRhoDKappa
@@ -2539,15 +2537,15 @@ namespace oofem {
         double yieldHardOne = computeHardeningOne(tempKappa);
         double yieldHardTwo = computeHardeningTwo(tempKappa);
 
-        //CoQpute dilation parameter
-        double AGParam = this->ft * yieldHardTwo * 3 / this->fc + m / 2;
+        //Compute dilation parameter (mQ = dmg/dsig with mg per eq.(23), generalised with qh1 factors)
+        double AGParam = 3. * this->ft * yieldHardOne * yieldHardTwo / this->fc + this->m * yieldHardOne * yieldHardOne / 2.;
         double BGParam =
-            yieldHardTwo / 3. * ( 1. + this->ft / this->fc ) /
-            ( log(AGParam) + log(this->dilationConst + 1.) - log(2 * this->dilationConst - 1.) - log(3. * yieldHardTwo + this->m / 2) );
+            yieldHardOne * yieldHardTwo * ( 1. + this->ft / this->fc ) / 3. /
+            ( log(AGParam) + log(this->dilationConst + 1.) - log(2. * this->dilationConst - 1.) - log(3. * yieldHardOne * yieldHardTwo + this->m * yieldHardOne * yieldHardOne / 2.) );
 
-        double R = ( sig - ft / 3. * yieldHardTwo ) / fc / BGParam;
+        double R = ( sig - this->ft * yieldHardOne * yieldHardTwo / 3. ) / ( this->fc * BGParam );
 
-        double dMQDSig = AGParam / ( BGParam * fc ) * exp(R);
+        double dMQDSig = AGParam / ( BGParam * this->fc ) * exp(R);
 
         //compute help parameter Al and Bl and the corresponding derivatives
         double Bl = sig / fc + rho / ( fc * sqrt(6.) );
