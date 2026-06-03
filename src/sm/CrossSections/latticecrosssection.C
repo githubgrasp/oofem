@@ -82,10 +82,10 @@ LatticeCrossSection::initializeFrom(InputRecord &ir)
     IR_GIVE_OPTIONAL_FIELD(ir, area, _IFT_LatticeCrossSection_area);
     propertyDictionary.add(CS_Area, area);
 
-    double thickness = 0.0;
-    IR_GIVE_OPTIONAL_FIELD(ir, thickness, _IFT_LatticeCrossSection_thickness);
-    propertyDictionary.add(CS_Thickness, thickness);
-    
+    // CS_Thickness slot stays available for other models; latticecs does not read it.
+    propertyDictionary.add(CS_Thickness, 0.0);
+
+
     value = 0.0;
     IR_GIVE_OPTIONAL_FIELD(ir, value, _IFT_LatticeCrossSection_iy);
     propertyDictionary.add(CS_InertiaMomentY, value);
@@ -130,10 +130,8 @@ LatticeCrossSection::initializeFrom(InputRecord &ir)
         throw ValueInputException(ir, _IFT_LatticeCrossSection_nLayers,
                                   "nLayers must be >= 1");
     }
-    if ( this->nLayers > 1 && this->shape != 2 ) {
-        OOFEM_WARNING("LatticeCrossSection: nLayers > 1 only takes effect for shell-mode "
-                      "rectangles (shape == 2); ignored for shape = %d", this->shape);
-    }
+    // nLayers > 1 takes effect only if the consuming element supplies a shellnormal;
+    // the element-level isHybridShell() makes the final decision.
 }
 
 double LatticeCrossSection::giveLatticeStress1d(double strain, GaussPoint *gp, TimeStep *tStep) const

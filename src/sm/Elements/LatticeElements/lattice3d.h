@@ -45,7 +45,7 @@
 #define _IFT_Lattice3d_couplingflag "couplingflag"
 #define _IFT_Lattice3d_couplingnumber "couplingnumber"
 #define _IFT_Lattice3d_pressures "pressures"
-#define _IFT_Lattice3d_thickness "thickness"
+#define _IFT_Lattice3d_shellnormal "shellnormal"
 //@}
 
 namespace oofem {
@@ -69,12 +69,11 @@ protected:
     int couplingFlag;
     IntArray couplingNumbers;
     FloatArray pressures;
-    double thickness;
 
-    // Shell-mode rectangle dimensions (set in computeGeometryProperties when shape == 2):
-    //   shellH = thickness extent in local frame (= this->giveThickness())
-    //   shellB = in-plane width extent in local frame
-    //   shellThicknessAxis = 2 if thickness is along local y, 3 if along local z, 0 if not shell mode
+    /// Shell surface normal in global coordinates; presence flags the element as a shell.
+    FloatArray shellNormal;
+
+    // Rectangular cross-section dimensions in local frame; set in computeGeometryProperties.
     double shellH = 0.;
     double shellB = 0.;
     int shellThicknessAxis = 0;
@@ -108,8 +107,6 @@ public:
 
     double giveCrackWidth() override;
 
-  double giveThickness(){return thickness;}
-  
     void givePlasticStrain(FloatArray &plas) override;
     void giveOldPlasticStrain(FloatArray &plas) override;
 
@@ -126,23 +123,20 @@ public:
 
     virtual void giveGPCoordinates(FloatArray &coords);
 
-    /**
-     * Return the global coordinates of the given GP. For the legacy single-GP-at-centroid
-     * case this is the element centroid (same as the no-argument overload). For multi-IP
-     * shell mode the GP's natural coordinates store the in-section (s, t) offset from the
-     * centroid (set in computeGaussPoints); this method rotates that offset from the local
-     * cross-section frame to global and adds it to the centroid.
-     */
+    /// Global coordinates of @p gp (centroid offset by the GP's local (s, t) for hybrid IPs).
     virtual void giveGPCoordinates(GaussPoint *gp, FloatArray &coords);
 
-    /**
-     * Compute integration-layer positions in the element-local cross-section frame.
-     * For each layer fills the local-y and local-z offsets from the centroid and the
-     * tributary area. In shell mode (shape == 2, nLayers > 1) produces nLayers equally-
-     * spaced strips through the thickness direction. Otherwise produces a single layer
-     * at (0, 0) with the full cross-section area (= legacy single-IP-at-centroid).
-     */
+    /// Per-layer local offsets (y, z) from centroid and tributary areas.
     virtual void computeLayerPositions(FloatArray &yOffset, FloatArray &zOffset, FloatArray &areas);
+
+    /// True if @p gp is a per-thickness-layer IP (false for centroid IP or non-hybrid mode).
+    bool isLayerIp(GaussPoint *gp);
+
+    /// True if shellnormal was supplied (element is tagged as a shell).
+    bool isShellElement() const { return shellNormal.giveSize() == 3; }
+
+    /// True if hybrid layered shell mode is active (shell + nLayers > 1 + rectangle).
+    bool isHybridShell();
 
     virtual void computeGeometryProperties();
 

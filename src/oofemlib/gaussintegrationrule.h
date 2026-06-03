@@ -90,6 +90,10 @@ public:
     int SetUpPointsOnWedgeLayers(int nPointsTri, int nPointsDepth, MaterialMode mode, const FloatArray &layerThickness) override;
     int SetUpPointsOn2DEmbeddedLine(int nPoints, MaterialMode mode, const FloatArray &coord0, const FloatArray &coord1) override;
 
+    /// Allocate @p nPoints IPs with placeholder coords/weights; caller overwrites them.
+    /// Bypasses the Gauss-Legendre table, so any @p nPoints is supported.
+    int SetUpPointsBare(int nPoints, MaterialMode mode) override;
+
     static void giveTetCoordsAndWeights(int nPoints, FloatArray &coords_xi1, FloatArray &coords_xi2, FloatArray &coords_xi3, FloatArray &weights);
     static void giveTriCoordsAndWeights(int nPoints, FloatArray &coords_xi1, FloatArray &coords_xi2, FloatArray &weights);
     static void giveLineCoordsAndWeights(int nPoints, FloatArray &coords_xi, FloatArray &weights);

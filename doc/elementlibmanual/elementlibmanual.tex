@@ -406,8 +406,9 @@ The input parameters for this element are shown in Table~\ref{lattice3dsummary}.
  \label{lattice3dfig}
 \end{figure}
 
-\begin{elementsummary}{lattice3d}{3d lattice element}{\field{polycoords}{ra}  \field{couplingflag}{in} \field{couplingnumbers}{ra} \field{pressures}{ra} \field{mlength}{rn}}{lattice3d element summary}{lattice3dsummary}
+\begin{elementsummary}{lattice3d}{3d lattice element}{\field{polycoords}{ra}  \field{shellnormal}{ra} \field{couplingflag}{in} \field{couplingnumbers}{ra} \field{pressures}{ra} \field{mlength}{rn}}{lattice3d element summary}{lattice3dsummary}
 \elementParam{\param{polycooords}: array of the coordinates of the vertices of the mid-cross-section of the lattice element in the global coordinate system.}
+\elementParam{\param{shellnormal}: three-component array (optional parameter) giving the shell surface normal in global coordinates. Supply this keyword on every lattice element that represents a shell so that the local cross-section frame is aligned with the through-thickness direction.}
 \elementParam{\param{couplingflag}: flag (optional parameter. Default is 0) which activates coupling with a transport lattice element.}
 \elementParam{\param{couplingnumbers}: array of numbers of transport lattice elements (optional parameter), which are coupled with the 3d lattice element.}
 \elementParam{\param{pressures}: array of pressure values (optional parameter), which are used to consider influence of fluid pressure on mechanical response.}

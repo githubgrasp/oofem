@@ -69,6 +69,20 @@ GaussIntegrationRule :: SetUpPointsOnLine(int nPoints, MaterialMode mode)
 
 
 int
+GaussIntegrationRule :: SetUpPointsBare(int nPoints, MaterialMode mode)
+// Allocates nPoints GPs with placeholder coords/weights; caller overwrites them.
+{
+    this->gaussPoints.resize( nPoints );
+    FloatArray defaultCoords = { 0.0 };
+    for ( int i = 1; i <= nPoints; ++i ) {
+        this->gaussPoints [ i - 1 ] = new GaussPoint(this, i, defaultCoords, 1.0, mode);
+    }
+    this->intdomain = _Line;
+    return this->giveNumberOfIntegrationPoints();
+}
+
+
+int
 GaussIntegrationRule :: SetUpPointsOn2DEmbeddedLine(int nPoints, MaterialMode mode, const FloatArray &coord0, const FloatArray &coord1)
 {
     FloatArray coords_xi, weights;

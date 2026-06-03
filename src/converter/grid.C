@@ -2986,9 +2986,10 @@ void Grid::writeT3dElemsOofem(std::ostream &out)
             << " nodes 2 " << e.n1 << " " << e.n2
             << " crossSect " << spec.crossSect
             << " mat " << spec.material
-            << " thickness " << t
-            << " polycoords 12 "
+            << " shellnormal 3 "
             << std::scientific
+            << n.at(1) << " " << n.at(2) << " " << n.at(3)
+            << " polycoords 12 "
             << x1.at(1) << " " << x1.at(2) << " " << x1.at(3) << " "
             << x2.at(1) << " " << x2.at(2) << " " << x2.at(3) << " "
             << x3.at(1) << " " << x3.at(2) << " " << x3.at(3) << " "

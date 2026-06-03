@@ -1,0 +1,28 @@
+lattice3dshell_lle.out
+Shell-mode lattice3d (shellnormal-tagged rectangle) with latticelinearelastic; tension + axial twist.
+StaticStructural nsteps 3 rtolv 1.e-6 ddm 4 2 1 2 4 ddv 2 1.e-4 1.e-3 ddltf 2 nmodules 1
+errorcheck
+domain 3dLattice
+OutputManager tstep_all dofman_all element_all
+ndofman 2 nelem 1 ncrosssect 1 nmat 1 nbc 1 nic 0 nltf 2
+node 1 coords 3 0.000000e+00 0.000000e+00 0.000000e+00 bc 6 1 1 1 1 1 1
+node 2 coords 3 1.000000e+00 0.000000e+00 0.000000e+00 bc 6 0 0 0 0 0 0
+lattice3D 1 nodes 2 1 2 crossSect 1 mat 1 shellnormal 3 0.0 0.0 1.0 polycoords 12 0.5 -0.05 -0.005   0.5 0.05 -0.005   0.5 0.05 0.005   0.5 -0.05 0.005
+latticecs 1 material 1
+latticelinearelastic 1 d 2400. tAlpha 0.0 e 30.e9 n 0.0 a1 0.5 a2 1.0 a3 0.5
+BoundaryCondition 1 loadTimeFunction 1 prescribedvalue 0.0
+ConstantFunction 1 f(t) 1.
+PiecewiseLinFunction 2 nPoints 2 t 2 1. 4. f(t) 2 0. 1.
+#%BEGIN_CHECK% tolerance 1.e-3
+## Step 3: load factor 2/3, prescribed u_x = 6.667e-5, prescribed twist = 6.667e-4.
+## Reaction at clamped node 1, dof 1 = axial force      = -E*eps*A    = -2.0e3   N
+## Reaction at clamped node 1, dof 4 = torsion moment   = -G*J*twist  = -0.1667  N*m
+## With latticelinearelastic the section properties are baked in via the cross-
+## section scale factors: q[1]=A, q[4]=J=b*t^3/6 (shell value).  The alpha-
+## coefficients map material constants: alphaOne=G/E=0.5 for nu=0 (shear),
+## alphaTwo=1 (bending), alphaThree=G/E=0.5 (torsion).
+## This is the baseline single-IP (nLayers=1, default) shellnormal-tagged test used
+## as the starting point for the multi-IP layered-shell refactor work.
+#REACTION tStep 3 number 1 dof 1 value -2.0000e+3
+#REACTION tStep 3 number 1 dof 4 value -1.6667e-1
+#%END_CHECK%

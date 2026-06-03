@@ -344,6 +344,9 @@ public:
      * @return Number of integration points.
      */
     virtual int SetUpPointsOnWedgeLayers(int nPointsTri, int nPointsDepth, MaterialMode mode, const FloatArray &layerThickness) { return 0; }
+
+    /// Allocate @p nPoints IPs with placeholder coords/weights; caller overwrites them.
+    virtual int SetUpPointsBare(int nPoints, MaterialMode mode) { return 0; }
 };
 } // end namespace oofem
 #endif // integrationrule_h

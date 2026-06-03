@@ -199,7 +199,7 @@ Lattice3d :: computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, int 
                                              TimeStep *tStep, int useUpdatedGpRecord)
     {
         FloatMatrix b, bt;
-        FloatArray u, stress, strain;
+        FloatArray u, stress, strain, s, contrib;
 
         this->length = giveLength();
 
@@ -212,28 +212,40 @@ Lattice3d :: computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, int 
         // zero answer will resize accordingly when adding first contribution
         answer.clear();
 
-        this->computeBmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), b);
+        // Loop over all IPs; per-IP partitioning is enforced via the section getters.
+        IntegrationRule *iRule = integrationRulesArray [ 0 ].get();
+        const int nGp = iRule->giveNumberOfIntegrationPoints();
+        for ( int i = 0; i < nGp; ++i ) {
+            GaussPoint *gp = iRule->getIntegrationPoint(i);
+            this->computeBmatrixAt(gp, b);
+            bt.beTranspositionOf(b);
 
-        bt.beTranspositionOf(b);
-
-        if ( useUpdatedGpRecord == 1 ) {
-            LatticeMaterialStatus *lmatStat = dynamic_cast < LatticeMaterialStatus * > ( integrationRulesArray [ 0 ]->getIntegrationPoint(0)->giveMaterialStatus() );
-            stress = lmatStat->giveLatticeStress();
-        } else {
-            if ( !this->isActivated(tStep) ) {
-                strain.zero();
+            if ( useUpdatedGpRecord == 1 ) {
+                LatticeMaterialStatus *lmatStat = dynamic_cast < LatticeMaterialStatus * > ( gp->giveMaterialStatus() );
+                if ( lmatStat != nullptr ) {
+                    stress = lmatStat->giveLatticeStress();
+                } else {
+                    stress.resize(6); stress.zero();
+                }
+            } else {
+                if ( !this->isActivated(tStep) ) {
+                    strain.resize(6); strain.zero();
+                } else {
+                    strain.beProductOf(b, u);
+                    strain.times(1. / this->length);
+                }
+                this->computeStressVector(stress, strain, gp, tStep);
             }
-            strain.beProductOf(b, u);
-            strain.times(1. / this->length);
-            this->computeStressVector(stress, strain, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
+
+            convertStressToResultants3d(s, stress, gp);
+
+            contrib.beProductOf(bt, s);
+            if ( answer.giveSize() == 0 ) {
+                answer = contrib;
+            } else {
+                answer.add(contrib);
+            }
         }
-
-    //Stress is now converted to sectional forces
-        FloatArray s;
-        convertStressToResultants3d(s,stress, integrationRulesArray [ 0 ]->getIntegrationPoint(0));
-
-
-        answer.beProductOf(bt, s);
         if ( !this->isActivated(tStep) ) {
             answer.zero();
             return;
@@ -288,7 +300,7 @@ Lattice3d :: computeLayerPositions(FloatArray &yOffset, FloatArray &zOffset, Flo
 
     int n = 1;
     LatticeCrossSection *lcs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );
-    if ( lcs != nullptr && lcs->giveShape() == 2 && this->shellThicknessAxis != 0 ) {
+    if ( this->isShellElement() && lcs != nullptr && this->shellThicknessAxis != 0 ) {
         n = lcs->giveNLayers();
     }
 
@@ -386,73 +398,90 @@ Lattice3d :: computeStressVector(FloatArray &answer, const FloatArray &strain, G
 void
 Lattice3d :: computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode,
                                     TimeStep *tStep)
-// Computes numerically the stiffness matrix of the receiver.
-// Loops over all integration points (one per layer for multi-IP shell mode,
-// a single centroid point in the legacy/solid case) and sums each layer's
-// B^T D B contribution.  No weight multiplication: the tributary-area scaling
-// is already baked into the per-GP cross-section properties returned by
-// giveArea(gp), giveI1(gp), giveI2(gp), giveJ(gp).  Divided by element length
-// at the end (per the standard lattice scaling).
+// Sums B^T D B over all IPs.  Per-IP partitioning (layer vs centroid in
+// hybrid shell mode) is enforced via the section getters, not here.
 {
     FloatMatrix d, ds, bj, bjt, dbj, contrib;
 
     answer.resize(12, 12);
     answer.zero();
 
-    // NOTE 2026-06-03: a layered loop here, combined with the per-GP B-matrix
-    // offset from step 5 and per-layer giveArea/I/J from step 6, produces a
-    // half-magnitude torsion-moment reaction at nLayers > 1 because spurious
-    // displacements develop in the free bending/shear DOFs (DOFs 2, 6, etc.).
-    // The root cause appears to be a coupling between the layered B-matrix
-    // (axial-rotation arm offsets) and the existing K-matrix bending/shear
-    // terms that wasn't resolved with a back-of-envelope derivation.  Keeping
-    // the legacy single-GP-at-centroid stiffness assembly until a careful
-    // layered-K derivation is worked out.  The multi-IP infrastructure
-    // (computeGaussPoints, giveGPCoordinates, per-GP B-matrix, per-layer
-    // giveArea/I/J) is in place and silent when nLayers == 1.
-    this->computeBmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), bj);
-    this->computeConstitutiveMatrixAt(d, rMode, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
+    IntegrationRule *iRule = integrationRulesArray [ 0 ].get();
+    const int nGp = iRule->giveNumberOfIntegrationPoints();
+    for ( int i = 0; i < nGp; ++i ) {
+        GaussPoint *gp = iRule->getIntegrationPoint(i);
+        this->computeBmatrixAt(gp, bj);
+        this->computeConstitutiveMatrixAt(d, rMode, gp, tStep);
+        convertTangentToResultantTangent3d(ds, d, gp);
 
-    convertTangentToResultantTangent3d(ds, d, integrationRulesArray [ 0 ]->getIntegrationPoint(0));
-
-    dbj.beProductOf(ds, bj);
-    bjt.beTranspositionOf(bj);
-    answer.beProductOf(bjt, dbj);
+        dbj.beProductOf(ds, bj);
+        bjt.beTranspositionOf(bj);
+        contrib.beProductOf(bjt, dbj);
+        answer.add(contrib);
+    }
     answer.times( 1. / this->giveLength() );
 
     return;
 }
 
 void Lattice3d :: computeGaussPoints()
-// Sets up the array of integration / material points of the receiver.
-// In shell mode (LatticeCS shape == 2) with nLayers > 1, creates nLayers
-// material points through the thickness, each with its local (s, t)
-// in-section offset stored in the GP's natural coordinates and the
-// per-layer tributary area in the GP's weight.  In all other cases
-// (solid lattice or shell with nLayers = 1) creates a single material
-// point at the centroid -- identical to the legacy behaviour.
+// In hybrid layered shell mode: nLayers per-thickness IPs + 1 extra centroid IP.
+// Otherwise: a single centroid IP (legacy behaviour).
 {
     FloatArray yOff, zOff, areas;
     this->computeLayerPositions(yOff, zOff, areas);
-    const int n = areas.giveSize();
+    const int nLayers = areas.giveSize();
 
-    this->numberOfGaussPoints = n;
+    LatticeCrossSection *lcs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );
+    const bool hybrid = ( nLayers > 1 && lcs != nullptr
+                          && this->isShellElement() && this->shellThicknessAxis != 0 );
+    const int nTotal = hybrid ? nLayers + 1 : nLayers;
+
+    this->numberOfGaussPoints = nTotal;
     integrationRulesArray.resize(1);
     integrationRulesArray [ 0 ].reset( new GaussIntegrationRule(1, this, 1, 3) );
-    integrationRulesArray [ 0 ]->SetUpPointsOnLine(n, _3dLattice);
+    // SetUpPointsBare bypasses the Gauss-Legendre N<=8 limit; coords/weights set below.
+    integrationRulesArray [ 0 ]->SetUpPointsBare(nTotal, _3dLattice);
 
-    // Overwrite each material point's natural coords + weight with the
-    // per-layer in-section offset and tributary area.  natCoords are stored
-    // as (axial = 0, yOffset, zOffset) in the element-local frame.
-    for ( int k = 1; k <= n; ++k ) {
+    // Layer IPs: natural coords carry the (s, t) offset, weight = tributary area.
+    for ( int k = 1; k <= nLayers; ++k ) {
         GaussPoint *gp = integrationRulesArray [ 0 ]->getIntegrationPoint(k - 1);
         FloatArray nc(3);
-        nc.at(1) = 0.0;             // GPs sit at the element axial midpoint
-        nc.at(2) = yOff.at(k);      // local-y offset from centroid
-        nc.at(3) = zOff.at(k);      // local-z offset from centroid
+        nc.at(1) = 0.0;
+        nc.at(2) = yOff.at(k);
+        nc.at(3) = zOff.at(k);
         gp->setNaturalCoordinates(nc);
         gp->setWeight(areas.at(k));
     }
+
+    // Centroid IP (hybrid only): no offset, weight = full area.
+    if ( hybrid ) {
+        GaussPoint *gp = integrationRulesArray [ 0 ]->getIntegrationPoint(nLayers);
+        FloatArray nc(3);
+        nc.zero();
+        gp->setNaturalCoordinates(nc);
+        gp->setWeight(this->area);
+    }
+}
+
+
+bool Lattice3d :: isLayerIp(GaussPoint *gp)
+{
+    // Layer IPs are 1..nLayers; the centroid IP (in hybrid mode) is the last one.
+    if ( gp == nullptr ) return false;
+    if ( !this->isHybridShell() ) return false;
+    return gp->giveNumber() < this->numberOfGaussPoints;
+}
+
+
+bool Lattice3d :: isHybridShell()
+{
+    if ( geometryFlag == 0 ) {
+        computeGeometryProperties();
+    }
+    if ( !this->isShellElement() ) return false;
+    LatticeCrossSection *lcs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );
+    return ( lcs != nullptr && lcs->giveNLayers() > 1 && this->shellThicknessAxis != 0 );
 }
 
 
@@ -460,6 +489,22 @@ void Lattice3d :: computeGaussPoints()
 double Lattice3d :: giveArea(GaussPoint *gp) {
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
+    }
+    // Hybrid shell mode (multi-IP):
+    //   Layer IP   -> tributary area b*(t/N): the material's E*A*eps then gives
+    //                 the per-layer axial force directly.
+    //   Centroid IP -> 0: the centroid IP carries no axial; the material's
+    //                 D[1,1] = E*0 = 0 makes both the stiffness and the stress
+    //                 vanish at this IP, so the per-IP status records a clean
+    //                 zero axial stress and no element-side post-processing
+    //                 is needed.
+    if ( this->isHybridShell() ) {
+        return this->isLayerIp(gp) ?
+               this->shellB * ( this->shellH /
+                                static_cast< double >(
+                                    dynamic_cast< LatticeCrossSection * >(
+                                        this->giveCrossSection() )->giveNLayers() ) ) :
+               0.0;
     }
     return this->area;
 }
@@ -552,8 +597,11 @@ Lattice3d :: initializeFrom(InputRecord &ir)
     pressures.zero();
     IR_GIVE_OPTIONAL_FIELD(ir, pressures, _IFT_Lattice3d_pressures);
 
-    thickness = 0.;
-    IR_GIVE_OPTIONAL_FIELD(ir, thickness, _IFT_Lattice3d_thickness);
+    shellNormal.resize(0);
+    IR_GIVE_OPTIONAL_FIELD(ir, shellNormal, _IFT_Lattice3d_shellnormal);
+    if ( shellNormal.giveSize() != 0 && shellNormal.giveSize() != 3 ) {
+        OOFEM_ERROR("shellnormal must have exactly 3 components");
+    }
 
 //Introduce here the geometry calculation
 //computeGeometryProperties();
@@ -688,24 +736,35 @@ void
   }
   
   //Shape is 0 (polygon based cross-section
-  
+
   if(this->numberOfPolygonVertices < 3){
     OOFEM_ERROR("Too small number of polygon vertices. Check meshing approach.\n");
   }
-  
+
     //Construct two perpendicular axis so that n is normal to the plane which they create
-    //Check, if one of the components of the normal-direction is zero
   FloatArray s(3), t(3);
-  FloatArray ref(3);
-  ref = {0,0,1};
-  
-  if (fabs(normal.dotProduct(ref)) > 0.99) {
-    ref = {0,1,0};
+  if ( this->shellNormal.giveSize() == 3 ) {
+    // Align local axis 2 with the shellnormal projected onto the cross-section plane.
+    double nDotAxial = shellNormal.dotProduct(normal);
+    FloatArray axialComp = normal;
+    axialComp.times(nDotAxial);
+    s = shellNormal;
+    s.subtract(axialComp);
+    if ( s.computeNorm() < 1e-8 ) {
+      OOFEM_ERROR("shellnormal is (nearly) parallel to the element axis");
+    }
+    s.normalize();
+  } else {
+    // No shellnormal: pick an arbitrary in-plane reference axis.
+    FloatArray ref(3);
+    ref = {0,0,1};
+    if (fabs(normal.dotProduct(ref)) > 0.99) {
+      ref = {0,1,0};
+    }
+    s.beVectorProductOf(ref, normal);
+    s.normalize();
   }
-  
-  s.beVectorProductOf(ref, normal);
-  s.normalize();
-  
+
   t.beVectorProductOf(normal, s);
   t.normalize();
   
@@ -843,14 +902,9 @@ void
 
     this->Ip = I1 + I2;
 
-if (cs->giveShape() == 2) {
-  // shell-type rectangle given by polygon vertices
-// Use effective rotational/torsional parameter J = b*t^3/6,
-// where t is the physical shell thickness and b is the in-plane tributary width.
-// This preserves shell-like thickness scaling and avoids the non-physical
-// mesh dependence.
+// Rectangle path: shape==2 (rectangular beam) or shellnormal-tagged shell.
+if ( cs->giveShape() == 2 || this->isShellElement() ) {
 
-  
     if (this->numberOfPolygonVertices != 4) {
         OOFEM_ERROR("Rectangle cross-section must have 4 vertices.");
     }
@@ -873,37 +927,42 @@ if (cs->giveShape() == 2) {
 
     const double d1 = 0.5 * (e1 + e3);
     const double d2 = 0.5 * (e2 + e4);
-    const double t  = this->giveThickness();
-
-    const double thickTol = 1e-6 * (d1 + d2);
 
     double b = 0.0;
     double h = 0.0;
 
-    // Edge directions in local (y, z), used to identify which local axis is
-    // the thickness direction.
     const double dy12 = lpc.at(3*(2-1)+2) - lpc.at(3*(1-1)+2);
     const double dz12 = lpc.at(3*(2-1)+3) - lpc.at(3*(1-1)+3);
-    const double dy23 = lpc.at(3*(3-1)+2) - lpc.at(3*(2-1)+2);
-    const double dz23 = lpc.at(3*(3-1)+3) - lpc.at(3*(2-1)+3);
 
-    if (std::fabs(d1 - t) < thickTol) {
-        h = d1;
-        b = d2;
-        // Thickness lies along edge 1-2; pick the local axis whose component dominates.
-        this->shellThicknessAxis = (std::fabs(dy12) > std::fabs(dz12)) ? 2 : 3;
-    } else if (std::fabs(d2 - t) < thickTol) {
-        h = d2;
-        b = d1;
-        // Thickness lies along edge 2-3.
-        this->shellThicknessAxis = (std::fabs(dy23) > std::fabs(dz23)) ? 2 : 3;
+    if ( this->shellNormal.giveSize() == 3 ) {
+        // Local axis 2 is the shell normal; pick h, b by edge orientation.
+        this->shellThicknessAxis = 2;
+        if ( std::fabs(dy12) > std::fabs(dz12) ) {
+            h = d1;
+            b = d2;
+        } else {
+            h = d2;
+            b = d1;
+        }
     } else {
-        OOFEM_ERROR("Rectangle cross-section does not match element thickness.");
+        // Rectangular beam: h = min edge, b = max edge.
+        h = std::min(d1, d2);
+        b = std::max(d1, d2);
     }
 
     this->shellH = h;
     this->shellB = b;
-    this->J = b * h * h * h / 6.0;
+    if ( this->isShellElement() ) {
+        // Plate torsion D33.
+        this->J = b * h * h * h / 6.0;
+    } else {
+        // Saint-Venant rectangular beam torsion: J = beta * bMax * hMin^3.
+        double bMax = std::max(b, h);
+        double hMin = std::min(b, h);
+        double a = hMin / bMax;
+        double beta = (1.0 / 3.0) - 0.21 * a * (1.0 - std::pow(a, 4) / 12.0);
+        this->J = beta * bMax * hMin * hMin * hMin;
+    }
 
       /* if (b <= 0.0 || h <= 0.0) { */
       /* 	OOFEM_ERROR("Invalid rectangle dimensions in cross-section."); */
@@ -1032,6 +1091,10 @@ double Lattice3d :: giveI1(GaussPoint *gp) {
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
     }
+    // Hybrid: in-plane bending at centroid only.
+    if ( this->isHybridShell() && this->isLayerIp(gp) ) {
+        return 0.0;
+    }
     return this->I1;
 }
 
@@ -1039,7 +1102,17 @@ double Lattice3d :: giveI2(GaussPoint *gp) {
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
     }
-
+    // Hybrid: through-thickness bending split between layer parallel-axis
+    // (from rigid-arm) and each layer's own b*(h/N)^3/12; centroid returns 0.
+    if ( this->isHybridShell() ) {
+        if ( this->isLayerIp(gp) ) {
+            LatticeCrossSection *lcs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );
+            const int N = lcs->giveNLayers();
+            const double dh = this->shellH / static_cast< double >( N );
+            return this->shellB * dh * dh * dh / 12.0;
+        }
+        return 0.0;
+    }
     return this->I2;
 }
 
@@ -1047,6 +1120,10 @@ double Lattice3d :: giveI2(GaussPoint *gp) {
 double Lattice3d :: giveJ(GaussPoint *gp) {
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
+    }
+    // Hybrid: torsion at centroid only.
+    if ( this->isHybridShell() && this->isLayerIp(gp) ) {
+        return 0.0;
     }
     return this->J;
 }
@@ -1057,6 +1134,10 @@ double Lattice3d :: giveShearArea1(GaussPoint *gp) {
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
     }
+    // Hybrid: shears at centroid only.
+    if ( this->isHybridShell() && this->isLayerIp(gp) ) {
+        return 0.0;
+    }
     //Temporary assumption. Ideally, shear area should be less than area.
     return this->shearArea1;
 }
@@ -1064,6 +1145,9 @@ double Lattice3d :: giveShearArea1(GaussPoint *gp) {
 double Lattice3d :: giveShearArea2(GaussPoint *gp) {
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
+    }
+    if ( this->isHybridShell() && this->isLayerIp(gp) ) {
+        return 0.0;
     }
     //Temporary assumption. Ideally, shear area should be less than area.
     return this->shearArea2;
@@ -1075,10 +1159,10 @@ double Lattice3d :: giveTributaryWidth(GaussPoint *gp)
         computeGeometryProperties();
     }
 
-    if (this->thickness > 0.0) {
-        return this->area / this->thickness;
+    // Rectangular sections: in-plane width. Otherwise: 1.0 (legacy default).
+    if ( this->shellB > 0.0 ) {
+        return this->shellB;
     }
-
     return 1.0;
 }
 
