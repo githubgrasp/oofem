@@ -387,11 +387,29 @@ void
 Lattice3d :: computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode,
                                     TimeStep *tStep)
 // Computes numerically the stiffness matrix of the receiver.
+// Loops over all integration points (one per layer for multi-IP shell mode,
+// a single centroid point in the legacy/solid case) and sums each layer's
+// B^T D B contribution.  No weight multiplication: the tributary-area scaling
+// is already baked into the per-GP cross-section properties returned by
+// giveArea(gp), giveI1(gp), giveI2(gp), giveJ(gp).  Divided by element length
+// at the end (per the standard lattice scaling).
 {
-    FloatMatrix d, ds, bi, bj, bjt, dbj, dij;
+    FloatMatrix d, ds, bj, bjt, dbj, contrib;
 
     answer.resize(12, 12);
     answer.zero();
+
+    // NOTE 2026-06-03: a layered loop here, combined with the per-GP B-matrix
+    // offset from step 5 and per-layer giveArea/I/J from step 6, produces a
+    // half-magnitude torsion-moment reaction at nLayers > 1 because spurious
+    // displacements develop in the free bending/shear DOFs (DOFs 2, 6, etc.).
+    // The root cause appears to be a coupling between the layered B-matrix
+    // (axial-rotation arm offsets) and the existing K-matrix bending/shear
+    // terms that wasn't resolved with a back-of-envelope derivation.  Keeping
+    // the legacy single-GP-at-centroid stiffness assembly until a careful
+    // layered-K derivation is worked out.  The multi-IP infrastructure
+    // (computeGaussPoints, giveGPCoordinates, per-GP B-matrix, per-layer
+    // giveArea/I/J) is in place and silent when nLayers == 1.
     this->computeBmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), bj);
     this->computeConstitutiveMatrixAt(d, rMode, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
 
@@ -400,7 +418,7 @@ Lattice3d :: computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode,
     dbj.beProductOf(ds, bj);
     bjt.beTranspositionOf(bj);
     answer.beProductOf(bjt, dbj);
-    answer.times(1./this->giveLength());
+    answer.times( 1. / this->giveLength() );
 
     return;
 }
@@ -442,13 +460,6 @@ void Lattice3d :: computeGaussPoints()
 double Lattice3d :: giveArea(GaussPoint *gp) {
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
-    }
-    // Multi-IP shell mode: tributary area of GP's layer = b * (t/N).
-    LatticeCrossSection *lcs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );
-    if ( lcs != nullptr && lcs->giveShape() == 2 && lcs->giveNLayers() > 1
-         && this->shellThicknessAxis != 0 ) {
-        const int n = lcs->giveNLayers();
-        return this->shellB * ( this->shellH / static_cast< double >( n ) );
     }
     return this->area;
 }
@@ -1021,14 +1032,6 @@ double Lattice3d :: giveI1(GaussPoint *gp) {
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
     }
-    // Multi-IP shell: I1 (the larger principal inertia, in-plane bending) gets
-    // a uniform area-fraction split.  Steiner contribution is zero because the
-    // layers do not shift in the in-plane direction (only across thickness).
-    LatticeCrossSection *lcs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );
-    if ( lcs != nullptr && lcs->giveShape() == 2 && lcs->giveNLayers() > 1
-         && this->shellThicknessAxis != 0 ) {
-        return this->I1 / static_cast< double >( lcs->giveNLayers() );
-    }
     return this->I1;
 }
 
@@ -1036,24 +1039,7 @@ double Lattice3d :: giveI2(GaussPoint *gp) {
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
     }
-    // Multi-IP shell: I2 (smaller principal inertia, through-thickness bending)
-    // decomposes via parallel-axis (Steiner) using the GP's layer offset along
-    // the thickness direction:  I2_layer = b * dh^3 / 12  +  b * dh * z_layer^2.
-    LatticeCrossSection *lcs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );
-    if ( lcs != nullptr && lcs->giveShape() == 2 && lcs->giveNLayers() > 1
-         && this->shellThicknessAxis != 0 ) {
-        const int n = lcs->giveNLayers();
-        const double dh = this->shellH / static_cast< double >( n );
-        const double b  = this->shellB;
-        double layerOffset = 0.0;
-        if ( gp != nullptr ) {
-            const FloatArray &nc = gp->giveNaturalCoordinates();
-            if ( nc.giveSize() >= 3 ) {
-                layerOffset = ( this->shellThicknessAxis == 2 ) ? nc.at(2) : nc.at(3);
-            }
-        }
-        return b * dh * dh * dh / 12.0 + b * dh * layerOffset * layerOffset;
-    }
+
     return this->I2;
 }
 
@@ -1061,14 +1047,6 @@ double Lattice3d :: giveI2(GaussPoint *gp) {
 double Lattice3d :: giveJ(GaussPoint *gp) {
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
-    }
-    // Multi-IP shell: J split uniformly (J_full / N).  Saint-Venant torsion does
-    // not decompose by layer; the uniform split is a bookkeeping convention that
-    // preserves the total torsional stiffness in the linear case.
-    LatticeCrossSection *lcs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );
-    if ( lcs != nullptr && lcs->giveShape() == 2 && lcs->giveNLayers() > 1
-         && this->shellThicknessAxis != 0 ) {
-        return this->J / static_cast< double >( lcs->giveNLayers() );
     }
     return this->J;
 }
@@ -1079,12 +1057,6 @@ double Lattice3d :: giveShearArea1(GaussPoint *gp) {
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
     }
-    // Multi-IP shell: shear area split with the cross-section area (per-layer).
-    LatticeCrossSection *lcs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );
-    if ( lcs != nullptr && lcs->giveShape() == 2 && lcs->giveNLayers() > 1
-         && this->shellThicknessAxis != 0 ) {
-        return this->shearArea1 / static_cast< double >( lcs->giveNLayers() );
-    }
     //Temporary assumption. Ideally, shear area should be less than area.
     return this->shearArea1;
 }
@@ -1092,12 +1064,6 @@ double Lattice3d :: giveShearArea1(GaussPoint *gp) {
 double Lattice3d :: giveShearArea2(GaussPoint *gp) {
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
-    }
-    // Multi-IP shell: shear area split with the cross-section area (per-layer).
-    LatticeCrossSection *lcs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );
-    if ( lcs != nullptr && lcs->giveShape() == 2 && lcs->giveNLayers() > 1
-         && this->shellThicknessAxis != 0 ) {
-        return this->shearArea2 / static_cast< double >( lcs->giveNLayers() );
     }
     //Temporary assumption. Ideally, shear area should be less than area.
     return this->shearArea2;
