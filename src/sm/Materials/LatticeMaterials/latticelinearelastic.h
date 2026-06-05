@@ -55,6 +55,7 @@
 #define _IFT_LatticeLinearElastic_calpha "calpha"
 #define _IFT_LatticeLinearElastic_a3 "a3"
 #define _IFT_LatticeLinearElastic_tcrit "tcrit"
+#define _IFT_LatticeLinearElastic_nu "nu"
 //@}
 
 namespace oofem {
@@ -85,6 +86,13 @@ protected:
 
   /// parameter which allows to prescribed thermal displacement
     double cAlpha = 0.;
+
+    /// Poisson's ratio for shell mode. Used to compute the torsional
+    /// stiffness as G·J (with G = E/[2(1+nuShell)]) when the material is
+    /// queried from a shell-tagged element. Required for shell elements;
+    /// ignored otherwise.
+    double nuShell = 0.;
+    bool nuWasGiven = false;
 
 public:
     LatticeLinearElastic(int n, Domain *d) : LatticeStructuralMaterial(n, d), RandomMaterialExtensionInterface() { };

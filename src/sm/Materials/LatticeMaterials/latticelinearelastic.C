@@ -44,6 +44,7 @@
 #include "engngm.h"
 #include "mathfem.h"
 #include "Elements/LatticeElements/latticestructuralelement.h"
+#include "Elements/LatticeElements/lattice3d.h"
 #include "datastream.h"
 #include "staggeredproblem.h"
 #include "contextioerr.h"
@@ -88,6 +89,19 @@ LatticeLinearElastic :: initializeFrom(InputRecord &ir)
 
     this->alphaThree = this->alphaTwo;
     IR_GIVE_OPTIONAL_FIELD(ir, this->alphaThree, _IFT_LatticeLinearElastic_a3); // Macro
+
+    // Continuum-equivalent shortcut: nu sets a1 = a3 = 1/[2(1+nu)] (= G/E)
+    // and a2 = 1.  This is the correct calibration for shell elements;
+    // for shell-tagged elements nuWasGiven == true is required at runtime.
+    // Poisson's ratio. Used in shell mode to compute the torsional stiffness
+    // directly from G = E/[2(1+nu)] (overriding the spring-level a3·E in
+    // give3dLatticeStiffnessMatrix). Required for shell-tagged elements;
+    // does not affect a1/a2/a3 (which stay user-controlled).
+    nuShell = 0.;
+    if ( ir.hasField(_IFT_LatticeLinearElastic_nu) ) {
+        IR_GIVE_FIELD(ir, nuShell, _IFT_LatticeLinearElastic_nu);
+        nuWasGiven = true;
+    }
 
     localRandomType = 0; //Default: No local random field
     IR_GIVE_OPTIONAL_FIELD(ir, localRandomType, _IFT_LatticeLinearElastic_localrandomtype); // Macro
@@ -202,17 +216,39 @@ LatticeLinearElastic :: give3dLatticeStiffnessMatrix(MatResponseMode rmode, Gaus
   if(this->tCrit !=0.){
     reductionFactor = computeTemperatureReductionFactor(gp,atTime,VM_Total);
   }
-  
+
+  // If nu was supplied, the torsion entry is G/E = 1/[2(1+nu)] (so torsion =
+  // G·J).  Otherwise the user-controlled alphaThree applies (= E·alphaThree·J).
+  const double a3eff = nuWasGiven ? 1. / ( 2. * ( 1. + nuShell ) ) : this->alphaThree;
+
+  // For shell elements with nu given: the out-of-plane shear entry is also
+  // G/E.  The in-plane shear stays at the user-controlled alphaOne.  The
+  // out-of-plane direction is determined by the element's shellThicknessAxis
+  // (= 2 if thickness is along local y, = 3 if along local z).
+  double a1y = this->alphaOne;   // d[1] = shear in local y direction
+  double a1z = this->alphaOne;   // d[2] = shear in local z direction
+  if ( nuWasGiven ) {
+      Lattice3d *elem = dynamic_cast< Lattice3d * >( gp->giveElement() );
+      if ( elem != nullptr && elem->isShellElement() ) {
+          const double gOverE = 1. / ( 2. * ( 1. + nuShell ) );
+          if ( elem->giveShellThicknessAxis() == 2 ) {
+              a1y = gOverE;
+          } else if ( elem->giveShellThicknessAxis() == 3 ) {
+              a1z = gOverE;
+          }
+      }
+  }
+
     FloatArrayF< 6 >d = {
       1.,
-      this->alphaOne,
-      this->alphaOne,
-      this->alphaThree,
+      a1y,
+      a1z,
+      a3eff,
       this->alphaTwo,
       this->alphaTwo
     };
 
-    return diag(d * this->give(eNormal_ID, gp) * this->eNormalMean * reductionFactor);;
+    return diag(d * this->give(eNormal_ID, gp) * this->eNormalMean * reductionFactor);
  }
 
 FloatMatrixF< 3, 3 >
