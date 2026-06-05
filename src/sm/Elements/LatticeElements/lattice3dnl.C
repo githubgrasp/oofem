@@ -77,7 +77,7 @@ Lattice3dNL :: ~Lattice3dNL()
         FloatArray coordA(3), coordB(3), l1(3), l2(3), help(3), gpCoords(3);
         coordA = giveNode(1)->giveCoordinates();
         coordB = giveNode(2)->giveCoordinates();
-        giveGPCoordinates(gpCoords);
+        giveGPCoordinates(aGaussPoint, gpCoords);
 
         l1 = gpCoords-coordA;
         l2 = coordB-gpCoords;
@@ -270,7 +270,7 @@ Lattice3dNL :: ~Lattice3dNL()
     Lattice3dNL::computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode,
                                              TimeStep *tStep)
     {
-        FloatMatrix d, ds, bt, db, b;
+        FloatMatrix d, ds, bt, db, b, contrib;
         this->length = giveLength();
 
         FloatArray u;
@@ -279,29 +279,32 @@ Lattice3dNL :: ~Lattice3dNL()
         FloatArray coordA(3), coordB(3), coordGp(3);
         coordA = giveNode(1)->giveCoordinates();
         coordB = giveNode(2)->giveCoordinates();
-        giveGpCoordinates(coordGp);
 
         answer.resize(12, 12);
         answer.zero();
-        this->computeNLBmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), b, tStep);
 
-        this->computeConstitutiveMatrixAt(d, rMode, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
-		 	
-        convertTangentToResultantTangent3d(ds, d, integrationRulesArray [ 0 ]->getIntegrationPoint(0));
-	
-        //Rotate constitutive stiffness matrix
-        FloatMatrix r(6, 6), rT(6, 6), dR(6, 6), rTDR(6, 6);
-        computeCurrentGtoLStrainRotationMatrix(r, u, coordA, coordB, coordGp);
-	
-        rT.beTranspositionOf(r);
+        IntegrationRule *iRule = integrationRulesArray [ 0 ].get();
+        const int nGp = iRule->giveNumberOfIntegrationPoints();
+        for ( int i = 0; i < nGp; ++i ) {
+            GaussPoint *gp = iRule->getIntegrationPoint(i);
+            this->giveGPCoordinates(gp, coordGp);
+            this->computeNLBmatrixAt(gp, b, tStep);
+            this->computeConstitutiveMatrixAt(d, rMode, gp, tStep);
+            convertTangentToResultantTangent3d(ds, d, gp);
 
-        dR.beProductOf(ds, r);
-        rTDR.beProductOf(rT, dR);
+            FloatMatrix r(6, 6), rT(6, 6), dR(6, 6), rTDR(6, 6);
+            computeCurrentGtoLStrainRotationMatrix(r, u, coordA, coordB, coordGp);
 
-        db.beProductOf(rTDR, b);
-        db.times(1. / length);
-        bt.beTranspositionOf(b);
-        answer.beProductOf(bt, db);
+            rT.beTranspositionOf(r);
+            dR.beProductOf(ds, r);
+            rTDR.beProductOf(rT, dR);
+
+            db.beProductOf(rTDR, b);
+            db.times(1. / length);
+            bt.beTranspositionOf(b);
+            contrib.beProductOf(bt, db);
+            answer.add(contrib);
+        }
 
         return;
     }
@@ -321,7 +324,7 @@ Lattice3dNL :: ~Lattice3dNL()
         FloatArray coordA(3), coordB(3), coordGp(3), l1(3), l2(3), help(3);
         coordA = giveNode(1)->giveCoordinates();
         coordB = giveNode(2)->giveCoordinates();
-        giveGpCoordinates(coordGp);
+        this->giveGPCoordinates(gp, coordGp);
         l1 = coordGp-coordA;
         l2 = coordB-coordGp;
 
@@ -399,68 +402,69 @@ Lattice3dNL :: ~Lattice3dNL()
         FloatArray u, stress, strain;
         this->computeVectorOf(VM_Total, tStep, u);
         this->length   = giveLength();
-        GaussPoint *gp = this->integrationRulesArray [ 0 ]->getIntegrationPoint(0);
 
-        FloatArray coordA(3), coordB(3), coordGp(3), l1(3), l2(3);
+        FloatArray coordA(3), coordB(3);
         coordA = giveNode(1)->giveCoordinates();
         coordB = giveNode(2)->giveCoordinates();
-        giveGpCoordinates(coordGp);
-        l1 = coordGp-coordA;
-        l2 = coordB-coordGp;
 
-        this->length = giveLength();
-
-        if ( useUpdatedGpRecord == 1 ) {
-            LatticeMaterialStatus *lmatStat = dynamic_cast < LatticeMaterialStatus * > ( this->giveCrossSection()->giveMaterial(gp)->giveStatus(gp) );
-            stress = lmatStat->giveLatticeStress();
-        } else {
-            if ( !this->isActivated(tStep) ) {
-                strain.zero();
-            }
-            this->computeStrainVector(strain, gp, tStep);
-            this->computeStressVector(stress, strain, gp, tStep);
-        }
-
-        //Stress is now converted to sectional forces
-        FloatArray s;
-        convertStressToResultants3d(s,stress, integrationRulesArray [ 0 ]->getIntegrationPoint(0));
-
-        FloatMatrix rotationMatrix(3, 3);
-        FloatArray spinOne(3);
-        spinOne.at(1) = u.at(4);
-        spinOne.at(2) = u.at(5);
-        spinOne.at(3) = u.at(6);
-        this->computeGlobalRotationMatrix(rotationMatrix, spinOne);
-        FloatArray c1(3);
-        c1.beProductOf(rotationMatrix, l1);
-
-        FloatArray spinTwo(3);
-        spinTwo.at(1) = u.at(10);
-        spinTwo.at(2) = u.at(11);
-        spinTwo.at(3) = u.at(12);
-        this->computeGlobalRotationMatrix(rotationMatrix, spinTwo);
-        FloatArray c2(3);
-        c2.beProductOf(rotationMatrix, l2);
-
-        FloatMatrix rotMatrix(6, 6);
-        computeCurrentGtoLStrainRotationMatrix(rotMatrix, u, coordA, coordB, coordGp);
-
-        //Calculate sectional forces in global coordinate system
-        s.rotatedWith(rotMatrix, 't');
+        // Nodal rotation matrices depend only on the spins, not on the IP.
+        FloatMatrix rotationMatrixOne(3, 3), rotationMatrixTwo(3, 3);
+        FloatArray spinOne(3), spinTwo(3);
+        spinOne.at(1) = u.at(4);  spinOne.at(2) = u.at(5);  spinOne.at(3) = u.at(6);
+        spinTwo.at(1) = u.at(10); spinTwo.at(2) = u.at(11); spinTwo.at(3) = u.at(12);
+        this->computeGlobalRotationMatrix(rotationMatrixOne, spinOne);
+        this->computeGlobalRotationMatrix(rotationMatrixTwo, spinTwo);
 
         answer.resize(12);
-        answer.at(1) = -s.at(1);
-        answer.at(2) = -s.at(2);
-        answer.at(3) = -s.at(3);
-        answer.at(4) =  s.at(2) * c1.at(3) - s.at(3) * c1.at(2) - s.at(4);
-        answer.at(5) = -s.at(1) * c1.at(3) + s.at(3) * c1.at(1) - s.at(5);
-        answer.at(6) = s.at(1) * c1.at(2) - s.at(2) * c1.at(1) - s.at(6);
-        answer.at(7) = s.at(1);
-        answer.at(8) = s.at(2);
-        answer.at(9) = s.at(3);
-        answer.at(10) =  s.at(2) * c2.at(3) - s.at(3) * c2.at(2) + s.at(4);
-        answer.at(11) = -s.at(1) * c2.at(3) + s.at(3) * c2.at(1) + s.at(5);
-        answer.at(12) = s.at(1) * c2.at(2) - s.at(2) * c2.at(1) + s.at(6);
+        answer.zero();
+
+        IntegrationRule *iRule = this->integrationRulesArray [ 0 ].get();
+        const int nGp = iRule->giveNumberOfIntegrationPoints();
+        for ( int i = 0; i < nGp; ++i ) {
+            GaussPoint *gp = iRule->getIntegrationPoint(i);
+
+            FloatArray coordGp(3), l1(3), l2(3);
+            this->giveGPCoordinates(gp, coordGp);
+            l1 = coordGp - coordA;
+            l2 = coordB - coordGp;
+
+            if ( useUpdatedGpRecord == 1 ) {
+                LatticeMaterialStatus *lmatStat = dynamic_cast < LatticeMaterialStatus * > ( this->giveCrossSection()->giveMaterial(gp)->giveStatus(gp) );
+                stress = lmatStat->giveLatticeStress();
+            } else {
+                if ( !this->isActivated(tStep) ) {
+                    strain.zero();
+                }
+                this->computeStrainVector(strain, gp, tStep);
+                this->computeStressVector(stress, strain, gp, tStep);
+            }
+
+            FloatArray s;
+            convertStressToResultants3d(s, stress, gp);
+
+            FloatArray c1(3), c2(3);
+            c1.beProductOf(rotationMatrixOne, l1);
+            c2.beProductOf(rotationMatrixTwo, l2);
+
+            FloatMatrix rotMatrix(6, 6);
+            computeCurrentGtoLStrainRotationMatrix(rotMatrix, u, coordA, coordB, coordGp);
+
+            //Calculate sectional forces in global coordinate system
+            s.rotatedWith(rotMatrix, 't');
+
+            answer.at(1)  += -s.at(1);
+            answer.at(2)  += -s.at(2);
+            answer.at(3)  += -s.at(3);
+            answer.at(4)  +=  s.at(2) * c1.at(3) - s.at(3) * c1.at(2) - s.at(4);
+            answer.at(5)  += -s.at(1) * c1.at(3) + s.at(3) * c1.at(1) - s.at(5);
+            answer.at(6)  +=  s.at(1) * c1.at(2) - s.at(2) * c1.at(1) - s.at(6);
+            answer.at(7)  +=  s.at(1);
+            answer.at(8)  +=  s.at(2);
+            answer.at(9)  +=  s.at(3);
+            answer.at(10) +=  s.at(2) * c2.at(3) - s.at(3) * c2.at(2) + s.at(4);
+            answer.at(11) += -s.at(1) * c2.at(3) + s.at(3) * c2.at(1) + s.at(5);
+            answer.at(12) +=  s.at(1) * c2.at(2) - s.at(2) * c2.at(1) + s.at(6);
+        }
     }
 
 

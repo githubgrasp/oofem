@@ -82,8 +82,8 @@ LatticeLinearElastic :: initializeFrom(InputRecord &ir)
     alphaOne = 1.;
     IR_GIVE_OPTIONAL_FIELD(ir, alphaOne, _IFT_LatticeLinearElastic_a1); // Macro
 
-    //Parameter which is used for the definition of bending stiffness. Default is 0.
-    alphaTwo = 0.;
+    //Parameter which is used for the definition of bending stiffness. Default is 1.
+    alphaTwo = 1.;
     IR_GIVE_OPTIONAL_FIELD(ir, alphaTwo, _IFT_LatticeLinearElastic_a2); // Macro
 
     this->alphaThree = this->alphaTwo;

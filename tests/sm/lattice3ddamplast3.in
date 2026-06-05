@@ -10,7 +10,7 @@ node 1 coords 3 0.000000e+00 0.000000e+00 0.000000e+00 bc 6 1 1 1 1 1 1
 node 2 coords 3 1.000000e+00 0.000000e+00 0.000000e+00 bc 6 0 0 1 1 1 1
 lattice3D 1 nodes 2 1 2 crossSect 1 mat 1 polycoords 12 0.5 -0.5 -0.5   0.5 0.5 -0.5   0.5 0.5 0.5   0.5 -0.5 0.5
 latticecs 1 material 1
-latticeplastdam 1 talpha 0. d 0. e 1. ft 1. fc 10. angle1 0.5 angle2 0.5 flow 0.5 wf 5. a1 1.0 ahard 1.e-3 tol 1.e-6 
+latticeplastdam 1 talpha 0. d 0. e 1. ft 1. fc 10. angle1 0.5 angle2 0.5 flow 0.5 wf 5. a1 1.0 a2 0. a3 0. ahard 1.e-3 tol 1.e-6
 BoundaryCondition 1 loadTimeFunction 1 prescribedvalue 0.0
 ConstantFunction 1 f(t) 1.
 PiecewiseLinFunction 2 nPoints 5 t 5 0. 60 61 62 300. f(t) 5 0. 40. 18.8 40. 100.
