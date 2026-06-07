@@ -16,13 +16,14 @@ PiecewiseLinFunction 2 nPoints 2 t 2 1. 4. f(t) 2 0. 1.
 #%BEGIN_CHECK% tolerance 1.e-3
 ## Step 3: load factor 2/3, prescribed u_x = 6.667e-5, prescribed twist = 6.667e-4.
 ## Reaction at clamped node 1, dof 1 = axial force      = -E*eps*A    = -2.0e3   N
-## Reaction at clamped node 1, dof 4 = torsion moment   = -G*J*twist  = -0.1667  N*m
+## Reaction at clamped node 1, dof 4 = torsion moment   = -G*J*twist  = -8.333e-2 N*m
 ## With latticelinearelastic the section properties are baked in via the cross-
-## section scale factors: q[1]=A, q[4]=J=b*t^3/6 (shell value).  The alpha-
-## coefficients map material constants: alphaOne=G/E=0.5 for nu=0 (shear),
-## alphaTwo=1 (bending), alphaThree=G/E=0.5 (torsion).
+## section scale factors: q[1]=A, q[4]=J=b*t^3/12 (shell plate-twisting value).
+## The alpha-coefficients map material constants: alphaOne=G/E=0.5 for nu=0 (shear),
+## alphaTwo=1 (bending), alphaThree=G/E=0.5 (torsion). With J = b*t^3/12 this
+## gives torsion = G*J = (E/2) * b*t^3/12 = E*b*t^3/24 at nu=0.
 ## This is the baseline single-IP (nLayers=1, default) shellnormal-tagged test used
 ## as the starting point for the multi-IP layered-shell refactor work.
 #REACTION tStep 3 number 1 dof 1 value -2.0000e+3
-#REACTION tStep 3 number 1 dof 4 value -1.6667e-1
+#REACTION tStep 3 number 1 dof 4 value -8.3333e-2
 #%END_CHECK%

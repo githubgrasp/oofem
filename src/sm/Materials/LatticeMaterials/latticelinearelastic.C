@@ -76,31 +76,63 @@ LatticeLinearElastic :: initializeFrom(InputRecord &ir)
     LatticeStructuralMaterial :: initializeFrom(ir);
     RandomMaterialExtensionInterface :: initializeFrom(ir);
 
-    //Young's modulus of the material that the network element is made of
-    IR_GIVE_FIELD(ir, this->eNormalMean, _IFT_LatticeLinearElastic_e); // Macro
+    // Young's modulus of the spring (eNormalMean) and macroscopic Young's
+    // modulus (emMacro).  Either or both can be supplied:
+    //   * `em` alone: emMacro = em, eNormalMean = em (topology factor 1).
+    //   * `e`  alone: eNormalMean = e, emMacro = e   (same value, legacy).
+    //   * both:      eNormalMean = e, emMacro = em   (in-plane and torsion
+    //                stiffnesses decoupled, e.g. to apply a topology factor
+    //                to in-plane springs while keeping macroscopic G correct).
+    const bool emGiven = ir.hasField(_IFT_LatticeLinearElastic_em);
+    const bool eGiven  = ir.hasField(_IFT_LatticeLinearElastic_e);
+    if ( emGiven ) {
+        IR_GIVE_FIELD(ir, emMacro, _IFT_LatticeLinearElastic_em);
+    }
+    if ( eGiven ) {
+        IR_GIVE_FIELD(ir, eNormalMean, _IFT_LatticeLinearElastic_e);
+    } else if ( emGiven ) {
+        eNormalMean = emMacro;
+    } else {
+        OOFEM_ERROR("LatticeLinearElastic: either 'e' or 'em' (or both) must be supplied");
+    }
+    if ( !emGiven ) {
+        emMacro = eNormalMean;
+    }
 
-    //Parameter which relates the shear stiffness to the normal stiffness. Default is 1
+    // Spring ratios: a1 (shear/normal), a2 (bending/normal), a3 (torsion/normal).
+    // Track whether the user set them explicitly so the nu-shortcut below knows
+    // whether it may override the defaults.
+    const bool a1Given = ir.hasField(_IFT_LatticeLinearElastic_a1);
+    const bool a2Given = ir.hasField(_IFT_LatticeLinearElastic_a2);
+    const bool a3Given = ir.hasField(_IFT_LatticeLinearElastic_a3);
+
     alphaOne = 1.;
-    IR_GIVE_OPTIONAL_FIELD(ir, alphaOne, _IFT_LatticeLinearElastic_a1); // Macro
+    IR_GIVE_OPTIONAL_FIELD(ir, alphaOne, _IFT_LatticeLinearElastic_a1);
 
-    //Parameter which is used for the definition of bending stiffness. Default is 1.
     alphaTwo = 1.;
-    IR_GIVE_OPTIONAL_FIELD(ir, alphaTwo, _IFT_LatticeLinearElastic_a2); // Macro
+    IR_GIVE_OPTIONAL_FIELD(ir, alphaTwo, _IFT_LatticeLinearElastic_a2);
 
-    this->alphaThree = this->alphaTwo;
-    IR_GIVE_OPTIONAL_FIELD(ir, this->alphaThree, _IFT_LatticeLinearElastic_a3); // Macro
+    alphaThree = alphaTwo;
+    IR_GIVE_OPTIONAL_FIELD(ir, alphaThree, _IFT_LatticeLinearElastic_a3);
 
-    // Continuum-equivalent shortcut: nu sets a1 = a3 = 1/[2(1+nu)] (= G/E)
-    // and a2 = 1.  This is the correct calibration for shell elements;
-    // for shell-tagged elements nuWasGiven == true is required at runtime.
-    // Poisson's ratio. Used in shell mode to compute the torsional stiffness
-    // directly from G = E/[2(1+nu)] (overriding the spring-level a3·E in
-    // give3dLatticeStiffnessMatrix). Required for shell-tagged elements;
-    // does not affect a1/a2/a3 (which stay user-controlled).
-    nuShell = 0.;
+    // Nu shortcut: derive spring ratios from continuum (Em, nu) using the
+    // regular-triangular lattice mapping (Griffiths & Mustoe 2001). Axial
+    // spring is rescaled only when `em` alone is given; explicit a1/a2/a3
+    // override the derived values.
+    nu = 0.;
     if ( ir.hasField(_IFT_LatticeLinearElastic_nu) ) {
-        IR_GIVE_FIELD(ir, nuShell, _IFT_LatticeLinearElastic_nu);
+        IR_GIVE_FIELD(ir, nu, _IFT_LatticeLinearElastic_nu);
         nuWasGiven = true;
+        if ( nu >= 1. ) {
+            OOFEM_ERROR("LatticeLinearElastic: nu must be < 1");
+        }
+        const bool applyContinuumScaling = ( emGiven && !eGiven );
+        if ( applyContinuumScaling ) {
+            eNormalMean = emMacro / ( 1. - nu );
+        }
+        if ( !a1Given ) alphaOne   = ( 1. - 3. * nu ) / ( 1. + nu );
+        if ( !a2Given ) alphaTwo   = applyContinuumScaling ? 1. / ( 1. + nu ) : 1.;
+        if ( !a3Given ) alphaThree = 1. / ( 2. * ( 1. + nu ) );
     }
 
     localRandomType = 0; //Default: No local random field
@@ -217,24 +249,20 @@ LatticeLinearElastic :: give3dLatticeStiffnessMatrix(MatResponseMode rmode, Gaus
     reductionFactor = computeTemperatureReductionFactor(gp,atTime,VM_Total);
   }
 
-  // If nu was supplied, the torsion entry is G/E = 1/[2(1+nu)] (so torsion =
-  // G·J).  Otherwise the user-controlled alphaThree applies (= E·alphaThree·J).
-  const double a3eff = nuWasGiven ? 1. / ( 2. * ( 1. + nuShell ) ) : this->alphaThree;
-
-  // For shell elements with nu given: the out-of-plane shear entry is also
-  // G/E.  The in-plane shear stays at the user-controlled alphaOne.  The
-  // out-of-plane direction is determined by the element's shellThicknessAxis
-  // (= 2 if thickness is along local y, = 3 if along local z).
-  double a1y = this->alphaOne;   // d[1] = shear in local y direction
-  double a1z = this->alphaOne;   // d[2] = shear in local z direction
+  // Shell shortcut: override torsion and through-thickness shear so the
+  // resulting plate stiffnesses match continuum D = Em·h^3/[12(1-nu^2)].
+  double a3eff = this->alphaThree;
+  double a1y = this->alphaOne;
+  double a1z = this->alphaOne;
   if ( nuWasGiven ) {
       Lattice3d *elem = dynamic_cast< Lattice3d * >( gp->giveElement() );
       if ( elem != nullptr && elem->isShellElement() ) {
-          const double gOverE = 1. / ( 2. * ( 1. + nuShell ) );
+          a3eff = 1. / ( 1. + nu );
+          const double gOverEspring = 1. / ( 2. * ( 1. + nu ) );
           if ( elem->giveShellThicknessAxis() == 2 ) {
-              a1y = gOverE;
+              a1y = gOverEspring;
           } else if ( elem->giveShellThicknessAxis() == 3 ) {
-              a1z = gOverE;
+              a1z = gOverEspring;
           }
       }
   }

@@ -56,6 +56,7 @@
 #define _IFT_LatticeLinearElastic_a3 "a3"
 #define _IFT_LatticeLinearElastic_tcrit "tcrit"
 #define _IFT_LatticeLinearElastic_nu "nu"
+#define _IFT_LatticeLinearElastic_em "em"
 //@}
 
 namespace oofem {
@@ -87,12 +88,14 @@ protected:
   /// parameter which allows to prescribed thermal displacement
     double cAlpha = 0.;
 
-    /// Poisson's ratio for shell mode. Used to compute the torsional
-    /// stiffness as G·J (with G = E/[2(1+nuShell)]) when the material is
-    /// queried from a shell-tagged element. Required for shell elements;
-    /// ignored otherwise.
-    double nuShell = 0.;
+    /// Poisson's ratio; triggers the Fahy/Griffiths-Mustoe shortcut for
+    /// the spring ratios when supplied with `em`.
+    double nu = 0.;
     bool nuWasGiven = false;
+
+    /// Macroscopic Young's modulus (continuum E). Defaults to eNormalMean
+    /// if `em` is not given; decoupled from eNormalMean when both are set.
+    double emMacro = 0.;
 
 public:
     LatticeLinearElastic(int n, Domain *d) : LatticeStructuralMaterial(n, d), RandomMaterialExtensionInterface() { };

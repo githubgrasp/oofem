@@ -20,7 +20,7 @@ PiecewiseLinFunction 2 nPoints 2 t 2 0. 1. f(t) 2 0. 1.
 #REACTION tStep 1 number 1 dof 1 value -3.0000e+3
 #REACTION tStep 1 number 1 dof 2 value  6.0000e+3
 #REACTION tStep 1 number 1 dof 3 value -9.0000e+3
-#REACTION tStep 1 number 1 dof 4 value -2.5000e-1
+#REACTION tStep 1 number 1 dof 4 value -1.2500e-1
 #REACTION tStep 1 number 1 dof 5 value  4.4997e+3
 #REACTION tStep 1 number 1 dof 6 value  2.9750e+3
 #%END_CHECK%

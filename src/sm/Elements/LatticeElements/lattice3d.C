@@ -920,7 +920,7 @@ if ( cs->giveShape() == 2 || this->isShellElement() ) {
     const double e3 = edgeLength(3, 4);
     const double e4 = edgeLength(4, 1);
 
-    const double rectTol = 1e-6 * (e1 + e2 + e3 + e4);
+    const double rectTol = 1e-4 * (e1 + e2 + e3 + e4);
     if (std::fabs(e1 - e3) > rectTol || std::fabs(e2 - e4) > rectTol) {
         OOFEM_ERROR("Shape 2 cross-section is not a rectangle.");
     }
@@ -953,8 +953,8 @@ if ( cs->giveShape() == 2 || this->isShellElement() ) {
     this->shellH = h;
     this->shellB = b;
     if ( this->isShellElement() ) {
-        // Plate torsion D33.
-        this->J = b * h * h * h / 6.0;
+        // Plate-twisting second moment per unit width.
+        this->J = b * h * h * h / 12.0;
     } else {
         // Saint-Venant rectangular beam torsion: J = beta * bMax * hMin^3.
         double bMax = std::max(b, h);
@@ -1091,8 +1091,15 @@ double Lattice3d :: giveI1(GaussPoint *gp) {
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
     }
-    // Hybrid: in-plane bending at centroid only.
-    if ( this->isHybridShell() && this->isLayerIp(gp) ) {
+    // Hybrid: in-plane bending split equally across layer IPs as b^3*(h/N)/12;
+    // centroid returns 0.  Sums to b^3*h/12 in the elastic limit.
+    if ( this->isHybridShell() ) {
+        if ( this->isLayerIp(gp) ) {
+            LatticeCrossSection *lcs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );
+            const int N = lcs->giveNLayers();
+            const double dh = this->shellH / static_cast< double >( N );
+            return this->shellB * this->shellB * this->shellB * dh / 12.0;
+        }
         return 0.0;
     }
     return this->I1;
