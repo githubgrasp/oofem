@@ -87,6 +87,16 @@ struct Edge {
 };
 
 
+/// 1D mesh line segment from T3D, emitted for curves with `output yes`.
+/// `entType` is normally 2 (curve); `entID` is the T3D curve id.
+struct Lin1d {
+    int id;
+    int n1, n2;
+    int entType = 0;
+    int entID   = 0;
+};
+
+
 /// Curve segment derived from a boundary triangle edge: the two endpoints
 /// and the T3D curve id the segment belongs to. Produced by
 /// `buildCurveSegsFromTris`.
@@ -297,6 +307,28 @@ private:
     };
     std::vector< NodeBCSpec >nodeBCSpecs;
 
+    /// A reinforcement bar embedded as an independently meshed T3D curve.
+    /// The curve must be tagged with `output yes` in `mesh.in` so T3D emits
+    /// its 1D line segments (read into `lin1ds`). For each rebar node, the
+    /// converter emits one `latticelink3D` to the nearest matrix Delaunay
+    /// vertex with `length` equal to the tributary rebar-segment length
+    /// (half each side, halved at the end nodes), `diameter` from the
+    /// directive, and `dirvector` along the local rebar tangent. The bar
+    /// segments themselves are emitted as `lattice3D` using `crossSect`/`mat`
+    /// from the directive. Populated by `#@rebar <curveID> diameter <d>
+    /// crossSect <cs> mat <m> bondCS <bcs> bondMat <bmat>`.
+    struct RebarSpec {
+        int curveID  = 0;
+        double diameter = 0.;
+        int crossSect = 1;
+        int material  = 1;
+        int bondCS    = 1;
+        int bondMat   = 1;
+        std::string element = "lattice3Dnl"; ///< rebar element name; default
+                                             ///< is the large-rotation variant
+    };
+    std::vector< RebarSpec >rebarSpecs;
+
     /// When true, TM element emitters append `lumpedcapacity 1` to every
     /// `latticemt2D` / `latticemt3D` line. Enabled by `#@lumpedcapacity 1`.
     /// Switches the element capacity matrix from the consistent (coupled)
@@ -386,6 +418,11 @@ private:
     std::vector< Tet >tets;
 
     std::vector< Edge >edges;
+
+    /// 1D mesh line segments emitted by T3D for curves with `output yes`.
+    /// Populated by `readT3d`. Used by `writeT3dRebarOofem` to walk the
+    /// segments of each rebar curve referenced by a `#@rebar` directive.
+    std::vector< Lin1d >lin1ds;
 
     std::unordered_map< int, int >nodeIndex;
 
@@ -733,8 +770,22 @@ public:
     /// Write one OOFEM `node` record per T3D node to `out`.
     void writeT3dNodesOofem(std::ostream &out);
 
-    /// Write one OOFEM element record per T3D edge to `out`.
-    void writeT3dElemsOofem(std::ostream &out);
+    /// Write one OOFEM element record per T3D edge to `out`. `eid` is the
+    /// caller-owned element-id counter (1-based on entry); it is incremented
+    /// for each emitted element so subsequent writers can continue numbering.
+    void writeT3dElemsOofem(std::ostream &out, int &eid);
+
+    /// Emit `lattice3D` segments along each `#@rebar` curve plus one
+    /// `latticelink3D` per rebar node, coupling the rebar to its nearest
+    /// matrix Delaunay vertex. `eid` continues the element-id counter started
+    /// by `writeT3dElemsOofem`. No-op when `rebarSpecs` is empty.
+    void writeT3dRebarOofem(std::ostream &out, int &eid);
+
+    /// Count the elements emitted by `writeT3dRebarOofem`. Returns
+    /// `nRebarSegs` = number of rebar lattice3D segments, `nRebarLinks` =
+    /// number of latticelink3D bond elements. Used by `giveOutputT3d` to
+    /// patch the `nelem` field in the header before any element is written.
+    void computeRebarCounts(int &nRebarSegs, int &nRebarLinks) const;
 
     /// T3D pipeline entry point. Reads `t3dFileName`, parses control
     /// directives from `controlFileName`, and emits the OOFEM input.

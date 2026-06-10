@@ -1,0 +1,18 @@
+# Slab patch corners
+vertex 1 xyz 0.0 0.0 0.0
+vertex 2 xyz 1.0 0.0 0.0
+vertex 3 xyz 1.0 1.0 0.0
+vertex 4 xyz 0.0 1.0 0.0
+
+curve 1 vertex 1 2
+curve 2 vertex 2 3
+curve 3 vertex 3 4
+curve 4 vertex 4 1
+
+patch 1 normal 0 0 1 boundary curve 1 2 3 4 size def
+
+# Rebar curve with independent vertices, offset from boundary so T3D does
+# not merge them with patch nodes.
+vertex 10 xyz 0.05 0.5 0.0
+vertex 11 xyz 0.95 0.5 0.0
+curve 5 vertex 10 11 output yes

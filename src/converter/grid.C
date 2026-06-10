@@ -225,6 +225,23 @@ bool Grid::readT3d(const std::string &fn,
         entityNodes [ n.entType ] [ n.entID ].push_back(n.id);
     }
 
+    // ---------- 1D line segments ----------
+    // Emitted by T3D for curves declared with `output yes`. Stored in
+    // `lin1ds` and consumed by the rebar emitter; ignored otherwise.
+    lin1ds.clear();
+    lin1ds.reserve(nEdges);
+    for (int i = 0; i < nEdges; i++) {
+        Lin1d e;
+        int entProp;
+        in >> e.id >> e.n1 >> e.n2 >> e.entType >> e.entID >> entProp;
+        // Neighbour element ids (bit 32) — skip if present.
+        if ( t3dOutType & 32 ) {
+            int ng1, ng2;
+            in >> ng1 >> ng2;
+        }
+        lin1ds.push_back(e);
+    }
+
     // ---------- triangles ----------
     tris.clear();
     tris.reserve(nTris);
@@ -868,6 +885,43 @@ void Grid::readControlRecords()
                 converter::error("Malformed #@element directive — expected: <kind> <id> <name> <cs> <mat>");
             }
             elementSpecsByEntity[ { entType, entID } ] = EdgeSpec{ elementName, crossSect, material };
+        } else if ( tag == "#@rebar" ) {
+            // (T3D) #@rebar <curveID> diameter <d> crossSect <cs> mat <m>
+            //               bondCS <bcs> bondMat <bmat> [element <name>]
+            //
+            // Flags a T3D curve (meshed independently with `output yes`) as a
+            // reinforcement bar. Emits one rebar element per curve segment
+            // (default `lattice3Dnl`; override via the optional `element`
+            // keyword) and one latticelink3D per rebar node back to the
+            // nearest matrix Delaunay vertex; see writeT3dRebarOofem.
+            RebarSpec r;
+            if ( !( iss >> r.curveID ) ) {
+                converter::error("Malformed #@rebar — expected '<curveID> "
+                                 "diameter <d> crossSect <cs> mat <m> "
+                                 "bondCS <bcs> bondMat <bmat>'");
+            }
+            std::string kw;
+            while ( iss >> kw ) {
+                if ( kw == "diameter" ) {
+                    iss >> r.diameter;
+                } else if ( kw == "crossSect" ) {
+                    iss >> r.crossSect;
+                } else if ( kw == "mat" ) {
+                    iss >> r.material;
+                } else if ( kw == "bondCS" ) {
+                    iss >> r.bondCS;
+                } else if ( kw == "bondMat" ) {
+                    iss >> r.bondMat;
+                } else if ( kw == "element" ) {
+                    iss >> r.element;
+                } else {
+                    converter::errorf("Unknown #@rebar keyword '%s'", kw.c_str() );
+                }
+            }
+            if ( r.curveID <= 0 || r.diameter <= 0. ) {
+                converter::error("#@rebar requires curveID > 0 and diameter > 0");
+            }
+            rebarSpecs.push_back(r);
         } else if ( tag == "#@3DSECTION" ) {
             // (T3D)
             std::string mode;
@@ -2517,7 +2571,9 @@ void Grid::giveOutputT3d(const std::string &fileName)
     bool injected = false;
 
     const int nNodes = ( int ) nodes.size();
-    const int nElems = ( int ) edges.size();
+    int nRebarSegs = 0, nRebarLinks = 0;
+    computeRebarCounts(nRebarSegs, nRebarLinks);
+    const int nElems = ( int ) edges.size() + nRebarSegs + nRebarLinks;
 
     while ( std::getline(ctrl, line) ) {
         std::string t = line;
@@ -2549,8 +2605,10 @@ void Grid::giveOutputT3d(const std::string &fileName)
 
             out << "\n";
 
+            int eid = 1;
             writeT3dNodesOofem(out);
-            writeT3dElemsOofem(out);
+            writeT3dElemsOofem(out, eid);
+            writeT3dRebarOofem(out, eid);
 
             injected = true;
             continue;
@@ -2694,9 +2752,8 @@ void Grid::writeT3dNodesOofem(std::ostream &out)
     }
 }
 
-void Grid::writeT3dElemsOofem(std::ostream &out)
+void Grid::writeT3dElemsOofem(std::ostream &out, int &eid)
 {
-    int eid = 1;
     const bool is3D = !tets.empty();
     const bool useFrame = use3DFrameSection;
 
@@ -2997,6 +3054,170 @@ void Grid::writeT3dElemsOofem(std::ostream &out)
             << "\n";
     }
 }
+
+void Grid::computeRebarCounts(int &nRebarSegs, int &nRebarLinks) const
+{
+    nRebarSegs  = 0;
+    nRebarLinks = 0;
+    if ( rebarSpecs.empty() ) {
+        return;
+    }
+
+    std::set < int > rebarCurveIds;
+    for (const auto &r : rebarSpecs) {
+        rebarCurveIds.insert(r.curveID);
+    }
+
+    // Every node appearing in a rebar segment (endpoint vertex or interior)
+    // gets a latticelink3D to the nearest matrix node. The user is expected
+    // to declare rebar curves with independent vertices so no rebar node
+    // physically coincides with a matrix node.
+    std::set < int > linkNodes;
+    for (const auto &e : lin1ds) {
+        if ( !rebarCurveIds.count(e.entID) ) {
+            continue;
+        }
+        ++nRebarSegs;
+        linkNodes.insert(e.n1);
+        linkNodes.insert(e.n2);
+    }
+    nRebarLinks = ( int ) linkNodes.size();
+}
+
+
+void Grid::writeT3dRebarOofem(std::ostream &out, int &eid)
+{
+    if ( rebarSpecs.empty() ) {
+        return;
+    }
+
+    // Map: curveID -> RebarSpec (last one wins on duplicate declarations).
+    std::map < int, RebarSpec > specByCurve;
+    for (const auto &r : rebarSpecs) {
+        specByCurve [ r.curveID ] = r;
+    }
+
+    // Per-node bookkeeping: list of (segment index, "this node is n1") pairs,
+    // so we can compute tributary length and an averaged tangent at each rebar
+    // node. The rebar curve ID is also stored to look up the spec.
+    struct NodeUse {
+        int segIdx;
+        bool isFirst;            // true if this node is segment's n1
+    };
+    std::map < int, std::vector< NodeUse > > nodeUses;
+    std::map < int, int > nodeCurve;          // rebar node id -> rebar curve id
+
+    // First pass: emit one lattice3D per rebar segment, build nodeUses.
+    for (size_t si = 0; si < lin1ds.size(); ++si) {
+        const Lin1d &e = lin1ds [ si ];
+        auto it = specByCurve.find(e.entID);
+        if ( it == specByCurve.end() ) {
+            continue;
+        }
+        const RebarSpec &r = it->second;
+
+        out << r.element << " " << eid++
+            << " nodes 2 " << e.n1 << " " << e.n2
+            << " crossSect " << r.crossSect
+            << " mat " << r.material
+            << "\n";
+
+        nodeUses [ e.n1 ].push_back({ ( int ) si, true });
+        nodeUses [ e.n2 ].push_back({ ( int ) si, false });
+        nodeCurve [ e.n1 ] = e.entID;
+        nodeCurve [ e.n2 ] = e.entID;
+    }
+
+    if ( nodeUses.empty() ) {
+        // No rebar segments actually present (e.g. curve was declared but
+        // never meshed with `output yes`). Silently skip the link pass.
+        return;
+    }
+
+    // Set of all node ids that lie on any rebar curve. Excluded from the
+    // candidate matrix-node pool so the nearest-vertex query cannot pick a
+    // rebar node back. The user is expected to declare rebar curves with
+    // independent vertices so no rebar node physically coincides with a
+    // matrix node.
+    std::set < int > rebarNodeIds;
+    for (const auto &nu : nodeUses) {
+        rebarNodeIds.insert(nu.first);
+    }
+
+    // Second pass: one latticelink3D per rebar node, linking to the nearest
+    // non-rebar (matrix) node.
+    for (const auto &nu : nodeUses) {
+        const int rebarNodeId = nu.first;
+        const auto &uses = nu.second;
+        const RebarSpec &r = specByCurve.at(nodeCurve.at(rebarNodeId) );
+
+        const oofem::FloatArray xR = getX(rebarNodeId);
+
+        // Tributary length: half the length of each adjacent rebar segment.
+        // Interior node (uses.size()==2): L = (L1 + L2)/2.
+        // End node      (uses.size()==1): L = L1/2.
+        double length = 0.;
+        for (const NodeUse &u : uses) {
+            const Lin1d &seg = lin1ds [ u.segIdx ];
+            const oofem::FloatArray xA = getX(seg.n1);
+            const oofem::FloatArray xB = getX(seg.n2);
+            oofem::FloatArray d(3);
+            d.beDifferenceOf(xB, xA);
+            length += 0.5 * d.computeNorm();
+        }
+
+        // Tangent: take the first adjacent segment's direction (n1 -> n2).
+        // For straight rebars all adjacent segments share the same
+        // direction, so the choice is exact; for curved rebars this is a
+        // local approximation good enough for bond-slip integration.
+        oofem::FloatArray tangent(3);
+        tangent.zero();
+        {
+            const Lin1d &seg = lin1ds [ uses.front().segIdx ];
+            const oofem::FloatArray xA = getX(seg.n1);
+            const oofem::FloatArray xB = getX(seg.n2);
+            tangent.beDifferenceOf(xB, xA);
+            const double tnorm = tangent.computeNorm();
+            if ( tnorm > 0. ) {
+                tangent.times(1. / tnorm);
+            }
+        }
+
+        // Nearest non-rebar node by Euclidean distance. Brute force is
+        // O(N_matrix * N_rebar); fine for the McNeice-scale meshes targeted
+        // here. Replace with an octree query if it becomes a hotspot.
+        int    bestMatrixId = -1;
+        double bestDist     = std::numeric_limits< double >::infinity();
+        for (const Node &n : nodes) {
+            if ( rebarNodeIds.count(n.id) ) {
+                continue;
+            }
+            const double dx = n.x - xR.at(1);
+            const double dy = n.y - xR.at(2);
+            const double dz = n.z - xR.at(3);
+            const double d2 = dx * dx + dy * dy + dz * dz;
+            if ( d2 < bestDist ) {
+                bestDist     = d2;
+                bestMatrixId = n.id;
+            }
+        }
+        if ( bestMatrixId < 0 ) {
+            converter::errorf("#@rebar: no matrix node found for rebar node %d "
+                              "(curve %d) — mesh has no non-rebar nodes",
+                              rebarNodeId, r.curveID);
+        }
+
+        out << "latticelink3D " << eid++
+            << " nodes 2 " << rebarNodeId << " " << bestMatrixId
+            << " crossSect " << r.bondCS
+            << " mat " << r.bondMat
+            << " length " << std::scientific << length
+            << " diameter " << r.diameter
+            << " dirvector 3 " << tangent.at(1) << " " << tangent.at(2) << " " << tangent.at(3)
+            << "\n";
+    }
+}
+
 
 std::pair< int, int >
 Grid::entityForEdge(const Edge &e) const

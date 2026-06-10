@@ -693,6 +693,8 @@ void
     this->I1   = M_PI * pow(r, 4) / 4.0;
     this->I2   = this->I1;
     this->Ip   = M_PI * pow(r, 4) / 2.0;
+    // Saint-Venant torsion constant equals the polar moment for circular sections.
+    this->J    = this->Ip;
     
     const double k = 0.9;
     this->shearArea1 = k * this->area;
