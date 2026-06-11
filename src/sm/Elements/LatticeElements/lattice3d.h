@@ -76,7 +76,6 @@ protected:
     // Rectangular cross-section dimensions in local frame; set in computeGeometryProperties.
     double shellH = 0.;
     double shellB = 0.;
-    int shellThicknessAxis = 0;
 
 public:
     Lattice3d(int n, Domain *);
@@ -134,9 +133,6 @@ public:
 
     /// True if shellnormal was supplied (element is tagged as a shell).
     bool isShellElement() const { return shellNormal.giveSize() == 3; }
-
-    /// Local axis along which the shell thickness lies (2 or 3); 0 if not set.
-    int giveShellThicknessAxis() const { return shellThicknessAxis; }
 
     /// True if hybrid layered shell mode is active (shell + nLayers > 1 + rectangle).
     bool isHybridShell();

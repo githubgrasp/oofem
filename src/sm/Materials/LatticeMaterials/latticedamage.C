@@ -42,6 +42,8 @@
 #include "engngm.h"
 #include "mathfem.h"
 #include "Elements/LatticeElements/latticestructuralelement.h"
+#include "Elements/LatticeElements/lattice3d.h"
+#include "integrationrule.h"
 #include "datastream.h"
 #include "staggeredproblem.h"
 #include "contextioerr.h"
@@ -323,6 +325,25 @@ LatticeDamage :: performDamageEvaluation(GaussPoint *gp, FloatArrayF< 6 > &reduc
         omega = this->computeDamageParam(tempKappa, gp);
         if ( omega > 0 ) {
             status->setTempCrackFlag(1);
+        }
+    }
+
+    // Centroid omega raised to mean of layer omegas (shear/torsion follow layer damage).
+    auto *lat3d = dynamic_cast< Lattice3d * >( gp->giveElement() );
+    if ( lat3d != nullptr && lat3d->isHybridShell() && !lat3d->isLayerIp(gp) ) {
+        IntegrationRule *rule = lat3d->giveIntegrationRule(0);
+        double omegaSum = 0.0;
+        int nLayer = 0;
+        for ( int i = 0; i < rule->giveNumberOfIntegrationPoints(); ++i ) {
+            GaussPoint *otherGp = rule->getIntegrationPoint(i);
+            if ( lat3d->isLayerIp(otherGp) ) {
+                auto *layerStatus = static_cast< LatticeDamageStatus * >( this->giveStatus(otherGp) );
+                omegaSum += layerStatus->giveTempDamage();
+                ++nLayer;
+            }
+        }
+        if ( nLayer > 0 ) {
+            omega = std::max( omega, omegaSum / nLayer );
         }
     }
 

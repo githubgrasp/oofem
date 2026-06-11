@@ -811,6 +811,8 @@ void Grid::readControlRecords()
                     for (int i = 0; i < n; ++i) {
                         iss >> bc.values [ i ];
                     }
+                } else if ( token == "ltf" ) {
+                    iss >> bc.ltf;
                 }
             }
 
@@ -837,6 +839,16 @@ void Grid::readControlRecords()
             iss >> qLabel >> lr.q;                 // expects "q 3000"
             if ( qLabel != "q" ) {
                 converter::error("Invalid #@LOAD: expected 'q <value>'");
+            }
+
+            // Optional trailing keywords: currently only `ltf <id>`.
+            std::string token;
+            while ( iss >> token ) {
+                if ( token == "ltf" ) {
+                    iss >> lr.ltf;
+                } else {
+                    converter::errorf("Unknown #@LOAD keyword '%s'", token.c_str() );
+                }
             }
 
             loadRequests.push_back(std::move(lr) );
@@ -1725,7 +1737,7 @@ void Grid::writeLiveLoads(std::ostream &out, int &bcID)
         }
 
         out << "NodalLoad " << bcID++
-            << " loadTimeFunction 2"
+            << " loadTimeFunction " << loadNodeLtf [ i ]
             << " dofs 3 1 2 3"
             << " components 3 "
             << std::scientific
@@ -2675,6 +2687,7 @@ void Grid::prepareLiveLoadSets()
     loadFy.assign(n, 0.0);
     loadFz.assign(n, 0.0);
     loadNodeSetID.assign(n, -1);
+    loadNodeLtf.assign(n, 1);
 
     // --- accumulate forces ---
     for (const auto &req : loadRequests) {
@@ -2711,6 +2724,10 @@ void Grid::prepareLiveLoadSets()
             loadFx [ i ] += Fi * liveDir.at(1);
             loadFy [ i ] += Fi * liveDir.at(2);
             loadFz [ i ] += Fi * liveDir.at(3);
+            // Per-node LTF: last #@LOAD touching this node wins. Mixing
+            // different LTFs into one NodalLoad isn't representable, so
+            // separate loads with different LTFs should target disjoint nodes.
+            loadNodeLtf [ i ] = req.ltf;
         }
     }
 
@@ -3405,7 +3422,7 @@ void Grid::writeBCRecords(std::ostream &out, int &bcID) const
         }
 
         out << "BoundaryCondition " << bcID++
-            << " loadTimeFunction 1"
+            << " loadTimeFunction " << bc.ltf
             << " dofs " << bc.dofs.size();
         for (int d : bc.dofs) {
             out << " " << d;

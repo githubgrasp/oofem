@@ -83,16 +83,8 @@ Lattice3d :: computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, int 
     answer.resize(6, 12);
     answer.zero();
 
-    // Rigid-arm vectors in the element-local frame.
-    // l1 = vector node-1 -> GP, l2 = vector GP -> node-2.
-    // eccS, eccT are the offsets of the cross-section centroid from the
-    // element axis (the line between the two nodes); nonzero when the
-    // axis does not pass through the centroid, e.g. shell-mode rectangles.
-    // For multi-IP shell GPs, the GP's natural coordinates carry an additional
-    // in-section (s, t) offset of the GP from the centroid (set in
-    // computeGaussPoints).  The offset adds to l1's transverse components and
-    // subtracts from l2's.  For the single-GP-at-centroid case the offset is
-    // zero and this reduces to the legacy form.
+    // Rigid arms node-1 -> GP and GP -> node-2; eccS/eccT centroid offsets,
+    // gpY/gpZ per-IP offsets from natural coords (zero for centroid-only IP).
     double gpY = 0.0, gpZ = 0.0;
     if ( aGaussPoint != nullptr ) {
         const FloatArray &nc = aGaussPoint->giveNaturalCoordinates();
@@ -273,10 +265,7 @@ Lattice3d :: giveGPCoordinates(GaussPoint *gp, FloatArray &coords)
         return;
     }
 
-    // The GP's natural coordinates carry the in-section (axial, local-y, local-z)
-    // offset from the centroid (set in computeGaussPoints).  Rotate that local
-    // offset into global coordinates using the transpose of localCoordinateSystem
-    // (localCoordinateSystem is the global -> local rotation), then add to the centroid.
+    // Rotate per-IP local offset (natural coords) into global frame, add to centroid.
     const FloatArray &nc = gp->giveNaturalCoordinates();
     FloatArray localOffset(3);
     localOffset.at(1) = nc.at(1);
@@ -300,7 +289,7 @@ Lattice3d :: computeLayerPositions(FloatArray &yOffset, FloatArray &zOffset, Flo
 
     int n = 1;
     LatticeCrossSection *lcs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );
-    if ( this->isShellElement() && lcs != nullptr && this->shellThicknessAxis != 0 ) {
+    if ( this->isShellElement() && lcs != nullptr ) {
         n = lcs->giveNLayers();
     }
 
@@ -314,18 +303,13 @@ Lattice3d :: computeLayerPositions(FloatArray &yOffset, FloatArray &zOffset, Flo
         return;
     }
 
-    // Multi-layer shell: n equal strips through the thickness.
+    // Multi-layer shell: n equal strips through the thickness (local y).
     const double h = this->shellH;
     const double b = this->shellB;
     const double dh = h / static_cast< double >( n );
     const double aStrip = b * dh;
     for ( int k = 1; k <= n; ++k ) {
-        const double offset = -h / 2.0 + ( static_cast< double >( k ) - 0.5 ) * dh;
-        if ( this->shellThicknessAxis == 2 ) {
-            yOffset.at(k) = offset;
-        } else {                // shellThicknessAxis == 3
-            zOffset.at(k) = offset;
-        }
+        yOffset.at(k) = -h / 2.0 + ( static_cast< double >( k ) - 0.5 ) * dh;
         areas.at(k) = aStrip;
     }
 }
@@ -398,8 +382,7 @@ Lattice3d :: computeStressVector(FloatArray &answer, const FloatArray &strain, G
 void
 Lattice3d :: computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode,
                                     TimeStep *tStep)
-// Sums B^T D B over all IPs.  Per-IP partitioning (layer vs centroid in
-// hybrid shell mode) is enforced via the section getters, not here.
+// Sums B^T D B over all IPs; per-IP partitioning is in the section getters.
 {
     FloatMatrix d, ds, bj, bjt, dbj, contrib;
 
@@ -425,16 +408,14 @@ Lattice3d :: computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode,
 }
 
 void Lattice3d :: computeGaussPoints()
-// In hybrid layered shell mode: nLayers per-thickness IPs + 1 extra centroid IP.
-// Otherwise: a single centroid IP (legacy behaviour).
+// Hybrid shell: nLayers layer IPs + 1 centroid IP. Otherwise: one centroid IP.
 {
     FloatArray yOff, zOff, areas;
     this->computeLayerPositions(yOff, zOff, areas);
     const int nLayers = areas.giveSize();
 
     LatticeCrossSection *lcs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );
-    const bool hybrid = ( nLayers > 1 && lcs != nullptr
-                          && this->isShellElement() && this->shellThicknessAxis != 0 );
+    const bool hybrid = ( nLayers > 1 && lcs != nullptr && this->isShellElement() );
     const int nTotal = hybrid ? nLayers + 1 : nLayers;
 
     this->numberOfGaussPoints = nTotal;
@@ -481,7 +462,7 @@ bool Lattice3d :: isHybridShell()
     }
     if ( !this->isShellElement() ) return false;
     LatticeCrossSection *lcs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );
-    return ( lcs != nullptr && lcs->giveNLayers() > 1 && this->shellThicknessAxis != 0 );
+    return ( lcs != nullptr && lcs->giveNLayers() > 1 );
 }
 
 
@@ -490,14 +471,7 @@ double Lattice3d :: giveArea(GaussPoint *gp) {
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
     }
-    // Hybrid shell mode (multi-IP):
-    //   Layer IP   -> tributary area b*(t/N): the material's E*A*eps then gives
-    //                 the per-layer axial force directly.
-    //   Centroid IP -> 0: the centroid IP carries no axial; the material's
-    //                 D[1,1] = E*0 = 0 makes both the stiffness and the stress
-    //                 vanish at this IP, so the per-IP status records a clean
-    //                 zero axial stress and no element-side post-processing
-    //                 is needed.
+    // Hybrid: axial at layer IPs (tributary area b*(t/N)), zero at centroid IP.
     if ( this->isHybridShell() ) {
         return this->isLayerIp(gp) ?
                this->shellB * ( this->shellH /
@@ -890,17 +864,21 @@ void
 
     //Compute main axis of the cross-section
     double angleChange = 0.;
-    double tol = 1e-12 * (fabs(Ixx) + fabs(Iyy));
 
-    if ( fabs(Ixx - Iyy) < tol && fabs(Ixy) < tol ) {
-      angleChange = 0.0;  // orientation arbitrary
+    if ( this->isShellElement() ) {
+      // Shell mode: no principal-axis rotation, frame fixed by shellNormal.
+      this->I1 = Ixx;
+      this->I2 = Iyy;
     } else {
-      angleChange = 0.5 * atan2(-2.0 * Ixy, (Ixx - Iyy));
+      double tol = 1e-12 * (fabs(Ixx) + fabs(Iyy));
+      if ( fabs(Ixx - Iyy) < tol && fabs(Ixy) < tol ) {
+        angleChange = 0.0;  // orientation arbitrary
+      } else {
+        angleChange = 0.5 * atan2(-2.0 * Ixy, (Ixx - Iyy));
+      }
+      this->I1 = ( Ixx + Iyy ) / 2. + sqrt(pow( ( Ixx - Iyy ) / 2., 2. ) + pow(Ixy, 2.) );
+      this->I2 = ( Ixx + Iyy ) / 2. - sqrt(pow( ( Ixx - Iyy ) / 2., 2. ) + pow(Ixy, 2.) );
     }
-
-    //Moment of inertias saved in the element
-    this->I1 = ( Ixx + Iyy ) / 2. + sqrt(pow( ( Ixx - Iyy ) / 2., 2. ) + pow(Ixy, 2.) );
-    this->I2 = ( Ixx + Iyy ) / 2. - sqrt(pow( ( Ixx - Iyy ) / 2., 2. ) + pow(Ixy, 2.) );
 
     this->Ip = I1 + I2;
 
@@ -938,7 +916,6 @@ if ( cs->giveShape() == 2 || this->isShellElement() ) {
 
     if ( this->shellNormal.giveSize() == 3 ) {
         // Local axis 2 is the shell normal; pick h, b by edge orientation.
-        this->shellThicknessAxis = 2;
         if ( std::fabs(dy12) > std::fabs(dz12) ) {
             h = d1;
             b = d2;
@@ -1093,8 +1070,6 @@ double Lattice3d :: giveI1(GaussPoint *gp) {
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
     }
-    // Hybrid: in-plane bending split equally across layer IPs as b^3*(h/N)/12;
-    // centroid returns 0.  Sums to b^3*h/12 in the elastic limit.
     if ( this->isHybridShell() ) {
         if ( this->isLayerIp(gp) ) {
             LatticeCrossSection *lcs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );
@@ -1111,8 +1086,6 @@ double Lattice3d :: giveI2(GaussPoint *gp) {
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
     }
-    // Hybrid: through-thickness bending split between layer parallel-axis
-    // (from rigid-arm) and each layer's own b*(h/N)^3/12; centroid returns 0.
     if ( this->isHybridShell() ) {
         if ( this->isLayerIp(gp) ) {
             LatticeCrossSection *lcs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );

@@ -76,13 +76,7 @@ LatticeLinearElastic :: initializeFrom(InputRecord &ir)
     LatticeStructuralMaterial :: initializeFrom(ir);
     RandomMaterialExtensionInterface :: initializeFrom(ir);
 
-    // Young's modulus of the spring (eNormalMean) and macroscopic Young's
-    // modulus (emMacro).  Either or both can be supplied:
-    //   * `em` alone: emMacro = em, eNormalMean = em (topology factor 1).
-    //   * `e`  alone: eNormalMean = e, emMacro = e   (same value, legacy).
-    //   * both:      eNormalMean = e, emMacro = em   (in-plane and torsion
-    //                stiffnesses decoupled, e.g. to apply a topology factor
-    //                to in-plane springs while keeping macroscopic G correct).
+    // eNormalMean = spring Em, emMacro = macroscopic Em. At least one of `e`, `em` must be set.
     const bool emGiven = ir.hasField(_IFT_LatticeLinearElastic_em);
     const bool eGiven  = ir.hasField(_IFT_LatticeLinearElastic_e);
     if ( emGiven ) {
@@ -99,9 +93,7 @@ LatticeLinearElastic :: initializeFrom(InputRecord &ir)
         emMacro = eNormalMean;
     }
 
-    // Spring ratios: a1 (shear/normal), a2 (bending/normal), a3 (torsion/normal).
-    // Track whether the user set them explicitly so the nu-shortcut below knows
-    // whether it may override the defaults.
+    // Spring ratios a1 (shear), a2 (bending), a3 (torsion); track explicit input.
     const bool a1Given = ir.hasField(_IFT_LatticeLinearElastic_a1);
     const bool a2Given = ir.hasField(_IFT_LatticeLinearElastic_a2);
     const bool a3Given = ir.hasField(_IFT_LatticeLinearElastic_a3);
@@ -115,10 +107,7 @@ LatticeLinearElastic :: initializeFrom(InputRecord &ir)
     alphaThree = alphaTwo;
     IR_GIVE_OPTIONAL_FIELD(ir, alphaThree, _IFT_LatticeLinearElastic_a3);
 
-    // Nu shortcut: derive spring ratios from continuum (Em, nu) using the
-    // regular-triangular lattice mapping (Griffiths & Mustoe 2001). Axial
-    // spring is rescaled only when `em` alone is given; explicit a1/a2/a3
-    // override the derived values.
+    // Nu shortcut: spring ratios from Griffiths & Mustoe (2001); explicit a1/a2/a3 win.
     nu = 0.;
     if ( ir.hasField(_IFT_LatticeLinearElastic_nu) ) {
         IR_GIVE_FIELD(ir, nu, _IFT_LatticeLinearElastic_nu);
@@ -249,21 +238,15 @@ LatticeLinearElastic :: give3dLatticeStiffnessMatrix(MatResponseMode rmode, Gaus
     reductionFactor = computeTemperatureReductionFactor(gp,atTime,VM_Total);
   }
 
-  // Shell shortcut: override torsion and through-thickness shear so the
-  // resulting plate stiffnesses match continuum D = Em·h^3/[12(1-nu^2)].
+  // Shell mode: torsion and through-thickness shear overridden to match continuum D.
   double a3eff = this->alphaThree;
   double a1y = this->alphaOne;
-  double a1z = this->alphaOne;
+  const double a1z = this->alphaOne;
   if ( nuWasGiven ) {
       Lattice3d *elem = dynamic_cast< Lattice3d * >( gp->giveElement() );
       if ( elem != nullptr && elem->isShellElement() ) {
           a3eff = 1. / ( 1. + nu );
-          const double gOverEspring = 1. / ( 2. * ( 1. + nu ) );
-          if ( elem->giveShellThicknessAxis() == 2 ) {
-              a1y = gOverEspring;
-          } else if ( elem->giveShellThicknessAxis() == 3 ) {
-              a1z = gOverEspring;
-          }
+          a1y = 1. / ( 2. * ( 1. + nu ) );
       }
   }
 

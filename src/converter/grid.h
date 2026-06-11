@@ -157,6 +157,7 @@ private:
         std::vector< int >dofs;
         std::vector< double >values;
         int setID = -1; // NEW
+        int ltf   = 1;  ///< load-time function id; override via `ltf <id>` on #@BC.
     };
 
     std::vector< BCRequest >bcRequests;
@@ -429,6 +430,7 @@ private:
     std::vector< double >edgeWidth;
 
     std::vector< int >loadNodeSetID;  // size = nodes.size()
+    std::vector< int >loadNodeLtf;    // size = nodes.size(); LTF id per loaded node
     std::vector< double >loadFx, loadFy, loadFz;
 
 

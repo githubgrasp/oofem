@@ -140,8 +140,8 @@ Consumed by the T3D writers (`giveOutputT3d` / `writeT3dNodesOofem` / `writeT3dE
 
 | Directive | Arguments | Purpose |
 |-----------|-----------|---------|
-| `#@BC` | `<entType> <entID> <dofMask> <values…>` | Dirichlet BC on a T3D entity. Generates `BoundaryCondition` records and a matching set. |
-| `#@LOAD` | `<entType> <entID> <q> [ltf <ltfID>]` | Distributed load on a T3D entity. Emitted via `#@INSERT_LIVELOADS`. |
+| `#@BC` | `<entType> <entID> <dofMask> <values…> [ltf <ltfID>]` | Dirichlet BC on a T3D entity. Generates `BoundaryCondition` records and a matching set. `ltf` selects the OOFEM load-time function id (defaults to 1, which conventionally is the user's `ConstantFunction 1`). |
+| `#@LOAD` | `<entType> <entID> q <q> [ltf <ltfID>]` | Distributed load on a T3D entity. Emitted via `#@INSERT_LIVELOADS`. `ltf` selects the OOFEM load-time function id (defaults to 1). Distinct `#@LOAD` directives that target overlapping node sets must use the same `ltf`, since each emitted `NodalLoad` carries a single LTF — the last load touching a node wins. |
 | `#@DIR` | `<entID> <dx> <dy> <dz>` | Direction vector associated with an entity (used for shell/beam orientation). |
 | `#@THICKNESS` | `<entID> <t>` | Shell/plate thickness for an entity. |
 | `#@3DSECTION` | `<args>` | 3D section data for shell/beam elements. |
