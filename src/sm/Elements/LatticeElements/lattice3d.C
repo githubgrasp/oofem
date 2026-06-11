@@ -577,6 +577,12 @@ Lattice3d :: initializeFrom(InputRecord &ir)
         OOFEM_ERROR("shellnormal must have exactly 3 components");
     }
 
+    boundaryCoords.resize(0);
+    IR_GIVE_OPTIONAL_FIELD(ir, boundaryCoords, _IFT_Lattice3d_boundarycoords);
+    if ( boundaryCoords.giveSize() % 3 != 0 ) {
+        OOFEM_ERROR("boundarycoords must have a multiple of 3 components (N vertices × 3 coords)");
+    }
+
 //Introduce here the geometry calculation
 //computeGeometryProperties();
 

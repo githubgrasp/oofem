@@ -102,6 +102,20 @@ public:
     void writeCellVarsCross(ExportRegion &vtkPiece);
 
     void setupVTKPieceCross(ExportRegion &vtkPiece, TimeStep *tStep, Set& region);
+    void exportCellVarsCross(ExportRegion &vtkPiece, Set &region, IntArray &cellVarsToExport, TimeStep *tStep);
+
+    // Per-cell role tag for the cross piece: 0 = A-side, 1 = B-side, 2 = midline, -1 = point fallback.
+    IntArray polygonRoleCross;
+
+    // Per-vertex displacement on the cross piece (numNodes x 3); deformed = ref + displacement.
+    FloatMatrix displacementCross;
+
+    // Per-cell synthetic-geometry flag (1 = synthesised, 0 = real polygon vertices from converter).
+    IntArray syntheticCross;
+
+    // Per-region-element: layout info needed by exportCellVarsCross (cells per element,
+    // verts per cell, strip count, kind 0/1/2/3, cap counts for kind 1).
+    IntArray cellsPerElemCross, vertsPerCellCross, nStripsPerElemCross, elemKindCross, capCountCross;
 
     int initRegionNodeNumbering(ExportRegion& piece, Domain *domain, TimeStep *tStep, Set& region) override;
 

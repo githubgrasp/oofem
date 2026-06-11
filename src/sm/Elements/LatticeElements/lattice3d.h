@@ -46,6 +46,7 @@
 #define _IFT_Lattice3d_couplingnumber "couplingnumber"
 #define _IFT_Lattice3d_pressures "pressures"
 #define _IFT_Lattice3d_shellnormal "shellnormal"
+#define _IFT_Lattice3d_boundarycoords "boundarycoords"
 //@}
 
 namespace oofem {
@@ -72,6 +73,11 @@ protected:
 
     /// Shell surface normal in global coordinates; presence flags the element as a shell.
     FloatArray shellNormal;
+
+    /// Optional extra boundary vertices (3*N coords) supplied by the converter for closure
+    /// polygons at the specimen boundary (e.g. specimen-corner vertices). Read only by the VTK
+    /// export module; doesn't affect FE computation.
+    FloatArray boundaryCoords;
 
     // Rectangular cross-section dimensions in local frame; set in computeGeometryProperties.
     double shellH = 0.;
@@ -133,6 +139,12 @@ public:
 
     /// True if shellnormal was supplied (element is tagged as a shell).
     bool isShellElement() const { return shellNormal.giveSize() == 3; }
+
+    /// Shell normal in world frame (size 3 for shell elements, 0 otherwise).
+    const FloatArray &giveShellNormal() const { return shellNormal; }
+
+    /// Optional extra boundary vertices supplied by converter (size 3*N, 0 if not supplied).
+    const FloatArray &giveBoundaryCoords() const { return boundaryCoords; }
 
     /// True if hybrid layered shell mode is active (shell + nLayers > 1 + rectangle).
     bool isHybridShell();
