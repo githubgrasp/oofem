@@ -148,6 +148,12 @@ void Cylinder::findOutsiders(oofem::FloatArray &boundaries)
         this->grid->giveVoronoiLine(i + 1)->setOutsideFlag(outsideFlag);
     }
 
+    // Project Voronoi cross-sections of boundary-crossing Delaunay lines onto the cylinder surface.
+    for ( int i = 0; i < this->grid->giveNumberOfDelaunayLines(); i++ ) {
+        if ( this->grid->giveDelaunayLine(i + 1)->giveOutsideFlag() == 3 ) {
+            this->modifyVoronoiCrossSection(i + 1);
+        }
+    }
 
     return;
 }

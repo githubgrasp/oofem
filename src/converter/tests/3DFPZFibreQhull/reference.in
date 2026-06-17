@@ -429,7 +429,7 @@ lattice3D 382 nodes 2 893 894 crossSect 2 mat 2
 latticelink3D 383 nodes 2 892 217 crossSect 3 mat 3 length 1.417051e-02 diameter 3.800000e-05 dirvector 3 0.000000e+00 1.000000e+00 0.000000e+00 L_end 7.085256e-03
 latticelink3D 384 nodes 2 893 730 crossSect 3 mat 3 length 7.089991e-03 diameter 3.800000e-05 dirvector 3 0.000000e+00 1.000000e+00 0.000000e+00 L_end 1.228449e-02
 latticelink3D 385 nodes 2 894 487 crossSect 3 mat 3 length 8.739497e-03 diameter 3.800000e-05 dirvector 3 0.000000e+00 1.000000e+00 0.000000e+00 L_end 4.369748e-03
-latticecs 1 material 1 shape 2
+latticecs 1 material 1
 latticecs 2 material 2 shape 1 radius 1.9e-5
 latticecs 3 material 3
 latticedamage 1 talpha 0. d 0. e 30.e9 e0 100.e6 stype 3 wf 40.e6

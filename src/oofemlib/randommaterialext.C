@@ -107,10 +107,17 @@ RandomMaterialExtensionInterface :: _generateStatusVariables(GaussPoint *gp) con
     RandomMaterialStatusExtensionInterface *status = static_cast< RandomMaterialStatusExtensionInterface * >
                                                      ( matStat->giveInterface(RandomMaterialStatusExtensionInterfaceType) );
 
+    Domain *d = gp->giveElement()->giveDomain();
+    const int nFunc = d->giveNumberOfFunctions();
     for ( int i = 1; i <= size; i++ ) {
+        const int gen = randomVariableGenerators.at(i);
+        if ( gen < 1 || gen > nFunc ) {
+            OOFEM_ERROR("randgen entry %d references LoadTimeFunction %d, but only %d functions are declared (valid range 1..%d).",
+                        i, gen, nFunc, nFunc);
+        }
         FloatArray globalCoordinates;
         if ( gp->giveElement()->computeGlobalCoordinates(globalCoordinates, gp->giveSubPatchCoordinates() ) ) {
-            Function *f = gp->giveElement()->giveDomain()->giveFunction(randomVariableGenerators.at(i) );
+            Function *f = d->giveFunction(gen);
             value = f->evaluate({{ "x", globalCoordinates } });
             status->_setProperty(randVariables.at(i), value);
         } else {

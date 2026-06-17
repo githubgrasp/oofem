@@ -4634,9 +4634,9 @@ lattice3D 3949 nodes 2 655 665 crossSect 1 mat 1 polycoords 12 2.663473e-02 2.54
 lattice3D 3950 nodes 2 657 666 crossSect 1 mat 1 polycoords 15 1.709680e-04 1.767119e-02 -3.201203e-02 -1.086852e-03 2.659242e-02 -2.149458e-02 4.505272e-03 2.988108e-02 -2.871597e-02 6.136435e-03 2.895859e-02 -3.255458e-02 4.981827e-03 2.489470e-02 -3.417945e-02
 lattice3D 3951 nodes 2 663 669 crossSect 1 mat 1 polycoords 15 -8.695358e-03 2.379503e-03 -4.790131e-02 -8.039021e-03 8.913886e-04 -4.817840e-02 -6.691476e-03 9.230228e-05 -4.106427e-02 -7.758727e-03 2.517168e-03 -4.059639e-02 -9.092336e-03 3.357539e-03 -4.746822e-02
 lattice3D 3952 nodes 2 663 673 crossSect 1 mat 1 polycoords 15 -1.176461e-02 -1.314197e-02 -4.221951e-02 -1.237455e-02 -1.352567e-02 -4.426353e-02 -1.484229e-02 -1.327780e-02 -4.516043e-02 -2.383983e-02 -1.038804e-02 -4.029679e-02 -1.685227e-02 -1.080772e-02 -3.660148e-02
-latticecs 1 material 1 shape 2
-latticecs 2 material 2 shape 2
-latticecs 3 material 3 shape 2
+latticecs 1 material 1
+latticecs 2 material 2
+latticecs 3 material 3
 latticeplastdam 1 d 0 talpha 0. calpha 0. e 30.e9 ft 3.e6 fc 30.e6 wf 50.e-6 ahard 1.e-3
 latticeplastdam 2 d 0 talpha 0. calpha 0. e 300.e9 ft 1.e16 fc 30.e16 wf 15.4e+6 ahard 1.e-3
 latticeplastdam 3 d 0 talpha 0. calpha 0.15e-3 e 30.e9 a1 0.001 ft 3.e6 fc 30.e6 wf 50.e-6 ahard 1.e-3

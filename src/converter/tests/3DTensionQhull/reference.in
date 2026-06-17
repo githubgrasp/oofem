@@ -2403,8 +2403,8 @@ lattice3D 2032 nodes 2 345 359 crossSect 1 mat 1 polycoords 15 1.524898e-02 3.02
 lattice3D 2033 nodes 2 347 354 crossSect 1 mat 1 polycoords 15 3.479166e-02 3.156384e-02 3.507935e-02 3.624956e-02 2.519167e-02 3.967604e-02 3.567702e-02 2.516552e-02 3.969899e-02 3.155386e-02 2.937777e-02 3.668268e-02 3.366605e-02 3.171657e-02 3.497686e-02
 lattice3D 2034 nodes 2 350 358 crossSect 1 mat 1 polycoords 9 4.347017e-02 6.182743e-02 1.268793e-02 4.340128e-02 6.134348e-02 1.195410e-02 4.273786e-02 6.180381e-02 1.264298e-02
 lattice3D 2035 nodes 2 356 360 crossSect 1 mat 1 polycoords 18 1.132585e-02 4.081635e-02 2.806766e-02 1.103254e-02 4.625394e-02 2.582761e-02 1.244916e-02 4.814504e-02 2.779328e-02 1.423608e-02 4.393025e-02 3.234832e-02 1.363234e-02 4.103443e-02 3.216776e-02 1.298930e-02 4.053281e-02 3.116330e-02
-latticecs 1 material 1 shape 2
-latticecs 2 material 2 shape 2
+latticecs 1 material 1
+latticecs 2 material 2
 latticeplastdam 1 d 0 talpha 0. calpha 0. e 50.46e9 a1 0.215 ft 2.44e6 fc 30.e6 wf 50.e-6 ahard 1.e-3 angle1 0.5 flow 0.25
 latticelinearelastic 2 d 0 talpha 0. calpha 0. e 50.46e9 a1 0.215
 BoundaryCondition 1 loadTimeFunction 1 dofs 6 1 2 3 4 5 6 values 6 0 0 0 0 0 0 set 1

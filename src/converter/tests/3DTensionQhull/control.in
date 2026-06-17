@@ -7,8 +7,8 @@ gpexportmodule vars 2 46 139 tstep_all
 domain 3dLattice
 OutputManager tstep_all dofman_output { #@CTL1 #@CTL2 }
 ncrosssect 2 nmat 2 nbc 2 nic 0 nltf 2 nset 2
-latticecs 1 material 1 shape 2
-latticecs 2 material 2 shape 2
+latticecs 1 material 1
+latticecs 2 material 2
 latticeplastdam 1 d 0 talpha 0. calpha 0. e 50.46e9 a1 0.215 ft 2.44e6 fc 30.e6 wf 50.e-6 ahard 1.e-3 angle1 0.5 flow 0.25
 latticelinearelastic 2 d 0 talpha 0. calpha 0. e 50.46e9 a1 0.215
 BoundaryCondition 1 loadTimeFunction 1 dofs 6 1 2 3 4 5 6 values 6 0 0 0 0 0 0 set 1

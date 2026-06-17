@@ -6,9 +6,9 @@ gpexportmodule vars 2 46 139 tstep_all
 domain 3dLattice
 OutputManager tstep_all dofman_output { #@CTL1 #@CTL2 }
 ncrosssect 3 nmat 4 nbc 3 nic 0 nltf 4 nset 2
-latticecs 1 material 1 shape 2
-latticecs 2 material 2 shape 2
-latticecs 3 material 3 shape 2
+latticecs 1 material 1
+latticecs 2 material 2
+latticecs 3 material 3
 mps 4 d 0. lattice a1 0.297 a2 1.e-12 a3 1 talpha 0. referencetemperature 296. mode 1 q1 1.26403980927102E-11 q2 8.99822274579516E-11 q3 1.63092787267537E-12 q4 3.51199279469883E-12 stiffnessfactor 1. timefactor 1. lambda0 1. begoftimeofinterest 1.e-8 endoftimeofinterest 100000. relMatAge 28. CoupledAnalysisType 0
 latticeplasticitydamageviscoelastic 1 d 0 talpha 0. viscomat 4 calpha 0. e 45.91e9 a1 0.297 a2 1.e-12 a3 1 ft 2.35e6 fc 30.e6 wf 20.e-6 ahard 1.e-3 angle1 0.5 flow 0.25 timefactor 1. iter 100 tol 1.e-6 timedepfracturing fcm28 30 fib_s 0.25 stiffnessfactor 1. randvars 2 806 807 randgen 2 4 4
 latticelinearelastic 2 d 0 talpha 0. calpha 0. e 300e10
@@ -31,7 +31,7 @@ Set 2 nodes 1 #@CTL2
 #@mesher qhull
 #@diam 4.e-3
 #@perflag 3 0 0 0
-#@prism 1 box 6 0. -0.075 -0.075 10.e-3 0.075 0.075 refine 1.
+#@cylinder 1 line 6 0. 0. 0. 10.e-3 0. 0. radius 75.e-3 refine 1.
 #@cylinderinclusion 1 line 6 0. 0. 0. 10.e-3 0. 0. radius 8.e-3 itz 0.1e-3 inside 2 interface 3
 #@bodyload 3 3
 #@controlvertex 1 coords 3 0.     0. 0.
