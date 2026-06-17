@@ -1864,12 +1864,32 @@ std::set < int > Grid::collectBCNodes(const BCRequest &bc) const
 {
     std::set < int > result;
 
-    // interior nodes
+    // interior nodes (classified by t3d to the entity itself).
     auto tIt = entityNodes.find(bc.entType);
     if ( tIt != entityNodes.end() ) {
         auto idIt = tIt->second.find(bc.entID);
         if ( idIt != tIt->second.end() ) {
             result.insert(idIt->second.begin(), idIt->second.end() );
+        }
+    }
+
+    // For 2D entities (surface=3, patch=5, shell=6) the boundary curve nodes and
+    // their endpoint vertices are classified to the curve/vertex, not the patch,
+    // so the lookup above misses them. Walk the triangles classified to the entity
+    // to also pick up every node that touches the patch's mesh (mirrors the LOAD
+    // path in prepareLiveLoadSets via computeNodalAreasOnTriEntity).
+    if ( bc.entType == 3 || bc.entType == 5 || bc.entType == 6 ) {
+        auto trIt = entityTris.find(bc.entType);
+        if ( trIt != entityTris.end() ) {
+            auto trIdIt = trIt->second.find(bc.entID);
+            if ( trIdIt != trIt->second.end() ) {
+                for ( int ti : trIdIt->second ) {
+                    const Tri &tr = tris [ ti ];
+                    result.insert(tr.n1);
+                    result.insert(tr.n2);
+                    result.insert(tr.n3);
+                }
+            }
         }
     }
 

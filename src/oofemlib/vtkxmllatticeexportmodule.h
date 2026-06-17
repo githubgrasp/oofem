@@ -37,12 +37,16 @@
 
 #include "vtkxmlexportmodule.h"
 #include "floatmatrix.h"
+#include <vector>
+#include <string>
 
 
 ///@name Input fields for VTK XML Lattice export module
 //@{
 #define _IFT_VTKXMLLatticeExportModule_Name "vtkxmllattice"
 #define _IFT_VTKXMLLatticeExportModule_cross "cross"
+// crossstep N: write a cross VTU every N-th line-VTU write (1 = same cadence, default).
+#define _IFT_VTKXMLLatticeExportModule_crossstep "crossstep"
 //@}
 
 namespace oofem {
@@ -67,7 +71,20 @@ protected:
 
     bool crossSectionExportFlag;
 
+    // Thin cross-VTU writes relative to line-VTU writes. crossOutputStep = 1 means same cadence.
+    int crossOutputStep = 1;
+    int crossOutputCounter = 0;
+
+    // PVD collection buffers: one for the line VTUs, one for the cross VTUs.
+    std::vector< std::string > pvdBufferLine;
+    std::vector< std::string > pvdBufferCross;
+
     void giveSwitches(IntArray &answer, int location);
+
+    // Append a DataSet entry to the relevant pvd buffer and rewrite the .pvd file.
+    void appendPvdEntryLine(TimeStep *tStep, const std::string &vtuFilename);
+    void appendPvdEntryCross(TimeStep *tStep, const std::string &vtuFilename);
+    void writePvdCollection(const std::string &pvdFilename, const std::vector< std::string > &buffer);
 
 public:
 

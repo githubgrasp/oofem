@@ -376,6 +376,16 @@ Lattice3d :: computeConstitutiveMatrixAt(FloatMatrix &answer, MatResponseMode rM
 void
 Lattice3d :: computeStressVector(FloatArray &answer, const FloatArray &strain, GaussPoint *gp, TimeStep *tStep)
 {
+    // Hybrid layer IPs see only the axial strain: shears/torsion/in-plane bending
+    // act at the centroid IP, so feeding them here would contaminate the scalar
+    // damage variable (LatticeDamage equiv strain mixes axial + transverse shear).
+    if ( this->isLayerIp(gp) ) {
+        FloatArray axialOnly(6);
+        axialOnly.zero();
+        axialOnly.at(1) = strain.at(1);
+        answer = static_cast< LatticeCrossSection * >( this->giveCrossSection() )->giveLatticeStress3d(axialOnly, gp, tStep);
+        return;
+    }
     answer = static_cast< LatticeCrossSection * >( this->giveCrossSection() )->giveLatticeStress3d(strain, gp, tStep);
 }
 
@@ -577,11 +587,6 @@ Lattice3d :: initializeFrom(InputRecord &ir)
         OOFEM_ERROR("shellnormal must have exactly 3 components");
     }
 
-    boundaryCoords.resize(0);
-    IR_GIVE_OPTIONAL_FIELD(ir, boundaryCoords, _IFT_Lattice3d_boundarycoords);
-    if ( boundaryCoords.giveSize() % 3 != 0 ) {
-        OOFEM_ERROR("boundarycoords must have a multiple of 3 components (N vertices × 3 coords)");
-    }
 
 //Introduce here the geometry calculation
 //computeGeometryProperties();
@@ -668,17 +673,27 @@ void
   
   if (cs->giveShape() == 1) {
     double r = cs->giveRadius();
-    
-    this->area = M_PI * r * r;
-    this->I1   = M_PI * pow(r, 4) / 4.0;
-    this->I2   = this->I1;
-    this->Ip   = M_PI * pow(r, 4) / 2.0;
-    // Saint-Venant torsion constant equals the polar moment for circular sections.
-    this->J    = this->Ip;
-    
-    const double k = 0.9;
-    this->shearArea1 = k * this->area;
-    this->shearArea2 = k * this->area;
+    // Per-property fallback: each cross-section property is taken from the LatticeCS
+    // dictionary if the user supplied it (> 0); otherwise it is derived from radius.
+    // This lets users override the circular-section defaults without losing the shape tag.
+    const double rArea  = M_PI * r * r;
+    const double rI     = M_PI * pow(r, 4) / 4.0;
+    const double rIp    = M_PI * pow(r, 4) / 2.0;
+    const double kShear = 0.9;
+    // LatticeCrossSection adds a give(int, GaussPoint*) overload that hides the inherited
+    // CrossSection::give(CrossSectionProperty, GaussPoint*). Call the base version explicitly,
+    // both to dodge the hidden-overload bug and because the dictionary lookup is gp-independent.
+    auto pick = [&](CrossSectionProperty key, double fallback) {
+        double v = cs->CrossSection::give(key, (GaussPoint *) nullptr);
+        return ( v > 0.0 ) ? v : fallback;
+    };
+    this->area       = pick(CS_Area, rArea);
+    this->I1         = pick(CS_InertiaMomentY, rI);
+    this->I2         = pick(CS_InertiaMomentZ, rI);
+    this->J          = pick(CS_TorsionConstantX, rIp);
+    this->Ip         = rIp;
+    this->shearArea1 = pick(CS_ShearAreaY, kShear * this->area);
+    this->shearArea2 = pick(CS_ShearAreaZ, kShear * this->area);
     
     FloatArray s(3), t(3), ref(3);
     ref.resize(3);
