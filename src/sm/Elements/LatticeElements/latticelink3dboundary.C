@@ -351,8 +351,11 @@ LatticeLink3dBoundary :: giveInternalForcesVector(FloatArray &answer, TimeStep *
 
     bt.beTranspositionOf(b);
     if ( useUpdatedGpRecord == 1 ) {
-        TotalStressVector = ( ( StructuralMaterialStatus * ) mat->giveStatus(integrationRulesArray [ 0 ]->getIntegrationPoint(0) ) )
-                            ->giveStressVector();
+        // Lattice materials produce a LatticeMaterialStatus, which does NOT
+        // inherit from StructuralMaterialStatus. Fetch the stored 6-component
+        // lattice stress directly.
+        TotalStressVector = static_cast< LatticeMaterialStatus * >( mat->giveStatus(integrationRulesArray [ 0 ]->getIntegrationPoint(0) ) )
+                            ->giveLatticeStress();
     } else
     if ( !this->isActivated(tStep) ) {
         strain.resize(StructuralMaterial :: giveSizeOfVoigtSymVector(integrationRulesArray [ 0 ]->getIntegrationPoint(0)->giveMaterialMode() ) );
