@@ -928,7 +928,12 @@ void CylindricalALM :: convertHPCMap()
             int idofid = calm_HPCDmanDofSrcArray.at(2 * i);
             if ( inode == jglobnum ) {
                 if ( parallel_context->isLocal( dman.get() ) ) {
-                    indirectMap.at(++count) = dman->giveDofWithID(idofid)->giveEquationNumber(dn);
+                    Dof *dof = dman->giveDofWithID(idofid);
+                    if ( dof == nullptr ) {
+                        OOFEM_ERROR("HPC references DOF id %d on node %d but that node has no such DOF — check the dofidmask on the periodic control node",
+                                    idofid, inode);
+                    }
+                    indirectMap.at(++count) = dof->giveEquationNumber(dn);
                     if ( calm_Control == calml_hpc ) {
                         weights.at(count) = calm_HPCDmanWeightSrcArray.at(i);
                     }

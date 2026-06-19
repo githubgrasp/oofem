@@ -3835,11 +3835,13 @@ Grid::give3DSMOutput(const std::string &fileName)
                     << coords.at(1) << " " << coords.at(2) << " " << coords.at(3) << "\n";
             }
 
-            // Periodic control node.
+            // Periodic control node. Carries the six macroscopic-strain DOFs
+            // {E_xx, E_yy, E_zz, G_yz, G_xz, G_xy} that lattice3Dboundary /
+            // latticelink3Dboundary expect on their third (control) node.
             if ( periodic ) {
                 out << "node " << ctlNode << " coords 3 " << std::scientific
                     << specimenDim.at(1) << " " << specimenDim.at(2) << " " << specimenDim.at(3)
-                    << " load 1 2\n";
+                    << " dofidmask 6 31 32 33 40 41 42 load 1 2\n";
             }
 
             int elemCounter = 0;
