@@ -112,7 +112,9 @@ namespace oofem {
                     e->integrateTerm_c(contrib, *this->term, ir, tstep); // @todo IR
                     contrib.times(this->factor * factor2);
                     // assemble
-                    dest.assemble (contrib, locr);
+                    if (contrib.isNotEmpty()) {
+                        dest.assemble (contrib, locr);
+                    }
                     if ( eNorms ) {
                         eNorms->assembleSquared(contrib, dofIDs);
                     }
