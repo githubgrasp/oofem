@@ -54,6 +54,7 @@
 #ifdef __SM_MODULE
  #include "../sm/Elements/LatticeElements/latticestructuralelement.h"
  #include "../sm/Elements/LatticeElements/lattice3d.h"
+ #include "../sm/Elements/LatticeElements/lattice3dboundary.h"
  #include "../sm/Elements/LatticeElements/latticelink3d.h"
  #include "../sm/Elements/LatticeElements/latticelink3dboundary.h"
  #include "../sm/CrossSections/latticecrosssection.h"
@@ -268,8 +269,17 @@ int synthesiseElementPolygon(Element *el, FloatArray &polyCoords)
     if ( el->giveNumberOfDofManagers() < 2 ) return 0;
     // Link/bond elements: render as line, not as a synthesised cross-section.
     if ( dynamic_cast< LatticeLink3d * >( el ) || dynamic_cast< LatticeLink3dBoundary * >( el ) ) return 0;
-    const FloatArray &cA = el->giveNode(1)->giveCoordinates();
-    const FloatArray &cB = el->giveNode(2)->giveCoordinates();
+    // For Lattice3dBoundary the raw coords of node 2 sit on the opposite face (in-cell
+    // mirror); using them would put the synthesised polygon's midpoint far from either
+    // node and orient the element frame across the cell. Shift to true geometric coords.
+    FloatArray cA, cB;
+    if ( dynamic_cast< Lattice3dBoundary * >( el ) ) {
+        el->recalculateCoordinates(1, cA);
+        el->recalculateCoordinates(2, cB);
+    } else {
+        cA = el->giveNode(1)->giveCoordinates();
+        cB = el->giveNode(2)->giveCoordinates();
+    }
     FloatArray mid(3);
     for ( int i = 1; i <= 3; ++i ) mid.at(i) = 0.5 * ( cA.at(i) + cB.at(i) );
     FloatArray ex, ey, ez;
@@ -751,8 +761,21 @@ VTKXMLLatticeExportModule::setupVTKPieceCross(ExportRegion &vtkPieceCross, TimeS
 
             Node *nA = el->giveNode(1);
             Node *nB = el->giveNumberOfDofManagers() >= 2 ? el->giveNode(2) : nA;
-            const FloatArray &cA = nA->giveCoordinates();
-            const FloatArray &cB = nB->giveCoordinates();
+            // For Lattice3dBoundary the second node sits on the opposite face of the periodic
+            // cell (its stored coords are the in-cell mirror), so the polygon ends up
+            // rigid-body-transformed to a position spanning the cube. recalculateCoordinates
+            // shifts each end back to its true geometric position.
+            FloatArray cA, cB;
+#ifdef __SM_MODULE
+            if ( dynamic_cast< Lattice3dBoundary * >( el ) ) {
+                el->recalculateCoordinates(1, cA);
+                el->recalculateCoordinates(2, cB);
+            } else
+#endif
+            {
+                cA = nA->giveCoordinates();
+                cB = nB->giveCoordinates();
+            }
             for ( int i = 1; i <= 3; ++i ) {
                 nodeRefA.at(i) = cA.at(i);
                 nodeRefB.at(i) = cB.at(i);
@@ -948,8 +971,17 @@ VTKXMLLatticeExportModule::setupVTKPieceCross(ExportRegion &vtkPieceCross, TimeS
             const int N = vpc;
             Node *nA = el->giveNode(1);
             Node *nB = el->giveNode(2);
-            const FloatArray &cA = nA->giveCoordinates();
-            const FloatArray &cB = nB->giveCoordinates();
+            FloatArray cA, cB;
+#ifdef __SM_MODULE
+            if ( dynamic_cast< Lattice3dBoundary * >( el ) ) {
+                el->recalculateCoordinates(1, cA);
+                el->recalculateCoordinates(2, cB);
+            } else
+#endif
+            {
+                cA = nA->giveCoordinates();
+                cB = nB->giveCoordinates();
+            }
             for ( int i = 1; i <= 3; ++i ) {
                 nodeRefA.at(i) = cA.at(i);
                 nodeRefB.at(i) = cB.at(i);
@@ -1101,10 +1133,23 @@ VTKXMLLatticeExportModule::setupVTKPieceCross(ExportRegion &vtkPieceCross, TimeS
             }
         } else if ( kind == 2 ) {
             // Line (bond link): VTK_LINE between the two nodes, each endpoint with its own kinematics.
+            // For LatticeLink3dBoundary, node 2 (or 1) may be a periodic-mirror partner whose
+            // raw coordinates sit on the opposite face of the cell; recalculateCoordinates shifts
+            // it back to its true geometric position so the VTK line is drawn along the fibre
+            // rather than spanning the whole cell.
             Node *nA = el->giveNode(1);
             Node *nB = el->giveNode(2);
-            const FloatArray &cA = nA->giveCoordinates();
-            const FloatArray &cB = nB->giveCoordinates();
+            FloatArray cA, cB;
+#ifdef __SM_MODULE
+            if ( dynamic_cast< LatticeLink3dBoundary * >( el ) ) {
+                el->recalculateCoordinates(1, cA);
+                el->recalculateCoordinates(2, cB);
+            } else
+#endif
+            {
+                cA = nA->giveCoordinates();
+                cB = nB->giveCoordinates();
+            }
             giveNodeKinematics(nA, tStep, dispA, rotA);
             giveNodeKinematics(nB, tStep, dispB, rotB);
 
