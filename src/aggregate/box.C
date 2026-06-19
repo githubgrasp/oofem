@@ -165,6 +165,13 @@ void Box::writePackingFile() const
     for ( const auto &inc : realInclusions ) {
         inc->writeTo(out);
     }
+    // Periodic ghost copies — same record format as their parents, sharing
+    // the parent id. Downstream consumers (the OOFEM converter) renumber
+    // when reading, so duplicate ids are not a collision; this matches the
+    // legacy 27-cell-stencil packing format the Matlab pipeline produced.
+    for ( const auto &inc : ghostInclusions ) {
+        inc->writeTo(out);
+    }
 }
 
 } // namespace aggregate
