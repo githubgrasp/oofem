@@ -9,6 +9,7 @@ set(AGGREGATE_SOURCES
     dlim.C
     gradingcurve.C
     placer.C
+    stats.C
     vtu.C
    )
 

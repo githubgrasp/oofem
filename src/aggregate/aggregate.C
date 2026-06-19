@@ -10,6 +10,7 @@
 #include "dlim.h"
 #include "gradingcurve.h"
 #include "placer.h"
+#include "stats.h"
 #include "vtu.h"
 
 namespace {
@@ -87,6 +88,8 @@ int main(int argc, char *argv[])
         }
         box.writePackingFile();
         std::cout << "Packing written to " << box.giveOutputFileName() << "\n";
+        std::mt19937 statsRng(box.giveRandomSeed() ^ 0x57415453u);
+        aggregate::printStats(box, statsRng, std::cout);
         return EXIT_SUCCESS;
     }
 
@@ -141,5 +144,10 @@ int main(int argc, char *argv[])
         aggregate::writeVtu(box, box.giveVtuFileName());
         std::cout << "VTU written to " << box.giveVtuFileName() << "\n";
     }
+
+    // Stats RNG is independent of the placer's so the diagnostic output is
+    // reproducible without altering placement when stats are toggled on/off.
+    std::mt19937 statsRng(box.giveRandomSeed() ^ 0x57415453u);
+    aggregate::printStats(box, statsRng, std::cout);
     return EXIT_SUCCESS;
 }
