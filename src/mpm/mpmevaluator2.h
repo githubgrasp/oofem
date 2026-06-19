@@ -568,7 +568,9 @@ public:
                         O.value = FloatMatrix(std::get<double>(L.value) * std::get<FloatMatrix>(R.value)); O.type = VarSlot::Type::MATRIX;
                     } else if (L.type == VarSlot::Type::MATRIX && R.type == VarSlot::Type::MATRIX) {
                         const auto &m1 = std::get<FloatMatrix>(L.value), &m2 = std::get<FloatMatrix>(R.value);
-                        if (m1.cols() != m2.rows()) throw std::runtime_error("Matrix Multiplication size mismatch");
+                        if (m1.cols() != m2.rows()) {
+                            throw std::runtime_error("Matrix Multiplication size mismatch");
+                        }
                         auto res = m1 * m2;
                         //if (res.rows() == 1 && res.cols() == 1) { O.value = res(0,0); O.type = VarSlot::Type::SCALAR; }
                         //else { O.value = res; O.type = VarSlot::Type::MATRIX; }

@@ -776,7 +776,9 @@ class SymbolicTerm : public GenericCellTerm {
         FloatMatrix help;
         _evaluateVM(help, cell, gp, tStep, rhsExpressionContext);
         // convert result to array
-        help.copyColumn(answer, 1);
+        if (help.isNotEmpty()) {
+            help.copyColumn(answer, 1);
+        }
     }
     void getDimensions(Element& cell) const override {}
 
