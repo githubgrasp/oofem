@@ -1066,7 +1066,13 @@ void Prism::findOutsiders(oofem::FloatArray &boundaries)
                                 newCoords.at(n + 1) = coords.at(n + 1) - switches.at(n + 1) * specimenDimension.at(n + 1);
                             }
 
-                            periodicNode = ( Fibre::findNearestReinforcementNode(newCoords, grid, 2 * 10 * grid->giveTol() ) )->giveNumber();
+                            Vertex *partner = Fibre::findNearestReinforcementNode(newCoords, grid, 2 * 10 * grid->giveTol() );
+                            if ( partner == nullptr ) {
+                                // No inside partner exists; leave periodicNode at its 0 default
+                                // so the writer can detect and skip this orphan element.
+                                continue;
+                            }
+                            periodicNode = partner->giveNumber();
                             this->grid->giveReinforcementNode(nodes.at(m + 1) )->setPeriodicNode(periodicNode);
                             this->grid->giveReinforcementNode(nodes.at(m + 1) )->setLocation(location);
                             //used for the Delaunay transport model
@@ -1121,7 +1127,13 @@ void Prism::findOutsiders(oofem::FloatArray &boundaries)
                         }
 
 
-                        periodicNode = ( Fibre::findNearestReinforcementNode(newCoords, grid, 2 * 10 * grid->giveTol() ) )->giveNumber();
+                        Vertex *partner = Fibre::findNearestReinforcementNode(newCoords, grid, 2 * 10 * grid->giveTol() );
+                        if ( partner == nullptr ) {
+                            // No inside partner exists; leave periodicNode at its 0 default
+                            // so the writer can detect and skip this orphan link.
+                            continue;
+                        }
+                        periodicNode = partner->giveNumber();
                         this->grid->giveReinforcementNode(nodes.at(m + 1) )->setPeriodicNode(periodicNode);
                         this->grid->giveReinforcementNode(nodes.at(m + 1) )->setLocation(location);
                         //used for the Delaunay transport model

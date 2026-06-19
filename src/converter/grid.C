@@ -3516,19 +3516,64 @@ Grid::give3DSMOutput(const std::string &fileName)
     oofem::IntArray crossSectionNodes;
     oofem::IntArray location(2);
 
-    for ( int i = 0; i < this->giveNumberOfDelaunayVertices(); i++ ) {
+    // Compact node maps: renumber inside / on-boundary Delaunay and
+    // reinforcement vertices to consecutive ids so the emitted node list is
+    // dense (OOFEM's MapBasedEntityRenumberingFunctor requires every
+    // referenced id to be defined). Periodic-partner references returned by
+    // Vertex::givePeriodicNode() are raw indices and must be remapped before
+    // use.
+    const int nDelV = this->giveNumberOfDelaunayVertices();
+    std::vector< int >nodeMap(nDelV + 1, 0);
+    int delauneyCounter = 0;
+    for ( int i = 0; i < nDelV; i++ ) {
         int flag = this->giveDelaunayVertex(i + 1)->giveOutsideFlag();
         if ( flag == 0 || flag == 2 ) {
-            numberOfNodes++;
+            nodeMap [ i + 1 ] = ++delauneyCounter;
         }
     }
+    const int nDenseDelaunay = delauneyCounter;
 
-    // Reinforcement (fibre) nodes are inside-only.
-    for ( int i = 0; i < this->giveNumberOfReinforcementNode(); i++ ) {
-        if ( this->giveReinforcementNode(i + 1)->giveOutsideFlag() == 0 ) {
-            numberOfNodes++;
+    const int nReinf = this->giveNumberOfReinforcementNode();
+    std::vector< int >reinfMap(nReinf + 1, 0);
+    int reinfCounter = 0;
+    for ( int i = 0; i < nReinf; i++ ) {
+        int flag = this->giveReinforcementNode(i + 1)->giveOutsideFlag();
+        if ( flag == 0 || flag == 2 ) {
+            reinfMap [ i + 1 ] = nDenseDelaunay + ++reinfCounter;
         }
     }
+    const int nDenseReinf = reinfCounter;
+
+    auto mapId = [ & ](int rawId) {
+        return nodeMap [ rawId ];
+    };
+    auto mapReinf = [ & ](int rawId) {
+        return reinfMap [ rawId ];
+    };
+
+    // Endpoint resolution for periodic boundary fibre beams / links: replicate
+    // the swap-to-partner the emit pass does and return the final dense id,
+    // or 0 if no valid partner exists (orphan — element must be skipped).
+    auto resolveReinfEndpoint = [ & ](int rawId) -> int {
+        int f = this->giveReinforcementNode(rawId)->giveOutsideFlag();
+        if ( f == 1 ) {
+            int partner = this->giveReinforcementNode(rawId)->givePeriodicNode();
+            if ( partner == 0 ) return 0;
+            return reinfMap [ partner ];
+        }
+        return reinfMap [ rawId ];
+    };
+    auto resolveDelaunayEndpoint = [ & ](int rawId) -> int {
+        int f = this->giveDelaunayVertex(rawId)->giveOutsideFlag();
+        if ( f == 1 ) {
+            int partner = this->giveDelaunayVertex(rawId)->givePeriodicNode();
+            if ( partner == 0 ) return 0;
+            return nodeMap [ partner ];
+        }
+        return nodeMap [ rawId ];
+    };
+
+    numberOfNodes = nDenseDelaunay + nDenseReinf;
 
     for ( int i = 0; i < this->giveNumberOfDelaunayLines(); i++ ) {
         int flag = this->giveDelaunayLine(i + 1)->giveOutsideFlag();
@@ -3551,39 +3596,48 @@ Grid::give3DSMOutput(const std::string &fileName)
     }
 
     // Fibre beam segments (lattice3D / lattice3Dboundary, circular cross-section).
+    // Skip orphan boundary beams whose periodic partners don't exist.
+    int skippedOrphanBeams = 0;
     for ( int i = 0; i < this->giveNumberOfLatticeBeams(); i++ ) {
         int flag = this->giveLatticeBeam(i + 1)->giveOutsideFlag();
-        if ( flag == 0 || ( periodic && flag == 2 ) ) numberOfLines++;
-    }
-
-    // Fibre/matrix coupling links (latticelink3D / latticelink3Dboundary).
-    for ( int i = 0; i < this->giveNumberOfLatticeLinks(); i++ ) {
-        int flag = this->giveLatticeLink(i + 1)->giveOutsideFlag();
-        if ( flag == 0 || ( periodic && flag == 2 ) ) numberOfLines++;
-    }
-
-    // Compact node map for non-periodic mode (renumbers inside vertices to 1..N).
-    // Periodic mode uses raw vertex indices because periodic-partner references
-    // returned by Vertex::givePeriodicNode() are raw indices.
-    const int nDelV = this->giveNumberOfDelaunayVertices();
-    std::vector< int >nodeMap(nDelV + 1, 0);
-    if ( !periodic ) {
-        int nodeCounter = 0;
-        for ( int i = 0; i < nDelV; i++ ) {
-            int flag = this->giveDelaunayVertex(i + 1)->giveOutsideFlag();
-            if ( flag == 0 || flag == 2 ) {
-                nodeMap [ i + 1 ] = ++nodeCounter;
+        if ( flag == 0 ) {
+            numberOfLines++;
+        } else if ( periodic && flag == 2 ) {
+            this->giveLatticeBeam(i + 1)->giveLocalVertices(lineNodes);
+            if ( resolveReinfEndpoint(lineNodes.at(1)) != 0 &&
+                 resolveReinfEndpoint(lineNodes.at(2)) != 0 ) {
+                numberOfLines++;
+            } else {
+                skippedOrphanBeams++;
             }
         }
     }
-    auto mapId = [ & ](int rawId) {
-        return periodic ? rawId : nodeMap [ rawId ];
-    };
 
-    // Periodic control-node id (only meaningful when periodic). Includes
-    // reinforcement-node count so the fibre case still reaches a unique id.
-    const int nReinf = this->giveNumberOfReinforcementNode();
-    const int ctlNode = nDelV + nReinf + 1;
+    // Fibre/matrix coupling links (latticelink3D / latticelink3Dboundary).
+    // Endpoint 1 is reinforcement, endpoint 2 is Delaunay.
+    int skippedOrphanLinks = 0;
+    for ( int i = 0; i < this->giveNumberOfLatticeLinks(); i++ ) {
+        int flag = this->giveLatticeLink(i + 1)->giveOutsideFlag();
+        if ( flag == 0 ) {
+            numberOfLines++;
+        } else if ( periodic && flag == 2 ) {
+            this->giveLatticeLink(i + 1)->giveLocalVertices(lineNodes);
+            if ( resolveReinfEndpoint(lineNodes.at(1)) != 0 &&
+                 resolveDelaunayEndpoint(lineNodes.at(2)) != 0 ) {
+                numberOfLines++;
+            } else {
+                skippedOrphanLinks++;
+            }
+        }
+    }
+    if ( skippedOrphanBeams + skippedOrphanLinks > 0 ) {
+        printf("give3DSMOutput: skipped %d orphan fibre boundary element(s) (%d beams, %d links) with no valid periodic partner\n",
+               skippedOrphanBeams + skippedOrphanLinks, skippedOrphanBeams, skippedOrphanLinks);
+    }
+
+    // Periodic control-node id (only meaningful when periodic). Sits after
+    // the dense Delaunay + reinforcement blocks.
+    const int ctlNode = nDenseDelaunay + nDenseReinf + 1;
     const std::string ctlPlaceholder = "#@CTLNODE";
 
     // #@CTL<id> → resolved Delaunay-vertex id from #@controlvertex definitions.
@@ -3670,18 +3724,17 @@ Grid::give3DSMOutput(const std::string &fileName)
             out << "\n";
 
             // Delaunay nodes (inside or on boundary). In periodic mode, the
-            // first inside vertex is pinned and raw vertex IDs are used.
-            // Vertices matching a #@rigidarm face are emitted as
-            // rigidarmnode slaved to the master controlvertex (except the
-            // master itself, which is kept as a regular node).
-            int compactCounter = 0;
+            // first inside vertex is pinned. Vertices matching a #@rigidarm
+            // face are emitted as rigidarmnode slaved to the master
+            // controlvertex (except the master itself, which is kept as a
+            // regular node).
             int firstFlag = 0;
             for ( int i = 0; i < nDelV; i++ ) {
                 int flag = this->giveDelaunayVertex(i + 1)->giveOutsideFlag();
                 if ( flag != 0 && flag != 2 ) continue;
 
                 this->giveDelaunayVertex(i + 1)->giveCoordinates(coords);
-                int nid = periodic ? ( i + 1 ) : ( ++compactCounter );
+                int nid = nodeMap [ i + 1 ];
 
                 // Check whether this vertex lands on any #@rigidarm face.
                 const RigidArmSpec *raMatch = nullptr;
@@ -3773,11 +3826,12 @@ Grid::give3DSMOutput(const std::string &fileName)
                 out << "\n";
             }
 
-            // Reinforcement (fibre) nodes — id = nDelV + reinforcement-index.
+            // Reinforcement (fibre) nodes — dense ids sit after the Delaunay block.
             for ( int i = 0; i < nReinf; i++ ) {
-                if ( this->giveReinforcementNode(i + 1)->giveOutsideFlag() != 0 ) continue;
+                int flag = this->giveReinforcementNode(i + 1)->giveOutsideFlag();
+                if ( flag != 0 && flag != 2 ) continue;
                 this->giveReinforcementNode(i + 1)->giveCoordinates(coords);
-                out << "node " << ( nDelV + i + 1 ) << " coords 3 " << std::scientific
+                out << "node " << reinfMap [ i + 1 ] << " coords 3 " << std::scientific
                     << coords.at(1) << " " << coords.at(2) << " " << coords.at(3) << "\n";
             }
 
@@ -3844,7 +3898,7 @@ Grid::give3DSMOutput(const std::string &fileName)
                     }
 
                     out << "lattice3Dboundary " << ++elemCounter
-                        << " nodes 3 " << lineNodes.at(1) << " " << lineNodes.at(2) << " " << ctlNode
+                        << " nodes 3 " << mapId(lineNodes.at(1)) << " " << mapId(lineNodes.at(2)) << " " << ctlNode
                         << " crossSect " << matBoundary << " mat " << matBoundary
                         << " polycoords " << ( 3 * crossSectionNodes.giveSize() );
                     for ( int m = 0; m < crossSectionNodes.giveSize(); m++ ) {
@@ -3941,13 +3995,17 @@ Grid::give3DSMOutput(const std::string &fileName)
                             lineNodes.at(m + 1) = this->giveReinforcementNode(lineNodes.at(m + 1))->givePeriodicNode();
                         }
                     }
+                    if ( lineNodes.at(1) == 0 || lineNodes.at(2) == 0 ||
+                         mapReinf(lineNodes.at(1)) == 0 || mapReinf(lineNodes.at(2)) == 0 ) {
+                        continue;
+                    }
                     out << "lattice3Dboundary " << ++elemCounter
-                        << " nodes 3 " << ( nDelV + lineNodes.at(1) ) << " " << ( nDelV + lineNodes.at(2) )
+                        << " nodes 3 " << mapReinf(lineNodes.at(1)) << " " << mapReinf(lineNodes.at(2))
                         << " " << ctlNode << " crossSect 2 mat 2"
                         << " location 2 " << location.at(1) << " " << location.at(2) << "\n";
                 } else {
                     out << "lattice3D " << ++elemCounter
-                        << " nodes 2 " << ( nDelV + lineNodes.at(1) ) << " " << ( nDelV + lineNodes.at(2) )
+                        << " nodes 2 " << mapReinf(lineNodes.at(1)) << " " << mapReinf(lineNodes.at(2))
                         << " crossSect 2 mat 2\n";
                 }
             }
@@ -3977,8 +4035,12 @@ Grid::give3DSMOutput(const std::string &fileName)
                         location.at(2) = this->giveDelaunayVertex(lineNodes.at(2))->giveLocation();
                         lineNodes.at(2) = this->giveDelaunayVertex(lineNodes.at(2))->givePeriodicNode();
                     }
+                    if ( lineNodes.at(1) == 0 || lineNodes.at(2) == 0 ||
+                         mapReinf(lineNodes.at(1)) == 0 || mapId(lineNodes.at(2)) == 0 ) {
+                        continue;
+                    }
                     out << "latticelink3Dboundary " << ++elemCounter
-                        << " nodes 3 " << ( nDelV + lineNodes.at(1) ) << " " << lineNodes.at(2)
+                        << " nodes 3 " << mapReinf(lineNodes.at(1)) << " " << mapId(lineNodes.at(2))
                         << " " << ctlNode << " crossSect 3 mat 3"
                         << " length " << linkLen << " diameter " << linkDiam
                         << " dirvector 3 " << linkDir.at(1) << " " << linkDir.at(2) << " " << linkDir.at(3)
@@ -3986,7 +4048,7 @@ Grid::give3DSMOutput(const std::string &fileName)
                         << " location 2 " << location.at(1) << " " << location.at(2) << "\n";
                 } else {
                     out << "latticelink3D " << ++elemCounter
-                        << " nodes 2 " << ( nDelV + lineNodes.at(1) ) << " " << lineNodes.at(2)
+                        << " nodes 2 " << mapReinf(lineNodes.at(1)) << " " << mapId(lineNodes.at(2))
                         << " crossSect 3 mat 3"
                         << " length " << linkLen << " diameter " << linkDiam
                         << " dirvector 3 " << linkDir.at(1) << " " << linkDir.at(2) << " " << linkDir.at(3)

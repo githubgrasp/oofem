@@ -192,20 +192,31 @@ Fibre::ofType()
 Vertex *
 Fibre::findNearestReinforcementNode(const oofem::FloatArray &coord, Grid *grid, double tol)
 {
+    // Only inside / on-boundary nodes are valid periodic partners; an outside
+    // partner points at an id the writer never emits and produces a broken
+    // boundary element. Return nullptr if no valid partner exists — the
+    // caller treats that as "no partner" and skips the orphan element.
+    auto isInside = [grid](int idx) {
+        int f = grid->giveReinforcementNode(idx)->giveOutsideFlag();
+        return f == 0 || f == 2;
+    };
+
     Vertex *bestNode = nullptr;
     oofem::FloatArray coordN;
 
-    // First pass: any node within `tol`.
+    // First pass: any inside node within `tol`.
     for ( int i = 0; i < grid->giveNumberOfReinforcementNode(); i++ ) {
+        if ( !isInside(i + 1) ) continue;
         grid->giveReinforcementNode(i + 1)->giveCoordinates(coordN);
         if ( computeDistance(coord, coordN) <= tol ) {
             return grid->giveReinforcementNode(i + 1);
         }
     }
 
-    // Fallback: nearest by distance, with a warning.
+    // Fallback: nearest inside node by distance.
     double bestDistance = std::numeric_limits< double >::infinity();
     for ( int i = 0; i < grid->giveNumberOfReinforcementNode(); i++ ) {
+        if ( !isInside(i + 1) ) continue;
         grid->giveReinforcementNode(i + 1)->giveCoordinates(coordN);
         const double d = computeDistance(coord, coordN);
         if ( d <= bestDistance ) {
@@ -213,7 +224,11 @@ Fibre::findNearestReinforcementNode(const oofem::FloatArray &coord, Grid *grid, 
             bestNode     = grid->giveReinforcementNode(i + 1);
         }
     }
-    printf("findNearestReinforcementNode: no node within tol=%e; nearest is at %e\n", tol, bestDistance);
+    if ( bestNode == nullptr ) {
+        printf("findNearestReinforcementNode: no inside reinforcement node available; orphan fibre endpoint skipped\n");
+    } else if ( bestDistance > tol ) {
+        printf("findNearestReinforcementNode: no inside node within tol=%e; nearest is at %e\n", tol, bestDistance);
+    }
     return bestNode;
 }
 
