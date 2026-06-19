@@ -167,8 +167,9 @@ void Box::writePackingFile() const
     }
     // Periodic ghost copies — same record format as their parents, sharing
     // the parent id. Downstream consumers (the OOFEM converter) renumber
-    // when reading, so duplicate ids are not a collision; this matches the
-    // legacy 27-cell-stencil packing format the Matlab pipeline produced.
+    // when reading, so duplicate ids are not a collision. Only the images
+    // for the faces a parent actually crosses are present (1 per face, 3 per
+    // edge, 7 per corner).
     for ( const auto &inc : ghostInclusions ) {
         inc->writeTo(out);
     }
