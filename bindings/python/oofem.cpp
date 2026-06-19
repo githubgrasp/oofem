@@ -818,6 +818,7 @@ PYBIND11_MODULE(oofempy, m) {
                 if (i >= (size_t) s.giveSize()) throw py::index_error();
                 return s[i];
             })
+            .def("__len__", &oofem::FloatArray::giveSize)  // Enables len(obj) in Python
             .def("__repr__",
                 [](const oofem::FloatArray &s) {
                     std::ostringstream streamObj;
@@ -1003,6 +1004,7 @@ PYBIND11_MODULE(oofempy, m) {
             .def("sort", &oofem::IntArray::sort)
             .def("zero", &oofem::IntArray::zero)
             .def("pY", &oofem::IntArray::pY)
+            .def("__len__", &oofem::IntArray::giveSize)  // Enables len(obj) in Python
             .def("__repr__",
                 [](const oofem::IntArray &s) {
                     std::string a = "<oofempy.IntArray: {";
