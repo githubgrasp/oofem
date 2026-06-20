@@ -166,6 +166,12 @@ LatticeLink3dBoundary :: computeStiffnessMatrix(FloatMatrix &answer, MatResponse
     Rtranspose.beTranspositionOf(R);
     answer.rotatedWith(Rtranspose);
 
+    //Scale by the bond interface area (= computeVolumeAround/giveLength), as in
+    //LatticeLink3d. Without this the boundary bond is ~1/area (~1e5-1e6) too stiff,
+    //acting as a near-rigid weld that over-constrains the fibre.
+    double area = this->computeVolumeAround(integrationRulesArray [ 0 ]->getIntegrationPoint(0) ) / this->giveLength();
+    answer.times(area);
+
     return;
 }
 
@@ -402,6 +408,11 @@ LatticeLink3dBoundary :: giveInternalForcesVector(FloatArray &answer, TimeStep *
     if ( this->giveRotationMatrix(R) ) {
         answer.rotatedWith(R, 'n');
     }
+
+    //Scale by the bond interface area (= computeVolumeAround/giveLength), as in
+    //LatticeLink3d::giveInternalForcesVector. Must match computeStiffnessMatrix.
+    double area = this->computeVolumeAround(integrationRulesArray [ 0 ]->getIntegrationPoint(0) ) / this->giveLength();
+    answer.times(area);
 
     return;
 }
