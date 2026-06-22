@@ -195,6 +195,12 @@ public:
     virtual double giveNormalStress() { return 0; }
 
     /**
+     * Returns the temp (current, not-yet-committed) normal stress.
+     * @return tempNormalStress
+     */
+    virtual double giveTempNormalStress() { return 0; }
+
+    /**
      * Returns the old normal stress.
      * @return oldNormalStress
      */

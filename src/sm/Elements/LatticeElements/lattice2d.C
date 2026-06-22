@@ -350,6 +350,18 @@ Lattice2d :: giveNormalStress()
     return normalStress;
 }
 
+double
+Lattice2d :: giveTempNormalStress()
+{
+    LatticeMaterialStatus *status;
+
+    IntegrationRule *iRule = this->giveDefaultIntegrationRulePtr();
+    GaussPoint *gp = iRule->getIntegrationPoint(0);
+    status = static_cast< LatticeMaterialStatus * >( gp->giveMaterialStatus() );
+
+    return status->giveTempNormalLatticeStress();
+}
+
 int
 Lattice2d :: hasBeenUpdated()
 {

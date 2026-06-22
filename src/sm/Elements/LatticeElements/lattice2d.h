@@ -78,6 +78,8 @@ public:
 
     double giveNormalStress() override;
 
+    double giveTempNormalStress() override;
+
     int hasBeenUpdated() override;
 
     double giveArea(GaussPoint *gp) override { return this->width * this->thickness; }
