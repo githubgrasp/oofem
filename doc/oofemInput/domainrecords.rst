@@ -791,6 +791,44 @@ Currently, EntType keyword can be one from
    change dynamically, as the solid part deforms. The velocities are
    obtained from coupled structural nodes.
 
+-  Lattice hydro-mechanical coupling, Neumann type (transport pressure
+   to mechanical force)
+
+   ``LatticeNeumannCoupling`` ``smnodes #(ia)`` ``tmnodes #(ia)``
+   ``direction #(ra)``
+
+   Active boundary condition coupling a transport (pore-pressure) lattice
+   to a mechanical lattice in a staggered analysis. For each mechanical
+   node listed in ``smnodes`` it reads the fluid pressure :math:`P_f`
+   from the corresponding transport node in ``tmnodes`` (in the coupled
+   transport slave problem of a ``StaggeredProblem``) and applies a nodal
+   force :math:`f = P_f\, l\, \mathbf{n}`, where :math:`l` is the distance
+   between the mechanical node and its transport counterpart and
+   :math:`\mathbf{n}` is the unit ``direction``. The ``smnodes`` and
+   ``tmnodes`` arrays must have the same length. The transport slave
+   problem is identified by the ``coupling`` field of the driving
+   ``StaggeredProblem``. Implements Approach 1 of Grassl, Fahy, Gallipoli
+   and Wheeler (2015).
+
+-  Lattice hydro-mechanical coupling, Dirichlet type (mechanical stress
+   to transport pressure)
+
+   ``LatticeDirichletCoupling`` ``couplingelements #(ia)``
+
+   Boundary condition prescribing the pore pressure :math:`P_f` at a
+   transport lattice node to the distance-weighted average of the
+   (compression-only) normal stress of the mechanical lattice elements
+   listed in ``couplingelements`` (read from the coupled mechanical slave
+   problem of a ``StaggeredProblem``). Tensile normal stress is clamped
+   to zero. The coupling is explicit (one-step lagged): the pressure
+   prescribed at step :math:`n` uses the mechanical stress of step
+   :math:`n-1`, and the first step prescribes zero. The node the
+   condition acts on is given through the associated set and ``dofs``
+   (DOF 11, :math:`P_f`), as for a standard ``BoundaryCondition``. The
+   mechanical slave problem is identified by the ``coupling`` field of the
+   driving ``StaggeredProblem``. Implements Approach 2 of Grassl, Fahy,
+   Gallipoli and Wheeler (2015).
+
 - Body loads
 
    - Volume flux (load)
