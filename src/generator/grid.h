@@ -24,6 +24,7 @@ class Inclusion;
 class GridLocalizer;
 class Refinement;
 class Notch;
+class HoleDisk;
 /**
  * Grid provides services for reading components description from
  * input stream and instantiating corresponding components acordingly. The basic Grid task are following
@@ -118,6 +119,12 @@ public:
     /// `#@notch ... delete` companion drops elements with midpoint inside.
     std::vector< Notch * >notchList;
 
+    /// Circular holes (voids) read from `#@holedisk`. Each is also stored in
+    /// `inclusionList` (so its rim/sacrificial points are generated); this list
+    /// is used by `addVertex` to reject matrix fill points strictly inside a
+    /// hole, the circular analog of `notchList`.
+    std::vector< HoleDisk * >holeList;
+
 
     /// Constructor. Creates an empty `n`-th grid.
     Grid(int n);
@@ -144,7 +151,11 @@ public:
     /// suppressed (currently: strictly inside a `#@notch` box). Random-
     /// placement loops MUST check the return value before resetting their
     /// iteration counter, otherwise rejection-by-notch causes a spin-loop.
-    bool addVertex(const oofem::FloatArray &coords);
+    /// Add a vertex at `coords`. By default the point is rejected (returns
+    /// false) if it lies strictly inside any `#@notch` box or `#@holedisk`
+    /// circle. `allowInsideHole` lets hole seeding place its own sacrificial
+    /// interior points; the notch suppression still applies.
+    bool addVertex(const oofem::FloatArray &coords, bool allowInsideHole = false);
 
     /// Dump the generated vertex list as an ASCII VTK PolyData file at
     /// `path`. Triggered by the `#@vtk` directive.
@@ -184,6 +195,11 @@ public:
     /// margin). Used by `addVertex` to suppress placement inside notches
     /// while leaving boundary points intact.
     bool insideAnyNotch(const oofem::FloatArray &coord) const;
+
+    /// True if `coord` lies strictly inside any `#@holedisk` circle (more than
+    /// the grid tolerance inside). Used by `addVertex` to keep matrix fill out
+    /// of holes — the circular analog of `insideAnyNotch`.
+    bool insideAnyHole(const oofem::FloatArray &coord) const;
 
     /// Returns the receiver's associated spatial localiser (octree).
     GridLocalizer *giveGridLocalizer();

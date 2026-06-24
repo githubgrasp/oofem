@@ -32,6 +32,7 @@ class Line;
 class Inclusion;
 class GridLocalizer;
 class Fibre;
+class HoleDisk;
 class BoundarySphere;
 class BoundaryCylinder;
 
@@ -242,6 +243,12 @@ private:
     };
     std::vector< SphereInclusionSpec >sphereInclusionSpecs;
 
+    /// Circular holes (voids), each a first-class `HoleDisk` owning its geometry
+    /// (inside/rim tests, cross-section projection). Populated by `#@holedisk`
+    /// and `#@diskinclusion ... delete`. The hole counterpart of the region
+    /// classes — cf. the generator's `HoleDisk` inclusion.
+    std::vector< HoleDisk * >holeList;
+
     /// A straight-axis cylindrical inclusion with ITZ halo. The inclusion
     /// classification uses perpendicular distance from each endpoint to the
     /// (infinite) axis through the two line points. Populated by the
@@ -356,6 +363,17 @@ private:
     /// get swapped for their periodic partner via `givePeriodicElement()`.
     /// Enabled by the `#@couplingflag` directive.
     bool emitCouplingFlag = false;
+
+    /// Hydro-mechanical boundary coupling on the inner circle of a `#@disk`
+    /// annulus (GraFahGalWhe15 thick-walled cylinder). Enabled by
+    /// `#@coupling inner ltf <id> pressure <p>`. Step 3a emits radial nodal
+    /// loads on the inner-rim mechanical nodes (a direct-pressure elastic
+    /// check); Step 3b will instead emit `LatticeNeumannCoupling` reading the
+    /// transport pressure. `couplingPressure` is the reference pressure scaled
+    /// by load-time function `couplingLtf`.
+    bool couplingEnabled = false;
+    int couplingLtf = 1;
+    double couplingPressure = 0.;
 
     /// Control-vertex definitions from `#@controlvertex <id> coords 3 x y z`.
     /// Each entry declares a specific mesh coordinate whose nearest Delaunay
@@ -635,6 +653,16 @@ public:
     /// if exactly one endpoint does; otherwise returns `defaultMat`.
     int resolveInclusionMaterial(const oofem::FloatArray &A, const oofem::FloatArray &B,
                                  int defaultMat) const;
+
+    /// True if point (x,y) lies strictly inside any `delete` (hole) disk/sphere
+    /// inclusion. Used by the region's classify() to mark such vertices outside
+    /// the domain, carving a void (reuses the standard outside-node machinery).
+    bool isInsideDeleteHole(double x, double y) const;
+
+    /// True if (x,y) lies on the rim of any `delete` (hole) disk/sphere
+    /// inclusion (within `tol` of the circle). The rim nodes are kept (they are
+    /// the mechanical boundary nodes); only strictly-inside points are dropped.
+    bool onDeleteHoleRim(double x, double y, double tol) const;
 
     /// Match each `#@controlvertex` declaration to the nearest Delaunay vertex
     /// and populate `controlNodeIds`. Called after the Delaunay vertex list is loaded.
@@ -938,7 +966,15 @@ public:
     /// the nearest notch face. Mirrors the 3D `Prism::modifyVoronoiCross`
     /// projection step so transport nodes (Voronoi vertices) sit on the
     /// physical boundaries. Idempotent — call once after qhull parsing.
-    void project2DVoronoiVerticesToBoundaries();
+    void project2DVoronoiVerticesToNotches();
+
+    /// For each `delete` (hole) disk inclusion, shift the dual Voronoi
+    /// (cross-section) vertices of the rim mechanical edges radially onto the
+    /// hole circle, so transport nodes lie on the boundary and no transport
+    /// edge runs tangentially inside the void. The 2D-inclusion analog of the
+    /// per-region cross-section projection (`Disk::modifyVoronoiCrossSection`),
+    /// generalized to any number of holes at any centre.
+    void project2DVoronoiVerticesToHoles();
 
     /// 3D notch counterpart of the 2D projection: Voronoi vertices that
     /// fall strictly inside any 3D `#@notch` box AND bound a crossing

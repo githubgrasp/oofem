@@ -1,8 +1,10 @@
 set(CONVERTER_SOURCES
 curve.C
 cylinder.C
+disk.C
 ellipsoid.C
 fibre.C
+holedisk.C
 grid.C
 gridcomponent.C
 inclusion.C

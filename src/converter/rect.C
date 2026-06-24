@@ -6,6 +6,7 @@
 
 #include <cmath>
 #include <list>
+#include <vector>
 
 
 Rect::Rect(int n, Grid *aGrid) : Region(n, aGrid)
@@ -47,6 +48,10 @@ void Rect::findOutsiders(oofem::FloatArray &boundaries)
     const bool periodic = perX || perY;
 
     auto classify = [&]( double x, double y ) -> int {
+        // A vertex inside a `delete` (hole) inclusion is treated as outside the
+        // domain — carving a void through the same outside-node machinery used
+        // for boundary mirror / periodic image nodes.
+        if ( grid->isInsideDeleteHole(x, y) ) return 1;
         const bool sx = ( x + tol < xmin ) || ( x - tol > xmax );
         const bool sy = ( y + tol < ymin ) || ( y - tol > ymax );
         if ( sx || sy ) return 1;
@@ -141,5 +146,61 @@ void Rect::findOutsiders(oofem::FloatArray &boundaries)
         const int f1 = grid->giveVoronoiVertex(ep.at(1))->giveOutsideFlag();
         const int f2 = grid->giveVoronoiVertex(ep.at(2))->giveOutsideFlag();
         grid->giveVoronoiLine(i)->setOutsideFlag(lineFlag(f1, f2));
+    }
+
+    // The region owns its Voronoi cross-section adjustment (mirrors
+    // Cylinder/Disk findOutsiders): clamp boundary-crossing Voronoi vertices
+    // onto the rectangle faces. Notch voids are handled separately.
+    this->projectVoronoiToBoundary();
+}
+
+
+void Rect::projectVoronoiToBoundary()
+{
+    // Clamp the outside endpoint of every crossing Voronoi edge (one endpoint
+    // inside the rectangle, one outside) onto the nearest rectangle face. Only
+    // crossing-edge endpoints are moved — far-outside vertices are left where
+    // qhull put them (they are never emitted), avoiding coincident corner nodes.
+    const double xmin = box.at(1), ymin = box.at(2);
+    const double xmax = box.at(3), ymax = box.at(4);
+    const double tol = grid->giveTol();
+
+    auto outsideRect = [&]( const oofem::FloatArray &c ) {
+        return c.at(1) < xmin - tol || c.at(1) > xmax + tol ||
+               c.at(2) < ymin - tol || c.at(2) > ymax + tol;
+    };
+    auto clampToRect = [&]( oofem::FloatArray &c ) {
+        if ( c.at(1) < xmin ) c.at(1) = xmin;
+        if ( c.at(1) > xmax ) c.at(1) = xmax;
+        if ( c.at(2) < ymin ) c.at(2) = ymin;
+        if ( c.at(2) > ymax ) c.at(2) = ymax;
+    };
+
+    const int nVorV = grid->giveNumberOfVoronoiVertices();
+    const int nVorL = grid->giveNumberOfVoronoiLines();
+
+    std::vector< int > vertOutside( nVorV + 1, 0 );
+    oofem::FloatArray c(3);
+    for ( int i = 1; i <= nVorV; ++i ) {
+        grid->giveVoronoiVertex(i)->giveCoordinates(c);
+        if ( outsideRect(c) ) vertOutside[i] = 1;
+    }
+
+    std::vector< char > toProject( nVorV + 1, 0 );
+    oofem::IntArray ep;
+    for ( int i = 1; i <= nVorL; ++i ) {
+        grid->giveVoronoiLine(i)->giveLocalVertices(ep);
+        if ( ep.giveSize() != 2 ) continue;
+        const int a = ep.at(1), b = ep.at(2);
+        if ( a == 0 || b == 0 ) continue;   // qhull at-infinity marker
+        if ( vertOutside[a] == 0 && vertOutside[b] == 1 ) toProject[b] = 1;
+        else if ( vertOutside[a] == 1 && vertOutside[b] == 0 ) toProject[a] = 1;
+    }
+
+    for ( int i = 1; i <= nVorV; ++i ) {
+        if ( !toProject[i] ) continue;
+        grid->giveVoronoiVertex(i)->giveCoordinates(c);
+        clampToRect(c);
+        grid->giveVoronoiVertex(i)->setCoordinates(c);
     }
 }

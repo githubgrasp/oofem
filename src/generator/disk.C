@@ -36,6 +36,8 @@ void Disk::initializeFromTokens(std::istringstream &iss)
         } else if ( tok == "radius" ) {
             iss >> radius;
             gotRadius = true;
+        } else if ( tok == "innerradius" ) {
+            iss >> innerRadius;
         } else if ( tok == "refine" ) {
             iss >> refinement;
         } else {
@@ -56,6 +58,7 @@ int Disk::generatePoints()
     const double cx = centre.at(1), cy = centre.at(2);
     const double diam = grid->diameter;
     const double maxIter = grid->giveMaximumIterations();
+    const bool annulus = ( innerRadius > 0. );
 
     int randomIntegerOne = grid->giveRandomInteger() - 1;
     int randomIntegerTwo = grid->giveRandomInteger() - 2;
@@ -63,14 +66,16 @@ int Disk::generatePoints()
     oofem::FloatArray random(3);
     random.at(3) = 0.;
 
-    // Centre
-    random.at(1) = cx;
-    random.at(2) = cy;
-    grid->addVertex(random);
+    // Centre — solid disc only; for an annulus the centre lies in the hole.
+    if ( !annulus ) {
+        random.at(1) = cx;
+        random.at(2) = cy;
+        grid->addVertex(random);
+    }
 
-    printf("Points on disk circumference\n");
+    printf("Points on disk outer circumference\n");
 
-    // Random ring on circumference (Bolander-style: random angles, distance check).
+    // Random ring on the outer circumference (Bolander-style: random angles, distance check).
     for ( int i = 0; i < maxIter; ++i ) {
         const double theta = 2. * M_PI * grid->ran1(& randomIntegerOne);
         random.at(1) = cx + radius * cos(theta);
@@ -83,12 +88,32 @@ int Disk::generatePoints()
         }
     }
 
+    // Random ring on the inner (hole) circumference for an annulus.
+    if ( annulus ) {
+        printf("Points on disk inner circumference\n");
+        for ( int i = 0; i < maxIter; ++i ) {
+            const double theta = 2. * M_PI * grid->ran1(& randomIntegerOne);
+            random.at(1) = cx + innerRadius * cos(theta);
+            random.at(2) = cy + innerRadius * sin(theta);
+
+            const int flag = grid->giveGridLocalizer()->checkNodesWithinBox(random,
+                                 refinement * grid->giveDiameter(random) );
+            if ( flag == 0 && grid->addVertex(random) ) {
+                i = 0;
+            }
+        }
+    }
+
     printf("Points in disk interior\n");
 
-    // Random interior fill (sample (theta, sqrt(u)*R) for uniform area).
+    // Random interior fill, area-uniform in the annular band [rMin, rMax].
+    // For a solid disc (rMin = 0) this reduces to sqrt(u) * (radius - diam).
+    const double rMin = annulus ? ( innerRadius + diam ) : 0.;
+    const double rMax = radius - diam;
     for ( int i = 0; i < maxIter; ++i ) {
         const double theta = 2. * M_PI * grid->ran1(& randomIntegerOne);
-        const double r = ( radius - diam ) * sqrt(grid->ran1(& randomIntegerTwo) );
+        const double u = grid->ran1(& randomIntegerTwo);
+        const double r = sqrt(rMin * rMin + u * ( rMax * rMax - rMin * rMin ) );
 
         random.at(1) = cx + r * cos(theta);
         random.at(2) = cy + r * sin(theta);
@@ -97,12 +122,22 @@ int Disk::generatePoints()
         if ( flag == 0 && grid->addVertex(random) ) {
             i = 0;
 
-            // Mirror across the disk boundary so the dual cells partition
+            // Mirror across the outer boundary so the dual cells partition
             // cleanly along the circle.
             const double rMirror = 2. * radius - r;
             random.at(1) = cx + rMirror * cos(theta);
             random.at(2) = cy + rMirror * sin(theta);
             grid->addVertex(random);
+
+            // Mirror across the inner boundary (into the hole) for the annulus.
+            if ( annulus ) {
+                const double rInner = 2. * innerRadius - r;
+                if ( rInner > 0. ) {
+                    random.at(1) = cx + rInner * cos(theta);
+                    random.at(2) = cy + rInner * sin(theta);
+                    grid->addVertex(random);
+                }
+            }
         }
     }
 

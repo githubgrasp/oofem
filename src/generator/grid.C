@@ -21,6 +21,7 @@
 #include "rect.h"
 #include "disk.h"
 #include "interfacedisk.h"
+#include "holedisk.h"
 #include <iostream>
 #include "generatorerror.h"
 
@@ -206,6 +207,17 @@ bool Grid::insideAnyNotch(const oofem::FloatArray &coord) const
 {
     for ( const auto *n : notchList ) {
         if ( n != nullptr && n->containsStrictly(coord, this->TOL) ) {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+bool Grid::insideAnyHole(const oofem::FloatArray &coord) const
+{
+    for ( const auto *h : holeList ) {
+        if ( h != nullptr && h->containsStrictly(coord, this->TOL) ) {
             return true;
         }
     }
@@ -533,11 +545,17 @@ int Grid::generateRandomPoints()
 }
 
 // grid.C
-bool Grid::addVertex(const oofem::FloatArray &coords) {
+bool Grid::addVertex(const oofem::FloatArray &coords, bool allowInsideHole) {
     // Suppress placement strictly inside any #@notch box. Boundary points
     // (within TOL of a face) are kept so the dual mesh can partition cleanly
     // along the notch surface.
     if ( insideAnyNotch(coords) ) {
+        return false;
+    }
+
+    // Same for #@holedisk circles, unless the caller is the hole itself seeding
+    // its sacrificial interior points (the circular analog of the notch case).
+    if ( !allowInsideHole && insideAnyHole(coords) ) {
         return false;
     }
 
@@ -908,6 +926,16 @@ int Grid::readControlRecords(const std::string &controlFile)
                 inclusionList.resize(num, nullptr);
             }
             setInclusion(num, inc);
+        } else if ( tag == "#@holedisk" ) {
+            int num;
+            iss >> num;
+            auto *inc = new HoleDisk(num, this);
+            inc->initializeFromTokens(iss);
+            if ( ( int ) inclusionList.size() < num ) {
+                inclusionList.resize(num, nullptr);
+            }
+            setInclusion(num, inc);
+            holeList.push_back(inc);
         } else if ( tag == "#@cylinder" ) {
             int num;
             iss >> num;

@@ -9,6 +9,8 @@
 #include "boundarysphere.h"
 #include "interfacecylinder.h"
 #include "cylinder.h"
+#include "holedisk.h"
+#include "disk.h"
 #include "inclusion.h"
 #include "fibre.h"
 #include "line.h"
@@ -1161,6 +1163,38 @@ void Grid::readControlRecords()
                 converter::error("Malformed #@sphereinclusion — expected 'interface <m>'");
             }
             sphereInclusionSpecs.push_back(s);
+        } else if ( tag == "#@disk" ) {
+            // #@disk <id> centre 2 cx cy radius r [innerradius ri]
+            // Circular domain region (2D analog of #@cylinder). The domain is the
+            // inside of this circle (or the annulus between innerradius and
+            // radius); the Disk region both classifies points and projects
+            // boundary Voronoi cross-section nodes radially onto the circle(s).
+            // Matches the generator's #@disk seeding.
+            int num;
+            iss >> num;
+            std::string kw;
+            int sz = 0;
+            iss >> kw >> sz;              // "centre" 2
+            if ( kw != "centre" || sz != 2 ) {
+                converter::error("Malformed #@disk — expected 'centre 2 cx cy'");
+            }
+            oofem::FloatArray centre(2);
+            iss >> centre.at(1) >> centre.at(2);
+            double rad = 0.;
+            iss >> kw >> rad;            // "radius" r
+            if ( kw != "radius" ) {
+                converter::error("Malformed #@disk — expected 'radius <r>'");
+            }
+            auto *d = new Disk(num, this);
+            d->setCentre(centre);
+            d->setRadius(rad);
+            double innerRad = 0.;
+            if ( iss >> kw && kw == "innerradius" ) {   // optional inner (hole) radius
+                iss >> innerRad;
+                d->setInnerRadius(innerRad);
+            }
+            regionList.resize(std::max(( int ) regionList.size(), num), nullptr);
+            setRegion(num, d);
         } else if ( tag == "#@diskinclusion" ) {
             // #@diskinclusion <id> centre 2 cx cy radius r itz t
             //   inside <mi> interface <mif>
@@ -1176,26 +1210,51 @@ void Grid::readControlRecords()
             if ( kw != "centre" || sz != 2 ) {
                 converter::error("Malformed #@diskinclusion — expected 'centre 2 cx cy'");
             }
-            SphereInclusionSpec s;
-            iss >> s.cx >> s.cy;
-            s.cz = 0.;
-            iss >> kw >> s.radius;        // "radius" r
+            double cx, cy, radius;
+            iss >> cx >> cy;
+            iss >> kw >> radius;          // "radius" r
             if ( kw != "radius" ) {
                 converter::error("Malformed #@diskinclusion — expected 'radius <r>'");
             }
-            iss >> kw >> s.itz;           // "itz" t
-            if ( kw != "itz" ) {
-                converter::error("Malformed #@diskinclusion — expected 'itz <t>'");
+            iss >> kw;
+            if ( kw == "delete" ) {       // hole/void: a first-class HoleDisk
+                holeList.push_back(new HoleDisk(num, cx, cy, radius) );
+            } else if ( kw == "itz" ) {
+                SphereInclusionSpec s;
+                s.cx = cx; s.cy = cy; s.cz = 0.; s.radius = radius;
+                iss >> s.itz;             // "itz" t
+                iss >> kw >> s.inside;    // "inside" mi
+                if ( kw != "inside" ) {
+                    converter::error("Malformed #@diskinclusion — expected 'inside <m>'");
+                }
+                iss >> kw >> s.interface_;    // "interface" mif
+                if ( kw != "interface" ) {
+                    converter::error("Malformed #@diskinclusion — expected 'interface <m>'");
+                }
+                sphereInclusionSpecs.push_back(s);
+            } else {
+                converter::error("Malformed #@diskinclusion — expected 'itz <t> inside <m> interface <m>' or 'delete'");
             }
-            iss >> kw >> s.inside;        // "inside" mi
-            if ( kw != "inside" ) {
-                converter::error("Malformed #@diskinclusion — expected 'inside <m>'");
+        } else if ( tag == "#@holedisk" ) {
+            // #@holedisk <id> centre 2 cx cy radius r
+            // A circular hole/void — the converter counterpart of the generator's
+            // #@holedisk (same line works in both files). Equivalent to
+            // #@diskinclusion <id> centre 2 cx cy radius r delete.
+            int num;
+            iss >> num;
+            std::string kw;
+            int sz = 0;
+            iss >> kw >> sz;              // "centre" 2
+            if ( kw != "centre" || sz != 2 ) {
+                converter::error("Malformed #@holedisk — expected 'centre 2 cx cy'");
             }
-            iss >> kw >> s.interface_;    // "interface" mif
-            if ( kw != "interface" ) {
-                converter::error("Malformed #@diskinclusion — expected 'interface <m>'");
+            double cx, cy, radius;
+            iss >> cx >> cy;
+            iss >> kw >> radius;          // "radius" r
+            if ( kw != "radius" ) {
+                converter::error("Malformed #@holedisk — expected 'radius <r>'");
             }
-            sphereInclusionSpecs.push_back(s);
+            holeList.push_back(new HoleDisk(num, cx, cy, radius) );
         } else if ( tag == "#@cylinderinclusion" ) {
             // #@cylinderinclusion <id> line 6 x1 y1 z1 x2 y2 z2
             //   radius r itz t inside <mi> interface <mif>
@@ -1244,6 +1303,25 @@ void Grid::readControlRecords()
             // Used by staggered SMTM analyses (e.g. Wong percolation) where
             // the SM and TM subproblems exchange data element-by-element.
             emitCouplingFlag = true;
+        } else if ( tag == "#@coupling" ) {
+            // #@coupling inner ltf <id> pressure <p>
+            // Hydro-mechanical boundary coupling on the inner circle of a
+            // #@disk annulus. `ltf` selects the load-time function scaling the
+            // pressure; `pressure` is the reference inner pressure.
+            std::string rim, kw;
+            if ( !( iss >> rim ) || rim != "inner" ) {
+                converter::error("Malformed #@coupling — expected 'inner ltf <id> pressure <p>'");
+            }
+            while ( iss >> kw ) {
+                if ( kw == "ltf" ) {
+                    iss >> couplingLtf;
+                } else if ( kw == "pressure" ) {
+                    iss >> couplingPressure;
+                } else {
+                    converter::errorf("#@coupling — unknown keyword '%s'", kw.c_str() );
+                }
+            }
+            couplingEnabled = true;
         } else if ( tag == "#@rigidarm" ) {
             // #@rigidarm <master_ctl_id> face <axis> <side>
             //   mastermask 6 m1..m6 doftype 6 d1..d6
@@ -2533,7 +2611,19 @@ void Grid::giveOutput(const std::string &fileName)
     giveOofemOutput(fileName);
 
     if ( emitVtkOutput ) {
-        giveVtkOutput2(fileName, 3);
+        // Write one Delaunay-element VTU per structural material actually
+        // declared in control.in (nmat), not a fixed matrix/inclusion/interface
+        // triple — meshes with a single material then get a single mat1 file.
+        int nmat = 1;
+        std::ifstream ctrl(controlFileName);
+        std::string tok;
+        while ( ctrl >> tok ) {
+            if ( tok == "nmat" ) {
+                ctrl >> nmat;
+                break;
+            }
+        }
+        giveVtkOutput2(fileName, nmat);
     }
     if ( emitPovOutput ) {
         givePOVOutput(fileName);
@@ -2551,10 +2641,12 @@ void Grid::giveOofemOutput(const std::string &fileName)
         project3DVoronoiVerticesToNotches();
         give3DTMOutput(fileName);
     } else if ( gridType == _2dSM ) {
-        project2DVoronoiVerticesToBoundaries();
+        project2DVoronoiVerticesToNotches();
+        project2DVoronoiVerticesToHoles();
         give2DSMOutput(fileName);
     } else if ( gridType == _2dTM ) {
-        project2DVoronoiVerticesToBoundaries();
+        project2DVoronoiVerticesToNotches();
+        project2DVoronoiVerticesToHoles();
         give2DTMOutput(fileName);
     } else {
         converter::error("Unknown grid type\n");
@@ -3389,6 +3481,43 @@ Grid::notchDeletes(const oofem::FloatArray &A, const oofem::FloatArray &B) const
     return false;
 }
 
+
+bool
+Grid::isInsideDeleteHole(double x, double y) const
+{
+    for ( const auto *h : holeList ) {
+        if ( h != nullptr && h->isStrictlyInside(x, y) ) {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+bool
+Grid::onDeleteHoleRim(double x, double y, double tol) const
+{
+    for ( const auto *h : holeList ) {
+        if ( h != nullptr && h->onRim(x, y, tol) ) {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+void
+Grid::project2DVoronoiVerticesToHoles()
+{
+    // Each hole owns its cross-section projection (cf. the per-region
+    // Disk::modifyVoronoiCrossSection); the grid just drives the list.
+    const double tol = this->giveTol();
+    for ( auto *h : holeList ) {
+        if ( h != nullptr ) {
+            h->projectVoronoiCrossSection(this, tol);
+        }
+    }
+}
 
 int
 Grid::resolveInclusionMaterial(const oofem::FloatArray &A, const oofem::FloatArray &B,
@@ -5133,12 +5262,48 @@ Grid::giveDelaunayElementVTKOutput2(FILE *outputStream, int nb_mtx)
         // }
     }
 
+    // Resolve each line's material on the fly: the Delaunay line objects never
+    // carry the per-element material the SM writer computes, so we recompute it
+    // from the endpoint coordinates (notch + inclusion resolution, matrix = 1).
+    // This lets the mesh be shown with projected materials without an analysis.
+    auto lineMaterial = [&]( int lineIndex ) -> int {
+        oofem::IntArray ep;
+        oofem::FloatArray cA, cB;
+        this->giveDelaunayLine(lineIndex)->giveLocalVertices(ep);
+        if ( ep.giveSize() != 2 ) {
+            return 0;
+        }
+        this->giveDelaunayVertex(ep.at(1) )->giveCoordinates(cA);
+        this->giveDelaunayVertex(ep.at(2) )->giveCoordinates(cB);
+        int mat = this->resolveNotchMaterial(cA, cB, 1);
+        mat = this->resolveInclusionMaterial(cA, cB, mat);
+        return mat;
+    };
+
+    // A line is part of the drawn mesh only if both endpoints are kept (not
+    // outside the domain) and it has a valid dual cross-section — the same
+    // criterion the SM writer uses, so the VTU matches the emitted element set.
+    auto lineKept = [&]( int lineIndex ) -> bool {
+        oofem::IntArray ep, cs;
+        this->giveDelaunayLine(lineIndex)->giveLocalVertices(ep);
+        if ( ep.giveSize() != 2 ) {
+            return false;
+        }
+        if ( this->giveDelaunayVertex(ep.at(1) )->giveOutsideFlag() == 1 ||
+             this->giveDelaunayVertex(ep.at(2) )->giveOutsideFlag() == 1 ) {
+            return false;
+        }
+        this->giveDelaunayLine(lineIndex)->giveCrossSectionVertices(cs);
+        if ( cs.giveSize() < 2 || cs.at(1) == 0 || cs.at(2) == 0 ) {
+            return false;
+        }
+        return true;
+    };
+
     numberOfLines = 0;
     for ( int iline = 0; iline < this->giveNumberOfDelaunayLines(); iline++ ) {
-        if ( this->giveDelaunayLine(iline + 1)->giveOutsideFlag() != 1 ) {
-            if ( this->giveDelaunayLine(iline + 1)->giveMaterial() == nb_mtx ) {
-                numberOfLines++;
-            }
+        if ( lineKept(iline + 1) && lineMaterial(iline + 1) == nb_mtx ) {
+            numberOfLines++;
         }
     }
 
@@ -5172,8 +5337,8 @@ Grid::giveDelaunayElementVTKOutput2(FILE *outputStream, int nb_mtx)
     //
 
     for ( int i = 0; i <  this->giveNumberOfDelaunayLines(); i++ ) {
-        if ( this->giveDelaunayLine(i + 1)->giveOutsideFlag() != 1 ) {
-            if ( ( this->giveDelaunayLine(i + 1)->giveMaterial() ) == nb_mtx ) {
+        if ( lineKept(i + 1) && lineMaterial(i + 1) == nb_mtx ) {
+            {
                 delaunayLine = this->giveDelaunayLine(i + 1);
                 delaunayLine->giveLocalVertices(nodes);
                 delaunayLine->giveCrossSectionVertices(crossSectionNodes);
@@ -5534,9 +5699,15 @@ void Grid::give2DSMOutput(const std::string &fileName)
         converter::error("give2DSMOutput: at least one #@rect region is required");
     }
 
+    // Region 1 may be a #@rect (rectangular domain, supports periodic) or a
+    // #@disk (circular domain, non-periodic). Node membership is flag-based
+    // (set by the region's findOutsiders), so most of the writer is region
+    // agnostic; `rect` is only used by the rect-specific element guard and the
+    // periodic-boundary path below.
     const auto *rect = dynamic_cast< Rect * >( this->giveRegion(1) );
-    if ( !rect ) {
-        converter::error("give2DSMOutput: region 1 must be a #@rect");
+    const auto *disk = dynamic_cast< Disk * >( this->giveRegion(1) );
+    if ( !rect && !disk ) {
+        converter::error("give2DSMOutput: region 1 must be a #@rect or #@disk");
     }
 
     oofem::FloatArray bounds;
@@ -5544,6 +5715,27 @@ void Grid::give2DSMOutput(const std::string &fileName)
 
     const bool periodic = ( periodicityFlag.giveSize() >= 2 ) &&
                           ( periodicityFlag.at(1) == 1 || periodicityFlag.at(2) == 1 );
+    if ( periodic && !rect ) {
+        converter::error("give2DSMOutput: periodic mode requires a #@rect region");
+    }
+
+    if ( couplingEnabled ) {
+        if ( !disk ) {
+            converter::error("#@coupling requires region 1 to be a #@disk annulus");
+        }
+        std::vector< Disk::RimCouplingEntry > rim;
+        const_cast< Disk * >( disk )->computeInnerRimCoupling(rim);
+        const double innerR = disk->giveInnerRadius();
+        double perim = 0., fx = 0., fy = 0.;
+        for ( const auto &e : rim ) {
+            perim += e.tributary;
+            fx += e.tributary * e.dirX;
+            fy += e.tributary * e.dirY;
+        }
+        printf("#@coupling: %d inner-rim mechanical nodes; tributary sum = %.6g "
+               "(2*pi*r_in = %.6g); force-direction sum = (%.3g, %.3g) [~0 expected]\n",
+               (int) rim.size(), perim, 2. * M_PI * innerR, fx, fy);
+    }
 
     const int nDelV = this->giveNumberOfDelaunayVertices();
     const int nDelL = this->giveNumberOfDelaunayLines();
@@ -5557,10 +5749,13 @@ void Grid::give2DSMOutput(const std::string &fileName)
     std::vector< int > nodeMap( nDelV + 1, 0 );
     int emittedNodes = 0;
     {
-        oofem::FloatArray c(3);
         for ( int i = 0; i < nDelV; ++i ) {
-            this->giveDelaunayVertex(i + 1)->giveCoordinates(c);
-            if ( rect->contains(c.at(1), c.at(2), tol) ) {
+            // Node membership via the outsideFlag set by Region::findOutsiders
+            // (0 = interior, 2 = on the domain boundary; 1 = outside, which now
+            // also covers vertices inside a `delete` hole inclusion). Mirrors
+            // give3DSMOutput so a single mechanism drives 2D and 3D membership.
+            const int flag = this->giveDelaunayVertex(i + 1)->giveOutsideFlag();
+            if ( flag == 0 || flag == 2 ) {
                 nodeMap[ i + 1 ] = ++emittedNodes;
             }
         }
@@ -5598,8 +5793,15 @@ void Grid::give2DSMOutput(const std::string &fileName)
             if ( cs.at(1) == 0 || cs.at(2) == 0 ) continue;
             this->giveVoronoiVertex(cs.at(1))->giveCoordinates(vA);
             this->giveVoronoiVertex(cs.at(2))->giveCoordinates(vB);
-            if ( !rect->contains(vA.at(1), vA.at(2), tol) &&
-                 !rect->contains(vB.at(1), vB.at(2), tol) ) continue;
+            // Drop elements whose dual cross-section is entirely outside the
+            // domain (rect or disk).
+            if ( rect ) {
+                if ( !rect->contains(vA.at(1), vA.at(2), tol) &&
+                     !rect->contains(vB.at(1), vB.at(2), tol) ) continue;
+            } else if ( disk ) {
+                if ( !disk->contains(vA.at(1), vA.at(2), tol) &&
+                     !disk->contains(vB.at(1), vB.at(2), tol) ) continue;
+            }
             this->giveDelaunayVertex(ep.at(1))->giveCoordinates(cA);
             this->giveDelaunayVertex(ep.at(2))->giveCoordinates(cB);
             if ( notchDeletes(cA, cB) ) continue;
@@ -5630,6 +5832,13 @@ void Grid::give2DSMOutput(const std::string &fileName)
         }
     };
 
+    // Hydro-mechanical coupling (#@coupling) generated records, filled below
+    // and spliced in at the {#@COUPLINGBC}/{#@COUPLINGSET} tokens; anchor map
+    // tags three outer nodes with inline per-DOF `bc` masks.
+    std::string couplingBCRecords, couplingSetRecords;
+    int couplingGenBC = 0, couplingGenSet = 0;
+    std::map< int, std::vector< int > > anchorBcMask;  // Delaunay vertex -> per-DOF bc ids
+
     auto substitute = [ & ](std::string &s) {
         if ( periodic ) {
             replaceAll(s, "#@CTLNODE", std::to_string(ctlNode));
@@ -5637,7 +5846,91 @@ void Grid::give2DSMOutput(const std::string &fileName)
         for ( const auto &tok : sortedCtlTokens ) {
             replaceAll(s, tok.first, std::to_string(tok.second));
         }
+        replaceAll(s, "{#@COUPLINGBC}", couplingBCRecords);
+        replaceAll(s, "{#@COUPLINGSET}", couplingSetRecords);
     };
+
+    if ( couplingEnabled ) {
+        if ( !disk ) {
+            converter::error("#@coupling requires region 1 to be a #@disk annulus");
+        }
+        // Base BC / set counts from control.in, so generated ids don't collide.
+        int baseNbc = 0, baseNset = 0;
+        {
+            std::ifstream cf(controlFileName);
+            std::string l;
+            while ( std::getline(cf, l) ) {
+                std::string s = l;
+                size_t p = s.find_first_not_of(" \t");
+                if ( p != std::string::npos ) s.erase(0, p);
+                if ( s.rfind("ncrosssect", 0) == 0 ) {
+                    std::istringstream is(s);
+                    std::string tk, prev;
+                    while ( is >> tk ) {
+                        if ( prev == "nbc" ) baseNbc = std::stoi(tk);
+                        else if ( prev == "nset" ) baseNset = std::stoi(tk);
+                        prev = tk;
+                    }
+                    break;
+                }
+            }
+        }
+
+        // (a) Outward radial NodalLoads on the inner-rim mechanical nodes:
+        //     f = pressure * tributary * (radial unit vector). One load + one
+        //     single-node set per rim node (each has its own direction).
+        std::vector< Disk::RimCouplingEntry > rim;
+        const_cast< Disk * >( disk )->computeInnerRimCoupling(rim);
+        std::ostringstream bcs, sets;
+        int bId = baseNbc, sId = baseNset;
+        for ( const auto &e : rim ) {
+            const int nid = nodeMap[ e.delaunayVertex ];
+            if ( nid == 0 ) continue;
+            const double fx = couplingPressure * e.tributary * e.dirX;
+            const double fy = couplingPressure * e.tributary * e.dirY;
+            ++bId; ++sId;
+            sets << "Set " << sId << " nodes 1 " << nid << "\n";
+            bcs << "NodalLoad " << bId << " loadTimeFunction " << couplingLtf
+                << " dofs 3 1 2 6 components 3 " << std::scientific
+                << fx << " " << fy << " 0. set " << sId << "\n";
+        }
+        couplingBCRecords = bcs.str();
+        couplingSetRecords = sets.str();
+        couplingGenBC = bId - baseNbc;
+        couplingGenSet = sId - baseNset;
+
+        // (b) Free outer surface + tangential/R_w anchor pins at three outer
+        //     cardinal nodes (theta = 0, 90, 270 deg), referencing the
+        //     template's BoundaryCondition 1 (prescribedvalue 0). Tangential
+        //     pins leave the radial DOF free, so the Lame radial solution is
+        //     not perturbed (matches the 2015 pressure-case setup).
+        const oofem::FloatArray &cc0 = disk->giveCentre();
+        const double cx = cc0.at(1), cy = cc0.at(2);
+        const double outerR = disk->giveRadius();
+        const double rimTol = 1.e3 * tol;
+        const std::vector< std::pair< double, std::vector< int > > > targets = {
+            { 0.,             { 0, 1, 1 } },   // east:  fix D_v, R_w
+            { M_PI / 2.,      { 1, 0, 1 } },   // north: fix D_u, R_w
+            { 3. * M_PI / 2., { 1, 0, 1 } },   // south: fix D_u, R_w
+        };
+        for ( const auto &tg : targets ) {
+            int best = 0;
+            double bestAng = 1.e300;
+            oofem::FloatArray cc;
+            for ( int i = 1; i <= nDelV; ++i ) {
+                if ( nodeMap[ i ] == 0 ) continue;
+                this->giveDelaunayVertex(i)->giveCoordinates(cc);
+                const double dx = cc.at(1) - cx, dy = cc.at(2) - cy;
+                if ( std::fabs(std::sqrt(dx * dx + dy * dy) - outerR) >= rimTol ) continue;
+                double ang = std::atan2(dy, dx);
+                if ( ang < 0. ) ang += 2. * M_PI;
+                double d = std::fabs(ang - tg.first);
+                d = std::min(d, 2. * M_PI - d);
+                if ( d < bestAng ) { bestAng = d; best = i; }
+            }
+            if ( best != 0 ) anchorBcMask[ best ] = tg.second;
+        }
+    }
 
     std::ifstream ctrl(controlFileName);
     std::ofstream out(fileName);
@@ -5665,8 +5958,21 @@ void Grid::give2DSMOutput(const std::string &fileName)
             std::string token;
             out << "ndofman " << totalNodes
                 << " nelem " << emittedElems << " ";
+            bool sawNset = false;
             while ( iss >> token ) {
-                out << token << " ";
+                if ( couplingEnabled && token == "nbc" ) {
+                    std::string v; iss >> v;
+                    out << "nbc " << ( std::stoi(v) + couplingGenBC ) << " ";
+                } else if ( couplingEnabled && token == "nset" ) {
+                    std::string v; iss >> v;
+                    sawNset = true;
+                    out << "nset " << ( std::stoi(v) + couplingGenSet ) << " ";
+                } else {
+                    out << token << " ";
+                }
+            }
+            if ( couplingEnabled && !sawNset && couplingGenSet > 0 ) {
+                out << "nset " << couplingGenSet << " ";
             }
             out << "\n";
 
@@ -5732,6 +6038,16 @@ void Grid::give2DSMOutput(const std::string &fileName)
                         for ( int id : bcIds ) out << " " << id;
                     }
                 }
+                // #@coupling anchor tagging — three outer cardinal nodes get a
+                // per-DOF `bc` mask (tangential + R_w pinned) referencing the
+                // template BoundaryCondition 1.
+                if ( !ssMatch ) {
+                    auto am = anchorBcMask.find(i + 1);
+                    if ( am != anchorBcMask.end() ) {
+                        out << " bc 3 " << am->second[0] << " "
+                            << am->second[1] << " " << am->second[2];
+                    }
+                }
                 out << "\n";
             }
 
@@ -5769,8 +6085,15 @@ void Grid::give2DSMOutput(const std::string &fileName)
 
                 this->giveVoronoiVertex(crossSectionNodes.at(1))->giveCoordinates(vA);
                 this->giveVoronoiVertex(crossSectionNodes.at(2))->giveCoordinates(vB);
-                if ( !rect->contains(vA.at(1), vA.at(2), tol) &&
-                     !rect->contains(vB.at(1), vB.at(2), tol) ) continue;
+                // Drop elements whose dual cross-section is entirely outside the
+                // domain (rect or disk).
+                if ( rect ) {
+                    if ( !rect->contains(vA.at(1), vA.at(2), tol) &&
+                         !rect->contains(vB.at(1), vB.at(2), tol) ) continue;
+                } else if ( disk ) {
+                    if ( !disk->contains(vA.at(1), vA.at(2), tol) &&
+                         !disk->contains(vB.at(1), vB.at(2), tol) ) continue;
+                }
 
                 this->giveDelaunayVertex(endpoints.at(1))->giveCoordinates(cA);
                 this->giveDelaunayVertex(endpoints.at(2))->giveCoordinates(cB);
@@ -5849,65 +6172,37 @@ void Grid::give2DSMOutput(const std::string &fileName)
 }
 
 
-void Grid::project2DVoronoiVerticesToBoundaries()
+void Grid::project2DVoronoiVerticesToNotches()
 {
-    // Mirror of 3D `Prism::modifyVoronoiCrossSection`: project Voronoi
-    // vertices that bound a *crossing* Voronoi edge onto the nearest
-    // rect / notch face. Voronoi vertices that are deep outside the
-    // specimen (no Voronoi edge connects them to an inside vertex) are
-    // left at their qhull-computed position — they will not be emitted
-    // anyway because both endpoints of every Voronoi edge incident on
-    // them are also outside.
-    //
-    // Selectivity matters: a blanket "clamp all outside vertices" pass
-    // collapses many far-out qhull vertices onto the same rect corner,
-    // creating coincident TM nodes. The 3D code avoids this by only
-    // projecting vertices in the cross-section of a boundary Delaunay
-    // line (i.e. those that bound a "crossing" Voronoi edge). We do the
-    // same here: a crossing edge is one Voronoi edge with one endpoint
-    // inside the domain and one outside.
-    //
-    // Idempotent: a vertex projected onto a face is on-the-face for
-    // subsequent passes, no further snapping happens.
-    if ( regionList.empty() || regionList[0] == nullptr ) {
-        return;
-    }
-    const auto *rect = dynamic_cast< const Rect * >( this->giveRegion(1) );
-    if ( !rect ) {
-        return;
-    }
-    const auto &box = rect->giveBox();
-    const double xmin = box.at(1), ymin = box.at(2);
-    const double xmax = box.at(3), ymax = box.at(4);
-    const double tol = this->giveTol();
+    // 2D twin of project3DVoronoiVerticesToNotches.
+    // Snap the outside endpoint of every crossing Voronoi edge out of
+    // delete-mode notch voids onto the nearest notch face, and record which
+    // Voronoi vertices were originally inside a deleting notch (used by the TM
+    // emitter). The domain boundary itself (rect/disk) is handled by the region
+    // in findOutsiders (Rect::projectVoronoiToBoundary / Disk::modifyVoronoi-
+    // CrossSection) — the original generator/converter design.
+    const int nVorV = this->giveNumberOfVoronoiVertices();
+    voronoiOrigInsideDeletingNotch.assign( nVorV + 1, 0 );
 
-    auto outsideRect = [&]( const oofem::FloatArray &c ) {
-        return c.at(1) < xmin - tol || c.at(1) > xmax + tol ||
-               c.at(2) < ymin - tol || c.at(2) > ymax + tol;
-    };
+    bool anyDeleting = false;
+    for ( const auto &n : notchSpecs ) {
+        if ( n.deleteFlag ) { anyDeleting = true; break; }
+    }
+    if ( !anyDeleting ) {
+        return;
+    }
+
+    const double tol = this->giveTol();
     auto insideNotch = [&]( const oofem::FloatArray &c, const NotchSpec &n ) {
         return c.at(1) > n.xmin + tol && c.at(1) < n.xmax - tol &&
                c.at(2) > n.ymin + tol && c.at(2) < n.ymax - tol;
     };
-    // Only delete-mode notches participate in projection: those represent
-    // physical voids (the user is expected to discretise them on the
-    // generator side). Material-mode notches are pure material overrides
-    // — projecting Voronoi vertices for them would distort polygons
-    // without any matching boundary discretisation, since the generator
-    // hasn't placed surface vertices.
     auto insideAnyDeletingNotch = [&]( const oofem::FloatArray &c ) {
         for ( const auto &n : notchSpecs ) {
             if ( !n.deleteFlag ) continue;
             if ( insideNotch(c, n) ) return true;
         }
         return false;
-    };
-
-    auto clampToRect = [&]( oofem::FloatArray &c ) {
-        if ( c.at(1) < xmin ) c.at(1) = xmin;
-        if ( c.at(1) > xmax ) c.at(1) = xmax;
-        if ( c.at(2) < ymin ) c.at(2) = ymin;
-        if ( c.at(2) > ymax ) c.at(2) = ymax;
     };
     auto snapOutOfNotch = [&]( oofem::FloatArray &c, const NotchSpec &n ) {
         const double dxL = c.at(1) - n.xmin;
@@ -5927,35 +6222,22 @@ void Grid::project2DVoronoiVerticesToBoundaries()
         }
     };
 
-    const int nVorV = this->giveNumberOfVoronoiVertices();
     const int nVorL = this->giveNumberOfVoronoiLines();
 
-    // Pre-pass: classify every Voronoi vertex (inside / outside / inside-notch).
-    // We use the *original* qhull coordinates for this — projection is
-    // applied only after classification. Also record the "originally
-    // inside any delete-mode notch" flag for later use by the TM emitter.
-    voronoiOrigInsideDeletingNotch.assign( nVorV + 1, 0 );
+    // Classify on the *original* qhull coordinates; project only after.
     std::vector< oofem::FloatArray > origCoords( nVorV + 1 );
-    std::vector< int > vertClass( nVorV + 1, 0 );  // 0=inside, 1=outside-rect, 2=inside-notch
+    std::vector< int > vertClass( nVorV + 1, 0 );  // 0=not-in-notch, 2=inside-notch
     for ( int i = 1; i <= nVorV; ++i ) {
         oofem::FloatArray c(3);
         this->giveVoronoiVertex(i)->giveCoordinates(c);
         origCoords[i] = c;
-        if ( outsideRect(c) ) {
-            vertClass[i] = 1;
-        } else if ( insideAnyDeletingNotch(c) ) {
+        if ( insideAnyDeletingNotch(c) ) {
             vertClass[i] = 2;
             voronoiOrigInsideDeletingNotch[ i ] = 1;
         }
     }
 
-    // For each Voronoi line, if it's a crossing edge (one endpoint inside,
-    // one outside the rect, OR one outside and one inside any notch), mark
-    // the outside endpoint as "to-project". We also remember which side of
-    // the boundary the projection should snap to.
-    std::vector< char > projectToRect( nVorV + 1, 0 );
     std::vector< char > projectOutOfNotch( nVorV + 1, 0 );
-
     oofem::IntArray ep;
     for ( int i = 1; i <= nVorL; ++i ) {
         this->giveVoronoiLine(i)->giveLocalVertices(ep);
@@ -5963,29 +6245,18 @@ void Grid::project2DVoronoiVerticesToBoundaries()
         const int a = ep.at(1), b = ep.at(2);
         if ( a == 0 || b == 0 ) continue;   // qhull at-infinity marker
         const int ca = vertClass[a], cb = vertClass[b];
-        // Mixed inside / outside-rect → project the outside-rect end.
-        if ( ca == 0 && cb == 1 ) projectToRect[b] = 1;
-        else if ( ca == 1 && cb == 0 ) projectToRect[a] = 1;
-        // Mixed inside / inside-notch → project the inside-notch end out.
         if ( ca == 0 && cb == 2 ) projectOutOfNotch[b] = 1;
         else if ( ca == 2 && cb == 0 ) projectOutOfNotch[a] = 1;
     }
 
-    // Apply the marked projections.
     for ( int i = 1; i <= nVorV; ++i ) {
-        if ( !projectToRect[i] && !projectOutOfNotch[i] ) continue;
+        if ( !projectOutOfNotch[i] ) continue;
         oofem::FloatArray c = origCoords[i];
-        if ( projectToRect[i] ) {
-            clampToRect(c);
-        }
-        if ( projectOutOfNotch[i] ) {
-            // Find which delete-mode notch the original vertex was inside.
-            for ( const auto &n : notchSpecs ) {
-                if ( !n.deleteFlag ) continue;
-                if ( insideNotch(origCoords[i], n) ) {
-                    snapOutOfNotch(c, n);
-                    break;
-                }
+        for ( const auto &n : notchSpecs ) {
+            if ( !n.deleteFlag ) continue;
+            if ( insideNotch(origCoords[i], n) ) {
+                snapOutOfNotch(c, n);
+                break;
             }
         }
         this->giveVoronoiVertex(i)->setCoordinates(c);
@@ -6122,27 +6393,87 @@ void Grid::give2DTMOutput(const std::string &fileName)
     if ( regionList.empty() || regionList[0] == nullptr ) {
         converter::error("give2DTMOutput: at least one #@rect region is required");
     }
+    // Region 1 is a #@rect or a #@disk (circular domain). The transport writer
+    // is region-agnostic except for three geometric predicates below.
     const auto *rect = dynamic_cast< Rect * >( this->giveRegion(1) );
-    if ( !rect ) {
-        converter::error("give2DTMOutput: region 1 must be a #@rect");
+    const auto *disk = dynamic_cast< Disk * >( this->giveRegion(1) );
+    if ( !rect && !disk ) {
+        converter::error("give2DTMOutput: region 1 must be a #@rect or #@disk");
     }
 
     const int nVorV = this->giveNumberOfVoronoiVertices();
     const int nVorL = this->giveNumberOfVoronoiLines();
     const double tol = this->giveTol();
-    const auto &rectBox = rect->giveBox();
-    const double xmin = rectBox.at(1), ymin = rectBox.at(2);
-    const double xmax = rectBox.at(3), ymax = rectBox.at(4);
+
+    double xmin = 0., ymin = 0., xmax = 0., ymax = 0.;
+    if ( rect ) {
+        const auto &rectBox = rect->giveBox();
+        xmin = rectBox.at(1); ymin = rectBox.at(2);
+        xmax = rectBox.at(3); ymax = rectBox.at(4);
+    }
+    double dcx = 0., dcy = 0., drad = 0., dinner = 0.;
+    if ( disk ) {
+        dcx = disk->giveCentre().at(1);
+        dcy = disk->giveCentre().at(2);
+        drad = disk->giveRadius();
+        dinner = disk->giveInnerRadius();   // 0 for a solid disc
+    }
 
     auto strictlyInside = [&](const oofem::FloatArray &c) {
-        return c.at(1) > xmin + tol && c.at(1) < xmax - tol &&
-               c.at(2) > ymin + tol && c.at(2) < ymax - tol;
+        // A #@holedisk void is outside the domain — its interior and rim are not
+        // interior transport nodes (the rim nodes are emitted by the boundary pass).
+        if ( this->isInsideDeleteHole(c.at(1), c.at(2)) ||
+             this->onDeleteHoleRim(c.at(1), c.at(2), tol) ) {
+            return false;
+        }
+        if ( rect ) {
+            return c.at(1) > xmin + tol && c.at(1) < xmax - tol &&
+                   c.at(2) > ymin + tol && c.at(2) < ymax - tol;
+        }
+        const double d = std::sqrt(( c.at(1) - dcx ) * ( c.at(1) - dcx ) + ( c.at(2) - dcy ) * ( c.at(2) - dcy ) );
+        return d < drad - tol && ( dinner <= 0. || d > dinner + tol );
     };
     auto onRectBoundary = [&](const oofem::FloatArray &c) {
-        return ( std::abs(c.at(1) - xmin) < tol || std::abs(c.at(1) - xmax) < tol ||
-                 std::abs(c.at(2) - ymin) < tol || std::abs(c.at(2) - ymax) < tol ) &&
-               c.at(1) > xmin - tol && c.at(1) < xmax + tol &&
-               c.at(2) > ymin - tol && c.at(2) < ymax + tol;
+        if ( this->onDeleteHoleRim(c.at(1), c.at(2), tol) ) {
+            return true;
+        }
+        if ( rect ) {
+            return ( std::abs(c.at(1) - xmin) < tol || std::abs(c.at(1) - xmax) < tol ||
+                     std::abs(c.at(2) - ymin) < tol || std::abs(c.at(2) - ymax) < tol ) &&
+                   c.at(1) > xmin - tol && c.at(1) < xmax + tol &&
+                   c.at(2) > ymin - tol && c.at(2) < ymax + tol;
+        }
+        const double d = std::sqrt(( c.at(1) - dcx ) * ( c.at(1) - dcx ) + ( c.at(2) - dcy ) * ( c.at(2) - dcy ) );
+        return std::abs(d - drad) < tol || ( dinner > 0. && std::abs(d - dinner) < tol );
+    };
+    // Boundary transport-node position for a crossing edge whose dual Delaunay
+    // endpoints lie on the boundary: the dual-edge midpoint, projected radially
+    // onto the nearer circle for a disk (outer, or the inner hole for an annulus;
+    // a chord midpoint is otherwise off the circle).
+    auto boundaryNodeCoord = [&](const oofem::FloatArray &dA, const oofem::FloatArray &dB) {
+        oofem::FloatArray m(3);
+        m.at(1) = 0.5 * ( dA.at(1) + dB.at(1) );
+        m.at(2) = 0.5 * ( dA.at(2) + dB.at(2) );
+        // Hole rim edge: both Delaunay endpoints on the same #@holedisk circle →
+        // the hole projects the chord midpoint radially onto its circle.
+        for ( const auto *h : holeList ) {
+            if ( h != nullptr && h->boundaryNodeCoord(dA, dB, tol, m) ) {
+                return m;
+            }
+        }
+        if ( disk ) {
+            const double ex = m.at(1) - dcx, ey = m.at(2) - dcy;
+            const double d = std::sqrt(ex * ex + ey * ey);
+            if ( d > 0. ) {
+                double targetR = drad;
+                if ( dinner > 0. && std::abs(d - dinner) < std::abs(d - drad) ) {
+                    targetR = dinner;
+                }
+                m.at(1) = dcx + targetR / d * ex;
+                m.at(2) = dcy + targetR / d * ey;
+            }
+        }
+        return m;
     };
 
     // Pre-pass 1: interior Voronoi vertices (strictly inside the rect; excludes
@@ -6205,9 +6536,7 @@ void Grid::give2DTMOutput(const std::string &fileName)
             this->giveDelaunayVertex(cs.at(2))->giveCoordinates(dB);
             if ( !onRectBoundary(dA) || !onRectBoundary(dB) ) continue;
 
-            oofem::FloatArray mid(3);
-            mid.at(1) = 0.5 * ( dA.at(1) + dB.at(1) );
-            mid.at(2) = 0.5 * ( dA.at(2) + dB.at(2) );
+            const oofem::FloatArray mid = boundaryNodeCoord(dA, dB);
             boundaryNodeForLine[ i + 1 ] = ++emittedNodes;
             boundaryNodeCoords.push_back(mid);
             ++emittedElems;
@@ -6370,14 +6699,12 @@ void Grid::give2DTMOutput(const std::string &fileName)
                 if ( inA ) {
                     this->giveVoronoiVertex(a)->giveCoordinates(vA);
                 } else {
-                    vA.at(1) = 0.5 * ( dA.at(1) + dB.at(1) );
-                    vA.at(2) = 0.5 * ( dA.at(2) + dB.at(2) );
+                    vA = boundaryNodeCoord(dA, dB);
                 }
                 if ( inB ) {
                     this->giveVoronoiVertex(b)->giveCoordinates(vB);
                 } else {
-                    vB.at(1) = 0.5 * ( dA.at(1) + dB.at(1) );
-                    vB.at(2) = 0.5 * ( dA.at(2) + dB.at(2) );
+                    vB = boundaryNodeCoord(dA, dB);
                 }
 
                 const double ddx = dA.at(1) - dB.at(1);

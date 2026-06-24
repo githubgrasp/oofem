@@ -59,6 +59,13 @@ public:
     /// True iff `(x, y)` lies inside the rectangle (with `tol` margin).
     bool contains(double x, double y, double tol) const;
 
+    /// Region-owned Voronoi cross-section adjustment (called at the end of
+    /// findOutsiders, as Cylinder/Disk do): clamp the outside endpoint of every
+    /// crossing Voronoi edge onto the nearest rectangle face, so the boundary
+    /// dual cells close on the rectangle. Notch voids are handled separately by
+    /// Grid::project2DVoronoiVerticesToNotches.
+    void projectVoronoiToBoundary();
+
     /// Returns class name of the receiver.
     const char *giveClassName() const override { return "Rect"; }
 };

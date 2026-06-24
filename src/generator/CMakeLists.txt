@@ -21,6 +21,7 @@ set(GENERATOR_SOURCES
     rect.C
     disk.C
     interfacedisk.C
+    holedisk.C
    )
 
 add_library(generator STATIC ${GENERATOR_SOURCES})
