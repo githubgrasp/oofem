@@ -1164,12 +1164,12 @@ void Grid::readControlRecords()
             }
             sphereInclusionSpecs.push_back(s);
         } else if ( tag == "#@disk" ) {
-            // #@disk <id> centre 2 cx cy radius r [innerradius ri]
+            // #@disk <id> centre 2 cx cy radius r
             // Circular domain region (2D analog of #@cylinder). The domain is the
-            // inside of this circle (or the annulus between innerradius and
-            // radius); the Disk region both classifies points and projects
-            // boundary Voronoi cross-section nodes radially onto the circle(s).
-            // Matches the generator's #@disk seeding.
+            // inside of this circle; the Disk region both classifies points and
+            // projects boundary Voronoi cross-section nodes radially onto the
+            // circle. Holes are separate #@holedisk inclusions. Matches the
+            // generator's #@disk seeding.
             int num;
             iss >> num;
             std::string kw;
@@ -1188,11 +1188,6 @@ void Grid::readControlRecords()
             auto *d = new Disk(num, this);
             d->setCentre(centre);
             d->setRadius(rad);
-            double innerRad = 0.;
-            if ( iss >> kw && kw == "innerradius" ) {   // optional inner (hole) radius
-                iss >> innerRad;
-                d->setInnerRadius(innerRad);
-            }
             regionList.resize(std::max(( int ) regionList.size(), num), nullptr);
             setRegion(num, d);
         } else if ( tag == "#@diskinclusion" ) {
@@ -1304,14 +1299,15 @@ void Grid::readControlRecords()
             // the SM and TM subproblems exchange data element-by-element.
             emitCouplingFlag = true;
         } else if ( tag == "#@coupling" ) {
-            // #@coupling inner ltf <id> pressure <p>
-            // Hydro-mechanical boundary coupling on the inner circle of a
-            // #@disk annulus. `ltf` selects the load-time function scaling the
-            // pressure; `pressure` is the reference inner pressure.
-            std::string rim, kw;
-            if ( !( iss >> rim ) || rim != "inner" ) {
-                converter::error("Malformed #@coupling — expected 'inner ltf <id> pressure <p>'");
+            // #@coupling hole <id> ltf <id> pressure <p>
+            // Hydro-mechanical boundary coupling on the rim of #@holedisk <id>.
+            // `ltf` selects the load-time function scaling the pressure;
+            // `pressure` is the reference rim pressure.
+            std::string kw;
+            if ( !( iss >> kw ) || kw != "hole" ) {
+                converter::error("Malformed #@coupling — expected 'hole <id> ltf <id> pressure <p>'");
             }
+            iss >> couplingHoleId;
             while ( iss >> kw ) {
                 if ( kw == "ltf" ) {
                     iss >> couplingLtf;
@@ -5720,21 +5716,24 @@ void Grid::give2DSMOutput(const std::string &fileName)
     }
 
     if ( couplingEnabled ) {
-        if ( !disk ) {
-            converter::error("#@coupling requires region 1 to be a #@disk annulus");
+        HoleDisk *hole = nullptr;
+        for ( auto *h : holeList ) {
+            if ( h != nullptr && h->giveNumber() == couplingHoleId ) { hole = h; break; }
         }
-        std::vector< Disk::RimCouplingEntry > rim;
-        const_cast< Disk * >( disk )->computeInnerRimCoupling(rim);
-        const double innerR = disk->giveInnerRadius();
+        if ( hole == nullptr ) {
+            converter::errorf("#@coupling hole %d: no matching #@holedisk", couplingHoleId);
+        }
+        std::vector< HoleDisk::RimCouplingEntry > rim;
+        hole->computeRimCoupling(this, rim);
         double perim = 0., fx = 0., fy = 0.;
         for ( const auto &e : rim ) {
             perim += e.tributary;
             fx += e.tributary * e.dirX;
             fy += e.tributary * e.dirY;
         }
-        printf("#@coupling: %d inner-rim mechanical nodes; tributary sum = %.6g "
-               "(2*pi*r_in = %.6g); force-direction sum = (%.3g, %.3g) [~0 expected]\n",
-               (int) rim.size(), perim, 2. * M_PI * innerR, fx, fy);
+        printf("#@coupling hole %d: %d rim mechanical nodes; tributary sum = %.6g "
+               "(2*pi*r = %.6g); force-direction sum = (%.3g, %.3g) [~0 expected]\n",
+               couplingHoleId, (int) rim.size(), perim, 2. * M_PI * hole->giveRadius(), fx, fy);
     }
 
     const int nDelV = this->giveNumberOfDelaunayVertices();
@@ -5832,12 +5831,12 @@ void Grid::give2DSMOutput(const std::string &fileName)
         }
     };
 
-    // Hydro-mechanical coupling (#@coupling) generated records, filled below
-    // and spliced in at the {#@COUPLINGBC}/{#@COUPLINGSET} tokens; anchor map
-    // tags three outer nodes with inline per-DOF `bc` masks.
+    // Hydro-mechanical coupling (#@coupling hole <id>) generated records,
+    // spliced in at the {#@COUPLINGBC}/{#@COUPLINGSET} tokens. Rigid-body
+    // restraint is the user's responsibility via #@controlvertex + sets in
+    // control.in (no anchors are emitted here).
     std::string couplingBCRecords, couplingSetRecords;
     int couplingGenBC = 0, couplingGenSet = 0;
-    std::map< int, std::vector< int > > anchorBcMask;  // Delaunay vertex -> per-DOF bc ids
 
     auto substitute = [ & ](std::string &s) {
         if ( periodic ) {
@@ -5851,8 +5850,14 @@ void Grid::give2DSMOutput(const std::string &fileName)
     };
 
     if ( couplingEnabled ) {
-        if ( !disk ) {
-            converter::error("#@coupling requires region 1 to be a #@disk annulus");
+        // The coupled boundary is a hole rim, referenced by id.
+        HoleDisk *hole = nullptr;
+        for ( auto *h : holeList ) {
+            if ( h != nullptr && h->giveNumber() == couplingHoleId ) { hole = h; break; }
+        }
+        if ( hole == nullptr ) {
+            converter::errorf("#@coupling hole %d: no matching #@holedisk / #@diskinclusion ... delete",
+                              couplingHoleId);
         }
         // Base BC / set counts from control.in, so generated ids don't collide.
         int baseNbc = 0, baseNset = 0;
@@ -5876,11 +5881,11 @@ void Grid::give2DSMOutput(const std::string &fileName)
             }
         }
 
-        // (a) Outward radial NodalLoads on the inner-rim mechanical nodes:
-        //     f = pressure * tributary * (radial unit vector). One load + one
-        //     single-node set per rim node (each has its own direction).
-        std::vector< Disk::RimCouplingEntry > rim;
-        const_cast< Disk * >( disk )->computeInnerRimCoupling(rim);
+        // Outward radial NodalLoads on the hole-rim mechanical nodes:
+        // f = pressure * tributary * (radial unit vector). One load + one
+        // single-node set per rim node (each has its own direction).
+        std::vector< HoleDisk::RimCouplingEntry > rim;
+        hole->computeRimCoupling(this, rim);
         std::ostringstream bcs, sets;
         int bId = baseNbc, sId = baseNset;
         for ( const auto &e : rim ) {
@@ -5898,38 +5903,6 @@ void Grid::give2DSMOutput(const std::string &fileName)
         couplingSetRecords = sets.str();
         couplingGenBC = bId - baseNbc;
         couplingGenSet = sId - baseNset;
-
-        // (b) Free outer surface + tangential/R_w anchor pins at three outer
-        //     cardinal nodes (theta = 0, 90, 270 deg), referencing the
-        //     template's BoundaryCondition 1 (prescribedvalue 0). Tangential
-        //     pins leave the radial DOF free, so the Lame radial solution is
-        //     not perturbed (matches the 2015 pressure-case setup).
-        const oofem::FloatArray &cc0 = disk->giveCentre();
-        const double cx = cc0.at(1), cy = cc0.at(2);
-        const double outerR = disk->giveRadius();
-        const double rimTol = 1.e3 * tol;
-        const std::vector< std::pair< double, std::vector< int > > > targets = {
-            { 0.,             { 0, 1, 1 } },   // east:  fix D_v, R_w
-            { M_PI / 2.,      { 1, 0, 1 } },   // north: fix D_u, R_w
-            { 3. * M_PI / 2., { 1, 0, 1 } },   // south: fix D_u, R_w
-        };
-        for ( const auto &tg : targets ) {
-            int best = 0;
-            double bestAng = 1.e300;
-            oofem::FloatArray cc;
-            for ( int i = 1; i <= nDelV; ++i ) {
-                if ( nodeMap[ i ] == 0 ) continue;
-                this->giveDelaunayVertex(i)->giveCoordinates(cc);
-                const double dx = cc.at(1) - cx, dy = cc.at(2) - cy;
-                if ( std::fabs(std::sqrt(dx * dx + dy * dy) - outerR) >= rimTol ) continue;
-                double ang = std::atan2(dy, dx);
-                if ( ang < 0. ) ang += 2. * M_PI;
-                double d = std::fabs(ang - tg.first);
-                d = std::min(d, 2. * M_PI - d);
-                if ( d < bestAng ) { bestAng = d; best = i; }
-            }
-            if ( best != 0 ) anchorBcMask[ best ] = tg.second;
-        }
     }
 
     std::ifstream ctrl(controlFileName);
@@ -6036,16 +6009,6 @@ void Grid::give2DSMOutput(const std::string &fileName)
                     if ( !bcIds.empty() ) {
                         out << " bc " << bcIds.size();
                         for ( int id : bcIds ) out << " " << id;
-                    }
-                }
-                // #@coupling anchor tagging — three outer cardinal nodes get a
-                // per-DOF `bc` mask (tangential + R_w pinned) referencing the
-                // template BoundaryCondition 1.
-                if ( !ssMatch ) {
-                    auto am = anchorBcMask.find(i + 1);
-                    if ( am != anchorBcMask.end() ) {
-                        out << " bc 3 " << am->second[0] << " "
-                            << am->second[1] << " " << am->second[2];
                     }
                 }
                 out << "\n";
@@ -6416,7 +6379,6 @@ void Grid::give2DTMOutput(const std::string &fileName)
         dcx = disk->giveCentre().at(1);
         dcy = disk->giveCentre().at(2);
         drad = disk->giveRadius();
-        dinner = disk->giveInnerRadius();   // 0 for a solid disc
     }
 
     auto strictlyInside = [&](const oofem::FloatArray &c) {
@@ -6431,7 +6393,7 @@ void Grid::give2DTMOutput(const std::string &fileName)
                    c.at(2) > ymin + tol && c.at(2) < ymax - tol;
         }
         const double d = std::sqrt(( c.at(1) - dcx ) * ( c.at(1) - dcx ) + ( c.at(2) - dcy ) * ( c.at(2) - dcy ) );
-        return d < drad - tol && ( dinner <= 0. || d > dinner + tol );
+        return d < drad - tol;
     };
     auto onRectBoundary = [&](const oofem::FloatArray &c) {
         if ( this->onDeleteHoleRim(c.at(1), c.at(2), tol) ) {
@@ -6444,12 +6406,11 @@ void Grid::give2DTMOutput(const std::string &fileName)
                    c.at(2) > ymin - tol && c.at(2) < ymax + tol;
         }
         const double d = std::sqrt(( c.at(1) - dcx ) * ( c.at(1) - dcx ) + ( c.at(2) - dcy ) * ( c.at(2) - dcy ) );
-        return std::abs(d - drad) < tol || ( dinner > 0. && std::abs(d - dinner) < tol );
+        return std::abs(d - drad) < tol;
     };
     // Boundary transport-node position for a crossing edge whose dual Delaunay
     // endpoints lie on the boundary: the dual-edge midpoint, projected radially
-    // onto the nearer circle for a disk (outer, or the inner hole for an annulus;
-    // a chord midpoint is otherwise off the circle).
+    // onto the circle for a disk (a chord midpoint is otherwise off the circle).
     auto boundaryNodeCoord = [&](const oofem::FloatArray &dA, const oofem::FloatArray &dB) {
         oofem::FloatArray m(3);
         m.at(1) = 0.5 * ( dA.at(1) + dB.at(1) );
@@ -6465,12 +6426,8 @@ void Grid::give2DTMOutput(const std::string &fileName)
             const double ex = m.at(1) - dcx, ey = m.at(2) - dcy;
             const double d = std::sqrt(ex * ex + ey * ey);
             if ( d > 0. ) {
-                double targetR = drad;
-                if ( dinner > 0. && std::abs(d - dinner) < std::abs(d - drad) ) {
-                    targetR = dinner;
-                }
-                m.at(1) = dcx + targetR / d * ex;
-                m.at(2) = dcy + targetR / d * ey;
+                m.at(1) = dcx + drad / d * ex;
+                m.at(2) = dcy + drad / d * ey;
             }
         }
         return m;

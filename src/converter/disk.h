@@ -9,7 +9,6 @@
 
 #ifndef __MAKEDEPEND
  #include <stdio.h>
- #include <vector>
 #endif
 
 
@@ -19,7 +18,9 @@
 /// `modifyVoronoiCrossSection` projects the Voronoi cross-section vertices of
 /// boundary-crossing mechanical elements radially onto the circle, so transport
 /// nodes lie on the boundary and no transport element runs tangentially along
-/// it (the requirement of the coupled transport-mechanical lattice).
+/// it (the requirement of the coupled transport-mechanical lattice). Holes
+/// (annulus, multiple voids) are separate `#@holedisk` inclusions, not a
+/// property of the disc.
 class Disk : public Region
 {
 protected:
@@ -27,8 +28,6 @@ protected:
     oofem::FloatArray centre;
     /// Outer circle radius.
     double radius = 0.;
-    /// Inner (hole) radius; 0 = full disc, > 0 = annulus.
-    double innerRadius = 0.;
 
 public:
     Disk(int n, Grid *aGrid);
@@ -42,10 +41,6 @@ public:
     void setRadius(double r) { radius = r; }
     /// Returns the outer circle radius.
     double giveRadius() const { return radius; }
-    /// Set the inner (hole) radius; 0 = full disc.
-    void setInnerRadius(double r) { innerRadius = r; }
-    /// Returns the inner (hole) radius (0 = full disc).
-    double giveInnerRadius() const { return innerRadius; }
 
     /// Fill `boundaries` with the disc bounding box `[xmin xmax ymin ymax 0 0]`.
     void defineBoundaries(oofem::FloatArray &boundaries) override;
@@ -63,20 +58,6 @@ public:
 
     /// True iff `(x, y)` lies inside the circle (with `tol` margin).
     bool contains(double x, double y, double tol) const;
-
-    /// One inner-rim mechanical node receiving the hydro-mechanical coupling load.
-    struct RimCouplingEntry {
-        int delaunayVertex = 0;      ///< global Delaunay-vertex id (mechanical node)
-        double dirX = 0., dirY = 0.; ///< outward radial unit direction at the node
-        double tributary = 0.;       ///< tributary boundary length (sum of incident half-edges)
-    };
-
-    /// Identify the mechanical nodes on this disk's inner circle (the annulus
-    /// hole rim) and fill `entries` with each node's outward radial direction
-    /// and tributary boundary length (half of every incident inner-rim Delaunay
-    /// edge). Pure geometry on the region's own circle — the grid turns the
-    /// result into coupling boundary-condition records. Requires `innerRadius > 0`.
-    void computeInnerRimCoupling(std::vector< RimCouplingEntry > &entries);
 
     const char *giveClassName() const override { return "Disk"; }
 };

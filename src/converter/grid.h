@@ -364,14 +364,15 @@ private:
     /// Enabled by the `#@couplingflag` directive.
     bool emitCouplingFlag = false;
 
-    /// Hydro-mechanical boundary coupling on the inner circle of a `#@disk`
-    /// annulus (GraFahGalWhe15 thick-walled cylinder). Enabled by
-    /// `#@coupling inner ltf <id> pressure <p>`. Step 3a emits radial nodal
-    /// loads on the inner-rim mechanical nodes (a direct-pressure elastic
-    /// check); Step 3b will instead emit `LatticeNeumannCoupling` reading the
-    /// transport pressure. `couplingPressure` is the reference pressure scaled
-    /// by load-time function `couplingLtf`.
+    /// Hydro-mechanical boundary coupling on a hole rim (GraFahGalWhe15
+    /// thick-walled cylinder). Enabled by `#@coupling hole <id> ltf <id>
+    /// pressure <p>`, where `<id>` selects the `#@holedisk` whose rim is
+    /// loaded. Step 3a emits radial nodal loads on the rim mechanical nodes (a
+    /// direct-pressure elastic check); Step 3b will instead emit
+    /// `LatticeNeumannCoupling` reading the transport pressure. `couplingPressure`
+    /// is the reference pressure scaled by load-time function `couplingLtf`.
     bool couplingEnabled = false;
+    int couplingHoleId = 0;
     int couplingLtf = 1;
     double couplingPressure = 0.;
 

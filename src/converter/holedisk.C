@@ -5,6 +5,7 @@
 #include "intarray.h"
 
 #include <cmath>
+#include <map>
 
 
 HoleDisk::HoleDisk(int n, double cx, double cy, double radius)
@@ -87,4 +88,60 @@ bool HoleDisk::boundaryNodeCoord(const oofem::FloatArray &dA, const oofem::Float
         m.at(2) = cy + radius / d * ey;
     }
     return true;
+}
+
+
+void HoleDisk::computeRimCoupling(Grid *grid, std::vector< RimCouplingEntry > &entries) const
+{
+    entries.clear();
+
+    const double rimTol = 1.e3 * grid->giveTol();
+
+    auto rad = [&]( const oofem::FloatArray &c ) -> double {
+        return std::sqrt(( c.at(1) - cx ) * ( c.at(1) - cx ) + ( c.at(2) - cy ) * ( c.at(2) - cy ) );
+    };
+
+    // Accumulate the tributary length per rim vertex over its incident rim
+    // Delaunay edges (the boundary mechanical elements). No Delaunay edge
+    // crosses the empty hole, so the only edges with both endpoints on the
+    // circle are the boundary-polygon edges — each rim node sees its two
+    // neighbours and gets half of each edge.
+    std::map< int, int > vertexToEntry;
+    oofem::IntArray ep;
+    oofem::FloatArray ca, cb;
+
+    for ( int i = 1; i <= grid->giveNumberOfDelaunayLines(); ++i ) {
+        if ( grid->giveDelaunayLine(i)->giveOutsideFlag() == 1 ) continue;
+        grid->giveDelaunayLine(i)->giveLocalVertices(ep);
+        if ( ep.giveSize() != 2 ) continue;
+        grid->giveDelaunayVertex(ep.at(1) )->giveCoordinates(ca);
+        grid->giveDelaunayVertex(ep.at(2) )->giveCoordinates(cb);
+        if ( std::fabs(rad(ca) - radius) >= rimTol || std::fabs(rad(cb) - radius) >= rimTol ) continue;
+
+        const double dx = cb.at(1) - ca.at(1);
+        const double dy = cb.at(2) - ca.at(2);
+        const double halfLen = 0.5 * std::sqrt(dx * dx + dy * dy);
+
+        for ( int k = 1; k <= 2; ++k ) {
+            const int gv = ep.at(k);
+            auto it = vertexToEntry.find(gv);
+            int idx;
+            if ( it == vertexToEntry.end() ) {
+                oofem::FloatArray cc;
+                grid->giveDelaunayVertex(gv)->giveCoordinates(cc);
+                const double d = rad(cc);
+                RimCouplingEntry e;
+                e.delaunayVertex = gv;
+                e.dirX = ( cc.at(1) - cx ) / d;   // outward radial unit vector
+                e.dirY = ( cc.at(2) - cy ) / d;
+                e.tributary = 0.;
+                idx = (int) entries.size();
+                entries.push_back(e);
+                vertexToEntry[ gv ] = idx;
+            } else {
+                idx = it->second;
+            }
+            entries[ idx ].tributary += halfLen;
+        }
+    }
 }

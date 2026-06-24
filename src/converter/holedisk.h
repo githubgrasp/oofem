@@ -3,6 +3,8 @@
 
 #include "floatarray.h"
 
+#include <vector>
+
 class Grid;
 
 
@@ -52,6 +54,19 @@ public:
     /// circle and return true; otherwise return false and leave `m` untouched.
     bool boundaryNodeCoord(const oofem::FloatArray &dA, const oofem::FloatArray &dB,
                            double tol, oofem::FloatArray &m) const;
+
+    /// One rim mechanical node receiving the hydro-mechanical coupling load.
+    struct RimCouplingEntry {
+        int delaunayVertex = 0;      ///< global Delaunay-vertex id (mechanical node)
+        double dirX = 0., dirY = 0.; ///< outward radial unit direction at the node
+        double tributary = 0.;       ///< tributary boundary length (sum of incident half-edges)
+    };
+
+    /// Identify the mechanical nodes on this hole's rim and fill `entries` with
+    /// each node's outward radial direction and tributary boundary length (half
+    /// of every incident rim Delaunay edge). Pure geometry on the hole circle —
+    /// the grid turns the result into coupling boundary-condition records.
+    void computeRimCoupling(Grid *grid, std::vector< RimCouplingEntry > &entries) const;
 };
 
 
