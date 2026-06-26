@@ -6,7 +6,7 @@
 #include "surface.h"
 #include "region.h"
 #include "interfacesphere.h"
-#include "boundarysphere.h"
+#include "sphere.h"
 #include "interfacecylinder.h"
 #include "cylinder.h"
 #include "holedisk.h"
@@ -170,6 +170,8 @@ void Grid::resolveGridType(const std::string &name)
         gridType = _3dSM;
     } else if ( !strncasecmp(name.c_str(), "3dtm", 4) ) {
         gridType = _3dTM;
+    } else if ( !strncasecmp(name.c_str(), "2dsmtm", 6) ) {
+        gridType = _2dSMTM;
     } else if ( !strncasecmp(name.c_str(), "2dsm", 4) ) {
         gridType = _2dSM;
     } else if ( !strncasecmp(name.c_str(), "2dtm", 4) ) {
@@ -1318,6 +1320,12 @@ void Grid::readControlRecords()
                 }
             }
             couplingEnabled = true;
+        } else if ( tag == "#@tmcontrol" ) {
+            // #@tmcontrol <path>
+            // TM control template for a combined #@grid 2dSMTM run.
+            if ( !( iss >> tmControlFileName ) ) {
+                converter::error("Malformed #@tmcontrol — expected '<path>'");
+            }
         } else if ( tag == "#@rigidarm" ) {
             // #@rigidarm <master_ctl_id> face <axis> <side>
             //   mastermask 6 m1..m6 doftype 6 d1..d6
@@ -2644,6 +2652,32 @@ void Grid::giveOofemOutput(const std::string &fileName)
         project2DVoronoiVerticesToNotches();
         project2DVoronoiVerticesToHoles();
         give2DTMOutput(fileName);
+    } else if ( gridType == _2dSMTM ) {
+        // Combined run: write the SM and TM input files from one shared node
+        // numbering, so the SM LatticeNeumannCoupling can reference TM
+        // transport-node ids (mirrors the single-pass 2015 triangle2oofem).
+        if ( tmControlFileName.empty() ) {
+            converter::error("#@grid 2dSMTM requires #@tmcontrol <path> (the TM control template)");
+        }
+        project2DVoronoiVerticesToNotches();
+        project2DVoronoiVerticesToHoles();
+
+        // Derive oofem.sm.in / oofem.tm.in from the base output name (oofem.in).
+        std::string base = fileName;
+        const size_t dot = base.rfind(".in");
+        const std::string stem = ( dot != std::string::npos ) ? base.substr(0, dot) : base;
+        const std::string smOut = stem + ".sm.in";
+        const std::string tmOut = stem + ".tm.in";
+
+        // The SM control is the file the converter was invoked on; the TM
+        // control comes from #@tmcontrol. give2D*Output read `controlFileName`
+        // for their copy-through template, so swap it per writer. TM is written
+        // first so its node numbering is available to the SM coupling pass.
+        const std::string smControl = controlFileName;
+        controlFileName = tmControlFileName;
+        give2DTMOutput(tmOut);
+        controlFileName = smControl;
+        give2DSMOutput(smOut);
     } else {
         converter::error("Unknown grid type\n");
     }

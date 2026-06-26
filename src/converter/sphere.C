@@ -1,4 +1,4 @@
-#include "boundarysphere.h"
+#include "sphere.h"
 #include "curve.h"
 #include "vertex.h"
 #include "line.h"
@@ -8,7 +8,7 @@
  #include <stdlib.h>
 #endif
 
-BoundarySphere::BoundarySphere(int n, Grid *aGrid) : Region(n, aGrid)
+Sphere::Sphere(int n, Grid *aGrid) : Region(n, aGrid)
 {
     this->number = n;
 }
@@ -16,7 +16,7 @@ BoundarySphere::BoundarySphere(int n, Grid *aGrid) : Region(n, aGrid)
 
 
 
-void BoundarySphere::findOutsiders(oofem::FloatArray &boundaries)
+void Sphere::findOutsiders(oofem::FloatArray &boundaries)
 {
     //This function finds nodes and elements which are either outside or on the boundary of the specimen.
     //It finds also periodic nodes and elements which are needed for the output of periodic cells.
@@ -127,7 +127,7 @@ void BoundarySphere::findOutsiders(oofem::FloatArray &boundaries)
 
 
 int
-BoundarySphere::modifyVoronoiCrossSection(int elementNumber)
+Sphere::modifyVoronoiCrossSection(int elementNumber)
 {
     oofem::IntArray crossSectionElements;
     oofem::IntArray crossSectionVertices;
@@ -205,7 +205,7 @@ BoundarySphere::modifyVoronoiCrossSection(int elementNumber)
 
 
 
-void BoundarySphere::defineBoundaries(oofem::FloatArray &boundaries)
+void Sphere::defineBoundaries(oofem::FloatArray &boundaries)
 //Determine the boundaries of the grid
 {
     boundaries.resize(6);
@@ -213,13 +213,13 @@ void BoundarySphere::defineBoundaries(oofem::FloatArray &boundaries)
     return;
 }
 
-BoundarySphere *BoundarySphere::ofType()
+Sphere *Sphere::ofType()
 // Returns a new DofManager, which has the same number than the receiver,
 // but belongs to aClass (Node, ElementSide,..).
 {
-    BoundarySphere *boundarysphere;
+    Sphere *sphere;
 
-    boundarysphere = new BoundarySphere(number, grid);
+    sphere = new Sphere(number, grid);
 
-    return boundarysphere;
+    return sphere;
 }

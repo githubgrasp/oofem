@@ -19,7 +19,7 @@ rect.C
 region.C
 surface.C
 vertex.C
-boundarysphere.C
+sphere.C
 )
 
 add_library(converter STATIC ${CONVERTER_SOURCES})

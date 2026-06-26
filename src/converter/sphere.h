@@ -1,5 +1,5 @@
-#ifndef boundarysphere_h
-#define boundarysphere_h
+#ifndef converter_sphere_h
+#define converter_sphere_h
 
 
 #include "grid.h"
@@ -15,7 +15,7 @@
 #endif
 
 
-class BoundarySphere : public Region
+class Sphere : public Region
 {
 protected:
     /// Array storing nodal coordinates.
@@ -32,9 +32,9 @@ public:
      * @param n node number in domain aDomain
      * @param aDomain domain to which node belongs
      */
-    BoundarySphere(int n, Grid *aGrid);                      // constructor
+    Sphere(int n, Grid *aGrid);                      // constructor
     /// Destructor.
-    ~BoundarySphere() override = default;                                           // destructor
+    ~Sphere() override = default;                                           // destructor
 
 
     double giveRadius() { return this->radius; }
@@ -42,9 +42,9 @@ public:
     void giveCentre(oofem::FloatArray &cent) { cent = centre; }
 
 
-    BoundarySphere *ofType();
+    Sphere *ofType();
 
-    const char *giveClassName() const override { return "BoundarySphere"; }
+    const char *giveClassName() const override { return "Sphere"; }
 
 
     void printYourself();
@@ -57,4 +57,4 @@ public:
 };
 
 
-#endif // boundarysphere_h
+#endif // converter_sphere_h

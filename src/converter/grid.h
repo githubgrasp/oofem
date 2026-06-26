@@ -33,8 +33,7 @@ class Inclusion;
 class GridLocalizer;
 class Fibre;
 class HoleDisk;
-class BoundarySphere;
-class BoundaryCylinder;
+class Sphere;
 
 
 /// Raw T3D mesh node. `entType`/`entID` tag the geometric entity (vertex,
@@ -117,7 +116,7 @@ private:
 
     /** Grid type. This determines the type of input to generate
      */
-    enum GridType { _3dSM, _3dTM, _2dSM, _2dTM };
+    enum GridType { _3dSM, _3dTM, _2dSM, _2dTM, _2dSMTM };
 
     GridType gridType;
 
@@ -137,6 +136,14 @@ private:
     std::vector< std::vector< int > >edgeToBoundaryTris;
 
     std::string controlFileName;
+
+    /// TM control template for a combined `#@grid 2dSMTM` run, set by
+    /// `#@tmcontrol <path>`. The SM control file (the one the converter is
+    /// invoked on) supplies the geometry directives and the SM template; this
+    /// file supplies the TM template. One run then writes both `oofem.sm.in`
+    /// and `oofem.tm.in` from a single shared node numbering, so the SM
+    /// `LatticeNeumannCoupling` can reference TM transport-node ids directly.
+    std::string tmControlFileName;
 
     std::map< int, std::map< int, std::vector< int > > >entityNodes;
 
