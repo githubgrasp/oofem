@@ -1426,6 +1426,24 @@ void Grid::readControlRecords()
             nb.axis = axis;
             nb.sideMax = ( sideWord == "max" );
             nodeBCSpecs.push_back(nb);
+        } else if ( tag == "#@edgebc" ) {
+            // #@edgebc region <id> bc <bc_id>
+            // Tags every emitted boundary node on the named region's edge with
+            // a pre-defined BoundaryCondition id (resolved via the region's
+            // onBoundary query, so it works for any region type).
+            EdgeBCSpec eb;
+            std::string kwRegion, kwBc;
+            if ( !( iss >> kwRegion >> eb.regionId >> kwBc >> eb.bcId ) ||
+                 kwRegion != "region" || kwBc != "bc" ) {
+                converter::error("Malformed #@edgebc — expected 'region <id> bc <bc_id>'");
+            }
+            if ( eb.regionId < 1 ) {
+                converter::error("#@edgebc — region id must be >= 1");
+            }
+            if ( eb.bcId < 1 ) {
+                converter::error("#@edgebc — bc_id must be >= 1");
+            }
+            edgeBCSpecs.push_back(eb);
         } else if ( tag == "#@lumpedcapacity" ) {
             // #@lumpedcapacity <0|1>
             int v = 0;
@@ -6651,9 +6669,8 @@ void Grid::give2DTMOutput(const std::string &fileName)
     // box used by #@slaveside).
     oofem::FloatArray nbBounds;
     this->giveRegion(1)->defineBoundaries(nbBounds);
-    auto appendNodeBCs = [ & ](std::ostream &os, const oofem::FloatArray &c) {
-        if ( nodeBCSpecs.empty() ) return;
-        std::vector< int > ids;
+    // Collect bc ids from #@nodebc (axis-aligned bbox face matching).
+    auto collectFaceBCs = [ & ](const oofem::FloatArray &c, std::vector< int > &ids) {
         for ( const auto &nb : nodeBCSpecs ) {
             if ( nb.axis < 1 || nb.axis > 2 ) continue;
             const double faceCoord = nb.sideMax ? nbBounds.at(2 * nb.axis)
@@ -6662,6 +6679,18 @@ void Grid::give2DTMOutput(const std::string &fileName)
                 ids.push_back(nb.bcId);
             }
         }
+    };
+    // Collect bc ids from #@edgebc (nodes on a region's edge, any region type).
+    auto collectEdgeBCs = [ & ](const oofem::FloatArray &c, std::vector< int > &ids) {
+        for ( const auto &eb : edgeBCSpecs ) {
+            Region *r = this->giveRegion(eb.regionId);
+            if ( r && r->onBoundary(c.at(1), c.at(2), tol) ) {
+                ids.push_back(eb.bcId);
+            }
+        }
+    };
+    // Emit a single inline `bc <n> <ids...>` record (one per node, merged).
+    auto emitNodeBCs = [ & ](std::ostream &os, const std::vector< int > &ids) {
         if ( ids.empty() ) return;
         os << " bc " << ids.size();
         for ( int id : ids ) os << " " << id;
@@ -6696,7 +6725,10 @@ void Grid::give2DTMOutput(const std::string &fileName)
                 out << "node " << nodeMap[ i + 1 ]
                     << " coords 2 " << std::scientific
                     << coords.at(1) << " " << coords.at(2);
-                appendNodeBCs(out, coords);
+                std::vector< int > ids;
+                collectFaceBCs(coords, ids);
+                collectEdgeBCs(coords, ids);
+                emitNodeBCs(out, ids);
                 out << "\n";
             }
 
@@ -6714,12 +6746,15 @@ void Grid::give2DTMOutput(const std::string &fileName)
                     out << "node " << boundaryNodeForLine[ i + 1 ]
                         << " coords 2 " << std::scientific
                         << c.at(1) << " " << c.at(2);
-                    appendNodeBCs(out, c);
+                    std::vector< int > ids;
+                    collectFaceBCs(c, ids);
+                    collectEdgeBCs(c, ids);
                     // Prescribe the pore pressure on coupled hole-rim transport
                     // nodes via inline bc → the TM template's BoundaryCondition.
                     if ( boundaryNodeIsCoupledRim[ i + 1 ] ) {
-                        out << " bc 1 " << couplingTmBc;
+                        ids.push_back(couplingTmBc);
                     }
+                    emitNodeBCs(out, ids);
                     out << "\n";
                 }
             }

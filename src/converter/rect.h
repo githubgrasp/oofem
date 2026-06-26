@@ -59,6 +59,9 @@ public:
     /// True iff `(x, y)` lies inside the rectangle (with `tol` margin).
     bool contains(double x, double y, double tol) const;
 
+    /// True iff `(x, y)` lies on any of the four rectangle edges (within `tol`).
+    bool onBoundary(double x, double y, double tol) const override;
+
     /// Region-owned Voronoi cross-section adjustment (called at the end of
     /// findOutsiders, as Cylinder/Disk do): clamp the outside endpoint of every
     /// crossing Voronoi edge onto the nearest rectangle face, so the boundary

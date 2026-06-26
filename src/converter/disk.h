@@ -59,6 +59,9 @@ public:
     /// True iff `(x, y)` lies inside the circle (with `tol` margin).
     bool contains(double x, double y, double tol) const;
 
+    /// True iff `(x, y)` lies on the outer circle (within `tol`).
+    bool onBoundary(double x, double y, double tol) const override;
+
     const char *giveClassName() const override { return "Disk"; }
 };
 

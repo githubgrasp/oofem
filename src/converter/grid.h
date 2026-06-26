@@ -322,6 +322,20 @@ private:
     };
     std::vector< NodeBCSpec >nodeBCSpecs;
 
+    /// Apply a pre-defined boundary condition to all boundary nodes along the
+    /// edge of a region. `#@edgebc region <id> bc <bcId>`. Resolution uses the
+    /// region's `onBoundary(x,y,tol)` query, so it works for any region type
+    /// (disk outer circle, rectangle edges, ...). Each matching node gets an
+    /// inline `bc` referencing `bcId` (currently wired in the 2D TM writer,
+    /// where each node carries a single P_f dof). Use-case: outer drainage
+    /// (P_f = 0) of the thick-walled cylinder, giving the steady-state
+    /// logarithmic pressure field.
+    struct EdgeBCSpec {
+        int regionId = 0;
+        int bcId = 0;
+    };
+    std::vector< EdgeBCSpec >edgeBCSpecs;
+
     /// A reinforcement bar embedded as an independently meshed T3D curve.
     /// The curve must be tagged with `output yes` in `mesh.in` so T3D emits
     /// its 1D line segments (read into `lin1ds`). For each rebar node, the

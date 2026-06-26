@@ -33,6 +33,14 @@ bool Disk::contains(double x, double y, double tol) const
 }
 
 
+bool Disk::onBoundary(double x, double y, double tol) const
+{
+    const double dx = x - centre.at(1), dy = y - centre.at(2);
+    const double d = std::sqrt(dx * dx + dy * dy);
+    return std::abs(d - radius) < tol;
+}
+
+
 void Disk::findOutsiders(oofem::FloatArray &boundaries)
 {
     const double tol = grid->giveTol();

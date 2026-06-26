@@ -40,6 +40,11 @@ public:
 
     virtual void findOutsiders(oofem::FloatArray &boundaries) = 0;
 
+    /// True if (x,y) lies on this region's outer edge (within tol). Used by the
+    /// `#@edgebc region <id> bc <bcId>` directive to collect a region's
+    /// boundary nodes into a set. Default: not implemented (returns false).
+    virtual bool onBoundary(double x, double y, double tol) const { return false; }
+
     virtual int giveSwitches(oofem::IntArray &switches, oofem::FloatArray &coords) { return 0; }
 
     virtual int modifyVoronoiCrossSection(int elementNumber) { return 1; }

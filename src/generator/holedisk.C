@@ -70,20 +70,26 @@ int HoleDisk::generatePoints()
     printf("Points on hole circumference\n");
 
     // Rim ring on the hole/matrix boundary — these are the mechanical nodes
-    // that stay ON the boundary (no converter shift needed for them).
-    for ( int i = 0; i < maxIter; ++i ) {
-        const double theta = 2. * M_PI * grid->ran1(& randomIntegerOne);
+    // that stay ON the boundary (no converter shift needed for them). The rim
+    // is a smooth circle, so the nodes are placed at REGULAR angular intervals
+    // rather than by random rejection: random seeding on the 1D rim leaves
+    // uneven gaps (an occasional missing element), whereas a fixed count at
+    // uniform spacing guarantees a clean rim polygon. The target spacing is
+    // refine * diameter, as for the random fill elsewhere.
+    const double spacing = refinement * diam;
+    int nRim = ( spacing > 0. ) ? ( int ) ( 2. * M_PI * radius / spacing + 0.5 ) : 0;
+    if ( nRim < 3 ) {
+        nRim = 3;
+    }
+    for ( int k = 0; k < nRim; ++k ) {
+        const double theta = 2. * M_PI * k / nRim;
         random.at(1) = cx + radius * cos(theta);
         random.at(2) = cy + radius * sin(theta);
 
         if ( !grid->isPointInsideMeshingRegion(random) ) {
             continue;
         }
-        const int flag = grid->giveGridLocalizer()->checkNodesWithinBox(random,
-                             refinement * grid->giveDiameter(random) );
-        if ( flag == 0 && grid->addVertex(random) ) {
-            i = 0;
-
+        if ( grid->addVertex(random) ) {
             // Paired sacrificial point one diameter inside the rim at the same
             // angle (mirror of the annulus inner-mirror): guarantees every rim
             // node has an inward neighbour, so the rim Delaunay comes out as a

@@ -34,6 +34,18 @@ bool Rect::contains(double x, double y, double tol) const
 }
 
 
+bool Rect::onBoundary(double x, double y, double tol) const
+{
+    const double xmin = box.at(1), ymin = box.at(2);
+    const double xmax = box.at(3), ymax = box.at(4);
+    const bool inX = x > xmin - tol && x < xmax + tol;
+    const bool inY = y > ymin - tol && y < ymax + tol;
+    const bool onVert = ( std::abs(x - xmin) < tol || std::abs(x - xmax) < tol ) && inY;
+    const bool onHoriz = ( std::abs(y - ymin) < tol || std::abs(y - ymax) < tol ) && inX;
+    return onVert || onHoriz;
+}
+
+
 void Rect::findOutsiders(oofem::FloatArray &boundaries)
 {
     const double tol = grid->giveTol();
