@@ -44,6 +44,8 @@
 #include "classfactory.h"
 #include "dofiditem.h"
 
+#include <cmath>
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -118,7 +120,7 @@ LatticeNeumannCoupling :: assembleVector(FloatArray &answer, TimeStep *tStep,
         const FloatArray &ct = tmNode->giveCoordinates();
         double dx = ct.at(1) - cm.at(1);
         double dy = ct.at(2) - cm.at(2);
-        double distance = sqrt(dx * dx + dy * dy);
+        double distance = std::sqrt(dx * dx + dy * dy);
 
         // f = P_f * distance * direction (pressure transferred to a nodal force).
         fext = this->directionVector;
