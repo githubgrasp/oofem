@@ -57,9 +57,10 @@ public:
 
     /// One rim mechanical node receiving the hydro-mechanical coupling load.
     struct RimCouplingEntry {
-        int delaunayVertex = 0;      ///< global Delaunay-vertex id (mechanical node)
-        double dirX = 0., dirY = 0.; ///< outward radial unit direction at the node
-        double tributary = 0.;       ///< tributary boundary length (sum of incident half-edges)
+        int delaunayVertex = 0;          ///< global Delaunay-vertex id (mechanical node)
+        double dirX = 0., dirY = 0.;     ///< outward radial unit direction at the node
+        double tributary = 0.;           ///< tributary boundary length (sum of incident half-edges)
+        std::vector< int >neighbourVertices; ///< other endpoint of each incident rim edge (for TM-node lookup)
     };
 
     /// Identify the mechanical nodes on this hole's rim and fill `entries` with

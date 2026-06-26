@@ -142,6 +142,7 @@ void HoleDisk::computeRimCoupling(Grid *grid, std::vector< RimCouplingEntry > &e
                 idx = it->second;
             }
             entries[ idx ].tributary += halfLen;
+            entries[ idx ].neighbourVertices.push_back(ep.at(3 - k) );  // other endpoint of this rim edge
         }
     }
 }

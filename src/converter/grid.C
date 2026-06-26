@@ -1315,6 +1315,10 @@ void Grid::readControlRecords()
                     iss >> couplingLtf;
                 } else if ( kw == "pressure" ) {
                     iss >> couplingPressure;
+                } else if ( kw == "neumann" ) {
+                    couplingNeumann = true;
+                } else if ( kw == "tmbc" ) {
+                    iss >> couplingTmBc;
                 } else {
                     converter::errorf("#@coupling — unknown keyword '%s'", kw.c_str() );
                 }
@@ -5915,9 +5919,6 @@ void Grid::give2DSMOutput(const std::string &fileName)
             }
         }
 
-        // Outward radial NodalLoads on the hole-rim mechanical nodes:
-        // f = pressure * tributary * (radial unit vector). One load + one
-        // single-node set per rim node (each has its own direction).
         std::vector< HoleDisk::RimCouplingEntry > rim;
         hole->computeRimCoupling(this, rim);
         std::ostringstream bcs, sets;
@@ -5925,13 +5926,38 @@ void Grid::give2DSMOutput(const std::string &fileName)
         for ( const auto &e : rim ) {
             const int nid = nodeMap[ e.delaunayVertex ];
             if ( nid == 0 ) continue;
-            const double fx = couplingPressure * e.tributary * e.dirX;
-            const double fy = couplingPressure * e.tributary * e.dirY;
-            ++bId; ++sId;
-            sets << "Set " << sId << " nodes 1 " << nid << "\n";
-            bcs << "NodalLoad " << bId << " loadTimeFunction " << couplingLtf
-                << " dofs 3 1 2 6 components 3 " << std::scientific
-                << fx << " " << fy << " 0. set " << sId << "\n";
+            if ( couplingNeumann ) {
+                // Transport-driven coupling: one LatticeNeumannCoupling per rim
+                // mechanical node, reading P_f from the TM rim nodes of its
+                // incident rim edges (looked up via the shared tmRimNodeForEdge
+                // map). f = P_f * distance * radial-direction (the BC computes
+                // the sm-tm distance at run time, so the per-edge half-lengths
+                // recover the tributary automatically).
+                std::vector< int > tmIds;
+                for ( int nb : e.neighbourVertices ) {
+                    const int va = std::min(e.delaunayVertex, nb), vb = std::max(e.delaunayVertex, nb);
+                    auto it = tmRimNodeForEdge.find( { va, vb } );
+                    if ( it != tmRimNodeForEdge.end() ) tmIds.push_back(it->second);
+                }
+                if ( tmIds.empty() ) continue;
+                ++bId;
+                bcs << "LatticeNeumannCoupling " << bId << " loadTimeFunction " << couplingLtf
+                    << " smnodes " << tmIds.size();
+                for ( size_t q = 0; q < tmIds.size(); ++q ) bcs << " " << nid;
+                bcs << " tmnodes " << tmIds.size();
+                for ( int t : tmIds ) bcs << " " << t;
+                bcs << " direction 3 " << std::scientific << e.dirX << " " << e.dirY << " 0.\n";
+            } else {
+                // Direct-pressure elastic check (3a): outward radial NodalLoad
+                // f = pressure * tributary * radial, one load + single-node set.
+                const double fx = couplingPressure * e.tributary * e.dirX;
+                const double fy = couplingPressure * e.tributary * e.dirY;
+                ++bId; ++sId;
+                sets << "Set " << sId << " nodes 1 " << nid << "\n";
+                bcs << "NodalLoad " << bId << " loadTimeFunction " << couplingLtf
+                    << " dofs 3 1 2 6 components 3 " << std::scientific
+                    << fx << " " << fy << " 0. set " << sId << "\n";
+            }
         }
         couplingBCRecords = bcs.str();
         couplingSetRecords = sets.str();
@@ -6495,6 +6521,20 @@ void Grid::give2DTMOutput(const std::string &fileName)
     // emanate from the same outside circumcenter.
     std::vector< int > boundaryNodeForLine( nVorL + 1, 0 );
     std::vector< oofem::FloatArray > boundaryNodeCoords;  // 1-indexed by sequential alloc
+
+    // Hydro-mechanical coupling (combined 2dSMTM run): hand the rim transport
+    // node ids over to the SM writer via tmRimNodeForEdge, and remember which
+    // boundary nodes sit on the coupled hole rim so they can be tagged with the
+    // prescribed-pressure BC below.
+    tmRimNodeForEdge.clear();
+    HoleDisk *couplingHole = nullptr;
+    if ( couplingNeumann ) {
+        for ( auto *h : holeList ) {
+            if ( h != nullptr && h->giveNumber() == couplingHoleId ) { couplingHole = h; break; }
+        }
+    }
+    std::vector< char > boundaryNodeIsCoupledRim( nVorL + 1, 0 );
+
     int emittedElems = 0;
     {
         oofem::IntArray ep, cs;
@@ -6531,6 +6571,16 @@ void Grid::give2DTMOutput(const std::string &fileName)
             boundaryNodeForLine[ i + 1 ] = ++emittedNodes;
             boundaryNodeCoords.push_back(mid);
             ++emittedElems;
+
+            // Record rim edge -> TM node id for the SM coupling pass, keyed by
+            // the sorted global Delaunay-vertex pair (shared by both writers).
+            const int va = std::min(cs.at(1), cs.at(2)), vb = std::max(cs.at(1), cs.at(2));
+            tmRimNodeForEdge[ { va, vb } ] = emittedNodes;
+            if ( couplingHole != nullptr &&
+                 couplingHole->onRim(dA.at(1), dA.at(2), tol) &&
+                 couplingHole->onRim(dB.at(1), dB.at(2), tol) ) {
+                boundaryNodeIsCoupledRim[ i + 1 ] = 1;
+            }
         }
     }
 
@@ -6641,6 +6691,11 @@ void Grid::give2DTMOutput(const std::string &fileName)
                         << " coords 2 " << std::scientific
                         << c.at(1) << " " << c.at(2);
                     appendNodeBCs(out, c);
+                    // Prescribe the pore pressure on coupled hole-rim transport
+                    // nodes via inline bc → the TM template's BoundaryCondition.
+                    if ( boundaryNodeIsCoupledRim[ i + 1 ] ) {
+                        out << " bc 1 " << couplingTmBc;
+                    }
                     out << "\n";
                 }
             }

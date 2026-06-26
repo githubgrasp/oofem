@@ -372,16 +372,28 @@ private:
     bool emitCouplingFlag = false;
 
     /// Hydro-mechanical boundary coupling on a hole rim (GraFahGalWhe15
-    /// thick-walled cylinder). Enabled by `#@coupling hole <id> ltf <id>
-    /// pressure <p>`, where `<id>` selects the `#@holedisk` whose rim is
-    /// loaded. Step 3a emits radial nodal loads on the rim mechanical nodes (a
-    /// direct-pressure elastic check); Step 3b will instead emit
-    /// `LatticeNeumannCoupling` reading the transport pressure. `couplingPressure`
-    /// is the reference pressure scaled by load-time function `couplingLtf`.
+    /// thick-walled cylinder), selecting the `#@holedisk` whose rim is loaded.
+    /// Two modes:
+    ///   `#@coupling hole <id> ltf <l> pressure <p>` — direct radial NodalLoads
+    ///   on the rim mechanical nodes (the SM-only elastic check, 3a);
+    ///   `#@coupling hole <id> neumann ltf <l> tmbc <bc>` — emit
+    ///   `LatticeNeumannCoupling` reading P_f from the coupled transport problem
+    ///   (needs a combined `#@grid 2dSMTM` run), and tag the rim transport nodes
+    ///   with inline `bc 1 <tmbc>` so the TM template's BoundaryCondition <tmbc>
+    ///   prescribes the pore pressure there.
     bool couplingEnabled = false;
     int couplingHoleId = 0;
     int couplingLtf = 1;
     double couplingPressure = 0.;
+    bool couplingNeumann = false;   ///< true → LatticeNeumannCoupling, false → direct NodalLoad
+    int couplingTmBc = 0;           ///< TM BoundaryCondition id tagged on rim transport nodes (neumann)
+
+    /// Rim edge (sorted global Delaunay-vertex pair) → TM transport-node id,
+    /// filled by `give2DTMOutput` as it allocates rim boundary nodes and read by
+    /// `give2DSMOutput`'s coupling pass. This is how the combined `#@grid 2dSMTM`
+    /// run lets the SM `LatticeNeumannCoupling` reference the TM node ids: the TM
+    /// writer hands over the actual ids it emitted (not a reconstruction).
+    std::map< std::pair< int, int >, int >tmRimNodeForEdge;
 
     /// Control-vertex definitions from `#@controlvertex <id> coords 3 x y z`.
     /// Each entry declares a specific mesh coordinate whose nearest Delaunay
