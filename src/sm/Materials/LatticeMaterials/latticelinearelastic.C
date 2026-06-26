@@ -49,6 +49,9 @@
 #include "staggeredproblem.h"
 #include "contextioerr.h"
 #include "classfactory.h"
+#include "dofmanager.h"
+#include "dof.h"
+#include "dofiditem.h"
 
 #ifdef __TM_MODULE
  #include "tm/Elements/LatticeElements/latticetransportelement.h"
@@ -174,8 +177,11 @@ LatticeLinearElastic :: giveCouplingPressure(GaussPoint *gp, TimeStep *tStep)
     double waterPressure = 0.;
 
 #ifdef __TM_MODULE
-    // Coupled (staggered) run: read the live pore pressure from the dual
-    // transport element in the transport slave problem (couplingNumbers.at(1)).
+    // Coupled (staggered) run: read the pore pressure from the dual transport
+    // element in the transport slave problem (couplingNumbers.at(1)). Average
+    // its current-step nodal pressures (the converged transport solution of
+    // this step), the same pressure state the boundary LatticeNeumannCoupling
+    // uses, so both coupling paths stay consistent.
     EngngModel *master = this->domain->giveEngngModel()->giveMasterEngngModel();
     if ( master ) {
         auto *sp = dynamic_cast< StaggeredProblem * >( master );
@@ -184,13 +190,18 @@ LatticeLinearElastic :: giveCouplingPressure(GaussPoint *gp, TimeStep *tStep)
             sp->giveCoupledModels(coupledModels);
             auto *se = static_cast< LatticeStructuralElement * >( gp->giveElement() );
             if ( se->giveCouplingFlag() == 1 && coupledModels.giveSize() >= 2 &&
-                 coupledModels.at(2) != 0 && !tStep->isTheFirstStep() ) {
+                 coupledModels.at(2) != 0 ) {
                 IntArray couplingNumbers;
                 se->giveCouplingNumbers(couplingNumbers);
                 if ( couplingNumbers.giveSize() >= 1 && couplingNumbers.at(1) != 0 ) {
-                    auto *te = static_cast< LatticeTransportElement * >(
-                        sp->giveSlaveProblem( coupledModels.at(2) )->giveDomain(1)->giveElement( couplingNumbers.at(1) ) );
-                    waterPressure = te->givePressure();
+                    Element *te = sp->giveSlaveProblem( coupledModels.at(2) )->giveDomain(1)->giveElement( couplingNumbers.at(1) );
+                    int nnodes = te->giveNumberOfDofManagers();
+                    for ( int i = 1; i <= nnodes; i++ ) {
+                        waterPressure += te->giveDofManager(i)->giveDofWithID(P_f)->giveUnknown(VM_Total, tStep);
+                    }
+                    if ( nnodes > 0 ) {
+                        waterPressure /= nnodes;
+                    }
                 }
             }
             return waterPressure;

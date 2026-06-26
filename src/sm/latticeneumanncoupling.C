@@ -108,7 +108,9 @@ LatticeNeumannCoupling :: assembleVector(FloatArray &answer, TimeStep *tStep,
         // Fluid pressure at the coupled transport node, in the mode the solver
         // requests: VM_Incremental yields the pressure increment dP = P(t)-P(t-1)
         // (so an incremental-load solver accumulates to the correct total),
-        // VM_Total yields the full pressure.
+        // VM_Total yields the full pressure. Either way this tracks the
+        // current-step pressure P(t), the same state the distributed Biot term
+        // in LatticeLinearElastic reads, keeping the two coupling paths consistent.
         double pf = tmNode->giveDofWithID(P_f)->giveUnknown(mode, tStep);
 
         // In-plane distance between the mechanical node and its transport counterpart.
