@@ -50,6 +50,10 @@
 #include "contextioerr.h"
 #include "classfactory.h"
 
+#ifdef __TM_MODULE
+ #include "tm/Elements/LatticeElements/latticetransportelement.h"
+#endif
+
 namespace oofem {
 REGISTER_Material(LatticeLinearElastic);
 
@@ -135,7 +139,9 @@ LatticeLinearElastic :: initializeFrom(InputRecord &ir)
     
     this->cAlpha = 0;
     IR_GIVE_OPTIONAL_FIELD(ir, cAlpha, _IFT_LatticeLinearElastic_calpha);
-    
+
+    this->biotCoefficient = 0.;
+    IR_GIVE_OPTIONAL_FIELD(ir, biotCoefficient, _IFT_LatticeLinearElastic_bio);
 }
 
 MaterialStatus *
@@ -162,6 +168,46 @@ LatticeLinearElastic :: giveStatus(GaussPoint *gp) const
 }
 
 
+double
+LatticeLinearElastic :: giveCouplingPressure(GaussPoint *gp, TimeStep *tStep)
+{
+    double waterPressure = 0.;
+
+#ifdef __TM_MODULE
+    // Coupled (staggered) run: read the live pore pressure from the dual
+    // transport element in the transport slave problem (couplingNumbers.at(1)).
+    EngngModel *master = this->domain->giveEngngModel()->giveMasterEngngModel();
+    if ( master ) {
+        auto *sp = dynamic_cast< StaggeredProblem * >( master );
+        if ( sp ) {
+            IntArray coupledModels;
+            sp->giveCoupledModels(coupledModels);
+            auto *se = static_cast< LatticeStructuralElement * >( gp->giveElement() );
+            if ( se->giveCouplingFlag() == 1 && coupledModels.giveSize() >= 2 &&
+                 coupledModels.at(2) != 0 && !tStep->isTheFirstStep() ) {
+                IntArray couplingNumbers;
+                se->giveCouplingNumbers(couplingNumbers);
+                if ( couplingNumbers.giveSize() >= 1 && couplingNumbers.at(1) != 0 ) {
+                    auto *te = static_cast< LatticeTransportElement * >(
+                        sp->giveSlaveProblem( coupledModels.at(2) )->giveDomain(1)->giveElement( couplingNumbers.at(1) ) );
+                    waterPressure = te->givePressure();
+                }
+            }
+            return waterPressure;
+        }
+    }
+#endif
+
+    // Standalone run: static pore-pressure field carried on the element.
+    FloatArray pressures;
+    static_cast< LatticeStructuralElement * >( gp->giveElement() )->givePressures(pressures);
+    for ( int i = 1; i <= pressures.giveSize(); i++ ) {
+        waterPressure += pressures.at(i) / pressures.giveSize();
+    }
+    return waterPressure;
+}
+
+
 FloatArrayF< 6 >
 LatticeLinearElastic :: giveLatticeStress3d(const FloatArrayF< 6 > &strain,
                                             GaussPoint *gp,
@@ -182,20 +228,12 @@ LatticeLinearElastic :: giveLatticeStress3d(const FloatArrayF< 6 > &strain,
     //stress are sectional forces
     auto stress = dot(stiffnessMatrix, reducedStrain);
 
-    //Read in fluid pressures from structural element if this is not a slave problem
-
-    FloatArray pressures;
-    if ( !domain->giveEngngModel()->giveMasterEngngModel() ) {
-        static_cast< LatticeStructuralElement * >( gp->giveElement() )->givePressures(pressures);
-    }
-    
-    //Calculate average
-    double waterPressure = 0.;
-    for ( int i = 0; i < pressures.giveSize(); i++ ) {
-        waterPressure += 1. / pressures.giveSize() * pressures [ i ];
-    }
-
-    stress.at(1) += waterPressure;
+    // Poromechanical coupling, concrete-mechanics convention: fluid pressure is
+    // a stress (compression negative, suction positive), so the total normal
+    // stress = effective + biot * (fluid pressure as stress). The pore pressure
+    // is read live from the coupled transport problem in a staggered run, or
+    // from the element's static field when run standalone.
+    stress.at(1) += this->biotCoefficient * this->giveCouplingPressure(gp, tStep);
 
     //Set all temp values
     status->letTempLatticeStrainBe(strain);

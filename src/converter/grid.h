@@ -395,6 +395,13 @@ private:
     /// writer hands over the actual ids it emitted (not a reconstruction).
     std::map< std::pair< int, int >, int >tmRimNodeForEdge;
 
+    /// Delaunay edge (sorted global vertex pair) → TM element id, filled by
+    /// `give2DTMOutput` as it emits each `latticemt2D` (its dual Delaunay edge)
+    /// and read by `give2DSMOutput` to emit `couplingflag 1 couplingnumber
+    /// <tm-elem>` on the dual `lattice2d` — the element-level link the
+    /// distributed (Biot) pore-pressure coupling reads at run time.
+    std::map< std::pair< int, int >, int >tmElemForEdge;
+
     /// Control-vertex definitions from `#@controlvertex <id> coords 3 x y z`.
     /// Each entry declares a specific mesh coordinate whose nearest Delaunay
     /// vertex id is exposed at write time via the `#@CTL<id>` inline placeholder.
@@ -979,6 +986,13 @@ public:
     /// midpoint of the Voronoi-edge segment. Same `#@thickness` directive
     /// drives the out-of-plane thickness.
     void give2DTMOutput(const std::string &fileName);
+
+    /// Combined `#@grid 2dSMTM` writer: one invocation writes both `oofem.sm.in`
+    /// and `oofem.tm.in` (derived from the base output name) from a single
+    /// shared node/element numbering, so the SM coupling records can reference
+    /// TM node/element ids. Reuses give2DTMOutput (run first) + give2DSMOutput;
+    /// the TM control template comes from `#@tmcontrol`.
+    void give2DSMTMOutput(const std::string &fileName);
 
     /// Snap Voronoi vertices that fall outside the 2D `#@rect` region to
     /// the nearest rectangle face by clamping coordinates, and snap

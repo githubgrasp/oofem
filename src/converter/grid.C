@@ -2657,36 +2657,46 @@ void Grid::giveOofemOutput(const std::string &fileName)
         project2DVoronoiVerticesToHoles();
         give2DTMOutput(fileName);
     } else if ( gridType == _2dSMTM ) {
-        // Combined run: write the SM and TM input files from one shared node
-        // numbering, so the SM LatticeNeumannCoupling can reference TM
-        // transport-node ids (mirrors the single-pass 2015 triangle2oofem).
-        if ( tmControlFileName.empty() ) {
-            converter::error("#@grid 2dSMTM requires #@tmcontrol <path> (the TM control template)");
-        }
-        project2DVoronoiVerticesToNotches();
-        project2DVoronoiVerticesToHoles();
-
-        // Derive oofem.sm.in / oofem.tm.in from the base output name (oofem.in).
-        std::string base = fileName;
-        const size_t dot = base.rfind(".in");
-        const std::string stem = ( dot != std::string::npos ) ? base.substr(0, dot) : base;
-        const std::string smOut = stem + ".sm.in";
-        const std::string tmOut = stem + ".tm.in";
-
-        // The SM control is the file the converter was invoked on; the TM
-        // control comes from #@tmcontrol. give2D*Output read `controlFileName`
-        // for their copy-through template, so swap it per writer. TM is written
-        // first so its node numbering is available to the SM coupling pass.
-        const std::string smControl = controlFileName;
-        controlFileName = tmControlFileName;
-        give2DTMOutput(tmOut);
-        controlFileName = smControl;
-        give2DSMOutput(smOut);
+        give2DSMTMOutput(fileName);
     } else {
         converter::error("Unknown grid type\n");
     }
     return;
 };
+
+
+void Grid::give2DSMTMOutput(const std::string &fileName)
+{
+    // Combined SM+TM run: write both the SM and TM input files from one shared
+    // node numbering, so the SM LatticeNeumannCoupling can reference TM
+    // transport-node ids and the SM couplingflag can reference TM element ids
+    // (mirrors the single-pass 2015 triangle2oofem). Reuses the standalone
+    // give2DSMOutput / give2DTMOutput writers; the cross-references travel
+    // between them through the tmRimNodeForEdge / tmElemForEdge member maps the
+    // TM writer fills and the SM writer reads — which is why TM is written first.
+    if ( tmControlFileName.empty() ) {
+        converter::error("#@grid 2dSMTM requires #@tmcontrol <path> (the TM control template)");
+    }
+    project2DVoronoiVerticesToNotches();
+    project2DVoronoiVerticesToHoles();
+
+    // Derive oofem.sm.in / oofem.tm.in from the base output name (oofem.in).
+    std::string base = fileName;
+    const size_t dot = base.rfind(".in");
+    const std::string stem = ( dot != std::string::npos ) ? base.substr(0, dot) : base;
+    const std::string smOut = stem + ".sm.in";
+    const std::string tmOut = stem + ".tm.in";
+
+    // The SM control is the file the converter was invoked on; the TM control
+    // comes from #@tmcontrol. give2D*Output read `controlFileName` for their
+    // copy-through template, so swap it per writer. TM first so its node/element
+    // numbering is available to the SM coupling passes.
+    const std::string smControl = controlFileName;
+    controlFileName = tmControlFileName;
+    give2DTMOutput(tmOut);
+    controlFileName = smControl;
+    give2DSMOutput(smOut);
+}
 
 void Grid::giveOutputT3d(const std::string &fileName)
 {
@@ -5946,7 +5956,10 @@ void Grid::give2DSMOutput(const std::string &fileName)
                 for ( size_t q = 0; q < tmIds.size(); ++q ) bcs << " " << nid;
                 bcs << " tmnodes " << tmIds.size();
                 for ( int t : tmIds ) bcs << " " << t;
-                bcs << " direction 3 " << std::scientific << e.dirX << " " << e.dirY << " 0.\n";
+                // Inward radial direction: f = P_f * distance * direction, and
+                // P_f is the fluid pressure as a stress (compression negative),
+                // so an inward direction yields the outward push on the wall.
+                bcs << " direction 3 " << std::scientific << ( -e.dirX ) << " " << ( -e.dirY ) << " 0.\n";
             } else {
                 // Direct-pressure elastic check (3a): outward radial NodalLoad
                 // f = pressure * tributary * radial, one load + single-node set.
@@ -6179,8 +6192,18 @@ void Grid::give2DSMOutput(const std::string &fileName)
                         << " crossSect " << mat << " mat " << mat
                         << " gpCoords 2 " << gx << " " << gy
                         << " width " << width
-                        << " thick " << latticeThickness
-                        << "\n";
+                        << " thick " << latticeThickness;
+                    if ( emitCouplingFlag ) {
+                        // Link this SM element to its dual TM element so the
+                        // material can read the pore pressure (distributed Biot
+                        // coupling). lattice2d takes a single couplingnumber.
+                        const int eva = std::min(endpoints.at(1), endpoints.at(2));
+                        const int evb = std::max(endpoints.at(1), endpoints.at(2));
+                        auto it = tmElemForEdge.find( { eva, evb } );
+                        out << " couplingflag 1 couplingnumber "
+                            << ( ( it != tmElemForEdge.end() ) ? it->second : 0 );
+                    }
+                    out << "\n";
                 }
             }
             injected = true;
@@ -6527,6 +6550,7 @@ void Grid::give2DTMOutput(const std::string &fileName)
     // boundary nodes sit on the coupled hole rim so they can be tagged with the
     // prescribed-pressure BC below.
     tmRimNodeForEdge.clear();
+    tmElemForEdge.clear();
     HoleDisk *couplingHole = nullptr;
     if ( couplingNeumann ) {
         for ( auto *h : holeList ) {
@@ -6772,6 +6796,12 @@ void Grid::give2DTMOutput(const std::string &fileName)
                     out << " lumpedcapacity 1";
                 }
                 out << "\n";
+
+                // Record this TM element id against its dual Delaunay edge so the
+                // SM writer can emit a matching couplingflag couplingnumber.
+                const int eva = std::min(crossSectionNodes.at(1), crossSectionNodes.at(2));
+                const int evb = std::max(crossSectionNodes.at(1), crossSectionNodes.at(2));
+                tmElemForEdge[ { eva, evb } ] = elemCounter;
             }
             injected = true;
             continue;

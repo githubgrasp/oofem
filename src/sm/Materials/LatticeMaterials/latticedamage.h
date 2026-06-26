@@ -170,8 +170,7 @@ protected:
     /// flag which chooses between no distribution (0) and Gaussian distribution (1)
     double localRandomType = 0.;
 
-    /// Biot's coefficient
-    double biotCoefficient = 0.;
+    /// `biotCoefficient` is inherited from LatticeLinearElastic (read from "bio").
 
     /// Parameter specifying how the biot coefficient changes with the crack opening
     int biotType = 0;
@@ -203,7 +202,7 @@ public:
 
     virtual double computeEquivalentStrain(const FloatArrayF< 6 > &strain, GaussPoint *gp) const;
 
-    virtual double computeBiot(double omega, double kappa, double le) const;
+    double computeBiot(double omega, double kappa, double le) const override;
 
     virtual double computeDamageParam(double kappa, GaussPoint *gp) const;
     ///Compute increment of dissipation for post-processing reasons

@@ -88,9 +88,7 @@ LatticeDamage :: initializeFrom(InputRecord &ir)
     this->ec = 10.;
     IR_GIVE_OPTIONAL_FIELD(ir, ec, _IFT_LatticeDamage_ec); // Macro
 
-    this->biotCoefficient = 0.;
-    IR_GIVE_OPTIONAL_FIELD(ir, this->biotCoefficient, _IFT_LatticeDamage_bio);
-
+    // biotCoefficient ("bio") is read by LatticeLinearElastic::initializeFrom (called above).
     this->biotType = 0;
     IR_GIVE_OPTIONAL_FIELD(ir, this->biotType, _IFT_LatticeDamage_btype);
 }

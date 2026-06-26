@@ -57,6 +57,7 @@
 #define _IFT_LatticeLinearElastic_tcrit "tcrit"
 #define _IFT_LatticeLinearElastic_nu "nu"
 #define _IFT_LatticeLinearElastic_em "em"
+#define _IFT_LatticeLinearElastic_bio "bio"
 //@}
 
 namespace oofem {
@@ -97,6 +98,11 @@ protected:
     /// if `em` is not given; decoupled from eNormalMean when both are set.
     double emMacro = 0.;
 
+    /// Biot coefficient — fraction of the pore (fluid) pressure that enters the
+    /// effective normal stress. 0 = no poromechanical coupling, 1 = full pore
+    /// pressure. Shared by the derived damage/plasticity-damage materials.
+    double biotCoefficient = 0.;
+
 public:
     LatticeLinearElastic(int n, Domain *d) : LatticeStructuralMaterial(n, d), RandomMaterialExtensionInterface() { };
 
@@ -134,6 +140,18 @@ public:
     double  give(int aProperty, GaussPoint *gp) const override;
 
 protected:
+    /// Pore (fluid) pressure acting on this Gauss point's lattice element.
+    /// In a coupled StaggeredProblem run it is read *live* from the dual
+    /// transport element (`couplingNumbers` + the transport slave problem);
+    /// when run standalone it falls back to the element's static `givePressures`
+    /// field. The caller multiplies by the Biot coefficient before adding it to
+    /// the normal stress. Returns 0 if no coupling/pressure applies.
+    double giveCouplingPressure(GaussPoint *gp, TimeStep *tStep);
+
+    /// Biot coefficient used to scale the pore pressure in the stress. Base
+    /// implementation returns the constant `biotCoefficient`; LatticeDamage
+    /// overrides it for the damage-evolving form (`btype 1`).
+    virtual double computeBiot(double omega, double kappa, double le) const { return biotCoefficient; }
 };
 } // end namespace oofem
 
