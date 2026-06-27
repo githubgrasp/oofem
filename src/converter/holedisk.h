@@ -27,6 +27,11 @@ protected:
     double cx = 0., cy = 0.;
     /// Circle radius.
     double radius = 0.;
+    /// Transport-only hole: deleted from the TM mesh but kept in the SM mesh
+    /// (the SM keeps the inclusion+ITZ; only the transport domain is voided here,
+    /// with its boundary on this circle = the ITZ midline). Created by `#@tmhole`.
+    /// Regular holes (`#@holedisk`) are voids in both domains (tmOnly = false).
+    bool tmOnly = false;
 
 public:
     HoleDisk(int n, double cx, double cy, double radius);
@@ -35,6 +40,8 @@ public:
     double giveCentreX() const { return cx; }
     double giveCentreY() const { return cy; }
     double giveRadius() const { return radius; }
+    bool isTmOnly() const { return tmOnly; }
+    void setTmOnly(bool t) { tmOnly = t; }
 
     /// True iff (x,y) lies strictly inside the hole (closer to the centre than
     /// `radius`). Rim points (at the radius) are not "inside" — they are kept.
