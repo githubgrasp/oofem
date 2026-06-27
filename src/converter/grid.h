@@ -243,6 +243,7 @@ private:
     /// Populated by the `#@sphereinclusion <id> centre 3 x y z radius r
     /// itz t inside <mi> interface <mif>` directive.
     struct SphereInclusionSpec {
+        int number = 0;          ///< inclusion id (the `<num>` of the directive); referenced by `#@coupling inclusion <id>`
         double cx = 0., cy = 0., cz = 0.;
         double radius = 0., itz = 0.;
         int inside    = 2;
@@ -401,6 +402,8 @@ private:
     double couplingPressure = 0.;
     bool couplingNeumann = false;   ///< true → LatticeNeumannCoupling, false → direct NodalLoad
     int couplingTmBc = 0;           ///< TM BoundaryCondition id tagged on rim transport nodes (neumann)
+    bool couplingDirichlet = false; ///< true → `#@coupling inclusion <id> dirichlet`: radial ITZ stress → TM pressure
+    int couplingInclusionId = 0;    ///< #@diskinclusion id whose radial ITZ elements drive the Dirichlet coupling
 
     /// Rim edge (sorted global Delaunay-vertex pair) → TM transport-node id,
     /// filled by `give2DTMOutput` as it allocates rim boundary nodes and read by
@@ -415,6 +418,13 @@ private:
     /// <tm-elem>` on the dual `lattice2d` — the element-level link the
     /// distributed (Biot) pore-pressure coupling reads at run time.
     std::map< std::pair< int, int >, int >tmElemForEdge;
+
+    /// Delaunay edge (sorted global vertex pair) → SM element id, filled by
+    /// `give2DSMOutput` as it emits each `lattice2D`. The reverse of
+    /// `tmElemForEdge`, read by `give2DTMOutput`'s Dirichlet coupling pass
+    /// (sm-first) so each `LatticeDirichletCoupling` can name the SM (radial ITZ)
+    /// elements that drive a transport node's pressure.
+    std::map< std::pair< int, int >, int >smElemForEdge;
 
     /// Control-vertex definitions from `#@controlvertex <id> coords 3 x y z`.
     /// Each entry declares a specific mesh coordinate whose nearest Delaunay

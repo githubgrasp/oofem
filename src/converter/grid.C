@@ -1218,6 +1218,7 @@ void Grid::readControlRecords()
                 holeList.push_back(new HoleDisk(num, cx, cy, radius) );
             } else if ( kw == "itz" ) {
                 SphereInclusionSpec s;
+                s.number = num;
                 s.cx = cx; s.cy = cy; s.cz = 0.; s.radius = radius;
                 iss >> s.itz;             // "itz" t
                 iss >> kw >> s.inside;    // "inside" mi
@@ -1301,27 +1302,47 @@ void Grid::readControlRecords()
             // the SM and TM subproblems exchange data element-by-element.
             emitCouplingFlag = true;
         } else if ( tag == "#@coupling" ) {
-            // #@coupling hole <id> ltf <id> pressure <p>
-            // Hydro-mechanical boundary coupling on the rim of #@holedisk <id>.
-            // `ltf` selects the load-time function scaling the pressure;
-            // `pressure` is the reference rim pressure.
+            // #@coupling hole <id> ltf <id> { pressure <p> | neumann tmbc <bc> }
+            //   Hydro-mechanical boundary coupling on the rim of #@holedisk <id>
+            //   (transport → mechanical). `ltf` scales the rim pressure.
+            // #@coupling inclusion <id> dirichlet ltf <id>
+            //   Displacement-driven coupling (mechanical → transport): the radial
+            //   ITZ structural stress of #@diskinclusion <id> drives the pore
+            //   pressure at the dual midline transport nodes, emitted as
+            //   per-node LatticeDirichletCoupling boundary conditions.
             std::string kw;
-            if ( !( iss >> kw ) || kw != "hole" ) {
-                converter::error("Malformed #@coupling — expected 'hole <id> ltf <id> pressure <p>'");
+            if ( !( iss >> kw ) ) {
+                converter::error("Malformed #@coupling — expected 'hole ...' or 'inclusion ...'");
             }
-            iss >> couplingHoleId;
-            while ( iss >> kw ) {
-                if ( kw == "ltf" ) {
-                    iss >> couplingLtf;
-                } else if ( kw == "pressure" ) {
-                    iss >> couplingPressure;
-                } else if ( kw == "neumann" ) {
-                    couplingNeumann = true;
-                } else if ( kw == "tmbc" ) {
-                    iss >> couplingTmBc;
-                } else {
-                    converter::errorf("#@coupling — unknown keyword '%s'", kw.c_str() );
+            if ( kw == "hole" ) {
+                iss >> couplingHoleId;
+                while ( iss >> kw ) {
+                    if ( kw == "ltf" ) {
+                        iss >> couplingLtf;
+                    } else if ( kw == "pressure" ) {
+                        iss >> couplingPressure;
+                    } else if ( kw == "neumann" ) {
+                        couplingNeumann = true;
+                    } else if ( kw == "tmbc" ) {
+                        iss >> couplingTmBc;
+                    } else {
+                        converter::errorf("#@coupling — unknown keyword '%s'", kw.c_str() );
+                    }
                 }
+            } else if ( kw == "inclusion" ) {
+                iss >> couplingInclusionId;
+                couplingDirichlet = true;
+                while ( iss >> kw ) {
+                    if ( kw == "dirichlet" ) {
+                        // mode flag — Dirichlet coupling is the only inclusion mode
+                    } else if ( kw == "ltf" ) {
+                        iss >> couplingLtf;
+                    } else {
+                        converter::errorf("#@coupling — unknown keyword '%s'", kw.c_str() );
+                    }
+                }
+            } else {
+                converter::errorf("#@coupling — expected 'hole <id> ...' or 'inclusion <id> dirichlet ...', got '%s'", kw.c_str() );
             }
             couplingEnabled = true;
         } else if ( tag == "#@tmcontrol" ) {
@@ -2710,10 +2731,22 @@ void Grid::give2DSMTMOutput(const std::string &fileName)
     // copy-through template, so swap it per writer. TM first so its node/element
     // numbering is available to the SM coupling passes.
     const std::string smControl = controlFileName;
-    controlFileName = tmControlFileName;
-    give2DTMOutput(tmOut);
-    controlFileName = smControl;
-    give2DSMOutput(smOut);
+    if ( couplingDirichlet ) {
+        // Displacement-driven coupling (mechanical → transport): the TM writer
+        // emits LatticeDirichletCoupling BCs naming SM element ids, so SM must be
+        // written first to populate smElemForEdge. SM needs no TM cross-reference
+        // here (no couplingflag), so the order simply reverses.
+        give2DSMOutput(smOut);
+        controlFileName = tmControlFileName;
+        give2DTMOutput(tmOut);
+        controlFileName = smControl;
+    } else {
+        // TM first so its node/element numbering feeds the SM coupling passes.
+        controlFileName = tmControlFileName;
+        give2DTMOutput(tmOut);
+        controlFileName = smControl;
+        give2DSMOutput(smOut);
+    }
 }
 
 void Grid::giveOutputT3d(const std::string &fileName)
@@ -5781,7 +5814,7 @@ void Grid::give2DSMOutput(const std::string &fileName)
         converter::error("give2DSMOutput: periodic mode requires a #@rect region");
     }
 
-    if ( couplingEnabled ) {
+    if ( couplingEnabled && !couplingDirichlet ) {
         HoleDisk *hole = nullptr;
         for ( auto *h : holeList ) {
             if ( h != nullptr && h->giveNumber() == couplingHoleId ) { hole = h; break; }
@@ -5915,8 +5948,10 @@ void Grid::give2DSMOutput(const std::string &fileName)
         replaceAll(s, "{#@COUPLINGSET}", couplingSetRecords);
     };
 
-    if ( couplingEnabled ) {
-        // The coupled boundary is a hole rim, referenced by id.
+    if ( couplingEnabled && !couplingDirichlet ) {
+        // The coupled boundary is a hole rim, referenced by id. (Dirichlet
+        // inclusion coupling needs no SM-side records — it lives entirely in the
+        // TM file as LatticeDirichletCoupling BCs.)
         HoleDisk *hole = nullptr;
         for ( auto *h : holeList ) {
             if ( h != nullptr && h->giveNumber() == couplingHoleId ) { hole = h; break; }
@@ -6211,6 +6246,10 @@ void Grid::give2DSMOutput(const std::string &fileName)
                         << " gpCoords 2 " << gx << " " << gy
                         << " width " << width
                         << " thick " << latticeThickness;
+                    // Record this SM element's id against its Delaunay edge, so a
+                    // later (sm-first) TM Dirichlet coupling pass can name it.
+                    smElemForEdge[ { std::min(endpoints.at(1), endpoints.at(2)),
+                                     std::max(endpoints.at(1), endpoints.at(2)) } ] = elemCounter;
                     if ( emitCouplingFlag ) {
                         // Link this SM element to its dual TM element so the
                         // material can read the pore pressure (distributed Biot
@@ -6632,6 +6671,56 @@ void Grid::give2DTMOutput(const std::string &fileName)
         }
     }
 
+    // Displacement-driven (Dirichlet) coupling pre-pass. For each radial ITZ
+    // structural element of #@diskinclusion <couplingInclusionId> (a Delaunay
+    // edge straddling the inclusion circle), its dual Voronoi edge is a transport
+    // element whose two midline Voronoi-vertex nodes receive the pore pressure.
+    // Each midline transport node thus collects the (≈2) flanking radial ITZ
+    // structural elements that drive it. Requires SM written first so
+    // smElemForEdge is populated (see give2DSMTMOutput's dirichlet branch).
+    std::map< int, std::vector< int > > dirichletNodeElems;  // TM node id → driving SM element ids
+    int dirichletBcIdBase = 0;   // coupling BC ids start at base+1 (template's nbc)
+    int dirichletSetIdBase = 0;  // coupling Set ids start at base+1 (template's nset)
+    if ( couplingDirichlet ) {
+        const SphereInclusionSpec *incl = nullptr;
+        for ( const auto &s : sphereInclusionSpecs ) {
+            if ( s.number == couplingInclusionId ) { incl = &s; break; }
+        }
+        if ( incl == nullptr ) {
+            converter::errorf("#@coupling inclusion %d: no matching #@diskinclusion <id> ... itz ...",
+                              couplingInclusionId);
+        }
+        const double effR = incl->radius + 0.5 * incl->itz;
+        oofem::IntArray vep, cs;
+        oofem::FloatArray dA(3), dB(3);
+        for ( int i = 0; i < nVorL; ++i ) {
+            this->giveVoronoiLine(i + 1)->giveCrossSectionVertices(cs);
+            if ( cs.giveSize() != 2 ) continue;
+            this->giveDelaunayVertex(cs.at(1))->giveCoordinates(dA);
+            this->giveDelaunayVertex(cs.at(2))->giveCoordinates(dB);
+            const double dA2 = ( dA.at(1) - incl->cx ) * ( dA.at(1) - incl->cx ) +
+                               ( dA.at(2) - incl->cy ) * ( dA.at(2) - incl->cy );
+            const double dB2 = ( dB.at(1) - incl->cx ) * ( dB.at(1) - incl->cx ) +
+                               ( dB.at(2) - incl->cy ) * ( dB.at(2) - incl->cy );
+            // ITZ radial edge: straddles the inclusion circle (mirrors
+            // resolveInclusionMaterial's effR = radius + 0.5*itz interface test).
+            const bool straddles = ( dA2 < effR * effR ) != ( dB2 < effR * effR );
+            if ( !straddles ) continue;
+            auto smIt = smElemForEdge.find( { std::min(cs.at(1), cs.at(2)),
+                                              std::max(cs.at(1), cs.at(2)) } );
+            if ( smIt == smElemForEdge.end() ) continue;
+            const int smElem = smIt->second;
+            this->giveVoronoiLine(i + 1)->giveLocalVertices(vep);
+            if ( vep.giveSize() != 2 ) continue;
+            for ( int k = 1; k <= 2; ++k ) {
+                const int vv = vep.at(k);
+                if ( vv != 0 && nodeMap[ vv ] != 0 ) {
+                    dirichletNodeElems[ nodeMap[ vv ] ].push_back(smElem);
+                }
+            }
+        }
+    }
+
     // #@CTL substitution. Note: for transport, control vertices remain
     // Delaunay vertex ids — they correspond to the original input sites,
     // not Voronoi vertices. Periodic emission would also remap; for now
@@ -6718,7 +6807,25 @@ void Grid::give2DTMOutput(const std::string &fileName)
             std::string token;
             out << "ndofman " << emittedNodes
                 << " nelem " << emittedElems << " ";
+            const int nCoupling = ( int ) dirichletNodeElems.size();
             while ( iss >> token ) {
+                // Dirichlet coupling adds one LatticeDirichletCoupling BC and one
+                // single-node Set per midline transport node; bump the template's
+                // nbc / nset so the emitted records at #@couplingbc / #@couplingset
+                // are counted. Remember the originals so coupling ids start above
+                // any BCs / sets the template already declares.
+                if ( token == "nbc" && nCoupling > 0 ) {
+                    int n = 0; iss >> n;
+                    dirichletBcIdBase = n;
+                    out << "nbc " << ( n + nCoupling ) << " ";
+                    continue;
+                }
+                if ( token == "nset" && nCoupling > 0 ) {
+                    int n = 0; iss >> n;
+                    dirichletSetIdBase = n;
+                    out << "nset " << ( n + nCoupling ) << " ";
+                    continue;
+                }
                 out << token << " ";
             }
             out << "\n";
@@ -6845,6 +6952,34 @@ void Grid::give2DTMOutput(const std::string &fileName)
                 tmElemForEdge[ { eva, evb } ] = elemCounter;
             }
             injected = true;
+            continue;
+        }
+
+        // #@couplingbc — emit one LatticeDirichletCoupling per midline transport
+        // node: its pore pressure is driven by the flanking radial ITZ structural
+        // elements. dof 11 is the transport pressure (P_f); `values 1 0.` is a
+        // placeholder overridden by the BC's give().
+        if ( t.rfind("#@couplingbc", 0) == 0 ) {
+            int bcId = dirichletBcIdBase;
+            int setId = dirichletSetIdBase;
+            for ( const auto &kv : dirichletNodeElems ) {
+                ++bcId; ++setId;
+                out << "LatticeDirichletCoupling " << bcId
+                    << " loadTimeFunction " << couplingLtf
+                    << " dofs 1 11 values 1 0."
+                    << " couplingelements " << kv.second.size();
+                for ( int e : kv.second ) out << " " << e;
+                out << " set " << setId << "\n";
+            }
+            continue;
+        }
+        // #@couplingset — one single-node Set per coupling BC (the midline node).
+        if ( t.rfind("#@couplingset", 0) == 0 ) {
+            int setId = dirichletSetIdBase;
+            for ( const auto &kv : dirichletNodeElems ) {
+                ++setId;
+                out << "Set " << setId << " nodes 1 " << kv.first << "\n";
+            }
             continue;
         }
 

@@ -249,6 +249,9 @@ LatticeLinearElastic :: giveLatticeStress3d(const FloatArrayF< 6 > &strain,
     //Set all temp values
     status->letTempLatticeStrainBe(strain);
     status->letTempLatticeStressBe(stress);
+    // Expose the axial (normal) stress so a staggered Dirichlet coupling can read
+    // it via Lattice2d::giveTempNormalStress (cf. latticedamage).
+    status->setTempNormalLatticeStress(stress.at(1) );
 
     return stress;
 }
