@@ -2706,13 +2706,13 @@ void Grid::giveOofemOutput(const std::string &fileName)
 
 void Grid::give2DSMTMOutput(const std::string &fileName)
 {
-    // Combined SM+TM run: write both the SM and TM input files from one shared
-    // node numbering, so the SM LatticeNeumannCoupling can reference TM
-    // transport-node ids and the SM couplingflag can reference TM element ids
-    // (mirrors the single-pass 2015 triangle2oofem). Reuses the standalone
-    // give2DSMOutput / give2DTMOutput writers; the cross-references travel
-    // between them through the tmRimNodeForEdge / tmElemForEdge member maps the
-    // TM writer fills and the SM writer reads — which is why TM is written first.
+    // Combined SM+TM run: write both input files from one shared node/element
+    // numbering, so the SM records can reference TM ids and vice versa (mirrors
+    // the single-pass 2015 triangle2oofem). NUMBER both domains first, then EMIT
+    // both: numberSM2D fills smElemForEdge, numberTM2D fills tmElemForEdge and
+    // tmRimNodeForEdge, so every cross-reference map exists before either file is
+    // written. The coupling DIRECTION (Neumann transport→mechanical, Dirichlet
+    // mechanical→transport, or both) therefore no longer dictates a write order.
     if ( tmControlFileName.empty() ) {
         converter::error("#@grid 2dSMTM requires #@tmcontrol <path> (the TM control template)");
     }
@@ -2726,27 +2726,22 @@ void Grid::give2DSMTMOutput(const std::string &fileName)
     const std::string smOut = stem + ".sm.in";
     const std::string tmOut = stem + ".tm.in";
 
-    // The SM control is the file the converter was invoked on; the TM control
-    // comes from #@tmcontrol. give2D*Output read `controlFileName` for their
-    // copy-through template, so swap it per writer. TM first so its node/element
-    // numbering is available to the SM coupling passes.
+    // Number both domains (no file I/O, no template needed) — this populates all
+    // cross-reference maps.
+    SMNumbering2D smNb;
+    TMNumbering2D tmNb;
+    numberSM2D(smNb);
+    numberTM2D(tmNb);
+
+    // Emit each file from its own control template. The SM control is the file
+    // the converter was invoked on; the TM control comes from #@tmcontrol.
+    // emit*2D read `controlFileName` for their copy-through template, so swap it
+    // per writer.
     const std::string smControl = controlFileName;
-    if ( couplingDirichlet ) {
-        // Displacement-driven coupling (mechanical → transport): the TM writer
-        // emits LatticeDirichletCoupling BCs naming SM element ids, so SM must be
-        // written first to populate smElemForEdge. SM needs no TM cross-reference
-        // here (no couplingflag), so the order simply reverses.
-        give2DSMOutput(smOut);
-        controlFileName = tmControlFileName;
-        give2DTMOutput(tmOut);
-        controlFileName = smControl;
-    } else {
-        // TM first so its node/element numbering feeds the SM coupling passes.
-        controlFileName = tmControlFileName;
-        give2DTMOutput(tmOut);
-        controlFileName = smControl;
-        give2DSMOutput(smOut);
-    }
+    emitSM2D(smNb, smOut);
+    controlFileName = tmControlFileName;
+    emitTM2D(tmNb, tmOut);
+    controlFileName = smControl;
 }
 
 void Grid::giveOutputT3d(const std::string &fileName)
