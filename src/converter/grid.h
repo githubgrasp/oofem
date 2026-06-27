@@ -1022,11 +1022,7 @@ public:
     /// edge runs tangentially inside the void. The 2D-inclusion analog of the
     /// per-region cross-section projection (`Disk::modifyVoronoiCrossSection`),
     /// generalized to any number of holes at any centre.
-    /// `tmOnlyPass` selects which holes to project: false = regular `#@holedisk`
-    /// voids (shared by SM and TM); true = `#@tmhole` transport-only voids. In a
-    /// 2dSMTM run the regular pass runs before the SM is written and the tmOnly
-    /// pass after, so a transport-only hole never disturbs the SM geometry.
-    void project2DVoronoiVerticesToHoles(bool tmOnlyPass = false);
+    void project2DVoronoiVerticesToHoles();
 
     /// 3D notch counterpart of the 2D projection: Voronoi vertices that
     /// fall strictly inside any 3D `#@notch` box AND bound a crossing

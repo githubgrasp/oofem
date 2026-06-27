@@ -1252,28 +1252,6 @@ void Grid::readControlRecords()
                 converter::error("Malformed #@holedisk — expected 'radius <r>'");
             }
             holeList.push_back(new HoleDisk(num, cx, cy, radius) );
-        } else if ( tag == "#@tmhole" ) {
-            // #@tmhole <id> centre 2 cx cy radius <r>
-            // Transport-only hole: voids the inclusion+ITZ region in the TM mesh
-            // (kept in the SM), with the TM boundary on this circle (the ITZ
-            // midline). Used by the displacement/Dirichlet coupling example.
-            int num;
-            iss >> num;
-            std::string kw;
-            int sz = 0;
-            iss >> kw >> sz;
-            if ( kw != "centre" || sz != 2 ) {
-                converter::error("Malformed #@tmhole — expected 'centre 2 cx cy'");
-            }
-            double cx, cy, radius;
-            iss >> cx >> cy;
-            iss >> kw >> radius;
-            if ( kw != "radius" ) {
-                converter::error("Malformed #@tmhole — expected 'radius <r>'");
-            }
-            HoleDisk *h = new HoleDisk(num, cx, cy, radius);
-            h->setTmOnly(true);
-            holeList.push_back(h);
         } else if ( tag == "#@cylinderinclusion" ) {
             // #@cylinderinclusion <id> line 6 x1 y1 z1 x2 y2 z2
             //   radius r itz t inside <mi> interface <mif>
@@ -2718,7 +2696,7 @@ void Grid::give2DSMTMOutput(const std::string &fileName)
         converter::error("#@grid 2dSMTM requires #@tmcontrol <path> (the TM control template)");
     }
     project2DVoronoiVerticesToNotches();
-    project2DVoronoiVerticesToHoles(/*tmOnlyPass*/ false);   // regular voids: shared SM+TM
+    project2DVoronoiVerticesToHoles();
 
     // Derive oofem.sm.in / oofem.tm.in from the base output name (oofem.in).
     std::string base = fileName;
@@ -2727,35 +2705,15 @@ void Grid::give2DSMTMOutput(const std::string &fileName)
     const std::string smOut = stem + ".sm.in";
     const std::string tmOut = stem + ".tm.in";
 
-    bool anyTmHole = false;
-    for ( const auto *h : holeList ) {
-        if ( h != nullptr && h->isTmOnly() ) anyTmHole = true;
-    }
-
     // The SM control is the file the converter was invoked on; the TM control
     // comes from #@tmcontrol. give2D*Output read `controlFileName` for their
-    // copy-through template, so swap it per writer.
+    // copy-through template, so swap it per writer. TM first so its node/element
+    // numbering is available to the SM coupling passes.
     const std::string smControl = controlFileName;
-    if ( anyTmHole ) {
-        // Displacement/Dirichlet coupling (sm-first): write the full SM mesh
-        // (matrix + ITZ + inclusion) BEFORE voiding the transport domain, so the
-        // transport-only hole projection onto the ITZ midline cannot disturb the
-        // shared SM geometry. The SM writer fills smElemForEdge for the TM
-        // LatticeDirichletCoupling.
-        controlFileName = smControl;
-        give2DSMOutput(smOut);
-        project2DVoronoiVerticesToHoles(/*tmOnlyPass*/ true);   // now void the TM domain
-        controlFileName = tmControlFileName;
-        give2DTMOutput(tmOut);
-        controlFileName = smControl;
-    } else {
-        // Pressure/Neumann coupling (tm-first): the SM coupling passes read the
-        // TM node/element numbering, so TM must be written first.
-        controlFileName = tmControlFileName;
-        give2DTMOutput(tmOut);
-        controlFileName = smControl;
-        give2DSMOutput(smOut);
-    }
+    controlFileName = tmControlFileName;
+    give2DTMOutput(tmOut);
+    controlFileName = smControl;
+    give2DSMOutput(smOut);
 }
 
 void Grid::giveOutputT3d(const std::string &fileName)
@@ -3611,16 +3569,13 @@ Grid::onDeleteHoleRim(double x, double y, double tol) const
 
 
 void
-Grid::project2DVoronoiVerticesToHoles(bool tmOnlyPass)
+Grid::project2DVoronoiVerticesToHoles()
 {
     // Each hole owns its cross-section projection (cf. the per-region
-    // Disk::modifyVoronoiCrossSection); the grid just drives the list. Only the
-    // holes matching `tmOnlyPass` are projected (regular voids vs transport-only
-    // voids), so a 2dSMTM run can project the transport-only holes after the SM
-    // file is written.
+    // Disk::modifyVoronoiCrossSection); the grid just drives the list.
     const double tol = this->giveTol();
     for ( auto *h : holeList ) {
-        if ( h != nullptr && h->isTmOnly() == tmOnlyPass ) {
+        if ( h != nullptr ) {
             h->projectVoronoiCrossSection(this, tol);
         }
     }
