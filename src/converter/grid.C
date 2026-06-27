@@ -5778,17 +5778,14 @@ int Grid::r8mat_solve(int n, int rhs_num, double a[])
 }
 
 
-void Grid::give2DSMOutput(const std::string &fileName)
+void Grid::numberSM2D(SMNumbering2D &nb)
 {
-    // 2D structural-mechanics writer. Handles non-periodic and periodic
-    // modes. In periodic mode (any axis of `#@perflag` is 1) Delaunay
-    // edges that cross the periodic boundary are emitted as
-    // `latticeboundary2d` elements, with the outside endpoint replaced by
-    // its periodic-partner id, an extra control node (CTLNODE) whose
-    // coordinates are the specimen dimensions and whose DOFs hold the
-    // macro strains, and a `location` code (1..8 around the rect) that
-    // tells the OOFEM element which axis-shift to apply. Inside edges
-    // (both endpoints inside) emit normal `lattice2D` lines.
+    // 2D structural-mechanics NUMBERING pass: build the compact node-id map and
+    // count emitted nodes/elements, recording each inside element's id against
+    // its Delaunay edge in `smElemForEdge`. The matching emission lives in
+    // `emitSM2D`; splitting them lets a coupled run number both domains before
+    // either file is written. (Periodic mode emits boundary-crossing edges as
+    // `latticeboundary2d`; see emitSM2D for the geometry.)
 
     if ( regionList.empty() || regionList[0] == nullptr ) {
         converter::error("give2DSMOutput: at least one #@rect region is required");
@@ -5804,9 +5801,6 @@ void Grid::give2DSMOutput(const std::string &fileName)
     if ( !rect && !disk ) {
         converter::error("give2DSMOutput: region 1 must be a #@rect or #@disk");
     }
-
-    oofem::FloatArray bounds;
-    this->giveRegion(1)->defineBoundaries(bounds);
 
     const bool periodic = ( periodicityFlag.giveSize() >= 2 ) &&
                           ( periodicityFlag.at(1) == 1 || periodicityFlag.at(2) == 1 );
@@ -5874,6 +5868,13 @@ void Grid::give2DSMOutput(const std::string &fileName)
 
     int emittedElems = 0;
     int emittedBoundaryElems = 0;
+    // Element ids are assigned here, in the numbering pass (walk + selection are
+    // identical to the emission loop below, so the id of each element equals its
+    // emission `elemCounter`). Recording the inside-element id against its
+    // Delaunay edge here — rather than during emission — makes smElemForEdge
+    // available before any file is written, so a coupled SMTM run can number both
+    // domains first and cross-reference in either direction.
+    smElemForEdge.clear();
     {
         oofem::IntArray ep, cs;
         oofem::FloatArray cA(3), cB(3), vA(3), vB(3);
@@ -5904,9 +5905,47 @@ void Grid::give2DSMOutput(const std::string &fileName)
             this->giveDelaunayVertex(ep.at(2))->giveCoordinates(cB);
             if ( notchDeletes(cA, cB) ) continue;
             ++emittedElems;
-            if ( emitBoundary ) ++emittedBoundaryElems;
+            if ( emitBoundary ) {
+                ++emittedBoundaryElems;
+            } else {
+                smElemForEdge[ { std::min(ep.at(1), ep.at(2)),
+                                 std::max(ep.at(1), ep.at(2)) } ] = emittedElems;
+            }
         }
     }
+
+    nb.nodeMap = std::move(nodeMap);
+    nb.emittedNodes = emittedNodes;
+    nb.emittedElems = emittedElems;
+    nb.emittedBoundaryElems = emittedBoundaryElems;
+    nb.periodic = periodic;
+}
+
+
+void Grid::emitSM2D(const SMNumbering2D &nb, const std::string &fileName)
+{
+    // 2D structural-mechanics EMISSION pass: write oofem.sm.in from a completed
+    // SMNumbering2D. Element ids reproduce the numbering pass exactly (same walk
+    // and selection), so `++elemCounter` below matches `smElemForEdge`. Reads any
+    // TM cross-reference maps already populated (e.g. tmElemForEdge for the
+    // distributed-Biot couplingflag, tmRimNodeForEdge for Neumann coupling).
+    const auto *rect = dynamic_cast< Rect * >( this->giveRegion(1) );
+    const auto *disk = dynamic_cast< Disk * >( this->giveRegion(1) );
+    oofem::FloatArray bounds;
+    this->giveRegion(1)->defineBoundaries(bounds);
+    const int nDelV = this->giveNumberOfDelaunayVertices();
+    const int nDelL = this->giveNumberOfDelaunayLines();
+    const double tol = this->giveTol();
+    const std::vector< int > &nodeMap = nb.nodeMap;
+    const int emittedNodes = nb.emittedNodes;
+    const int emittedElems = nb.emittedElems;
+    const bool periodic = nb.periodic;
+    auto delaunayHasPartner = [&]( int rawId ) {
+        return periodic &&
+               this->giveDelaunayVertex(rawId)->giveOutsideFlag() == 1 &&
+               this->giveDelaunayVertex(rawId)->givePeriodicNode() != 0;
+    };
+
     const int totalNodes = emittedNodes + ( periodic ? 1 : 0 );
     const int ctlNode = emittedNodes + 1;
 
@@ -6246,10 +6285,8 @@ void Grid::give2DSMOutput(const std::string &fileName)
                         << " gpCoords 2 " << gx << " " << gy
                         << " width " << width
                         << " thick " << latticeThickness;
-                    // Record this SM element's id against its Delaunay edge, so a
-                    // later (sm-first) TM Dirichlet coupling pass can name it.
-                    smElemForEdge[ { std::min(endpoints.at(1), endpoints.at(2)),
-                                     std::max(endpoints.at(1), endpoints.at(2)) } ] = elemCounter;
+                    // smElemForEdge for this inside element was recorded in the
+                    // numbering pre-pass above (id == elemCounter here).
                     if ( emitCouplingFlag ) {
                         // Link this SM element to its dual TM element so the
                         // material can read the pore pressure (distributed Biot
@@ -6278,6 +6315,16 @@ void Grid::give2DSMOutput(const std::string &fileName)
             out << line << "\n";
         }
     }
+}
+
+
+void Grid::give2DSMOutput(const std::string &fileName)
+{
+    // Standalone 2D SM writer (#@grid 2dSM): number then emit. The combined
+    // 2dSMTM run instead numbers both domains up front (see give2DSMTMOutput).
+    SMNumbering2D nb;
+    numberSM2D(nb);
+    emitSM2D(nb, fileName);
 }
 
 

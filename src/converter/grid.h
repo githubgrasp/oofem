@@ -1002,6 +1002,30 @@ public:
     /// pipeline as the 3D writer.
     void give2DSMOutput(const std::string &fileName);
 
+    /// Numbering state for the 2D SM writer, produced by `numberSM2D` and
+    /// consumed by `emitSM2D`. Separating numbering from emission lets a coupled
+    /// `#@grid 2dSMTM` run number both domains first (so every cross-reference map
+    /// exists before either file is written), instead of relying on a fixed
+    /// SM/TM write order.
+    struct SMNumbering2D {
+        std::vector< int > nodeMap;          ///< Delaunay vertex id → compact node id (0 = dropped)
+        int emittedNodes = 0;                ///< number of emitted SM nodes
+        int emittedElems = 0;                ///< number of emitted SM elements (inside + boundary)
+        int emittedBoundaryElems = 0;        ///< subset that are periodic `latticeboundary2d`
+        bool periodic = false;               ///< periodic mode (any `#@perflag` axis set)
+    };
+
+    /// Number the 2D SM mesh: build the compact node-id map, count the emitted
+    /// nodes/elements, and record each inside element's id against its Delaunay
+    /// edge in `smElemForEdge`. No file is written. (First half of the old
+    /// monolithic `give2DSMOutput`.)
+    void numberSM2D(SMNumbering2D &nb);
+
+    /// Emit `oofem.sm.in` from a completed `SMNumbering2D`. Writes nodes,
+    /// elements, and coupling records, reading any TM cross-reference maps that
+    /// are already populated. (Second half of the old `give2DSMOutput`.)
+    void emitSM2D(const SMNumbering2D &nb, const std::string &fileName);
+
     /// 2D mass-transport writer for the qhull pipeline. Emits one
     /// `latticemt2D` line per Voronoi edge whose endpoints are both inside
     /// the rectangle. The "nodes" of a transport element are Voronoi
