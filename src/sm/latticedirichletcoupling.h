@@ -65,12 +65,12 @@ protected:
     IntArray couplingElements;
 
     // Explicit (one-step-lagged) staggered coupling: the pressure prescribed at
-    // step n uses the mechanical stress committed at step n-1. The mechanical
-    // slave is solved and committed before the transport problem within a step,
-    // so its current stress is already step n; these cache the value so give()
-    // can return the previous step's. Keyed on the (target) time, because the
-    // transport field applies Dirichlet values through the give(..,double time)
-    // overload, not the TimeStep one.
+    // step n uses the mechanical stress committed at step n-1. Dirichlet coupling
+    // is mechanical -> transport, so the mechanical slave (prob2) is solved before
+    // the transport problem within a step (sm-first); its current stress is thus
+    // already step n, and these cache the value so give() can return step n-1's.
+    // Keyed on the (target) time, because the transport field applies Dirichlet
+    // values through the give(.., double time) overload, not the TimeStep one.
     double cachedValue = 0.;
     double previousValue = 0.;
     double cachedTime = -1.;

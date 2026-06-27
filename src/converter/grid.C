@@ -6221,6 +6221,12 @@ void Grid::give2DSMOutput(const std::string &fileName)
                         out << " couplingflag 1 couplingnumber "
                             << ( ( it != tmElemForEdge.end() ) ? it->second : 0 );
                     }
+                    // Per-material body load (#@bodyload <mat> <bc>), e.g. the
+                    // eigendisplacement on the ITZ elements.
+                    auto blIt = bodyloadByMaterial.find(mat);
+                    if ( blIt != bodyloadByMaterial.end() ) {
+                        out << " bodyloads 1 " << blIt->second;
+                    }
                     out << "\n";
                 }
             }

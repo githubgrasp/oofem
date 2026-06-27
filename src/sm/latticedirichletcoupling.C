@@ -44,6 +44,8 @@
 #include "intarray.h"
 #include "classfactory.h"
 
+#include <cmath>
+
 namespace oofem {
 REGISTER_BoundaryCondition(LatticeDirichletCoupling);
 
@@ -58,9 +60,11 @@ double
 LatticeDirichletCoupling :: give(Dof *dof, ValueModeType mode, double time)
 {
     // One-step-lagged (explicit) staggered coupling: return the value computed
-    // from the mechanical stress of the previous step. On a new step, shift the
-    // cache and recompute from the just-committed mechanical stress. The first
-    // step returns 0 (no prior mechanical state).
+    // from the mechanical stress of the previous step. The mechanical slave
+    // (prob2) is solved before the transport problem within a step (sm-first —
+    // Dirichlet couples mechanical -> transport, so the mechanical stress must
+    // exist when the transport reads it), so its current stress is already this
+    // step's; the cache returns the previous step's. The first step returns 0.
     if ( time != this->cachedTime ) {
         this->previousValue = this->cachedValue;
         this->cachedValue = this->computeCouplingValue(dof);
@@ -109,7 +113,7 @@ LatticeDirichletCoupling :: computeCouplingValue(Dof *dof)
 
         double dx = gpCoords.at(1) - nodeCoords.at(1);
         double dy = gpCoords.at(2) - nodeCoords.at(2);
-        double distance = sqrt(dx * dx + dy * dy);
+        double distance = std::sqrt(dx * dx + dy * dy);
 
         nominator   += distance * normalStress;
         denominator += distance;
