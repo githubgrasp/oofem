@@ -6520,8 +6520,12 @@ void Grid::project3DVoronoiVerticesToNotches()
 }
 
 
-void Grid::give2DTMOutput(const std::string &fileName)
+void Grid::numberTM2D(TMNumbering2D &nb)
 {
+    // 2D mass-transport NUMBERING pass (counterpart of numberSM2D). Builds the
+    // interior + boundary node maps, counts emitted nodes/elements, and records
+    // tmRimNodeForEdge + tmElemForEdge so a coupled run can cross-reference
+    // before any file is written. Emission lives in emitTM2D.
     // Stage 8 — 2D mass-transport variant of `give2DSMOutput`. Iterates
     // Voronoi lines instead of Delaunay; element nodes are Voronoi
     // vertices, cross-section width is the length of the dual Delaunay
@@ -6688,6 +6692,15 @@ void Grid::give2DTMOutput(const std::string &fileName)
 
             if ( inA && inB ) {
                 ++emittedElems;
+                // Record interior element id against its dual Delaunay edge
+                // (id == emission elemCounter: same walk + selection). Moving
+                // tmElemForEdge here, into the numbering pass, lets the SM writer
+                // read it before its own emission in a coupled run.
+                this->giveVoronoiLine(i + 1)->giveCrossSectionVertices(cs);
+                if ( cs.giveSize() == 2 ) {
+                    tmElemForEdge[ { std::min(cs.at(1), cs.at(2)),
+                                     std::max(cs.at(1), cs.at(2)) } ] = emittedElems;
+                }
                 continue;
             }
             if ( !inA && !inB ) continue;
@@ -6710,6 +6723,7 @@ void Grid::give2DTMOutput(const std::string &fileName)
             // the sorted global Delaunay-vertex pair (shared by both writers).
             const int va = std::min(cs.at(1), cs.at(2)), vb = std::max(cs.at(1), cs.at(2));
             tmRimNodeForEdge[ { va, vb } ] = emittedNodes;
+            tmElemForEdge[ { va, vb } ] = emittedElems;
             if ( couplingHole != nullptr &&
                  couplingHole->onRim(dA.at(1), dA.at(2), tol) &&
                  couplingHole->onRim(dB.at(1), dB.at(2), tol) ) {
@@ -6717,6 +6731,58 @@ void Grid::give2DTMOutput(const std::string &fileName)
             }
         }
     }
+
+    nb.nodeMap = std::move(nodeMap);
+    nb.boundaryNodeForLine = std::move(boundaryNodeForLine);
+    nb.boundaryNodeCoords = std::move(boundaryNodeCoords);
+    nb.boundaryNodeIsCoupledRim = std::move(boundaryNodeIsCoupledRim);
+    nb.emittedNodes = emittedNodes;
+    nb.emittedElems = emittedElems;
+}
+
+
+void Grid::emitTM2D(const TMNumbering2D &nb, const std::string &fileName)
+{
+    // 2D mass-transport EMISSION pass: write oofem.tm.in from a completed
+    // TMNumbering2D. Element ids reproduce the numbering pass exactly. Reads
+    // smElemForEdge in the Dirichlet coupling pre-pass below.
+    const auto *disk = dynamic_cast< Disk * >( this->giveRegion(1) );
+    const int nVorV = this->giveNumberOfVoronoiVertices();
+    const int nVorL = this->giveNumberOfVoronoiLines();
+    const double tol = this->giveTol();
+    double dcx = 0., dcy = 0., drad = 0.;
+    if ( disk ) {
+        dcx = disk->giveCentre().at(1);
+        dcy = disk->giveCentre().at(2);
+        drad = disk->giveRadius();
+    }
+    // Same boundary-node projection used during numbering (needed for the
+    // crossing-element gauss point / node coords during emission).
+    auto boundaryNodeCoord = [&](const oofem::FloatArray &dA, const oofem::FloatArray &dB) {
+        oofem::FloatArray m(3);
+        m.at(1) = 0.5 * ( dA.at(1) + dB.at(1) );
+        m.at(2) = 0.5 * ( dA.at(2) + dB.at(2) );
+        for ( const auto *h : holeList ) {
+            if ( h != nullptr && h->boundaryNodeCoord(dA, dB, tol, m) ) {
+                return m;
+            }
+        }
+        if ( disk ) {
+            const double ex = m.at(1) - dcx, ey = m.at(2) - dcy;
+            const double d = std::sqrt(ex * ex + ey * ey);
+            if ( d > 0. ) {
+                m.at(1) = dcx + drad / d * ex;
+                m.at(2) = dcy + drad / d * ey;
+            }
+        }
+        return m;
+    };
+    const std::vector< int > &nodeMap = nb.nodeMap;
+    const int emittedNodes = nb.emittedNodes;
+    const int emittedElems = nb.emittedElems;
+    const std::vector< int > &boundaryNodeForLine = nb.boundaryNodeForLine;
+    const std::vector< oofem::FloatArray > &boundaryNodeCoords = nb.boundaryNodeCoords;
+    const std::vector< char > &boundaryNodeIsCoupledRim = nb.boundaryNodeIsCoupledRim;
 
     // Displacement-driven (Dirichlet) coupling pre-pass. For each radial ITZ
     // structural element of #@diskinclusion <couplingInclusionId> (a Delaunay
@@ -6991,12 +7057,8 @@ void Grid::give2DTMOutput(const std::string &fileName)
                     out << " lumpedcapacity 1";
                 }
                 out << "\n";
-
-                // Record this TM element id against its dual Delaunay edge so the
-                // SM writer can emit a matching couplingflag couplingnumber.
-                const int eva = std::min(crossSectionNodes.at(1), crossSectionNodes.at(2));
-                const int evb = std::max(crossSectionNodes.at(1), crossSectionNodes.at(2));
-                tmElemForEdge[ { eva, evb } ] = elemCounter;
+                // tmElemForEdge for this element was recorded in the numbering
+                // pre-pass above (id == elemCounter here).
             }
             injected = true;
             continue;
@@ -7035,6 +7097,16 @@ void Grid::give2DTMOutput(const std::string &fileName)
             out << line << "\n";
         }
     }
+}
+
+
+void Grid::give2DTMOutput(const std::string &fileName)
+{
+    // Standalone 2D TM writer (#@grid 2dTM): number then emit. The combined
+    // 2dSMTM run instead numbers both domains up front (see give2DSMTMOutput).
+    TMNumbering2D nb;
+    numberTM2D(nb);
+    emitTM2D(nb, fileName);
 }
 
 //#endif

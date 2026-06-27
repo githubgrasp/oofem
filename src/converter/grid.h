@@ -1035,6 +1035,27 @@ public:
     /// drives the out-of-plane thickness.
     void give2DTMOutput(const std::string &fileName);
 
+    /// Numbering state for the 2D TM writer, produced by `numberTM2D` and
+    /// consumed by `emitTM2D` (the transport counterpart of `SMNumbering2D`).
+    struct TMNumbering2D {
+        std::vector< int > nodeMap;                          ///< Voronoi vertex id → interior node id
+        std::vector< int > boundaryNodeForLine;              ///< Voronoi line → its boundary node id (0 = none)
+        std::vector< oofem::FloatArray > boundaryNodeCoords; ///< coords of each boundary node (alloc order)
+        std::vector< char > boundaryNodeIsCoupledRim;        ///< Voronoi line → boundary node on a coupled hole rim
+        int emittedNodes = 0;                                ///< number of emitted TM nodes
+        int emittedElems = 0;                                ///< number of emitted TM elements
+    };
+
+    /// Number the 2D TM mesh: build the interior + boundary node maps, count the
+    /// emitted nodes/elements, and record `tmRimNodeForEdge` and `tmElemForEdge`.
+    /// No file is written. (First half of the old monolithic `give2DTMOutput`.)
+    void numberTM2D(TMNumbering2D &nb);
+
+    /// Emit `oofem.tm.in` from a completed `TMNumbering2D`. Runs the Dirichlet
+    /// coupling pre-pass (reading `smElemForEdge`) and writes nodes/elements/BCs.
+    /// (Second half of the old `give2DTMOutput`.)
+    void emitTM2D(const TMNumbering2D &nb, const std::string &fileName);
+
     /// Combined `#@grid 2dSMTM` writer: one invocation writes both `oofem.sm.in`
     /// and `oofem.tm.in` (derived from the base output name) from a single
     /// shared node/element numbering, so the SM coupling records can reference
