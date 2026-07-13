@@ -154,18 +154,8 @@ NonStationaryMPMSProblem :: giveDiscreteTime(int iStep)
 
 TimeStep *NonStationaryMPMSProblem :: giveNextStep()
 {
-    if ( !currentStep ) {
-        // first step -> generate initial step
-        currentStep = std::make_unique<TimeStep>( *giveSolutionStepWhenIcApply() );
-    }
-
-    double dt = this->giveDeltaT(currentStep->giveNumber()+1);
-    previousStep = std :: move(currentStep);
-    currentStep = std::make_unique<TimeStep>(*previousStep, dt);
-    currentStep->setIntrinsicTime(previousStep->giveTargetTime() + alpha * dt);
-    return currentStep.get();
+    return this->timeStepController->giveNextStep();
 }
-
 
 TimeStep *NonStationaryMPMSProblem :: giveSolutionStepWhenIcApply(bool force)
 {
@@ -240,6 +230,10 @@ void NonStationaryMPMSProblem :: solveYourselfAt(TimeStep *tStep)
                                                   SparseNonLinearSystemNM :: rlm_total, // ignore
                                                   currentIterations, // ignore
                                                   tStep);
+    if (status != CR_CONVERGED) {
+      OOFEM_WARNING("No success in solving problem at step %d", tStep->giveNumber());
+    }
+
     tStep->numberOfIterations = currentIterations;
     tStep->convergedReason = status;
 }

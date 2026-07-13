@@ -250,7 +250,7 @@ InternalStateValueType giveInternalStateValueType(UnknownType type)
 {
     if ( type == DisplacementVector || type == EigenVector || type == VelocityVector || type == DirectorField || type == MacroSlipVector || type == ResidualForce ) {
         return ISVT_VECTOR;
-    } else if ( type == FluxVector || type == PressureVector || type == Temperature || type == Humidity || type == DeplanationFunction || type == Concentration ) {
+    } else if ( type == FluxVector || type == PressureVector || type == PressureVector_1 || type == PressureVector_2 || type == Temperature || type == Humidity || type == DeplanationFunction || type == Concentration ) {
         return ISVT_SCALAR;
     } else {
         OOFEM_ERROR( "unsupported UnknownType %s", __UnknownTypeToString(type) );

@@ -196,7 +196,8 @@ namespace oofem {
     ENUM_ITEM_WITH_VALUE(IST_VolumeFraction, 146) \
     ENUM_ITEM_WITH_VALUE(IST_X_LCS, 147) /*Unit vector in local coordinate system in the x direction (usable for diagrams of internal forces for VTK export)*/ \
     ENUM_ITEM_WITH_VALUE(IST_Y_LCS, 148) \
-    ENUM_ITEM_WITH_VALUE(IST_Z_LCS, 149)
+    ENUM_ITEM_WITH_VALUE(IST_Z_LCS, 149) \
+    ENUM_ITEM_WITH_VALUE(IST_Pressure_2, 150) /* Pressure for second phase in multiphase problems */
     
 
 /**
