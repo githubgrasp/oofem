@@ -280,6 +280,8 @@ namespace oofem {
         IntArray lhsdotIntegrals;  // terms involving time derivative of unknowns at current time step
         IntArray rhsIntegrals;
 
+        bool debug = false;
+
     public:
         NonStationaryMPMSProblem(int i, EngngModel * _master) : EngngModel(i, _master), nMethod(nullptr) { ndomains = 1;}
         void initializeFrom(const std::shared_ptr<InputRecord> &ir) override ;

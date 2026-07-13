@@ -117,6 +117,7 @@ NonStationaryMPMSProblem :: initializeFrom(const std::shared_ptr<InputRecord> &i
             }
         }
     }
+    IR_GIVE_OPTIONAL_FIELD(ir, this->debug, "debug");
 }
 
 double NonStationaryMPMSProblem :: giveUnknownComponent(ValueModeType mode, TimeStep *tStep, Domain *d, Dof *dof)
@@ -404,6 +405,30 @@ NonStationaryMPMSProblem :: printOutputAt(FILE *file, TimeStep *tStep)
     }
 
     EngngModel :: printOutputAt(file, tStep);
+
+    if (this->debug) {
+        /* custom export */
+        // plot profile of the pressure fields vs x
+        Domain *d = this->giveDomain(1);
+        double t = tStep->giveTargetTime();
+        char filename[256];
+        sprintf(filename, "time_%lf.csv", t);
+        FILE *file1 = fopen(filename, "w");
+        fprintf(file1, "t=%lf[s]\nx, pw, pa, T, u\n", t);
+        for ( int i =1; i<= 141; i++) {
+            DofManager *dm = d->giveDofManager(i);
+            double x = dm->giveCoordinate(1);
+            FloatArray pw,pa,u,T,Sw;
+            dm->giveUnknownVector(pw, {P_f}, VM_Total, tStep);
+            dm->giveUnknownVector(pa, {P_f2}, VM_Total, tStep);
+            dm->giveUnknownVector(u, {D_u}, VM_Total, tStep);
+            dm->giveUnknownVector(T, {T_f}, VM_Total, tStep);
+
+            // dm->giveUnknownVector(Sw, {S_w}, VM_Total, tStep);
+            fprintf(file1, "%le, %le, %le, %le, %le\n", x, pw[0], pa[0], T[0], u[0]);
+        }
+        fclose(file1);
+    }
 
 }
 
