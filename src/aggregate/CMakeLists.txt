@@ -14,30 +14,30 @@ set(AGGREGATE_SOURCES
    )
 
 add_library(aggregate STATIC ${AGGREGATE_SOURCES})
-target_link_libraries(aggregate PUBLIC liboofem Eigen3::Eigen)
+target_link_libraries(aggregate PUBLIC ${OOFEM_TOOL_LINK} Eigen3::Eigen)
 target_include_directories(aggregate PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_executable(aggregate.exec aggregate.C)
-target_link_libraries(aggregate.exec PRIVATE aggregate liboofem)
+add_executable(aggregate.exec aggregate.C ${OOFEM_TOOL_OBJS})
+target_link_libraries(aggregate.exec PRIVATE aggregate ${OOFEM_TOOL_LINK})
 
-add_executable(intersection_test.exec intersection_test.C)
-target_link_libraries(intersection_test.exec PRIVATE aggregate liboofem)
+add_executable(intersection_test.exec intersection_test.C ${OOFEM_TOOL_OBJS})
+target_link_libraries(intersection_test.exec PRIVATE aggregate ${OOFEM_TOOL_LINK})
 
 add_test(
     NAME test_aggregate_intersection_unit
     COMMAND $<TARGET_FILE:intersection_test.exec>
 )
 
-add_executable(grading_test.exec grading_test.C)
-target_link_libraries(grading_test.exec PRIVATE aggregate liboofem)
+add_executable(grading_test.exec grading_test.C ${OOFEM_TOOL_OBJS})
+target_link_libraries(grading_test.exec PRIVATE aggregate ${OOFEM_TOOL_LINK})
 
 add_test(
     NAME test_aggregate_grading_unit
     COMMAND $<TARGET_FILE:grading_test.exec>
 )
 
-add_executable(placer_test.exec placer_test.C)
-target_link_libraries(placer_test.exec PRIVATE aggregate liboofem)
+add_executable(placer_test.exec placer_test.C ${OOFEM_TOOL_OBJS})
+target_link_libraries(placer_test.exec PRIVATE aggregate ${OOFEM_TOOL_LINK})
 
 add_test(
     NAME test_aggregate_placer_unit

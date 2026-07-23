@@ -42,7 +42,6 @@
 #include "engngm.h"
 #include "mathfem.h"
 #include "Elements/LatticeElements/latticestructuralelement.h"
-#include "Elements/LatticeElements/lattice3d.h"
 #include "integrationrule.h"
 #include "datastream.h"
 #include "staggeredproblem.h"
@@ -91,6 +90,9 @@ LatticeDamage :: initializeFrom(InputRecord &ir)
     // biotCoefficient ("bio") is read by LatticeLinearElastic::initializeFrom (called above).
     this->biotType = 0;
     IR_GIVE_OPTIONAL_FIELD(ir, this->biotType, _IFT_LatticeDamage_btype);
+
+    this->calDissFlag = 0;
+    IR_GIVE_OPTIONAL_FIELD(ir, this->calDissFlag, _IFT_LatticeDamage_calDiss);
 }
 
 
@@ -108,57 +110,41 @@ LatticeDamage :: computeEquivalentStrain(const FloatArrayF< 6 > &strain, GaussPo
 
 
 double
-LatticeDamage :: computeDamageParam(double tempKappa, GaussPoint *gp) const
+LatticeDamage :: computeDamageParamExplicit(double tempKappa, double e0, double wfParam, double eNormal, double le) const
 {
-    double le = static_cast< LatticeStructuralElement * >( gp->giveElement() )->giveLength();
-    const double e0 = this->give(e0_ID, gp) * this->e0Mean;
-    double eNormal = this->give(eNormal_ID, gp) * this->eNormalMean;
-
-    if ( softeningType == 1 ) { //linear
-        if ( tempKappa >= e0 && tempKappa < this->wf / le ) {
-            //linear stress-crack opening relation
-            //check if input parameter make sense
-            if ( this->wf / le <= e0 ) {
+    if ( softeningType == 1 ) {
+        if ( tempKappa >= e0 && tempKappa < wfParam / le ) {
+            if ( wfParam / le <= e0 ) {
                 OOFEM_ERROR("e0>wf/Le \n Possible solutions: Increase fracture energy or reduce element size\n");
             }
-
-            return ( 1. - e0 / tempKappa ) / ( 1. - e0 / ( this->wf / le ) );
-        } else if ( tempKappa >= this->wf / le ) {
+            return ( 1. - e0 / tempKappa ) / ( 1. - e0 / ( wfParam / le ) );
+        } else if ( tempKappa >= wfParam / le ) {
             return 1.;
         } else {
             return 0.;
         }
-    } else if ( softeningType == 2 ) {      //bilinear softening
-        //Check if input parameter make sense
+    } else if ( softeningType == 2 ) {
         if ( e0 > wfOne / le ) {
             OOFEM_ERROR("parameter wf1 is too small");
-        } else if ( wfOne / le >  this->wf / le ) {
+        } else if ( wfOne / le > wfParam / le ) {
             OOFEM_ERROR("parameter wf is too small");
         }
-
         if ( tempKappa > e0 ) {
             double helpStrain = 0.3 * e0;
             double omega = ( 1 - e0 / tempKappa ) / ( ( helpStrain - e0 ) / this->wfOne * le + 1. );
-
             if ( omega * tempKappa * le > 0 && omega * tempKappa * le < this->wfOne ) {
                 return omega;
             } else {
-                omega = ( 1. - helpStrain / tempKappa - helpStrain * this->wfOne / ( tempKappa * ( this->wf - this->wfOne ) ) ) / ( 1. - helpStrain * le / ( this->wf - this->wfOne ) );
-
-                if ( omega * tempKappa * le >= this->wfOne  && omega * tempKappa * le < this->wf  ) {
+                omega = ( 1. - helpStrain / tempKappa - helpStrain * this->wfOne / ( tempKappa * ( wfParam - this->wfOne ) ) ) / ( 1. - helpStrain * le / ( wfParam - this->wfOne ) );
+                if ( omega * tempKappa * le >= this->wfOne && omega * tempKappa * le < wfParam ) {
                     return omega;
                 }
             }
-
             return clamp(omega, 0., 1.);
         } else {
             return 0.;
         }
     } else if ( softeningType == 3 ) {
-        //exponential softening
-        //  iteration to achieve objectivity
-        //   we are finding state, where elastic stress is equal to
-        //   stress from crack-opening relation (wf = wf characterizes the carc opening diagram)
         if ( tempKappa <= e0 ) {
             return 0.0;
         } else {
@@ -167,15 +153,14 @@ LatticeDamage :: computeDamageParam(double tempKappa, GaussPoint *gp) const
             double Ft = eNormal * e0;
             do {
                 nite++;
-                double help = le * omega * tempKappa / this->wf;
-                double Lhs = eNormal * tempKappa - Ft * exp(-help) * le * tempKappa / this->wf;
+                double help = le * omega * tempKappa / wfParam;
+                double Lhs = eNormal * tempKappa - Ft * exp(-help) * le * tempKappa / wfParam;
                 R = ( 1. - omega ) * eNormal * tempKappa - Ft * exp(-help);
                 omega += R / Lhs;
                 if ( nite > 40 ) {
                     OOFEM_ERROR("computeDamageParam: algorithm not converging");
                 }
             } while ( fabs(R) >= 1.e-4 );
-
             if ( ( omega > 1.0 ) || ( omega < 0.0 ) ) {
                 OOFEM_ERROR("computeDamageParam: internal error\n");
             }
@@ -184,6 +169,17 @@ LatticeDamage :: computeDamageParam(double tempKappa, GaussPoint *gp) const
     } else {
         OOFEM_ERROR("computeDamageParam: unknown softening type");
     }
+    return 0.;
+}
+
+
+double
+LatticeDamage :: computeDamageParam(double tempKappa, GaussPoint *gp) const
+{
+    double le      = static_cast< LatticeStructuralElement * >( gp->giveElement() )->giveLength();
+    double e0      = this->give(e0_ID, gp) * this->e0Mean;
+    double eNormal = this->give(eNormal_ID, gp) * this->eNormalMean;
+    return computeDamageParamExplicit(tempKappa, e0, this->wf, eNormal, le);
 }
 
 
@@ -278,9 +274,9 @@ LatticeDamage :: giveLatticeStress3d(const FloatArrayF< 6 > &strain, GaussPoint 
     }
     answer.at(1) += waterPressure;
 
-    double tempDeltaDissipation = computeDeltaDissipation3d(omega, reducedStrain, gp, tStep);
+    double tempDeltaDissipation = calDissFlag ? computeDeltaDissipation3d(omega, reducedStrain, gp, tStep) : 0.;
     double tempDissipation = status->giveDissipation() + tempDeltaDissipation;
-    
+
     //Set all temp values
     status->setTempDissipation(tempDissipation);
     status->setTempDeltaDissipation(tempDeltaDissipation);
@@ -323,25 +319,6 @@ LatticeDamage :: performDamageEvaluation(GaussPoint *gp, FloatArrayF< 6 > &reduc
         omega = this->computeDamageParam(tempKappa, gp);
         if ( omega > 0 ) {
             status->setTempCrackFlag(1);
-        }
-    }
-
-    // Centroid omega raised to mean of layer omegas (shear/torsion follow layer damage).
-    auto *lat3d = dynamic_cast< Lattice3d * >( gp->giveElement() );
-    if ( lat3d != nullptr && lat3d->isHybridShell() && !lat3d->isLayerIp(gp) ) {
-        IntegrationRule *rule = lat3d->giveIntegrationRule(0);
-        double omegaSum = 0.0;
-        int nLayer = 0;
-        for ( int i = 0; i < rule->giveNumberOfIntegrationPoints(); ++i ) {
-            GaussPoint *otherGp = rule->getIntegrationPoint(i);
-            if ( lat3d->isLayerIp(otherGp) ) {
-                auto *layerStatus = static_cast< LatticeDamageStatus * >( this->giveStatus(otherGp) );
-                omegaSum += layerStatus->giveTempDamage();
-                ++nLayer;
-            }
-        }
-        if ( nLayer > 0 ) {
-            omega = std::max( omega, omegaSum / nLayer );
         }
     }
 

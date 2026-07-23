@@ -281,6 +281,16 @@ if (USE_OOFEG)
     list (APPEND MODULE_LIST "oofeg")
 endif ()
 
+# Tool executables (generator/converter/aggregate) link liboofem in shared
+# mode; in static mode they embed the object libraries like the oofem binary.
+if (USE_SHARED_LIB)
+    set (OOFEM_TOOL_LINK liboofem)
+    set (OOFEM_TOOL_OBJS)
+else ()
+    set (OOFEM_TOOL_LINK ${EXT_LIBS})
+    set (OOFEM_TOOL_OBJS ${LIBS})
+endif ()
+
 if (USE_GENERATOR)
     include_directories ("${oofem_SOURCE_DIR}/src/generator")
     add_subdirectory("${oofem_SOURCE_DIR}/src/generator")

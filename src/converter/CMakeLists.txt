@@ -23,11 +23,11 @@ sphere.C
 )
 
 add_library(converter STATIC ${CONVERTER_SOURCES})
-target_link_libraries(converter PUBLIC liboofem)
+target_link_libraries(converter PUBLIC ${OOFEM_TOOL_LINK})
 target_include_directories(converter PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_executable(converter.exec main.C)
-target_link_libraries(converter.exec PRIVATE converter liboofem)
+add_executable(converter.exec main.C ${OOFEM_TOOL_OBJS})
+target_link_libraries(converter.exec PRIVATE converter ${OOFEM_TOOL_LINK})
 
 enable_testing()
 

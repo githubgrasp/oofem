@@ -439,8 +439,10 @@ Here, $\mathbf{x}^{'}$ and $\mathbf{x}$ are the nodes inside and outside, respec
 \end{elementsummary}
 
 \subsubsection{Latticelink3d element}
-This element represents a two-node 3d link element connecting 3d beam and 3d lattice elements. Each node has six degrees of freedom. 
-The input parameters for this element are shown in Table~\ref{latticelink3dsummary}. 
+This element represents a two-node 3d link element connecting 3d beam (rebar/fibre) and 3d lattice (matrix) elements. Each node has six degrees of freedom.
+The input parameters for this element are shown in Table~\ref{latticelink3dsummary}.
+
+\textbf{Node ordering}: node~1 is the \emph{matrix} lattice node; node~2 is the \emph{rebar} (beam) node. The Gauss point and all output quantities are reported at the rebar node (node~2). The rigid-body arm accounting for the offset between the two nodes is applied to the matrix node (node~1), so that matrix rotations are correctly included in the computed bond-slip.
 
 \begin{elementsummary}{latticelink3d}{3d lattice link element}{\field{length}{rn}  \field{diameter}{rn} \field{dirvector}{ra} \field{l\_end}{rn}}{latticelink3d element summary}{latticelink3dsummary}
 \elementParam{\param{length}: bond length}
@@ -448,7 +450,7 @@ The input parameters for this element are shown in Table~\ref{latticelink3dsumma
 \elementParam{\param{dirvector}: direction vector in which bond-slip occurs.}
 \elementParam{\param{l\_end}: array of pressure values (optional parameter), which are used to consider influence of fluid pressure on mechanical response.}
 \elementParam{\param{mlength}: minimum length (optional parameter) is used to check if the cross-section of the element is not too small. Default value is 1.e-20.}
-\elementDescription{Unknowns}{Six dofs ($u$-displacement, $v$-displacement, $w$-displacement, $u$-rotation, $v$-rotation and $w$-rotation) are required in each node.}
+\elementDescription{Unknowns}{Six dofs ($u$-displacement, $v$-displacement, $w$-displacement, $u$-rotation, $v$-rotation and $w$-rotation) are required in each node. Node~1 is the matrix lattice node; node~2 is the rebar node.}
 \elementDescription{Reference}{\cite{GraAnt19}}
 \end{elementsummary}
 

@@ -85,6 +85,7 @@ set (sm_material
     LatticeMaterials/latticestructuralmaterial.C	
     LatticeMaterials/latticelinearelastic.C
     LatticeMaterials/latticedamage.C
+    LatticeMaterials/latticedamageshell.C
     LatticeMaterials/latticeviscoelastic.C
     LatticeMaterials/latticedamageviscoelastic.C
     LatticeMaterials/latticebondplasticity.C

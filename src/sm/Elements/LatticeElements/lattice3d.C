@@ -297,13 +297,11 @@ Lattice3d :: computeLayerPositions(FloatArray &yOffset, FloatArray &zOffset, Flo
     zOffset.resize(n); zOffset.zero();
     areas.resize(n);
 
-    if ( n == 1 ) {
-        // Default: single layer at centroid, tributary area = whole cross-section.
+    if ( !this->isShellElement() ) {
         areas.at(1) = this->area;
         return;
     }
 
-    // Multi-layer shell: n equal strips through the thickness (local y).
     const double h = this->shellH;
     const double b = this->shellB;
     const double dh = h / static_cast< double >( n );
@@ -376,23 +374,13 @@ Lattice3d :: computeConstitutiveMatrixAt(FloatMatrix &answer, MatResponseMode rM
 void
 Lattice3d :: computeStressVector(FloatArray &answer, const FloatArray &strain, GaussPoint *gp, TimeStep *tStep)
 {
-    // Hybrid layer IPs see only the axial strain: shears/torsion/in-plane bending
-    // act at the centroid IP, so feeding them here would contaminate the scalar
-    // damage variable (LatticeDamage equiv strain mixes axial + transverse shear).
-    if ( this->isLayerIp(gp) ) {
-        FloatArray axialOnly(6);
-        axialOnly.zero();
-        axialOnly.at(1) = strain.at(1);
-        answer = static_cast< LatticeCrossSection * >( this->giveCrossSection() )->giveLatticeStress3d(axialOnly, gp, tStep);
-        return;
-    }
     answer = static_cast< LatticeCrossSection * >( this->giveCrossSection() )->giveLatticeStress3d(strain, gp, tStep);
 }
 
 void
 Lattice3d :: computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode,
                                     TimeStep *tStep)
-// Sums B^T D B over all IPs; per-IP partitioning is in the section getters.
+// Section getters handle per-IP cross-section partitioning.
 {
     FloatMatrix d, ds, bj, bjt, dbj, contrib;
 
@@ -418,23 +406,16 @@ Lattice3d :: computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode,
 }
 
 void Lattice3d :: computeGaussPoints()
-// Hybrid shell: nLayers layer IPs + 1 centroid IP. Otherwise: one centroid IP.
 {
     FloatArray yOff, zOff, areas;
     this->computeLayerPositions(yOff, zOff, areas);
     const int nLayers = areas.giveSize();
 
-    LatticeCrossSection *lcs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );
-    const bool hybrid = ( nLayers > 1 && lcs != nullptr && this->isShellElement() );
-    const int nTotal = hybrid ? nLayers + 1 : nLayers;
-
-    this->numberOfGaussPoints = nTotal;
+    this->numberOfGaussPoints = nLayers;
     integrationRulesArray.resize(1);
     integrationRulesArray [ 0 ].reset( new GaussIntegrationRule(1, this, 1, 3) );
-    // SetUpPointsBare bypasses the Gauss-Legendre N<=8 limit; coords/weights set below.
-    integrationRulesArray [ 0 ]->SetUpPointsBare(nTotal, _3dLattice);
+    integrationRulesArray [ 0 ]->SetUpPointsBare(nLayers, _3dLattice);
 
-    // Layer IPs: natural coords carry the (s, t) offset, weight = tributary area.
     for ( int k = 1; k <= nLayers; ++k ) {
         GaussPoint *gp = integrationRulesArray [ 0 ]->getIntegrationPoint(k - 1);
         FloatArray nc(3);
@@ -444,24 +425,6 @@ void Lattice3d :: computeGaussPoints()
         gp->setNaturalCoordinates(nc);
         gp->setWeight(areas.at(k));
     }
-
-    // Centroid IP (hybrid only): no offset, weight = full area.
-    if ( hybrid ) {
-        GaussPoint *gp = integrationRulesArray [ 0 ]->getIntegrationPoint(nLayers);
-        FloatArray nc(3);
-        nc.zero();
-        gp->setNaturalCoordinates(nc);
-        gp->setWeight(this->area);
-    }
-}
-
-
-bool Lattice3d :: isLayerIp(GaussPoint *gp)
-{
-    // Layer IPs are 1..nLayers; the centroid IP (in hybrid mode) is the last one.
-    if ( gp == nullptr ) return false;
-    if ( !this->isHybridShell() ) return false;
-    return gp->giveNumber() < this->numberOfGaussPoints;
 }
 
 
@@ -471,8 +434,7 @@ bool Lattice3d :: isHybridShell()
         computeGeometryProperties();
     }
     if ( !this->isShellElement() ) return false;
-    LatticeCrossSection *lcs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );
-    return ( lcs != nullptr && lcs->giveNLayers() > 1 );
+    return dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() ) != nullptr;
 }
 
 
@@ -481,14 +443,9 @@ double Lattice3d :: giveArea(GaussPoint *gp) {
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
     }
-    // Hybrid: axial at layer IPs (tributary area b*(t/N)), zero at centroid IP.
     if ( this->isHybridShell() ) {
-        return this->isLayerIp(gp) ?
-               this->shellB * ( this->shellH /
-                                static_cast< double >(
-                                    dynamic_cast< LatticeCrossSection * >(
-                                        this->giveCrossSection() )->giveNLayers() ) ) :
-               0.0;
+        auto *lcs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );
+        return this->shellB * this->shellH / static_cast< double >( lcs->giveNLayers() );
     }
     return this->area;
 }
@@ -1092,13 +1049,9 @@ double Lattice3d :: giveI1(GaussPoint *gp) {
         computeGeometryProperties();
     }
     if ( this->isHybridShell() ) {
-        if ( this->isLayerIp(gp) ) {
-            LatticeCrossSection *lcs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );
-            const int N = lcs->giveNLayers();
-            const double dh = this->shellH / static_cast< double >( N );
-            return this->shellB * this->shellB * this->shellB * dh / 12.0;
-        }
-        return 0.0;
+        auto *lcs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );
+        const double dh = this->shellH / static_cast< double >( lcs->giveNLayers() );
+        return this->shellB * this->shellB * this->shellB * dh / 12.0;
     }
     return this->I1;
 }
@@ -1108,13 +1061,9 @@ double Lattice3d :: giveI2(GaussPoint *gp) {
         computeGeometryProperties();
     }
     if ( this->isHybridShell() ) {
-        if ( this->isLayerIp(gp) ) {
-            LatticeCrossSection *lcs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );
-            const int N = lcs->giveNLayers();
-            const double dh = this->shellH / static_cast< double >( N );
-            return this->shellB * dh * dh * dh / 12.0;
-        }
-        return 0.0;
+        auto *lcs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );
+        const double dh = this->shellH / static_cast< double >( lcs->giveNLayers() );
+        return this->shellB * dh * dh * dh / 12.0;
     }
     return this->I2;
 }
@@ -1124,9 +1073,9 @@ double Lattice3d :: giveJ(GaussPoint *gp) {
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
     }
-    // Hybrid: torsion at centroid only.
-    if ( this->isHybridShell() && this->isLayerIp(gp) ) {
-        return 0.0;
+    if ( this->isHybridShell() ) {
+        LatticeCrossSection *lcs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );
+        return this->J / static_cast< double >( lcs->giveNLayers() );
     }
     return this->J;
 }
@@ -1137,11 +1086,10 @@ double Lattice3d :: giveShearArea1(GaussPoint *gp) {
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
     }
-    // Hybrid: shears at centroid only.
-    if ( this->isHybridShell() && this->isLayerIp(gp) ) {
-        return 0.0;
+    if ( this->isHybridShell() ) {
+        LatticeCrossSection *lcs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );
+        return this->shearArea1 / static_cast< double >( lcs->giveNLayers() );
     }
-    //Temporary assumption. Ideally, shear area should be less than area.
     return this->shearArea1;
 }
 
@@ -1149,10 +1097,10 @@ double Lattice3d :: giveShearArea2(GaussPoint *gp) {
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
     }
-    if ( this->isHybridShell() && this->isLayerIp(gp) ) {
-        return 0.0;
+    if ( this->isHybridShell() ) {
+        LatticeCrossSection *lcs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );
+        return this->shearArea2 / static_cast< double >( lcs->giveNLayers() );
     }
-    //Temporary assumption. Ideally, shear area should be less than area.
     return this->shearArea2;
 }
 
@@ -1162,7 +1110,6 @@ double Lattice3d :: giveTributaryWidth(GaussPoint *gp)
         computeGeometryProperties();
     }
 
-    // Rectangular sections: in-plane width. Otherwise: 1.0 (legacy default).
     if ( this->shellB > 0.0 ) {
         return this->shellB;
     }
@@ -1171,8 +1118,7 @@ double Lattice3d :: giveTributaryWidth(GaussPoint *gp)
 
 void
 Lattice3d :: computeLumpedMassMatrix(FloatMatrix &answer, TimeStep *tStep)
-// Returns the lumped mass matrix of the receiver. This expression is
-// valid in both local and global axes.
+// Valid in both local and global axes.
 {
     GaussPoint *gp = integrationRulesArray [ 0 ]->getIntegrationPoint(0);
     double density = static_cast< LatticeCrossSection * >( this->giveCrossSection() )->give('d', gp);

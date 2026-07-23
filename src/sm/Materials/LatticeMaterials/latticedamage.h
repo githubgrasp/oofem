@@ -52,6 +52,7 @@
 #define _IFT_LatticeDamage_bio "bio"
 
 #define _IFT_LatticeDamage_btype "btype"
+#define _IFT_LatticeDamage_calDiss "caldiss"
 //@}
 
 namespace oofem {
@@ -175,6 +176,9 @@ protected:
     /// Parameter specifying how the biot coefficient changes with the crack opening
     int biotType = 0;
 
+    /// Compute dissipation (postprocessing only); off by default, switch on (1) to pay the incremental integration per stress evaluation
+    int calDissFlag = 0;
+
 
 public:
     LatticeDamage(int n, Domain *d);
@@ -198,7 +202,7 @@ public:
 
     bool hasMaterialModeCapability(MaterialMode mode) const override;
 
-    void performDamageEvaluation(GaussPoint *gp, FloatArrayF< 6 > &reducedStrain) const;
+    virtual void performDamageEvaluation(GaussPoint *gp, FloatArrayF< 6 > &reducedStrain) const;
 
     virtual double computeEquivalentStrain(const FloatArrayF< 6 > &strain, GaussPoint *gp) const;
 
@@ -216,6 +220,8 @@ public:
 
 
 protected:
+    double computeDamageParamExplicit(double kappa, double e0, double wf, double eNormal, double le) const;
+
     double computeReferenceGf(GaussPoint *gp) const;
     double computeIntervals(double testDissipation, double referenceGf) const;
 

@@ -115,21 +115,15 @@ public:
 
     void giveCouplingNumbers(IntArray &numbers) override { numbers = this->couplingNumbers; }
 
-    /**
-     * This function gives the cross-section coordinates.
-     */
     void giveCrossSectionCoordinates(FloatArray &coords) override { coords = polygonCoords; }
 
     virtual void giveGPCoordinates(FloatArray &coords);
 
-    /// Global coordinates of @p gp (centroid offset by the GP's local (s, t) for hybrid IPs).
+    /// Global coordinates of @p gp; layer IPs are offset from the element centroid.
     virtual void giveGPCoordinates(GaussPoint *gp, FloatArray &coords);
 
     /// Per-layer local offsets (y, z) from centroid and tributary areas.
     virtual void computeLayerPositions(FloatArray &yOffset, FloatArray &zOffset, FloatArray &areas);
-
-    /// True if @p gp is a per-thickness-layer IP (false for centroid IP or non-hybrid mode).
-    bool isLayerIp(GaussPoint *gp);
 
     /// True if shellnormal was supplied (element is tagged as a shell).
     bool isShellElement() const { return shellNormal.giveSize() == 3; }
@@ -137,7 +131,10 @@ public:
     /// Shell normal in world frame (size 3 for shell elements, 0 otherwise).
     const FloatArray &giveShellNormal() const { return shellNormal; }
 
-    /// True if hybrid layered shell mode is active (shell + nLayers > 1 + rectangle).
+    /// Plate thickness (dimension along shell normal). Zero for non-shell elements.
+    double giveShellH() const { return shellH; }
+
+    /// True if this is a shell element with a LatticeCrossSection (layer IPs active).
     bool isHybridShell();
 
     virtual void computeGeometryProperties();

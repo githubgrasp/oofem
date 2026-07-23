@@ -3427,7 +3427,7 @@ void Grid::writeT3dRebarOofem(std::ostream &out, int &eid)
         }
 
         out << "latticelink3D " << eid++
-            << " nodes 2 " << rebarNodeId << " " << bestMatrixId
+            << " nodes 2 " << bestMatrixId << " " << rebarNodeId
             << " crossSect " << r.bondCS
             << " mat " << r.bondMat
             << " length " << std::scientific << length

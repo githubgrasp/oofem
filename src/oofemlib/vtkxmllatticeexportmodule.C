@@ -695,10 +695,10 @@ VTKXMLLatticeExportModule::setupVTKPieceCross(ExportRegion &vtkPieceCross, TimeS
             totalNodes += nV;
             totalCells += nCells;
         } else if ( kind == 2 ) {
-            vertsPerCell.at(ie) = 2;
+            vertsPerCell.at(ie) = 1;
             nStripsPerElem.at(ie) = 1;
             cellsPerElem.at(ie) = 1;
-            totalNodes += 2;
+            totalNodes += 1;
             totalCells += 1;
         }
     }
@@ -1132,46 +1132,34 @@ VTKXMLLatticeExportModule::setupVTKPieceCross(ExportRegion &vtkPieceCross, TimeS
                 syntheticCross.at(cellIdx) = 1;
             }
         } else if ( kind == 2 ) {
-            // Line (bond link): VTK_LINE between the two nodes, each endpoint with its own kinematics.
-            // For LatticeLink3dBoundary, node 2 (or 1) may be a periodic-mirror partner whose
-            // raw coordinates sit on the opposite face of the cell; recalculateCoordinates shifts
-            // it back to its true geometric position so the VTK line is drawn along the fibre
-            // rather than spanning the whole cell.
-            Node *nA = el->giveNode(1);
+            // Bond link: VTK_VERTEX at node 2 (rebar node), where the constitutive point sits.
+            // Node 1 is the matrix lattice node; node 2 is the rebar/fibre node.
             Node *nB = el->giveNode(2);
-            FloatArray cA, cB;
+            FloatArray cB;
 #ifdef __SM_MODULE
             if ( dynamic_cast< LatticeLink3dBoundary * >( el ) ) {
-                el->recalculateCoordinates(1, cA);
                 el->recalculateCoordinates(2, cB);
             } else
 #endif
             {
-                cA = nA->giveCoordinates();
                 cB = nB->giveCoordinates();
             }
-            giveNodeKinematics(nA, tStep, dispA, rotA);
             giveNodeKinematics(nB, tStep, dispB, rotB);
 
-            for ( int j = 1; j <= 3; ++j ) coords.at(j) = cA.at(j);
-            vtkPieceCross.setNodeCoords(nodeOffset + 1, coords);
-            for ( int j = 1; j <= 3; ++j ) displacementCross.at(nodeOffset + 1, j) = dispA.at(j);
-
             for ( int j = 1; j <= 3; ++j ) coords.at(j) = cB.at(j);
-            vtkPieceCross.setNodeCoords(nodeOffset + 2, coords);
-            for ( int j = 1; j <= 3; ++j ) displacementCross.at(nodeOffset + 2, j) = dispB.at(j);
+            vtkPieceCross.setNodeCoords(nodeOffset + 1, coords);
+            for ( int j = 1; j <= 3; ++j ) displacementCross.at(nodeOffset + 1, j) = dispB.at(j);
 
-            connectivity.resize(2);
+            connectivity.resize(1);
             connectivity.at(1) = nodeOffset + 1;
-            connectivity.at(2) = nodeOffset + 2;
             ++cellIdx;
             vtkPieceCross.setConnectivity(cellIdx, connectivity);
-            vtkPieceCross.setCellType(cellIdx, 3);  // VTK_LINE
-            vtkOffset += 2;
+            vtkPieceCross.setCellType(cellIdx, 1);  // VTK_VERTEX
+            vtkOffset += 1;
             vtkPieceCross.setOffset(cellIdx, vtkOffset);
             polygonRoleCross.at(cellIdx) = -2;
             syntheticCross.at(cellIdx) = 1;
-            nodeOffset += 2;
+            nodeOffset += 1;
         }
     }
 
