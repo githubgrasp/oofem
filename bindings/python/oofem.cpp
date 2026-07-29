@@ -1354,6 +1354,7 @@ PYBIND11_MODULE(oofempy, m) {
         .def("giveDofManDofIDMask", &oofem::Element::giveDofManDofIDMask)
         .def("getActivityTimeFunctionNumber", &oofem::Element::getActivityTimeFunctionNumber)
         .def("setActivityTimeFunctionNumber", &oofem::Element::setActivityTimeFunctionNumber)
+        .def("computeMeanSize", &oofem::Element::computeMeanSize)
     ;
 
 #ifdef __SM_MODULE
