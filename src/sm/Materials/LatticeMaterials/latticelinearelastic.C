@@ -290,7 +290,8 @@ LatticeLinearElastic :: give3dLatticeStiffnessMatrix(MatResponseMode rmode, Gaus
     reductionFactor = computeTemperatureReductionFactor(gp,atTime,VM_Total);
   }
 
-  // Shell mode: torsion and through-thickness shear overridden to match continuum D.
+  // Shell mode: a1y (comp 2, out-of-plane shear) = G = Em/(2(1+nu)); the (1-nu)
+  // cancels the eNormalMean 1/(1-nu). a1z (comp 3) keeps the Griffiths-Mustoe ratio.
   double a3eff = this->alphaThree;
   double a1y = this->alphaOne;
   const double a1z = this->alphaOne;
@@ -298,7 +299,7 @@ LatticeLinearElastic :: give3dLatticeStiffnessMatrix(MatResponseMode rmode, Gaus
       Lattice3d *elem = dynamic_cast< Lattice3d * >( gp->giveElement() );
       if ( elem != nullptr && elem->isShellElement() ) {
           a3eff = 1. / ( 1. + nu );
-          a1y = 1. / ( 2. * ( 1. + nu ) );
+          a1y = ( 1. - nu ) / ( 2. * ( 1. + nu ) );
       }
   }
 

@@ -44,9 +44,12 @@
 #define _IFT_LatticeDamage_Name "latticedamage"
 #define _IFT_LatticeDamage_softeningType "stype"
 #define _IFT_LatticeDamage_wf "wf"
-#define _IFT_LatticeDamage_wfOne "wf1"
 #define _IFT_LatticeDamage_e0Mean "e0"
-#define _IFT_LatticeDamage_e0OneMean "e01"
+#define _IFT_LatticeDamage_ft "ft"
+#define _IFT_LatticeDamage_gf "gf"
+#define _IFT_LatticeDamage_sm "sm"
+#define _IFT_LatticeDamage_wfRatio "wfratio"
+#define _IFT_LatticeDamage_e0Ratio "e0ratio"
 #define _IFT_LatticeDamage_coh "coh"
 #define _IFT_LatticeDamage_ec "ec"
 #define _IFT_LatticeDamage_bio "bio"
@@ -144,11 +147,12 @@ protected:
 
     /// max effective strain at peak
     double e0Mean = 0.;
-    double e0OneMean = 0.;
-
-    ///tensile strength
-    double ftMean = 0.;
-    double ftOneMean = 0.;
+    /// bilinear (stype 2) kink ratios: sig1 = e0Ratio*ft, wf1 = wfRatio*wf
+    double e0Ratio = 0.3;
+    double wfRatio = 0.15;
+    /// crack spacing; when > 0 it replaces the element length as the softening characteristic
+    /// length (distributed cracking that cannot localize below sm, e.g. reinforced concrete).
+    double sm = 0.;
 
     /**parameter which determines the typ of the softeningFunction
      * 1 = linear softening

@@ -40,70 +40,22 @@
 ///@name Input fields for LatticeDamageShell
 //@{
 #define _IFT_LatticeDamageShell_Name "latticedamageshell"
-#define _IFT_LatticeDamageShell_wfShear "wfshear"
-#define _IFT_LatticeDamageShell_e0Shear "e0shear"
 //@}
 
 namespace oofem {
 
 /**
- * Status for LatticeDamageShell; extends LatticeDamageStatus with a
- * second damage variable (omega2) driven by the out-of-plane shear components.
- */
-class LatticeDamageShellStatus : public LatticeDamageStatus
-{
-protected:
-    double kappaShear = 0.;
-    double tempKappaShear = 0.;
-    double damageShear = 0.;
-    double tempDamageShear = 0.;
-
-public:
-    LatticeDamageShellStatus(GaussPoint *g);
-
-    double giveKappaShear() const { return kappaShear; }
-    double giveTempKappaShear() const { return tempKappaShear; }
-    void   setTempKappaShear(double v) { tempKappaShear = v; }
-
-    double giveDamageShear() const { return damageShear; }
-    double giveTempDamageShear() const { return tempDamageShear; }
-    void   setTempDamageShear(double v) { tempDamageShear = v; }
-
-    const char *giveClassName() const override { return "LatticeDamageShellStatus"; }
-
-    void initTempStatus() override;
-    void updateYourself(TimeStep *tStep) override;
-    void printOutputAt(FILE *file, TimeStep *tStep) const override;
-    void saveContext(DataStream &stream, ContextMode mode) override;
-    void restoreContext(DataStream &stream, ContextMode mode) override;
-};
-
-
-/**
- * Lattice damage for shell elements.
- * Two independent variables: omega1 for comps {1,2,4-6}, omega2 for comp 3 (out-of-plane shear).
+ * LatticeDamage for shells: excludes out-of-plane shear (comp 2) from the damage driver.
  */
 class LatticeDamageShell : public LatticeDamage
 {
-protected:
-    double wfShear = 0.;
-    double e0MeanShear = 0.;
-
 public:
     LatticeDamageShell(int n, Domain *d) : LatticeDamage(n, d) { }
 
     const char *giveInputRecordName() const override { return _IFT_LatticeDamageShell_Name; }
     const char *giveClassName() const override { return "LatticeDamageShell"; }
 
-    void initializeFrom(InputRecord &ir) override;
-
-    void performDamageEvaluation(GaussPoint *gp, FloatArrayF< 6 > &reducedStrain) const override;
-
-    FloatArrayF< 6 >giveLatticeStress3d(const FloatArrayF< 6 > &strain, GaussPoint *gp, TimeStep *tStep) override;
-
-    FloatMatrixF< 6, 6 >give3dLatticeStiffnessMatrix(MatResponseMode rMode, GaussPoint *gp, TimeStep *tStep) const override;
-
-    MaterialStatus *CreateStatus(GaussPoint *gp) const override;
+    double computeEquivalentStrain(const FloatArrayF< 6 > &strain, GaussPoint *gp) const override;
 };
 
 } // end namespace oofem

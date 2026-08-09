@@ -70,16 +70,71 @@ LatticeDamage :: initializeFrom(InputRecord &ir)
     softeningType = 1;
     IR_GIVE_OPTIONAL_FIELD(ir, softeningType, _IFT_LatticeDamage_softeningType); // Macro
 
-    IR_GIVE_FIELD(ir, wf, _IFT_LatticeDamage_wf); // Macro
+    // Peak: tensile strength as ft (=> e0 = ft/eNormalMean) or e0 directly.
+    const bool ftGiven = ir.hasField(_IFT_LatticeDamage_ft);
+    if ( ftGiven && ir.hasField(_IFT_LatticeDamage_e0Mean) ) {
+        OOFEM_ERROR("give either ft or e0, not both (e0 is derived from ft)");
+    }
+    if ( ftGiven ) {
+        double ftInput = 0.;
+        IR_GIVE_FIELD(ir, ftInput, _IFT_LatticeDamage_ft);
+        if ( ftInput <= 0. ) {
+            OOFEM_ERROR("ft must be positive");
+        }
+        this->e0Mean = ftInput / this->eNormalMean; // eNormalMean set by the elastic base above
+    } else {
+        IR_GIVE_OPTIONAL_FIELD(ir, e0Mean, _IFT_LatticeDamage_e0Mean); // Macro
+    }
+    const double ft = this->eNormalMean * this->e0Mean; // effective tensile strength
 
-    if ( softeningType == 2 ) { //bilinear softening
-        wfOne = 0.15 * wf;
-        IR_GIVE_OPTIONAL_FIELD(ir, wfOne, _IFT_LatticeDamage_wfOne); // Macro
-        e0OneMean = 0.3 * e0Mean;
-        IR_GIVE_OPTIONAL_FIELD(ir, e0OneMean, _IFT_LatticeDamage_e0OneMean);
+    // Optional crack spacing. When given (> 0), the softening is regularized by sm (a fixed
+    // crack spacing) instead of the element length, so cracking cannot localize below sm
+    // (distributed cracking, e.g. reinforced concrete); crack widths then use sm as the band.
+    IR_GIVE_OPTIONAL_FIELD(ir, sm, _IFT_LatticeDamage_sm);
+    if ( sm < 0. ) {
+        OOFEM_ERROR("sm must be positive");
     }
 
-    IR_GIVE_OPTIONAL_FIELD(ir, e0Mean, _IFT_LatticeDamage_e0Mean); // Macro
+    // Bilinear (stype 2) kink ratios: kink stress = e0Ratio*ft, kink opening = wfRatio*wf.
+    if ( softeningType == 2 ) {
+        IR_GIVE_OPTIONAL_FIELD(ir, wfRatio, _IFT_LatticeDamage_wfRatio);
+        IR_GIVE_OPTIONAL_FIELD(ir, e0Ratio, _IFT_LatticeDamage_e0Ratio);
+        if ( wfRatio <= 0. || wfRatio >= 1. || e0Ratio <= 0. || e0Ratio >= 1. ) {
+            OOFEM_ERROR("wfratio and e0ratio must lie in (0,1)");
+        }
+    } else if ( ir.hasField(_IFT_LatticeDamage_wfRatio) || ir.hasField(_IFT_LatticeDamage_e0Ratio) ) {
+        OOFEM_ERROR("wfratio/e0ratio apply only to stype 2 (bilinear softening)");
+    }
+
+    // Softening extent: exactly one of wf (direct) or gf (derived from fracture energy).
+    const bool wfGiven = ir.hasField(_IFT_LatticeDamage_wf);
+    const bool gfGiven = ir.hasField(_IFT_LatticeDamage_gf);
+    if ( wfGiven == gfGiven ) {
+        OOFEM_ERROR("give exactly one softening extent: wf or gf");
+    }
+    if ( gfGiven ) { // derived from fracture energy
+        if ( ft <= 0. ) {
+            OOFEM_ERROR("gf requires a positive ft (give ft or e0)");
+        }
+        double gf = 0.;
+        IR_GIVE_FIELD(ir, gf, _IFT_LatticeDamage_gf);
+        if ( gf <= 0. ) {
+            OOFEM_ERROR("gf must be positive");
+        }
+        if ( softeningType == 1 ) { // Gf = ft*wf/2
+            this->wf = 2. * gf / ft;
+        } else if ( softeningType == 2 ) { // Gf = ft*wf*(wfRatio + e0Ratio)/2
+            this->wf = 2. * gf / ( ft * ( wfRatio + e0Ratio ) );
+            this->wfOne = wfRatio * this->wf;
+        } else { // Gf = ft*wf
+            this->wf = gf / ft;
+        }
+    } else { // wf given directly
+        IR_GIVE_FIELD(ir, wf, _IFT_LatticeDamage_wf); // Macro
+        if ( softeningType == 2 ) {
+            this->wfOne = wfRatio * this->wf;
+        }
+    }
 
     this->coh = 2.;
     IR_GIVE_OPTIONAL_FIELD(ir, coh, _IFT_LatticeDamage_coh); // Macro
@@ -130,7 +185,7 @@ LatticeDamage :: computeDamageParamExplicit(double tempKappa, double e0, double 
             OOFEM_ERROR("parameter wf is too small");
         }
         if ( tempKappa > e0 ) {
-            double helpStrain = 0.3 * e0;
+            double helpStrain = this->e0Ratio * e0;
             double omega = ( 1 - e0 / tempKappa ) / ( ( helpStrain - e0 ) / this->wfOne * le + 1. );
             if ( omega * tempKappa * le > 0 && omega * tempKappa * le < this->wfOne ) {
                 return omega;
@@ -176,9 +231,12 @@ LatticeDamage :: computeDamageParamExplicit(double tempKappa, double e0, double 
 double
 LatticeDamage :: computeDamageParam(double tempKappa, GaussPoint *gp) const
 {
-    double le      = static_cast< LatticeStructuralElement * >( gp->giveElement() )->giveLength();
     double e0      = this->give(e0_ID, gp) * this->e0Mean;
     double eNormal = this->give(eNormal_ID, gp) * this->eNormalMean;
+    // Characteristic length: the crack spacing sm if given (so cracking cannot localize
+    // below sm), otherwise the element length.
+    double le = ( this->sm > 0. ) ? this->sm
+              : static_cast< LatticeStructuralElement * >( gp->giveElement() )->giveLength();
     return computeDamageParamExplicit(tempKappa, e0, this->wf, eNormal, le);
 }
 
@@ -326,8 +384,9 @@ LatticeDamage :: performDamageEvaluation(GaussPoint *gp, FloatArrayF< 6 > &reduc
     FloatArrayF< 6 >tempDamageLatticeStrain = omega * reducedStrain;
     status->letTempDamageLatticeStrainBe(tempDamageLatticeStrain);
 
-    //Compute crack width
-    double length = ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveLength();
+    //Compute crack width; use the crack spacing sm as the band width when given.
+    double length = ( this->sm > 0. ) ? this->sm
+                  : ( static_cast< LatticeStructuralElement * >( gp->giveElement() ) )->giveLength();
     double crackWidth = omega * norm(reducedStrain [ { 0, 1, 2 } ]) * length;
 
     status->setTempEquivalentStrain(equivStrain);
@@ -359,10 +418,20 @@ LatticeDamage :: computeReferenceGf(GaussPoint *gp) const
 {
     const double e0 = this->give(e0_ID, gp) * this->e0Mean;
     const double eNormal = this->give(eNormal_ID, gp) * this->eNormalMean;
-    if ( softeningType == 1 ) {
-        return e0 * eNormal * this->wf / 2.;
-    } else {   //This is for the exponential law. Should also implement it for the bilinear one.
-        return e0 * eNormal * this->wf;
+    const double ft = e0 * eNormal;
+    // Per-element reference dissipation. With a crack spacing sm the softening spans more
+    // strain than one element, so the element sees a fraction he/sm of the crack energy.
+    double factor = 1.;
+    if ( this->sm > 0. ) {
+        double he = static_cast< LatticeStructuralElement * >( gp->giveElement() )->giveLength();
+        factor = he / this->sm;
+    }
+    if ( softeningType == 1 ) { // linear
+        return 0.5 * ft * this->wf * factor;
+    } else if ( softeningType == 2 ) { // bilinear
+        return 0.5 * ft * ( this->wfOne + this->e0Ratio * this->wf ) * factor;
+    } else { // exponential
+        return ft * this->wf * factor;
     }
 }
 
