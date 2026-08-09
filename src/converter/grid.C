@@ -4261,15 +4261,15 @@ Grid::give3DSMOutput(const std::string &fileName)
                         continue;
                     }
                     out << "latticelink3Dboundary " << ++elemCounter
-                        << " nodes 3 " << mapReinf(lineNodes.at(1)) << " " << mapId(lineNodes.at(2))
+                        << " nodes 3 " << mapId(lineNodes.at(2)) << " " << mapReinf(lineNodes.at(1))
                         << " " << ctlNode << " crossSect 3 mat 3"
                         << " length " << linkLen << " diameter " << linkDiam
                         << " dirvector 3 " << linkDir.at(1) << " " << linkDir.at(2) << " " << linkDir.at(3)
                         << " L_end " << linkLend
-                        << " location 2 " << location.at(1) << " " << location.at(2) << "\n";
+                        << " location 2 " << location.at(2) << " " << location.at(1) << "\n";
                 } else {
                     out << "latticelink3D " << ++elemCounter
-                        << " nodes 2 " << mapReinf(lineNodes.at(1)) << " " << mapId(lineNodes.at(2))
+                        << " nodes 2 " << mapId(lineNodes.at(2)) << " " << mapReinf(lineNodes.at(1))
                         << " crossSect 3 mat 3"
                         << " length " << linkLen << " diameter " << linkDiam
                         << " dirvector 3 " << linkDir.at(1) << " " << linkDir.at(2) << " " << linkDir.at(3)

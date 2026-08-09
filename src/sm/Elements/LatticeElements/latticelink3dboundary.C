@@ -525,7 +525,7 @@ LatticeLink3dBoundary :: computeGeometryProperties()
 
     this->globalCentroid.resize(3);
     for ( int i = 1; i <= 3; i++ ) {
-        this->globalCentroid.at(i) = coordsA.at(i);
+        this->globalCentroid.at(i) = coordsB.at(i);
     }
 
     this->geometryFlag = 1;
