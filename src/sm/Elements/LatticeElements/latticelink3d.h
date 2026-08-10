@@ -72,6 +72,11 @@ public:
 
     double giveLength() override;
 
+    /// Bond area (same value used inline for the internal forces). Needed so the
+    /// section-resultant output path scales the slip traction into a bond force.
+    double giveArea(GaussPoint *gp) override
+    { return this->computeVolumeAround(gp) / this->giveLength(); }
+
     int giveLocalCoordinateSystem(FloatMatrix &answer) override;
 
     int computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoords) override;
