@@ -34,6 +34,7 @@
 
 #include "sm/Materials/LatticeMaterials/latticestructuralmaterial.h"
 #include "sm/Materials/LatticeMaterials/latticematstatus.h"
+#include "sm/Elements/LatticeElements/latticestructuralelement.h"
 #include "domain.h"
 #include "verbose.h"
 #include "sm/Materials/structuralms.h"
@@ -82,15 +83,30 @@ namespace oofem {
     {
         auto status = static_cast < LatticeMaterialStatus * > ( this->giveStatus(gp) );
 
+        // Convert the stored generalized stress into section resultants
+        // (stress x area/inertia). For hybrid shells the per-layer area/inertia
+        // varies, so the raw stress is not the force/moment. Falls back to the
+        // raw stress if the element is not a lattice structural element.
+        auto toResultants = [ gp ](const FloatArray &stress) {
+            FloatArray res = stress;
+            auto *el = dynamic_cast< LatticeStructuralElement * >( gp->giveElement() );
+            if ( el != nullptr && stress.giveSize() == 6 ) {
+                el->convertStressToResultants3d(res, stress, gp);
+            }
+            return res;
+        };
+
         if ( type == IST_LatticeForce ) {
-            auto help = status->giveLatticeStress();
+            // Section resultants (stress x area/inertia), not the raw generalized
+            // stress: for hybrid shells the per-layer area/inertia matters.
+            auto help = toResultants(status->giveLatticeStress());
             answer.resize(3);
             answer.at(1) = help.at(1);
             answer.at(2) = help.at(2);
             answer.at(3) = help.at(3);
             return 1;
         } else if ( type == IST_LatticeMoment )   {
-            auto help = status->giveLatticeStress();
+            auto help = toResultants(status->giveLatticeStress());
             answer.resize(3);
             answer.at(1) = help.at(4);
             answer.at(2) = help.at(5);

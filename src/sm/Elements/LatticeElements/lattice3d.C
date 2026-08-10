@@ -1074,8 +1074,15 @@ double Lattice3d :: giveJ(GaussPoint *gp) {
         computeGeometryProperties();
     }
     if ( this->isHybridShell() ) {
-        LatticeCrossSection *lcs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );
-        return this->J / static_cast< double >( lcs->giveNLayers() );
+        // Per-layer self-torsion only. The dominant y^2-weighted (Steiner) part
+        // of the plate twisting is generated automatically by the layer shear
+        // forces acting at their through-thickness offset (see computeBmatrixAt),
+        // just as axial forces at their offset give the Steiner bending. Returning
+        // J_total/nLayers here would add the full plate torsion on top of that and
+        // double-count the twisting stiffness.
+        auto *lcs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );
+        const double dh = this->shellH / static_cast< double >( lcs->giveNLayers() );
+        return this->shellB * dh * dh * dh / 12.0;
     }
     return this->J;
 }
