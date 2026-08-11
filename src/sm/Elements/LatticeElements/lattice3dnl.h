@@ -69,9 +69,7 @@ public:
 
  
 protected:
-    void computeGlobalRotationMatrix(FloatMatrix &answer, FloatArray &rotation);
   bool computeGtoLRotationMatrix(FloatMatrix &) override;
-  void computeSMtrx(FloatMatrix &answer, FloatArray &vec);
     bool computeGtoLStrainRotationMatrix(FloatMatrix &answer);
     void computeNLBmatrixAt(GaussPoint *gp, FloatMatrix &, TimeStep *tStep);
 

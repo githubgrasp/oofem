@@ -35,10 +35,59 @@
 #include "sm/Elements/LatticeElements/latticestructuralelement.h"
 #include "gausspoint.h"
 #include "crosssection.h"
+#include "floatmatrix.h"
+#include "floatarray.h"
+#include "mathfem.h"
+#include "error.h"
 
 namespace oofem {
 LatticeStructuralElement :: LatticeStructuralElement(int n, Domain *aDomain) : StructuralElement(n, aDomain)
 { }
+
+
+void
+LatticeStructuralElement :: computeGlobalRotationMatrix(FloatMatrix &answer, const FloatArray &psi)
+{
+    if ( psi.giveSize() != 3 ) {
+        OOFEM_ERROR("psi param size mismatch");
+    }
+
+    answer.resize(3, 3);
+    answer.zero();
+    answer.at(1, 1) = answer.at(2, 2) = answer.at(3, 3) = 1.;
+
+    double psiSize = psi.computeNorm();
+    if ( psiSize <= 1.e-40 ) {
+        return;
+    }
+
+    FloatMatrix S(3, 3), SS(3, 3);
+    computeSMtrx(S, psi);
+    SS.beProductOf(S, S);
+    S.times(sin(psiSize) / psiSize);
+    SS.times( ( 1. - cos(psiSize) ) / ( psiSize * psiSize ) );
+
+    answer.add(S);
+    answer.add(SS);
+}
+
+
+void
+LatticeStructuralElement :: computeSMtrx(FloatMatrix &answer, const FloatArray &vec)
+{
+    if ( vec.giveSize() != 3 ) {
+        OOFEM_ERROR("vec param size mismatch");
+    }
+
+    answer.resize(3, 3);
+    answer.at(1, 1) = answer.at(2, 2) = answer.at(3, 3) = 0.;
+    answer.at(1, 2) = -vec.at(3);
+    answer.at(1, 3) =  vec.at(2);
+    answer.at(2, 1) =  vec.at(3);
+    answer.at(2, 3) = -vec.at(1);
+    answer.at(3, 1) = -vec.at(2);
+    answer.at(3, 2) =  vec.at(1);
+}
 
 void
 LatticeStructuralElement :: initializeFrom(InputRecord &ir)

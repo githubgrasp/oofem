@@ -263,6 +263,13 @@ public:
      */
     virtual double giveShearArea2(GaussPoint *gp) { return 0.; }
 
+protected:
+    /// Rodrigues rotation matrix from a rotation (spin) vector. Shared by the
+    /// geometrically nonlinear lattice elements (Lattice3dNL, LatticeLink3dNL).
+    static void computeGlobalRotationMatrix(FloatMatrix &answer, const FloatArray &psi);
+    /// Skew-symmetric matrix of a 3-vector (used by computeGlobalRotationMatrix).
+    static void computeSMtrx(FloatMatrix &answer, const FloatArray &vec);
+
 };
 } // end namespace oofem
 #endif

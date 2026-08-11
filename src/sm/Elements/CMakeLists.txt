@@ -94,6 +94,7 @@ set (sm_element
     LatticeElements/lattice3dboundary.C
     LatticeElements/lattice3dboundarytruss.C
     LatticeElements/latticelink3d.C
+    LatticeElements/latticelink3dnl.C
     LatticeElements/latticelink3dboundary.C
     LatticeElements/latticeframe3d.C
     LatticeElements/latticeframe3dnl.C
