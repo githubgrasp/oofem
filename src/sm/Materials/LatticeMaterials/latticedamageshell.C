@@ -33,18 +33,8 @@
  */
 
 #include "latticedamageshell.h"
-#include "gausspoint.h"
-#include "floatarrayf.h"
 #include "classfactory.h"
 
 namespace oofem {
 REGISTER_Material(LatticeDamageShell);
-
-double
-LatticeDamageShell :: computeEquivalentStrain(const FloatArrayF< 6 > &strain, GaussPoint *gp) const
-{
-    // Test: include out-of-plane shear (comp 2) in the damage driver.
-    return LatticeDamage :: computeEquivalentStrain(strain, gp);
-}
-
 } // end namespace oofem

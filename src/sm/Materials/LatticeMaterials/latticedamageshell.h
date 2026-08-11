@@ -45,7 +45,10 @@
 namespace oofem {
 
 /**
- * LatticeDamage for shells: excludes out-of-plane shear (comp 2) from the damage driver.
+ * LatticeDamage under a distinct keyword for shell cross-sections. Behaviour is
+ * currently identical to LatticeDamage: damage is driven by all non-rotational
+ * strain components (axial + both shears), same as the base. Kept as a separate
+ * class so shell-specific damage tuning can be added later without touching the base.
  */
 class LatticeDamageShell : public LatticeDamage
 {
@@ -54,8 +57,6 @@ public:
 
     const char *giveInputRecordName() const override { return _IFT_LatticeDamageShell_Name; }
     const char *giveClassName() const override { return "LatticeDamageShell"; }
-
-    double computeEquivalentStrain(const FloatArrayF< 6 > &strain, GaussPoint *gp) const override;
 };
 
 } // end namespace oofem
