@@ -33,8 +33,22 @@
  */
 
 #include "latticedamageshell.h"
+#include "gausspoint.h"
+#include "floatarrayf.h"
 #include "classfactory.h"
 
 namespace oofem {
 REGISTER_Material(LatticeDamageShell);
+
+double
+LatticeDamageShell :: computeEquivalentStrain(const FloatArrayF< 6 > &strain, GaussPoint *gp) const
+{
+    // Out-of-plane (transverse) shear (comp 2) does not initiate damage: a thin bending
+    // slab cracks from flexural tension + in-plane shear (comps 1, 3). Zero comp 2 before
+    // the base criterion so transverse shear cannot trigger cracking (it is still reduced
+    // by omega once cracked). Prevents spurious punching failure at concentrated loads.
+    FloatArrayF< 6 >s = strain;
+    s.at(2) = 0.;
+    return LatticeDamage :: computeEquivalentStrain(s, gp);
+}
 } // end namespace oofem

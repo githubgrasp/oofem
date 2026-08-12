@@ -45,10 +45,12 @@
 namespace oofem {
 
 /**
- * LatticeDamage under a distinct keyword for shell cross-sections. Behaviour is
- * currently identical to LatticeDamage: damage is driven by all non-rotational
- * strain components (axial + both shears), same as the base. Kept as a separate
- * class so shell-specific damage tuning can be added later without touching the base.
+ * LatticeDamage for shell cross-sections. Differs from the base only in the damage
+ * driver: the out-of-plane (transverse) shear component (2) is excluded from the
+ * equivalent strain, so transverse shear cannot INITIATE cracking. Physically, a thin
+ * bending slab cracks from flexural tension / in-plane shear (comps 1 and 3); driving
+ * cracking with transverse shear produces spurious punching failure under concentrated
+ * loads (finest mesh fails earliest). Once cracked, comp 2 is still reduced by omega.
  */
 class LatticeDamageShell : public LatticeDamage
 {
@@ -57,6 +59,8 @@ public:
 
     const char *giveInputRecordName() const override { return _IFT_LatticeDamageShell_Name; }
     const char *giveClassName() const override { return "LatticeDamageShell"; }
+
+    double computeEquivalentStrain(const FloatArrayF< 6 > &strain, GaussPoint *gp) const override;
 };
 
 } // end namespace oofem
