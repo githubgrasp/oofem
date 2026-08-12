@@ -1015,23 +1015,40 @@ Currently, EntType keyword can be one from
      -  Structural penalty contact boundary condition
 
    ``structuralpenaltycontactbc`` ``loadTimeFunction #(in)`` ``dofs #(ia)``
-   ``pn #(rn)`` ``pt #(rn)`` ``friction #(rn)`` ``mastersurface #(in)``
-   ``slavesurface #(in)`` ``nsd #(in)``
+   ``pn #(rn)`` ``pt #(rn)`` ``friction #(rn)``
+   ``mastersurface #(in)`` ``slavesurface #(in)`` ``nsd #(in)``
+   [``frictiontransition #(rn)``] [``frictionhardening #(rn)``]
+   [``algo #(in)``] [``searchpadding #(rn)``] [``searchtol #(rn)``]
+   [``facethysteresis #(rn)``] [``generalizedfeatures #(in)``]
+   [``directionalprojection #(in)``] [``autopenalty #(in)``]
+   [``tangentmode #(in)``] [``fdcheck #(in)``] [``fdperturbation #(rn)``]
+   [``fdoutputprefix #(s)``] [``fdtolerance #(rn)``]
 
    Represents a penalty-based contact boundary condition used to model
    contact interactions between deformable bodies. The contact formulation
    enforces normal and tangential constraints between surfaces defined by
    ``StructuralFEContactSurface`` records and their underlying
-   ``StructuralContactElement_*`` elements.
+   ``StructuralContactElement_*`` elements. The formulation follows
+   Konyukhov and Schweizerhof, *Computational Contact Mechanics:
+   Geometrically Exact Theory for Arbitrary Shaped Bodies* (Springer,
+   LNACM 67, 2013): closest-point projection (Ch. 3), penalty/friction
+   evolution and return mapping (Sec. 6.1), and consistent tangents
+   (Sec. 7.1).
 
-   The parameters have the following meaning:
+   Required parameters:
 
    - ``pn`` — normal penalty stiffness, controlling resistance against
-     penetration between contacting surfaces.
+     penetration between contacting surfaces. Still required as a
+     placeholder when ``autopenalty`` is ``1``, in which case its value is
+     ignored.
    - ``pt`` — tangential penalty stiffness, controlling tangential
-     response.
-   - ``friction`` — coefficient of friction (currently experimental and
-     under development). Set to ``0.0`` for frictionless contact.
+     response. Same placeholder rule as ``pn`` when ``autopenalty`` is
+     ``1``.
+   - ``friction`` — Coulomb coefficient of friction. Set to ``0.0`` for
+     frictionless contact. **The frictional branch of this boundary
+     condition is an experimental, unverified development feature —
+     use** ``friction 0`` **for production analyses until it has been
+     validated.**
    - ``mastersurface`` and ``slavesurface`` — identifiers of the master
      and slave contact surfaces defined by corresponding
      ``StructuralFEContactSurface`` records (see :ref:`ContactSurfaceRecords`).
@@ -1040,11 +1057,70 @@ Currently, EntType keyword can be one from
    - ``nsd`` — number of spatial dimensions (2 for plane strain or plane stress, or 3 for
      3D problems).
 
+   Optional parameters:
+
+   - ``frictiontransition`` (default ``0.0``, range ``[0, 1)``) —
+     smoothness of the differentiable stick/slip projection used by the
+     experimental friction model. Zero recovers the sharp Coulomb return
+     map. Requires ``tangentmode`` ``0``, ``2`` or ``3``.
+   - ``frictionhardening`` (default ``0.0``, range ``[0, 1)``) —
+     dimensionless post-yield tangential-slip hardening ratio used by the
+     experimental friction model. Zero is perfect Coulomb friction;
+     positive values require a positive ``pt`` and ``tangentmode`` ``0``,
+     ``2`` or ``3``.
+   - ``algo`` (default ``0``) — contact search algorithm: ``0`` plain
+     surface-to-surface search; ``1`` sweep-and-prune broad-phase search
+     (3D only, i.e. ``nsd 3``), recommended for larger numbers of contact
+     elements.
+   - ``searchpadding`` (default: automatic, geometry-based) — absolute
+     broad-phase bounding-box padding used by the contact search. A
+     negative value (or omitting the field) selects the automatic
+     default.
+   - ``searchtol`` (default ``1.e-10``) — parametric-domain margin used by
+     the "is this point still inside this facet" test. Comparable to other
+     codes' sliding-elastic-interface search tolerance (typical default
+     ``0.01``).
+   - ``facethysteresis`` (default ``0.0``) — relative distance-squared
+     margin a competing master facet must exceed before it is allowed to
+     replace the facet currently owned by a contact pair. Zero disables
+     the hysteresis. A small positive value (e.g. ``1.e-6``) suppresses
+     Newton chattering caused by a slave point sitting near a shared edge
+     between two adjacent facets, where the true closest facet would
+     otherwise flip every iteration.
+   - ``generalizedfeatures`` (default ``0``) — when set to ``1``, extends
+     the closest-point search from plain facet (surface) projection to
+     also consider edge and vertex features of the master surface.
+     Mutually exclusive with ``directionalprojection``.
+   - ``directionalprojection`` (default ``0``) — when set to ``1``,
+     projects each slave point onto the master surface along the slave
+     surface's own normal direction instead of performing a general
+     closest-point search. Currently requires ``nsd 3``. Mutually
+     exclusive with ``generalizedfeatures``.
+   - ``autopenalty`` (default ``0``) — when set to ``1``, the ``pn``/``pt``
+     values are ignored and the normal/tangential penalty stiffnesses are
+     instead computed automatically for each slave contact element from
+     the contacting materials' initial Young's modulus and element
+     geometry (an :math:`E_n A/V` factor).
+   - ``tangentmode`` (default ``0``) — selects the contact tangent
+     formulation: ``0`` automatic selection, ``1`` rate-form analytical
+     (diagnostic use), ``2`` branch-frozen finite-difference, ``3`` exact
+     finite-step analytical tangent (including facet-history columns,
+     with a finite-difference fallback for projection features it does
+     not yet support).
+   - ``fdcheck`` (default ``0``) — when set to ``1``, enables an internal
+     finite-difference verification of the analytical contact tangent on
+     every call. Development/debugging aid only; adds significant
+     runtime cost.
+   - ``fdperturbation`` (default ``1.e-7``) — relative perturbation size
+     used by ``fdcheck``.
+   - ``fdoutputprefix`` (default ``"contact_fd"``) — filename prefix for
+     the diagnostic output written by ``fdcheck``.
+   - ``fdtolerance`` (default ``0.0``) — relative tolerance used by
+     ``fdcheck`` when comparing the analytical and finite-difference
+     tangents.
+
    The contact is enforced via the penalty method and contributes to the
-   residual and tangent system of equations at each iteration. This
-   boundary condition supports frictionless contact and a preliminary
-   version of frictional contact, which is currently experimental and
-   under development.
+   residual and tangent system of equations at each iteration.
 
    **Example:**
 
@@ -1058,8 +1134,21 @@ Currently, EntType keyword can be one from
    stiffness equal to 1.e8. The condition acts on degrees of freedom 1 and
    2 (displacement is X and Y direction) in a 2D plane strain/stress domain.
 
-   For bidirectional contact, two such boundary conditions can be defined
-   with swapped master and slave surfaces.
+   For bidirectional (two-pass) contact, two such boundary conditions can
+   be defined with swapped master and slave surfaces, e.g.:
+
+   ::
+
+      structuralpenaltycontactbc 6 loadTimeFunction 3 dofs 3 1 2 3 \
+          pn 0.01 pt 0.01 friction 0 autopenalty 1 \
+          mastersurface 2 slavesurface 1 nsd 3 algo 1 directionalprojection 1
+      structuralpenaltycontactbc 7 loadTimeFunction 3 dofs 3 1 2 3 \
+          pn 0.01 pt 0.01 friction 0 autopenalty 1 \
+          mastersurface 1 slavesurface 2 nsd 3 algo 1 directionalprojection 1
+
+   This frictionless two-pass example uses automatic penalty stiffness and
+   the sweep-and-prune search with directional projection, each surface
+   acting as master for the other.
 
 
    -  Thermal surface-to-surface contact boundary condition

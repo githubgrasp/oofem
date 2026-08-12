@@ -218,6 +218,9 @@ InternalStateValueType giveInternalStateValueType(InternalStateType type)
     case IST_MoistureContent:
     case IST_IncrementCreepModulus:
     case IST_InternalSource:
+    case IST_ContactNormalGap:
+    case IST_ContactPressure:
+    case IST_ContactStatus:
         return ISVT_SCALAR;
 
     default:

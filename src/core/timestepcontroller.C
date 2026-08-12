@@ -45,6 +45,7 @@
 #include "classfactory.h"
 #include "engngm.h"
 #include "function.h"
+#include <algorithm>
 
 namespace oofem {
 
@@ -70,6 +71,14 @@ void
 TimeStepController :: restoreContext(DataStream &stream)
 {
 
+}
+
+void
+TimeStepController :: restoreStepState(TimeStep &current, TimeStep &previous)
+{
+    currentStep = std::make_unique<TimeStep>(current);
+    previousStep = std::make_unique<TimeStep>(previous);
+    currentMetaStepNumber = std::max(0, current.giveMetaStepNumber() - 1);
 }
 
  

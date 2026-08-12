@@ -325,11 +325,17 @@ NRSolver :: solve(SparseMtrx &k, FloatArray &R, FloatArray *R0,
         //
         // update solution
         //
-        if ( this->lsFlag && ( nite > 0 ) ) { // Why not nite == 0 ?
-            // line search
+        if ( this->lsFlag ) {
+            // The energy line search is applied to every Newton correction.
+            // The first correction is often the most important one to damp
+            // when contact activates within a load step.
             LineSearchNM :: LS_status LSstatus;
             double eta;
             this->giveLineSearchSolver()->solve(X, ddX, F, R, R0, prescribedEqs, 1.0, eta, LSstatus, tStep);
+            if (LSstatus == LineSearchNM::ls_failed) {
+                throw ConvergenceException(
+                    "No admissible line-search correction; requesting time-step reduction");
+            }
         } else if ( this->constrainedNRFlag && ( nite > this->constrainedNRminiter ) ) {
             ///@todo This doesn't check units, it is nonsense and must be corrected / Mikael
             if ( this->forceErrVec.computeSquaredNorm() > this->forceErrVecOld.computeSquaredNorm() ) {

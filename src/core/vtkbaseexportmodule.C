@@ -120,7 +120,9 @@ VTKBaseExportModule::giveCellType(Element *elem)
         vtkCellType = 10;
     } else if ( elemGT == EGT_tetra_2 ) {
         vtkCellType = 24;
-    } else if ( elemGT == EGT_quad_1) {
+    } else if ( elemGT == EGT_quad_1
+                || ( elemGT == EGT_quad_1_interface
+                     && elem->giveNumberOfNodes() == 4 ) ) {
         vtkCellType = 9;
     } else if ( elemGT == EGT_quad_21_interface ) {
         vtkCellType = 30;
@@ -186,6 +188,9 @@ VTKBaseExportModule::giveNumberOfNodesPerCell(int cellType)
     case 25:
         return 20;
 
+    case 26:
+        return 15;
+
     case 29:
         return 27;
 
@@ -223,6 +228,10 @@ VTKBaseExportModule::giveElementCell(IntArray &answer, Element *elem)
         nodeMapping = {
             4, 6, 5, 1, 3, 2, 12, 11, 10, 9, 8, 7, 13, 15, 14
         };
+    } else if ( elemGT == EGT_quad_1_interface
+                && elem->giveNumberOfNodes() == 4 ) {
+        // FEI3dQuadLin uses the interface geometry tag for a four-node
+        // surface. It is a VTK_QUAD, not an eight-node VTK_HEXAHEDRON.
     } else if ( elemGT == EGT_quad_1_interface ) {
         nodeMapping = {
             1, 2, 4, 3, 5, 6, 8, 7

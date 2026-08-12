@@ -46,6 +46,7 @@
 #include "fei3dtetquad.h"
 #include "fei3dhexalin.h"
 #include "fei2dquadlin.h"
+#include "fei1dlin.h"
 #include "mathfem.h"
 
 #include "material.h"
@@ -502,6 +503,91 @@ const Variable UPQuad11::u(&UPQuad11::uInterpol, Variable::VariableQuantity::Dis
 #define _IFT_UPQuad11_Name "upquad11"
 REGISTER_Element(UPQuad11)
 
+/**
+ * @brief 1D Equal order linear UP Element
+ * 
+ */
+class UPLine11 : public UPElement {
+    protected:
+        //FEI3dTetLin pInterpol;
+        //FEI3dTetQuad uInterpol;
+        const static FEI1dLin pInterpol;
+        const static FEI1dLin uInterpol;
+        const static Variable p;
+        const static Variable u;
+       
+    public:
+    UPLine11(int n, Domain* d): 
+        UPElement(n,d)
+    {
+        numberOfDofMans  = 2;
+        numberOfGaussPoints = 2;
+        this->computeGaussPoints();
+    }
+
+  void getDofManLocalCodeNumbers (IntArray& answer, const Variable::VariableQuantity q, int num ) const  override {
+        /* dof ordering: u1 v1 w1 p1  u2 v2 w2 p2  u3 v3 w3 p3  u4 v4 w4 p4*/
+        if (q == Variable::VariableQuantity::Displacement) {
+          //answer={1,2,3, 5,6,7, 9,10,11, 13,14,15 };
+          //int o = (num-1)*2+1;
+          answer={num*2-1};
+        } else if (q == Variable::VariableQuantity::Pressure) {
+          //answer = {4, 8, 12, 16};
+          answer={num*2};
+        }
+    }
+    void getInternalDofManLocalCodeNumbers (IntArray& answer, const Variable::VariableQuantity q, int num ) const  override {
+        answer={};
+    }
+
+    void giveDofManDofIDMask(int inode, IntArray &answer) const override { 
+            answer = {1,11};
+    }
+    int giveNumberOfDofs() override { return 4; }
+    const char *giveInputRecordName() const override {return "upline11";}
+    
+    const FEInterpolation* getGeometryInterpolation() const override {return &this->pInterpol;}
+  
+    Element_Geometry_Type giveGeometryType() const override {
+        return EGT_line_1;
+    }
+    int getNumberOfSurfaceDOFs() const override {return 0;}
+    void getSurfaceLocalCodeNumbers(IntArray& answer, const Variable::VariableQuantity q) const override {
+        answer={};
+    }
+
+    int getNumberOfEdgeDOFs() const override  {return 4;}
+    void getEdgeLocalCodeNumbers(IntArray& answer, const Variable::VariableQuantity q) const override  {
+        if (q == Variable::VariableQuantity::Displacement) {
+            answer={1, 3};
+        } else {
+            answer ={2, 4};
+        }
+    }
+  
+
+
+private:
+        virtual int  giveNumberOfUDofs() const override {return 2;} 
+        virtual int  giveNumberOfPDofs() const override {return 2;}
+        virtual const Variable* getU() const override {return &u;}
+        virtual const Variable* getP() const override {return &p;}
+        void computeGaussPoints() override {
+            if ( integrationRulesArray.size() == 0 ) {
+                integrationRulesArray.resize( 1 );
+                integrationRulesArray [ 0 ] = std::make_unique<GaussIntegrationRule>(1, this);
+                integrationRulesArray [ 0 ]->SetUpPointsOnLine(numberOfGaussPoints, _1dUP);
+            }
+        }
+};
+
+const FEI1dLin  UPLine11::uInterpol(1);
+const FEI1dLin  UPLine11::pInterpol(1);
+const Variable UPLine11::p(&UPLine11::pInterpol, Variable::VariableQuantity::Pressure, Variable::VariableType::scalar, 1, NULL, {11});
+const Variable UPLine11::u(&UPLine11::uInterpol, Variable::VariableQuantity::Displacement, Variable::VariableType::vector, 1, NULL, {1});
+
+#define _IFT_UPLine11_Name "upline11"
+REGISTER_Element(UPLine11)
 
 
 #define _IFT_UPSimpleMaterial_Name "upm"
@@ -612,7 +698,14 @@ class UPSimpleMaterial : public Material {
                 answer.resize(2,2);
                 answer.beUnitMatrix();
                 answer.times(this->k);
+            } else if (mmode == _1dUP) {
+                answer.resize(1,1);
+                answer.at(1,1) = this->k;
+            } else {
+                OOFEM_ERROR("Unsupported material mode");
             }
+        } else {
+            answer.clear();
         }
     }
 
