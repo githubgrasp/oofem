@@ -470,9 +470,13 @@ VTKBaseExportModule::getNodalVariableFromPrimaryField(FloatArray &answer, DofMan
         dofIDMask.followedBy(T_f);
         iState = IST_Temperature;
         answer.resize(1);
-    } else if ( type == PressureVector ) {
+    } else if (( type == PressureVector ) || ( type == PressureVector_1 )) {
         dofIDMask.followedBy(P_f);
         iState = IST_Pressure;
+        answer.resize(1);
+    } else if ( type == PressureVector_2 ) {
+        dofIDMask.followedBy(P_f2);
+        iState = IST_Pressure_2;
         answer.resize(1);
     } else if ( type == DirectorField ) {
         for ( Dof *dof : * dman ) {

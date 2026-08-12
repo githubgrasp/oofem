@@ -359,7 +359,7 @@ if (USE_PYTHON_EXTENSION)
 endif ()
 
 if (USE_PYBIND_BINDINGS)
-    list (APPEND core_unsorted pythonfield.C)
+    list (APPEND core_unsorted pythonfield.C pythonmaterial.C)
 endif ()
 
 
