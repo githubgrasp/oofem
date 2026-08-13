@@ -89,6 +89,54 @@ LatticeStructuralElement :: computeSMtrx(FloatMatrix &answer, const FloatArray &
     answer.at(3, 2) =  vec.at(1);
 }
 
+
+void
+LatticeStructuralElement :: logRotationVector(const FloatMatrix &R, FloatArray &theta)
+{
+    theta.resize(3);
+
+    double tr = R.at(1, 1) + R.at(2, 2) + R.at(3, 3);
+    double cosAngle = 0.5 * ( tr - 1.0 );
+    if ( cosAngle >  1.0 ) cosAngle =  1.0;   // guard round-off
+    if ( cosAngle < -1.0 ) cosAngle = -1.0;
+    double angle = acos(cosAngle);
+
+    // Antisymmetric part: w = sin(angle) * axis
+    FloatArray w(3);
+    w.at(1) = 0.5 * ( R.at(3, 2) - R.at(2, 3) );
+    w.at(2) = 0.5 * ( R.at(1, 3) - R.at(3, 1) );
+    w.at(3) = 0.5 * ( R.at(2, 1) - R.at(1, 2) );
+
+    if ( angle < 1.e-7 ) {
+        // angle -> 0: sin(angle) ~ angle, so w ~ angle*axis = theta already (w -> 0 at R = I).
+        theta = w;
+    } else if ( angle < M_PI - 1.e-3 ) {
+        // regular range: theta = axis*angle = w * angle/sin(angle)
+        theta = w;
+        theta.times( angle / sin(angle) );
+    } else {
+        // angle -> pi: R ~ 2 n n^T - I is symmetric, w -> 0 and is useless. Recover the axis
+        // from the symmetric part; use the largest diagonal for conditioning.
+        int k = 1;
+        if ( R.at(2, 2) > R.at(k, k) ) k = 2;
+        if ( R.at(3, 3) > R.at(k, k) ) k = 3;
+        double nk = sqrt( 0.5 * ( R.at(k, k) + 1.0 ) );   // |n_k|, largest -> well conditioned
+        FloatArray axis(3);
+        axis.at(k) = nk;
+        for ( int i = 1; i <= 3; i++ ) {
+            if ( i != k ) {
+                axis.at(i) = 0.25 * ( R.at(i, k) + R.at(k, i) ) / nk;
+            }
+        }
+        axis.normalize();
+        if ( axis.dotProduct(w) < 0.0 ) {   // fix +/-n ambiguity using the (small) antisymmetric part
+            axis.times(-1.0);
+        }
+        theta = axis;
+        theta.times(angle);
+    }
+}
+
 void
 LatticeStructuralElement :: initializeFrom(InputRecord &ir)
 {

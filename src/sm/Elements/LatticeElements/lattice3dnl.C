@@ -283,31 +283,33 @@ Lattice3dNL :: ~Lattice3dNL()
 
         this->length = giveLength();
 
-        FloatMatrix rotationMatrix(3, 3);
-        FloatArray spin(3);
-        FloatArray uTotal(12);
-        this->computeVectorOf(VM_Total, tStep, uTotal);
-        spin.at(1) = u.at(4);
-        spin.at(2) = u.at(5);
-        spin.at(3) = u.at(6);
-        this->computeGlobalRotationMatrix(rotationMatrix, spin);
-        FloatArray c1(3);
-        c1.beProductOf(rotationMatrix, l1);
+        FloatArray spin1(3), spin2(3);
+        spin1.at(1) = u.at(4);  spin1.at(2) = u.at(5);  spin1.at(3) = u.at(6);
+        spin2.at(1) = u.at(10); spin2.at(2) = u.at(11); spin2.at(3) = u.at(12);
 
-        spin.at(1) = u.at(10);
-        spin.at(2) = u.at(11);
-        spin.at(3) = u.at(12);
-        this->computeGlobalRotationMatrix(rotationMatrix, spin);
-        FloatArray c2(3);
-        c2.beProductOf(rotationMatrix, l2);
+        FloatMatrix R1, R2;
+        this->computeGlobalRotationMatrix(R1, spin1);
+        this->computeGlobalRotationMatrix(R2, spin2);
+
+        FloatArray c1, c2;
+        c1.beProductOf(R1, l1);
+        c2.beProductOf(R2, l2);
 
         answer.resize(6);
         answer.at(1) = u.at(7) - u.at(1) - c1.at(1) - c2.at(1) + l1.at(1) + l2.at(1);
         answer.at(2) = u.at(8) - u.at(2) - c1.at(2) - c2.at(2) + l1.at(2) + l2.at(2);
         answer.at(3) = u.at(9) - u.at(3) - c1.at(3) - c2.at(3) + l1.at(3) + l2.at(3);
-        answer.at(4) = u.at(10) - u.at(4);
-        answer.at(5) = u.at(11) - u.at(5);
-        answer.at(6) = u.at(12) - u.at(6);
+
+        // Rotational strain: exact relative rotation in the global frame, log(R2 R1^T),
+        // generalizing the first-order spin2 - spin1 (identical for single-axis rotation).
+        FloatMatrix R1t, Rrel;
+        R1t.beTranspositionOf(R1);
+        Rrel.beProductOf(R2, R1t);
+        FloatArray theta;
+        this->logRotationVector(Rrel, theta);
+        answer.at(4) = theta.at(1);
+        answer.at(5) = theta.at(2);
+        answer.at(6) = theta.at(3);
 
         answer.times(1. / this->length);
 

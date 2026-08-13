@@ -269,6 +269,9 @@ protected:
     static void computeGlobalRotationMatrix(FloatMatrix &answer, const FloatArray &psi);
     /// Skew-symmetric matrix of a 3-vector (used by computeGlobalRotationMatrix).
     static void computeSMtrx(FloatMatrix &answer, const FloatArray &vec);
+    /// Axial vector of log(R): the rotation vector of a rotation matrix (inverse of
+    /// computeGlobalRotationMatrix). Robust at angle -> 0 and angle -> pi.
+    static void logRotationVector(const FloatMatrix &R, FloatArray &theta);
 
 };
 } // end namespace oofem

@@ -121,14 +121,21 @@ LatticeLink3dNL::computeStrainVector(FloatArray &answer, GaussPoint *gp, TimeSte
     answer.at(1) = u.at(7) - u.at(1) - cA.at(1) + rigidGlobal.at(1);
     answer.at(2) = u.at(8) - u.at(2) - cA.at(2) + rigidGlobal.at(2);
     answer.at(3) = u.at(9) - u.at(3) - cA.at(3) + rigidGlobal.at(3);
-    answer.at(4) = u.at(10) - u.at(4);
-    answer.at(5) = u.at(11) - u.at(5);
-    answer.at(6) = u.at(12) - u.at(6);
+    // Rotational strain: exact relative rotation log(R_B R_A^T), generalizing spin_B - spin_A.
+    FloatArray spinB(3);
+    spinB.at(1) = u.at(10); spinB.at(2) = u.at(11); spinB.at(3) = u.at(12);
+    FloatMatrix RB, RAt, Rrel;
+    LatticeStructuralElement::computeGlobalRotationMatrix(RB, spinB);
+    RAt.beTranspositionOf(RA);
+    Rrel.beProductOf(RB, RAt);
+    FloatArray theta;
+    LatticeStructuralElement::logRotationVector(Rrel, theta);
+    answer.at(4) = theta.at(1);
+    answer.at(5) = theta.at(2);
+    answer.at(6) = theta.at(3);
     // slip is a relative DISPLACEMENT, not a strain -> no division by length.
 
     // ROUTE 2 (node B rotation): project onto the current bond frame.
-    FloatArray spinB(3);
-    spinB.at(1) = u.at(10); spinB.at(2) = u.at(11); spinB.at(3) = u.at(12);
     FloatMatrix Qcur, Q6;
     this->computeCurrentFrame(Qcur, spinB);
     expandTo6(Qcur, Q6);
