@@ -426,9 +426,9 @@ lattice3D 379 nodes 2 30 33 crossSect 1 mat 1 polycoords 18 2.603515e-02 6.87144
 lattice3D 380 nodes 2 31 32 crossSect 1 mat 1 polycoords 9 1.641554e-02 2.184106e-02 1.272208e-02 1.335234e-02 2.323654e-02 1.245551e-02 1.509098e-02 2.391444e-02 1.506248e-02
 lattice3D 381 nodes 2 34 35 crossSect 2 mat 2
 lattice3D 382 nodes 2 35 36 crossSect 2 mat 2
-latticelink3D 383 nodes 2 34 9 crossSect 3 mat 3 length 1.417051e-02 diameter 3.800000e-05 dirvector 3 0.000000e+00 1.000000e+00 0.000000e+00 L_end 7.085256e-03
-latticelink3D 384 nodes 2 35 28 crossSect 3 mat 3 length 7.089991e-03 diameter 3.800000e-05 dirvector 3 0.000000e+00 1.000000e+00 0.000000e+00 L_end 1.228449e-02
-latticelink3D 385 nodes 2 36 19 crossSect 3 mat 3 length 8.739497e-03 diameter 3.800000e-05 dirvector 3 0.000000e+00 1.000000e+00 0.000000e+00 L_end 4.369748e-03
+latticelink3D 383 nodes 2 9 34 crossSect 3 mat 3 length 1.417051e-02 diameter 3.800000e-05 dirvector 3 0.000000e+00 1.000000e+00 0.000000e+00 L_end 7.085256e-03
+latticelink3D 384 nodes 2 28 35 crossSect 3 mat 3 length 7.089991e-03 diameter 3.800000e-05 dirvector 3 0.000000e+00 1.000000e+00 0.000000e+00 L_end 1.228449e-02
+latticelink3D 385 nodes 2 19 36 crossSect 3 mat 3 length 8.739497e-03 diameter 3.800000e-05 dirvector 3 0.000000e+00 1.000000e+00 0.000000e+00 L_end 4.369748e-03
 latticecs 1 material 1
 latticecs 2 material 2 shape 1 radius 1.9e-5
 latticecs 3 material 3

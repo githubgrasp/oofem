@@ -19,6 +19,7 @@ PiecewiseLinFunction 2 nPoints 2 t 2 0. 6. f(t) 2 0. 1.
 ## Axial slip (latticestrain comp 1) = 0.011*sin(theta_y), theta_y = (t/6)*pi/2.
 ## tStep 3: theta=pi/4 -> 0.011*sin(pi/4) = 7.7782e-3  (a linear link would give 8.6394e-3)
 ## tStep 6: theta=pi/2 -> 0.011*sin(pi/2) = 1.1000e-2  (a linear link would give 1.7279e-2)
-#ELEMENT tStep 3 number 1 gp 1 keyword "latticestrain" component 1 value 7.7782e-3
-#ELEMENT tStep 6 number 1 gp 1 keyword "latticestrain" component 1 value 1.1000e-2
+## keyword 138 = IST_LatticeStrain (numeric code); component 1 = axial slip.
+#ELEMENT tStep 3 number 1 gp 1 keyword 138 component 1 value 7.7782e-3
+#ELEMENT tStep 6 number 1 gp 1 keyword 138 component 1 value 1.1000e-2
 #%END_CHECK%
