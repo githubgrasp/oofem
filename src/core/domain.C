@@ -1047,6 +1047,16 @@ Domain :: postInitialize()
     for ( auto &el: elementList ) {
         el->postInitialize();
     }
+
+    for ( auto &el: materialList ) {
+        el->postInitialize();
+    }
+
+    for ( auto &el: crossSectionList ) {
+        el->postInitialize();
+    }
+
+
     //@TODO clear parameterPriorityManager
 
     for ( auto &cs: contactSurfaceList ) {

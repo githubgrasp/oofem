@@ -199,7 +199,8 @@ namespace oofem {
     ENUM_ITEM_WITH_VALUE(IST_Z_LCS, 149) \
     ENUM_ITEM_WITH_VALUE(IST_ContactNormalGap, 150) \
     ENUM_ITEM_WITH_VALUE(IST_ContactPressure, 151) \
-    ENUM_ITEM_WITH_VALUE(IST_ContactStatus, 152)
+    ENUM_ITEM_WITH_VALUE(IST_ContactStatus, 152) \
+    ENUM_ITEM_WITH_VALUE(IST_Pressure_2, 153) /* Pressure for second phase in multiphase problems */
     
 
 /**
