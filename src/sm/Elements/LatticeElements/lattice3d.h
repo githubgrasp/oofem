@@ -46,6 +46,7 @@
 #define _IFT_Lattice3d_couplingnumber "couplingnumber"
 #define _IFT_Lattice3d_pressures "pressures"
 #define _IFT_Lattice3d_shellnormal "shellnormal"
+#define _IFT_Lattice3d_zaxis "zaxis"
 //@}
 
 namespace oofem {
@@ -72,6 +73,11 @@ protected:
 
     /// Shell surface normal in global coordinates; presence flags the element as a shell.
     FloatArray shellNormal;
+
+    /// Reference axis orienting the transverse frame of a beam (no-polygon) cross-section,
+    /// mirroring LatticeFrame3d's zaxis. Mandatory when section properties (I1/I2/J) are
+    /// taken from the cross-section; empty for facet/shell sections.
+    FloatArray zaxis;
 
     // Rectangular cross-section dimensions in local frame; set in computeGeometryProperties.
     double shellH = 0.;

@@ -544,6 +544,16 @@ Lattice3d :: initializeFrom(InputRecord &ir)
         OOFEM_ERROR("shellnormal must have exactly 3 components");
     }
 
+    zaxis.resize(0);
+    IR_GIVE_OPTIONAL_FIELD(ir, zaxis, _IFT_Lattice3d_zaxis);
+    if ( zaxis.giveSize() != 0 && zaxis.giveSize() != 3 ) {
+        OOFEM_ERROR("zaxis must have exactly 3 components");
+    }
+    // zaxis orients a beam section; shellnormal orients a shell. They are mutually exclusive.
+    if ( zaxis.giveSize() == 3 && shellNormal.giveSize() == 3 ) {
+        OOFEM_ERROR("zaxis (beam orientation) and shellnormal (shell orientation) are mutually exclusive");
+    }
+
 
 //Introduce here the geometry calculation
 //computeGeometryProperties();
@@ -689,11 +699,61 @@ void
     return;
   }
   
-  //Shape is 0 (polygon based cross-section
+  // Beam/frame cross-section: no polygon geometry. Section properties are taken directly
+  // from the LatticeCrossSection and the transverse frame is oriented by the mandatory
+  // zaxis (as in LatticeFrame3d). This makes lattice3d a superset of latticeframe3d.
+  if ( this->numberOfPolygonVertices < 3 ) {
+    auto pick = [&](CrossSectionProperty key) {
+        return cs->CrossSection::give(key, (GaussPoint *) nullptr);
+    };
+    double a = pick(CS_Area);
+    if ( a <= 0.0 ) {
+      OOFEM_ERROR("Too small number of polygon vertices and no cross-section area given. Check meshing/cross-section.\n");
+    }
+    // Providing section resultants without an orientation is ambiguous (iy != iz): require zaxis.
+    if ( this->zaxis.giveSize() != 3 ) {
+      OOFEM_ERROR("Beam cross-section (area/I/J from the LatticeCS) requires a zaxis to orient the section.\n");
+    }
+    this->area       = a;
+    this->I1         = pick(CS_InertiaMomentY);
+    this->I2         = pick(CS_InertiaMomentZ);
+    this->J          = pick(CS_TorsionConstantX);
+    this->Ip         = this->I1 + this->I2;
+    this->shearArea1 = ( pick(CS_ShearAreaY) > 0.0 ) ? pick(CS_ShearAreaY) : this->area;
+    this->shearArea2 = ( pick(CS_ShearAreaZ) > 0.0 ) ? pick(CS_ShearAreaZ) : this->area;
+    this->shellB = 0.0;
+    this->shellH = 0.0;   // keep isHybridShell() false so the getters return these members
 
-  if(this->numberOfPolygonVertices < 3){
-    OOFEM_ERROR("Too small number of polygon vertices. Check meshing approach.\n");
+    // Local frame: axis 1 = element axis; transverse axes from zaxis (mirrors LatticeFrame3d).
+    FloatArray lx = this->normal;                 // already normalized above
+    FloatArray ly(3), lz(3);
+    lz = this->zaxis;
+    lz.add(-lz.dotProduct(lx), lx);               // orthogonalize against the element axis
+    if ( lz.computeNorm() < 1e-8 ) {
+      OOFEM_ERROR("zaxis is (nearly) parallel to the element axis\n");
+    }
+    lz.normalize();
+    ly.beVectorProductOf(lz, lx);
+    ly.normalize();
+
+    this->localCoordinateSystem.resize(3, 3);
+    for ( int i = 1; i <= 3; ++i ) {
+      this->localCoordinateSystem.at(1, i) = lx.at(i);
+      this->localCoordinateSystem.at(2, i) = ly.at(i);
+      this->localCoordinateSystem.at(3, i) = lz.at(i);
+    }
+
+    centroid.resize(3);
+    FloatArray midPointLocal(3);
+    midPointLocal.beProductOf(this->localCoordinateSystem, midPoint);
+    centroid = midPointLocal;
+    this->eccS = 0.0;
+    this->eccT = 0.0;
+    this->globalCentroid = midPoint;
+    return;
   }
+
+  //Shape is 0 (polygon based cross-section
 
     //Construct two perpendicular axis so that n is normal to the plane which they create
   FloatArray s(3), t(3);
