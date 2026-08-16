@@ -20,18 +20,18 @@ node 10 coords 3 1000.000e+00 750.000e+00 0.000000e+00
 node 11 coords 3 1000.000e+00 500.000e+00 0.000000e+00 
 node 12 coords 3 1000.000e+00 250.000e+00 0.000000e+00 
 node 13 coords 3 1000.000e+00 0.000000e+00 0.000000e+00 bc 6 1 1 1 1 1 1 
-latticeframe3d 1 nodes 2 1 2 zaxis 3 0 0 1 crossSect 1
-latticeframe3d 2 nodes 2 2 3 zaxis 3 0 0 1 crossSect 1
-latticeframe3d 3 nodes 2 3 4 zaxis 3 0 0 1 crossSect 1
-latticeframe3d 4 nodes 2 4 5 zaxis 3 0 0 1 crossSect 1
-latticeframe3d 5 nodes 2 5 6 zaxis 3 0 0 1 crossSect 1
-latticeframe3d 6 nodes 2 6 7 zaxis 3 0 0 1 crossSect 1
-latticeframe3d 7 nodes 2 7 8 zaxis 3 0 0 1 crossSect 1
-latticeframe3d 8 nodes 2 8 9 zaxis 3 0 0 1 crossSect 1
-latticeframe3d 9 nodes 2 9 10 zaxis 3 0 0 1 crossSect 1
-latticeframe3d 10 nodes 2 10 11 zaxis 3 0 0 1 crossSect 1
-latticeframe3d 11 nodes 2 11 12 zaxis 3 0 0 1 crossSect 1
-latticeframe3d 12 nodes 2 12 13 zaxis 3 0 0 1 crossSect 1
+lattice3d 1 nodes 2 1 2 zaxis 3 0 0 1 crossSect 1
+lattice3d 2 nodes 2 2 3 zaxis 3 0 0 1 crossSect 1
+lattice3d 3 nodes 2 3 4 zaxis 3 0 0 1 crossSect 1
+lattice3d 4 nodes 2 4 5 zaxis 3 0 0 1 crossSect 1
+lattice3d 5 nodes 2 5 6 zaxis 3 0 0 1 crossSect 1
+lattice3d 6 nodes 2 6 7 zaxis 3 0 0 1 crossSect 1
+lattice3d 7 nodes 2 7 8 zaxis 3 0 0 1 crossSect 1
+lattice3d 8 nodes 2 8 9 zaxis 3 0 0 1 crossSect 1
+lattice3d 9 nodes 2 9 10 zaxis 3 0 0 1 crossSect 1
+lattice3d 10 nodes 2 10 11 zaxis 3 0 0 1 crossSect 1
+lattice3d 11 nodes 2 11 12 zaxis 3 0 0 1 crossSect 1
+lattice3d 12 nodes 2 12 13 zaxis 3 0 0 1 crossSect 1
 latticecs 1 material 1 area 25281 iy 5.3e7 iz 5.3e7 ik 1e8 shearCoeff 0.833 
 latticeframesteelplastic 1 d 1. E 2.1e4 n 0.3 talpha 0 nx0 6e5 mx0 3e7 my0 3e7 mz0 3e7 tol 1.e-6 iter 100 sub 10
 BoundaryCondition 1 loadTimeFunction 1 prescribedvalue 0.0

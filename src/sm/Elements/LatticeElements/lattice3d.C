@@ -549,6 +549,9 @@ Lattice3d :: initializeFrom(InputRecord &ir)
     if ( zaxis.giveSize() != 0 && zaxis.giveSize() != 3 ) {
         OOFEM_ERROR("zaxis must have exactly 3 components");
     }
+
+    s = 0.;
+    IR_GIVE_OPTIONAL_FIELD(ir, s, _IFT_Lattice3d_s);
     // zaxis orients a beam section; shellnormal orients a shell. They are mutually exclusive.
     if ( zaxis.giveSize() == 3 && shellNormal.giveSize() == 3 ) {
         OOFEM_ERROR("zaxis (beam orientation) and shellnormal (shell orientation) are mutually exclusive");
@@ -710,10 +713,6 @@ void
     if ( a <= 0.0 ) {
       OOFEM_ERROR("Too small number of polygon vertices and no cross-section area given. Check meshing/cross-section.\n");
     }
-    // Providing section resultants without an orientation is ambiguous (iy != iz): require zaxis.
-    if ( this->zaxis.giveSize() != 3 ) {
-      OOFEM_ERROR("Beam cross-section (area/I/J from the LatticeCS) requires a zaxis to orient the section.\n");
-    }
     this->area       = a;
     this->I1         = pick(CS_InertiaMomentY);
     this->I2         = pick(CS_InertiaMomentZ);
@@ -727,14 +726,33 @@ void
     // Local frame: axis 1 = element axis; transverse axes from zaxis (mirrors LatticeFrame3d).
     FloatArray lx = this->normal;                 // already normalized above
     FloatArray ly(3), lz(3);
-    lz = this->zaxis;
-    lz.add(-lz.dotProduct(lx), lx);               // orthogonalize against the element axis
-    if ( lz.computeNorm() < 1e-8 ) {
-      OOFEM_ERROR("zaxis is (nearly) parallel to the element axis\n");
+    if ( this->zaxis.giveSize() == 3 ) {
+      lz = this->zaxis;
+      lz.add(-lz.dotProduct(lx), lx);             // orthogonalize against the element axis
+      if ( lz.computeNorm() < 1e-8 ) {
+        OOFEM_ERROR("zaxis is (nearly) parallel to the element axis\n");
+      }
+      lz.normalize();
+      ly.beVectorProductOf(lz, lx);
+      ly.normalize();
+    } else {
+      // No zaxis: the transverse orientation only matters for an asymmetric section (iy != iz),
+      // where leaving it unspecified is ambiguous. For iy == iz reproduce LatticeFrame3d's default frame.
+      if ( fabs(this->I1 - this->I2) > 1.e-12 * ( fabs(this->I1) + fabs(this->I2) ) ) {
+        OOFEM_ERROR("Beam cross-section with iy != iz requires a zaxis to orient the section.\n");
+      }
+      ly.zero();
+      if ( lx.at(1) == 0. ) {
+        ly.at(1) = 0.;        ly.at(2) = lx.at(3);  ly.at(3) = lx.at(2);
+      } else if ( lx.at(2) == 0. ) {
+        ly.at(1) = lx.at(3);  ly.at(2) = 0.;        ly.at(3) = -lx.at(1);
+      } else {
+        ly.at(1) = lx.at(2);  ly.at(2) = -lx.at(1); ly.at(3) = 0.;
+      }
+      ly.normalize();
+      lz.beVectorProductOf(lx, ly);
+      lz.normalize();
     }
-    lz.normalize();
-    ly.beVectorProductOf(lz, lx);
-    ly.normalize();
 
     this->localCoordinateSystem.resize(3, 3);
     for ( int i = 1; i <= 3; ++i ) {
@@ -743,13 +761,21 @@ void
       this->localCoordinateSystem.at(3, i) = lz.at(i);
     }
 
+    // Gauss point along the element: parameter (1+s)/2 from node A (s=0 -> midpoint),
+    // matching LatticeFrame3d's split l1 = (1+s)/2 L, l2 = (1-s)/2 L.
+    FloatArray gpGlobal = midPoint;
+    if ( this->s != 0.0 ) {
+      FloatArray shift = this->normal;              // unit vector A->B
+      shift.times(0.5 * this->s * this->length);
+      gpGlobal.add(shift);
+    }
     centroid.resize(3);
-    FloatArray midPointLocal(3);
-    midPointLocal.beProductOf(this->localCoordinateSystem, midPoint);
-    centroid = midPointLocal;
+    FloatArray gpLocal(3);
+    gpLocal.beProductOf(this->localCoordinateSystem, gpGlobal);
+    centroid = gpLocal;
     this->eccS = 0.0;
     this->eccT = 0.0;
-    this->globalCentroid = midPoint;
+    this->globalCentroid = gpGlobal;
     return;
   }
 

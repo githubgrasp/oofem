@@ -47,6 +47,7 @@
 #define _IFT_Lattice3d_pressures "pressures"
 #define _IFT_Lattice3d_shellnormal "shellnormal"
 #define _IFT_Lattice3d_zaxis "zaxis"
+#define _IFT_Lattice3d_s "s"
 //@}
 
 namespace oofem {
@@ -78,6 +79,10 @@ protected:
     /// mirroring LatticeFrame3d's zaxis. Mandatory when section properties (I1/I2/J) are
     /// taken from the cross-section; empty for facet/shell sections.
     FloatArray zaxis;
+
+    /// Gauss-point position along a beam element: parameter (1+s)/2 from node A (s=0 -> midpoint),
+    /// mirroring LatticeFrame3d's s. Only used by the beam (no-polygon) branch.
+    double s = 0.;
 
     // Rectangular cross-section dimensions in local frame; set in computeGeometryProperties.
     double shellH = 0.;

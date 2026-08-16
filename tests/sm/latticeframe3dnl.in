@@ -17,14 +17,14 @@ node 7 coords 3 7.065 0.0 0.0
 node 8 coords 3 8.2425 0.0 0.0 
 node 9 coords 3 9.42 0.0 0.0 bc 6 0 0 0 0 0 2
 #
-latticeframe3dnl 1 nodes 2 1 2 zaxis 3 0 -1 0 crossSect 1 mat 1
-latticeframe3dnl 2 nodes 2 2 3 zaxis 3 0 -1 0 crossSect 1 mat 1
-latticeframe3dnl 3 nodes 2 3 4 zaxis 3 0 -1 0 crossSect 1 mat 1
-latticeframe3dnl 4 nodes 2 4 5 zaxis 3 0 -1 0 crossSect 1 mat 1
-latticeframe3dnl 5 nodes 2 5 6 zaxis 3 0 -1 0 crossSect 1 mat 1
-latticeframe3dnl 6 nodes 2 6 7 zaxis 3 0 -1 0 crossSect 1 mat 1
-latticeframe3dnl 7 nodes 2 7 8 zaxis 3 0 -1 0 crossSect 1 mat 1
-latticeframe3dnl 8 nodes 2 8 9 zaxis 3 0 -1 0 crossSect 1 mat 1
+lattice3dnl 1 nodes 2 1 2 zaxis 3 0 -1 0 crossSect 1 mat 1
+lattice3dnl 2 nodes 2 2 3 zaxis 3 0 -1 0 crossSect 1 mat 1
+lattice3dnl 3 nodes 2 3 4 zaxis 3 0 -1 0 crossSect 1 mat 1
+lattice3dnl 4 nodes 2 4 5 zaxis 3 0 -1 0 crossSect 1 mat 1
+lattice3dnl 5 nodes 2 5 6 zaxis 3 0 -1 0 crossSect 1 mat 1
+lattice3dnl 6 nodes 2 6 7 zaxis 3 0 -1 0 crossSect 1 mat 1
+lattice3dnl 7 nodes 2 7 8 zaxis 3 0 -1 0 crossSect 1 mat 1
+lattice3dnl 8 nodes 2 8 9 zaxis 3 0 -1 0 crossSect 1 mat 1
 #≈c
 latticecs 1 material 1 iy 7.857e-9 iz 7.857e-9 ik 1.6e-8 shearCoeff 0.83 area 3.1416e-4
 latticeframeelastic 1 d 1. E 2.1e11 n 0.3 talpha 0 

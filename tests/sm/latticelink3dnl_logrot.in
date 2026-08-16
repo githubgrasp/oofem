@@ -1,0 +1,26 @@
+latticelink3dnl_logrot.out
+Single LatticeLink3dNL element: why the rotational strain (which drives the spring moment) must be log(R2 R1^T), not spin2-spin1. Node 1 (matrix) is rotated 180 deg about x (the bar axis, so its rigid arm does not swing and no translational slip is induced); node 2 (rebar) is rotated 180 deg about y. The two triads then differ by a half-turn about z: R2 R1^T = Rot_z(180 deg). Physically the spring must therefore develop its restoring moment ABOUT z. The log map puts the whole relative rotation into the component aligned with that axis (comp 5 = pi here), so the moment acts about z, as it must. Subtraction gives spin2-spin1 = (-pi, pi, 0): its projection onto z is exactly ZERO, so it would drive no moment about the axis the bodies are actually rotated apart on, and a spurious moment about x/y where there is no relative misalignment. Root cause: the moment must be a function of the relative orientation R2 R1^T only (objectivity); log is, subtraction is not. (As a corroborating tell, the subtraction vector has magnitude pi*sqrt(2) = 254 deg, larger than any valid rotation.) Pure kinematic check, independent of the bond material.
+NonLinearStatic nmsteps 1 nsteps 1 nmodules 1
+nsteps 1 rtolf 1.e-3 maxiter 300 stiffMode 1 controllmode 1 refloadmode 1 minsteplength 1.
+errorcheck
+domain 3dLattice
+OutputManager tstep_all dofman_all element_all
+ndofman 2 nelem 1 ncrosssect 1 nmat 1 nbc 2 nic 0 nltf 1
+node 1 coords 3 0.0 0.0 0.0 bc 6 1 1 1 2 1 1
+node 2 coords 3 1.0 0.0 0.0 bc 6 1 1 1 1 2 1
+latticelink3Dnl 1 nodes 2 1 2 crossSect 1 mat 1 length 1.0 diameter 5.2e-3 dirvector 3 1.0 0.0 0.0
+LatticeCS 1 material 1 shape 1 radius 0.0026
+LatticeSlip 1 d 1. talpha 0.0 e 200.e9 a1 100. a2 100. t0 4.e6 type 1 s1 1.e-5 alpha 0.5
+BoundaryCondition 1 loadTimeFunction 1 prescribedvalue 0.0
+BoundaryCondition 2 loadTimeFunction 1 prescribedvalue 3.14159265358979
+ConstantFunction 1 f(t) 1.0
+#%BEGIN_CHECK% tolerance 1.e-4
+## Relative rotation is exactly 180 deg about z (magnitude pi). In the bond frame the log map
+## puts it all in comp 5: (comp4, comp5, comp6) = (0, pi, 0). Subtraction (spin2-spin1) would
+## instead give comp5 = 0 and spurious comps 4/6 of combined magnitude pi*sqrt(2) = 4.443.
+## keyword 156 = IST_LatticeCurvature; its components 1,2,3 are the rotational
+## (relative-rotation) strain, i.e. internal strain components 4,5,6.
+#ELEMENT tStep 1 number 1 gp 1 keyword 156 component 1 value 0.0
+#ELEMENT tStep 1 number 1 gp 1 keyword 156 component 2 value 3.14159265
+#ELEMENT tStep 1 number 1 gp 1 keyword 156 component 3 value 0.0
+#%END_CHECK%

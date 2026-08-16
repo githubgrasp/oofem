@@ -13,8 +13,8 @@ node 4 coords 3 0. 0. 0.
 node 5 coords 3 0.1 0. 0.
 node 6 coords 3 0.2 0.0 0.
 #BeamElements
-latticeframe3d 1 nodes 2 1 2 crossSect 1 mat 1
-latticeframe3d 2 nodes 2 2 3 crossSect 1 mat 1
+lattice3d 1 nodes 2 1 2 crossSect 1 mat 1
+lattice3d 2 nodes 2 2 3 crossSect 1 mat 1
 #links for first node
 latticelink3d 3 nodes 2 1 4 crossSect 2 mat 2 length 0.05 diameter 1.e-2 dirvector 3 1.000000e+00 0.000000e+00 0.000000e+00
 latticelink3d 4 nodes 2 2 5 crossSect 2 mat 2 length 0.1 diameter 1.e-02 dirvector 3 1.000000e+00 0.000000e+00 0.000000e+00
