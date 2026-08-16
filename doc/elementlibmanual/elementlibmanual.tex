@@ -397,7 +397,9 @@ Represents three-node lattice element for boundary of 2d periodic cells. The fir
 \subsubsection{Lattice3d element}
 Lattice3d represents a two-node 3d lattice element for small rotations. Each node has six degrees of freedom as shown in Figure~\ref{lattice3dfig}.
 The element is based on the Rigid Body Spring Model originally developed by Kawai and later delveloped by Bolander for modelling fracture in concrete. The main idea is to model the elastic and inelastic response of a connection of two nodes by a set of springs located at the contact facet of two rigid bodies, which is the mid-cross-section of the element. The properties of the mid-cross-section are internally computed from its vertices which are given as input in the global coordinate sytem. Displacement jumps are computed at the mid-cross-section, which are smeared out over the element length in the form of strains.
-The input parameters for this element are shown in Table~\ref{lattice3dsummary}. 
+The input parameters for this element are shown in Table~\ref{lattice3dsummary}.
+
+The same element can also represent a two-node beam (frame) member. In beam mode no polygon vertices are given; instead the cross-section properties (area, second moments of area $iy$ and $iz$, torsion constant $ik$ and shear properties) are taken directly from the lattice cross-section, and the orientation of the local transverse axes is set by the \param{zaxis} parameter. The position of the integration point (contact facet, i.e. the location of the plastic hinge) along the element is controlled by \param{s}. If $iy=iz$ the \param{zaxis} may be omitted. The beam formulation follows the rigid-body-spring/Timoshenko frame link of \cite{Toi91}.
 
 \begin{figure}[htb]
   \centering
@@ -406,13 +408,16 @@ The input parameters for this element are shown in Table~\ref{lattice3dsummary}.
  \label{lattice3dfig}
 \end{figure}
 
-\begin{elementsummary}{lattice3d}{3d lattice element}{\field{polycoords}{ra}  \field{shellnormal}{ra} \field{couplingflag}{in} \field{couplingnumbers}{ra} \field{pressures}{ra} \field{mlength}{rn}}{lattice3d element summary}{lattice3dsummary}
+\begin{elementsummary}{lattice3d}{3d lattice element}{\field{polycoords}{ra}  \field{shellnormal}{ra} \optField{zaxis}{ra} \optField{s}{rn} \field{couplingflag}{in} \field{couplingnumbers}{ra} \field{pressures}{ra} \field{mlength}{rn}}{lattice3d element summary}{lattice3dsummary}
 \elementParam{\param{polycooords}: array of the coordinates of the vertices of the mid-cross-section of the lattice element in the global coordinate system.}
 \elementParam{\param{shellnormal}: three-component array (optional parameter) giving the shell surface normal in global coordinates. Supply this keyword on every lattice element that represents a shell so that the local cross-section frame is aligned with the through-thickness direction.}
 \elementParam{\param{couplingflag}: flag (optional parameter. Default is 0) which activates coupling with a transport lattice element.}
 \elementParam{\param{couplingnumbers}: array of numbers of transport lattice elements (optional parameter), which are coupled with the 3d lattice element.}
 \elementParam{\param{pressures}: array of pressure values (optional parameter), which are used to consider influence of fluid pressure on mechanical response.}
 \elementParam{\param{mlength}: minimum length (optional parameter) is used to check if the cross-section of the element is not too small. Default value is 1.e-20.}
+\elementParam{\param{zaxis}: three-component array giving the local $z$-axis of a beam cross-section (optional; required only when $iy \neq iz$). Not used for facet/shell cross-sections, and mutually exclusive with \param{shellnormal}.}
+\elementParam{\param{s}: position of the integration point along a beam element, normalised by half the element length ($0$: centre of element (default), $-1$: first node, $1$: second node). Beam mode only.}
+\elementDescription{CS properties (beam mode)}{Area, second moments of area along the local $y$ and $z$ axes (\param{iy} and \param{iz}), torsion constant (\param{ik}) and either a cross-section shear correction factor (\param{beamshearcoeff}) or equivalent shear areas (\param{shearareay} and \param{shearareaz}) are taken from the lattice cross-section, defined in the local coordinate system of the element.}
 \elementDescription{Unknowns}{Six dofs ($u$-displacement, $v$-displacement, $w$-displacement, $u$-rotation, $v$-rotation and $w$-rotation) are required in each node.}
 \elementDescription{Reference}{\cite{GraBol16}}
 \end{elementsummary}
@@ -464,37 +469,12 @@ The specific input parameters for this element in addition of those for latticel
 \elementDescription{Reference}{\cite{GraAnt19}}
 \end{elementsummary}
 
- \subsubsection{Latticeframe3d element}
- Latticeframe3d represents a two-node linear 3d frame element shown in Figure~\ref{fig:latticeframe3d}. Each node has six degrees of freedom, namely three translations and three rotations. The element is based on the link between rigid body spring and Timoshenko frame models. The main idea is to model the elastic and inelastic response of a connection of two nodes by a set of springs located at the contact facet of two rigid bodies. Displacement jumps are computed at the contact facet, which are smeared out over the element length in the form of strains. The input parameters for this element are shown in Table ~\ref{latticeframe3dsummary}. For the computation of the nodal forces, the initial configuration is used. The position of the plastic hinge is controlled by parameter $s$, which is normalised by half of the element length from the centre of the element. This approach was developed by \cite{Toi91}.
- 
-  \begin{figure}[htb]
-    \centering
-  \includegraphics[width=0.4\textwidth]{./latticeframe3d.png}
-  \caption{latticeframe3d element. Node numbering, DOF numbering and location of contact with springs.}
-  \label{fig:latticeframe3d}
-  \end{figure}
+ \subsubsection{Lattice3dnl element}
+ Lattice3dnl is the geometrically nonlinear (large-rotation) counterpart of the lattice3d element. It accepts the same input and the same cross-section options (facet/shell via \param{polycoords}, or beam via the cross-section properties together with \param{zaxis} and \param{s}), but the displacement jumps and nodal forces are evaluated in the deformed configuration, so the element is suitable for large rotations and catenary action. The rotational part of the generalised strain is the exact relative rotation of the two nodes, i.e. the axial vector of $\mathbf{R}_2 \mathbf{R}_1^{\mathrm{T}}$, which reduces to the difference of the nodal rotation vectors for rotation about a single axis.
 
- \begin{elementsummary}{latticeframe3d}{3d lattice frame element}{\field{zaxis}{ra} \optField{s}{rn}}{latticeframe3d element summary}{latticeframe3dsummary}
-\elementParam{\param{zaxis}: z-axis of local coordinate system }
-\elementParam{\param{s}:  distance from centre to location of springs normalised by half of element length (0  centre of element (default), -1  left node of element, 1 right end of element)}
-\elementDescription{CS properties}{Area, inertia moment along y and z axis (\param{iy} and \param{iz} parameters), torsion inertia moment (\param{ik} parameter) and either cross section area shear correction factor (\param{beamshearcoeff} parameter) or equivalent shear areas (\param{shearareay} and \param{shearareaz} parameters) are required. These cross section properties are assumed to be defined in local coordinate system of element.}
-\elementDescription{Unknowns}{Six dofs ($u$-displacement, $v$-displacement, $w$-displacement, $u$-rotation, $v$-rotation and $w$-rotation) are required in each node.}
-\elementDescription{Reference}{\cite{Toi91}}
-\end{elementsummary}
-
- \subsubsection{Latticeframe3dnl element}
- Latticeframe3dnl represents a two-node geometrically nonlinear 3d frame element. This element is an extension of latticeframe3d. Each node has six degrees of freedom, namely three translations and three rotations. The element is based on the link between rigid body spring and Timoshenko frame models. The main idea is to model the elastic and inelastic response of a connection of two nodes by a set of springs located at the contact facet of two rigid bodies. Displacement jumps are computed at the contact facet using the deformed geometry assuming large deformations, which are smeared out over the element length in the form of strains. The input parameters for this element are shown in Table~\ref{latticeframe3dnlsummary}. For the computation of the nodal forces, the deformed configuration is used as illustrated in Figure~\ref{fig:latticeframe3dnl}.
-
- \begin{figure}[htb]
-    \centering
-  \includegraphics[width=0.5\textwidth]{./latticeframe3dnl.png}
-  \caption{latticeframe3dnl element. Illustration of calculation of nodal forces using deformed geometry.}
-  \label{fig:latticeframe3dnl}
-  \end{figure}
- 
- \begin{elementsummary}{latticeframe3dnl}{3d lattice frame element}{-}{latticeframe3dnl element summary}{latticeframe3dnlsummary}
-   \elementParam{}
-\elementDescription{CS properties}{Area, inertia moment along y and z axis (\param{iy} and \param{iz} parameters), torsion inertia moment (\param{ik} parameter) and either cross section area shear correction factor (\param{beamshearcoeff} parameter) or equivalent shear areas (\param{shearareay} and \param{shearareaz} parameters) are required. These cross section properties are assumed to be defined in local coordinate system of element.}
+ \begin{elementsummary}{lattice3dnl}{3d geometrically nonlinear lattice element}{\field{polycoords}{ra} \field{shellnormal}{ra} \optField{zaxis}{ra} \optField{s}{rn}}{lattice3dnl element summary}{lattice3dnlsummary}
+\elementParam{\param{polycoords}, \param{shellnormal}, \param{zaxis}, \param{s}: as for the \element{lattice3d} element.}
+\elementDescription{CS properties (beam mode)}{As for the \element{lattice3d} element.}
 \elementDescription{Unknowns}{Six dofs ($u$-displacement, $v$-displacement, $w$-displacement, $u$-rotation, $v$-rotation and $w$-rotation) are required in each node.}
 \elementDescription{Reference}{\cite{AbdGra24}}
 \end{elementsummary}
