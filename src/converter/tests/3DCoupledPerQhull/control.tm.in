@@ -1,0 +1,23 @@
+#@mesher qhull
+#@grid 3dTM
+#@diam 0.0005
+#@perflag 3 1 1 1
+oofem.tm.out
+Transport subproblem of the coupled SMTM percolation analysis
+nltransienttransportproblem nsteps 100 deltat 1.0 rtol 0.001 alpha 1. nsmax 200 profileopt 1 contextOutputStep 100 nmodules 0
+domain 3dMassLatticeTransport
+OutputManager tstep_all dofman_output {#@CTLNODE}
+ncrosssect 1 nmat 3 nbc 2 nic 0 nltf 1
+simplecs 1
+latticetransmat 1 d 1.e3 k 1.e-19 vis 1.e-3 thetas 1. thetar 0. contype 0 c 0. ctor 0.001
+latticetransmat 2 d 1.e3 k 1.e-22 vis 1.e-3 thetas 1. thetar 0. contype 0 c 0. ctor 0.001
+latticetransmat 3 d 1.e3 k 1.e-19 vis 1.e-3 thetas 1. thetar 0. contype 0 c 0. ctor 0.001
+BoundaryCondition 1 loadTimeFunction 1 prescribedvalue 0.
+BoundaryCondition 2 loadTimeFunction 1 prescribedvalue 1.
+ConstantFunction 1 f(t) 1.
+#%BEGIN_CHECK%
+#TIME
+#REACTION number #@CTLNODE dof 3
+#%END_CHECK%
+#@prism 1 box 6 0. 0. 0. 0.00625 0.00625 0.00625
+#@sphereinclusion 1 centre 3 0.003125 0.003125 0.003125 radius 0.002 itz 1.e-5 inside 2 interface 3

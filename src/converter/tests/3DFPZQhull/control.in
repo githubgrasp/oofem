@@ -1,0 +1,24 @@
+oofem.out
+Mechanical 3D model
+NonLinearStatic nmsteps 1 nsteps 1 contextOutputStep 1000 nmodules 2 profileopt 1 lstype 3 smtype 7
+nsteps 200 rtolv 1.e-3 reqIterations 100 stiffMode 1 manrmsteps 10 maxiter 200 controllmode 0 stepLength 5.e-7 minsteplength 5.e-7 maxrestarts 0 hpcmode 2 hpc 2 #@CTLNODE 31 hpcw 1 1. lstype 3 smtype 7
+vtkxmllattice primvars 1 1 cellvars 2 60 90 tstep_all domain_all cross 1
+gpexportmodule vars 5 59 90 84 85 78 tstep_all domain_all
+domain 3dLattice
+OutputManager tstep_all dofman_output {#@CTLNODE}
+ncrosssect 1 nmat 1 nbc 2 nic 0 nltf 1
+latticecs 1 material 1
+latticeplastdam 1 d 0 talpha 0. calpha 0. e 50.46e9 a1 0.215 ft 3.e6 fc 30.e6 wf 50.e-6 ahard 1.e-6 angle1 0.5 flow 0.25
+BoundaryCondition 1 loadTimeFunction 1 prescribedvalue 0.0
+NodalLoad 2 loadTimeFunction 1 dofs 1 31 Components 1 1.
+ConstantFunction 1 f(t) 1.
+#%BEGIN_CHECK%
+#NODE number #@CTLNODE dof 31 unknown d
+#LOADLEVEL
+##TIME
+#%END_CHECK%
+#@grid 3dSM
+#@diam 0.01
+#@perflag 3 1 1 1
+#@prism 1 box 6 0. 0. 0. 0.1 0.1 0.1 refine 1.
+#@mesher qhull

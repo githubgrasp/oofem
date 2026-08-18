@@ -1,0 +1,56 @@
+#ifndef region_h
+#define region_h
+
+
+#include "grid.h"
+#include "gridcomponent.h"
+
+#include "floatarray.h"
+#include "intarray.h"
+
+#include "datareader.h"
+#include "oofemtxtdatareader.h"
+#include "oofemtxtinputrecord.h"
+
+#ifndef __MAKEDEPEND
+ #include <stdio.h>
+#endif
+
+class Region : public GridComponent
+{
+protected:
+    /// Array storing nodal coordinates.
+    oofem::IntArray surfaces;
+    int number;
+    double refinement;
+
+public:
+
+    /**
+     * Constructor. Creates a region belonging to grid.
+     * @param n region number in grid aGrid
+     * @param aGrid grid to which node belongs
+     */
+    Region(int n, Grid *aGrid);
+    /// Destructor.
+    virtual ~Region() = default;
+
+
+    virtual void defineBoundaries(oofem::FloatArray &boundaries) = 0;
+
+    virtual void findOutsiders(oofem::FloatArray &boundaries) = 0;
+
+    /// True if (x,y) lies on this region's outer edge (within tol). Used by the
+    /// `#@edgebc region <id> bc <bcId>` directive to collect a region's
+    /// boundary nodes into a set. Default: not implemented (returns false).
+    virtual bool onBoundary(double x, double y, double tol) const { return false; }
+
+    virtual int giveSwitches(oofem::IntArray &switches, oofem::FloatArray &coords) { return 0; }
+
+    virtual int modifyVoronoiCrossSection(int elementNumber) { return 1; }
+
+    virtual int areaCheck(int elementNumber) { return 0; };
+};
+
+
+#endif // region_h

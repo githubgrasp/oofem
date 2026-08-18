@@ -1,0 +1,145 @@
+#pragma once
+
+#include <Eigen/Dense>
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "gradingcurve.h"
+#include "inclusion.h"
+
+namespace aggregate {
+
+/// Parameters captured by the optional `#@grading` directive.
+struct GradingParameters
+{
+    bool present = false;
+    double dmin = 0.0;
+    double dmax = 0.0;
+    double aggregateFraction = 0.0;
+    GradingShape shape = GradingShape::Ellipsoid;
+};
+
+/// Parameters captured by the optional `#@fibres` directive.
+struct FibreParameters
+{
+    bool present = false;
+    double fibreFraction = 0.0;
+    double fibreLength = 0.0;
+    double fibreDiameter = 0.0;
+};
+
+/**
+ * Periodic representative volume element (RVE) used as the placement domain.
+ *
+ * Holds the bounding box dimensions, per-axis periodicity flags, the random
+ * number generator seed, the iteration cap for the trial-and-error placer,
+ * and the lists of inclusions placed inside.
+ *
+ * Configured by parsing a control file of leading-`#@` directives, mirroring
+ * the convention used in `src/generator/` and `src/converter/`.
+ */
+class Box
+{
+public:
+    /// Construct an empty box. Dimensions, periodicity, and inclusion lists
+    /// are zero-initialised; populate via `readControlRecords` or accessors.
+    Box();
+
+    /// Parse a control file of `#@`-directives and populate the box.
+    void readControlRecords(const std::string &fileName);
+
+    /// Write the inclusion packing to disk in the shared packing format.
+    void writePackingFile() const;
+
+    /// Path of the packing file declared by `#@output`.
+    const std::string &giveOutputFileName() const { return outputFileName; }
+
+    /// RVE side lengths. In 2D the z entry is 0.
+    const Eigen::Vector3d &giveDimensions() const { return dimensions; }
+
+    /// Per-axis periodicity flag (1 = periodic, 0 = real boundary). In 2D
+    /// the z entry is 0.
+    const Eigen::Vector3i &givePeriodicityFlag() const { return periodicityFlag; }
+
+    /// Spatial dimension (2 or 3). Determined by the arity of `#@box`.
+    int giveDim() const { return dim; }
+
+    /// Area (2D) or volume (3D) of the RVE — the natural measure for
+    /// converting volume / area fractions into target inclusion counts.
+    double giveMeasure() const
+    {
+        return ( dim == 2 )
+            ? dimensions(0) * dimensions(1)
+            : dimensions(0) * dimensions(1) * dimensions(2);
+    }
+
+    /// Maximum trial-and-error attempts for placing one inclusion.
+    int giveMaximumIterations() const { return maximumIterations; }
+
+    /// Boundary clearance — minimum distance any inclusion must keep from a
+    /// non-periodic face of the box. Set via `#@diam <d>` (matches the
+    /// generator's target nodal spacing). When > 0 the placer rejects any
+    /// candidate whose inclusion surface comes within this distance of a
+    /// non-periodic face, leaving room for the downstream mesher's boundary
+    /// nodes and an inclusion-perimeter ITZ ring without overlap. Default 0
+    /// (no clearance, classic behaviour).
+    double giveBoundaryClearance() const { return boundaryClearance; }
+
+    /// ITZ thickness — width of the interface band placed by the downstream
+    /// mesher around each inclusion (the radial offset between the inner
+    /// perimeter ring and its sister). Set via `#@itz <t>` to match the
+    /// generator's `#@inclusionfile … itz <t>`. The placer's disk-disk
+    /// overlap check requires a centre-to-centre gap of
+    /// `r1 + r2 + boundaryClearance + 2 * itzThickness` so the two ITZ
+    /// rings can be discretised without colliding. Default 0.
+    double giveItzThickness() const { return itzThickness; }
+
+    /// Seed for the std::mt19937 RNG used by the grading curve and placer.
+    unsigned int giveRandomSeed() const { return randomSeed; }
+
+    /// Take ownership of an inclusion that should appear in the packing file.
+    void addReal(std::unique_ptr<Inclusion> inclusion);
+
+    /// Take ownership of a periodic-image inclusion used for collision tests only.
+    void addGhost(std::unique_ptr<Inclusion> inclusion);
+
+    /// Real inclusions accumulated by the placer.
+    const std::vector<std::unique_ptr<Inclusion>> &giveRealInclusions() const
+    { return realInclusions; }
+
+    /// Periodic-image inclusions accumulated by the placer (not written to disk).
+    const std::vector<std::unique_ptr<Inclusion>> &giveGhostInclusions() const
+    { return ghostInclusions; }
+
+    /// Aggregate grading parameters (may be absent, see `present`).
+    const GradingParameters &giveGradingParameters() const { return grading; }
+
+    /// Fibre placement parameters (may be absent, see `present`).
+    const FibreParameters &giveFibreParameters() const { return fibres; }
+
+    /// Optional VTU output path (empty if `#@vtu` was not specified).
+    const std::string &giveVtuFileName() const { return vtuFileName; }
+
+private:
+    /// Apply one `#@`-directive line. Splits off the keyword and dispatches.
+    void applyDirective(const std::string &line);
+
+    std::string outputFileName;
+    Eigen::Vector3d dimensions;
+    Eigen::Vector3i periodicityFlag;
+    int dim = 3;
+    unsigned int randomSeed = 1;
+    int maximumIterations = 10000;
+    double boundaryClearance = 0.;
+    double itzThickness = 0.;
+
+    GradingParameters grading;
+    FibreParameters fibres;
+    std::string vtuFileName;
+
+    std::vector<std::unique_ptr<Inclusion>> realInclusions;
+    std::vector<std::unique_ptr<Inclusion>> ghostInclusions;
+};
+
+} // namespace aggregate

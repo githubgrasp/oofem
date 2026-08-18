@@ -173,6 +173,9 @@ option (USE_PYTHON_EXTENSION "Enable Python extension for exposing C++ code to p
 option (USE_HDF5 "HDF5 support" OFF)
 option (USE_MPM "Enable experimental multiphysics module" ON)
 option (USE_OOFEM_EXE "Build oofem executable" ON)
+option (USE_GENERATOR "Enable vertex generator" OFF)
+option (USE_CONVERTER "Enable mesh converter" OFF)
+option (USE_AGGREGATE "Enable aggregate/inclusion packing generator (requires Eigen3)" OFF)
 OPTION (USE_EIGEN "Use Eigen instead of home-made array classes (experimental)" OFF)
 OPTION (USE_XML "Reader for XML input format (requires pugixml)" ON)
 OPTION (USE_TRACE_FIELDS "Allow tracing field access by setting OOFEM_TRACE_FIELDS_CSV env var" OFF)
@@ -954,6 +957,34 @@ add_custom_target (
     #COMMAND tex4ht elementlibmanual --output=${oofem_BINARY_DIR}/doc/
     WORKING_DIRECTORY ${oofem_SOURCE_DIR}/doc/elementlibmanual/
     )
+
+# Tool executables (generator/converter/aggregate) link liboofem in shared
+# mode; in static mode they embed the object libraries like the oofem binary.
+if (USE_SHARED_LIB)
+    set (OOFEM_TOOL_LINK liboofem)
+    set (OOFEM_TOOL_OBJS)
+else ()
+    set (OOFEM_TOOL_LINK ${EXT_LIBS})
+    set (OOFEM_TOOL_OBJS ${LIBS})
+endif ()
+
+if (USE_GENERATOR)
+    include_directories ("${oofem_SOURCE_DIR}/src/generator")
+    add_subdirectory("${oofem_SOURCE_DIR}/src/generator")
+    list (APPEND MODULE_LIST "generator")
+endif ()
+
+if (USE_CONVERTER)
+    include_directories ("${oofem_SOURCE_DIR}/src/converter")
+    add_subdirectory("${oofem_SOURCE_DIR}/src/converter")
+    list (APPEND MODULE_LIST "converter")
+endif ()
+
+if (USE_AGGREGATE)
+    include_directories ("${oofem_SOURCE_DIR}/src/aggregate")
+    add_subdirectory("${oofem_SOURCE_DIR}/src/aggregate")
+    list (APPEND MODULE_LIST "aggregate")
+endif ()
 
 #######################################################################
 ######################## Tests ########################################

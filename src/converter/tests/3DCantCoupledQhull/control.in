@@ -1,0 +1,37 @@
+#@mesher qhull
+#@grid 3dSM
+#@diam 0.06
+#@perflag 3 0 0 0
+oofem.sm.out
+Mechanical cantilever — 3D lattice with notch + rigid-arm ends
+NonLinearStatic nmsteps 1 nsteps 1 contextOutputStep 1000 nmodules 2 profileopt 1 lstype 3 smtype 7
+nsteps 10 rtolv 1.e-3 reqIterations 100 stiffMode 1 manrmsteps 10 maxiter 200 controllmode 1 minsteplength 1.e-10 maxrestarts 0 lstype 3 smtype 7
+vtkxml primvars 1 1 tstep_all domain_all
+gpexportmodule vars 5 59 90 84 85 78 tstep_all domain_all
+domain 3dLattice
+OutputManager tstep_all dofman_output { #@CTL2 }
+ncrosssect 1 nmat 3 nbc 3 nic 0 nltf 2 nset 2
+simplecs 1
+latticedamage 1 talpha 0. d 0. e 30.e9 e0 100.e-6 stype 3 wf 40.e-6
+latticedamage 2 talpha 0. d 0. e 30.e9 e0 1.e-6 stype 3 wf 40.e-6
+latticelinearelastic 3 talpha 0. d 0. e 30.e9
+BoundaryCondition 1 loadTimeFunction 1 dofs 3 1 2 3 values 3 0. 0. 0. set 1
+BoundaryCondition 2 loadTimeFunction 1 dofs 2 2 3 values 2 0. 0. set 2
+NodalLoad 3 loadTimeFunction 2 dofs 1 1 Components 1 1. set 2
+ConstantFunction 1 f(t) 1.
+PiecewiseLinFunction 2 nPoints 3 t 3 0. 9. 12000. f(t) 3 0. 1.e-4 1.e-4
+Set 1 nodes 1 #@CTL1
+Set 2 nodes 1 #@CTL2
+#%BEGIN_CHECK%
+#NODE number #@CTL2 dof 1 unknown d
+#LOADLEVEL
+##TIME
+#%END_CHECK%
+#@prism 1 box 6 0. 0. 0. 0.25 0.25 1.
+#@controlvertex 1 coords 3 0.   0.125 0.25
+#@controlvertex 2 coords 3 0.25 0.125 0.25
+#@rigidarm 1 face 1 min mastermask 6 1 0 0 1 1 1 doftype 6 2 0 0 2 2 2
+#@rigidarm 2 face 1 max mastermask 6 1 0 0 1 1 1 doftype 6 2 0 0 2 2 2
+#@notch 1 box 6 0.1 0. 0. 0.15 0.25 0.25 material 2
+#@material_around 1 material 3
+#@material_around 2 material 3

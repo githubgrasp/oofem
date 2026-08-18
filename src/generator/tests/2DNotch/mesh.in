@@ -1,0 +1,21 @@
+# Stage 3 test: 2D notched beam.
+# A 100x50 mm rectangle with a midspan rectangular notch (8 mm wide, 25 mm
+# tall — half-height, like a typical SENB specimen). Generator suppresses
+# point placement strictly inside the notch box and seeds vertices on the
+# notch boundary at finer spacing. Converter-side deletion comes with the
+# 2D converter core (Stage 7).
+#@output nodes.dat
+#@domain 2
+#@diam 0.004
+#@maxiter 100000
+#@perflag 2 0 0
+#@ranint -1
+#@ranflag 1
+# bounding-box corners widen the localiser
+#@vertex 1 coords 2 -0.005 -0.005 refine 1. radius 0.
+#@vertex 2 coords 2  0.105  0.055 refine 1. radius 0.
+#@controlvertex 1 coords 2 0.005 0.0
+#@controlvertex 2 coords 2 0.095 0.0
+#@controlvertex 3 coords 2 0.05  0.05
+#@rect 1 box 4 0. 0. 0.10 0.05 refine 1.
+#@notch 1 box 4 0.046 0.0 0.054 0.025 surfacerefine 0.5 edgerefine 0.5

@@ -1,0 +1,7 @@
+#@output packing.dat
+#@vtu packing.vtu
+#@box 3 0.05 0.05 0.05
+#@periodicity 3 1 1 1
+#@seed 42
+#@maxiter 1000
+#@grading dmin 0.005 dmax 0.020 fraction 0.3

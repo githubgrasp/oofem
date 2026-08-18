@@ -1,0 +1,18 @@
+# Stage 0 test: 3D beam with a mid-span rectangular notch.
+# The generator suppresses point placement strictly inside the notch box;
+# the converter-side companion (3DNotchDeleteQhull) drops elements whose
+# midpoint falls inside the same box via `#@notch ... delete`.
+#@output nodes.dat
+#@domain 3
+#@diam 0.008
+#@maxiter 100000
+#@perflag 3 0 0 0
+#@ranint -1
+#@ranflag 1
+# bounding-box corners widen the localiser
+#@vertex 1 coords 3 -0.01 -0.01 -0.01 refine 1. radius 0.
+#@vertex 2 coords 3  0.11  0.06  0.06 refine 1. radius 0.
+#@controlvertex 1 coords 3 0.0  0.025 0.025
+#@controlvertex 2 coords 3 0.10 0.025 0.025
+#@prism 1 box 6 0. 0. 0. 0.10 0.05 0.05 refine 1.
+#@notch 1 box 6 0.045 0.0 0.0 0.055 0.025 0.05

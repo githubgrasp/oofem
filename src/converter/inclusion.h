@@ -1,0 +1,40 @@
+#ifndef inclusion_h
+#define inclusion_h
+
+
+#include "grid.h"
+#include "gridcomponent.h"
+
+#include "floatarray.h"
+#include "intarray.h"
+
+
+#ifndef __MAKEDEPEND
+ #include <stdio.h>
+#endif
+
+
+class Inclusion : public GridComponent
+{
+protected:
+
+    int number;
+
+
+public:
+
+    /**
+     * Constructor. Creates a node belonging to domain.
+     * @param n node number in domain aDomain
+     * @param aDomain domain to which node belongs
+     */
+    Inclusion(int n, Grid *aGrid);                      // constructor
+    /// Destructor.
+    ~Inclusion() override = default;                                           // destructor
+
+    virtual const char *giveClassName() const override = 0;
+
+};
+
+
+#endif // inclusion_h

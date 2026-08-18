@@ -1,0 +1,16 @@
+oofem.out
+3D mass-transport beam with a deleted notch (Stage 9f completeness)
+TransientTransport nsteps 1 deltat 1 alpha 1. rtolf 1e-6 nmodules 1
+errorcheck
+domain 2dMassLatticeTransport
+OutputManager tstep_all dofman_all
+ncrosssect 1 nmat 1 nbc 0 nic 0 nltf 1 nset 0
+simpletransportcs 1 mat 1
+latticetransmat 1 d 1.e-9 k 1.e-13 vis 1.e-9 thetas 0.0924 thetar 0. ctor 0.001
+ConstantFunction 1 f(t) 1.
+#@grid 3dTM
+#@mesher qhull
+#@diam 0.008
+#@perflag 3 0 0 0
+#@prism 1 box 6 0. 0. 0. 0.10 0.05 0.05 refine 1.
+#@notch 1 box 6 0.045 0.0 0.0 0.055 0.025 0.05 delete

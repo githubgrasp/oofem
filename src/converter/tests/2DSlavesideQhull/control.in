@@ -1,0 +1,24 @@
+oofem.out
+2D lattice direct tension via #@slaveside (left anchored, right pulled)
+LinearStatic nsteps 1 nmodules 1
+errorcheck
+domain 2dLattice
+OutputManager tstep_all dofman_output { #@CTL1 #@CTL2 }
+ncrosssect 1 nmat 1 nbc 2 nic 0 nltf 1 nset 2
+latticecs 1 material 1
+latticedamage 1 d 0 talpha 0. e 30.e9 e0 100.e-6 wf 100.e-4 coh 2. ec 10. stype 1
+BoundaryCondition 1 loadTimeFunction 1 dofs 3 1 2 6 values 3 0. 0. 0. set 1
+BoundaryCondition 2 loadTimeFunction 1 dofs 1 1 values 1 1.e-4 set 2
+ConstantFunction 1 f(t) 1.
+Set 1 nodes 1 #@CTL1
+Set 2 nodes 1 #@CTL2
+#@grid 2dSM
+#@mesher qhull
+#@diam 0.008
+#@perflag 2 0 0
+#@thickness 1.0
+#@rect 1 box 4 0. 0. 0.10 0.05
+#@controlvertex 1 coords 2 0.0  0.025
+#@controlvertex 2 coords 2 0.10 0.025
+#@slaveside 1 face 1 min dofs 1
+#@slaveside 2 face 1 max dofs 1

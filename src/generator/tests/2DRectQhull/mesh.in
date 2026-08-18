@@ -1,0 +1,16 @@
+# 2D structural mechanics test: 100x50 mm rectangle.
+# The generator writes a 2D nodes.dat that qvoronoi consumes; the converter
+# emits lattice2D elements (Stage 6 MVP — non-periodic, no inclusions).
+#@output nodes.dat
+#@domain 2
+#@diam 0.008
+#@maxiter 100000
+#@perflag 2 0 0
+#@ranint -1
+#@ranflag 1
+# bounding-box corners widen the localiser
+#@vertex 1 coords 2 -0.01 -0.01 refine 1. radius 0.
+#@vertex 2 coords 2  0.11  0.06 refine 1. radius 0.
+#@controlvertex 1 coords 2 0.0  0.025
+#@controlvertex 2 coords 2 0.10 0.025
+#@rect 1 box 4 0. 0. 0.10 0.05 refine 1.

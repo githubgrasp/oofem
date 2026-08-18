@@ -1,0 +1,15 @@
+#t3d -d 0.01 -i mesh.in -o mesh.out
+
+vertex 1 xyz 0.0 0.0 0.0
+vertex 2 xyz 1.0 0.0 0.0
+vertex 3 xyz 1. 1. 0.0
+vertex 4 xyz 0. 1. 0.0
+vertex 5 xyz 0.5 0.5 0.
+
+curve 1 vertex 1 2
+curve 2 vertex 2 3
+curve 3 vertex 3 4
+curve 4 vertex 4 1
+
+
+patch 1 normal 0 0 1 boundary curve 1 2 3 4 size def fixed vertex 5

@@ -1,0 +1,24 @@
+#@mesher qhull
+#@grid 3dTM
+#@diam 0.06
+#@perflag 3 0 0 0
+oofem.tm.out
+Transport subproblem of the coupled SMTM cantilever analysis
+nltransienttransportproblem nsteps 12000 rtol 1.e-3 alpha 1. nsmax 2000 contextOutputStep 3000 nmodules 2 profileopt 1 lumpedcapa deltatfunction 2
+vtkxml primvars 1 5 tstep_step 100 domain_all
+dofman primvars 1 5 tstep_step 100 domain_all
+domain 3dMassLatticeTransport
+OutputManager tstep_step 10 dofman_all
+ncrosssect 1 nmat 1 nbc 1 nic 1 nltf 2
+simplecs 1
+latticetransmat 1 d 1.e3 k 1.e-17 vis 1.e-3 thetas 0.1 thetar 0.0 a 1.e6 m 0.5 contype 1 ctor 0.001
+BoundaryCondition 1 loadTimeFunction 1 prescribedvalue 1.732e6
+InitialCondition 1 conditions 1 u 1.732e6
+PiecewiseLinFunction 1 nPoints 4 t 4 0. 10. 20. 1200000. f(t) 4 1. 1. 0. 0.
+PiecewiseLinFunction 2 nPoints 5 t 5 0. 10. 20. 200. 12000. f(t) 5 1. 1. 1. 20. 20.
+#%BEGIN_CHECK%
+#LOADLEVEL
+##TIME
+#%END_CHECK%
+#@prism 1 box 6 0. 0. 0. 0.25 0.25 1.
+#@couplingflag

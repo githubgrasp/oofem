@@ -1,0 +1,15 @@
+#@mesher qhull
+#@grid 3dSM
+#@diam 0.06
+#@perflag 3 0 0 0
+oofem.smtm.out
+Control file for coupled SMTM cantilever analysis (staggered)
+StaggeredProblem nsteps 12000 prob1 "oofem.tm.in" prob2 "oofem.sm.in" coupling 3 2 1 0 dtf 1
+domain heattransfer
+OutputManager tstep_all dofman_all element_all
+ncrosssect 0 nmat 0 nbc 0 nic 0 nltf 1
+PiecewiseLinFunction 1 nPoints 5 t 5 0. 10. 20. 200. 12000. f(t) 5 1. 1. 1. 20. 20.
+##%BEGIN_CHECK%
+##INCLUDE oofem.tm.in
+##%END_CHECK%
+#@prism 1 box 6 0. 0. 0. 0.25 0.25 1.
