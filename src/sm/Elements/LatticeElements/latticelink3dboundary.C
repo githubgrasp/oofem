@@ -10,7 +10,7 @@
  *
  *             OOFEM : Object Oriented Finite Element Code
  *
- *               Copyright (C) 1993 - 2025   Borek Patzak
+ *               Copyright (C) 1993 - 2026   Borek Patzak
  *
  *
  *
@@ -50,8 +50,6 @@
 #include "datastream.h"
 #include "crosssection.h"
 #include "dof.h"
-#include "parametermanager.h"
-#include "paramkey.h"
 
 #ifdef __OOFEG
  #include "oofeggraphiccontext.h"
@@ -59,9 +57,8 @@
 
 namespace oofem {
 REGISTER_Element(LatticeLink3dBoundary);
-ParamKey LatticeLink3dBoundary::IPK_LatticeLink3dBoundary_location("location");
 
-LatticeLink3dBoundary :: LatticeLink3dBoundary(int n, Domain *aDomain) : LatticeLink3d(n, aDomain), location(2)
+LatticeLink3dBoundary :: LatticeLink3dBoundary(int n, Domain *aDomain) : LatticeLink3d(n, aDomain)
 {
     numberOfDofMans = 3;
     geometryFlag = 0;
@@ -168,6 +165,12 @@ LatticeLink3dBoundary :: computeStiffnessMatrix(FloatMatrix &answer, MatResponse
     FloatMatrix Rtranspose;
     Rtranspose.beTranspositionOf(R);
     answer.rotatedWith(Rtranspose);
+
+    //Scale by the bond interface area (= computeVolumeAround/giveLength), as in
+    //LatticeLink3d. Without this the boundary bond is ~1/area (~1e5-1e6) too stiff,
+    //acting as a near-rigid weld that over-constrains the fibre.
+    double area = this->computeVolumeAround(integrationRulesArray [ 0 ]->getIntegrationPoint(0) ) / this->giveLength();
+    answer.times(area);
 
     return;
 }
@@ -323,18 +326,11 @@ LatticeLink3dBoundary ::   giveDofManDofIDMask(int inode, IntArray &answer) cons
 void
 LatticeLink3dBoundary :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {   
-    ParameterManager &ppm = this->giveDomain()->elementPPM;
     LatticeLink3d :: initializeFrom(ir, priority);
 
-    PM_UPDATE_PARAMETER(location, ppm, ir, this->number, IPK_LatticeLink3dBoundary_location, priority) ;    
-}
-
-void 
-LatticeLink3dBoundary :: postInitialize()
-{
-    ParameterManager &ppm = this->giveDomain()->elementPPM;
-    LatticeLink3d :: postInitialize();
-    PM_ELEMENT_ERROR_IFNOTSET(ppm, this->number, IPK_LatticeLink3dBoundary_location) ;
+    location.resize(2);
+    IR_GIVE_FIELD(ir, location, _IFT_LatticeLink3dBoundary_location); // Macro
+    
 }
 
 
@@ -342,7 +338,7 @@ LatticeLink3dBoundary :: postInitialize()
 void
 LatticeLink3dBoundary :: giveInternalForcesVector(FloatArray &answer, TimeStep *tStep, int useUpdatedGpRecord)
 {
-    Material *mat = this->giveMaterial();
+    Material *mat = this->giveCrossSection()->giveMaterial(integrationRulesArray [ 0 ]->getIntegrationPoint(0));
 
     FloatMatrix b, bt, A, R, GNT;
     FloatArray bs, TotalStressVector, u, strain;
@@ -361,8 +357,11 @@ LatticeLink3dBoundary :: giveInternalForcesVector(FloatArray &answer, TimeStep *
 
     bt.beTranspositionOf(b);
     if ( useUpdatedGpRecord == 1 ) {
-        TotalStressVector = ( ( StructuralMaterialStatus * ) mat->giveStatus(integrationRulesArray [ 0 ]->getIntegrationPoint(0) ) )
-                            ->giveStressVector();
+        // Lattice materials produce a LatticeMaterialStatus, which does NOT
+        // inherit from StructuralMaterialStatus. Fetch the stored 6-component
+        // lattice stress directly.
+        TotalStressVector = static_cast< LatticeMaterialStatus * >( mat->giveStatus(integrationRulesArray [ 0 ]->getIntegrationPoint(0) ) )
+                            ->giveLatticeStress();
     } else
     if ( !this->isActivated(tStep) ) {
         strain.resize(StructuralMaterial :: giveSizeOfVoigtSymVector(integrationRulesArray [ 0 ]->getIntegrationPoint(0)->giveMaterialMode() ) );
@@ -409,6 +408,11 @@ LatticeLink3dBoundary :: giveInternalForcesVector(FloatArray &answer, TimeStep *
     if ( this->giveRotationMatrix(R) ) {
         answer.rotatedWith(R, 'n');
     }
+
+    //Scale by the bond interface area (= computeVolumeAround/giveLength), as in
+    //LatticeLink3d::giveInternalForcesVector. Must match computeStiffnessMatrix.
+    double area = this->computeVolumeAround(integrationRulesArray [ 0 ]->getIntegrationPoint(0) ) / this->giveLength();
+    answer.times(area);
 
     return;
 }
@@ -521,7 +525,7 @@ LatticeLink3dBoundary :: computeGeometryProperties()
 
     this->globalCentroid.resize(3);
     for ( int i = 1; i <= 3; i++ ) {
-        this->globalCentroid.at(i) = coordsA.at(i);
+        this->globalCentroid.at(i) = coordsB.at(i);
     }
 
     this->geometryFlag = 1;

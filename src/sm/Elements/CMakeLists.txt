@@ -90,12 +90,12 @@ set (sm_element
     LatticeElements/lattice2d.C
     LatticeElements/lattice2dboundary.C
     LatticeElements/lattice3d.C
+    LatticeElements/lattice3dnl.C
     LatticeElements/lattice3dboundary.C
     LatticeElements/lattice3dboundarytruss.C
     LatticeElements/latticelink3d.C
+    LatticeElements/latticelink3dnl.C
     LatticeElements/latticelink3dboundary.C
-    LatticeElements/latticebeam3d.C
-    LatticeElements/latticebeam3dboundary.C
     tet21ghostsolid.C
     quad1platesubsoil.C 
     quad2platesubsoil.C

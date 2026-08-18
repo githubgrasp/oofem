@@ -1,0 +1,25 @@
+lattice3dnl_logrot.out
+Single Lattice3dNL element: companion to latticelink3dnl_logrot showing the same log(R2 R1^T) vs spin2-spin1 effect in the structural (not bond) element. Node 1 is rotated 180 deg about x, node 2 180 deg about y; the true relative rotation is a 180 deg turn about z (magnitude pi). Unlike the bond link, this element carries mid-length rigid arms, so node 2's arm swings and induces a real axial strain, and the corotational frame tumbles by the average nodal spin; the rotational-strain components are therefore reported in a rotated frame. The invariant is their norm: sqrt(c1^2+c2^2+c3^2) = pi with the log map, versus pi*sqrt(2) = 4.443 that spin2-spin1 would give (an impossible >180 deg rotation vector). Pure kinematic check, material-independent.
+NonLinearStatic nmsteps 1 nsteps 1 nmodules 1
+nsteps 1 rtolf 1.e-3 maxiter 300 stiffMode 1 controllmode 1 refloadmode 1 minsteplength 1.
+errorcheck
+domain 3dLattice
+OutputManager tstep_all dofman_all element_all
+ndofman 2 nelem 1 ncrosssect 1 nmat 1 nbc 2 nic 0 nltf 1
+node 1 coords 3 0.0 0.0 0.0 bc 6 1 1 1 2 1 1
+node 2 coords 3 1.0 0.0 0.0 bc 6 1 1 1 1 2 1
+lattice3Dnl 1 nodes 2 1 2 crossSect 1 mat 1
+LatticeCS 1 material 1 shape 1 radius 0.05
+latticeframeelastic 1 d 1. talpha 0.0 E 30.e9 n 0.0
+BoundaryCondition 1 loadTimeFunction 1 prescribedvalue 0.0
+BoundaryCondition 2 loadTimeFunction 1 prescribedvalue 3.14159265358979
+ConstantFunction 1 f(t) 1.0
+#%BEGIN_CHECK% tolerance 1.e-3
+## keyword 156 = IST_LatticeCurvature; comps 1,2,3 = rotational strain (internal comps 4,5,6),
+## here reported in the tumbled corotational frame. The invariant is the norm:
+## sqrt(c1^2+c2^2+c3^2) = sqrt(1.7676^2+1.7676^2+1.9029^2) = 3.1416 = pi (the exact 180 deg
+## relative rotation about z). spin2-spin1 would instead give norm pi*sqrt(2) = 4.443.
+#ELEMENT tStep 1 number 1 gp 1 keyword 156 component 1 value -1.7676e+00
+#ELEMENT tStep 1 number 1 gp 1 keyword 156 component 2 value  1.7676e+00
+#ELEMENT tStep 1 number 1 gp 1 keyword 156 component 3 value -1.9029e+00
+#%END_CHECK%

@@ -1,3 +1,4 @@
+
 /*
  *
  *                 #####    #####   ######  ######  ###   ###
@@ -10,7 +11,7 @@
  *
  *             OOFEM : Object Oriented Finite Element Code
  *
- *               Copyright (C) 1993 - 2025   Borek Patzak
+ *               Copyright (C) 1993 - 2026   Borek Patzak
  *
  *
  *
@@ -39,191 +40,204 @@
 #include "gausspoint.h"
 
 namespace oofem {
-LatticeMaterialStatus :: LatticeMaterialStatus(GaussPoint *g) : MaterialStatus(g), RandomMaterialStatusExtensionInterface()
-{ }
-
-
-void
-LatticeMaterialStatus :: initTempStatus()
-//
-// initializes temp variables according to variables form previous equlibrium state.
-// builds new crackMap
-//
-{
-    MaterialStatus :: initTempStatus();
-
-    this->tempLatticeStrain = this->latticeStrain;
-
-    this->tempLatticeStress = this->latticeStress;
-
-    this->tempReducedLatticeStrain = this->reducedLatticeStrain;
-
-    this->tempNormalLatticeStress = this->normalLatticeStress;
-
-    this->tempPlasticLatticeStrain = this->plasticLatticeStrain;
-
-    this->tempDissipation = this->dissipation;
-    this->tempDeltaDissipation = this->deltaDissipation;
-    this->tempCrackFlag = this->crackFlag;
-    this->tempCrackWidth = this->crackWidth;
-
-    this->tempDamageLatticeStrain = this->damageLatticeStrain;
-
-    this->updateFlag = 0;
-}
-
-
-void
-LatticeMaterialStatus :: updateYourself(TimeStep *atTime)
-{
-    MaterialStatus :: updateYourself(atTime);
-
-    this->latticeStress = this->tempLatticeStress;
-
-    this->latticeStrain = this->tempLatticeStrain;
-
-    this->plasticLatticeStrain = this->tempPlasticLatticeStrain;
-
-    this->reducedLatticeStrain = this->tempReducedLatticeStrain;
-
-    this->damageLatticeStrain = this->tempDamageLatticeStrain;
-
-    this->dissipation = this->tempDissipation;
-
-    this->deltaDissipation = this->tempDeltaDissipation;
-
-    this->crackFlag = this->tempCrackFlag;
-
-    this->crackWidth = this->tempCrackWidth;
-
-    this->updateFlag = 1;
-}
-
-
-void
-LatticeMaterialStatus :: printOutputAt(FILE *file, TimeStep *tStep) const
-{
-    MaterialStatus :: printOutputAt(file, tStep);
-
-    fprintf(file, " latticestrain ");
-    for ( double s : this->latticeStrain ) {
-        fprintf(file, "% .4e ", s);
-    }
-    fprintf(file, " latticestress ");
-    for ( double s : this->latticeStress ) {
-        fprintf(file, "% .4e ", s);
-    }
-    fprintf(file, " reducedlatticestrain ");
-    for ( double s : this->reducedLatticeStrain ) {
-        fprintf(file, "% .4e ", s);
-    }
-}
-
-
-Interface *
-LatticeMaterialStatus :: giveInterface(InterfaceType type)
-{
-    if ( type == RandomMaterialStatusExtensionInterfaceType ) {
-        return ( RandomMaterialStatusExtensionInterface * ) this;
-    } else {
-        return nullptr;
-    }
-}
-
-
-void
-LatticeMaterialStatus :: saveContext(DataStream &stream, ContextMode mode)
-//
-// saves full information stored in this Status
-// no temp variables stored
-//
-{
-    MaterialStatus :: saveContext(stream, mode);
-
-    contextIOResultType iores;
-
-    if ( ( iores = latticeStress.storeYourself(stream) ) != CIO_OK ) {
-        THROW_CIOERR(iores);
+    LatticeMaterialStatus::LatticeMaterialStatus(GaussPoint *g) : MaterialStatus(g), RandomMaterialStatusExtensionInterface()
+    {
     }
 
-    if ( ( iores = latticeStrain.storeYourself(stream) ) != CIO_OK ) {
-        THROW_CIOERR(iores);
+
+    void
+    LatticeMaterialStatus::initTempStatus()
+    //
+    // initializes temp variables according to variables form previous equlibrium state.
+    // builds new crackMap
+    //
+    {
+        MaterialStatus::initTempStatus();
+
+        this->tempLatticeStrain = this->latticeStrain;
+
+        this->tempLatticeStress = this->latticeStress;
+
+        this->tempReducedLatticeStrain = this->reducedLatticeStrain;
+
+        this->tempNormalLatticeStress = this->normalLatticeStress;
+
+        this->tempPlasticLatticeStrain = this->plasticLatticeStrain;
+
+        this->tempDissipation = this->dissipation;
+        this->tempDeltaDissipation = this->deltaDissipation;
+        this->tempCrackFlag = this->crackFlag;
+        this->tempCrackWidth = this->crackWidth;
+
+        this->tempDamageLatticeStrain = this->damageLatticeStrain;
+
+        this->updateFlag = 0;
     }
 
-    if ( ( iores = reducedLatticeStrain.storeYourself(stream) ) != CIO_OK ) {
-        THROW_CIOERR(iores);
+
+    void
+    LatticeMaterialStatus::updateYourself(TimeStep *atTime)
+    {
+        MaterialStatus::updateYourself(atTime);
+
+        this->latticeStress = this->tempLatticeStress;
+
+        this->latticeStrain = this->tempLatticeStrain;
+
+        this->plasticLatticeStrain = this->tempPlasticLatticeStrain;
+
+        this->reducedLatticeStrain = this->tempReducedLatticeStrain;
+
+        this->damageLatticeStrain = this->tempDamageLatticeStrain;
+
+        this->dissipation = this->tempDissipation;
+
+        this->deltaDissipation = this->tempDeltaDissipation;
+
+        this->crackFlag = this->tempCrackFlag;
+
+        this->crackWidth = this->tempCrackWidth;
+
+        this->updateFlag = 1;
     }
 
-    if ( ( iores = plasticLatticeStrain.storeYourself(stream) ) != CIO_OK ) {
-        THROW_CIOERR(iores);
+
+    void
+    LatticeMaterialStatus::printOutputAt(FILE *file, TimeStep *tStep) const
+    {
+        MaterialStatus::printOutputAt(file, tStep);
+
+        fprintf(file, " latticestrain ");
+        for ( double s : this->latticeStrain ) {
+            fprintf(file, "% .4e ", s);
+        }
+        fprintf(file, " latticestress ");
+        for ( double s : this->latticeStress ) {
+            fprintf(file, "% .4e ", s);
+        }
+        fprintf(file, " reducedlatticestrain ");
+        for ( double s : this->reducedLatticeStrain ) {
+            fprintf(file, "% .4e ", s);
+        }
+	fprintf(file, "\n");
     }
 
-    if ( ( iores = damageLatticeStrain.storeYourself(stream) ) != CIO_OK ) {
-        THROW_CIOERR(iores);
+
+    Interface *
+    LatticeMaterialStatus::giveInterface(InterfaceType type)
+    {
+        if ( type == RandomMaterialStatusExtensionInterfaceType ) {
+            return ( RandomMaterialStatusExtensionInterface * ) this;
+        } else {
+            return nullptr;
+        }
     }
 
-    if ( !stream.write(le) ) {
-        THROW_CIOERR(CIO_IOERR);
+    void
+    LatticeMaterialStatus::saveContext(DataStream &stream, ContextMode mode)
+    //
+    // saves full information stored in this Status
+    // no temp variables stored
+    //
+    {
+        MaterialStatus::saveContext(stream, mode);
+
+        contextIOResultType iores;
+
+        if ( ( iores = latticeStress.storeYourself(stream) ) != CIO_OK ) {
+            THROW_CIOERR(iores);
+        }
+
+        if ( ( iores = latticeStrain.storeYourself(stream) ) != CIO_OK ) {
+            THROW_CIOERR(iores);
+        }
+
+        if ( ( iores = reducedLatticeStrain.storeYourself(stream) ) != CIO_OK ) {
+            THROW_CIOERR(iores);
+        }
+
+        if ( ( iores = plasticLatticeStrain.storeYourself(stream) ) != CIO_OK ) {
+            THROW_CIOERR(iores);
+        }
+
+        if ( ( iores = damageLatticeStrain.storeYourself(stream) ) != CIO_OK ) {
+            THROW_CIOERR(iores);
+        }
+
+
+        if ( !stream.write(le) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+
+        if ( !stream.write(dissipation) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+
+        if ( !stream.write(deltaDissipation) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+
+        if ( !stream.write(crackFlag) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+
+
+        if ( !stream.write(updateFlag) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
     }
 
-    if ( !stream.write(dissipation) ) {
-        THROW_CIOERR(CIO_IOERR);
+
+    void
+    LatticeMaterialStatus::restoreContext(DataStream &stream, ContextMode mode)
+    //
+    // restores full information stored in stream to this Status
+    //
+    {
+        MaterialStatus::saveContext(stream, mode);
+
+        contextIOResultType iores;
+
+        if ( ( iores = damageLatticeStrain.restoreYourself(stream) ) != CIO_OK ) {
+            THROW_CIOERR(iores);
+        }
+
+        if ( ( iores = latticeStress.restoreYourself(stream) ) != CIO_OK ) {
+            THROW_CIOERR(iores);
+        }
+
+        if ( ( iores = latticeStrain.restoreYourself(stream) ) != CIO_OK ) {
+            THROW_CIOERR(iores);
+        }
+
+        if ( ( iores = reducedLatticeStrain.restoreYourself(stream) ) != CIO_OK ) {
+            THROW_CIOERR(iores);
+        }
+
+        if ( ( iores = plasticLatticeStrain.restoreYourself(stream) ) != CIO_OK ) {
+            THROW_CIOERR(iores);
+        }
+
+        if ( !stream.read(le) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+
+        if ( !stream.read(dissipation) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+
+        if ( !stream.read(deltaDissipation) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+
+        if ( !stream.read(crackFlag) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+
+
+        if ( !stream.read(updateFlag) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+
     }
-
-    if ( !stream.write(deltaDissipation) ) {
-        THROW_CIOERR(CIO_IOERR);
-    }
-
-    if ( !stream.write(crackFlag) ) {
-        THROW_CIOERR(CIO_IOERR);
-    }
-}
-
-
-void
-LatticeMaterialStatus :: restoreContext(DataStream &stream, ContextMode mode)
-//
-// restores full information stored in stream to this Status
-//
-{
-    MaterialStatus :: saveContext(stream, mode);
-
-    contextIOResultType iores;
-
-    if ( ( iores = damageLatticeStrain.restoreYourself(stream) ) != CIO_OK ) {
-        THROW_CIOERR(iores);
-    }
-
-    if ( ( iores = latticeStress.restoreYourself(stream) ) != CIO_OK ) {
-        THROW_CIOERR(iores);
-    }
-
-    if ( ( iores = latticeStrain.restoreYourself(stream) ) != CIO_OK ) {
-        THROW_CIOERR(iores);
-    }
-
-    if ( ( iores = reducedLatticeStrain.restoreYourself(stream) ) != CIO_OK ) {
-        THROW_CIOERR(iores);
-    }
-
-    if ( ( iores = plasticLatticeStrain.restoreYourself(stream) ) != CIO_OK ) {
-        THROW_CIOERR(iores);
-    }
-
-    if ( !stream.read(le) ) {
-        THROW_CIOERR(CIO_IOERR);
-    }
-
-    if ( !stream.read(dissipation) ) {
-        THROW_CIOERR(CIO_IOERR);
-    }
-
-    if ( !stream.read(deltaDissipation) ) {
-        THROW_CIOERR(CIO_IOERR);
-    }
-
-    if ( !stream.read(crackFlag) ) {
-        THROW_CIOERR(CIO_IOERR);
-    }
-}
 } // end namespace oofem

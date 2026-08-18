@@ -14,8 +14,8 @@ Lattice2D 1 nodes 2 1 2 crossSect 1 mat 2 gpCoords 2 50 0. width 1000.0 thick 10
 #
 latticecs 1 material 2
 #
-mps 1 d 0. lattice a1 1. a2 1. talpha 0. referencetemperature 296. mode 0 fc 30. cc 350. w/c 0.5 a/c 6. stiffnessfactor 1.e6  timefactor 1. lambda0 1. begoftimeofinterest 1.e-6 endoftimeofinterest 1000. relMatAge 28. CoupledAnalysisType 0
-latticedamageviscoelastic 2 d 0. talpha 0. viscomat 1 a1 1. a2 1. e 20.e3 e0 150.e-6 wf 50.e-3 stype 3 timefactor 1.
+mps 1 d 0. lattice a1 1. a2 1. a3 1. talpha 0. referencetemperature 296. mode 0 fc 30. cc 350. w/c 0.5 a/c 6. stiffnessfactor 1.e6  timefactor 1. lambda0 1. begoftimeofinterest 1.e-6 endoftimeofinterest 1000. relMatAge 28. CoupledAnalysisType 0
+latticedamageviscoelastic 2 d 0. talpha 0. viscomat 1 a1 1. a2 1. a3 1. e 20.e3 e0 150.e-6 wf 50.e-3 stype 3 timefactor 1.
 #
 BoundaryCondition 1 loadTimeFunction 1 dofs 2 2 6 values 2 0. 0. set 1
 BoundaryCondition 2 loadTimeFunction 1 dofs 1 1 values 1 0. set 2

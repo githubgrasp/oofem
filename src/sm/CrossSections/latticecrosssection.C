@@ -10,7 +10,7 @@
  *
  *             OOFEM : Object Oriented Finite Element Code
  *
- *               Copyright (C) 1993 - 2025   Borek Patzak
+ *               Copyright (C) 1993 - 2026   Borek Patzak
  *
  *
  *
@@ -35,6 +35,9 @@
 #include "latticecrosssection.h"
 #include "sm/Materials/LatticeMaterials/latticematstatus.h"
 #include "sm/Materials/LatticeMaterials/latticestructuralmaterial.h"
+#include "dynamicinputrecord.h"
+#include "datastream.h"
+#include "contextioerr.h"
 #include "gausspoint.h"
 #include "element.h"
 #include "floatarray.h"
@@ -45,13 +48,13 @@ namespace oofem {
 REGISTER_CrossSection(LatticeCrossSection);
 
 LatticeStructuralMaterial *
-LatticeCrossSection :: giveLatticeMaterial() const
+LatticeCrossSection::giveLatticeMaterial() const
 {
     return static_cast< LatticeStructuralMaterial * >( this->giveDomain()->giveMaterial(this->materialNum) );
 }
 
 int
-LatticeCrossSection :: checkConsistency()
+LatticeCrossSection::checkConsistency()
 {
     // Checks if the given cross section material is a 'LatticeStructuralMaterial'
     Material *mat = this->giveDomain()->giveMaterial(this->materialNum);
@@ -64,37 +67,98 @@ LatticeCrossSection :: checkConsistency()
 }
 
 void
-LatticeCrossSection :: initializeFrom(const std::shared_ptr<InputRecord> &ir)
+LatticeCrossSection::initializeFrom(const std::shared_ptr<InputRecord> &ir)
 {
-    CrossSection :: initializeFrom(ir);
+    CrossSection::initializeFrom(ir);
+
+    double value;
+
     IR_GIVE_FIELD(ir, this->materialNum, _IFT_LatticeCrossSection_Material);
 
-    double thickness = 0.0;
-    if ( ir->hasField(_IFT_LatticeCrossSection_thickness) ) {
-        IR_GIVE_OPTIONAL_FIELD(ir, thickness, _IFT_LatticeCrossSection_thickness);
-        propertyDictionary.add(CS_Thickness, thickness);
+    this->materialNumber = 0;
+    IR_GIVE_OPTIONAL_FIELD(ir, this->materialNumber, _IFT_LatticeCrossSection_MaterialNumber);
+
+    double area = 0.0;
+    IR_GIVE_OPTIONAL_FIELD(ir, area, _IFT_LatticeCrossSection_area);
+    propertyDictionary.add(CS_Area, area);
+
+    // CS_Thickness slot stays available for other models; latticecs does not read it.
+    propertyDictionary.add(CS_Thickness, 0.0);
+
+
+    value = 0.0;
+    IR_GIVE_OPTIONAL_FIELD(ir, value, _IFT_LatticeCrossSection_iy);
+    propertyDictionary.add(CS_InertiaMomentY, value);
+
+    value = 0.0;
+    IR_GIVE_OPTIONAL_FIELD(ir, value, _IFT_LatticeCrossSection_iz);
+    propertyDictionary.add(CS_InertiaMomentZ, value);
+
+    value = 0.0;
+    IR_GIVE_OPTIONAL_FIELD(ir, value, _IFT_LatticeCrossSection_ik);
+    propertyDictionary.add(CS_TorsionConstantX, value);
+
+    double beamshearcoeff = 1.;
+    IR_GIVE_OPTIONAL_FIELD(ir, beamshearcoeff, _IFT_LatticeCrossSection_shearcoeff);
+    propertyDictionary.add(CS_BeamShearCoeff, beamshearcoeff);
+
+    value = 0.0;
+    IR_GIVE_OPTIONAL_FIELD(ir, value, _IFT_LatticeCrossSection_shearareay);
+    if ( value == 0.0 ) {
+        value = beamshearcoeff * area;
     }
+    propertyDictionary.add(CS_ShearAreaY, value);
+
+    value = 0.0;
+    IR_GIVE_OPTIONAL_FIELD(ir, value, _IFT_LatticeCrossSection_shearareaz);
+    if ( value == 0.0 ) {
+        value = beamshearcoeff * area;
+    }
+    propertyDictionary.add(CS_ShearAreaZ, value);    
+
+    this->shape = 0;
+    IR_GIVE_OPTIONAL_FIELD(ir, this->shape, _IFT_LatticeCrossSection_shape);
+    
+    this->radius = 0.0;
+    IR_GIVE_OPTIONAL_FIELD(ir, this->radius, _IFT_LatticeCrossSection_radius);
+
+    // Number of through-thickness layers (only meaningful when shape == 2, i.e. shell mode).
+    // Default 1 = single material point at centroid (preserves legacy single-IP behaviour).
+    this->nLayers = 1;
+    IR_GIVE_OPTIONAL_FIELD(ir, this->nLayers, _IFT_LatticeCrossSection_nLayers);
+    if ( this->nLayers < 1 ) {
+        throw ValueInputException(ir, _IFT_LatticeCrossSection_nLayers,
+                                  "nLayers must be >= 1");
+    }
+    // nLayers > 1 takes effect only if the consuming element supplies a shellnormal;
+    // the element-level isHybridShell() makes the final decision.
 }
 
-double LatticeCrossSection :: giveLatticeStress1d(double strain, GaussPoint *gp, TimeStep *tStep) const
+double LatticeCrossSection::giveLatticeStress1d(double strain, GaussPoint *gp, TimeStep *tStep) const
 {
     return this->giveLatticeMaterial()->giveLatticeStress1d(strain, gp, tStep);
 }
 
-FloatArrayF< 3 >LatticeCrossSection :: giveLatticeStress2d(const FloatArrayF< 3 > &strain, GaussPoint *gp, TimeStep *tStep) const
+FloatArrayF< 3 >LatticeCrossSection::giveLatticeStress2d(const FloatArrayF< 3 > &strain, GaussPoint *gp, TimeStep *tStep) const
 {
     return this->giveLatticeMaterial()->giveLatticeStress2d(strain, gp, tStep);
 }
 
-FloatArrayF< 6 >LatticeCrossSection :: giveLatticeStress3d(const FloatArrayF< 6 > &strain, GaussPoint *gp, TimeStep *tStep) const
+FloatArrayF< 6 >LatticeCrossSection::giveLatticeStress3d(const FloatArrayF< 6 > &strain, GaussPoint *gp, TimeStep *tStep) const
 {
     return this->giveLatticeMaterial()->giveLatticeStress3d(strain, gp, tStep);
+}
+
+FloatArrayF< 6 >LatticeCrossSection::giveFrameForces3d(const FloatArrayF< 6 > &strain, GaussPoint *gp, TimeStep *tStep) const
+{
+    // Get the forces divided by the sectional properties from material
+    return this->giveLatticeMaterial()->giveFrameForces3d(strain, gp, tStep);
 }
 
 
 
 FloatMatrixF< 1, 1 >
-LatticeCrossSection :: give1dStiffnessMatrix(MatResponseMode rMode, GaussPoint *gp, TimeStep *tStep) const
+LatticeCrossSection::give1dStiffnessMatrix(MatResponseMode rMode, GaussPoint *gp, TimeStep *tStep) const
 {
     LatticeStructuralMaterial *mat = this->giveLatticeMaterial();
     if ( mat->hasAnalyticalTangentStiffness() ) {
@@ -105,7 +169,7 @@ LatticeCrossSection :: give1dStiffnessMatrix(MatResponseMode rMode, GaussPoint *
 }
 
 FloatMatrixF< 3, 3 >
-LatticeCrossSection :: give2dStiffnessMatrix(MatResponseMode rMode, GaussPoint *gp, TimeStep *tStep) const
+LatticeCrossSection::give2dStiffnessMatrix(MatResponseMode rMode, GaussPoint *gp, TimeStep *tStep) const
 {
     LatticeStructuralMaterial *mat = this->giveLatticeMaterial();
     if ( mat->hasAnalyticalTangentStiffness() ) {
@@ -116,7 +180,7 @@ LatticeCrossSection :: give2dStiffnessMatrix(MatResponseMode rMode, GaussPoint *
 }
 
 FloatMatrixF< 6, 6 >
-LatticeCrossSection :: give3dStiffnessMatrix(MatResponseMode rMode, GaussPoint *gp, TimeStep *tStep) const
+LatticeCrossSection::give3dStiffnessMatrix(MatResponseMode rMode, GaussPoint *gp, TimeStep *tStep) const
 {
     LatticeStructuralMaterial *mat = this->giveLatticeMaterial();
     if ( mat->hasAnalyticalTangentStiffness() ) {
@@ -126,9 +190,16 @@ LatticeCrossSection :: give3dStiffnessMatrix(MatResponseMode rMode, GaussPoint *
     }
 }
 
+FloatMatrixF< 6, 6 >
+LatticeCrossSection::give3dFrameStiffnessMatrix(MatResponseMode rMode, GaussPoint *gp, TimeStep *tStep) const
+{
+    LatticeStructuralMaterial *mat = this->giveLatticeMaterial();
+    return mat->give3dFrameStiffnessMatrix(rMode, gp, tStep);
+}
+
 
 int
-LatticeCrossSection :: giveIPValue(FloatArray &answer, GaussPoint *ip, InternalStateType type, TimeStep *tStep)
+LatticeCrossSection::giveIPValue(FloatArray &answer, GaussPoint *ip, InternalStateType type, TimeStep *tStep)
 {
     if ( type == IST_CrossSectionNumber ) {
         answer.resize(1);
@@ -139,12 +210,12 @@ LatticeCrossSection :: giveIPValue(FloatArray &answer, GaussPoint *ip, InternalS
 }
 
 double
-LatticeCrossSection :: give(int aProperty, GaussPoint *gp) const
+LatticeCrossSection::give(int aProperty, GaussPoint *gp) const
 {
     return this->giveMaterial(gp)->give(aProperty, gp);
 }
 
-Material *LatticeCrossSection :: giveMaterial(IntegrationPoint *ip) const
+Material *LatticeCrossSection::giveMaterial(IntegrationPoint *ip) const
 {
     if ( this->giveMaterialNumber() ) {
         return this->giveDomain()->giveMaterial(this->giveMaterialNumber() );
@@ -153,21 +224,20 @@ Material *LatticeCrossSection :: giveMaterial(IntegrationPoint *ip) const
     }
 }
 
-
 int
-LatticeCrossSection :: packUnknowns(DataStream &buff, TimeStep *tStep, GaussPoint *gp)
+LatticeCrossSection::packUnknowns(DataStream &buff, TimeStep *tStep, GaussPoint *gp)
 {
     return this->giveLatticeMaterial()->packUnknowns(buff, tStep, gp);
 }
 
 int
-LatticeCrossSection :: unpackAndUpdateUnknowns(DataStream &buff, TimeStep *tStep, GaussPoint *gp)
+LatticeCrossSection::unpackAndUpdateUnknowns(DataStream &buff, TimeStep *tStep, GaussPoint *gp)
 {
     return this->giveLatticeMaterial()->unpackAndUpdateUnknowns(buff, tStep, gp);
 }
 
 int
-LatticeCrossSection :: estimatePackSize(DataStream &buff, GaussPoint *gp)
+LatticeCrossSection::estimatePackSize(DataStream &buff, GaussPoint *gp)
 {
     return this->giveLatticeMaterial()->estimatePackSize(buff, gp);
 }

@@ -10,7 +10,7 @@
  *
  *             OOFEM : Object Oriented Finite Element Code
  *
- *               Copyright (C) 1993 - 2025   Borek Patzak
+ *               Copyright (C) 1993 - 2026   Borek Patzak
  *
  *
  *
@@ -47,7 +47,6 @@
 //@}
 
 namespace oofem {
-
 /**
  * This class implements a 3-dimensional lattice element
  */
@@ -65,11 +64,6 @@ protected:
     FloatArray rigid;
     FloatArray globalCentroid;
 
-    static ParamKey IPK_LatticeLink3d_length;
-    static ParamKey IPK_LatticeLink3d_diameter;
-    static ParamKey IPK_LatticeLink3d_dirvector;
-    static ParamKey IPK_LatticeLink3d_l_end;
-
 public:
     LatticeLink3d(int n, Domain *);
     virtual ~LatticeLink3d();
@@ -77,6 +71,9 @@ public:
     double computeVolumeAround(GaussPoint *aGaussPoint) override;
 
     double giveLength() override;
+
+    double giveArea(GaussPoint *gp) override
+    { return this->computeVolumeAround(gp) / this->giveLength(); }
 
     int giveLocalCoordinateSystem(FloatMatrix &answer) override;
 
@@ -92,16 +89,18 @@ public:
 
     void giveDofManDofIDMask(int inode, IntArray &) const override;
 
-    virtual void giveGPCoordinates(FloatArray &coords);
+    void giveGpCoordinates(FloatArray &coords, GaussPoint *gp) override;
 
     virtual void computeGeometryProperties();
+    void computeLumpedMassMatrix(FloatMatrix &answer, TimeStep *tStep) override;
+    void computeMassMatrix(FloatMatrix &answer, TimeStep *tStep) override
+    { this->computeLumpedMassMatrix(answer, tStep); }
 
     void giveInternalForcesVector(FloatArray &answer, TimeStep *tStep, int useUpdatedGpRecord = 0) override;
 
     const char *giveInputRecordName() const override { return _IFT_LatticeLink3d_Name; }
     const char *giveClassName()  const override { return "LatticeLink3d"; }
     void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
-    void postInitialize() override;
 
     Element_Geometry_Type giveGeometryType() const override { return EGT_line_1; }
 
@@ -123,11 +122,6 @@ protected:
     void computeConstitutiveMatrixAt(FloatMatrix &answer, MatResponseMode rMode, GaussPoint *gp, TimeStep *tStep) override;
     void computeStressVector(FloatArray &answer, const FloatArray &strain, GaussPoint *gp, TimeStep *tStep) override;
 
-
-    /**
-     * This computes the geometrical properties of the element. It is called only once.
-     */
-    void computePropertiesOfCrossSection();
 
     void computeGaussPoints() override;
     integrationDomain giveIntegrationDomain() const override { return _Line; }
