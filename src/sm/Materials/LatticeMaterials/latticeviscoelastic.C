@@ -220,12 +220,9 @@ LatticeViscoelasticStatus::initTempStatus()
 void
 LatticeViscoelasticStatus::printOutputAt(FILE *file, TimeStep *tStep) const
 {
-    //    MaterialStatus *mS = this->giveViscoelasticMatStatus();
-
     LatticeMaterialStatus::printOutputAt(file, tStep);
     fprintf(file, "\nViscoelastic material:");
 
-    //this->slaveGpVisco->giveMaterialStatus()->printOutputAt(file, tStep);
     this->giveSlaveGaussPointVisco()->giveMaterialStatus()->printOutputAt(file, tStep);
 
     fprintf(file, "\n");
@@ -239,7 +236,6 @@ LatticeViscoelasticStatus::updateYourself(TimeStep *tStep)
 // temporary variables are having values corresponding to newly reached equilibrium.
 //
 {
-    //  this->slaveGpVisco->giveMaterialStatus()->updateYourself(tStep);
     this->giveSlaveGaussPointVisco()->giveMaterialStatus()->updateYourself(tStep);
 
     LatticeMaterialStatus::updateYourself(tStep);
@@ -255,7 +251,6 @@ LatticeViscoelasticStatus::saveContext(DataStream &stream, ContextMode mode)
     // save parent class status
     LatticeMaterialStatus::saveContext(stream, mode);
 
-    //    this->slaveGpVisco->giveMaterialStatus()->saveContext(stream, mode);
     this->giveSlaveGaussPointVisco()->giveMaterialStatus()->saveContext(stream, mode);
 }
 
@@ -267,7 +262,6 @@ LatticeViscoelasticStatus::restoreContext(DataStream &stream, ContextMode mode)
 {
     LatticeMaterialStatus::restoreContext(stream, mode);
 
-    //  this->slaveGpVisco->giveMaterialStatus()->restoreContext(stream, mode);
     this->giveSlaveGaussPointVisco()->giveMaterialStatus()->restoreContext(stream, mode);
 }
 }     // end namespace oofem

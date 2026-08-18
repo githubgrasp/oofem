@@ -72,8 +72,6 @@ public:
 
     double giveLength() override;
 
-    /// Bond area (same value used inline for the internal forces). Needed so the
-    /// section-resultant output path scales the slip traction into a bond force.
     double giveArea(GaussPoint *gp) override
     { return this->computeVolumeAround(gp) / this->giveLength(); }
 
@@ -124,11 +122,6 @@ protected:
     void computeConstitutiveMatrixAt(FloatMatrix &answer, MatResponseMode rMode, GaussPoint *gp, TimeStep *tStep) override;
     void computeStressVector(FloatArray &answer, const FloatArray &strain, GaussPoint *gp, TimeStep *tStep) override;
 
-
-    /**
-     * This computes the geometrical properties of the element. It is called only once.
-     */
-    void computePropertiesOfCrossSection();
 
     void computeGaussPoints() override;
     integrationDomain giveIntegrationDomain() const override { return _Line; }

@@ -127,16 +127,11 @@ Lattice2dBoundary :: computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answ
 
     answer.at(3, 1) = 0.;
     answer.at(3, 2) = 0.;
-    //    answer.at(3, 3) = -this->width / sqrt(12.);
     answer.at(3, 3) = -1.;
 
     answer.at(3, 4) = 0.;
     answer.at(3, 5) = 0.;
     answer.at(3, 6) = 1.;
-    //    answer.at(3, 6) = this->width / sqrt(12.);
-
-
-    //    answer.times(1. / length);
 
     return;
 }
@@ -479,7 +474,6 @@ Lattice2dBoundary :: giveInternalForcesVector(FloatArray &answer, TimeStep *tSte
     this->computeBmatrixAt(integrationRulesArray [ 0 ]->getIntegrationPoint(0), b);
 
     bt.beTranspositionOf(b);
-    // TotalStressVector = gp->giveStressVector() ;
     if ( useUpdatedGpRecord == 1 ) {
         TotalStressVector = ( ( LatticeMaterialStatus * ) mat->giveStatus(integrationRulesArray [ 0 ]->getIntegrationPoint(0) ) )
                             ->giveLatticeStress();
@@ -490,19 +484,13 @@ Lattice2dBoundary :: giveInternalForcesVector(FloatArray &answer, TimeStep *tSte
     }
     this->computeStrainVector(strain, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
 
-    //    strain.beProductOf(b, u);
-
     this->computeStressVector(TotalStressVector, strain, integrationRulesArray [ 0 ]->getIntegrationPoint(0), tStep);
-    //
-    // compute nodal representation of internal forces using f = B^T*Sigma dV
-    //
-    //    dV  = this->computeVolumeAround(integrationRulesArray [ 0 ]->getIntegrationPoint(0) );
 
+    // compute nodal internal forces f = B^T * s
     FloatArray s;
     convertStressToResultants2d(s,TotalStressVector,integrationRulesArray [ 0 ]->getIntegrationPoint(0));
 
     bs.beProductOf(bt, s);
-    //    bs.times(dV);
 
     for ( int m = 1; m <= 6; m++ ) {
         answer.at(m) = bs.at(m);
@@ -635,8 +623,6 @@ void Lattice2dBoundary :: drawRawCrossSections(oofegGraphicContext &gc, TimeStep
 
     specimenDimension.at(1) =  this->giveNode(3)->giveCoordinate(1);
     specimenDimension.at(2) =  this->giveNode(3)->giveCoordinate(2);
-
-    // double width = cs->give(WIDTH);
 
     double x1, y1, x2, y2;
     x1 = this->giveNode(1)->giveCoordinate(1);

@@ -93,7 +93,6 @@ public:
     int giveCrackFlag() override;
 
     double giveCrackWidth() override;
-    //double giveOldCrackWidth() override;
 
     double giveDissipation() override;
     double giveDeltaDissipation() override;

@@ -70,8 +70,6 @@ public:
 
     int computeNumberOfDofs() override { return 18; }
 
-  //    double computeVolumeAround(GaussPoint *) override;
-
     void giveDofManDofIDMask(int inode, IntArray &) const override;
 
     void  giveInternalForcesVector(FloatArray &answer, TimeStep *, int useUpdatedGpRecord = 0) override;

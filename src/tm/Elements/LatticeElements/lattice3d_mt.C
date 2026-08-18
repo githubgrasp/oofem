@@ -338,32 +338,6 @@ Lattice3d_mt :: computeSpecialCrossSectionProperties()
 }
 
 
-
-// void
-// Lattice3d_mt :: computeHomogenisedInternalForcesVectorAt(FloatArray &answer, TimeStep *tStep, ValueModeType mode, FloatArray &unknowns)
-// {
-//     IntArray dofids;
-//     FloatArray tmp;
-
-//     FloatMatrix s;
-//     this->giveElementDofIDMask(dofids);
-
-//     ///@todo Integrate and compute as a nonlinear problem instead of doing this tangent.
-//     this->computeConductivityMatrix(s, Conductivity, tStep);
-//     answer.beProductOf(s, unknowns);
-
-//     this->computeInternalSourceRhsVectorAt(tmp, tStep, mode);
-//     answer.subtract(tmp);
-
-//     FloatMatrix bc_tangent;
-//     this->computeBCMtrxAt(bc_tangent, tStep, VM_Total);
-//     if ( bc_tangent.isNotEmpty() ) {
-//         tmp.beProductOf(bc_tangent, unknowns);
-//         answer.add(tmp);
-//     }
-// }
-
-
 void
 Lattice3d_mt :: computeCrossSectionProperties() {
     if ( this->numberOfPolygonVertices < 3 ) {

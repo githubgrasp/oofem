@@ -611,9 +611,6 @@ LatticeFrameConcretePlastic::computeDMMatrix(const FloatArrayF<6> &stress,
             while ( status->giveTempReturnResult() == RR_NotConverged || subIncrementFlag == 1 ) {
                 stress = mult(tangent, tempStrain - tempPlasticStrain);
                 performRegularReturn(stress, returnResult, k, yieldValue, gp, tStep);
-                //if ( status->giveTempReturnResult() == RR_WrongSurface ) {
-                //  int RestartWithNewKValue;
-                //}
                 if ( status->giveTempReturnResult() == RR_NotConverged ) {
                     subIncrementCounter++;
                     if ( subIncrementCounter > numberOfSubIncrements ) {
@@ -1012,8 +1009,6 @@ LatticeFrameConcretePlastic::computeDMMatrix(const FloatArrayF<6> &stress,
         for ( double s : this->plasticLatticeStrain ) {
             fprintf(file, "% .8e ", s);
         }
-        //fprintf(file, "kappad %.8e ", this->kappaD);
-        // fprintf(file, "damage %.8e ", this->damage);
         fprintf(file, ", kappaD %.8e, damage %.8e \n", this->kappaD, this->damage);
 	fprintf(file, "\n");
     }

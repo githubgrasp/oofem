@@ -69,7 +69,7 @@ namespace oofem {
     double
     LatticeLink3d::computeVolumeAround(GaussPoint *aGaussPoint)
     {
-        //Returns artifical volume (bond area times bond length) so that general parts of post processing work
+        //Returns artificial volume (bond area times bond length) so that general parts of post processing work
         return pow(this->bondLength, 2.) * this->bondDiameter * M_PI;
     }
 
@@ -212,9 +212,6 @@ namespace oofem {
         integrationRulesArray [ 0 ]->SetUpPointsOnLine(1, _3dLattice);
     }
 
-
-
-
     bool
     LatticeLink3d::computeGtoLRotationMatrix(FloatMatrix &answer)
     {
@@ -345,9 +342,7 @@ namespace oofem {
         normal = this->directionVector;
         normal.normalize();
 
-
-
-        //Construct two perpendicular axis so that n is normal to the plane which they create
+        //Construct two perpendicular axes so that n is normal to the plane which they create
         //Check, if one of the components of the normal-direction is zero
         if ( normal.at(1) == 0 ) {
             s.at(1) = 0.;
@@ -439,29 +434,14 @@ namespace oofem {
                 this->computeStressVector(stress, strain, gp, tStep);
             }
 
-            // updates gp stress and strain record  acording to current
+            // updates gp stress and strain record according to current
             // increment of displacement
             if ( stress.giveSize() == 0 ) {
                 break;
             }
 
-            // now every gauss point has real stress vector
-            // compute nodal representation of internal forces using f = B^T*Sigma dV
-            //	double dV = this->computeVolumeAround(gp);
-            //		double dV = 1.;
-            if ( stress.giveSize() == 6 ) {
-                // It may happen that e.g. plane strain is computed
-                // using the default 3D implementation. If so,
-                // the stress needs to be reduced.
-                // (Note that no reduction will take place if
-                //  the simulation is actually 3D.)
-                FloatArray stressTemp;
-                StructuralMaterial::giveReducedSymVectorForm(stressTemp, stress, gp->giveMaterialMode() );
-
-                answer.beProductOf(bt, stressTemp);
-            } else {
-                answer.beProductOf(bt, stress);
-            }
+            // compute nodal representation of internal forces using f = B^T*stress
+            answer.beProductOf(bt, stress);
 
             //Introduce integration of bond strength
             double area = this->computeVolumeAround(gp) / this->giveLength();

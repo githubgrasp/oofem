@@ -466,14 +466,7 @@ namespace oofem {
                     tempStrain = strain;
                     subIncrementCounter = 0;
                 } else {//Converged
-                    //Check the surface
-                    int surfaceCheck = checkTransition(stress, tempKappa, gp, tStep);
                     status->setTempKappaP(tempKappa);
-                    // if ( surfaceCheck != surface ) {
-                    //  //		OOFEM_WARNING("LatticePlasticityDamage::PerformPlasticityReturn Wrong surface. Try the other\n");
-                    //  surface = surfaceCheck;
-                    //  returnResult = RR_NotConverged;
-                    //	      }
                 }
             }
         }
@@ -483,9 +476,6 @@ namespace oofem {
         tempPlasticStrain.at(3) = strain.at(3) - stress.at(3) / ( this->alphaOne * eNormalMean );
 
         status->letTempPlasticLatticeStrainBe( assemble < 6 > ( tempPlasticStrain, { 0, 1, 2 } ) );
-
-
-        //    status->letTempLatticeStressBe(assemble< 6 >(stress, { 0, 1, 2 }) );
 
         answer = assemble < 6 > ( stress, { 0, 1, 2 } );
         answer.at(4) = this->alphaThree * this->eNormalMean * reducedStrain.at(4);

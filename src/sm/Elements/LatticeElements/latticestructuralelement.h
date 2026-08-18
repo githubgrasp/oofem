@@ -238,20 +238,6 @@ public:
      * Gives the torsional Constant
      */
     virtual double giveJ(GaussPoint *gp) { return 0.; }
-  
-    // /**
-    //  * Gives the y second moment of area
-    //  */
-    // virtual double giveIy() { return 0.; }
-
-    // /**
-    //  * Gives the z second moment of area
-    //  */
-    // virtual double giveIz() { return 0.; }
-    // /**
-    //  * Gives the polar second moment of area
-    //  */
-    // virtual double giveIk() { return 0.; }
 
     /**
      * Gives the shear area 1

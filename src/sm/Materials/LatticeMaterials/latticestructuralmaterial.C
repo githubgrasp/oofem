@@ -230,7 +230,6 @@ LatticeStructuralMaterial::initializeFrom(InputRecord &ir)
     }
 
     //sum up all prescribed temperatures over an element
-    //elem->computeResultingIPTemperatureAt(et, tStep, gp, mode);
     if ( selem ) {
         selem->computeResultingIPTemperatureAt(et, tStep, gp, mode);
     }

@@ -133,7 +133,6 @@ Lattice3dBoundaryTruss :: computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix 
     answer.at(4, 1) = 0.;
     answer.at(4, 2) = 0;
     answer.at(4, 3) = 0.;
-//    answer.at(4, 4) = -sqrt(Ip / this->area);
     answer.at(4, 4) = -1.;
     answer.at(4, 5) = 0.;
     answer.at(4, 6) = 0.;
@@ -141,7 +140,6 @@ Lattice3dBoundaryTruss :: computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix 
     answer.at(4, 7) = 0.;
     answer.at(4, 8) = 0.;
     answer.at(4, 9) = 0.;
-    //answer.at(4, 10) = sqrt(Ip / this->area);
     answer.at(4, 10) = 1.;
     answer.at(4, 11) = 0.;
     answer.at(4, 12) = 0.;
@@ -152,7 +150,6 @@ Lattice3dBoundaryTruss :: computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix 
     answer.at(5, 2) = 0.;
     answer.at(5, 3) = 0.;
     answer.at(5, 4) = 0.;
-  //  answer.at(5, 5) = -sqrt(I1 / this->area);
     answer.at(5, 5) = -1.;
     answer.at(5, 6) = 0.;
     //Second node
@@ -160,7 +157,6 @@ Lattice3dBoundaryTruss :: computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix 
     answer.at(5, 8) = 0.;
     answer.at(5, 9) =  0.;
     answer.at(5, 10) = 0.;
-//    answer.at(5, 11) = sqrt(I1 / this->area);
     answer.at(5, 11) = 1.;
     answer.at(5, 12) = 0.;
 
@@ -171,7 +167,6 @@ Lattice3dBoundaryTruss :: computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix 
     answer.at(6, 3) = 0.;
     answer.at(6, 4) = 0.;
     answer.at(6, 5) = 0.;
-//    answer.at(6, 6) = -sqrt(I2 / this->area);
     answer.at(6, 6) = -1.;
     //Second node
     answer.at(6, 7) = 0.;
@@ -179,10 +174,7 @@ Lattice3dBoundaryTruss :: computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix 
     answer.at(6, 9) =  0.;
     answer.at(6, 10) = 0.;
     answer.at(6, 11) = 0.;
-//    answer.at(6, 12) = sqrt(I2 / this->area);
     answer.at(6, 12) = 1.;
-
-//    answer.times(1. / this->length);
 
     return;
 }
@@ -192,7 +184,6 @@ Lattice3dBoundaryTruss :: computeStiffnessMatrix(FloatMatrix &answer, MatRespons
                                                  TimeStep *tStep)
 // Computes numerically the stiffness matrix of the receiver.
 {
-    //    double dV;
     FloatMatrix d, ds, bi, bj, dbj, dij, bjt;
     FloatMatrix t(12, 13), tt;
     FloatMatrix answerTemp(12, 12), answerHelp, ttk(13, 12);
@@ -715,7 +706,6 @@ Lattice3dBoundaryTruss :: drawRawCrossSections(oofegGraphicContext &gc, TimeStep
     }
 
     EASValsSetLineWidth(OOFEG_RAW_GEOMETRY_WIDTH);
-    //  EASValsSetColor(gc.getNodeColor());
     EASValsSetLayer(OOFEG_RAW_CROSSSECTION_LAYER);
 
     for ( int i = 0; i < numberOfPolygonVertices; i++ ) {

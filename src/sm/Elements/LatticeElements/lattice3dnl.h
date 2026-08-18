@@ -51,7 +51,7 @@ namespace oofem {
 /**
  * This class implements a geometric nonlinear 3-dimensional lattice element based on rigid body spring models.
 Related reference (for the special case of a beam element with symmetric cross-section): A 3D frame element for large rotations based on the rigid-body-spring concept for analysing the failure of structures. International Journal of Solids and Structures. https://doi.org/10.1016/j.ijsolstr.2025.113812
- Author: Peter Grassl, 2026
+ Author: Peter Grassl and Gumaa Abdelhrim, 2026
  */
 
 class Lattice3dNL : public Lattice3d
@@ -61,28 +61,20 @@ protected:
 public:
     Lattice3dNL(int n, Domain *);
     virtual ~Lattice3dNL();
-
   const char *giveInputRecordName() const override { return _IFT_Lattice3dNL_Name; }
     const char *giveClassName() const override { return "lattice3dnl"; }
-
   void giveInternalForcesVector(FloatArray &answer, TimeStep *tStep, int useUpdatedGpRecord) override;
 
  
 protected:
   bool computeGtoLRotationMatrix(FloatMatrix &) override;
     bool computeGtoLStrainRotationMatrix(FloatMatrix &answer);
-    void computeNLBmatrixAt(GaussPoint *gp, FloatMatrix &, TimeStep *tStep);
-
-
-  
+    void computeNLBmatrixAt(GaussPoint *gp, FloatMatrix &, TimeStep *tStep);  
     void updateYourself(TimeStep *tStep) override;
     void initForNewStep() override;
-
     void computeCurrentGtoLStrainRotationMatrix(FloatMatrix &GtoLCurrent, const FloatArray &u, const FloatArray &coordA, const FloatArray &coordB, const FloatArray &coordGP);
-
       void computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode, TimeStep *tStep) override;
     virtual void  computeStrainVector(FloatArray &answer, GaussPoint *gp, TimeStep *tStep) override;
-
 };
 } // end namespace oofem
 #endif

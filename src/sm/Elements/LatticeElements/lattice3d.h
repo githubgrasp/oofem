@@ -186,11 +186,6 @@ protected:
     void computeConstitutiveMatrixAt(FloatMatrix &answer, MatResponseMode rMode, GaussPoint *gp, TimeStep *tStep) override;
     void computeStressVector(FloatArray &answer, const FloatArray &strain, GaussPoint *gp, TimeStep *tStep) override;
 
-    /**
-     * This computes the geometrical properties of the element once.
-     */
-    void computePropertiesOfCrossSection();
-
     void computeGaussPoints() override;
     integrationDomain giveIntegrationDomain() const override { return _Line; }
 };

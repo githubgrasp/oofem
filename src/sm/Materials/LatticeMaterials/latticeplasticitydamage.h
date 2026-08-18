@@ -112,8 +112,6 @@ protected:
 
     int deletionFlag = 0;
     int tempDeletionFlag = 1.;
-    
-    //double e0 = 0.;
 
     int compressionFlag = 0;
 
