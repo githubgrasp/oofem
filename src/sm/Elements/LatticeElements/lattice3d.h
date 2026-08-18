@@ -10,7 +10,7 @@
  *
  *             OOFEM : Object Oriented Finite Element Code
  *
- *               Copyright (C) 1993 - 2019   Borek Patzak
+ *               Copyright (C) 1993 - 2026   Borek Patzak
  *
  *
  *
@@ -75,8 +75,8 @@ protected:
     /// Shell surface normal in global coordinates; presence flags the element as a shell.
     FloatArray shellNormal;
 
-    /// Reference axis orienting the transverse frame of a beam (no-polygon) cross-section,
-    /// mirroring LatticeFrame3d's zaxis. Mandatory when section properties (I1/I2/J) are
+    /// Reference axis orienting the transverse frame of a beam (no-polygon) cross-section
+    /// Mandatory when section properties (I1/I2/J) are
     /// taken from the cross-section; empty for facet/shell sections.
     FloatArray zaxis;
 
@@ -84,7 +84,6 @@ protected:
     /// mirroring LatticeFrame3d's s. Only used by the beam (no-polygon) branch.
     double s = 0.;
 
-    // Rectangular cross-section dimensions in local frame; set in computeGeometryProperties.
     double shellH = 0.;
     double shellB = 0.;
 
@@ -177,7 +176,6 @@ public:
     void drawRawCrossSections(oofegGraphicContext &, TimeStep *tStep);
     void drawDeformedGeometry(oofegGraphicContext &, TimeStep *tStep, UnknownType) override;
 #endif
-
 
 protected:
     void computeBmatrixAt(GaussPoint *, FloatMatrix &, int = 1, int = ALL_STRAINS) override;

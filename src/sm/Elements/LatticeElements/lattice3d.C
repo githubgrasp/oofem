@@ -672,16 +672,16 @@ void
     return;
   }
   
-  // shape 3: generic (property-defined) cross-section. No geometry - the section properties
-  // are taken directly from the latticecs (area is mandatory; iy/iz/ik/shear are optional and
-  // default to 0 / area). The transverse frame is oriented by the zaxis.
-  if ( cs->giveShape() == 3 ) {
+  // Beam/frame cross-section: no polygon geometry. Section properties are taken directly
+  // from the LatticeCrossSection and the transverse frame is oriented by the mandatory
+  // zaxis (as in LatticeFrame3d). This makes lattice3d a superset of latticeframe3d.
+  if ( this->numberOfPolygonVertices < 3 ) {
     auto pick = [&](CrossSectionProperty key) {
         return cs->give(key, (GaussPoint *) nullptr);
     };
     double a = pick(CS_Area);
     if ( a <= 0.0 ) {
-      OOFEM_ERROR("shape 3 (property-defined) cross-section requires a positive area.\n");
+      OOFEM_ERROR("Too small number of polygon vertices and no cross-section area given. Check meshing/cross-section.\n");
     }
     this->area       = a;
     this->I1         = pick(CS_InertiaMomentY);
@@ -693,7 +693,7 @@ void
     this->shellB = 0.0;
     this->shellH = 0.0;   // keep isHybridShell() false so the getters return these members
 
-    // Local frame: axis 1 = element axis; transverse axes from zaxis.
+    // Local frame: axis 1 = element axis; transverse axes from zaxis (mirrors LatticeFrame3d).
     FloatArray lx = this->normal;                 // already normalized above
     FloatArray ly(3), lz(3);
     if ( this->zaxis.giveSize() == 3 ) {
@@ -707,7 +707,7 @@ void
       ly.normalize();
     } else {
       // No zaxis: the transverse orientation only matters for an asymmetric section (iy != iz),
-      // where leaving it unspecified is ambiguous. For iy == iz use a default transverse frame.
+      // where leaving it unspecified is ambiguous. For iy == iz reproduce LatticeFrame3d's default frame.
       if ( fabs(this->I1 - this->I2) > 1.e-12 * ( fabs(this->I1) + fabs(this->I2) ) ) {
         OOFEM_ERROR("Beam cross-section with iy != iz requires a zaxis to orient the section.\n");
       }
@@ -732,7 +732,7 @@ void
     }
 
     // Gauss point along the element: parameter (1+s)/2 from node A (s=0 -> midpoint),
-    // i.e. arms l1 = (1+s)/2 L, l2 = (1-s)/2 L.
+    // matching LatticeFrame3d's split l1 = (1+s)/2 L, l2 = (1-s)/2 L.
     FloatArray gpGlobal = midPoint;
     if ( this->s != 0.0 ) {
       FloatArray shift = this->normal;              // unit vector A->B
@@ -986,23 +986,7 @@ if ( cs->giveShape() == 2 || this->isShellElement() ) {
 
     this->shearArea1 = area;
     this->shearArea2 = area;
-
-    // Let user-specified section properties override the geometry-derived ones.
-    // A property is overridden only when a positive value is given in the latticecs; otherwise the
-    // geometric value stands. (Shell layered getters use shellB/shellH, so overriding I/J/area here
-    // affects only non-shell facet/rectangle sections.)
-    auto pick = [&](CrossSectionProperty key, double geom) {
-        double v = cs->give(key, (GaussPoint *) nullptr);
-        return ( v > 0.0 ) ? v : geom;
-    };
-    this->area       = pick(CS_Area, this->area);
-    this->I1         = pick(CS_InertiaMomentY, this->I1);
-    this->I2         = pick(CS_InertiaMomentZ, this->I2);
-    this->J          = pick(CS_TorsionConstantX, this->J);
-    this->Ip         = this->I1 + this->I2;
-    this->shearArea1 = pick(CS_ShearAreaY, this->shearArea1);
-    this->shearArea2 = pick(CS_ShearAreaZ, this->shearArea2);
-
+    
     //Rotation around normal axis by angleChange
     FloatMatrix rotationChange(3, 3);
     rotationChange.zero();
