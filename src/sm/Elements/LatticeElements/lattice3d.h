@@ -75,13 +75,13 @@ protected:
     /// Shell surface normal in global coordinates; presence flags the element as a shell.
     FloatArray shellNormal;
 
-    /// Reference axis orienting the transverse frame of a beam (no-polygon) cross-section
-    /// Mandatory when section properties (I1/I2/J) are
-    /// taken from the cross-section; empty for facet/shell sections.
+    /// Reference axis orienting the transverse frame of a property-defined (shape 3) cross-section.
+    /// Mandatory when the section properties (I1/I2/J) are taken directly from the cross-section;
+    /// empty for facet/shell sections.
     FloatArray zaxis;
 
-    /// Gauss-point position along a beam element: parameter (1+s)/2 from node A (s=0 -> midpoint),
-    /// mirroring LatticeFrame3d's s. Only used by the beam (no-polygon) branch.
+    /// Gauss-point position along the element: parameter (1+s)/2 from node A (s=0 -> midpoint).
+    /// Only used by the property-defined (shape 3) cross-section.
     double s = 0.;
 
     double shellH = 0.;
@@ -150,7 +150,6 @@ public:
     const char *giveClassName() const override { return "Lattice3d"; }
     void initializeFrom(InputRecord &ir) override;
 
-    /// Global coordinates of the integration point @p gp (nullptr = element centroid).
     void giveGpCoordinates(FloatArray &coords, GaussPoint *gp) override;
 
   double giveJ(GaussPoint *gp) override;
