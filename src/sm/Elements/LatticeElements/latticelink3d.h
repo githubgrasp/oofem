@@ -91,7 +91,7 @@ public:
 
     void giveDofManDofIDMask(int inode, IntArray &) const override;
 
-    virtual void giveGPCoordinates(FloatArray &coords);
+    void giveGpCoordinates(FloatArray &coords, GaussPoint *gp) override;
 
     virtual void computeGeometryProperties();
     void computeLumpedMassMatrix(FloatMatrix &answer, TimeStep *tStep) override;

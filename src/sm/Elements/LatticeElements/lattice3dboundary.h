@@ -77,7 +77,6 @@ public:
     void  giveInternalForcesVector(FloatArray &answer, TimeStep *, int useUpdatedGpRecord = 0) override;
     void computeGeometryProperties() override;
 
-    void giveGPCoordinates(FloatArray &coords) override { coords = this->globalCentroid; }
     const char *giveInputRecordName() const override { return _IFT_Lattice3dBoundary_Name; }
     const char *giveClassName() const override { return "Lattice3dBoundary"; }
     void initializeFrom(InputRecord &ir) override;

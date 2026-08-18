@@ -133,7 +133,7 @@ namespace oofem {
     }
 
     void
-    LatticeLink3d::giveGPCoordinates(FloatArray &coords)
+    LatticeLink3d::giveGpCoordinates(FloatArray &coords, GaussPoint *gp)
     {
         if ( geometryFlag == 0 ) {
             computeGeometryProperties();

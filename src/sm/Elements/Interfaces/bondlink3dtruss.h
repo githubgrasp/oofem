@@ -90,8 +90,6 @@ public:
 
     void giveDofManDofIDMask(int inode, IntArray &) const override;
 
-    virtual void giveGPCoordinates(FloatArray &coords);
-
     virtual void computeGeometryProperties();
 
     void giveInternalForcesVector(FloatArray &answer,

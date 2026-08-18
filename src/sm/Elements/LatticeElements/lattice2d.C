@@ -435,7 +435,7 @@ Lattice2d :: computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoo
 
 
 void
-Lattice2d :: giveGpCoordinates(FloatArray &answer)
+Lattice2d :: giveGpCoordinates(FloatArray &answer, GaussPoint *gp)
 {
     answer.resize(3);
     answer.at(1) = this->gpCoords.at(1);

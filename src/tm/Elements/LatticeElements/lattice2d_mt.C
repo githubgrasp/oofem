@@ -326,7 +326,7 @@ Lattice2d_mt :: computeInternalSourceRhsVectorAt(FloatArray &answer, TimeStep *t
 
 
 void
-Lattice2d_mt :: giveGpCoordinates(FloatArray &answer)
+Lattice2d_mt :: giveGpCoordinates(FloatArray &answer, GaussPoint *gp)
 {
     answer.resize(3);
     answer.at(1) = this->gpCoords.at(1);

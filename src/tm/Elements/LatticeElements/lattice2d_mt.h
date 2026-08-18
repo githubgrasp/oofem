@@ -142,7 +142,7 @@ protected:
 
     double giveArea() override { return width * thickness; }
 
-    void  giveGpCoordinates(FloatArray &coords) override;
+    void  giveGpCoordinates(FloatArray &coords, GaussPoint *gp) override;
 
     double computeEdgeVolumeAround(GaussPoint *gp, int iEdge) override { return 0; }
 

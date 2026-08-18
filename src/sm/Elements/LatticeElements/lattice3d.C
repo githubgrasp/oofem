@@ -10,7 +10,7 @@
  *
  *             OOFEM : Object Oriented Finite Element Code
  *
- *               Copyright () 1993 - 2019   Borek Patzak
+ *               Copyright () 1993 - 2026   Borek Patzak
  *
  *
  *
@@ -83,7 +83,7 @@ Lattice3d :: computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, int 
     answer.resize(6, 12);
     answer.zero();
 
-    // Rigid arms node-1 -> GP and GP -> node-2; eccS/eccT centroid offsets,
+    // Rigid arms node-1 -> CP and CP -> node-2; eccS/eccT centroid offsets,
     // gpY/gpZ per-IP offsets from natural coords (zero for centroid-only IP).
     double gpY = 0.0, gpZ = 0.0;
     if ( aGaussPoint != nullptr ) {
@@ -93,10 +93,15 @@ Lattice3d :: computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, int 
             gpZ = nc.at(3);
         }
     }
+
     FloatArray l1(3), l2(3);
-    l1.at(1) =  this->length / 2.;        l2.at(1) =  this->length / 2.;
-    l1.at(2) =  this->eccS + gpY;         l2.at(2) = -this->eccS - gpY;
-    l1.at(3) =  this->eccT + gpZ;         l2.at(3) = -this->eccT - gpZ;
+    l1.at(1) =  this->length / 2.;        
+    l1.at(2) =  this->eccS + gpY; 
+    l1.at(3) =  this->eccT + gpZ;
+
+    l2.at(1) =  this->length / 2.;
+    l2.at(2) = -this->eccS - gpY;
+    l2.at(3) = -this->eccT - gpZ;
 
     //Normal displacement jump in x-direction
     //First node
@@ -134,7 +139,6 @@ Lattice3d :: computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, int 
     answer.at(4, 2) = 0;
     answer.at(4, 3) = 0.;
     answer.at(4, 4) = -1.;
-    //answer.at(4, 4) = -sqrt(Ip / this->area);
     answer.at(4, 5) = 0.;
     answer.at(4, 6) = 0.;
     //Second node
@@ -142,7 +146,6 @@ Lattice3d :: computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, int 
     answer.at(4, 8) = 0.;
     answer.at(4, 9) = 0.;
     answer.at(4, 10) = 1.;
-    //    answer.at(4, 10) = sqrt(Ip / this->area);
     answer.at(4, 11) = 0.;
     answer.at(4, 12) = 0.;
 
@@ -153,7 +156,6 @@ Lattice3d :: computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, int 
     answer.at(5, 3) = 0.;
     answer.at(5, 4) = 0.;
     answer.at(5, 5) = -1.;
-    //    answer.at(5, 5) = -sqrt(I1 / this->area);
     answer.at(5, 6) = 0.;
     //Second node
     answer.at(5, 7) = 0.;
@@ -161,7 +163,6 @@ Lattice3d :: computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, int 
     answer.at(5, 9) =  0.;
     answer.at(5, 10) = 0.;
     answer.at(5, 11) = 1.;
-    //answer.at(5, 11) = sqrt(I1 / this->area);
     answer.at(5, 12) = 0.;
 
     //Rotation around z-axis
@@ -172,7 +173,6 @@ Lattice3d :: computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, int 
     answer.at(6, 4) = 0.;
     answer.at(6, 5) = 0.;
     answer.at(6, 6) = -1.;
-    //    answer.at(6, 6) = -sqrt(I2 / this->area);
     //Second node
     answer.at(6, 7) = 0.;
     answer.at(6, 8) = 0.;
@@ -180,11 +180,8 @@ Lattice3d :: computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, int 
     answer.at(6, 10) = 0.;
     answer.at(6, 11) = 0.;
     answer.at(6, 12) = 1.;
-    //    answer.at(6, 12) = sqrt(I2 / this->area);
-    //    answer.times(1. / this->length);
     return;
 }
-
 
     void
     Lattice3d::giveInternalForcesVector(FloatArray &answer,
@@ -245,15 +242,7 @@ Lattice3d :: computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, int 
     }
 
 void
-Lattice3d :: giveGPCoordinates(FloatArray &coords)
-{
-    // Legacy overload: returns centroid only (used by old callers that don't pass a gp).
-    this->giveGPCoordinates(nullptr, coords);
-}
-
-
-void
-Lattice3d :: giveGPCoordinates(GaussPoint *gp, FloatArray &coords)
+Lattice3d :: giveGpCoordinates(FloatArray &coords, GaussPoint *gp)
 {
     if ( geometryFlag == 0 ) {
         computeGeometryProperties();
@@ -576,18 +565,6 @@ Lattice3d :: computeGlobalCoordinates(FloatArray &answer, const FloatArray &lcoo
 
     return 1;
 }
-
-void
-Lattice3d::giveGpCoordinates(FloatArray &answer)
-{
-    if ( geometryFlag == 0 ) {
-        computeGeometryProperties();
-    }
-    answer.resize(3);
-    answer = this->globalCentroid;
-    return;
-}
-
 
 void
 Lattice3d :: computeGeometryProperties()

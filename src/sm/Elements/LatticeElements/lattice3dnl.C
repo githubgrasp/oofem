@@ -77,7 +77,7 @@ Lattice3dNL :: ~Lattice3dNL()
         FloatArray coordA(3), coordB(3), l1(3), l2(3), help(3), gpCoords(3);
         coordA = giveNode(1)->giveCoordinates();
         coordB = giveNode(2)->giveCoordinates();
-        giveGPCoordinates(aGaussPoint, gpCoords);
+        giveGpCoordinates(gpCoords, aGaussPoint);
 
         l1 = gpCoords-coordA;
         l2 = coordB-gpCoords;
@@ -239,7 +239,7 @@ Lattice3dNL :: ~Lattice3dNL()
         const int nGp = iRule->giveNumberOfIntegrationPoints();
         for ( int i = 0; i < nGp; ++i ) {
             GaussPoint *gp = iRule->getIntegrationPoint(i);
-            this->giveGPCoordinates(gp, coordGp);
+            this->giveGpCoordinates(coordGp, gp);
             this->computeNLBmatrixAt(gp, b, tStep);
             this->computeConstitutiveMatrixAt(d, rMode, gp, tStep);
             convertTangentToResultantTangent3d(ds, d, gp);
@@ -276,7 +276,7 @@ Lattice3dNL :: ~Lattice3dNL()
         FloatArray coordA(3), coordB(3), coordGp(3), l1(3), l2(3), help(3);
         coordA = giveNode(1)->giveCoordinates();
         coordB = giveNode(2)->giveCoordinates();
-        this->giveGPCoordinates(gp, coordGp);
+        this->giveGpCoordinates(coordGp, gp);
         l1 = coordGp-coordA;
         l2 = coordB-coordGp;
 
@@ -378,7 +378,7 @@ Lattice3dNL :: ~Lattice3dNL()
             GaussPoint *gp = iRule->getIntegrationPoint(i);
 
             FloatArray coordGp(3), l1(3), l2(3);
-            this->giveGPCoordinates(gp, coordGp);
+            this->giveGpCoordinates(coordGp, gp);
             l1 = coordGp - coordA;
             l2 = coordB - coordGp;
 

@@ -109,18 +109,6 @@ BondLink3dTruss::computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, 
 }
 
 void
-BondLink3dTruss::giveGPCoordinates(FloatArray &coords)
-{
-    if ( geometryFlag == 0 ) {
-        computeGeometryProperties();
-    }
-    coords.resize(3);
-    coords = this->globalCentroid;
-    return;
-}
-
-
-void
 BondLink3dTruss::computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode,
                                         TimeStep *tStep)
 // Computes numerically the stiffness matrix of the receiver.

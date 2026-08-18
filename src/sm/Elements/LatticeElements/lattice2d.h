@@ -133,7 +133,7 @@ protected:
     double givePitch();
     void computeGaussPoints() override;
     integrationDomain giveIntegrationDomain() const override { return _Line; }
-    void giveGpCoordinates(FloatArray &coords) override;
+    void giveGpCoordinates(FloatArray &coords, GaussPoint *gp) override;
 };
 } // end namespace oofem
 #endif

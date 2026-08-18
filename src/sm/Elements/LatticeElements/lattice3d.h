@@ -128,11 +128,6 @@ public:
 
     void giveCrossSectionCoordinates(FloatArray &coords) override { coords = polygonCoords; }
 
-    virtual void giveGPCoordinates(FloatArray &coords);
-
-    /// Global coordinates of @p gp; layer IPs are offset from the element centroid.
-    virtual void giveGPCoordinates(GaussPoint *gp, FloatArray &coords);
-
     /// Per-layer local offsets (y, z) from centroid and tributary areas.
     virtual void computeLayerPositions(FloatArray &yOffset, FloatArray &zOffset, FloatArray &areas);
 
@@ -156,7 +151,8 @@ public:
     const char *giveClassName() const override { return "Lattice3d"; }
     void initializeFrom(InputRecord &ir) override;
 
-    void giveGpCoordinates(FloatArray &answer) override;
+    /// Global coordinates of the integration point @p gp (nullptr = element centroid).
+    void giveGpCoordinates(FloatArray &coords, GaussPoint *gp) override;
 
   double giveJ(GaussPoint *gp) override;
   double giveI1(GaussPoint *gp) override;

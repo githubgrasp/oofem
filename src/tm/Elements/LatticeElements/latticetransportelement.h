@@ -116,7 +116,7 @@ public:
     /**
      * Gives the GP coordinates
      */
-    virtual void  giveGpCoordinates(FloatArray &coords) { }
+    virtual void  giveGpCoordinates(FloatArray &coords, GaussPoint *gp = nullptr) { }
 
     /**
      * Returns the real volume

@@ -217,7 +217,7 @@ public:
     /**
      * Gives the GP coordinates
      */
-  virtual void  giveGpCoordinates(FloatArray &coords){return;}
+  virtual void  giveGpCoordinates(FloatArray &coords, GaussPoint *gp = nullptr) { }
 
   virtual double giveTributaryWidth(GaussPoint *gp)
 {

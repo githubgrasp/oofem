@@ -118,18 +118,6 @@ BondLink3d :: computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, int
 }
 
 void
-BondLink3d :: giveGPCoordinates(FloatArray &coords)
-{
-    if ( geometryFlag == 0 ) {
-        computeGeometryProperties();
-    }
-    coords.resize(3);
-    coords = this->globalCentroid;
-    return;
-}
-
-
-void
 BondLink3d :: computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode,
                                      TimeStep *tStep)
 // Computes numerically the stiffness matrix of the receiver.
