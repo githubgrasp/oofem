@@ -81,9 +81,14 @@ protected:
     double beamshearcoeff = 0.;
     double shearareay = 0.;
     double shearareaz = 0.;
+  /// Cross-section shape: 0 = polygon/facet (from polycoords), 1 = circular (from radius),
+  /// 2 = rectangular (from 4 vertices), 3 = generic/property-defined (area/iy/iz/ik given directly,
+  /// no geometry). For shapes 0/1/2 a user-supplied property overrides the geometry-derived value.
   int shape = 0;
   double radius = 0.;
-  int nLayers = 1;   ///< Number of through-thickness layers (shell mode, shape=2). 1 = single material point at centroid (default).
+  /// Number of through-thickness layers of a shell (layering is driven by the element's shellnormal,
+  /// not by the shape). 1 = single material point at the centroid (default).
+  int nLayers = 1;
 
 public:
     /**
@@ -155,6 +160,9 @@ public:
     const char *giveClassName() const override { return "LatticeCrossSection"; }
     const char *giveInputRecordName() const override { return _IFT_LatticeCrossSection_Name; }
 
+    // Un-hide the base give(CrossSectionProperty, ...) overloads: declaring give(int,...)
+    // below would otherwise hide them (they answer a different question - section vs material property).
+    using CrossSection::give;
     virtual double give(int aProperty, GaussPoint *gp) const override;
 
   int giveShape() const { return shape; }

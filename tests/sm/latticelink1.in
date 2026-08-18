@@ -19,7 +19,7 @@ lattice3d 2 nodes 2 2 3 crossSect 1 mat 1
 latticelink3d 3 nodes 2 1 4 crossSect 2 mat 2 length 0.05 diameter 1.e-2 dirvector 3 1.000000e+00 0.000000e+00 0.000000e+00
 latticelink3d 4 nodes 2 2 5 crossSect 2 mat 2 length 0.1 diameter 1.e-02 dirvector 3 1.000000e+00 0.000000e+00 0.000000e+00
 latticelink3d 5 nodes 2 3 6 crossSect 2 mat 2 length 0.05 diameter 1.e-02 dirvector 3 1.000000e+00 0.000000e+00 0.000000e+00
-latticecs 1 material 1 iy 7.857e-9 iz 7.857e-9 ik 1.6e-8 shearCoeff 0.83 area 3.1416e-2
+latticecs 1 material 1 iy 7.857e-9 iz 7.857e-9 ik 1.6e-8 shearCoeff 0.83 area 3.1416e-2 shape 3
 latticecs 2 material 2
 latticeframeelastic 1 d 0 e 2.1e11 n 0.3 talpha 0
 latticeslip 2 talpha 0. d 0. e 30.e9 type 2 alpha 0.4 s1 1.e-3 s2 2e-3 s3 6.5e-3 t0 1.541e7 tf 6.164e6 a1 100. a2 100.

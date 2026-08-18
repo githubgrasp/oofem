@@ -535,6 +535,33 @@ The crossSectType keyword can be one from following possibilities
      number of external node with prescribed boundary condition which
      corresponds to the relative twist of warping cross section.
 
+-  | Lattice cross section
+   | ``LatticeCS`` ``material #(in)`` [``shape #(in)``] [``radius #(rn)``]
+     [``area #(rn)``] [``iy #(rn)``] [``iz #(rn)``] [``ik #(rn)``]
+     [``shearcoeff #(rn)``] [``shearareay #(rn)``] [``shearareaz #(rn)``]
+     [``nlayers #(in)``]
+   | Cross section for the 3d lattice elements (``lattice3d``,
+     ``lattice3dnl``). The ``shape`` parameter selects how the section
+     properties are obtained: ``0`` -- a general polygon/facet built from the
+     element vertex coordinates (``polycoords``); ``1`` -- a circle (from
+     ``radius``); ``2`` -- a rectangle (from four vertices); ``3`` -- a
+     property-defined section given directly, with no geometry (default is
+     ``0``). For the geometric shapes (``0``, ``1``, ``2``) the properties are
+     computed from the geometry, and any individual property may be overridden
+     by supplying its value here. Parameter ``area`` is the cross section area,
+     ``iy`` and ``iz`` are the second moments of area along the local y and z
+     axes, and ``ik`` is the Saint-Venant torsional constant; the shear response
+     is set either by a shear correction factor ``shearcoeff`` or by equivalent
+     shear areas ``shearareay`` and ``shearareaz``. For the property-defined
+     section (``shape 3``) the element represents a two-node frame member (rod,
+     beam, ...): ``area`` is mandatory, the remaining properties are optional,
+     the transverse axes are oriented by the element's ``zaxis`` and the
+     integration-point position along the element by its ``s`` parameter (see the
+     element library manual). The number of through-thickness layers of a shell
+     is given by ``nlayers`` (shell mode is activated by the element's
+     ``shellnormal``; default is a single integration point at the centroid).
+     All properties are defined in the local coordinate system of the element.
+
 .. _MaterialTypeRecords:
 
 Material type records

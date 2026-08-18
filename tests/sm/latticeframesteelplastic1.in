@@ -11,7 +11,7 @@ node 2 coords 3 0.500000e+00 0.000000e+00 0.000000e+00
 node 3 coords 3 1.000000e+00 0.000000e+00 0.000000e+00 bc 6 0 0 0 0 0 0
 lattice3d 1 nodes 2 1 2 zaxis 3 0 0 1 crossSect 1 
 lattice3d 2 nodes 2 2 3 zaxis 3 0 0 1 crossSect 1
-latticecs 1 material 1 iy 0.083 iz 0.083 ik 0.167 shearCoeff 1. area 1.
+latticecs 1 material 1 iy 0.083 iz 0.083 ik 0.167 shearCoeff 1. area 1. shape 3
 latticeframesteelplastic 1 d 1. E 1. n 0.15 talpha 0 nx0 1 mx0 1 my0 1 mz0 1 tol 1.e-6 iter 100 sub 10
 BoundaryCondition 1 loadTimeFunction 1 prescribedvalue 0.0
 ConstantFunction 1 f(t) 1.

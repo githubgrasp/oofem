@@ -32,7 +32,7 @@ lattice3d 9 nodes 2 9 10 zaxis 3 0 0 1 crossSect 1
 lattice3d 10 nodes 2 10 11 zaxis 3 0 0 1 crossSect 1
 lattice3d 11 nodes 2 11 12 zaxis 3 0 0 1 crossSect 1
 lattice3d 12 nodes 2 12 13 zaxis 3 0 0 1 crossSect 1
-latticecs 1 material 1 area 25281 iy 5.3e7 iz 5.3e7 ik 1e8 shearCoeff 0.833 
+latticecs 1 material 1 area 25281 iy 5.3e7 iz 5.3e7 ik 1e8 shearCoeff 0.833 shape 3
 latticeframesteelplastic 1 d 1. E 2.1e4 n 0.3 talpha 0 nx0 6e5 mx0 3e7 my0 3e7 mz0 3e7 tol 1.e-6 iter 100 sub 10
 BoundaryCondition 1 loadTimeFunction 1 prescribedvalue 0.0
 ConstantFunction 1 f(t) 1.

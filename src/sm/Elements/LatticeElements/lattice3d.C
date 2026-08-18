@@ -277,7 +277,7 @@ Lattice3d :: computeLayerPositions(FloatArray &yOffset, FloatArray &zOffset, Flo
     }
 
     int n = 1;
-    LatticeCrossSection *lcs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );
+    LatticeCrossSection *lcs = static_cast< LatticeCrossSection * >( this->giveCrossSection() );
     if ( this->isShellElement() && lcs != nullptr ) {
         n = lcs->giveNLayers();
     }
@@ -419,11 +419,9 @@ void Lattice3d :: computeGaussPoints()
 
 bool Lattice3d :: isHybridShell()
 {
-    if ( geometryFlag == 0 ) {
-        computeGeometryProperties();
-    }
-    if ( !this->isShellElement() ) return false;
-    return dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() ) != nullptr;
+    // A lattice3d element always has a LatticeCrossSection (enforced in computeCrossSectionProperties),
+    // so a shell element is always a layered (hybrid) shell.
+    return this->isShellElement();
 }
 
 
@@ -433,7 +431,7 @@ double Lattice3d :: giveArea(GaussPoint *gp) {
         computeGeometryProperties();
     }
     if ( this->isHybridShell() ) {
-        auto *lcs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );
+        auto *lcs = static_cast< LatticeCrossSection * >( this->giveCrossSection() );
         return this->shellB * this->shellH / static_cast< double >( lcs->giveNLayers() );
     }
     return this->area;
@@ -612,7 +610,7 @@ Lattice3d :: computeGeometryProperties()
 void
   Lattice3d :: computeCrossSectionProperties() {
 
-
+  //Key check to make sure that lattice3d is only used with latticecross-section
   auto *cs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );
   if (!cs) {
     OOFEM_ERROR("Expected LatticeCrossSection");
@@ -620,18 +618,13 @@ void
   
   if (cs->giveShape() == 1) {
     double r = cs->giveRadius();
-    // Per-property fallback: each cross-section property is taken from the LatticeCS
-    // dictionary if the user supplied it (> 0); otherwise it is derived from radius.
-    // This lets users override the circular-section defaults without losing the shape tag.
     const double rArea  = M_PI * r * r;
     const double rI     = M_PI * pow(r, 4) / 4.0;
     const double rIp    = M_PI * pow(r, 4) / 2.0;
     const double kShear = 0.9;
-    // LatticeCrossSection adds a give(int, GaussPoint*) overload that hides the inherited
-    // CrossSection::give(CrossSectionProperty, GaussPoint*). Call the base version explicitly,
-    // both to dodge the hidden-overload bug and because the dictionary lookup is gp-independent.
+    // The section-property lookup is gp-independent, so a null gp is passed.
     auto pick = [&](CrossSectionProperty key, double fallback) {
-        double v = cs->CrossSection::give(key, (GaussPoint *) nullptr);
+        double v = cs->give(key, (GaussPoint *) nullptr);
         return ( v > 0.0 ) ? v : fallback;
     };
     this->area       = pick(CS_Area, rArea);
@@ -679,16 +672,16 @@ void
     return;
   }
   
-  // Beam/frame cross-section: no polygon geometry. Section properties are taken directly
-  // from the LatticeCrossSection and the transverse frame is oriented by the mandatory
-  // zaxis (as in LatticeFrame3d). This makes lattice3d a superset of latticeframe3d.
-  if ( this->numberOfPolygonVertices < 3 ) {
+  // shape 3: generic (property-defined) cross-section. No geometry - the section properties
+  // are taken directly from the latticecs (area is mandatory; iy/iz/ik/shear are optional and
+  // default to 0 / area). The transverse frame is oriented by the zaxis.
+  if ( cs->giveShape() == 3 ) {
     auto pick = [&](CrossSectionProperty key) {
-        return cs->CrossSection::give(key, (GaussPoint *) nullptr);
+        return cs->give(key, (GaussPoint *) nullptr);
     };
     double a = pick(CS_Area);
     if ( a <= 0.0 ) {
-      OOFEM_ERROR("Too small number of polygon vertices and no cross-section area given. Check meshing/cross-section.\n");
+      OOFEM_ERROR("shape 3 (property-defined) cross-section requires a positive area.\n");
     }
     this->area       = a;
     this->I1         = pick(CS_InertiaMomentY);
@@ -700,7 +693,7 @@ void
     this->shellB = 0.0;
     this->shellH = 0.0;   // keep isHybridShell() false so the getters return these members
 
-    // Local frame: axis 1 = element axis; transverse axes from zaxis (mirrors LatticeFrame3d).
+    // Local frame: axis 1 = element axis; transverse axes from zaxis.
     FloatArray lx = this->normal;                 // already normalized above
     FloatArray ly(3), lz(3);
     if ( this->zaxis.giveSize() == 3 ) {
@@ -714,7 +707,7 @@ void
       ly.normalize();
     } else {
       // No zaxis: the transverse orientation only matters for an asymmetric section (iy != iz),
-      // where leaving it unspecified is ambiguous. For iy == iz reproduce LatticeFrame3d's default frame.
+      // where leaving it unspecified is ambiguous. For iy == iz use a default transverse frame.
       if ( fabs(this->I1 - this->I2) > 1.e-12 * ( fabs(this->I1) + fabs(this->I2) ) ) {
         OOFEM_ERROR("Beam cross-section with iy != iz requires a zaxis to orient the section.\n");
       }
@@ -739,7 +732,7 @@ void
     }
 
     // Gauss point along the element: parameter (1+s)/2 from node A (s=0 -> midpoint),
-    // matching LatticeFrame3d's split l1 = (1+s)/2 L, l2 = (1-s)/2 L.
+    // i.e. arms l1 = (1+s)/2 L, l2 = (1-s)/2 L.
     FloatArray gpGlobal = midPoint;
     if ( this->s != 0.0 ) {
       FloatArray shift = this->normal;              // unit vector A->B
@@ -984,17 +977,6 @@ if ( cs->giveShape() == 2 || this->isShellElement() ) {
         this->J = beta * bMax * hMin * hMin * hMin;
     }
 
-      /* if (b <= 0.0 || h <= 0.0) { */
-      /* 	OOFEM_ERROR("Invalid rectangle dimensions in cross-section."); */
-      /* } */
-      
-      /* if (h > b) { */
-      /*   std::swap(b, h); */
-      /* } */
-      
-      /* const double r = h / b; */
-      /* this->J = (b * h * h * h / 3.0) * (1.0 - 0.63 * r + 0.052 * pow(r, 5)); */
-      
 
     } else {
       this->J = this->Ip; // temporary fallback for generic polygons
@@ -1004,7 +986,23 @@ if ( cs->giveShape() == 2 || this->isShellElement() ) {
 
     this->shearArea1 = area;
     this->shearArea2 = area;
-    
+
+    // Let user-specified section properties override the geometry-derived ones.
+    // A property is overridden only when a positive value is given in the latticecs; otherwise the
+    // geometric value stands. (Shell layered getters use shellB/shellH, so overriding I/J/area here
+    // affects only non-shell facet/rectangle sections.)
+    auto pick = [&](CrossSectionProperty key, double geom) {
+        double v = cs->give(key, (GaussPoint *) nullptr);
+        return ( v > 0.0 ) ? v : geom;
+    };
+    this->area       = pick(CS_Area, this->area);
+    this->I1         = pick(CS_InertiaMomentY, this->I1);
+    this->I2         = pick(CS_InertiaMomentZ, this->I2);
+    this->J          = pick(CS_TorsionConstantX, this->J);
+    this->Ip         = this->I1 + this->I2;
+    this->shearArea1 = pick(CS_ShearAreaY, this->shearArea1);
+    this->shearArea2 = pick(CS_ShearAreaZ, this->shearArea2);
+
     //Rotation around normal axis by angleChange
     FloatMatrix rotationChange(3, 3);
     rotationChange.zero();
@@ -1112,7 +1110,7 @@ double Lattice3d :: giveI1(GaussPoint *gp) {
         computeGeometryProperties();
     }
     if ( this->isHybridShell() ) {
-        auto *lcs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );
+        auto *lcs = static_cast< LatticeCrossSection * >( this->giveCrossSection() );
         const double dh = this->shellH / static_cast< double >( lcs->giveNLayers() );
         return this->shellB * this->shellB * this->shellB * dh / 12.0;
     }
@@ -1124,7 +1122,7 @@ double Lattice3d :: giveI2(GaussPoint *gp) {
         computeGeometryProperties();
     }
     if ( this->isHybridShell() ) {
-        auto *lcs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );
+        auto *lcs = static_cast< LatticeCrossSection * >( this->giveCrossSection() );
         const double dh = this->shellH / static_cast< double >( lcs->giveNLayers() );
         return this->shellB * dh * dh * dh / 12.0;
     }
@@ -1143,7 +1141,7 @@ double Lattice3d :: giveJ(GaussPoint *gp) {
         // just as axial forces at their offset give the Steiner bending. Returning
         // J_total/nLayers here would add the full plate torsion on top of that and
         // double-count the twisting stiffness.
-        auto *lcs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );
+        auto *lcs = static_cast< LatticeCrossSection * >( this->giveCrossSection() );
         const double dh = this->shellH / static_cast< double >( lcs->giveNLayers() );
         return this->shellB * dh * dh * dh / 12.0;
     }
@@ -1157,7 +1155,7 @@ double Lattice3d :: giveShearArea1(GaussPoint *gp) {
         computeGeometryProperties();
     }
     if ( this->isHybridShell() ) {
-        LatticeCrossSection *lcs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );
+        LatticeCrossSection *lcs = static_cast< LatticeCrossSection * >( this->giveCrossSection() );
         return this->shearArea1 / static_cast< double >( lcs->giveNLayers() );
     }
     return this->shearArea1;
@@ -1168,7 +1166,7 @@ double Lattice3d :: giveShearArea2(GaussPoint *gp) {
         computeGeometryProperties();
     }
     if ( this->isHybridShell() ) {
-        LatticeCrossSection *lcs = dynamic_cast< LatticeCrossSection * >( this->giveCrossSection() );
+        LatticeCrossSection *lcs = static_cast< LatticeCrossSection * >( this->giveCrossSection() );
         return this->shearArea2 / static_cast< double >( lcs->giveNLayers() );
     }
     return this->shearArea2;
