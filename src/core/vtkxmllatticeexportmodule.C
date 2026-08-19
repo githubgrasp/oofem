@@ -10,7 +10,7 @@
  *
  *             OOFEM : Object Oriented Finite Element Code
  *
- *               Copyright (C) 1993 - 2025   Borek Patzak
+ *               Copyright (C) 1993 - 2019   Borek Patzak
  *
  *
  *
@@ -45,12 +45,307 @@
 #include "classfactory.h"
 #include "crosssection.h"
 #include "dof.h"
+#include "floatarray.h"
+#include "floatmatrix.h"
+#include "dofiditem.h"
+#include <cmath>
+#include <map>
+
+#ifdef __SM_MODULE
+ #include "../sm/Elements/LatticeElements/latticestructuralelement.h"
+ #include "../sm/Elements/LatticeElements/lattice3d.h"
+ #include "../sm/Elements/LatticeElements/lattice3dboundary.h"
+ #include "../sm/Elements/LatticeElements/latticelink3d.h"
+ #include "../sm/Elements/LatticeElements/latticelink3dboundary.h"
+ #include "../sm/CrossSections/latticecrosssection.h"
+#endif
+
+namespace {
+using namespace oofem;
+
+// R = I + sin(theta)*K + (1-cos(theta))*K^2 where K = skew(spin/theta).
+// Degrades to I + skew(spin) for small theta.
+void rodriguesRotation(FloatMatrix &R, const FloatArray &spin)
+{
+    R.resize(3, 3); R.zero();
+    R.at(1,1) = R.at(2,2) = R.at(3,3) = 1.0;
+
+    const double theta = spin.computeNorm();
+    if ( theta < 1e-12 ) {
+        R.at(1,2) = -spin.at(3); R.at(2,1) =  spin.at(3);
+        R.at(1,3) =  spin.at(2); R.at(3,1) = -spin.at(2);
+        R.at(2,3) = -spin.at(1); R.at(3,2) =  spin.at(1);
+        return;
+    }
+    const double s = std::sin(theta) / theta;
+    const double c = ( 1.0 - std::cos(theta) ) / ( theta * theta );
+    const double k1 = spin.at(1), k2 = spin.at(2), k3 = spin.at(3);
+    R.at(1,1) += c * ( -k2*k2 - k3*k3 );
+    R.at(1,2) += -s * k3 + c * ( k1*k2 );
+    R.at(1,3) +=  s * k2 + c * ( k1*k3 );
+    R.at(2,1) +=  s * k3 + c * ( k1*k2 );
+    R.at(2,2) += c * ( -k1*k1 - k3*k3 );
+    R.at(2,3) += -s * k1 + c * ( k2*k3 );
+    R.at(3,1) += -s * k2 + c * ( k1*k3 );
+    R.at(3,2) +=  s * k1 + c * ( k2*k3 );
+    R.at(3,3) += c * ( -k1*k1 - k2*k2 );
+}
+
+// v_def = node_ref + node_disp + R(node_rot) * (v_ref - node_ref).
+void rigidBodyTransform(FloatArray &v_def, const FloatArray &v_ref,
+                        const FloatArray &node_ref, const FloatArray &node_disp,
+                        const FloatArray &node_rot)
+{
+    FloatMatrix R;
+    rodriguesRotation(R, node_rot);
+    FloatArray rel(3);
+    for ( int i = 1; i <= 3; ++i ) rel.at(i) = v_ref.at(i) - node_ref.at(i);
+    FloatArray rotated(3);
+    rotated.beProductOf(R, rel);
+    v_def.resize(3);
+    for ( int i = 1; i <= 3; ++i ) v_def.at(i) = node_ref.at(i) + node_disp.at(i) + rotated.at(i);
+}
+
+// Subdivide a 4-vertex shell polygon into N strips along the shell-normal direction.
+// stripVerts is (4*N) x 3; strip k occupies rows 4k+1 .. 4k+4 (CCW order).
+// Falls back to copying the original polygon if N==1 or the polygon isn't 4-vertex.
+void subdivideShellPolygon(const FloatArray &polyRef, int polyNV,
+                            const FloatArray &normal, int N,
+                            FloatMatrix &stripVerts)
+{
+    if ( N <= 1 || polyNV != 4 || normal.giveSize() != 3 ) {
+        stripVerts.resize(polyNV, 3);
+        for ( int k = 0; k < polyNV; ++k ) {
+            for ( int j = 1; j <= 3; ++j ) stripVerts.at(k+1, j) = polyRef.at(3*k + j);
+        }
+        return;
+    }
+    FloatArray centroid(3); centroid.zero();
+    for ( int k = 0; k < 4; ++k ) for ( int j = 1; j <= 3; ++j ) centroid.at(j) += polyRef.at(3*k + j) / 4.0;
+    FloatArray proj(4);
+    for ( int k = 0; k < 4; ++k ) {
+        double p = 0;
+        for ( int j = 1; j <= 3; ++j ) p += ( polyRef.at(3*k + j) - centroid.at(j) ) * normal.at(j);
+        proj.at(k+1) = p;
+    }
+    double meanP = 0; for ( int k = 1; k <= 4; ++k ) meanP += proj.at(k) / 4.0;
+    int top[2] = { -1, -1 }, bot[2] = { -1, -1 }, nt = 0, nb = 0;
+    for ( int k = 0; k < 4; ++k ) {
+        if ( proj.at(k+1) > meanP ) { if ( nt < 2 ) top[nt++] = k; }
+        else { if ( nb < 2 ) bot[nb++] = k; }
+    }
+    if ( nt != 2 || nb != 2 ) {  // degenerate; fall back
+        stripVerts.resize(4, 3);
+        for ( int k = 0; k < 4; ++k ) for ( int j = 1; j <= 3; ++j ) stripVerts.at(k+1, j) = polyRef.at(3*k + j);
+        return;
+    }
+    auto vdist2 = [&](int a, int b) {
+        double d = 0;
+        for ( int j = 1; j <= 3; ++j ) {
+            double diff = polyRef.at(3*a + j) - polyRef.at(3*b + j);
+            d += diff * diff;
+        }
+        return d;
+    };
+    // Pair top[0] with whichever bot is closest in 3D (i.e. same in-plane position).
+    int botPair0 = ( vdist2(top[0], bot[0]) < vdist2(top[0], bot[1]) ) ? bot[0] : bot[1];
+    int botPair1 = ( botPair0 == bot[0] ) ? bot[1] : bot[0];
+    int topPair0 = top[0], topPair1 = top[1];
+
+    stripVerts.resize(4 * N, 3);
+    for ( int k = 0; k < N; ++k ) {
+        double tb = static_cast< double >( k ) / N;
+        double tt = static_cast< double >( k + 1 ) / N;
+        for ( int j = 1; j <= 3; ++j ) {
+            double b0 = polyRef.at(3*botPair0 + j), t0 = polyRef.at(3*topPair0 + j);
+            double b1 = polyRef.at(3*botPair1 + j), t1 = polyRef.at(3*topPair1 + j);
+            stripVerts.at(4*k + 1, j) = b0 + tb * ( t0 - b0 );
+            stripVerts.at(4*k + 2, j) = b1 + tb * ( t1 - b1 );
+            stripVerts.at(4*k + 3, j) = b1 + tt * ( t1 - b1 );
+            stripVerts.at(4*k + 4, j) = b0 + tt * ( t0 - b0 );
+        }
+    }
+}
+
+#ifdef __SM_MODULE
+// Returns nLayers for hybrid shell (>1), else 1. Also fills shellNormal if applicable.
+int getElementStripCount(Element *el, FloatArray &shellNormal)
+{
+    shellNormal.resize(0);
+    auto *lat3d = dynamic_cast< Lattice3d * >( el );
+    if ( !lat3d || !lat3d->isHybridShell() ) return 1;
+    shellNormal = lat3d->giveShellNormal();
+    auto *lcs = dynamic_cast< LatticeCrossSection * >( el->giveCrossSection() );
+    if ( !lcs ) return 1;
+    return lcs->giveNLayers();
+}
+#else
+int getElementStripCount(Element *, FloatArray &shellNormal)
+{
+    shellNormal.resize(0);
+    return 1;
+}
+#endif
+
+// Build a frame (e_x = given axis, e_y, e_z). Pick world Z as up reference; world Y if vertical.
+void buildFrameFromAxis(const FloatArray &axis, FloatArray &ex, FloatArray &ey, FloatArray &ez)
+{
+    ex.resize(3);
+    double len = axis.computeNorm();
+    if ( len < 1e-12 ) { ex.at(1) = 1; ex.at(2) = 0; ex.at(3) = 0; }
+    else for ( int i = 1; i <= 3; ++i ) ex.at(i) = axis.at(i) / len;
+    FloatArray up(3); up.at(1) = 0; up.at(2) = 0; up.at(3) = 1;
+    if ( std::fabs(ex.dotProduct(up)) > 0.99 ) { up.at(1) = 0; up.at(2) = 1; up.at(3) = 0; }
+    double exDotUp = ex.dotProduct(up);
+    ey.resize(3);
+    for ( int i = 1; i <= 3; ++i ) ey.at(i) = up.at(i) - exDotUp * ex.at(i);
+    ey.times(1.0 / ey.computeNorm());
+    ez.resize(3);
+    ez.beVectorProductOf(ex, ey);
+}
+
+// Build a local frame (e_x, e_y, e_z) given the element axis. Pick world Z as up reference
+// unless axis is nearly vertical, in which case use world Y.
+void buildElementFrame(const FloatArray &nodeA, const FloatArray &nodeB,
+                        FloatArray &ex, FloatArray &ey, FloatArray &ez)
+{
+    ex.resize(3);
+    for ( int i = 1; i <= 3; ++i ) ex.at(i) = nodeB.at(i) - nodeA.at(i);
+    double len = ex.computeNorm();
+    if ( len < 1e-12 ) {
+        ex.at(1) = 1; ex.at(2) = 0; ex.at(3) = 0;
+        ey.resize(3); ey.at(1) = 0; ey.at(2) = 1; ey.at(3) = 0;
+        ez.resize(3); ez.at(1) = 0; ez.at(2) = 0; ez.at(3) = 1;
+        return;
+    }
+    ex.times(1.0 / len);
+    FloatArray up(3); up.at(1) = 0; up.at(2) = 0; up.at(3) = 1;
+    if ( std::fabs(ex.dotProduct(up)) > 0.99 ) { up.at(1) = 0; up.at(2) = 1; up.at(3) = 0; }
+    double exDotUp = ex.dotProduct(up);
+    ey.resize(3);
+    for ( int i = 1; i <= 3; ++i ) ey.at(i) = up.at(i) - exDotUp * ex.at(i);
+    ey.times(1.0 / ey.computeNorm());
+    ez.resize(3);
+    ez.beVectorProductOf(ex, ey);
+}
+
+// Synthesise a rectangular polygon (4 vertices CCW) of dimensions b × h, centred at midpoint,
+// in the (e_y, e_z) plane perpendicular to the element axis.
+void synthesiseRectangle(const FloatArray &mid, const FloatArray &ey, const FloatArray &ez,
+                          double b, double h, FloatArray &polyCoords)
+{
+    polyCoords.resize(12);
+    double signsY[4] = { +1, -1, -1, +1 };
+    double signsZ[4] = { +1, +1, -1, -1 };
+    for ( int k = 0; k < 4; ++k ) {
+        for ( int j = 1; j <= 3; ++j ) {
+            polyCoords.at(3*k + j) = mid.at(j)
+                                    + 0.5 * b * signsY[k] * ey.at(j)
+                                    + 0.5 * h * signsZ[k] * ez.at(j);
+        }
+    }
+}
+
+// Synthesise an N-gon (N vertices CCW) of given radius, centred at midpoint, in (e_y, e_z) plane.
+void synthesisePolygonNgon(const FloatArray &mid, const FloatArray &ey, const FloatArray &ez,
+                            double radius, int N, FloatArray &polyCoords)
+{
+    polyCoords.resize(3 * N);
+    for ( int k = 0; k < N; ++k ) {
+        double angle = 2.0 * M_PI * k / N;
+        double cy = radius * std::cos(angle);
+        double cz = radius * std::sin(angle);
+        for ( int j = 1; j <= 3; ++j ) {
+            polyCoords.at(3*k + j) = mid.at(j) + cy * ey.at(j) + cz * ez.at(j);
+        }
+    }
+}
+
+// Try to synthesise a cross-section polygon for an element without polygonCoords.
+// Returns # vertices placed in polyCoords (0 if synthesis failed → treat as line for 2-node, else skip).
+#ifdef __SM_MODULE
+int synthesiseElementPolygon(Element *el, FloatArray &polyCoords)
+{
+    if ( el->giveNumberOfDofManagers() < 2 ) return 0;
+    // Link/bond elements: render as line, not as a synthesised cross-section.
+    if ( dynamic_cast< LatticeLink3d * >( el ) || dynamic_cast< LatticeLink3dBoundary * >( el ) ) return 0;
+    // For Lattice3dBoundary the raw coords of node 2 sit on the opposite face (in-cell
+    // mirror); using them would put the synthesised polygon's midpoint far from either
+    // node and orient the element frame across the cell. Shift to true geometric coords.
+    FloatArray cA, cB;
+    if ( dynamic_cast< Lattice3dBoundary * >( el ) ) {
+        el->recalculateCoordinates(1, cA);
+        el->recalculateCoordinates(2, cB);
+    } else {
+        cA = el->giveNode(1)->giveCoordinates();
+        cB = el->giveNode(2)->giveCoordinates();
+    }
+    FloatArray mid(3);
+    for ( int i = 1; i <= 3; ++i ) mid.at(i) = 0.5 * ( cA.at(i) + cB.at(i) );
+    FloatArray ex, ey, ez;
+    buildElementFrame(cA, cB, ex, ey, ez);
+
+    auto *lcs = dynamic_cast< LatticeCrossSection * >( el->giveCrossSection() );
+    if ( lcs && lcs->giveShape() == 1 && lcs->giveRadius() > 0 ) {
+        // Circular: 8-gon.
+        synthesisePolygonNgon(mid, ey, ez, lcs->giveRadius(), 8, polyCoords);
+        return 8;
+    }
+
+    auto *lse = dynamic_cast< LatticeStructuralElement * >( el );
+    if ( !lse ) return 0;
+    IntegrationRule *iRule = el->giveDefaultIntegrationRulePtr();
+    if ( !iRule || iRule->giveNumberOfIntegrationPoints() == 0 ) return 0;
+    GaussPoint *gp = iRule->getIntegrationPoint(0);
+    double A = lse->giveArea(gp);
+    if ( A <= 0 ) return 0;
+    double I1 = lse->giveI1(gp);
+    double I2 = lse->giveI2(gp);
+    double b, h;
+    if ( I1 > 0 ) {
+        b = std::sqrt(12.0 * I1 / A);
+        h = A / b;
+    } else if ( I2 > 0 ) {
+        h = std::sqrt(12.0 * I2 / A);
+        b = A / h;
+    } else {
+        b = h = std::sqrt(A);
+    }
+    synthesiseRectangle(mid, ey, ez, b, h, polyCoords);
+    return 4;
+}
+#else
+int synthesiseElementPolygon(Element *, FloatArray &polyCoords) {
+    polyCoords.resize(0);
+    return 0;
+}
+#endif
+
+// Read total nodal displacement (D_u, D_v, D_w) and rotation (R_u, R_v, R_w).
+void giveNodeKinematics(Node *node, TimeStep *tStep, FloatArray &disp, FloatArray &rot)
+{
+    disp.resize(3); disp.zero();
+    rot.resize(3); rot.zero();
+    if ( !node || !tStep ) return;
+    IntArray dispIds = { D_u, D_v, D_w };
+    IntArray rotIds  = { R_u, R_v, R_w };
+    FloatArray vec;
+    node->giveUnknownVector(vec, dispIds, VM_Total, tStep, true);
+    for ( int i = 1; i <= std::min(3, vec.giveSize()); ++i ) disp.at(i) = vec.at(i);
+    node->giveUnknownVector(vec, rotIds, VM_Total, tStep, true);
+    for ( int i = 1; i <= std::min(3, vec.giveSize()); ++i ) rot.at(i) = vec.at(i);
+}
+
+} // anonymous namespace
 
 #ifdef __SM_MODULE
  #include "../sm/Elements/LatticeElements/latticestructuralelement.h"
  #include "../sm/Elements/LatticeElements/lattice2dboundary.h"
  #include "../sm/Elements/LatticeElements/lattice3dboundary.h"
  #include "../sm/Elements/LatticeElements/latticelink3dboundary.h"
+ #include "../sm/Elements/LatticeElements/latticelink3d.h"
+ #include "../sm/Elements/LatticeElements/lattice3d.h"
+ #include "../sm/CrossSections/latticecrosssection.h"
 #endif
 
 #ifdef __TM_MODULE
@@ -77,6 +372,12 @@ VTKXMLLatticeExportModule::initializeFrom(const std::shared_ptr<InputRecord> &ir
     VTKXMLExportModule::initializeFrom(ir);
     this->crossSectionExportFlag = false;
     IR_GIVE_OPTIONAL_FIELD(ir, this->crossSectionExportFlag, _IFT_VTKXMLLatticeExportModule_cross);
+    this->crossOutputStep = 1;
+    IR_GIVE_OPTIONAL_FIELD(ir, this->crossOutputStep, _IFT_VTKXMLLatticeExportModule_crossstep);
+    if ( this->crossOutputStep < 1 ) this->crossOutputStep = 1;
+    this->crossOutputCounter = 0;
+    this->pvdBufferLine.clear();
+    this->pvdBufferCross.clear();
 }
 
 std::string
@@ -237,118 +538,658 @@ VTKXMLLatticeExportModule::setupVTKPiece(ExportRegion &vtkPiece, TimeStep *tStep
 void
 VTKXMLLatticeExportModule::setupVTKPieceCross(ExportRegion &vtkPieceCross, TimeStep *tStep, Set& region)
 {
-    // Stores all neccessary data (of a region) in a VTKPiece so it can be exported later.
+    // Per lattice element with a polygon: emit 3 cells -- A-side, B-side, midline.
+    // A and B copies move with their owner node's rigid-body kinematics (total disp + Rodrigues rot).
+    // Midline = average of the two deformed copies; carries the edge-level cell data.
+    // Elements without a polygon (frame, transport-only) fall back to a single VTK_VERTEX.
 
-    Domain *domain  = emodel->giveDomain(1);
-
-    IntArray elements = region.giveElementList();
+    Domain *domain = emodel->giveDomain( 1 );
+    IntArray elements    = region.giveElementList();
     int numberOfElements = elements.giveSize();
 
-    //Loop over the elements and get crossSectionNodes
-    int numberOfCrossSectionNodes = 0;
-
-    IntArray crossSectionTable;
-    crossSectionTable.resize(numberOfElements);
-    int numberOfNodes = 0;
-    for ( int ie = 1; ie <= numberOfElements; ie++ ) {
-    #ifdef __SM_MODULE
-        if (  dynamic_cast< LatticeStructuralElement * >( domain->giveElement(elements.at(ie) ) ) ) {
-            numberOfCrossSectionNodes = ( static_cast< LatticeStructuralElement * >( domain->giveElement(elements.at(ie) ) ) )->giveNumberOfCrossSectionNodes();
-        } else 
-    #endif
-    #ifdef __TM_MODULE    
-        if ( dynamic_cast< LatticeTransportElement * >( domain->giveElement(elements.at(ie) ) ) ) {
-            numberOfCrossSectionNodes = ( static_cast< LatticeTransportElement * >( domain->giveElement(elements.at(ie) ) ) )->giveNumberOfCrossSectionNodes();
-        } else
-    #endif
-        {
-            OOFEM_ERROR("Unknown element type\n");
+    auto getPolygonNodeCount = [&](int ielem) -> int {
+        Element *el = domain->giveElement(ielem);
+        if ( auto *le = dynamic_cast<LatticeStructuralElement *>(el) ) {
+            return le->giveNumberOfCrossSectionNodes();
+        } else if ( auto *le = dynamic_cast<LatticeTransportElement *>(el) ) {
+            return le->giveNumberOfCrossSectionNodes();
         }
+        return 0;
+    };
 
-        crossSectionTable.at(ie) = numberOfCrossSectionNodes;
-        numberOfNodes += numberOfCrossSectionNodes;
+    auto getPolygonCoords = [&](int ielem, FloatArray &coords) {
+        Element *el = domain->giveElement(ielem);
+        if ( auto *le = dynamic_cast<LatticeStructuralElement *>(el) ) {
+            le->giveCrossSectionCoordinates(coords);
+        } else if ( auto *le = dynamic_cast<LatticeTransportElement *>(el) ) {
+            le->giveCrossSectionCoordinates(coords);
+        }
+    };
+
+    auto getGpCoords = [&](int ielem, FloatArray &coords) {
+        Element *el = domain->giveElement(ielem);
+        if ( auto *le = dynamic_cast<LatticeStructuralElement *>(el) ) {
+            le->giveGpCoordinates(coords);
+        } else if ( auto *le = dynamic_cast<LatticeTransportElement *>(el) ) {
+            le->giveGpCoordinates(coords);
+        }
+    };
+
+    // Per-element kind: 0 = real polygon, 1 = synthesised polygon, 2 = line (bond), 3 = skip.
+    IntArray elemKind(numberOfElements);
+    IntArray vertsPerCell(numberOfElements);   // # vertices per emitted cell
+    IntArray nStripsPerElem(numberOfElements); // # strips per copy (only meaningful for kind 0)
+    IntArray cellsPerElem(numberOfElements);   // # cells per element
+
+    // First pass: classify each element; for kind-1, just count incidence per node (for cap detection).
+    std::map< int, int > nodeIncidence;
+    FloatArray scratchPoly;
+    for ( int ie = 1; ie <= numberOfElements; ie++ ) {
+        Element *el = domain->giveElement(elements.at(ie));
+        int npoly = getPolygonNodeCount(elements.at(ie));
+        if ( npoly >= 3 ) {
+            elemKind.at(ie) = 0;
+            continue;
+        }
+        int synVerts = synthesiseElementPolygon(el, scratchPoly);
+        if ( synVerts >= 3 ) {
+            elemKind.at(ie) = 1;
+            vertsPerCell.at(ie) = synVerts;
+            ++nodeIncidence[el->giveDofManagerNumber(1)];
+            ++nodeIncidence[el->giveDofManagerNumber(2)];
+            continue;
+        }
+        if ( el->giveNumberOfDofManagers() == 2 ) {
+            elemKind.at(ie) = 2;
+            continue;
+        }
+        elemKind.at(ie) = 3;
     }
 
-    FloatMatrix nodeTable;
-    nodeTable.resize(numberOfNodes, 3);
+    // Stage 4b (fan approach): for each shell element with a 4-vertex polygon, emit 4 closure
+    // triangles per element (A_top, B_top, A_bot, B_bot). Each triangle has 3 fresh vertices,
+    // all under one node's rigid-body kinematics. No watertightness, no sorting, no dedup.
+    // Counting happens in the second pass below.
 
-    FloatArray crossSectionCoordinates;
+    // Detect whether a shell element sits at the specimen boundary. The converter places one
+    // pair of polygon TOP-BOT vertices at the edge midpoint (xm ± b·snorm) when there is no
+    // adjacent triangle on that side — i.e. the component of (vertex - xm) orthogonal to snorm
+    // collapses to zero. Returns true iff exactly one TOP-BOT pair has this property → emit
+    // 4 side tris. Using the shell-normal-orthogonal magnitude avoids dependence on the
+    // converter's polygon lateral axis (which is not snorm × elemAxis on curved shells).
+    auto shellHasBoundarySide = [&](Element *el) -> bool {
+#ifdef __SM_MODULE
+        auto *l3d = dynamic_cast< Lattice3d * >( el );
+        if ( !l3d || !l3d->isShellElement() ) return false;
+        FloatArray poly;
+        l3d->giveCrossSectionCoordinates(poly);
+        if ( poly.giveSize() != 12 ) return false;
+        const FloatArray &snorm = l3d->giveShellNormal();
+        const FloatArray &cA = l3d->giveNode(1)->giveCoordinates();
+        const FloatArray &cB = l3d->giveNode(2)->giveCoordinates();
+        FloatArray xm(3), e(3);
+        for ( int j = 1; j <= 3; ++j ) {
+            xm.at(j) = 0.5 * ( cA.at(j) + cB.at(j) );
+            e.at(j)  = cB.at(j) - cA.at(j);
+        }
+        double elemLen = e.computeNorm();
+        if ( elemLen <= 0 ) return false;
+        const double tol = 1e-3 * elemLen;
+        int nBndTop = 0, nBndBot = 0;
+        for ( int k = 0; k < 4; ++k ) {
+            double dn = 0;
+            for ( int j = 1; j <= 3; ++j ) dn += ( poly.at(3*k + j) - xm.at(j) ) * snorm.at(j);
+            double latSq = 0;
+            for ( int j = 1; j <= 3; ++j ) {
+                double dp = ( poly.at(3*k + j) - xm.at(j) ) - dn * snorm.at(j);
+                latSq += dp * dp;
+            }
+            if ( std::sqrt(latSq) < tol ) { ( dn > 0 ) ? ++nBndTop : ++nBndBot; }
+        }
+        return ( nBndTop == 1 && nBndBot == 1 );
+#else
+        (void) el;
+        return false;
+#endif
+    };
+
+    // Second pass: count cells (now we know terminal/interior status per node).
+    int totalNodes = 0, totalCells = 0;
+    for ( int ie = 1; ie <= numberOfElements; ie++ ) {
+        Element *el = domain->giveElement(elements.at(ie));
+        const int kind = elemKind.at(ie);
+        if ( kind == 0 ) {
+            int npoly = getPolygonNodeCount(elements.at(ie));
+            FloatArray dummyNormal;
+            int nStrips = getElementStripCount(el, dummyNormal);
+            int vpc = ( nStrips > 1 && npoly == 4 ) ? 4 : npoly;
+            vertsPerCell.at(ie) = vpc;
+            nStripsPerElem.at(ie) = nStrips;
+            int nClosure = 0;
+#ifdef __SM_MODULE
+            // 4 fan triangles per shell element with a 4-vertex polygon (A_top, B_top, A_bot, B_bot).
+            auto *l3dCnt = dynamic_cast< Lattice3d * >( el );
+            if ( l3dCnt && l3dCnt->isShellElement() && npoly == 4 ) {
+                nClosure = 4;
+                // +4 fan triangles for the boundary side (A_top→poly_top→poly_bot→A_bot and B-mirror).
+                if ( shellHasBoundarySide(el) ) nClosure += 4;
+            }
+#endif
+            cellsPerElem.at(ie) = 3 * nStrips + nClosure;
+            totalNodes += 3 * nStrips * vpc + 3 * nClosure;
+            totalCells += 3 * nStrips + nClosure;
+        } else if ( kind == 1 ) {
+            int N = vertsPerCell.at(ie);
+            int nA = el->giveDofManagerNumber(1);
+            int nB = el->giveDofManagerNumber(2);
+            int capA = ( nodeIncidence[nA] == 1 ) ? 1 : 0;
+            int capB = ( nodeIncidence[nB] == 1 ) ? 1 : 0;
+            nStripsPerElem.at(ie) = 1;
+            // Cells: 3 midpoint + 2N lateral quads + capA + capB
+            int nCells = 3 + 2 * N + capA + capB;
+            // Vertices: 3N midpoint copies + 2N joint vertices (caps share joint vertices)
+            int nV = 5 * N;
+            cellsPerElem.at(ie) = nCells;
+            totalNodes += nV;
+            totalCells += nCells;
+        } else if ( kind == 2 ) {
+            vertsPerCell.at(ie) = 1;
+            nStripsPerElem.at(ie) = 1;
+            cellsPerElem.at(ie) = 1;
+            totalNodes += 1;
+            totalCells += 1;
+        }
+    }
+    if ( totalNodes == 0 || totalCells == 0 ) return;
+
+    // Stash per-element layout into members for exportCellVarsCross.
+    elemKindCross = elemKind;
+    cellsPerElemCross = cellsPerElem;
+    vertsPerCellCross = vertsPerCell;
+    nStripsPerElemCross = nStripsPerElem;
+    capCountCross.resize(numberOfElements);
+    for ( int ie = 1; ie <= numberOfElements; ie++ ) {
+        if ( elemKind.at(ie) != 1 ) { capCountCross.at(ie) = 0; continue; }
+        Element *el = domain->giveElement(elements.at(ie));
+        int nA = el->giveDofManagerNumber(1);
+        int nB = el->giveDofManagerNumber(2);
+        int c = 0;
+        if ( nodeIncidence[nA] == 1 ) ++c;
+        if ( nodeIncidence[nB] == 1 ) ++c;
+        capCountCross.at(ie) = c;
+    }
+
+    // (Per-element extrusion uses the element's own axis directly — no per-node joint axis needed.)
+
+    vtkPieceCross.setNumberOfNodes(totalNodes);
+    vtkPieceCross.setNumberOfCells(totalCells);
+
+    // Pre-size the per-cell polygonRole tag (0 = A-side, 1 = B-side, 2 = midline, -1 = fallback point).
+    polygonRoleCross.resize(totalCells);
+
+    // Per-vertex displacement (so ParaView Warp by Vector can show the deformed bodies).
+    displacementCross.resize(totalNodes, 3); displacementCross.zero();
+
+    FloatArray polyRef, vRef(3), vDef(3);
+    FloatArray nodeRefA(3), nodeRefB(3), dispA, dispB, rotA, rotB;
+    IntArray connectivity;
     FloatArray coords(3);
 
-    //Store node coordinates in table
-    int nodeCounter = 0;
-    for ( int ie = 1; ie <= elements.giveSize(); ie++ ) {
-    #ifdef __SM_MODULE
-        if (  dynamic_cast< LatticeStructuralElement * >( domain->giveElement(elements.at(ie) ) ) ) {
-            numberOfCrossSectionNodes =  ( static_cast< LatticeStructuralElement * >( domain->giveElement(elements.at(ie) ) ) )->giveNumberOfCrossSectionNodes();
-            ( static_cast< LatticeStructuralElement * >( domain->giveElement(elements.at(ie) ) ) )->giveCrossSectionCoordinates(crossSectionCoordinates);
-        } else 
-    #endif
-    #ifdef __TM_MODULE
-        if ( dynamic_cast< LatticeTransportElement * >( domain->giveElement(elements.at(ie) ) ) ) {
-            numberOfCrossSectionNodes = ( static_cast< LatticeTransportElement * >( domain->giveElement(elements.at(ie) ) ) )->giveNumberOfCrossSectionNodes();
-            ( static_cast< LatticeTransportElement * >( domain->giveElement(elements.at(ie) ) ) )->giveCrossSectionCoordinates(crossSectionCoordinates);
-        } else
-    #endif
-        {
-            OOFEM_ERROR("Unknown element type\n");
-        }
+    syntheticCross.resize(totalCells); syntheticCross.zero();
 
-        for ( int is = 0; is < numberOfCrossSectionNodes; is++ ) {
-            nodeCounter++;
-            nodeTable.at(nodeCounter, 1) = crossSectionCoordinates.at(3 * is + 1);
-            nodeTable.at(nodeCounter, 2) = crossSectionCoordinates.at(3 * is + 2);
-            nodeTable.at(nodeCounter, 3) = crossSectionCoordinates.at(3 * is + 3);
+    int nodeOffset = 0, cellIdx = 0, vtkOffset = 0;
+    for ( int ie = 1; ie <= numberOfElements; ie++ ) {
+        Element *el = domain->giveElement(elements.at(ie));
+        const int vpc = vertsPerCell.at(ie);
+        const int nStrips = nStripsPerElem.at(ie);
+        const int kind = elemKind.at(ie);
+
+        if ( kind == 3 ) continue;  // skipped
+
+        if ( kind == 0 ) {
+            getPolygonCoords(elements.at(ie), polyRef);
+            const int polyNV = polyRef.giveSize() / 3;
+            FloatArray shellNormal;
+            getElementStripCount(el, shellNormal);
+
+            // Subdivide polygon (reference frame) into nStrips quads when hybrid.
+            FloatMatrix stripVerts;
+            subdivideShellPolygon(polyRef, polyNV, shellNormal, nStrips, stripVerts);
+            const int totalStripV = nStrips * vpc;
+
+            Node *nA = el->giveNode(1);
+            Node *nB = el->giveNumberOfDofManagers() >= 2 ? el->giveNode(2) : nA;
+            // For Lattice3dBoundary the second node sits on the opposite face of the periodic
+            // cell (its stored coords are the in-cell mirror), so the polygon ends up
+            // rigid-body-transformed to a position spanning the cube. recalculateCoordinates
+            // shifts each end back to its true geometric position.
+            FloatArray cA, cB;
+#ifdef __SM_MODULE
+            if ( dynamic_cast< Lattice3dBoundary * >( el ) ) {
+                el->recalculateCoordinates(1, cA);
+                el->recalculateCoordinates(2, cB);
+            } else
+#endif
+            {
+                cA = nA->giveCoordinates();
+                cB = nB->giveCoordinates();
+            }
+            for ( int i = 1; i <= 3; ++i ) {
+                nodeRefA.at(i) = cA.at(i);
+                nodeRefB.at(i) = cB.at(i);
+            }
+            giveNodeKinematics(nA, tStep, dispA, rotA);
+            giveNodeKinematics(nB, tStep, dispB, rotB);
+
+            // Deformed strip vertices under A's and B's rigid-body kinematics.
+            FloatMatrix vA(totalStripV, 3), vB(totalStripV, 3);
+            for ( int k = 0; k < totalStripV; ++k ) {
+                for ( int j = 1; j <= 3; ++j ) vRef.at(j) = stripVerts.at(k+1, j);
+                rigidBodyTransform(vDef, vRef, nodeRefA, dispA, rotA);
+                for ( int j = 1; j <= 3; ++j ) vA.at(k+1, j) = vDef.at(j);
+                rigidBodyTransform(vDef, vRef, nodeRefB, dispB, rotB);
+                for ( int j = 1; j <= 3; ++j ) vB.at(k+1, j) = vDef.at(j);
+            }
+
+            // Emit 3 * nStrips cells: copy ∈ {0,1,2} × strip ∈ 0..nStrips-1.
+            for ( int copy = 0; copy < 3; ++copy ) {
+                for ( int s = 0; s < nStrips; ++s ) {
+                    connectivity.resize(vpc);
+                    for ( int k = 1; k <= vpc; ++k ) {
+                        const int stripVertRow = s * vpc + k;  // 1-based
+                        int nodeIdx = nodeOffset + k;
+                        for ( int j = 1; j <= 3; ++j ) coords.at(j) = stripVerts.at(stripVertRow, j);
+                        vtkPieceCross.setNodeCoords(nodeIdx, coords);
+                        for ( int j = 1; j <= 3; ++j ) {
+                            double def = ( copy == 0 ) ? vA.at(stripVertRow, j)
+                                       : ( copy == 1 ) ? vB.at(stripVertRow, j)
+                                       : 0.5 * ( vA.at(stripVertRow, j) + vB.at(stripVertRow, j) );
+                            displacementCross.at(nodeIdx, j) = def - stripVerts.at(stripVertRow, j);
+                        }
+                        connectivity.at(k) = nodeIdx;
+                    }
+                    ++cellIdx;
+                    vtkPieceCross.setConnectivity(cellIdx, connectivity);
+                    vtkPieceCross.setCellType(cellIdx, 7);  // VTK_POLYGON
+                    vtkOffset += vpc;
+                    vtkPieceCross.setOffset(cellIdx, vtkOffset);
+                    polygonRoleCross.at(cellIdx) = copy;
+                    nodeOffset += vpc;
+                }
+            }
+
+            // Stage 4b fan closures: per shell element with 4-vertex polygon, emit 4 triangles:
+            // (A_top, polyTop1, polyTop2), (B_top, ...), (A_bot, polyBot1, polyBot2), (B_bot, ...).
+            // Each triangle's 3 vertices use one node's rigid-body kinematics. No watertightness.
+#ifdef __SM_MODULE
+            auto *l3dShell = dynamic_cast< Lattice3d * >( el );
+            if ( l3dShell && l3dShell->isShellElement() && polyNV == 4 ) {
+                const FloatArray &snorm = l3dShell->giveShellNormal();
+                // Identify TOP / BOT polygon vertex indices by shell-normal projection.
+                FloatArray polyCntr(3); polyCntr.zero();
+                for ( int k = 0; k < polyNV; ++k ) for ( int j = 1; j <= 3; ++j ) polyCntr.at(j) += polyRef.at(3*k + j) / polyNV;
+                int topIdx[2] = { -1, -1 };
+                int botIdx[2] = { -1, -1 };
+                int nT = 0, nB = 0;
+                double maxProj = 0, minProj = 0;
+                for ( int k = 0; k < polyNV; ++k ) {
+                    double p = 0;
+                    for ( int j = 1; j <= 3; ++j ) p += ( polyRef.at(3*k + j) - polyCntr.at(j) ) * snorm.at(j);
+                    if ( p > 0 ) {
+                        if ( nT < 2 ) topIdx[nT++] = k;
+                        if ( p > maxProj ) maxProj = p;
+                    } else {
+                        if ( nB < 2 ) botIdx[nB++] = k;
+                        if ( p < minProj ) minProj = p;
+                    }
+                }
+                if ( nT == 2 && nB == 2 ) {
+                    const double halfH_top =  maxProj;
+                    const double halfH_bot = -minProj;
+                    auto emitFanTriangle = [&](int nodeOwner, int surfId) {
+                        const FloatArray &nodeRefOwn = ( nodeOwner == 0 ) ? nodeRefA : nodeRefB;
+                        const FloatArray &dispOwn    = ( nodeOwner == 0 ) ? dispA    : dispB;
+                        const FloatArray &rotOwn     = ( nodeOwner == 0 ) ? rotA     : rotB;
+                        const int *idx = ( surfId == 0 ) ? topIdx : botIdx;
+                        const double off = ( surfId == 0 ) ? halfH_top : -halfH_bot;
+                        // Three reference positions: node_top/bot + 2 polygon vertices.
+                        FloatArray nodeCap(3);
+                        for ( int j = 1; j <= 3; ++j ) nodeCap.at(j) = nodeRefOwn.at(j) + off * snorm.at(j);
+                        FloatArray triRef[3];
+                        triRef[0] = nodeCap;
+                        for ( int t = 0; t < 2; ++t ) {
+                            triRef[t+1].resize(3);
+                            for ( int j = 1; j <= 3; ++j ) triRef[t+1].at(j) = polyRef.at(3 * idx[t] + j);
+                        }
+                        connectivity.resize(3);
+                        for ( int t = 0; t < 3; ++t ) {
+                            int nodeIdx = nodeOffset + t + 1;
+                            for ( int j = 1; j <= 3; ++j ) coords.at(j) = triRef[t].at(j);
+                            vtkPieceCross.setNodeCoords(nodeIdx, coords);
+                            FloatArray vDefFan;
+                            rigidBodyTransform(vDefFan, triRef[t], nodeRefOwn, dispOwn, rotOwn);
+                            for ( int j = 1; j <= 3; ++j ) displacementCross.at(nodeIdx, j) = vDefFan.at(j) - triRef[t].at(j);
+                            connectivity.at(t + 1) = nodeIdx;
+                        }
+                        ++cellIdx;
+                        vtkPieceCross.setConnectivity(cellIdx, connectivity);
+                        vtkPieceCross.setCellType(cellIdx, 7);  // VTK_POLYGON (3-vertex)
+                        vtkOffset += 3;
+                        vtkPieceCross.setOffset(cellIdx, vtkOffset);
+                        polygonRoleCross.at(cellIdx) = ( surfId == 0 ) ? 5 : 6;
+                        syntheticCross.at(cellIdx) = 1;
+                        nodeOffset += 3;
+                    };
+                    emitFanTriangle(0, 0);  // A-top
+                    emitFanTriangle(1, 0);  // B-top
+                    emitFanTriangle(0, 1);  // A-bot
+                    emitFanTriangle(1, 1);  // B-bot
+
+                    // Side closure: locate the TOP-BOT polygon pair at the edge midpoint
+                    // (boundary side) and emit 4 triangles tying it to A_top/A_bot and B_top/B_bot.
+                    // Boundary criterion: shell-normal-orthogonal component of (vertex - xm)
+                    // is ~0 — independent of the converter's lateral basis (which deviates from
+                    // snorm × elemAxis on curved shells).
+                    {
+                        FloatArray e(3);
+                        for ( int j = 1; j <= 3; ++j ) e.at(j) = nodeRefB.at(j) - nodeRefA.at(j);
+                        double elemLen = e.computeNorm();
+                        FloatArray xm(3);
+                        for ( int j = 1; j <= 3; ++j ) xm.at(j) = 0.5 * ( nodeRefA.at(j) + nodeRefB.at(j) );
+                        if ( elemLen > 0 ) {
+                            const double tol = 1e-3 * elemLen;
+                            auto vertLat = [&](int idx) {
+                                double dn = 0;
+                                for ( int j = 1; j <= 3; ++j ) dn += ( polyRef.at(3 * idx + j) - xm.at(j) ) * snorm.at(j);
+                                double latSq = 0;
+                                for ( int j = 1; j <= 3; ++j ) {
+                                    double dp = ( polyRef.at(3 * idx + j) - xm.at(j) ) - dn * snorm.at(j);
+                                    latSq += dp * dp;
+                                }
+                                return std::sqrt(latSq);
+                            };
+                            int bndTop = -1, bndBot = -1;
+                            int nBndTop = 0, nBndBot = 0;
+                            for ( int t = 0; t < 2; ++t ) if ( vertLat(topIdx[t]) < tol ) { bndTop = topIdx[t]; ++nBndTop; }
+                            for ( int b = 0; b < 2; ++b ) if ( vertLat(botIdx[b]) < tol ) { bndBot = botIdx[b]; ++nBndBot; }
+                            if ( nBndTop == 1 && nBndBot == 1 ) {
+                                FloatArray polyBndTop(3), polyBndBot(3);
+                                for ( int j = 1; j <= 3; ++j ) {
+                                    polyBndTop.at(j) = polyRef.at(3 * bndTop + j);
+                                    polyBndBot.at(j) = polyRef.at(3 * bndBot + j);
+                                }
+                                auto emitSideTriangle = [&](int nodeOwner, const FloatArray &triR0, const FloatArray &triR1, const FloatArray &triR2) {
+                                    const FloatArray &nodeRefOwn = ( nodeOwner == 0 ) ? nodeRefA : nodeRefB;
+                                    const FloatArray &dispOwn    = ( nodeOwner == 0 ) ? dispA    : dispB;
+                                    const FloatArray &rotOwn     = ( nodeOwner == 0 ) ? rotA     : rotB;
+                                    const FloatArray *triRef[3] = { &triR0, &triR1, &triR2 };
+                                    connectivity.resize(3);
+                                    for ( int t = 0; t < 3; ++t ) {
+                                        int nodeIdx = nodeOffset + t + 1;
+                                        for ( int j = 1; j <= 3; ++j ) coords.at(j) = triRef[t]->at(j);
+                                        vtkPieceCross.setNodeCoords(nodeIdx, coords);
+                                        FloatArray vDefSide;
+                                        rigidBodyTransform(vDefSide, *triRef[t], nodeRefOwn, dispOwn, rotOwn);
+                                        for ( int j = 1; j <= 3; ++j ) displacementCross.at(nodeIdx, j) = vDefSide.at(j) - triRef[t]->at(j);
+                                        connectivity.at(t + 1) = nodeIdx;
+                                    }
+                                    ++cellIdx;
+                                    vtkPieceCross.setConnectivity(cellIdx, connectivity);
+                                    vtkPieceCross.setCellType(cellIdx, 7);  // VTK_POLYGON (3-vertex)
+                                    vtkOffset += 3;
+                                    vtkPieceCross.setOffset(cellIdx, vtkOffset);
+                                    polygonRoleCross.at(cellIdx) = 7;
+                                    syntheticCross.at(cellIdx) = 1;
+                                    nodeOffset += 3;
+                                };
+                                FloatArray aTop(3), aBot(3), bTop(3), bBot(3);
+                                for ( int j = 1; j <= 3; ++j ) {
+                                    aTop.at(j) = nodeRefA.at(j) + halfH_top * snorm.at(j);
+                                    aBot.at(j) = nodeRefA.at(j) - halfH_bot * snorm.at(j);
+                                    bTop.at(j) = nodeRefB.at(j) + halfH_top * snorm.at(j);
+                                    bBot.at(j) = nodeRefB.at(j) - halfH_bot * snorm.at(j);
+                                }
+                                // A-side quad split into two triangles, both under A's kinematics.
+                                emitSideTriangle(0, aTop, polyBndTop, polyBndBot);
+                                emitSideTriangle(0, aTop, polyBndBot, aBot);
+                                // B-side quad split into two triangles, both under B's kinematics.
+                                emitSideTriangle(1, bTop, polyBndTop, polyBndBot);
+                                emitSideTriangle(1, bTop, polyBndBot, bBot);
+                            }
+                        }
+                    }
+                }
+            }
+#endif
+        } else if ( kind == 1 ) {
+            // Synthesised polygon (frame/rebar): 3 midpoint cells + 2N lateral quads + 0–2 caps.
+            // Vertex layout (per element): 0..N-1 = midpoint A copy, N..2N-1 = B copy, 2N..3N-1 = midline copy,
+            // 3N..4N-1 = joint at A, 4N..5N-1 = joint at B.
+            synthesiseElementPolygon(el, polyRef);
+            const int N = vpc;
+            Node *nA = el->giveNode(1);
+            Node *nB = el->giveNode(2);
+            FloatArray cA, cB;
+#ifdef __SM_MODULE
+            if ( dynamic_cast< Lattice3dBoundary * >( el ) ) {
+                el->recalculateCoordinates(1, cA);
+                el->recalculateCoordinates(2, cB);
+            } else
+#endif
+            {
+                cA = nA->giveCoordinates();
+                cB = nB->giveCoordinates();
+            }
+            for ( int i = 1; i <= 3; ++i ) {
+                nodeRefA.at(i) = cA.at(i);
+                nodeRefB.at(i) = cB.at(i);
+            }
+            giveNodeKinematics(nA, tStep, dispA, rotA);
+            giveNodeKinematics(nB, tStep, dispB, rotB);
+
+            // Polygon radius: rotational distance from polygon centroid to its first vertex.
+            FloatArray polyCentroid(3); polyCentroid.zero();
+            for ( int k = 0; k < N; ++k ) for ( int j = 1; j <= 3; ++j ) polyCentroid.at(j) += polyRef.at(3*k + j) / N;
+            // Vertex 0 distance to centroid → polygon "radius" (for octagon = R; for rect we just use vertex0).
+            FloatArray vec0(3);
+            for ( int j = 1; j <= 3; ++j ) vec0.at(j) = polyRef.at(j) - polyCentroid.at(j);
+            const double polyR = vec0.computeNorm();
+            // Phase angle of vertex 0 in the element's (e_y, e_z) plane.
+            FloatArray elemEx, elemEy, elemEz;
+            buildElementFrame(nodeRefA, nodeRefB, elemEx, elemEy, elemEz);
+            double phase0 = std::atan2( vec0.dotProduct(elemEz), vec0.dotProduct(elemEy) );
+
+            // Per-element extrusion: end-polygons are the midpoint polygon translated to each node,
+            // using the element's own (e_y, e_z) frame. This automatically allows any incidence count
+            // (no per-node joint axis averaging), at the cost of non-watertight angled junctions.
+            auto buildEndVerts = [&](const FloatArray &nodePos, FloatMatrix &out) {
+                out.resize(N, 3);
+                for ( int k = 0; k < N; ++k ) {
+                    double angle = phase0 + 2.0 * M_PI * k / N;
+                    double cy = polyR * std::cos(angle);
+                    double cz = polyR * std::sin(angle);
+                    for ( int j = 1; j <= 3; ++j ) out.at(k+1, j) = nodePos.at(j) + cy * elemEy.at(j) + cz * elemEz.at(j);
+                }
+            };
+
+            FloatMatrix jointRefA, jointRefB;
+            buildEndVerts(nodeRefA, jointRefA);
+            buildEndVerts(nodeRefB, jointRefB);
+
+            FloatMatrix vA(N, 3), vB(N, 3), vJointA(N, 3), vJointB(N, 3);
+            for ( int k = 0; k < N; ++k ) {
+                for ( int j = 1; j <= 3; ++j ) vRef.at(j) = polyRef.at(3*k + j);
+                rigidBodyTransform(vDef, vRef, nodeRefA, dispA, rotA);
+                for ( int j = 1; j <= 3; ++j ) vA.at(k+1, j) = vDef.at(j);
+                rigidBodyTransform(vDef, vRef, nodeRefB, dispB, rotB);
+                for ( int j = 1; j <= 3; ++j ) vB.at(k+1, j) = vDef.at(j);
+                for ( int j = 1; j <= 3; ++j ) vRef.at(j) = jointRefA.at(k+1, j);
+                rigidBodyTransform(vDef, vRef, nodeRefA, dispA, rotA);
+                for ( int j = 1; j <= 3; ++j ) vJointA.at(k+1, j) = vDef.at(j);
+                for ( int j = 1; j <= 3; ++j ) vRef.at(j) = jointRefB.at(k+1, j);
+                rigidBodyTransform(vDef, vRef, nodeRefB, dispB, rotB);
+                for ( int j = 1; j <= 3; ++j ) vJointB.at(k+1, j) = vDef.at(j);
+            }
+
+            // Emit 3 midpoint copies (A, B, midline) — vertex indices 1..N, N+1..2N, 2N+1..3N.
+            const int baseMidA   = nodeOffset;
+            const int baseMidB   = nodeOffset + N;
+            const int baseMidM   = nodeOffset + 2*N;
+            const int baseJointA = nodeOffset + 3*N;
+            const int baseJointB = nodeOffset + 4*N;
+            for ( int copy = 0; copy < 3; ++copy ) {
+                const int base = nodeOffset + copy * N;
+                connectivity.resize(N);
+                for ( int k = 1; k <= N; ++k ) {
+                    int nodeIdx = base + k;
+                    for ( int j = 1; j <= 3; ++j ) coords.at(j) = polyRef.at(3*(k-1) + j);
+                    vtkPieceCross.setNodeCoords(nodeIdx, coords);
+                    for ( int j = 1; j <= 3; ++j ) {
+                        double def = ( copy == 0 ) ? vA.at(k, j)
+                                   : ( copy == 1 ) ? vB.at(k, j)
+                                   : 0.5 * ( vA.at(k, j) + vB.at(k, j) );
+                        displacementCross.at(nodeIdx, j) = def - polyRef.at(3*(k-1) + j);
+                    }
+                    connectivity.at(k) = nodeIdx;
+                }
+                ++cellIdx;
+                vtkPieceCross.setConnectivity(cellIdx, connectivity);
+                vtkPieceCross.setCellType(cellIdx, 7);  // VTK_POLYGON
+                vtkOffset += N;
+                vtkPieceCross.setOffset(cellIdx, vtkOffset);
+                polygonRoleCross.at(cellIdx) = copy;
+                syntheticCross.at(cellIdx) = 1;
+            }
+
+            // Joint vertex sets at A and B (indices 3N+1..4N, 4N+1..5N).
+            for ( int k = 1; k <= N; ++k ) {
+                int idxA = baseJointA + k;
+                for ( int j = 1; j <= 3; ++j ) coords.at(j) = jointRefA.at(k, j);
+                vtkPieceCross.setNodeCoords(idxA, coords);
+                for ( int j = 1; j <= 3; ++j ) displacementCross.at(idxA, j) = vJointA.at(k, j) - jointRefA.at(k, j);
+                int idxB = baseJointB + k;
+                for ( int j = 1; j <= 3; ++j ) coords.at(j) = jointRefB.at(k, j);
+                vtkPieceCross.setNodeCoords(idxB, coords);
+                for ( int j = 1; j <= 3; ++j ) displacementCross.at(idxB, j) = vJointB.at(k, j) - jointRefB.at(k, j);
+            }
+            nodeOffset += 5 * N;
+
+            // Lateral quads on A-side: midpoint A-vertex k → joint A-vertex k. Quad k spans k..k+1.
+            for ( int k = 0; k < N; ++k ) {
+                int kn = ( k + 1 ) % N;
+                connectivity.resize(4);
+                connectivity.at(1) = baseMidA   + k  + 1;
+                connectivity.at(2) = baseMidA   + kn + 1;
+                connectivity.at(3) = baseJointA + kn + 1;
+                connectivity.at(4) = baseJointA + k  + 1;
+                ++cellIdx;
+                vtkPieceCross.setConnectivity(cellIdx, connectivity);
+                vtkPieceCross.setCellType(cellIdx, 7);
+                vtkOffset += 4;
+                vtkPieceCross.setOffset(cellIdx, vtkOffset);
+                polygonRoleCross.at(cellIdx) = 3;  // lateral
+                syntheticCross.at(cellIdx) = 1;
+            }
+            // Lateral quads on B-side.
+            for ( int k = 0; k < N; ++k ) {
+                int kn = ( k + 1 ) % N;
+                connectivity.resize(4);
+                connectivity.at(1) = baseMidB   + k  + 1;
+                connectivity.at(2) = baseMidB   + kn + 1;
+                connectivity.at(3) = baseJointB + kn + 1;
+                connectivity.at(4) = baseJointB + k  + 1;
+                ++cellIdx;
+                vtkPieceCross.setConnectivity(cellIdx, connectivity);
+                vtkPieceCross.setCellType(cellIdx, 7);
+                vtkOffset += 4;
+                vtkPieceCross.setOffset(cellIdx, vtkOffset);
+                polygonRoleCross.at(cellIdx) = 3;
+                syntheticCross.at(cellIdx) = 1;
+            }
+            // Caps at terminal nodes.
+            if ( nodeIncidence[el->giveDofManagerNumber(1)] == 1 ) {
+                connectivity.resize(N);
+                for ( int k = 1; k <= N; ++k ) connectivity.at(k) = baseJointA + k;
+                ++cellIdx;
+                vtkPieceCross.setConnectivity(cellIdx, connectivity);
+                vtkPieceCross.setCellType(cellIdx, 7);
+                vtkOffset += N;
+                vtkPieceCross.setOffset(cellIdx, vtkOffset);
+                polygonRoleCross.at(cellIdx) = 4;  // cap
+                syntheticCross.at(cellIdx) = 1;
+            }
+            if ( nodeIncidence[el->giveDofManagerNumber(2)] == 1 ) {
+                connectivity.resize(N);
+                for ( int k = 1; k <= N; ++k ) connectivity.at(k) = baseJointB + k;
+                ++cellIdx;
+                vtkPieceCross.setConnectivity(cellIdx, connectivity);
+                vtkPieceCross.setCellType(cellIdx, 7);
+                vtkOffset += N;
+                vtkPieceCross.setOffset(cellIdx, vtkOffset);
+                polygonRoleCross.at(cellIdx) = 4;
+                syntheticCross.at(cellIdx) = 1;
+            }
+        } else if ( kind == 2 ) {
+            // Bond link: VTK_VERTEX at node 2 (rebar node), where the constitutive point sits.
+            // Node 1 is the matrix lattice node; node 2 is the rebar/fibre node.
+            Node *nB = el->giveNode(2);
+            FloatArray cB;
+#ifdef __SM_MODULE
+            if ( dynamic_cast< LatticeLink3dBoundary * >( el ) ) {
+                el->recalculateCoordinates(2, cB);
+            } else
+#endif
+            {
+                cB = nB->giveCoordinates();
+            }
+            giveNodeKinematics(nB, tStep, dispB, rotB);
+
+            for ( int j = 1; j <= 3; ++j ) coords.at(j) = cB.at(j);
+            vtkPieceCross.setNodeCoords(nodeOffset + 1, coords);
+            for ( int j = 1; j <= 3; ++j ) displacementCross.at(nodeOffset + 1, j) = dispB.at(j);
+
+            connectivity.resize(1);
+            connectivity.at(1) = nodeOffset + 1;
+            ++cellIdx;
+            vtkPieceCross.setConnectivity(cellIdx, connectivity);
+            vtkPieceCross.setCellType(cellIdx, 1);  // VTK_VERTEX
+            vtkOffset += 1;
+            vtkPieceCross.setOffset(cellIdx, vtkOffset);
+            polygonRoleCross.at(cellIdx) = -2;
+            syntheticCross.at(cellIdx) = 1;
+            nodeOffset += 1;
         }
     }
 
-    if ( numberOfNodes > 0 && numberOfElements > 0 ) {
-        // Export nodes as vtk vertices
-        vtkPieceCross.setNumberOfNodes(numberOfNodes);
-        for ( int inode = 1; inode <= numberOfNodes; inode++ ) {
-            coords.at(1) = nodeTable.at(inode, 1);
-            coords.at(2) = nodeTable.at(inode, 2);
-            coords.at(3) = nodeTable.at(inode, 3);
-            vtkPieceCross.setNodeCoords(inode, coords);
-        }
-    }
-
-
-    //-------------------------------------------
-    // Export all the cell data for the piece
-    //-------------------------------------------
-    IntArray connectivity;
-    vtkPieceCross.setNumberOfCells(numberOfElements);
-    int numElNodes;
-
-    int offset = 0;
-    for ( int ei = 1; ei <= numberOfElements; ei++ ) {
-        numElNodes = crossSectionTable.at(ei);
-
-        connectivity.resize(numElNodes);
-        for ( int i = 1; i <= numElNodes; i++ ) {
-            connectivity.at(i) = offset + i;
-        }
-        vtkPieceCross.setConnectivity(ei, connectivity);
-
-        vtkPieceCross.setCellType(ei, 7);
-        offset += numElNodes;
-        vtkPieceCross.setOffset(ei, offset);
-    }
-
-    this->exportCellVars(vtkPieceCross, region, cellVarsToExport, tStep);
+    // Cell variables: edge data only on the midline cell (role 2); closures get zeros.
+    this->exportCellVarsCross(vtkPieceCross, region, cellVarsToExport, tStep);
 }
+
 
 
 void
 VTKXMLLatticeExportModule::doOutput(TimeStep *tStep, bool forcedOutput)
 {
+    // Did the main (line) VTU actually get written? It writes iff testTimeStepOutput passes.
+    const bool lineWillWrite = ( testTimeStepOutput(tStep) || forcedOutput );
+
     this->doOutputNormal(tStep, forcedOutput);
+
     if ( crossSectionExportFlag ) {
-        this->doOutputCross(tStep, forcedOutput);
+        // Cross VTU is gated by both the line-output gate AND the crossOutputStep multiplier.
+        // The counter ticks once per line-output trigger, so crossstep=N means "1 in N line outputs".
+        bool crossWillWrite = false;
+        if ( lineWillWrite ) {
+            if ( forcedOutput || ( this->crossOutputCounter % this->crossOutputStep == 0 ) ) {
+                crossWillWrite = true;
+            }
+            ++this->crossOutputCounter;
+        }
+        if ( crossWillWrite ) {
+            this->doOutputCross(tStep, forcedOutput);
+        }
     }
     this->defaultVTKPiece.clear();
-
 }
 
 
@@ -392,6 +1233,8 @@ VTKXMLLatticeExportModule::doOutputCross(TimeStep *tStep, bool forcedOutput)
 
     this->fileStreamCross << "</UnstructuredGrid>\n</VTKFile>";
     this->fileStreamCross.close();
+
+    this->appendPvdEntryCross(tStep, this->giveOutputFileNameCross(tStep));
 }
 
 
@@ -472,9 +1315,52 @@ VTKXMLLatticeExportModule::doOutputNormal(TimeStep *tStep, bool forcedOutput)
 
     this->fileStream << "</UnstructuredGrid>\n</VTKFile>";
     this->fileStream.close();
+
+    this->appendPvdEntryLine(tStep, this->giveOutputFileName(tStep));
 }
 
 
+void
+VTKXMLLatticeExportModule::appendPvdEntryLine(TimeStep *tStep, const std::string &vtuFilename)
+{
+    std::ostringstream entry;
+    entry << "<DataSet timestep=\"" << tStep->giveTargetTime() * this->timeScale
+          << "\" group=\"\" part=\"\" file=\"" << vtuFilename << "\"/>";
+    this->pvdBufferLine.push_back(entry.str() );
+    const std::string pvdName = this->emodel->giveOutputBaseFileName() + ".m" + std::to_string(this->number) + ".pvd";
+    this->writePvdCollection(pvdName, this->pvdBufferLine);
+}
+
+
+void
+VTKXMLLatticeExportModule::appendPvdEntryCross(TimeStep *tStep, const std::string &vtuFilename)
+{
+    std::ostringstream entry;
+    entry << "<DataSet timestep=\"" << tStep->giveTargetTime() * this->timeScale
+          << "\" group=\"\" part=\"\" file=\"" << vtuFilename << "\"/>";
+    this->pvdBufferCross.push_back(entry.str() );
+    const std::string pvdName = this->emodel->giveOutputBaseFileName() + ".m" + std::to_string(this->number) + ".cross.pvd";
+    this->writePvdCollection(pvdName, this->pvdBufferCross);
+}
+
+
+void
+VTKXMLLatticeExportModule::writePvdCollection(const std::string &pvdFilename, const std::vector< std::string > &buffer)
+{
+    if ( this->pythonExport ) {
+        return; // python harness suppresses on-disk writes.
+    }
+    std::ofstream stream(pvdFilename.c_str() );
+    if ( !stream.good() ) {
+        OOFEM_ERROR("failed to open file %s", pvdFilename.c_str() );
+    }
+    stream << "<?xml version=\"1.0\"?>\n<VTKFile type=\"Collection\" version=\"0.1\">\n<Collection>\n";
+    for ( const auto &entry : buffer ) {
+        stream << entry << "\n";
+    }
+    stream << "</Collection>\n</VTKFile>";
+    stream.close();
+}
 
 
 int
@@ -826,6 +1712,18 @@ VTKXMLLatticeExportModule::writeVTKPieceCross(ExportRegion &vtkPieceCross, TimeS
     this->giveDataHeaders(pointHeader, cellHeader);
 
     this->fileStreamCross << pointHeader.c_str();
+
+    // Displacement field so ParaView's Warp by Vector shows the deformed bodies.
+    if ( displacementCross.giveNumberOfRows() == numNodes ) {
+        this->fileStreamCross << " <DataArray type=\"Float64\" Name=\"Displacement\" NumberOfComponents=\"3\" format=\"ascii\"> ";
+        for ( int inode = 1; inode <= numNodes; ++inode ) {
+            this->fileStreamCross << scientific << displacementCross.at(inode, 1) << " "
+                                  << scientific << displacementCross.at(inode, 2) << " "
+                                  << scientific << displacementCross.at(inode, 3) << " ";
+        }
+        this->fileStreamCross << "</DataArray>\n";
+    }
+
     this->fileStreamCross << "</PointData>\n";
     this->fileStreamCross << cellHeader.c_str();
 
@@ -837,6 +1735,138 @@ VTKXMLLatticeExportModule::writeVTKPieceCross(ExportRegion &vtkPieceCross, TimeS
     vtkPieceCross.clear();
     return true;
 }
+
+
+void
+VTKXMLLatticeExportModule::writePrimaryVarsCross(ExportRegion &vtkPiece)
+{
+    for ( int i = 1; i <= primaryVarsToExport.giveSize(); i++ ) {
+        UnknownType type = ( UnknownType ) primaryVarsToExport.at(i);
+        InternalStateValueType valType = giveInternalStateValueType(type);
+        int ncomponents = giveInternalStateTypeSize(valType);
+        ( void ) ncomponents; //silence the warning
+        int numNodes = vtkPiece.giveNumberOfNodes();
+        const char *name = __UnknownTypeToString(type);
+        ( void ) name; //silence the warning
+
+        if (!this->fileStreamCross.is_open()) {
+            OOFEM_ERROR("fileStreamCross is not open");
+        }
+
+        this->fileStreamCross << " <DataArray type=\"Float64\" Name=\"" << name << "\" NumberOfComponents=\"" << ncomponents << "\" format=\"ascii\"> ";
+        for ( int inode = 1; inode <= numNodes; inode++ ) {
+            FloatArray &valueArray = vtkPiece.givePrimaryVarInNode(type, inode);
+
+            if (valueArray.giveSize() == 0) {
+                OOFEM_WARNING("Empty valueArray at node %d", inode);
+                continue;
+            }
+	    for ( int k = 1; k <= valueArray.giveSize(); k++ ) {
+	      this->fileStreamCross << scientific << valueArray.at(k) << " ";
+	    }
+        }
+        this->fileStreamCross << "</DataArray>\n";
+    }
+}
+
+
+void
+VTKXMLLatticeExportModule::exportCellVarsCross(ExportRegion &vtkPiece, Set &region, IntArray &cellVarsToExport, TimeStep *tStep)
+{
+    // Layout per element (from setupVTKPieceCross):
+    //   * Polygon: 3 copies (A, B, midline) × nStrips cells, all 3*nStrips cells contiguous.
+    //   * Fallback: 1 cell.
+    // Per copy, strips are emitted s=0..nStrips-1 in IP order: for hybrid shells, midline
+    // strip s carries layer-IP s's data; A and B strips get zeros.
+    Domain *d = emodel->giveDomain(1);
+    const IntArray &elems = region.giveElementList();
+    const int nElem = elems.giveSize();
+    const int nCells = vtkPiece.giveNumberOfCells();
+
+    vtkPiece.setNumberOfCellVarsToExport(cellVarsToExport, nCells);
+
+    for ( int field = 1; field <= cellVarsToExport.giveSize(); ++field ) {
+        InternalStateType type = ( InternalStateType ) cellVarsToExport.at(field);
+        InternalStateValueType valType = giveInternalStateValueType(type);
+        int ncomponents = giveInternalStateTypeSize(valType);
+        FloatArray zeroVec(ncomponents);
+        zeroVec.zero();
+        FloatArray valueArray;
+
+        int cellIdx = 0;
+        for ( int ie = 1; ie <= nElem; ++ie ) {
+            Element *el = d->giveElement(elems.at(ie));
+            if ( cellIdx >= nCells ) break;
+            const int kind = ( ie <= elemKindCross.giveSize() ) ? elemKindCross.at(ie) : 0;
+            const int ncells_this = ( ie <= cellsPerElemCross.giveSize() ) ? cellsPerElemCross.at(ie) : 0;
+            const int nStrips = ( ie <= nStripsPerElemCross.giveSize() ) ? nStripsPerElemCross.at(ie) : 1;
+            const int N = ( ie <= vertsPerCellCross.giveSize() ) ? vertsPerCellCross.at(ie) : 0;
+            const int capCount = ( ie <= capCountCross.giveSize() ) ? capCountCross.at(ie) : 0;
+            if ( ncells_this == 0 ) continue;
+
+            if ( el->giveParallelMode() != Element_local ) {
+                for ( int k = 1; k <= ncells_this; ++k ) vtkPiece.setCellVar(type, ++cellIdx, zeroVec);
+                continue;
+            }
+
+            // Kind 2 (line bond): single cell with element data.
+            if ( kind == 2 ) {
+                this->getCellVariableFromIS(valueArray, el, type, tStep);
+                vtkPiece.setCellVar(type, ++cellIdx, valueArray);
+                continue;
+            }
+
+            // Kind 0 + kind 1 share the "A zeros / B zeros / midline data" pattern for the first 3 cells.
+            // Kind 0 has nStrips midline cells (per-IP for hybrid shell).
+            // Kind 1 has 1 midline cell + 2N lateral quads (element data) + capCount caps (element data).
+
+            // A copies: zeros.
+            for ( int s = 0; s < nStrips; ++s ) vtkPiece.setCellVar(type, ++cellIdx, zeroVec);
+            // B copies: zeros.
+            for ( int s = 0; s < nStrips; ++s ) vtkPiece.setCellVar(type, ++cellIdx, zeroVec);
+            // Midline copies: per-IP value when nStrips>1 (kind 0 hybrid), else element-level.
+            if ( nStrips == 1 ) {
+                this->getCellVariableFromIS(valueArray, el, type, tStep);
+                vtkPiece.setCellVar(type, ++cellIdx, valueArray);
+            } else {
+                IntegrationRule *iRule = el->giveDefaultIntegrationRulePtr();
+                const int nGp = iRule ? iRule->giveNumberOfIntegrationPoints() : 0;
+                for ( int s = 0; s < nStrips; ++s ) {
+                    if ( s < nGp ) {
+                        GaussPoint *gp = iRule->getIntegrationPoint(s);
+                        valueArray.resize(ncomponents); valueArray.zero();
+                        int ok = el->giveIPValue(valueArray, gp, type, tStep);
+                        if ( !ok || valueArray.giveSize() != ncomponents ) valueArray = zeroVec;
+                        vtkPiece.setCellVar(type, ++cellIdx, valueArray);
+                    } else {
+                        vtkPiece.setCellVar(type, ++cellIdx, zeroVec);
+                    }
+                }
+            }
+
+            // Kind 0 closure cells (TOP/BOT + SIDE for boundary shells): zero data.
+            // These were emitted per shell element in setupVTKPieceCross; cellsPerElemCross
+            // already counts them, so skip the remainder of ncells_this here, otherwise the
+            // NEXT element's data would land in the current element's closure slots.
+            if ( kind == 0 ) {
+                const int nClosure = ncells_this - 3 * nStrips;
+                for ( int k = 0; k < nClosure; ++k ) vtkPiece.setCellVar(type, ++cellIdx, zeroVec);
+            }
+
+            // Kind 1: lateral quads (2N) + caps (0..2), all carrying element-level data.
+            if ( kind == 1 ) {
+                this->getCellVariableFromIS(valueArray, el, type, tStep);
+                for ( int k = 0; k < 2 * N + capCount; ++k ) {
+                    vtkPiece.setCellVar(type, ++cellIdx, valueArray);
+                }
+            }
+        }
+
+        // Trailing safety: any leftover cells (none expected) get zero data.
+        while ( cellIdx < nCells ) vtkPiece.setCellVar(type, ++cellIdx, zeroVec);
+    }
+}
+
 
 void
 VTKXMLLatticeExportModule::writeCellVarsCross(ExportRegion &vtkPiece)
@@ -854,24 +1884,34 @@ VTKXMLLatticeExportModule::writeCellVarsCross(ExportRegion &vtkPiece)
         valueArray.resize(ncomponents);
         for ( int ielem = 1; ielem <= numCells; ielem++ ) {
             valueArray = vtkPiece.giveCellVar(type, ielem);
-            for ( int i = 1; i <= valueArray.giveSize(); i++ ) {
-                this->fileStreamCross << valueArray.at(i) << " ";
+
+            if (valueArray.giveSize() == 0){
+                OOFEM_WARNING("Empty valueArray at node %d", ielem);
+                continue;
+            }
+
+            for ( int k = 1; k <= valueArray.giveSize(); k++ ) {
+                this->fileStreamCross << valueArray.at(k) << " ";
             }
         }
         this->fileStreamCross << "</DataArray>\n";
+    }
 
-#ifdef _PYBIND_BINDINGS
-#if 0
-        if ( pythonExport ) {
-            py::list vals;
-            for ( int ielem = 1; ielem <= numCells; ielem++ ) {
-                valueArray = vtkPiece.giveCellVar(i, ielem);
-                vals.append(valueArray);
-            }
-            this->Py_CellVars [ name ] = vals;
+    // polygonRole: 0 = A-side, 1 = B-side, 2 = midline, -2 = line (bond), -1 = point fallback.
+    if ( polygonRoleCross.giveSize() == numCells ) {
+        this->fileStreamCross << " <DataArray type=\"Int32\" Name=\"polygonRole\" NumberOfComponents=\"1\" format=\"ascii\"> ";
+        for ( int ielem = 1; ielem <= numCells; ielem++ ) {
+            this->fileStreamCross << polygonRoleCross.at(ielem) << " ";
         }
-#endif
-#endif
-    }//end of for
+        this->fileStreamCross << "</DataArray>\n";
+    }
+    // syntheticGeometry: 1 = polygon synthesised from sectional properties or line for bond, 0 = real polygon.
+    if ( syntheticCross.giveSize() == numCells ) {
+        this->fileStreamCross << " <DataArray type=\"Int32\" Name=\"syntheticGeometry\" NumberOfComponents=\"1\" format=\"ascii\"> ";
+        for ( int ielem = 1; ielem <= numCells; ielem++ ) {
+            this->fileStreamCross << syntheticCross.at(ielem) << " ";
+        }
+        this->fileStreamCross << "</DataArray>\n";
+    }
 }
 } // end namespace oofem

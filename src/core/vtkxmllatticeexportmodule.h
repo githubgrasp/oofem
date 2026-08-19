@@ -10,7 +10,7 @@
  *
  *             OOFEM : Object Oriented Finite Element Code
  *
- *               Copyright (C) 1993 - 2025   Borek Patzak
+ *               Copyright (C) 1993 - 2019   Borek Patzak
  *
  *
  *
@@ -37,12 +37,16 @@
 
 #include "vtkxmlexportmodule.h"
 #include "floatmatrix.h"
+#include <vector>
+#include <string>
 
 
 ///@name Input fields for VTK XML Lattice export module
 //@{
 #define _IFT_VTKXMLLatticeExportModule_Name "vtkxmllattice"
 #define _IFT_VTKXMLLatticeExportModule_cross "cross"
+// crossstep N: write a cross VTU every N-th line-VTU write (1 = same cadence, default).
+#define _IFT_VTKXMLLatticeExportModule_crossstep "crossstep"
 //@}
 
 namespace oofem {
@@ -67,7 +71,20 @@ protected:
 
     bool crossSectionExportFlag;
 
+    // Thin cross-VTU writes relative to line-VTU writes. crossOutputStep = 1 means same cadence.
+    int crossOutputStep = 1;
+    int crossOutputCounter = 0;
+
+    // PVD collection buffers: one for the line VTUs, one for the cross VTUs.
+    std::vector< std::string > pvdBufferLine;
+    std::vector< std::string > pvdBufferCross;
+
     void giveSwitches(IntArray &answer, int location);
+
+    // Append a DataSet entry to the relevant pvd buffer and rewrite the .pvd file.
+    void appendPvdEntryLine(TimeStep *tStep, const std::string &vtuFilename);
+    void appendPvdEntryCross(TimeStep *tStep, const std::string &vtuFilename);
+    void writePvdCollection(const std::string &pvdFilename, const std::vector< std::string > &buffer);
 
 public:
 
@@ -98,13 +115,29 @@ public:
 
     void setupVTKPiece(ExportRegion &vtkPiece, TimeStep *tStep, Set& region) override;
 
+    void writePrimaryVarsCross(ExportRegion &vtkPiece);
     void writeCellVarsCross(ExportRegion &vtkPiece);
 
     void setupVTKPieceCross(ExportRegion &vtkPiece, TimeStep *tStep, Set& region);
+    void exportCellVarsCross(ExportRegion &vtkPiece, Set &region, IntArray &cellVarsToExport, TimeStep *tStep);
+
+    // Per-cell role tag for the cross piece: 0 = A-side, 1 = B-side, 2 = midline, -1 = point fallback.
+    IntArray polygonRoleCross;
+
+    // Per-vertex displacement on the cross piece (numNodes x 3); deformed = ref + displacement.
+    FloatMatrix displacementCross;
+
+    // Per-cell synthetic-geometry flag (1 = synthesised, 0 = real polygon vertices from converter).
+    IntArray syntheticCross;
+
+    // Per-region-element: layout info needed by exportCellVarsCross (cells per element,
+    // verts per cell, strip count, kind 0/1/2/3, cap counts for kind 1).
+    IntArray cellsPerElemCross, vertsPerCellCross, nStripsPerElemCross, elemKindCross, capCountCross;
 
     int initRegionNodeNumbering(ExportRegion& piece, Domain *domain, TimeStep *tStep, Set& region) override;
 
     void exportPrimaryVars(ExportRegion &piece, Set& region, IntArray& primaryVarsToExport, NodalRecoveryModel& smoother, TimeStep *tStep) override;
+
     void exportIntVars(ExportRegion &piece, Set& region, IntArray& internalVarsToExport, NodalRecoveryModel& smoother, TimeStep *tStep) override;
 };
 } // end namespace oofem
