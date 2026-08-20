@@ -46,6 +46,8 @@
 #include "../sm/Elements/LatticeElements/latticestructuralelement.h"
 #include "classfactory.h"
 #include "../sm/Materials/structuralmaterial.h"
+#include "parametermanager.h"
+#include "paramkey.h"
 #include "contextioerr.h"
 #include "datastream.h"
 #include "crosssection.h"
@@ -57,6 +59,8 @@
 
 namespace oofem {
 REGISTER_Element(LatticeLink3dBoundary);
+
+ParamKey LatticeLink3dBoundary::IPK_LatticeLink3dBoundary_location("location");
 
 LatticeLink3dBoundary :: LatticeLink3dBoundary(int n, Domain *aDomain) : LatticeLink3d(n, aDomain)
 {
@@ -166,9 +170,7 @@ LatticeLink3dBoundary :: computeStiffnessMatrix(FloatMatrix &answer, MatResponse
     Rtranspose.beTranspositionOf(R);
     answer.rotatedWith(Rtranspose);
 
-    //Scale by the bond interface area (= computeVolumeAround/giveLength), as in
-    //LatticeLink3d. Without this the boundary bond is ~1/area (~1e5-1e6) too stiff,
-    //acting as a near-rigid weld that over-constrains the fibre.
+    //Scale by the bond interface area (= computeVolumeAround/giveLength)
     double area = this->computeVolumeAround(integrationRulesArray [ 0 ]->getIntegrationPoint(0) ) / this->giveLength();
     answer.times(area);
 
@@ -325,12 +327,18 @@ LatticeLink3dBoundary ::   giveDofManDofIDMask(int inode, IntArray &answer) cons
 
 void
 LatticeLink3dBoundary :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
-{   
+{
+    ParameterManager &ppm = this->giveDomain()->elementPPM;
     LatticeLink3d :: initializeFrom(ir, priority);
+    PM_UPDATE_PARAMETER(location, ppm, ir, this->number, IPK_LatticeLink3dBoundary_location, priority);
+}
 
-    location.resize(2);
-    IR_GIVE_FIELD(ir, location, _IFT_LatticeLink3dBoundary_location); // Macro
-    
+void
+LatticeLink3dBoundary :: postInitialize()
+{
+    ParameterManager &ppm = this->giveDomain()->elementPPM;
+    LatticeLink3d :: postInitialize();
+    PM_ELEMENT_ERROR_IFNOTSET(ppm, this->number, IPK_LatticeLink3dBoundary_location);
 }
 
 
@@ -409,8 +417,7 @@ LatticeLink3dBoundary :: giveInternalForcesVector(FloatArray &answer, TimeStep *
         answer.rotatedWith(R, 'n');
     }
 
-    //Scale by the bond interface area (= computeVolumeAround/giveLength), as in
-    //LatticeLink3d::giveInternalForcesVector. Must match computeStiffnessMatrix.
+    //Scale by the bond interface area (= computeVolumeAround/giveLength). Must match computeStiffnessMatrix.
     double area = this->computeVolumeAround(integrationRulesArray [ 0 ]->getIntegrationPoint(0) ) / this->giveLength();
     answer.times(area);
 

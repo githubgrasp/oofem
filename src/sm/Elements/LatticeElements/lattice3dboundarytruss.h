@@ -81,6 +81,9 @@ public:
     const char *giveInputRecordName() const override { return _IFT_Lattice3dBoundaryTruss_Name; }
     const char *giveClassName() const override { return "Lattice3dBoundaryTruss"; }
     void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
+    void postInitialize() override;
+
+    static ParamKey IPK_Lattice3dBoundaryTruss_location;
     Element_Geometry_Type giveGeometryType() const override { return EGT_line_1; }
     void saveContext(DataStream &stream, ContextMode mode) override;
 

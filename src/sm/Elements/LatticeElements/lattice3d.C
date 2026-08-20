@@ -46,6 +46,8 @@
 #include "floatarrayf.h"
 #include "mathfem.h"
 #include "latticestructuralelement.h"
+#include "parametermanager.h"
+#include "paramkey.h"
 #include "contextioerr.h"
 #include "datastream.h"
 #include "classfactory.h"
@@ -58,6 +60,15 @@
 
 namespace oofem {
 REGISTER_Element(Lattice3d);
+
+ParamKey Lattice3d::IPK_Lattice3d_mlength("mlength");
+ParamKey Lattice3d::IPK_Lattice3d_polycoords("polycoords");
+ParamKey Lattice3d::IPK_Lattice3d_couplingflag("couplingflag");
+ParamKey Lattice3d::IPK_Lattice3d_couplingnumber("couplingnumber");
+ParamKey Lattice3d::IPK_Lattice3d_pressures("pressures");
+ParamKey Lattice3d::IPK_Lattice3d_shellnormal("shellnormal");
+ParamKey Lattice3d::IPK_Lattice3d_zaxis("zaxis");
+ParamKey Lattice3d::IPK_Lattice3d_s("s");
 
 Lattice3d :: Lattice3d(int n, Domain *aDomain) : LatticeStructuralElement(n, aDomain)
 {
@@ -95,8 +106,8 @@ Lattice3d :: computeBmatrixAt(GaussPoint *aGaussPoint, FloatMatrix &answer, int 
     }
 
     FloatArray l1(3), l2(3);
-    l1.at(1) =  this->length / 2.;        
-    l1.at(2) =  this->eccS + gpY; 
+    l1.at(1) =  this->length / 2.;
+    l1.at(2) =  this->eccS + gpY;
     l1.at(3) =  this->eccT + gpZ;
 
     l2.at(1) =  this->length / 2.;
@@ -507,47 +518,37 @@ Lattice3d :: giveDofManDofIDMask(int inode, IntArray &answer) const
 void
 Lattice3d :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
-    LatticeStructuralElement ::initializeFrom(ir, priority);
-    
-    minLength = 1.e-20;
-    IR_GIVE_OPTIONAL_FIELD(ir, minLength, _IFT_Lattice3d_mlength);
+    ParameterManager &ppm = this->giveDomain()->elementPPM;
+    LatticeStructuralElement :: initializeFrom(ir, priority);
 
-    polygonCoords.resize(0);
-    IR_GIVE_OPTIONAL_FIELD(ir, polygonCoords, _IFT_Lattice3d_polycoords);
-    numberOfPolygonVertices = polygonCoords.giveSize() / 3.;
+    PM_UPDATE_PARAMETER(minLength, ppm, ir, this->number, IPK_Lattice3d_mlength, priority);
+    PM_UPDATE_PARAMETER(polygonCoords, ppm, ir, this->number, IPK_Lattice3d_polycoords, priority);
+    numberOfPolygonVertices = (int) ( polygonCoords.giveSize() / 3. );
+    PM_UPDATE_PARAMETER(couplingFlag, ppm, ir, this->number, IPK_Lattice3d_couplingflag, priority);
+    PM_UPDATE_PARAMETER(couplingNumbers, ppm, ir, this->number, IPK_Lattice3d_couplingnumber, priority);
+    PM_UPDATE_PARAMETER(pressures, ppm, ir, this->number, IPK_Lattice3d_pressures, priority);
+    PM_UPDATE_PARAMETER(shellNormal, ppm, ir, this->number, IPK_Lattice3d_shellnormal, priority);
+    PM_UPDATE_PARAMETER(zaxis, ppm, ir, this->number, IPK_Lattice3d_zaxis, priority);
+    PM_UPDATE_PARAMETER(s, ppm, ir, this->number, IPK_Lattice3d_s, priority);
+}
 
-    couplingFlag = 0;
-    IR_GIVE_OPTIONAL_FIELD(ir, couplingFlag, _IFT_Lattice3d_couplingflag);
+void
+Lattice3d :: postInitialize()
+{
+    LatticeStructuralElement :: postInitialize();
 
-    IR_GIVE_OPTIONAL_FIELD(ir, couplingNumbers, _IFT_Lattice3d_couplingnumber);
+    numberOfPolygonVertices = (int) ( polygonCoords.giveSize() / 3. );
 
-    pressures.resize(numberOfPolygonVertices);
-    pressures.zero();
-    IR_GIVE_OPTIONAL_FIELD(ir, pressures, _IFT_Lattice3d_pressures);
-
-    shellNormal.resize(0);
-    IR_GIVE_OPTIONAL_FIELD(ir, shellNormal, _IFT_Lattice3d_shellnormal);
+    // zaxis orients a beam section; shellnormal orients a shell. They are mutually exclusive.
     if ( shellNormal.giveSize() != 0 && shellNormal.giveSize() != 3 ) {
         OOFEM_ERROR("shellnormal must have exactly 3 components");
     }
-
-    zaxis.resize(0);
-    IR_GIVE_OPTIONAL_FIELD(ir, zaxis, _IFT_Lattice3d_zaxis);
     if ( zaxis.giveSize() != 0 && zaxis.giveSize() != 3 ) {
         OOFEM_ERROR("zaxis must have exactly 3 components");
     }
-
-    s = 0.;
-    IR_GIVE_OPTIONAL_FIELD(ir, s, _IFT_Lattice3d_s);
-    // zaxis orients a beam section; shellnormal orients a shell. They are mutually exclusive.
     if ( zaxis.giveSize() == 3 && shellNormal.giveSize() == 3 ) {
         OOFEM_ERROR("zaxis (beam orientation) and shellnormal (shell orientation) are mutually exclusive");
     }
-
-
-//Introduce here the geometry calculation
-//computeGeometryProperties();
-
 }
 
 
@@ -601,11 +602,11 @@ Lattice3d :: computeGeometryProperties()
     computeCrossSectionProperties();
 
     this->geometryFlag = 1;
-    
+
     return;
 }
 
- 
+
 void
   Lattice3d :: computeCrossSectionProperties() {
 
@@ -633,30 +634,30 @@ void
     this->Ip         = rIp;
     this->shearArea1 = pick(CS_ShearAreaY, kShear * this->area);
     this->shearArea2 = pick(CS_ShearAreaZ, kShear * this->area);
-    
+
     FloatArray s(3), t(3), ref(3);
     ref.resize(3);
     ref.zero();
     ref.at(3) = 1.0;
-    
+
     if (fabs(normal.dotProduct(ref)) > 0.99) {
       ref.zero();
       ref.at(2) = 1.0;
     }
-    
+
     s.beVectorProductOf(ref, normal);
     s.normalize();
-    
+
     t.beVectorProductOf(normal, s);
     t.normalize();
-    
+
     this->localCoordinateSystem.resize(3,3);
     for (int i = 1; i <= 3; ++i) {
       this->localCoordinateSystem.at(1,i) = normal.at(i);
       this->localCoordinateSystem.at(2,i) = s.at(i);
       this->localCoordinateSystem.at(3,i) = t.at(i);
     }
-    
+
     centroid.resize(3);
     centroid.zero();
 
@@ -670,10 +671,10 @@ void
 
     return;
   }
-  
+
   // Beam/frame cross-section: no polygon geometry. Section properties are taken directly
   // from the LatticeCrossSection and the transverse frame is oriented by the mandatory
-  // zaxis (as in LatticeFrame3d). This makes lattice3d a superset of latticeframe3d.
+  // zaxis.
   if ( this->numberOfPolygonVertices < 3 ) {
     auto pick = [&](CrossSectionProperty key) {
         return cs->give(key, (GaussPoint *) nullptr);
@@ -692,7 +693,7 @@ void
     this->shellB = 0.0;
     this->shellH = 0.0;   // keep isHybridShell() false so the getters return these members
 
-    // Local frame: axis 1 = element axis; transverse axes from zaxis (mirrors LatticeFrame3d).
+    // Local frame: axis 1 = element axis; transverse axes from zaxis.
     FloatArray lx = this->normal;                 // already normalized above
     FloatArray ly(3), lz(3);
     if ( this->zaxis.giveSize() == 3 ) {
@@ -706,7 +707,7 @@ void
       ly.normalize();
     } else {
       // No zaxis: the transverse orientation only matters for an asymmetric section (iy != iz),
-      // where leaving it unspecified is ambiguous. For iy == iz reproduce LatticeFrame3d's default frame.
+      // where leaving it unspecified is ambiguous.
       if ( fabs(this->I1 - this->I2) > 1.e-12 * ( fabs(this->I1) + fabs(this->I2) ) ) {
         OOFEM_ERROR("Beam cross-section with iy != iz requires a zaxis to orient the section.\n");
       }
@@ -730,8 +731,7 @@ void
       this->localCoordinateSystem.at(3, i) = lz.at(i);
     }
 
-    // Gauss point along the element: parameter (1+s)/2 from node A (s=0 -> midpoint),
-    // matching LatticeFrame3d's split l1 = (1+s)/2 L, l2 = (1-s)/2 L.
+    // Gauss point along the element: parameter (1+s)/2 from node A (s=0 -> midpoint).
     FloatArray gpGlobal = midPoint;
     if ( this->s != 0.0 ) {
       FloatArray shift = this->normal;              // unit vector A->B
@@ -776,7 +776,7 @@ void
 
   t.beVectorProductOf(normal, s);
   t.normalize();
-  
+
     //Set up rotation matrix
     FloatMatrix lcs(3, 3);
 
@@ -792,22 +792,22 @@ void
     FloatArray lpc(3 * numberOfPolygonVertices);
     for ( int k = 1; k <= numberOfPolygonVertices; k++ ) {
         for ( int n = 1; n <= 3; n++ ) {
-	  help.at(n) = polygonCoords.at(3 * (k - 1) + n);
+            help.at(n) = polygonCoords.at(3 * (k - 1) + n);
         }
 
-	test.beProductOf(lcs, help);
+        test.beProductOf(lcs, help);
 
-	for ( int n = 1; n <= 3; n++ ) {
-	  lpc.at(3 * (k - 1) + n) = test.at(n);
+        for ( int n = 1; n <= 3; n++ ) {
+            lpc.at(3 * (k - 1) + n) = test.at(n);
         }
     }
 
     this->area = 0.;
     for ( int k = 1; k <= numberOfPolygonVertices; k++ ) {
         if ( k < numberOfPolygonVertices ) {
-	  this->area += lpc.at(3 * (k - 1) + 2) * lpc.at(3 * ( k ) + 3) - lpc.at(3 * ( k ) + 2) * lpc.at(3 * (k - 1) + 3);
+            this->area += lpc.at(3 * (k - 1) + 2) * lpc.at(3 * ( k ) + 3) - lpc.at(3 * ( k ) + 2) * lpc.at(3 * (k - 1) + 3);
         } else {   //Back to zero for n+1
-	  this->area += lpc.at(3 * (k-1) + 2) * lpc.at(3) - lpc.at(2) * lpc.at(3 * (k-1) + 3);
+            this->area += lpc.at(3 * (k-1) + 2) * lpc.at(3) - lpc.at(2) * lpc.at(3 * (k-1) + 3);
         }
     }
 
@@ -828,12 +828,12 @@ void
         // Calculate again local co-ordinate system for different order
         for ( int k = 1; k <= numberOfPolygonVertices; k++ ) {
             for ( int n = 1; n <= 3; n++ ) {
-	      help.at(n) = polygonCoords.at(3 * (k-1) + n );
+                help.at(n) = polygonCoords.at(3 * (k-1) + n );
             }
 
             test.beProductOf(lcs, help);
             for ( int n = 1; n <= 3; n++ ) {
-	      lpc.at(3 * (k-1) + n) = test.at(n);
+                lpc.at(3 * (k-1) + n) = test.at(n);
             }
         }
     }
@@ -847,11 +847,11 @@ void
     centroid.zero();
     for ( int k = 1; k <= numberOfPolygonVertices; k++ ) {
         if ( k < numberOfPolygonVertices ) {
-	  centroid.at(2) += ( lpc.at(3 * (k-1) + 2) + lpc.at(3 * ( k ) + 2) ) * ( lpc.at(3 * (k-1) + 2) * lpc.at(3 * ( k ) + 3) - lpc.at(3 * ( k ) + 2) * lpc.at(3 * (k-1) + 3) );	 
-	  centroid.at(3) += ( lpc.at(3 * (k-1) + 3) + lpc.at(3 * ( k ) + 3) ) * ( lpc.at(3 * (k-1) +2) * lpc.at(3 * ( k ) + 3) - lpc.at(3 * ( k ) + 2) * lpc.at(3 * (k-1) + 3) );
+            centroid.at(2) += ( lpc.at(3 * (k-1) + 2) + lpc.at(3 * ( k ) + 2) ) * ( lpc.at(3 * (k-1) + 2) * lpc.at(3 * ( k ) + 3) - lpc.at(3 * ( k ) + 2) * lpc.at(3 * (k-1) + 3) );
+            centroid.at(3) += ( lpc.at(3 * (k-1) + 3) + lpc.at(3 * ( k ) + 3) ) * ( lpc.at(3 * (k-1) +2) * lpc.at(3 * ( k ) + 3) - lpc.at(3 * ( k ) + 2) * lpc.at(3 * (k-1) + 3) );
         } else { //Back to zero for n+1
-	  centroid.at(2) += ( lpc.at(3 * (k-1) + 2) + lpc.at(2) ) * ( lpc.at(3 * (k-1) + 2) * lpc.at(3) - lpc.at(2) * lpc.at(3 * (k-1) + 3) );
-	  centroid.at(3) += ( lpc.at(3 * (k-1) + 3) + lpc.at(3) ) * ( lpc.at(3 * (k-1) + 2) * lpc.at(3) - lpc.at(2) * lpc.at(3 * (k-1) + 3) );
+            centroid.at(2) += ( lpc.at(3 * (k-1) + 2) + lpc.at(2) ) * ( lpc.at(3 * (k-1) + 2) * lpc.at(3) - lpc.at(2) * lpc.at(3 * (k-1) + 3) );
+            centroid.at(3) += ( lpc.at(3 * (k-1) + 3) + lpc.at(3) ) * ( lpc.at(3 * (k-1) + 2) * lpc.at(3) - lpc.at(2) * lpc.at(3 * (k-1) + 3) );
         }
     }
 
@@ -862,7 +862,7 @@ void
     //Shift coordinates to centroid
     for ( int k = 1; k <= numberOfPolygonVertices; k++ ) {
         for ( int l = 1; l <= 3; l++ ) {
-	  lpc.at(3 * (k-1) + l) -= centroid.at(l);
+            lpc.at(3 * (k-1) + l) -= centroid.at(l);
         }
     }
 
@@ -875,23 +875,23 @@ void
 
     for ( int k = 1; k <= numberOfPolygonVertices; k++ ) {
         if ( k < numberOfPolygonVertices ) {
-	  a = lpc.at(3 * (k-1) + 2) * lpc.at(3 * ( k ) + 3) - lpc.at(3 * ( k ) + 2) * lpc.at(3 * (k-1) + 3);
+            a = lpc.at(3 * (k-1) + 2) * lpc.at(3 * ( k ) + 3) - lpc.at(3 * ( k ) + 2) * lpc.at(3 * (k-1) + 3);
 
-	  Ixx += ( ( pow(lpc.at(3 * (k-1) + 3), 2.) + lpc.at(3 * (k-1) + 3) * lpc.at(3 * ( k ) + 3) + pow(lpc.at(3 * ( k ) + 3), 2.) ) * a ) / 12.;
+            Ixx += ( ( pow(lpc.at(3 * (k-1) + 3), 2.) + lpc.at(3 * (k-1) + 3) * lpc.at(3 * ( k ) + 3) + pow(lpc.at(3 * ( k ) + 3), 2.) ) * a ) / 12.;
 
-	  Iyy += ( ( pow(lpc.at(3 * (k-1) + 2), 2.) + lpc.at(3 * (k-1) + 2) * lpc.at(3 * ( k ) + 2) + pow(lpc.at(3 * ( k ) + 2), 2.) ) * a ) / 12.;
+            Iyy += ( ( pow(lpc.at(3 * (k-1) + 2), 2.) + lpc.at(3 * (k-1) + 2) * lpc.at(3 * ( k ) + 2) + pow(lpc.at(3 * ( k ) + 2), 2.) ) * a ) / 12.;
 
-	  Ixy += ( ( lpc.at(3 * (k-1) + 2) * lpc.at(3 * ( k ) + 3) + 2. * lpc.at(3 * (k-1) + 2) * lpc.at(3 * (k-1) + 3) +
-		     2 * lpc.at(3 * ( k ) + 2) * lpc.at(3 * ( k ) + 3) + lpc.at(3 * ( k ) + 2) * lpc.at(3 * (k-1) + 3) ) * a ) / 24.;
+            Ixy += ( ( lpc.at(3 * (k-1) + 2) * lpc.at(3 * ( k ) + 3) + 2. * lpc.at(3 * (k-1) + 2) * lpc.at(3 * (k-1) + 3) +
+                    2 * lpc.at(3 * ( k ) + 2) * lpc.at(3 * ( k ) + 3) + lpc.at(3 * ( k ) + 2) * lpc.at(3 * (k-1) + 3) ) * a ) / 24.;
         } else {   //Back to zero for n+1
-	  a = lpc.at(3 * (k-1) + 2) * lpc.at(3) - lpc.at(2) * lpc.at(3 * (k-1) + 3);
+            a = lpc.at(3 * (k-1) + 2) * lpc.at(3) - lpc.at(2) * lpc.at(3 * (k-1) + 3);
 
-	  Ixx += ( ( pow(lpc.at(3 * (k-1) + 3), 2.) + lpc.at(3 * (k-1) + 3) * lpc.at(3) + pow(lpc.at(3), 2.) ) * a ) / 12.;
+            Ixx += ( ( pow(lpc.at(3 * (k-1) + 3), 2.) + lpc.at(3 * (k-1) + 3) * lpc.at(3) + pow(lpc.at(3), 2.) ) * a ) / 12.;
 
-	  Iyy += ( ( pow(lpc.at(3 * (k-1) + 2), 2.) + lpc.at(3 * (k-1) + 2) * lpc.at(2) + pow(lpc.at(2), 2.) ) * a ) / 12.;
+            Iyy += ( ( pow(lpc.at(3 * (k-1) + 2), 2.) + lpc.at(3 * (k-1) + 2) * lpc.at(2) + pow(lpc.at(2), 2.) ) * a ) / 12.;
 
-	  Ixy += ( ( lpc.at(3 * (k-1) + 2) * lpc.at(3) + 2. * lpc.at(3 * (k-1) + 2) * lpc.at(3 * (k-1) + 3) +
-		     2 * lpc.at(2) * lpc.at(3) + lpc.at(2) * lpc.at(3 * (k-1) + 3) ) * a ) / 24.;
+            Ixy += ( ( lpc.at(3 * (k-1) + 2) * lpc.at(3) + 2. * lpc.at(3 * (k-1) + 2) * lpc.at(3 * (k-1) + 3) +
+                    2 * lpc.at(2) * lpc.at(3) + lpc.at(2) * lpc.at(3 * (k-1) + 3) ) * a ) / 24.;
         }
     }
 
@@ -981,11 +981,11 @@ if ( cs->giveShape() == 2 || this->isShellElement() ) {
       this->J = this->Ip; // temporary fallback for generic polygons
     }
 
-    
+
 
     this->shearArea1 = area;
     this->shearArea2 = area;
-    
+
     //Rotation around normal axis by angleChange
     FloatMatrix rotationChange(3, 3);
     rotationChange.zero();
@@ -1002,12 +1002,12 @@ if ( cs->giveShape() == 2 || this->isShellElement() ) {
     //Calculate the polygon vertices in the new coordinate system
     for ( int k = 1; k <= numberOfPolygonVertices; k++ ) {
         for ( int n = 1; n <= 3; n++ ) {
-	  help.at(n) = polygonCoords.at(3 * (k-1) + n);
+            help.at(n) = polygonCoords.at(3 * (k-1) + n);
         }
 
         test.beProductOf(this->localCoordinateSystem, help);
         for ( int n = 1; n <= 3; n++ ) {
-	  lpc.at(3 * (k-1) + n) = test.at(n);
+            lpc.at(3 * (k-1) + n) = test.at(n);
         }
     }
 
@@ -1015,11 +1015,11 @@ if ( cs->giveShape() == 2 || this->isShellElement() ) {
     centroid.zero();
     for ( int k = 1; k <= numberOfPolygonVertices; k++ ) {
         if ( k < numberOfPolygonVertices ) {
-	  centroid.at(2) += ( lpc.at(3 * (k-1) + 2) + lpc.at(3 * ( k ) + 2) ) * ( lpc.at(3 * (k-1) + 2) * lpc.at(3 * ( k ) + 3) - lpc.at(3 * ( k ) + 2) * lpc.at(3 * (k-1) + 3) );
-	  centroid.at(3) += ( lpc.at(3 * (k-1) + 3) + lpc.at(3 * ( k ) + 3) ) * ( lpc.at(3 * (k-1) + 2) * lpc.at(3 * ( k ) + 3) - lpc.at(3 * ( k ) + 2) * lpc.at(3 * (k-1) + 3) );
+            centroid.at(2) += ( lpc.at(3 * (k-1) + 2) + lpc.at(3 * ( k ) + 2) ) * ( lpc.at(3 * (k-1) + 2) * lpc.at(3 * ( k ) + 3) - lpc.at(3 * ( k ) + 2) * lpc.at(3 * (k-1) + 3) );
+            centroid.at(3) += ( lpc.at(3 * (k-1) + 3) + lpc.at(3 * ( k ) + 3) ) * ( lpc.at(3 * (k-1) + 2) * lpc.at(3 * ( k ) + 3) - lpc.at(3 * ( k ) + 2) * lpc.at(3 * (k-1) + 3) );
         } else {   //Back to zero for n+1
-	  centroid.at(2) += ( lpc.at(3 * (k-1) + 2) + lpc.at(2) ) * ( lpc.at(3 * (k-1) + 2) * lpc.at(3) - lpc.at(2) * lpc.at(3 * (k-1) + 3) );
-          centroid.at(3) += ( lpc.at(3 * (k-1) + 3) + lpc.at(3) ) * ( lpc.at(3 * (k-1) + 2) * lpc.at(3) - lpc.at(2) * lpc.at(3 * (k-1) + 3) );
+            centroid.at(2) += ( lpc.at(3 * (k-1) + 2) + lpc.at(2) ) * ( lpc.at(3 * (k-1) + 2) * lpc.at(3) - lpc.at(2) * lpc.at(3 * (k-1) + 3) );
+            centroid.at(3) += ( lpc.at(3 * (k-1) + 3) + lpc.at(3) ) * ( lpc.at(3 * (k-1) + 2) * lpc.at(3) - lpc.at(2) * lpc.at(3 * (k-1) + 3) );
         }
     }
 
@@ -1038,7 +1038,7 @@ if ( cs->giveShape() == 2 || this->isShellElement() ) {
     transposeLCS.beTranspositionOf(this->localCoordinateSystem);
 
     this->globalCentroid.beProductOf(transposeLCS, centroid);
-     
+
   return;
 }
 
@@ -1118,19 +1118,12 @@ double Lattice3d :: giveJ(GaussPoint *gp) {
         computeGeometryProperties();
     }
     if ( this->isHybridShell() ) {
-        // Per-layer self-torsion only. The dominant y^2-weighted (Steiner) part
-        // of the plate twisting is generated automatically by the layer shear
-        // forces acting at their through-thickness offset (see computeBmatrixAt),
-        // just as axial forces at their offset give the Steiner bending. Returning
-        // J_total/nLayers here would add the full plate torsion on top of that and
-        // double-count the twisting stiffness.
         auto *lcs = static_cast< LatticeCrossSection * >( this->giveCrossSection() );
         const double dh = this->shellH / static_cast< double >( lcs->giveNLayers() );
         return this->shellB * dh * dh * dh / 12.0;
     }
     return this->J;
 }
-
 
 
 double Lattice3d :: giveShearArea1(GaussPoint *gp) {

@@ -44,6 +44,8 @@
 #include "floatarray.h"
 #include "mathfem.h"
 #include "../sm/Elements/LatticeElements/latticestructuralelement.h"
+#include "parametermanager.h"
+#include "paramkey.h"
 #include "contextioerr.h"
 #include "datastream.h"
 #include "classfactory.h"
@@ -56,6 +58,11 @@
 
 namespace oofem {
     REGISTER_Element(LatticeLink3d);
+
+    ParamKey LatticeLink3d::IPK_LatticeLink3d_length("length");
+    ParamKey LatticeLink3d::IPK_LatticeLink3d_diameter("diameter");
+    ParamKey LatticeLink3d::IPK_LatticeLink3d_dirvector("dirvector");
+    ParamKey LatticeLink3d::IPK_LatticeLink3d_l_end("l_end");
 
     LatticeLink3d::LatticeLink3d(int n, Domain *aDomain) : LatticeStructuralElement(n, aDomain)
     {
@@ -166,7 +173,6 @@ namespace oofem {
         FloatMatrix d, b, bt, db;
         FloatArray u, strain;
 
-        // This function can be quite costly to do inside the loops when one has many slave dofs.
         this->computeVectorOf(VM_Total, tStep, u);
         // subtract initial displacements, if defined
         if ( initialDisplacements ) {
@@ -280,17 +286,25 @@ namespace oofem {
     void
     LatticeLink3d::initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
     {
+        ParameterManager &ppm = this->giveDomain()->elementPPM;
         // first call parent
         LatticeStructuralElement::initializeFrom(ir, priority);
 
-        IR_GIVE_FIELD(ir, this->bondLength, _IFT_LatticeLink3d_length);
+        PM_UPDATE_PARAMETER(bondLength, ppm, ir, this->number, IPK_LatticeLink3d_length, priority);
+        PM_UPDATE_PARAMETER(bondDiameter, ppm, ir, this->number, IPK_LatticeLink3d_diameter, priority);
+        PM_UPDATE_PARAMETER(directionVector, ppm, ir, this->number, IPK_LatticeLink3d_dirvector, priority);
+        PM_UPDATE_PARAMETER(bondEndLength, ppm, ir, this->number, IPK_LatticeLink3d_l_end, priority);
+    }
 
-        IR_GIVE_FIELD(ir, this->bondDiameter, _IFT_LatticeLink3d_diameter);
-
-        IR_GIVE_FIELD(ir, this->directionVector, _IFT_LatticeLink3d_dirvector);
-
-        this->bondEndLength = 0.;
-        IR_GIVE_OPTIONAL_FIELD(ir, this->bondEndLength, _IFT_LatticeLink3d_l_end);
+    void
+    LatticeLink3d::postInitialize()
+    {
+        ParameterManager &ppm = this->giveDomain()->elementPPM;
+        LatticeStructuralElement::postInitialize();
+        PM_ELEMENT_ERROR_IFNOTSET(ppm, this->number, IPK_LatticeLink3d_length);
+        PM_ELEMENT_ERROR_IFNOTSET(ppm, this->number, IPK_LatticeLink3d_diameter);
+        PM_ELEMENT_ERROR_IFNOTSET(ppm, this->number, IPK_LatticeLink3d_dirvector);
+        // bondEndLength (l_end) is an optional dormant hook — no required check (fork keeps it optional).
     }
 
 
@@ -407,7 +421,7 @@ namespace oofem {
         FloatMatrix b, bt;
         FloatArray u, stress(6), strain(6);
 
-        // This function can be quite costly to do inside the loops when one has many slave dofs.
+
         this->computeVectorOf(VM_Total, tStep, u);
         // subtract initial displacements, if defined
         if ( initialDisplacements ) {

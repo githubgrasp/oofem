@@ -74,6 +74,9 @@ public:
     const char *giveInputRecordName() const override { return _IFT_LatticeLink3dBoundary_Name; }
     const char *giveClassName() const override { return "LatticeLink3dBoundary"; }
     void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
+    void postInitialize() override;
+
+    static ParamKey IPK_LatticeLink3dBoundary_location;
     Element_Geometry_Type giveGeometryType() const override { return EGT_line_1; }
 
     void saveContext(DataStream &stream, ContextMode mode) override;

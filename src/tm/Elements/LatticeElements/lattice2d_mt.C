@@ -44,6 +44,8 @@
 #include "floatarray.h"
 #include "intarray.h"
 #include "domain.h"
+#include "parametermanager.h"
+#include "paramkey.h"
 #include "mathfem.h"
 #include "engngm.h"
 #include "load.h"
@@ -56,6 +58,15 @@
 
 namespace oofem {
 REGISTER_Element(Lattice2d_mt);
+
+ParamKey Lattice2d_mt::IPK_Lattice2d_mt_dim("dim");
+ParamKey Lattice2d_mt::IPK_Lattice2d_mt_thickness("thick");
+ParamKey Lattice2d_mt::IPK_Lattice2d_mt_width("width");
+ParamKey Lattice2d_mt::IPK_Lattice2d_mt_gpcoords("gpcoords");
+ParamKey Lattice2d_mt::IPK_Lattice2d_mt_crackwidth("crackwidth");
+ParamKey Lattice2d_mt::IPK_Lattice2d_mt_couplingflag("couplingflag");
+ParamKey Lattice2d_mt::IPK_Lattice2d_mt_couplingnumber("couplingnumber");
+ParamKey Lattice2d_mt::IPK_Lattice2d_mt_lumpedcapacity("lumpedcapacity");
 
 Lattice2d_mt :: Lattice2d_mt(int n, Domain *aDomain, ElementMode em) :
     LatticeTransportElement(n, aDomain, em)
@@ -182,37 +193,38 @@ Lattice2d_mt :: giveDofManDofIDMask(int inode, IntArray &answer) const
 void
 Lattice2d_mt :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
+    ParameterManager &ppm = this->giveDomain()->elementPPM;
     // first call parent
     LatticeTransportElement :: initializeFrom(ir, priority);
 
-    dimension = 2.;
-    IR_GIVE_OPTIONAL_FIELD(ir, dimension, _IFT_Lattice2DMT_dim);
-
-    IR_GIVE_FIELD(ir, thickness, _IFT_Lattice2DMT_thick);
-
-    IR_GIVE_FIELD(ir, width, _IFT_Lattice2DMT_width);
-    crackLengths.resize(1);
-    crackLengths.at(1) = width;
-
-
-    IR_GIVE_FIELD(ir, gpCoords, _IFT_Lattice2DMT_gpcoords);
+    PM_UPDATE_PARAMETER(dimension, ppm, ir, this->number, IPK_Lattice2d_mt_dim, priority);
+    PM_UPDATE_PARAMETER(thickness, ppm, ir, this->number, IPK_Lattice2d_mt_thickness, priority);
+    PM_UPDATE_PARAMETER(width, ppm, ir, this->number, IPK_Lattice2d_mt_width, priority);
+    PM_UPDATE_PARAMETER(gpCoords, ppm, ir, this->number, IPK_Lattice2d_mt_gpcoords, priority);
 
     crackWidths.resize(1);
     crackWidths.zero();
-    IR_GIVE_OPTIONAL_FIELD(ir, crackWidths.at(1), _IFT_Lattice2DMT_crackwidth);
+    PM_UPDATE_PARAMETER(crackWidths.at(1), ppm, ir, this->number, IPK_Lattice2d_mt_crackwidth, priority);
 
-    couplingFlag = 0;
-    IR_GIVE_OPTIONAL_FIELD(ir, couplingFlag, _IFT_Lattice2DMT_couplingflag);
-
-    lumpedCapacity = 0;
-    IR_GIVE_OPTIONAL_FIELD(ir, lumpedCapacity, _IFT_Lattice2DMT_lumpedcapacity);
+    PM_UPDATE_PARAMETER(couplingFlag, ppm, ir, this->number, IPK_Lattice2d_mt_couplingflag, priority);
+    PM_UPDATE_PARAMETER(lumpedCapacity, ppm, ir, this->number, IPK_Lattice2d_mt_lumpedcapacity, priority);
 
     couplingNumbers.resize(1);
     couplingNumbers.zero();
-    if ( couplingFlag == 1 ) {
-        IR_GIVE_OPTIONAL_FIELD(ir, couplingNumbers.at(1), _IFT_Lattice2DMT_couplingnumber);
-    }
+    PM_UPDATE_PARAMETER(couplingNumbers.at(1), ppm, ir, this->number, IPK_Lattice2d_mt_couplingnumber, priority);
+}
 
+void
+Lattice2d_mt :: postInitialize()
+{
+    ParameterManager &ppm = this->giveDomain()->elementPPM;
+    this->LatticeTransportElement :: postInitialize();
+
+    PM_ELEMENT_ERROR_IFNOTSET(ppm, this->number, IPK_Lattice2d_mt_thickness);
+    PM_ELEMENT_ERROR_IFNOTSET(ppm, this->number, IPK_Lattice2d_mt_width);
+    PM_ELEMENT_ERROR_IFNOTSET(ppm, this->number, IPK_Lattice2d_mt_gpcoords);
+    crackLengths.resize(1);
+    crackLengths.at(1) = width;
     numberOfGaussPoints = 1;
 }
 

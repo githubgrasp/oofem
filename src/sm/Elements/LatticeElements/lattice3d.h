@@ -58,7 +58,7 @@ namespace oofem {
 class Lattice3d : public LatticeStructuralElement
 {
 protected:
-    double minLength;
+    double minLength = 1.e-20;
     double kappa, length;
   double I1, I2, Ip, J;
      double shearArea1, shearArea2;
@@ -68,7 +68,7 @@ protected:
     double eccS, eccT, area;
     FloatArray midPoint, centroid, globalCentroid, normal;
     int geometryFlag;
-    int couplingFlag;
+    int couplingFlag = 0;
     IntArray couplingNumbers;
     FloatArray pressures;
 
@@ -76,12 +76,9 @@ protected:
     FloatArray shellNormal;
 
     /// Reference axis orienting the transverse frame of a property-defined (shape 3) cross-section.
-    /// Mandatory when the section properties (I1/I2/J) are taken directly from the cross-section;
-    /// empty for facet/shell sections.
     FloatArray zaxis;
 
-    /// Gauss-point position along the element: parameter (1+s)/2 from node A (s=0 -> midpoint).
-    /// Only used by the property-defined (shape 3) cross-section.
+    /// Gauss-point position along the element: parameter (1+s)/2 from node A (s=0 gives midpoint).
     double s = 0.;
 
     double shellH = 0.;
@@ -149,6 +146,16 @@ public:
     const char *giveInputRecordName() const override { return _IFT_Lattice3d_Name; }
     const char *giveClassName() const override { return "Lattice3d"; }
     void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
+    void postInitialize() override;
+
+    static ParamKey IPK_Lattice3d_mlength;
+    static ParamKey IPK_Lattice3d_polycoords;
+    static ParamKey IPK_Lattice3d_couplingflag;
+    static ParamKey IPK_Lattice3d_couplingnumber;
+    static ParamKey IPK_Lattice3d_pressures;
+    static ParamKey IPK_Lattice3d_shellnormal;
+    static ParamKey IPK_Lattice3d_zaxis;
+    static ParamKey IPK_Lattice3d_s;
 
     void giveGpCoordinates(FloatArray &coords, GaussPoint *gp) override;
 

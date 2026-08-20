@@ -84,6 +84,9 @@ public:
     const char *giveInputRecordName() const override { return _IFT_Lattice2dBoundary_Name; }
     const char *giveClassName() const override { return "Lattice2dBoundary"; }
     void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
+    void postInitialize() override;
+
+    static ParamKey IPK_Lattice2dBoundary_location;
 
     void saveContext(DataStream &stream, ContextMode mode) override;
     void restoreContext(DataStream &stream, ContextMode mode) override;

@@ -60,7 +60,7 @@ protected:
     double bondDiameter;
     FloatArray directionVector;
     int geometryFlag;
-    double bondEndLength;
+    double bondEndLength = 0.;
     FloatArray rigid;
     FloatArray globalCentroid;
 
@@ -101,6 +101,12 @@ public:
     const char *giveInputRecordName() const override { return _IFT_LatticeLink3d_Name; }
     const char *giveClassName()  const override { return "LatticeLink3d"; }
     void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
+    void postInitialize() override;
+
+    static ParamKey IPK_LatticeLink3d_length;
+    static ParamKey IPK_LatticeLink3d_diameter;
+    static ParamKey IPK_LatticeLink3d_dirvector;
+    static ParamKey IPK_LatticeLink3d_l_end;
 
     Element_Geometry_Type giveGeometryType() const override { return EGT_line_1; }
 

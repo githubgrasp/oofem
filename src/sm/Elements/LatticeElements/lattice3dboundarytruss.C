@@ -46,6 +46,8 @@
 #include "latticestructuralelement.h"
 #include "classfactory.h"
 #include "../sm/Materials/structuralmaterial.h"
+#include "parametermanager.h"
+#include "paramkey.h"
 #include "contextioerr.h"
 #include "datastream.h"
 #include "crosssection.h"
@@ -57,6 +59,8 @@
 
 namespace oofem {
 REGISTER_Element(Lattice3dBoundaryTruss);
+
+ParamKey Lattice3dBoundaryTruss::IPK_Lattice3dBoundaryTruss_location("location");
 
 Lattice3dBoundaryTruss :: Lattice3dBoundaryTruss(int n, Domain *aDomain) : Lattice3dBoundary(n, aDomain)
 {
@@ -422,10 +426,17 @@ Lattice3dBoundaryTruss ::   giveDofManDofIDMask(int inode, IntArray &answer) con
 void
 Lattice3dBoundaryTruss :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
+    ParameterManager &ppm = this->giveDomain()->elementPPM;
     Lattice3d :: initializeFrom(ir, priority);
+    PM_UPDATE_PARAMETER(location, ppm, ir, this->number, IPK_Lattice3dBoundaryTruss_location, priority);
+}
 
-    this->location.resize(2);
-    IR_GIVE_FIELD(ir, location, _IFT_Lattice3dBoundaryTruss_location); // Macro
+void
+Lattice3dBoundaryTruss :: postInitialize()
+{
+    ParameterManager &ppm = this->giveDomain()->elementPPM;
+    Lattice3d :: postInitialize();
+    PM_ELEMENT_ERROR_IFNOTSET(ppm, this->number, IPK_Lattice3dBoundaryTruss_location);
 }
 
 

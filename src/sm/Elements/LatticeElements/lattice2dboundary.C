@@ -45,6 +45,8 @@
 #include "floatarray.h"
 #include "mathfem.h"
 #include "datastream.h"
+#include "parametermanager.h"
+#include "paramkey.h"
 #include "contextioerr.h"
 #include "classfactory.h"
 #include "dof.h"
@@ -59,14 +61,14 @@
 namespace oofem {
 REGISTER_Element(Lattice2dBoundary);
 
+ParamKey Lattice2dBoundary::IPK_Lattice2dBoundary_location("location");
+
 Lattice2dBoundary :: Lattice2dBoundary(int n, Domain *aDomain) : Lattice2d(n, aDomain)
     // Constructor.
 {
     numberOfDofMans     = 3;
-
-    kappa = -1; // set kappa to undef value (should be always > 0.)
-
-    pitch               = 10.;  // a dummy value
+    kappa = -1;
+    pitch               = 10.;
 }
 
 Lattice2dBoundary :: ~Lattice2dBoundary()
@@ -192,7 +194,7 @@ Lattice2dBoundary :: recalculateCoordinates(int nodeNumber, FloatArray &coords) 
 
 
 void
-Lattice2dBoundary :: computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode,                                      TimeStep *tStep)
+Lattice2dBoundary :: computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMode, TimeStep *tStep)
 // Computes numerically the stiffness matrix of the receiver.
 {
   double length = this->giveLength();
@@ -208,10 +210,10 @@ Lattice2dBoundary :: computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode
     convertTangentToResultantTangent2d(ds, d, integrationRulesArray [ 0 ]->getIntegrationPoint(0));
 
     db.beProductOf(ds, b);
-    bt.beTranspositionOf(b);    
+    bt.beTranspositionOf(b);
     answerTemp.beProductOf(bt, db);
     answerTemp.times(1./length);
-    
+
     answer.resize(computeNumberOfDofs(), computeNumberOfDofs() );
     answer.zero();
 
@@ -301,7 +303,7 @@ Lattice2dBoundary :: computeStrainVector(FloatArray &answer, GaussPoint *gp, Tim
     FloatMatrix b;
     FloatArray u;
     double length = this->giveLength();
-    
+
     //Compute strain vector
     //Get the 9 components of the displacement vector of this element
     this->computeVectorOf(VM_Total, stepN, u);
@@ -441,10 +443,19 @@ double Lattice2dBoundary :: givePitch()
 void
 Lattice2dBoundary :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
+    ParameterManager &ppm = this->giveDomain()->elementPPM;
     // first call parent
     Lattice2d :: initializeFrom(ir, priority);
-    IR_GIVE_FIELD(ir, location, _IFT_Lattice2dBoundary_location); // Macro
+    PM_UPDATE_PARAMETER(location, ppm, ir, this->number, IPK_Lattice2dBoundary_location, priority);
+}
 
+void
+Lattice2dBoundary :: postInitialize()
+{
+    ParameterManager &ppm = this->giveDomain()->elementPPM;
+    // first call parent
+    Lattice2d :: postInitialize();
+    PM_ELEMENT_ERROR_IFNOTSET(ppm, this->number, IPK_Lattice2dBoundary_location);
     this->computeGaussPoints();
 }
 

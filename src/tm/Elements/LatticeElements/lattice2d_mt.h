@@ -68,13 +68,13 @@ protected:
     FloatArray crackWidths;
     FloatArray crackLengths;
 
-    double dimension = 0., width = 0., thickness = 0.;
+    double dimension = 2., width = 0., thickness = 0.;
     FloatArray gpCoords;
 
     double crackWidth = 0.;
 
     /// 0 = consistent (coupled) capacity matrix; 1 = diagonal lumped form.
-    /// Lumping gives TPFA-style monotone behaviour for nonlinear c(p).
+    /// Lumping gives monotone behaviour for nonlinear c(p).
     int lumpedCapacity = 0;
 
 public:
@@ -110,6 +110,16 @@ public:
     int computeNumberOfDofs() override { return 2; }
     void giveDofManDofIDMask(int inode, IntArray &) const override;
     void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
+    void postInitialize() override;
+
+    static ParamKey IPK_Lattice2d_mt_dim;
+    static ParamKey IPK_Lattice2d_mt_thickness;
+    static ParamKey IPK_Lattice2d_mt_width;
+    static ParamKey IPK_Lattice2d_mt_gpcoords;
+    static ParamKey IPK_Lattice2d_mt_crackwidth;
+    static ParamKey IPK_Lattice2d_mt_couplingflag;
+    static ParamKey IPK_Lattice2d_mt_couplingnumber;
+    static ParamKey IPK_Lattice2d_mt_lumpedcapacity;
 
     void updateInternalState(TimeStep *tStep) override;
 
