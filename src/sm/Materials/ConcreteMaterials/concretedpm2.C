@@ -1583,7 +1583,7 @@ ConcreteDPM2::performPlasticityReturn(GaussPoint *gp, const FloatMatrixF< 6, 6 >
                 }
                 OOFEM_LOG_INFO("KappaP old %g new %g yieldfun %g\n", status->giveTempKappaP(), tempKappaP, yieldValue);
                 // Mark the element for deletion and continue instead of aborting the whole analysis.
-                OOFEM_WARNING("ConcreteDPM2::performPlasticityReturn: could not reach convergence with small deltaStrain, giving up. Delete element number %d", gp->giveElement()->giveNumber() );
+                OOFEM_LOG_INFO("ConcreteDPM2::performPlasticityReturn: element %d deleted, plastic return did not converge.\n", gp->giveElement()->giveNumber() );
                 status->setTempDeletionFlag(1);
                 for ( int k = 0; k < 6; k++ ) {
                     effectiveStress.at(k + 1) = 0.;
@@ -1786,7 +1786,7 @@ ConcreteDPM2::computeRatioPotential(double sig,
     double yieldHardOne = computeHardeningOne(tempKappa);
     double yieldHardTwo = computeHardeningTwo(tempKappa);
 
-    //Compute dilation parameter (mQ = dmg/dsig with mg per eq.(23), generalised with qh1 factors)
+    //Compute dilation parameter (mQ = dmg/dsig with mg per eq.(23), generalised with qh factors)
     double AGParam = 3. * this->ft * yieldHardOne * yieldHardTwo / this->fc + this->m * yieldHardOne * yieldHardOne / 2.;
     double BGParam =
         yieldHardOne * yieldHardTwo * ( 1. + this->ft / this->fc ) / 3. /
