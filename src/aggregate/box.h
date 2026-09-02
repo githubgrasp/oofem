@@ -121,6 +121,12 @@ public:
     /// Optional VTU output path (empty if `#@vtu` was not specified).
     const std::string &giveVtuFileName() const { return vtuFileName; }
 
+    /// Whether the VTU should also draw the periodic ghost images (default
+    /// true). Purely a visualisation choice — the ghosts always exist on the
+    /// box for overlap tests and are always written to the packing file
+    /// regardless of this flag. Toggled by `#@vtughosts 0`.
+    bool giveVtuIncludeGhosts() const { return vtuIncludeGhosts; }
+
 private:
     /// Apply one `#@`-directive line. Splits off the keyword and dispatches.
     void applyDirective(const std::string &line);
@@ -137,6 +143,7 @@ private:
     GradingParameters grading;
     FibreParameters fibres;
     std::string vtuFileName;
+    bool vtuIncludeGhosts = true;
 
     std::vector<std::unique_ptr<Inclusion>> realInclusions;
     std::vector<std::unique_ptr<Inclusion>> ghostInclusions;

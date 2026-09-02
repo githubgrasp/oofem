@@ -64,6 +64,14 @@ int main(int argc, char *argv[])
     std::mt19937 rng(box.giveRandomSeed());
     aggregate::Placer placer(box, rng);
 
+    // Optional diagnostic: AGGREGATE_TRACE=<file> logs every ellipsoid
+    // placement trial (rejected overlaps plus the accepted one) for
+    // illustrating the trial-and-error process. Observer only — the packing
+    // is unchanged whether or not this is set.
+    if ( const char *tracePath = std::getenv("AGGREGATE_TRACE") ) {
+        placer.enableTrace(tracePath);
+    }
+
     const auto &grading = box.giveGradingParameters();
     const auto &fibres = box.giveFibreParameters();
     const double rveMeasure = box.giveMeasure();
@@ -141,7 +149,8 @@ int main(int argc, char *argv[])
     box.writePackingFile();
     std::cout << "Packing written to " << box.giveOutputFileName() << "\n";
     if ( !box.giveVtuFileName().empty() ) {
-        aggregate::writeVtu(box, box.giveVtuFileName());
+        aggregate::writeVtu(box, box.giveVtuFileName(), 10,
+                            box.giveVtuIncludeGhosts());
         std::cout << "VTU written to " << box.giveVtuFileName() << "\n";
     }
 

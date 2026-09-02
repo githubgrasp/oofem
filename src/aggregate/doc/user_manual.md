@@ -8,12 +8,28 @@ where each inclusion sits and how it is oriented. The packing file is the
 input to downstream tools — typically the converter, which couples it
 with a node mesh from the generator to produce a complete OOFEM `.in`.
 
-The module is written from scratch in C++, replacing an earlier Matlab
-implementation. The numerical parts (Wriggers' interval-volume formula,
-the Alfano-Greer ellipsoid–ellipsoid test, the trial-and-error placement
-loop) are faithful ports; the random-orientation sampler was upgraded
-from the Matlab mixed convention to Shoemake's uniform-on-SO(3) quaternion
-method.
+The module implements the meso-structure generation of Grassl and Antonelli
+(2019): poly-dispersed ellipsoids sized from a Fuller grading curve divided
+into sieve intervals and placed into a periodic cell by random sequential
+addition, rejecting overlaps, with
+inner/outer bounding-sphere pre-checks to skip unnecessary tests. As in that
+work, ellipsoid–ellipsoid overlap is decided by the algebraic separation
+condition of Wang, Wang & Kim (2001). Here that condition is evaluated via the
+mathematically equivalent Alfano–Greer (2003) eigenvalues of `A⁻¹B` (which are
+the roots of `det(λA − B) = 0`) rather than the characteristic-polynomial
+coefficients, so results are identical up to rounding. The random orientation
+uses Shoemake's uniform-on-SO(3) quaternion sampler (Grassl and Antonelli
+(2019) used the method of Muller (1959)).
+
+References:
+
+- W. Wang, J. Wang, M.-S. Kim. An algebraic condition for the separation of
+  two ellipsoids. *Computer Aided Geometric Design* 18 (6), 531–539, 2001.
+- S. Alfano, M. L. Greer. Determining if two solid ellipsoids intersect.
+  *Journal of Guidance, Control, and Dynamics* 26 (1), 106–110, 2003.
+- P. Grassl, A. Antonelli. 3D network modelling of fracture processes in
+  fibre-reinforced geomaterials. *International Journal of Solids and
+  Structures* 156–157, 234–242, 2019.
 
 ## Running the aggregate tests
 
@@ -114,6 +130,37 @@ aggregate.exec <control-file>
 The control file's `#@output` directive names the packing file; `#@vtu`
 optionally adds a VTU file beside it.
 
+### Tracing the placement process
+
+Set the `AGGREGATE_TRACE` environment variable to a filename to record every
+ellipsoid placement *trial* — the rejected candidates that overlap an
+existing aggregate as well as the one finally accepted:
+
+```bash
+AGGREGATE_TRACE=placement.trace aggregate.exec control.in
+```
+
+Each trial is one line:
+
+```text
+# trace v1
+trial <id> <iter> <status> centre 3 <cx> <cy> <cz> angles 3 <phix> <phiy> <phiz> radii 3 <sx> <sy> <sz>
+```
+
+`<id>` is the id the aggregate receives once a trial succeeds (shared by all
+of that aggregate's rejected trials, so the log groups per aggregate),
+`<iter>` is the 0-based attempt index, and `<status>` is `overlap` (rejected
+for hitting an existing aggregate), `boundary` (rejected on a non-periodic
+face), or `accept`. The `accept` records reproduce the `packing.dat`
+placements exactly.
+
+The trace is a pure observer: it logs values the placement loop already
+computes without touching control flow or the RNG, so the resulting packing
+is **byte-identical** whether tracing is on or off. It is intended for
+illustrating or debugging the trial-and-error process, not for production
+runs. Only the 3D ellipsoid placer (`#@grading` in 3D) is traced; the 2D disk
+and fibre placers are not.
+
 ## Control file `#@` directives
 
 The control file is read line by line. Lines that start with `#@` are
@@ -126,6 +173,7 @@ and descriptive text — are ignored. Directive order is irrelevant.
 |-----------|-----------|---------|
 | `#@output` | `<filename>` | Packing-file output path. Required. |
 | `#@vtu` | `<filename>` | Optional VTU output path. Omit to skip ParaView export. |
+| `#@vtughosts` | `0` or `1` | Whether the VTU also draws the periodic ghost images (default `1`). Purely a visualisation choice — the ghosts always exist for overlap tests and are always written to `packing.dat`, so `0` only makes the `.vtu` show a single copy of each inclusion. |
 | `#@box` | `2 <lx> <ly>` (2D) or `3 <lx> <ly> <lz>` (3D) | RVE side lengths. The leading count selects the dimension — 2D mode places disks, 3D mode places ellipsoids/spheres and (optionally) fibres. Required. |
 | `#@periodicity` | `2 <px> <py>` (2D) or `3 <px> <py> <pz>` (3D) | Per-axis periodicity flag. `1` = periodic (the placer generates ghosts and allows boundary crossings); `0` = real boundary (candidates that touch the boundary are rejected). The arity must match `#@box`. |
 | `#@seed` | `<n>` | Seed passed to `std::mt19937`. The same seed always produces the same packing. |
@@ -178,11 +226,12 @@ generator-side `#@inclusionfile` consumer.
 
 The placer determines an integer fibre count from the requested volume
 fraction, then attempts to place each one against existing aggregates.
-**Fibre-fibre overlaps are not checked** (matching the Matlab convention)
+**Fibre-fibre overlaps are not checked** (as in Grassl and Antonelli (2019),
+which checks only ellipsoid–ellipsoid and ellipsoid–line-segment overlaps)
 — only fibre-vs-ellipsoid intersections cause rejection.
 
-When `#@grading` and `#@fibres` are both present, the placer follows the
-Matlab three-stage order:
+When `#@grading` and `#@fibres` are both present, the placer follows a
+three-stage order:
 
 1. Place "group 1" aggregates (the large end, above the `dlim`-derived
    volume threshold) — these go down before fibres so the big inclusions
@@ -254,14 +303,17 @@ This format is shared with the generator and the converter:
 ### `packing.vtu`
 
 ParaView-compatible XML UnstructuredGrid. Each ellipsoid is tessellated
-into an `(N+1)²` grid of points and `N²` quad cells (default `N = 10`,
-matching the Matlab visualisation). Each fibre becomes 2 points and a
-single line cell. Two cell-data arrays let you filter and colour:
+into an `(N+1)²` grid of points and `N²` quad cells (default `N = 10`).
+Each fibre becomes 2 points and a single line cell. By default the periodic ghost images are drawn as well,
+so the VTU shows the packing tiling exactly as `packing.dat` describes it
+(set `#@vtughosts 0` to draw only the real inclusions). Three cell-data
+arrays let you filter and colour:
 
 | Array | Type | Values |
 |-------|------|--------|
 | `kind` | Int32 | `0` for ellipsoid surface, `1` for fibre |
 | `id` | Int32 | the inclusion's sequential id |
+| `ghost` | Int32 | `0` for a real inclusion, `1` for a periodic image |
 
 To visualise:
 
@@ -270,8 +322,9 @@ paraview packing.vtu
 ```
 
 In ParaView, apply a `Threshold` on `kind` to show ellipsoids and
-fibres on separate layers, or colour by `id` to follow individual
-inclusions through filters.
+fibres on separate layers, colour by `id` to follow individual
+inclusions through filters, or `Threshold` on `ghost` to hide the
+periodic images (`ghost = 0`) or isolate them (`ghost = 1`).
 
 ## Example
 

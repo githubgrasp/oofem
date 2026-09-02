@@ -2,8 +2,12 @@
 
 #include <Eigen/Geometry>
 #include <cmath>
+#include <iomanip>
+#include <ios>
+#include <limits>
 #include <memory>
 
+#include "aggregateerror.h"
 #include "box.h"
 #include "disk.h"
 #include "ellipsoid.h"
@@ -88,6 +92,36 @@ Placer::Placer(Box &boxRef, std::mt19937 &rngRef)
     : box(boxRef), rng(rngRef)
 {}
 
+void Placer::enableTrace(const std::string &path)
+{
+    traceFile.open(path);
+    if ( !traceFile ) {
+        errorf("Placer::enableTrace: cannot open '%s' for writing", path.c_str());
+    }
+    // Lossless decimal formatting, matching Box::writePackingFile so trial
+    // coordinates round-trip exactly and can be diffed against the packing.
+    traceFile << std::scientific
+              << std::setprecision(std::numeric_limits<double>::max_digits10);
+    traceFile << "# trace v1\n"
+              << "# trial <id> <iter> <status> centre 3 x y z"
+                 " angles 3 phix phiy phiz radii 3 sx sy sz\n";
+}
+
+void Placer::logTrial(int id, int iter, const char *status,
+                      const Eigen::Vector3d &centre,
+                      const Eigen::Vector3d &angles,
+                      const Eigen::Vector3d &semiAxes)
+{
+    if ( !traceFile.is_open() ) {
+        return;
+    }
+    traceFile << "trial " << id << ' ' << iter << ' ' << status
+              << " centre 3 " << centre(0) << ' ' << centre(1) << ' ' << centre(2)
+              << " angles 3 " << angles(0) << ' ' << angles(1) << ' ' << angles(2)
+              << " radii 3 " << semiAxes(0) << ' ' << semiAxes(1) << ' ' << semiAxes(2)
+              << '\n';
+}
+
 bool Placer::detectBoundaries(Eigen::Vector3d &centre,
                               const Eigen::Vector3d &angles,
                               const Eigen::Vector3d &semiAxes,
@@ -150,6 +184,10 @@ bool Placer::placeOne(const Eigen::Vector3d &semiAxes)
     const Eigen::Vector3d &boxDims = box.giveDimensions();
     const int maxIter = box.giveMaximumIterations();
 
+    // The id this aggregate will receive once a trial succeeds; shared by all
+    // of its rejected trials so the trace can be grouped per aggregate.
+    const int id = static_cast<int>( box.giveRealInclusions().size() ) + 1;
+
     for ( int iter = 0; iter < maxIter; ++iter ) {
         Eigen::Vector3d centre(uniform(rng, 0.0, boxDims(0)),
                                uniform(rng, 0.0, boxDims(1)),
@@ -158,6 +196,7 @@ bool Placer::placeOne(const Eigen::Vector3d &semiAxes)
 
         int bitmask = 0;
         if ( !detectBoundaries(centre, angles, semiAxes, bitmask) ) {
+            logTrial(id, iter, "boundary", centre, angles, semiAxes);
             continue;
         }
 
@@ -165,10 +204,11 @@ bool Placer::placeOne(const Eigen::Vector3d &semiAxes)
         const std::vector<Eigen::Vector3d> shifts = ghostShifts(boxDims, bitmask);
 
         if ( overlapsAnyExisting(candidate, shifts) ) {
+            logTrial(id, iter, "overlap", centre, angles, semiAxes);
             continue;
         }
 
-        const int id = static_cast<int>( box.giveRealInclusions().size() ) + 1;
+        logTrial(id, iter, "accept", centre, angles, semiAxes);
         box.addReal(std::make_unique<Ellipsoid>(id, centre, angles, semiAxes));
         for ( const auto &shift : shifts ) {
             box.addGhost(std::make_unique<Ellipsoid>(id, centre + shift, angles, semiAxes));

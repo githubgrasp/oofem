@@ -46,7 +46,8 @@ void appendEllipsoidPoints(const Ellipsoid &e, int meshSize,
 
 } // namespace
 
-void writeVtu(const Box &box, const std::string &fileName, int meshSize)
+void writeVtu(const Box &box, const std::string &fileName, int meshSize,
+              bool includeGhosts)
 {
     if ( meshSize < 1 ) {
         errorf("writeVtu: meshSize must be ≥ 1, got %d", meshSize);
@@ -58,11 +59,12 @@ void writeVtu(const Box &box, const std::string &fileName, int meshSize)
     std::vector<unsigned char> cellTypes;
     std::vector<int> cellKind;
     std::vector<int> cellId;
+    std::vector<int> cellGhost;
 
-    const int patchPoints = ( meshSize + 1 ) * ( meshSize + 1 );
-
-    for ( const auto &incPtr : box.giveRealInclusions() ) {
-        if ( const auto *e = dynamic_cast<const Ellipsoid *>( incPtr.get() ) ) {
+    // Tessellate one inclusion, tagging its cells as real (ghost=0) or a
+    // periodic image (ghost=1). Shared by the real and ghost passes below.
+    auto appendInclusion = [&]( const Inclusion &inc, int ghost ) {
+        if ( const auto *e = dynamic_cast<const Ellipsoid *>( &inc ) ) {
             const int basePoint = static_cast<int>( points.size() );
             appendEllipsoidPoints(*e, meshSize, points);
             for ( int j = 0; j < meshSize; ++j ) {
@@ -79,10 +81,10 @@ void writeVtu(const Box &box, const std::string &fileName, int meshSize)
                     cellTypes.push_back(kVtkQuad);
                     cellKind.push_back(kKindEllipsoid);
                     cellId.push_back(e->giveNumber());
+                    cellGhost.push_back(ghost);
                 }
             }
-            (void)patchPoints;
-        } else if ( const auto *f = dynamic_cast<const Fibre *>( incPtr.get() ) ) {
+        } else if ( const auto *f = dynamic_cast<const Fibre *>( &inc ) ) {
             const int basePoint = static_cast<int>( points.size() );
             points.push_back(f->giveEndpointA());
             points.push_back(f->giveEndpointB());
@@ -92,6 +94,16 @@ void writeVtu(const Box &box, const std::string &fileName, int meshSize)
             cellTypes.push_back(kVtkLine);
             cellKind.push_back(kKindFibre);
             cellId.push_back(f->giveNumber());
+            cellGhost.push_back(ghost);
+        }
+    };
+
+    for ( const auto &incPtr : box.giveRealInclusions() ) {
+        appendInclusion(*incPtr, 0);
+    }
+    if ( includeGhosts ) {
+        for ( const auto &incPtr : box.giveGhostInclusions() ) {
+            appendInclusion(*incPtr, 1);
         }
     }
 
@@ -143,6 +155,11 @@ void writeVtu(const Box &box, const std::string &fileName, int meshSize)
     out << "\n        </DataArray>\n"
         << "        <DataArray type=\"Int32\" Name=\"id\" format=\"ascii\">\n";
     for ( int v : cellId ) {
+        out << ' ' << v;
+    }
+    out << "\n        </DataArray>\n"
+        << "        <DataArray type=\"Int32\" Name=\"ghost\" format=\"ascii\">\n";
+    for ( int v : cellGhost ) {
         out << ' ' << v;
     }
     out << "\n        </DataArray>\n"
