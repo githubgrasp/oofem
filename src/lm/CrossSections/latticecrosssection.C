@@ -144,6 +144,11 @@ FloatArrayF< 3 >LatticeCrossSection :: giveLatticeStress2d(const FloatArrayF< 3 
     return this->giveLatticeMaterial()->giveLatticeStress2d(strain, gp, tStep);
 }
 
+FloatArrayF< 3 >LatticeCrossSection :: giveLatticeContactStress(const FloatArrayF< 3 > &jump, GaussPoint *gp, TimeStep *tStep) const
+{
+    return this->giveLatticeMaterial()->giveLatticeContactStress(jump, gp, tStep);
+}
+
 FloatArrayF< 6 >LatticeCrossSection :: giveLatticeStress3d(const FloatArrayF< 6 > &strain, GaussPoint *gp, TimeStep *tStep) const
 {
     return this->giveLatticeMaterial()->giveLatticeStress3d(strain, gp, tStep);
@@ -188,6 +193,20 @@ LatticeCrossSection :: give3dStiffnessMatrix(MatResponseMode rMode, GaussPoint *
     } else {
         OOFEM_ERROR("not implemented");
     }
+}
+
+FloatMatrixF< 3, 3 >
+LatticeCrossSection :: giveContactStiffnessMatrix(MatResponseMode rMode, GaussPoint *gp, TimeStep *tStep) const
+{
+    // Translational block (normal + two shears) of the 3d lattice stiffness.
+    auto k6 = this->give3dStiffnessMatrix(rMode, gp, tStep);
+    FloatMatrixF< 3, 3 >k3;
+    for ( int i = 1; i <= 3; i++ ) {
+        for ( int j = 1; j <= 3; j++ ) {
+            k3.at(i, j) = k6.at(i, j);
+        }
+    }
+    return k3;
 }
 
 FloatMatrixF< 6, 6 >

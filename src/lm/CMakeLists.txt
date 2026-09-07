@@ -6,6 +6,7 @@ set (lm_elements
     Elements/lattice3dboundary.C
     Elements/lattice3dboundarytruss.C
     Elements/latticelink3d.C
+    Elements/latticecontact3d.C
     Elements/latticelink3dboundary.C
     Elements/lattice3dnl.C
     Elements/latticelink3dnl.C

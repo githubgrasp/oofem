@@ -131,6 +131,8 @@ public:
 
     FloatArrayF< 6 >giveLatticeStress3d(const FloatArrayF< 6 > &strain, GaussPoint *gp, TimeStep *tStep) const;
 
+    FloatArrayF< 3 >giveLatticeContactStress(const FloatArrayF< 3 > &jump, GaussPoint *gp, TimeStep *tStep) const;
+
     FloatArrayF< 6 >giveFrameForces3d(const FloatArrayF< 6 > &strain, GaussPoint *gp, TimeStep *tStep) const;
 
     FloatMatrixF< 1, 1 >give1dStiffnessMatrix(MatResponseMode rMode, GaussPoint *gp, TimeStep *tStep) const;
@@ -138,6 +140,8 @@ public:
     FloatMatrixF< 3, 3 >give2dStiffnessMatrix(MatResponseMode rMode, GaussPoint *gp, TimeStep *tStep) const;
 
     FloatMatrixF< 6, 6 >give3dStiffnessMatrix(MatResponseMode rMode, GaussPoint *gp, TimeStep *tStep) const;
+
+    FloatMatrixF< 3, 3 >giveContactStiffnessMatrix(MatResponseMode rMode, GaussPoint *gp, TimeStep *tStep) const;
 
     FloatMatrixF< 6, 6 >give3dFrameStiffnessMatrix(MatResponseMode rMode, GaussPoint *gp, TimeStep *tStep) const;
     //@}

@@ -46,6 +46,7 @@
 #define _IFT_LatticeBondPlasticity_sub "sub"
 #define _IFT_LatticeBondPlasticity_fc "fc"
 #define _IFT_LatticeBondPlasticity_angle1 "angle1"
+#define _IFT_LatticeBondPlasticity_flowangle "flowangle"
 #define _IFT_LatticeBondPlasticity_ef "ef"
 //@}
 
@@ -190,6 +191,8 @@ public:
                                         GaussPoint *gp) const;
 
     FloatArrayF< 6 >giveLatticeStress3d(const FloatArrayF< 6 > &jump, GaussPoint *gp, TimeStep *tStep) override;
+
+    FloatArrayF< 3 >giveLatticeContactStress(const FloatArrayF< 3 > &jump, GaussPoint *gp, TimeStep *tStep) override;
 
 
     FloatArrayF< 3 >performPlasticityReturn(GaussPoint *gp, const FloatArrayF< 3 > &totalStrain, TimeStep *) const;

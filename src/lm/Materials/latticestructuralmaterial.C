@@ -166,6 +166,14 @@ LatticeStructuralMaterial :: giveLatticeStress3d(const FloatArrayF< 6 > &strain,
     OOFEM_ERROR("3dLattice mode not supported");
 }
 
+FloatArrayF< 3 >
+LatticeStructuralMaterial :: giveLatticeContactStress(const FloatArrayF< 3 > &jump, GaussPoint *gp, TimeStep *tStep)
+{
+    // Default: evaluate the 3d lattice response with zero rotational jump and keep the translational part.
+    auto answer = giveLatticeStress3d(assemble< 6 >(jump, { 0, 1, 2 }), gp, tStep);
+    return answer [ { 0, 1, 2 } ];
+}
+
     FloatArrayF < 6 >
     LatticeStructuralMaterial::giveFrameForces3d(const FloatArrayF < 6 > & strain, GaussPoint * gp, TimeStep * tStep)
     {

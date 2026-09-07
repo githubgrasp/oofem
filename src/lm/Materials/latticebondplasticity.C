@@ -94,7 +94,9 @@ LatticeBondPlasticity::initializeFrom(const std::shared_ptr<InputRecord> &ir)
 
     this->frictionAngleTwo = this->frictionAngleOne;
 
+    // Dilatancy: flowAngle == frictionAngleOne is associated (default); set to 0 for non-dilatant Coulomb contact.
     this->flowAngle = this->frictionAngleOne;
+    IR_GIVE_OPTIONAL_FIELD(ir, this->flowAngle, _IFT_LatticeBondPlasticity_flowangle);
 
     this->ef = 0.;
     IR_GIVE_OPTIONAL_FIELD(ir, this->ef, _IFT_LatticeBondPlasticity_ef);
@@ -687,6 +689,31 @@ LatticeBondPlasticity::giveLatticeStress3d(const FloatArrayF < 6 > & originalStr
     status->letTempLatticeStrainBe(originalStrain);
     status->letTempReducedLatticeStrainBe(reducedStrain);
     status->letTempLatticeStressBe(stress);
+
+    return stress;
+}
+
+
+FloatArrayF < 3 >
+LatticeBondPlasticity::giveLatticeContactStress(const FloatArrayF < 3 > & jump, GaussPoint * gp, TimeStep * tStep)
+{
+    // Node-to-node contact: only the three translational components (normal + two shears).
+    // The plastic return already works in three components, so no rotational block is formed.
+    auto status = static_cast < LatticeBondPlasticityStatus * > ( this->giveStatus(gp) );
+    status->initTempStatus();
+
+    auto reducedStrain = jump;
+    auto thermalStrain = this->computeStressIndependentStrainVector(gp, tStep, VM_Total);
+    if ( thermalStrain.giveSize() ) {
+	reducedStrain -= FloatArrayF < 6 > ( thermalStrain ) [ { 0, 1, 2 } ];
+    }
+
+    auto stress = this->performPlasticityReturn(gp, reducedStrain, tStep);
+
+    // Store padded to six components so the status matches the general lattice layout.
+    status->letTempLatticeStrainBe(assemble < 6 > ( jump, { 0, 1, 2 } ));
+    status->letTempReducedLatticeStrainBe(assemble < 6 > ( reducedStrain, { 0, 1, 2 } ));
+    status->letTempLatticeStressBe(assemble < 6 > ( stress, { 0, 1, 2 } ));
 
     return stress;
 }

@@ -108,6 +108,9 @@ public:
 
     virtual FloatArrayF< 6 >giveLatticeStress3d(const FloatArrayF< 6 > &strain, GaussPoint *gp, TimeStep *tStep);
 
+    /// Node-to-node contact response: three translational components (normal + two shears) from a displacement jump.
+    virtual FloatArrayF< 3 >giveLatticeContactStress(const FloatArrayF< 3 > &jump, GaussPoint *gp, TimeStep *tStep);
+
     virtual FloatArrayF< 6 >giveFrameForces3d(const FloatArrayF< 6 > &strain, GaussPoint *gp, TimeStep *tStep);
 
     virtual FloatMatrixF< 1, 1 >give1dLatticeStiffnessMatrix(MatResponseMode rMode, GaussPoint *gp, TimeStep *tStep) const;
