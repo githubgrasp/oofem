@@ -61,6 +61,16 @@ public:
     void printOutputAt(FILE *file, TimeStep *tStep) override;
 
     /**
+     * Lattice elements have no solid displacement interpolation (computeNmatrixAt
+     * is a no-op), so StructuralElement::giveIPValue's IST_DisplacementVector case
+     * (answer = N*u) operates on an empty N and crashes.  Route straight to
+     * Element::giveIPValue -> cross-section/material, which returns the lattice IST
+     * (LatticeForce/Strain/...) or an empty (zero-padded on export) value for any
+     * unsupported solid IST.  Lets a single vtkxml export a mixed solid+lattice mesh.
+     */
+    int giveIPValue(FloatArray &answer, GaussPoint *gp, InternalStateType type, TimeStep *tStep) override;
+
+    /**
      * Returns the cross-sectional area of the lattice element.
      * @return Cross-section area.
      */
