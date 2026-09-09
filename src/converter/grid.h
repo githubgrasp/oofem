@@ -223,6 +223,15 @@ private:
     };
     std::map< std::pair< int, int >, EdgeSpec >elementSpecsByEntity;
 
+    /// Per-material element-name override for the Delaunay/qhull (3DSM) writer,
+    /// which — unlike the T3D writer's entity-keyed `elementSpecsByEntity` — has
+    /// no notion of T3D entities. Maps a material id to the element name emitted
+    /// for any 3DSM inside line resolving to that material. Empty by default
+    /// (writer falls back to its hardcoded `lattice3D`). Populated by
+    /// `#@element material <mat> <name>`. Use-case: emit `latticecontact3d`
+    /// bond/interface elements on the ITZ shell of a `#@cylinderinclusion`.
+    std::map< int, std::string >elementNameByMaterial;
+
     /// A notch is an axis-aligned box. By default (`material <m>`) matrix
     /// elements whose midpoint falls inside have their material reassigned to
     /// `<m>`. With the `delete` keyword the element is omitted entirely —
@@ -262,12 +271,20 @@ private:
     /// (infinite) axis through the two line points. Populated by the
     /// `#@cylinderinclusion <id> line 6 x1 y1 z1 x2 y2 z2 radius r itz t
     ///   inside <mi> interface <mif>` directive.
+    /// Optionally, an axial sub-range of the ITZ shell can be given a distinct
+    /// `interface` material via `debond <s0> <s1> <matDebond>` (arclength s
+    /// measured from point 1 along the axis). Use-case: a bond-free / frictionless
+    /// zone near the loaded face of a pull-out specimen, while the rest of the
+    /// interface carries the full bond material.
     struct CylinderInclusionSpec {
         double x1 = 0., y1 = 0., z1 = 0.;
         double x2 = 0., y2 = 0., z2 = 0.;
         double radius = 0., itz = 0.;
         int inside    = 2;
         int interface_ = 3;
+        bool hasDebond = false;
+        double debondStart = 0., debondEnd = 0.;
+        int debondInterface = 0;
     };
     std::vector< CylinderInclusionSpec >cylinderInclusionSpecs;
 
@@ -301,10 +318,17 @@ private:
     /// rotation kinematics. Populated by `#@slaveside <master_ctl_id> face
     /// <axis> <side> dofs <list>`. Use-case: pulling one face of a non-
     /// periodic specimen uniformly without coupling rotation.
+    /// The optional `inclusiononly` keyword restricts slaving to nodes inside
+    /// an inclusion (perp distance from an inclusion axis/centre < radius +
+    /// 0.5·itz) — the complement of `#@nodebc ... matrixonly`. Use-case: an
+    /// embedded-reinforcement pull-out where the bar's loaded-end nodes follow
+    /// a single master (rigid grip) so its reaction is the total pull force,
+    /// while the surrounding matrix face is clamped separately.
     struct SlaveSideSpec {
         int masterCtlId = 0;
         int axis = 1;                  // 1=x, 2=y, 3=z
         bool sideMax = false;
+        bool inclusionOnly = false;
         oofem::IntArray slavedDofs;    // subset of {D_u=1, D_v=2, D_w=3, R_u=4, R_v=5, R_w=6}
     };
     std::vector< SlaveSideSpec >slaveSideSpecs;
@@ -316,10 +340,21 @@ private:
     /// same face (each contributes one BC id) or different faces.
     /// Use-case: prescribing saturation on top/bottom of a transport mesh
     /// without a post-process script.
+    /// The optional trailing keyword `matrixonly` restricts tagging to matrix
+    /// nodes — those lying outside every `#@sphere/cylinderinclusion` (perp
+    /// distance from the axis > radius + 0.5·itz). Use-case: supporting the
+    /// concrete face of an embedded-reinforcement pull-out specimen without
+    /// pinning the bar/interface nodes that share the same face plane.
+    /// `dofs` lists which DOFs the BC constrains (default: the three
+    /// translations 1 2 3). In the 3D-SM writer the tag is emitted as a full
+    /// per-DOF array `bc 6 b1..b6` (bcId at the listed DOF positions, 0 else),
+    /// as OOFEM requires for 6-DOF lattice nodes.
     struct NodeBCSpec {
         int bcId = 0;
         int axis = 1;       // 1=x, 2=y, 3=z
         bool sideMax = false;
+        bool matrixOnly = false;
+        oofem::IntArray dofs;   // empty => default translations {1,2,3}
     };
     std::vector< NodeBCSpec >nodeBCSpecs;
 
@@ -704,6 +739,11 @@ public:
     /// if exactly one endpoint does; otherwise returns `defaultMat`.
     int resolveInclusionMaterial(const oofem::FloatArray &A, const oofem::FloatArray &B,
                                  int defaultMat) const;
+
+    /// True if point P lies inside any sphere/cylinder inclusion (perp distance
+    /// from the axis/centre < radius + itz/2). Used by the `matrixonly` variant
+    /// of `#@nodebc` to skip bar/interface nodes on a support face.
+    bool pointInsideAnyInclusion(const oofem::FloatArray &P) const;
 
     /// True if point (x,y) lies strictly inside any `delete` (hole) disk/sphere
     /// inclusion. Used by the region's classify() to mark such vertices outside

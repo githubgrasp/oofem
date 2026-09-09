@@ -887,20 +887,35 @@ void Grid::readControlRecords()
                 entityThickness [ entType ] [ entID ] = t;
             }
         } else if ( tag == "#@element" ) {
-            // (T3D) #@element <entityKind> <entityID> <elementName> <crossSect> <mat>
+            // (T3D)    #@element <entityKind> <entityID> <elementName> <crossSect> <mat>
+            // (3DSM)   #@element material <mat> <elementName>
             std::string kind;
             iss >> kind;
-            int entType = entityTypeFromString(kind);
-            if ( entType < 0 ) {
-                converter::errorf("Unknown entity kind '%s' in #@element directive", kind.c_str());
+            if ( kind == "material" ) {
+                // Delaunay/qhull path: override the element name for every inside
+                // line that resolves to material <mat> (see give3DSMOutput). The
+                // 3DSM writer already emits crossSect == mat == <mat> with the
+                // Voronoi facet as polycoords, which is exactly the record a
+                // latticecontact3d interface element expects.
+                int matId = 0;
+                std::string elementName;
+                if ( !( iss >> matId >> elementName ) ) {
+                    converter::error("Malformed #@element material — expected: material <mat> <name>");
+                }
+                elementNameByMaterial[ matId ] = elementName;
+            } else {
+                int entType = entityTypeFromString(kind);
+                if ( entType < 0 ) {
+                    converter::errorf("Unknown entity kind '%s' in #@element directive", kind.c_str());
+                }
+                int entID = 0;
+                std::string elementName;
+                int crossSect = 1, material = 1;
+                if ( !( iss >> entID >> elementName >> crossSect >> material ) ) {
+                    converter::error("Malformed #@element directive — expected: <kind> <id> <name> <cs> <mat>");
+                }
+                elementSpecsByEntity[ { entType, entID } ] = EdgeSpec{ elementName, crossSect, material };
             }
-            int entID = 0;
-            std::string elementName;
-            int crossSect = 1, material = 1;
-            if ( !( iss >> entID >> elementName >> crossSect >> material ) ) {
-                converter::error("Malformed #@element directive — expected: <kind> <id> <name> <cs> <mat>");
-            }
-            elementSpecsByEntity[ { entType, entID } ] = EdgeSpec{ elementName, crossSect, material };
         } else if ( tag == "#@rebar" ) {
             // (T3D) #@rebar <curveID> diameter <d> crossSect <cs> mat <m>
             //               bondCS <bcs> bondMat <bmat> [element <name>]
@@ -1282,6 +1297,19 @@ void Grid::readControlRecords()
             if ( kw != "interface" ) {
                 converter::error("Malformed #@cylinderinclusion — expected 'interface <m>'");
             }
+            // Optional: debond <s0> <s1> <matDebond> — interface elements whose
+            // midpoint axial position s (arclength from point 1) lies in
+            // [s0, s1] get material <matDebond> instead of <interface_>.
+            std::string opt;
+            if ( iss >> opt ) {
+                if ( opt != "debond" ) {
+                    converter::errorf("Unknown #@cylinderinclusion keyword '%s' — expected 'debond <s0> <s1> <mat>'", opt.c_str());
+                }
+                if ( !( iss >> c.debondStart >> c.debondEnd >> c.debondInterface ) ) {
+                    converter::error("Malformed #@cylinderinclusion debond — expected 'debond <s0> <s1> <mat>'");
+                }
+                c.hasDebond = true;
+            }
             cylinderInclusionSpecs.push_back(c);
         } else if ( tag == "#@bodyload" ) {
             // #@bodyload <mat> <bc_id> — any element whose crossSect/mat
@@ -1392,9 +1420,11 @@ void Grid::readControlRecords()
             for ( int i = 1; i <= 6; ++i ) iss >> ra.doftype.at(i);
             rigidArmSpecs.push_back(ra);
         } else if ( tag == "#@slaveside" ) {
-            // #@slaveside <master_ctl_id> face <axis> <min|max> dofs <list>
+            // #@slaveside <master_ctl_id> face <axis> <min|max> dofs <list> [inclusiononly]
             // Slaves the listed DOFs of every Delaunay vertex on the chosen
-            // face plane to the named control vertex via DT_simpleSlave.
+            // face plane to the named control vertex via DT_simpleSlave. With
+            // `inclusiononly` only nodes inside an inclusion (the reinforcement)
+            // are slaved.
             SlaveSideSpec ss;
             std::string kw, sideWord;
             int axis = 0;
@@ -1413,8 +1443,20 @@ void Grid::readControlRecords()
             if ( kw != "dofs" ) {
                 converter::error("#@slaveside — expected 'dofs <list>' after side");
             }
-            int dofId;
-            while ( iss >> dofId ) {
+            std::string tok;
+            while ( iss >> tok ) {
+                if ( tok == "inclusiononly" ) {
+                    ss.inclusionOnly = true;
+                    continue;
+                }
+                int dofId = 0;
+                try {
+                    size_t consumed = 0;
+                    dofId = std::stoi(tok, &consumed);
+                    if ( consumed != tok.size() ) throw std::invalid_argument(tok);
+                } catch ( ... ) {
+                    converter::errorf("#@slaveside — expected a dof id (1..6) or 'inclusiononly', got '%s'", tok.c_str());
+                }
                 if ( dofId < 1 || dofId > 6 ) {
                     converter::errorf("#@slaveside — dof id %d out of range (1..6)", dofId);
                 }
@@ -1425,15 +1467,18 @@ void Grid::readControlRecords()
             }
             slaveSideSpecs.push_back(ss);
         } else if ( tag == "#@nodebc" ) {
-            // #@nodebc <bc_id> face <axis> <min|max>
+            // #@nodebc <bc_id> face <axis> <min|max> [matrixonly]
             // Tags every emitted node on the chosen face plane with that
             // BoundaryCondition id. Multiple directives stack on the same
-            // node (axes/sides may overlap, e.g. a corner).
+            // node (axes/sides may overlap, e.g. a corner). With the optional
+            // `matrixonly` keyword only nodes outside every inclusion (the
+            // matrix) are tagged — bar/interface nodes on the same face are left
+            // free (e.g. embedded-reinforcement pull-out support face).
             NodeBCSpec nb;
             std::string kw, sideWord;
             int axis = 0;
             if ( !( iss >> nb.bcId >> kw >> axis >> sideWord ) || kw != "face" ) {
-                converter::error("Malformed #@nodebc — expected '<bc_id> face <axis> <min|max>'");
+                converter::error("Malformed #@nodebc — expected '<bc_id> face <axis> <min|max> [matrixonly]'");
             }
             if ( axis < 1 || axis > 3 ) {
                 converter::error("#@nodebc — axis must be 1, 2 or 3");
@@ -1443,6 +1488,27 @@ void Grid::readControlRecords()
             }
             if ( nb.bcId < 1 ) {
                 converter::error("#@nodebc — bc_id must be >= 1");
+            }
+            std::string opt;
+            while ( iss >> opt ) {
+                if ( opt == "matrixonly" ) {
+                    nb.matrixOnly = true;
+                } else if ( opt == "dofs" ) {
+                    int nd = 0;
+                    if ( !( iss >> nd ) || nd < 1 ) {
+                        converter::error("#@nodebc dofs — expected 'dofs <n> <d1..dn>'");
+                    }
+                    nb.dofs.resize(nd);
+                    for ( int k = 1; k <= nd; ++k ) {
+                        int d = 0;
+                        if ( !( iss >> d ) || d < 1 || d > 6 ) {
+                            converter::error("#@nodebc dofs — each dof must be in 1..6");
+                        }
+                        nb.dofs.at(k) = d;
+                    }
+                } else {
+                    converter::errorf("Unknown #@nodebc keyword '%s' — expected 'matrixonly' or 'dofs'", opt.c_str());
+                }
             }
             nb.axis = axis;
             nb.sideMax = ( sideWord == "max" );
@@ -3646,10 +3712,45 @@ Grid::resolveInclusionMaterial(const oofem::FloatArray &A, const oofem::FloatArr
         if ( in1 && in2 ) {
             return c.inside;
         } else if ( in1 != in2 ) {
+            if ( c.hasDebond ) {
+                // Axial position of the edge midpoint: arclength from point 1
+                // along the (unit) axis direction.
+                const double mx = 0.5 * ( A.at(1) + B.at(1) ) - c.x1;
+                const double my = 0.5 * ( A.at(2) + B.at(2) ) - c.y1;
+                const double mz = 0.5 * ( A.at(3) + B.at(3) ) - c.z1;
+                const double invLen = 1. / std::sqrt(aLen2);
+                const double s = ( mx * ax + my * ay + mz * az ) * invLen;
+                if ( s >= c.debondStart && s <= c.debondEnd ) {
+                    return c.debondInterface;
+                }
+            }
             return c.interface_;
         }
     }
     return defaultMat;
+}
+
+
+bool
+Grid::pointInsideAnyInclusion(const oofem::FloatArray &P) const
+{
+    for ( const auto &s : sphereInclusionSpecs ) {
+        const double effR = s.radius + 0.5 * s.itz;
+        const double dx = P.at(1) - s.cx, dy = P.at(2) - s.cy, dz = P.at(3) - s.cz;
+        if ( std::sqrt(dx * dx + dy * dy + dz * dz) < effR ) return true;
+    }
+    for ( const auto &c : cylinderInclusionSpecs ) {
+        const double effR = c.radius + 0.5 * c.itz;
+        const double ax = c.x2 - c.x1, ay = c.y2 - c.y1, az = c.z2 - c.z1;
+        const double aLen2 = ax * ax + ay * ay + az * az;
+        if ( aLen2 <= 0. ) continue;
+        const double dx = P.at(1) - c.x1, dy = P.at(2) - c.y1, dz = P.at(3) - c.z1;
+        const double cx = dy * az - dz * ay;
+        const double cy = dz * ax - dx * az;
+        const double cz = dx * ay - dy * ax;
+        if ( std::sqrt(( cx * cx + cy * cy + cz * cz ) / aLen2) < effR ) return true;
+    }
+    return false;
 }
 
 
@@ -3996,6 +4097,7 @@ Grid::give3DSMOutput(const std::string &fileName)
                         const double faceCoord = ss.sideMax ? bounds.at(2 * ss.axis)
                                                             : bounds.at(2 * ss.axis - 1);
                         if ( std::abs(coords.at(ss.axis) - faceCoord) >= tol ) continue;
+                        if ( ss.inclusionOnly && !pointInsideAnyInclusion(coords) ) continue;
                         if ( controlNodeIds.find(ss.masterCtlId) == controlNodeIds.end() ) continue;
                         ssMatch = &ss;
                         break;
@@ -4028,18 +4130,29 @@ Grid::give3DSMOutput(const std::string &fileName)
                     wrotePeriodicPin = true;
                 }
                 if ( !wrotePeriodicPin && !nodeBCSpecs.empty() ) {
-                    std::vector< int > bcIds;
+                    // Per-DOF bc array for 6-DOF lattice nodes: bcId is placed at
+                    // each constrained DOF position (default translations 1 2 3),
+                    // 0 elsewhere. Multiple matching specs (e.g. a corner) stack.
+                    int bcPerDof[6] = { 0, 0, 0, 0, 0, 0 };
+                    bool any = false;
                     for ( const auto &nb : nodeBCSpecs ) {
                         if ( nb.axis < 1 || nb.axis > 3 ) continue;
                         const double faceCoord = nb.sideMax ? bounds.at(2 * nb.axis)
                                                             : bounds.at(2 * nb.axis - 1);
-                        if ( std::abs(coords.at(nb.axis) - faceCoord) < tol ) {
-                            bcIds.push_back(nb.bcId);
+                        if ( std::abs(coords.at(nb.axis) - faceCoord) >= tol ) continue;
+                        if ( nb.matrixOnly && pointInsideAnyInclusion(coords) ) continue;
+                        if ( nb.dofs.isEmpty() ) {
+                            bcPerDof[0] = bcPerDof[1] = bcPerDof[2] = nb.bcId;
+                        } else {
+                            for ( int k = 1; k <= nb.dofs.giveSize(); ++k ) {
+                                bcPerDof[ nb.dofs.at(k) - 1 ] = nb.bcId;
+                            }
                         }
+                        any = true;
                     }
-                    if ( !bcIds.empty() ) {
-                        out << " bc " << bcIds.size();
-                        for ( int id : bcIds ) out << " " << id;
+                    if ( any ) {
+                        out << " bc 6";
+                        for ( int d = 0; d < 6; ++d ) out << " " << bcPerDof[d];
                     }
                 }
                 out << "\n";
@@ -4173,7 +4286,11 @@ Grid::give3DSMOutput(const std::string &fileName)
 
                 int matInside = resolveLineMaterial(lineNodes.at(1), lineNodes.at(2), A, B);
                 auto insideBodyloadIt = bodyloadByMaterial.find(matInside);
-                out << "lattice3D " << ++elemCounter
+                auto insideElemNameIt = elementNameByMaterial.find(matInside);
+                const std::string insideElemName =
+                    ( insideElemNameIt != elementNameByMaterial.end() )
+                    ? insideElemNameIt->second : std::string("lattice3D");
+                out << insideElemName << " " << ++elemCounter
                     << " nodes 2 " << mapId(lineNodes.at(1)) << " " << mapId(lineNodes.at(2))
                     << " crossSect " << matInside << " mat " << matInside
                     << " polycoords " << 3 * ( int ) polyOut.size();

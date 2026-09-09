@@ -1,7 +1,7 @@
 contact_cubes_shear.out
 Two cubes, interface elements: normal compression held then sheared (non-dilatant Coulomb)
-StaticStructural nsteps 6 rtolv 1.e-3 maxiter 200 nmodules 0
-#vtkxml tstep_all primvars 1 1 vars 2 1 4 cellvars 2 138 139 stype 1
+StaticStructural nsteps 6 rtolv 1.e-3 maxiter 200 nmodules 1
+errorcheck
 domain 3d
 OutputManager tstep_all dofman_all element_all
 ndofman 16 nelem 16 ncrosssect 2 nmat 2 nbc 3 nic 0 nltf 3
@@ -47,3 +47,7 @@ BoundaryCondition 3 loadTimeFunction 3 prescribedvalue 2.e-3
 ConstantFunction 1 f(t) 1.
 PiecewiseLinFunction 2 nPoints 3 t 3 0. 1. 6. f(t) 3 0. 1. 1.
 PiecewiseLinFunction 3 nPoints 3 t 3 0. 1. 6. f(t) 3 0. 0. 1.
+#%BEGIN_CHECK%
+#ELEMENT tStep 6 number 13 gp 1 keyword 139 component 1 value -1.5912e7 tolerance 1.e5
+#ELEMENT tStep 6 number 13 gp 1 keyword 139 component 3 value -7.9423e6 tolerance 1.e5
+#%END_CHECK%

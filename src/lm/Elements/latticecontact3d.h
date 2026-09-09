@@ -42,6 +42,7 @@
 #define _IFT_LatticeContact3d_Name "latticecontact3d"
 #define _IFT_LatticeContact3d_area "area"
 #define _IFT_LatticeContact3d_normal "normal"
+#define _IFT_LatticeContact3d_polycoords "polycoords"
 //@}
 
 namespace oofem {
@@ -54,16 +55,26 @@ namespace oofem {
  * strain to a lattice material (e.g. latticebondplasticity, whose plastic
  * return acts on those three components; the rotational components 4-6 stay
  * zero). Constitutive input is a displacement jump, not a strain: no division
- * by element length. Internal force and stiffness are scaled by the nodal
- * contact area.
+ * by element length. Internal force and stiffness are scaled by the contact
+ * area.
+ *
+ * The contact area and normal are taken either from an explicit `area` (+
+ * optional `normal`) input, or from a `polycoords` facet polygon (the Voronoi
+ * facet, as lattice3d): the area is the polygon area and the normal its plane
+ * normal (Newell's method). The element only couples the translational DOFs, so
+ * it attaches equally to 3-DOF continuum nodes and 6-DOF lattice nodes (leaving
+ * their rotations to the lattice struts); it transmits no moment.
  */
 class LatticeContact3d : public LatticeStructuralElement
 {
 protected:
-    /// Contact area attached to the node pair.
+    /// Contact area attached to the node pair (explicit input; ignored when polycoords is given).
     double area = 0.;
     /// Optional user-supplied contact normal (local axis 1). Derived from the node line if absent.
     FloatArray normalVector;
+    /// Optional contact-facet polygon (Voronoi facet, as lattice3d): area and normal are derived from it.
+    FloatArray polygonCoords;
+    int numberOfPolygonVertices = 0;
 
     FloatMatrix localCoordinateSystem;
     FloatArray globalCentroid;
@@ -77,7 +88,8 @@ public:
 
     double giveLength() override;
 
-    double giveArea(GaussPoint *gp) override { return this->area; }
+    double giveArea(GaussPoint *gp) override
+    { if ( geometryFlag == 0 ) { computeGeometryProperties(); } return this->area; }
 
     int giveLocalCoordinateSystem(FloatMatrix &answer) override;
 
@@ -103,6 +115,7 @@ public:
 
     static ParamKey IPK_LatticeContact3d_area;
     static ParamKey IPK_LatticeContact3d_normal;
+    static ParamKey IPK_LatticeContact3d_polycoords;
 
     Element_Geometry_Type giveGeometryType() const override { return EGT_line_1; }
 

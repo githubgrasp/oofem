@@ -57,6 +57,7 @@ REGISTER_Element(LatticeContact3d);
 
 ParamKey LatticeContact3d::IPK_LatticeContact3d_area("area");
 ParamKey LatticeContact3d::IPK_LatticeContact3d_normal("normal");
+ParamKey LatticeContact3d::IPK_LatticeContact3d_polycoords("polycoords");
 
 LatticeContact3d :: LatticeContact3d(int n, Domain *aDomain) : LatticeStructuralElement(n, aDomain)
 {
@@ -220,6 +221,8 @@ LatticeContact3d :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int p
 
     PM_UPDATE_PARAMETER(area, ppm, ir, this->number, IPK_LatticeContact3d_area, priority);
     PM_UPDATE_PARAMETER(normalVector, ppm, ir, this->number, IPK_LatticeContact3d_normal, priority);
+    PM_UPDATE_PARAMETER(polygonCoords, ppm, ir, this->number, IPK_LatticeContact3d_polycoords, priority);
+    numberOfPolygonVertices = (int) ( polygonCoords.giveSize() / 3 );
 }
 
 
@@ -228,8 +231,12 @@ LatticeContact3d :: postInitialize()
 {
     ParameterManager &ppm = this->giveDomain()->elementPPM;
     LatticeStructuralElement :: postInitialize();
-    PM_ELEMENT_ERROR_IFNOTSET(ppm, this->number, IPK_LatticeContact3d_area);
-    // normal is optional: derived from the node line when omitted.
+    numberOfPolygonVertices = (int) ( polygonCoords.giveSize() / 3 );
+    // Area and normal come from the polygon (Voronoi facet) when given; otherwise
+    // 'area' is required and the normal falls back to input/node line.
+    if ( numberOfPolygonVertices < 3 ) {
+        PM_ELEMENT_ERROR_IFNOTSET(ppm, this->number, IPK_LatticeContact3d_area);
+    }
 }
 
 
@@ -258,17 +265,57 @@ LatticeContact3d :: computeGeometryProperties()
         coordsB.at(i) = nodeB->giveCoordinate(i);
     }
 
-    // Normal (local axis 1): user-supplied when given, otherwise the node line.
-    FloatArray normal(3);
-    if ( this->normalVector.giveSize() == 3 && this->normalVector.computeNorm() > 1e-12 ) {
-        normal = this->normalVector;
-    } else {
-        normal.beDifferenceOf(coordsB, coordsA);
-        if ( normal.computeNorm() < 1e-12 ) {
-            OOFEM_ERROR("LatticeContact3d: contact normal is undefined; supply 'normal' for coincident nodes.");
-        }
+    FloatArray normal(3), centroid(3);
+    for ( int i = 1; i <= 3; i++ ) {
+        centroid.at(i) = 0.5 * ( coordsA.at(i) + coordsB.at(i) );
     }
-    normal.normalize();
+
+    if ( this->numberOfPolygonVertices >= 3 ) {
+        // Contact-facet polygon (Voronoi facet, as lattice3d): Newell's method
+        // gives the area-weighted plane normal in one pass; |sum| = 2 * area.
+        FloatArray nw(3);
+        nw.zero();
+        centroid.zero();
+        const int nv = this->numberOfPolygonVertices;
+        for ( int k = 0; k < nv; k++ ) {
+            const int kn = ( k + 1 ) % nv;
+            const double xi = polygonCoords.at(3 * k + 1),  yi = polygonCoords.at(3 * k + 2),  zi = polygonCoords.at(3 * k + 3);
+            const double xj = polygonCoords.at(3 * kn + 1), yj = polygonCoords.at(3 * kn + 2), zj = polygonCoords.at(3 * kn + 3);
+            nw.at(1) += ( yi - yj ) * ( zi + zj );
+            nw.at(2) += ( zi - zj ) * ( xi + xj );
+            nw.at(3) += ( xi - xj ) * ( yi + yj );
+            centroid.at(1) += xi;
+            centroid.at(2) += yi;
+            centroid.at(3) += zi;
+        }
+        const double twiceArea = nw.computeNorm();
+        if ( twiceArea < 1e-20 ) {
+            OOFEM_ERROR("LatticeContact3d: degenerate contact polygon (zero area).");
+        }
+        this->area = 0.5 * twiceArea;
+        normal = nw;
+        normal.times(1.0 / twiceArea);
+        centroid.times(1.0 / nv);
+    } else {
+        // Explicit: normal user-supplied when given, otherwise the node line.
+        if ( this->normalVector.giveSize() == 3 && this->normalVector.computeNorm() > 1e-12 ) {
+            normal = this->normalVector;
+        } else {
+            normal.beDifferenceOf(coordsB, coordsA);
+            if ( normal.computeNorm() < 1e-12 ) {
+                OOFEM_ERROR("LatticeContact3d: contact normal is undefined; supply 'normal' or 'polycoords' for coincident nodes.");
+            }
+        }
+        normal.normalize();
+    }
+
+    // Orient along node1->node2 when the nodes are distinct, so the compression
+    // sign convention is independent of polygon winding.
+    FloatArray axis(3);
+    axis.beDifferenceOf(coordsB, coordsA);
+    if ( axis.computeNorm() > 1e-12 && normal.dotProduct(axis) < 0. ) {
+        normal.times(-1.0);
+    }
 
     // Two axes spanning the plane orthogonal to the normal.
     FloatArray s(3), t(3);
@@ -298,10 +345,7 @@ LatticeContact3d :: computeGeometryProperties()
         this->localCoordinateSystem.at(3, i) = t.at(i);
     }
 
-    this->globalCentroid.resize(3);
-    for ( int i = 1; i <= 3; i++ ) {
-        this->globalCentroid.at(i) = 0.5 * ( coordsA.at(i) + coordsB.at(i) );
-    }
+    this->globalCentroid = centroid;
 
     this->geometryFlag = 1;
 }
