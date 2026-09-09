@@ -355,6 +355,14 @@ VTKXMLLatticeExportModule::initializeFrom(const std::shared_ptr<InputRecord> &ir
     VTKXMLExportModule::initializeFrom(ir);
     this->crossSectionExportFlag = false;
     IR_GIVE_OPTIONAL_FIELD(ir, this->crossSectionExportFlag, _IFT_VTKXMLLatticeExportModule_cross);
+
+    // Thin cross-VTU writes relative to line-VTU writes: crossstep = N means "1 in N".
+    this->crossOutputStep = 1;
+    IR_GIVE_OPTIONAL_FIELD(ir, this->crossOutputStep, _IFT_VTKXMLLatticeExportModule_crossstep);
+    if ( this->crossOutputStep < 1 ) this->crossOutputStep = 1;
+    this->crossOutputCounter = 0;
+    this->pvdBufferLine.clear();
+    this->pvdBufferCross.clear();
 }
 
 std::string
@@ -1144,9 +1152,24 @@ VTKXMLLatticeExportModule::setupVTKPieceCross(ExportRegion &vtkPieceCross, TimeS
 void
 VTKXMLLatticeExportModule::doOutput(TimeStep *tStep, bool forcedOutput)
 {
+    // The line VTU writes iff the time-step output gate passes.
+    const bool lineWillWrite = ( testTimeStepOutput(tStep) || forcedOutput );
+
     this->doOutputNormal(tStep, forcedOutput);
+
     if ( crossSectionExportFlag ) {
-        this->doOutputCross(tStep, forcedOutput);
+        // Cross VTU gated by the line gate AND the crossstep multiplier: the counter
+        // ticks once per line output, so crossstep = N writes the cross 1-in-N.
+        bool crossWillWrite = false;
+        if ( lineWillWrite ) {
+            if ( forcedOutput || ( this->crossOutputCounter % this->crossOutputStep == 0 ) ) {
+                crossWillWrite = true;
+            }
+            ++this->crossOutputCounter;
+        }
+        if ( crossWillWrite ) {
+            this->doOutputCross(tStep, forcedOutput);
+        }
     }
     this->defaultVTKPiece.clear();
 
