@@ -1153,6 +1153,7 @@ VTKXMLLatticeExportModule::doOutput(TimeStep *tStep, bool forcedOutput)
 }
 
 
+
 void
 VTKXMLLatticeExportModule::doOutputCross(TimeStep *tStep, bool forcedOutput)
 {
@@ -1193,7 +1194,11 @@ VTKXMLLatticeExportModule::doOutputCross(TimeStep *tStep, bool forcedOutput)
 
     this->fileStreamCross << "</UnstructuredGrid>\n</VTKFile>";
     this->fileStreamCross.close();
+
+    this->appendPvdEntryCross(tStep, this->giveOutputFileNameCross(tStep));
 }
+
+
 
 
 void
@@ -1273,7 +1278,10 @@ VTKXMLLatticeExportModule::doOutputNormal(TimeStep *tStep, bool forcedOutput)
 
     this->fileStream << "</UnstructuredGrid>\n</VTKFile>";
     this->fileStream.close();
+
+    this->appendPvdEntryLine(tStep, this->giveOutputFileName(tStep));
 }
+
 
 
 
@@ -1822,6 +1830,49 @@ VTKXMLLatticeExportModule::writePrimaryVarsCross(ExportRegion &vtkPiece)
         }
         this->fileStreamCross << "</DataArray>\n";
     }
+}
+
+
+void
+VTKXMLLatticeExportModule::appendPvdEntryLine(TimeStep *tStep, const std::string &vtuFilename)
+{
+    std::ostringstream entry;
+    entry << "<DataSet timestep=\"" << tStep->giveTargetTime() * this->timeScale
+          << "\" group=\"\" part=\"\" file=\"" << vtuFilename << "\"/>";
+    this->pvdBufferLine.push_back(entry.str() );
+    const std::string pvdName = this->emodel->giveOutputBaseFileName() + ".m" + std::to_string(this->number) + ".pvd";
+    this->writePvdCollection(pvdName, this->pvdBufferLine);
+}
+
+
+void
+VTKXMLLatticeExportModule::appendPvdEntryCross(TimeStep *tStep, const std::string &vtuFilename)
+{
+    std::ostringstream entry;
+    entry << "<DataSet timestep=\"" << tStep->giveTargetTime() * this->timeScale
+          << "\" group=\"\" part=\"\" file=\"" << vtuFilename << "\"/>";
+    this->pvdBufferCross.push_back(entry.str() );
+    const std::string pvdName = this->emodel->giveOutputBaseFileName() + ".m" + std::to_string(this->number) + ".cross.pvd";
+    this->writePvdCollection(pvdName, this->pvdBufferCross);
+}
+
+
+void
+VTKXMLLatticeExportModule::writePvdCollection(const std::string &pvdFilename, const std::vector< std::string > &buffer)
+{
+    if ( this->pythonExport ) {
+        return; // python harness suppresses on-disk writes.
+    }
+    std::ofstream stream(pvdFilename.c_str() );
+    if ( !stream.good() ) {
+        OOFEM_ERROR("failed to open file %s", pvdFilename.c_str() );
+    }
+    stream << "<?xml version=\"1.0\"?>\n<VTKFile type=\"Collection\" version=\"0.1\">\n<Collection>\n";
+    for ( const auto &entry : buffer ) {
+        stream << entry << "\n";
+    }
+    stream << "</Collection>\n</VTKFile>";
+    stream.close();
 }
 
 } // end namespace oofem
