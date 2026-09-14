@@ -7161,7 +7161,7 @@ void Grid::emitTM2D(const TMNumbering2D &nb, const std::string &fileName)
 
                 out << "latticemt2D " << ++elemCounter
                     << " nodes 2 " << n1 << " " << n2
-                    << " mat " << mat << " dim 2"
+                    << " crossSect " << mat << " mat " << mat << " dim 2"
                     << " thick " << latticeThickness
                     << " width " << width
                     << " gpCoords 2 " << gx << " " << gy;
