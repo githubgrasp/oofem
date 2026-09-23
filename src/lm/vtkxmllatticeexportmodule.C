@@ -184,23 +184,6 @@ int getElementStripCount(Element *, FloatArray &shellNormal)
 }
 #endif
 
-// Build a frame (e_x = given axis, e_y, e_z). Pick world Z as up reference; world Y if vertical.
-void buildFrameFromAxis(const FloatArray &axis, FloatArray &ex, FloatArray &ey, FloatArray &ez)
-{
-    ex.resize(3);
-    double len = axis.computeNorm();
-    if ( len < 1e-12 ) { ex.at(1) = 1; ex.at(2) = 0; ex.at(3) = 0; }
-    else for ( int i = 1; i <= 3; ++i ) ex.at(i) = axis.at(i) / len;
-    FloatArray up(3); up.at(1) = 0; up.at(2) = 0; up.at(3) = 1;
-    if ( std::fabs(ex.dotProduct(up)) > 0.99 ) { up.at(1) = 0; up.at(2) = 1; up.at(3) = 0; }
-    double exDotUp = ex.dotProduct(up);
-    ey.resize(3);
-    for ( int i = 1; i <= 3; ++i ) ey.at(i) = up.at(i) - exDotUp * ex.at(i);
-    ey.times(1.0 / ey.computeNorm());
-    ez.resize(3);
-    ez.beVectorProductOf(ex, ey);
-}
-
 // Build a local frame (e_x, e_y, e_z) given the element axis. Pick world Z as up reference
 // unless axis is nearly vertical, in which case use world Y.
 void buildElementFrame(const FloatArray &nodeA, const FloatArray &nodeB,
@@ -545,15 +528,6 @@ VTKXMLLatticeExportModule::setupVTKPieceCross(ExportRegion &vtkPieceCross, TimeS
             le->giveCrossSectionCoordinates(coords);
         } else if ( auto *le = dynamic_cast<LatticeTransportElement *>(el) ) {
             le->giveCrossSectionCoordinates(coords);
-        }
-    };
-
-    auto getGpCoords = [&](int ielem, FloatArray &coords) {
-        Element *el = domain->giveElement(ielem);
-        if ( auto *le = dynamic_cast<LatticeStructuralElement *>(el) ) {
-            le->giveGpCoordinates(coords);
-        } else if ( auto *le = dynamic_cast<LatticeTransportElement *>(el) ) {
-            le->giveGpCoordinates(coords);
         }
     };
 
@@ -1016,7 +990,6 @@ VTKXMLLatticeExportModule::setupVTKPieceCross(ExportRegion &vtkPieceCross, TimeS
             // Emit 3 midpoint copies (A, B, midline) — vertex indices 1..N, N+1..2N, 2N+1..3N.
             const int baseMidA   = nodeOffset;
             const int baseMidB   = nodeOffset + N;
-            const int baseMidM   = nodeOffset + 2*N;
             const int baseJointA = nodeOffset + 3*N;
             const int baseJointB = nodeOffset + 4*N;
             for ( int copy = 0; copy < 3; ++copy ) {
