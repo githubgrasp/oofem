@@ -63,12 +63,20 @@ LatticeBondPlasticity::hasMaterialModeCapability(MaterialMode mode) const
 double
 LatticeBondPlasticity::computeHardening(double kappa) const
 {
+    // ef <= 0 : no hardening (elastic-perfectly-plastic bond)
+    if ( this->ef <= 0. ) {
+        return 1.;
+    }
     return exp(pow(kappa / this->ef, 2.) );
 }
 
 double
 LatticeBondPlasticity::computeDHardeningDKappa(double kappa) const
 {
+    // ef <= 0 : no hardening -> zero derivative
+    if ( this->ef <= 0. ) {
+        return 0.;
+    }
     return 2. * kappa / ( pow(this->ef, 2.) ) * exp(pow(kappa / this->ef, 2.) );
 }
 
