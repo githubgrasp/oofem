@@ -48,6 +48,7 @@
 #define _IFT_LatticeBondPlasticity_angle1 "angle1"
 #define _IFT_LatticeBondPlasticity_flowangle "flowangle"
 #define _IFT_LatticeBondPlasticity_ef "ef"
+#define _IFT_LatticeBondPlasticity_qres "qres"
 //@}
 
 namespace oofem {
@@ -128,6 +129,10 @@ protected:
 
     //parameter in hardening law
     double ef = 0.;
+
+    /// residual fraction of the softening ratio: hardening(kappa) goes 1 -> qres.
+    /// Softening active only when ef > 0 and qres < 1; default 1 = off.
+    double qres = 1.;
 
 public:
 

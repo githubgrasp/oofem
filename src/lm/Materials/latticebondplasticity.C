@@ -63,21 +63,21 @@ LatticeBondPlasticity::hasMaterialModeCapability(MaterialMode mode) const
 double
 LatticeBondPlasticity::computeHardening(double kappa) const
 {
-    // ef <= 0 : no softening (elastic-perfectly-plastic bond)
-    if ( this->ef <= 0. ) {
+    // hardening(kappa) = qres + (1 - qres) * exp(-(kappa/ef)^2), softening 1 -> qres.
+    // Off (returns 1) when ef <= 0 or qres >= 1 (elastic-perfectly-plastic bond).
+    if ( this->ef <= 0. || this->qres >= 1. ) {
         return 1.;
     }
-    return exp(-pow(kappa / this->ef, 2.) );
+    return this->qres + ( 1. - this->qres ) * exp(-pow(kappa / this->ef, 2.) );
 }
 
 double
 LatticeBondPlasticity::computeDHardeningDKappa(double kappa) const
 {
-    // ef <= 0 : no softening -> zero derivative
-    if ( this->ef <= 0. ) {
+    if ( this->ef <= 0. || this->qres >= 1. ) {
         return 0.;
     }
-    return -2. * kappa / ( pow(this->ef, 2.) ) * exp(-pow(kappa / this->ef, 2.) );
+    return ( 1. - this->qres ) * ( -2. * kappa / pow(this->ef, 2.) ) * exp(-pow(kappa / this->ef, 2.) );
 }
 
 
@@ -108,6 +108,9 @@ LatticeBondPlasticity::initializeFrom(const std::shared_ptr<InputRecord> &ir)
 
     this->ef = 0.;
     IR_GIVE_OPTIONAL_FIELD(ir, this->ef, _IFT_LatticeBondPlasticity_ef);
+
+    this->qres = 1.;
+    IR_GIVE_OPTIONAL_FIELD(ir, this->qres, _IFT_LatticeBondPlasticity_qres);
 }
 
 std::unique_ptr< MaterialStatus >
