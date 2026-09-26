@@ -135,11 +135,13 @@ LatticeBondPlasticity::computeShift(const double kappa) const
 double
 LatticeBondPlasticity::computeParamA(const double kappa) const
 {
-    double hardening = computeHardening(kappa);
+    double q = computeHardening(kappa);
+    double alpha = this->frictionAngleOne * q;   // alpha_b(kappa) = angle1 * q
 
-    double paramA = this->frictionAngleTwo * this->frictionAngleOne * this->fc * hardening /
-        ( this->frictionAngleTwo * this->frictionAngleOne +
-          sqrt(1. + pow(this->frictionAngleTwo, 2.) * pow(this->frictionAngleOne, 2.) ) );
+    // a = beta*alpha*fc(kappa) / (beta*alpha + sqrt(1+beta^2 alpha^2)); fc(kappa) = fc*q, beta = frictionAngleTwo (fixed)
+    double paramA = this->frictionAngleTwo * alpha * this->fc * q /
+        ( this->frictionAngleTwo * alpha +
+          sqrt(1. + pow(this->frictionAngleTwo, 2.) * pow(alpha, 2.) ) );
 
     return paramA;
 }
@@ -161,13 +163,19 @@ LatticeBondPlasticity::computeDShiftDKappa(const double kappa) const
 double
 LatticeBondPlasticity::computeDParamADKappa(const double kappa) const
 {
-    double dHardeningDKappa = computeDHardeningDKappa(kappa);
+    double q = computeHardening(kappa);
+    double dq = computeDHardeningDKappa(kappa);
 
-    double A2 = this->frictionAngleTwo * this->frictionAngleOne + sqrt(1. + pow(this->frictionAngleTwo, 2.) * pow(this->frictionAngleOne, 2.) );
+    // a = N/D with N = c1*fc*q^2, D = c1*q + s, c1 = beta*angle1, s = sqrt(1 + c1^2 q^2).
+    // Both alpha_b(kappa) = angle1*q and fc(kappa) = fc*q vary with q -> full quotient rule.
+    double c1 = this->frictionAngleTwo * this->frictionAngleOne;
+    double s = sqrt(1. + pow(c1, 2.) * pow(q, 2.) );
+    double N = c1 * this->fc * pow(q, 2.);
+    double D = c1 * q + s;
+    double dN = 2. * c1 * this->fc * q * dq;
+    double dD = c1 * dq + pow(c1, 2.) * q * dq / s;
 
-    double dA1DKappa = this->frictionAngleTwo * this->frictionAngleOne * this->fc * dHardeningDKappa;
-
-    double dParamADKappa = dA1DKappa / A2;
+    double dParamADKappa = ( dN * D - N * dD ) / pow(D, 2.);
 
     return dParamADKappa;
 }
@@ -498,7 +506,7 @@ LatticeBondPlasticity::computeYieldValue(const FloatArrayF < 3 > & stress,
     double shearNorm = norm(stress [ { 1, 2 } ]);
 
     if ( transitionFlag == 0 ) { //friction
-        return shearNorm + this->frictionAngleOne * stress.at(1);
+        return shearNorm + this->frictionAngleOne * computeHardening(kappa) * stress.at(1);
     } else {
         return pow(shearNorm, 2.) + pow(stress.at(1) + shift, 2.) / pow(this->frictionAngleTwo, 2.) - pow(paramA, 2.) / pow(this->frictionAngleTwo, 2.);
     }
@@ -509,11 +517,10 @@ double
 LatticeBondPlasticity::computeTransition(const double kappa,
                                          GaussPoint *gp) const
 {
+    double alpha = this->frictionAngleOne * computeHardening(kappa);
     double paramA = computeParamA(kappa);
 
-    double transition = -paramA / ( this->frictionAngleTwo * this->frictionAngleOne *
-				    sqrt(1. + pow(this->frictionAngleTwo, 2.) *
-					 pow(this->frictionAngleOne, 2.) ) );
+    double transition = -paramA / ( this->frictionAngleTwo * alpha * sqrt(1. + pow(this->frictionAngleTwo, 2.) * pow(alpha, 2.) ) );
     return transition;
 }
 
@@ -534,9 +541,9 @@ LatticeBondPlasticity::computeFVector(const FloatArrayF < 3 > & stress,
 
     FloatArrayF < 3 > f;
     if ( transitionFlag == 0 ) {//line
-	f.at(1) = this->frictionAngleOne;
+	f.at(1) = this->frictionAngleOne * computeHardening(kappa);
 	f.at(2) = 1.;
-	f.at(3) = 0.;
+	f.at(3) = this->frictionAngleOne * computeDHardeningDKappa(kappa) * stress.at(1);
     } else { //cap ellipse
 	f.at(1) = 2. * ( stress.at(1) + shift ) / pow(this->frictionAngleTwo, 2.);
 	f.at(2) = 2. * shearNorm;
@@ -562,8 +569,8 @@ LatticeBondPlasticity::computeMVector(const FloatArrayF < 3 > & stress,
     if ( transitionFlag == 0 ) {
 	m.at(1) = this->flowAngle;
 	m.at(2) = 1.;
-	//No hardening for the Mohr-Coulomb
-	m.at(3) = 0.;
+	// kappa = accumulated plastic slip: dkappa = lambda * m(3), m(3) = dg/dtau = 1 on the friction line.
+	m.at(3) = 1.;
     } else {
 	m.at(1) = 2. * ( stress.at(1) + shift ) / pow(this->frictionAngleTwo, 2.);
 	m.at(2) = 2. * shearNorm;
