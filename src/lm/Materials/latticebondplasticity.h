@@ -46,6 +46,7 @@
 #define _IFT_LatticeBondPlasticity_sub "sub"
 #define _IFT_LatticeBondPlasticity_fc "fc"
 #define _IFT_LatticeBondPlasticity_angle1 "angle1"
+#define _IFT_LatticeBondPlasticity_angle2 "angle2"
 #define _IFT_LatticeBondPlasticity_flowangle "flowangle"
 #define _IFT_LatticeBondPlasticity_ef "ef"
 #define _IFT_LatticeBondPlasticity_qres "qres"

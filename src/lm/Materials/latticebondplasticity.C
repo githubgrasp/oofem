@@ -100,7 +100,10 @@ LatticeBondPlasticity::initializeFrom(const std::shared_ptr<InputRecord> &ir)
     this->frictionAngleOne = 0.2;
     IR_GIVE_OPTIONAL_FIELD(ir, this->frictionAngleOne, _IFT_LatticeBondPlasticity_angle1);
 
+    // Cap aspect (fixed): defaults to frictionAngleOne (original coupled cap); set angle2 < angle1
+    // to widen/raise the cap toward the corner value (max bond -> alpha*fc as angle2 -> 0).
     this->frictionAngleTwo = this->frictionAngleOne;
+    IR_GIVE_OPTIONAL_FIELD(ir, this->frictionAngleTwo, _IFT_LatticeBondPlasticity_angle2);
 
     // Dilatancy: flowAngle == frictionAngleOne is associated (default); set to 0 for non-dilatant Coulomb contact.
     this->flowAngle = this->frictionAngleOne;
@@ -569,16 +572,18 @@ LatticeBondPlasticity::computeMVector(const FloatArrayF < 3 > & stress,
     if ( transitionFlag == 0 ) {
 	m.at(1) = this->flowAngle;
 	m.at(2) = 1.;
-	// kappa = accumulated plastic slip: dkappa = lambda * m(3), m(3) = dg/dtau = 1 on the friction line.
-	m.at(3) = 1.;
+	// kappa = accumulated plastic slip = shear plastic strain: dkappa = lambda*m(3) with
+	// m(3)=m(2), so kappa measures the same slip on the friction line and the cap.
+	m.at(3) = m.at(2);
     } else {
-	m.at(1) = 2. * ( stress.at(1) + shift ) / pow(this->frictionAngleTwo, 2.);
+	// Non-associated cap flow: scale the associated normal component by flowAngle/alpha
+	// so the flow direction matches the friction flow (flowAngle,1) exactly at the
+	// transition (tangency) and is purely normal at zero shear (apex sigma_n=-fc).
+	double alpha = this->frictionAngleOne * computeHardening(kappa);
+	double factor = ( this->flowAngle > 0. ) ? this->flowAngle / alpha : 0.;
+	m.at(1) = factor * 2. * ( stress.at(1) + shift ) / pow(this->frictionAngleTwo, 2.);
 	m.at(2) = 2. * shearNorm;
-	if ( stress.at(1) < -shift - this->yieldTol ) {
-            m.at(3) = fabs(m.at(1) );
-	} else {
-            m.at(3) = 0;
-	}
+	m.at(3) = m.at(2); // kappa = plastic slip, same measure as the friction line
     }
 
     return m;
@@ -591,32 +596,33 @@ LatticeBondPlasticity::computeDMMatrix(const FloatArrayF < 3 > & stress,
                                        const int transitionFlag,
                                        GaussPoint * gp) const
 {
-    auto mVector = computeMVector(stress, kappa, transitionFlag, gp);
     double dShiftDKappa = computeDShiftDKappa(kappa);
     double shift = computeShift(kappa);
 
     if ( transitionFlag == 0 ) {
 	return FloatMatrixF < 3, 3 > ( );
-    } else { //cap ellipse
+    } else { //cap ellipse (non-associated: normal flow scaled by flowAngle/alpha)
+	double alpha = this->frictionAngleOne * computeHardening(kappa);
+	double dAlphaDKappa = this->frictionAngleOne * computeDHardeningDKappa(kappa);
+	double factor = ( this->flowAngle > 0. ) ? this->flowAngle / alpha : 0.;
+	double dFactorDKappa = ( this->flowAngle > 0. ) ? -this->flowAngle * dAlphaDKappa / pow(alpha, 2.) : 0.;
+	double beta2 = pow(this->frictionAngleTwo, 2.);
+
 	FloatMatrixF < 3, 3 > dm;
-	//Derivatives of dGDSig
-	dm.at(1, 1) = 2. / pow(this->frictionAngleTwo, 2.);
+	//Derivatives of dGDSig  (m1 = factor * 2 (sigma_n+shift)/beta^2 ; both factor and shift vary with kappa)
+	dm.at(1, 1) = factor * 2. / beta2;
 	dm.at(1, 2) = 0.;
-	dm.at(1, 3) = 2. * dShiftDKappa / pow(this->frictionAngleTwo, 2.);
+	dm.at(1, 3) = 2. / beta2 * ( factor * dShiftDKappa + ( stress.at(1) + shift ) * dFactorDKappa );
 
 	//Derivatives of dGDTau
 	dm.at(2, 1) = 0.;
 	dm.at(2, 2) = 2.;
 	dm.at(2, 3) = 0;
 
-	//Derivates of evolution law
-	if ( stress.at(1) < -shift - this->yieldTol ) {
-            dm.at(3, 1) = 1. / mVector.at(3) * mVector.at(1) * dm.at(1, 1);
-            dm.at(3, 2) = 0.;
-            dm.at(3, 3) = 1. / mVector.at(3) * ( mVector.at(1) * dm.at(1, 3) );
-	} else {
-            dm.at(3, 1) = dm.at(3, 2) = dm.at(3, 3) = 0.;
-	}
+	//Derivatives of evolution law: m(3)=m(2)=2*shearNorm, same row as dGDTau
+	dm.at(3, 1) = 0.;
+	dm.at(3, 2) = 2.;
+	dm.at(3, 3) = 0.;
 	return dm;
     }
 }
