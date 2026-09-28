@@ -50,6 +50,7 @@
 #define _IFT_LatticeBondPlasticity_flowangle "flowangle"
 #define _IFT_LatticeBondPlasticity_ef "ef"
 #define _IFT_LatticeBondPlasticity_qres "qres"
+#define _IFT_LatticeBondPlasticity_efp "efp"
 //@}
 
 namespace oofem {
@@ -134,6 +135,11 @@ protected:
     /// residual fraction of the softening ratio: hardening(kappa) goes 1 -> qres.
     /// Softening active only when ef > 0 and qres < 1; default 1 = off.
     double qres = 1.;
+
+    /// exponent of the softening law hardening = qres + (1-qres)*exp(-(kappa/ef)^efp).
+    /// efp = 1 -> exponential (finite slope at 0, matches Lun05 Fig.7); efp = 2 -> Gaussian
+    /// (zero slope at 0). Use efp >= 1.
+    double efp = 1.;
 
 public:
 

@@ -63,12 +63,13 @@ LatticeBondPlasticity::hasMaterialModeCapability(MaterialMode mode) const
 double
 LatticeBondPlasticity::computeHardening(double kappa) const
 {
-    // hardening(kappa) = qres + (1 - qres) * exp(-(kappa/ef)^2), softening 1 -> qres.
-    // Off (returns 1) when ef <= 0 or qres >= 1 (elastic-perfectly-plastic bond).
+    // hardening(kappa) = qres + (1 - qres) * exp(-(kappa/ef)^efp), softening 1 -> qres.
+    // efp = 1 (exponential) matches Lundgren's mu(k) input curve (Lun05 Fig. 7); efp = 2
+    // gives the Gaussian (zero slope at 0). Off (returns 1) when ef <= 0 or qres >= 1.
     if ( this->ef <= 0. || this->qres >= 1. ) {
         return 1.;
     }
-    return this->qres + ( 1. - this->qres ) * exp(-pow(kappa / this->ef, 2.) );
+    return this->qres + ( 1. - this->qres ) * exp(-pow(kappa / this->ef, this->efp) );
 }
 
 double
@@ -77,7 +78,9 @@ LatticeBondPlasticity::computeDHardeningDKappa(double kappa) const
     if ( this->ef <= 0. || this->qres >= 1. ) {
         return 0.;
     }
-    return ( 1. - this->qres ) * ( -2. * kappa / pow(this->ef, 2.) ) * exp(-pow(kappa / this->ef, 2.) );
+    // d/dkappa [ (1-qres) exp(-(kappa/ef)^efp) ] = -(1-qres)(efp/ef)(kappa/ef)^(efp-1) exp(-(kappa/ef)^efp)
+    double base = kappa / this->ef;
+    return ( 1. - this->qres ) * ( -this->efp / this->ef ) * pow(base, this->efp - 1. ) * exp(-pow(base, this->efp) );
 }
 
 
@@ -114,6 +117,9 @@ LatticeBondPlasticity::initializeFrom(const std::shared_ptr<InputRecord> &ir)
 
     this->qres = 1.;
     IR_GIVE_OPTIONAL_FIELD(ir, this->qres, _IFT_LatticeBondPlasticity_qres);
+
+    this->efp = 1.;   // softening exponent: 1 = exponential (Lun05 Fig.7), 2 = Gaussian
+    IR_GIVE_OPTIONAL_FIELD(ir, this->efp, _IFT_LatticeBondPlasticity_efp);
 }
 
 std::unique_ptr< MaterialStatus >
