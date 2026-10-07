@@ -767,6 +767,8 @@ public:
 
     FloatArrayF< 1 >giveRealStressVector_1d(const FloatArrayF< 1 > &strain, GaussPoint *gp, TimeStep *tStep) const override;
 
+    FloatArrayF< 3 >giveRealStressVector_PlaneStress(const FloatArrayF< 3 > &strain, GaussPoint *gp, TimeStep *tStep) const override;
+
     bool hasMaterialModeCapability(MaterialMode mode) const override;
 
     /**
@@ -1124,6 +1126,10 @@ public:
     FloatMatrixF< 6, 6 >computeDDRhoDDStress(const FloatArrayF< 6 > &stress) const;
 
     FloatMatrixF< 6, 6 >give3dMaterialStiffnessMatrix(MatResponseMode mode, GaussPoint *gp, TimeStep *tStep) const override;
+
+    // --- 2D plane stress (native reduced formulation, built step by step) ---
+    // Step 0: elastic scaffold only. Plasticity/damage added in later steps.
+    FloatMatrixF< 3, 3 >givePlaneStressStiffMtrx(MatResponseMode mode, GaussPoint *gp, TimeStep *tStep) const override;
 
     /// Compute the 3d secant stiffness matrix.
     FloatMatrixF< 6, 6 >compute3dSecantStiffness(GaussPoint *gp, TimeStep *tStep) const;

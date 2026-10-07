@@ -485,7 +485,7 @@ ConcreteDPM2::hasMaterialModeCapability(MaterialMode mode) const
 // returns whether receiver supports given mode
 //
 {
-    return mode == _3dMat || mode == _1dMat;
+    return mode == _3dMat || mode == _1dMat || mode == _PlaneStress;
 }
 
 
@@ -959,6 +959,43 @@ ConcreteDPM2::giveRealStressVector_1d(const FloatArrayF< 1 > &fullStrainVector, 
 #endif
     assignStateFlag(gp);
     return FloatArrayF< 1 >{ stress };
+}
+
+
+// ===================================================================
+// 2D plane stress (native reduced formulation, built step by step)
+// Step 0: elastic scaffold only. The plastic return and damage are
+// added in later steps; here the response is linear-elastic plane stress.
+// ===================================================================
+
+FloatArrayF< 3 >
+ConcreteDPM2::giveRealStressVector_PlaneStress(const FloatArrayF< 3 > &fullStrainVector, GaussPoint *gp, TimeStep *tStep) const
+{
+    auto status = static_cast< ConcreteDPM2Status * >( this->giveStatus(gp) );
+    status->initTempStatus();
+
+    // Remove thermal/shrinkage strains
+    FloatArrayF< 3 >strain = fullStrainVector;
+    auto thermalStrain = this->computeStressIndependentStrainVector(gp, tStep, VM_Total);
+    if ( thermalStrain.giveSize() == 3 ) {
+        strain -= FloatArrayF< 3 >(thermalStrain);
+    }
+
+    // Step 0: linear-elastic plane-stress response.
+    auto D = this->linearElasticMaterial.givePlaneStressStiffMtrx(ElasticStiffness, gp, tStep);
+    auto stress = dot(D, strain);
+
+    status->letTempStrainVectorBe(fullStrainVector);
+    status->letTempStressVectorBe(stress);
+    return stress;
+}
+
+
+FloatMatrixF< 3, 3 >
+ConcreteDPM2::givePlaneStressStiffMtrx(MatResponseMode mode, GaussPoint *gp, TimeStep *tStep) const
+{
+    // Step 0: elastic plane-stress stiffness for every response mode.
+    return this->linearElasticMaterial.givePlaneStressStiffMtrx(ElasticStiffness, gp, tStep);
 }
 
 
