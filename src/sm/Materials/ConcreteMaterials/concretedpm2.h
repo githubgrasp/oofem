@@ -765,6 +765,8 @@ public:
 
     FloatArrayF< 6 >giveRealStressVector_3d(const FloatArrayF< 6 > &strain, GaussPoint *gp, TimeStep *tStep) const override;
 
+    FloatArrayF< 1 >giveRealStressVector_1d(const FloatArrayF< 1 > &strain, GaussPoint *gp, TimeStep *tStep) const override;
+
     bool hasMaterialModeCapability(MaterialMode mode) const override;
 
     /**
@@ -1128,6 +1130,67 @@ public:
 
     /// Compute the 3d tangent stiffness matrix.
     FloatMatrixF< 6, 6 >compute3dTangentStiffness(GaussPoint *gp, TimeStep *tStep) const;
+
+    // --- 1D (uniaxial) implementation -------------------------------------
+    // Dedicated 1D stress return. In 1D a single stress sigma is mapped to the
+    // Haigh-Westergaard coordinates sig = sigma/3, rho = sigma*sqrt(2/3) and the
+    // Lode angle theta = 0 in tension, pi/6 in compression. The plastic return
+    // solves a 3x3 system in the unknowns [sigma, kappaP, deltaLambda]; the
+    // vertex case is never used in 1D.
+
+    FloatMatrixF< 1, 1 >give1dStressStiffMtrx(MatResponseMode mode, GaussPoint *gp, TimeStep *tStep) const override;
+
+    /// Perform the 1D plasticity return and return the effective stress.
+    double performPlasticityReturn1d(GaussPoint *gp, double strain) const;
+
+    /// Perform the regular 1D plastic return (no vertex case in 1D).
+    double performRegularReturn1d(double &effectiveStress,
+                                  ConcreteDPM2_ReturnResult &returnResult,
+                                  double kappaP,
+                                  double theta,
+                                  GaussPoint *gp) const;
+
+    /// Map a 1D stress to the Haigh-Westergaard coordinates.
+    void computeTrialCoordinates1d(double stress, double &sig, double &rho, double &theta) const;
+
+    /// Jacobian of the 1D return (unknowns [sigma, kappaP, deltaLambda]).
+    FloatMatrixF< 3, 3 >compute1dJacobian(double sigma, double kappa, double deltaLambda, double theta, GaussPoint *gp) const;
+
+    /// 1D derivative of the yield surface with respect to sigma.
+    double computeDFDInv1d(double sigma, double tempKappa, double theta) const;
+
+    /// 1D derivative of the plastic potential with respect to sigma.
+    double computeDGDInv1d(double sigma, double tempKappa) const;
+
+    /// 1D second derivative of the plastic potential with respect to sigma.
+    double computeDDGDDInv1d(double sigma, double tempKappa) const;
+
+    /// 1D mixed derivative of the plastic potential with respect to sigma and kappa.
+    double computeDDGDInvDKappa1d(double sigma, double tempKappa) const;
+
+    /// 1D derivative of the yield surface with respect to kappa.
+    double computeDFDKappa1d(double sigma, double tempKappa, double theta) const;
+
+    /// 1D derivative of the hardening variable with respect to the plastic multiplier.
+    double computeDKappaDDeltaLambda1d(double sigma, double tempKappa, double theta) const;
+
+    /// 1D derivative of dKappaDDeltaLambda with respect to kappa.
+    double computeDDKappaDDeltaLambdaDKappa1d(double sigma, double tempKappa, double theta) const;
+
+    /// 1D derivative of dKappaDDeltaLambda with respect to sigma.
+    double computeDDKappaDDeltaLambdaDInv1d(double sigma, double tempKappa, double theta) const;
+
+    /// 1D derivative of the ductility measure with respect to sigma.
+    double computeDDuctilityMeasureDInv1d(double sigma, double tempKappa, double theta) const;
+
+    /// Compute the 1D damage parameters (tension, compression).
+    FloatArrayF< 2 >computeDamage1d(double strain, double deltaTime, GaussPoint *gp, TimeStep *tStep, double alpha, double effectiveStress) const;
+
+    /// Check for un- and reloading in the 1D damage part.
+    int checkForUnAndReloading1d(double &tempEquivStrain, double &minEquivStrain, GaussPoint *gp) const;
+
+    /// Set the characteristic length for the 1D case.
+    void initDamaged1d(double kappaD, GaussPoint *gp) const;
 
     bool isCharacteristicMtrxSymmetric(MatResponseMode rMode) const override { return false; }
 
