@@ -1,0 +1,25 @@
+con2dpm14.out
+Plane stress CDPM2 - uniaxial tension with tensile damage (single CST, single IP)
+StaticStructural nsteps 8 nmodules 1
+errorcheck
+domain 2dPlaneStress
+OutputManager tstep_all dofman_all element_all
+ndofman 3 nelem 1 ncrosssect 1 nmat 1 nbc 2 nltf 1 nic 0 nset 0
+node 1 coords 3 0. 0. 0. bc 2 1 1
+node 2 coords 3 1. 0. 0. bc 2 2 1
+node 3 coords 3 0. 1. 0. bc 2 1 1
+trplanestress2d 1 nodes 3 1 2 3 mat 1 crossSect 1
+SimpleCS 1 thick 1.0
+con2dpm 1 d 0 E 20.e9 n 0.2 talpha 0. wf 800.e-6 fc 35e6 ft 2.e6 hp 0.025 yieldtol 1.e-10 asoft 7. stype 2 damflag 1 helem 0.1
+BoundaryCondition 1 loadTimeFunction 1 prescribedvalue 0.0
+BoundaryCondition 2 loadTimeFunction 1 prescribedvalue 5.e-4
+PiecewiseLinFunction 1 t 2 0.0 8.0 f(t) 2 0.0 1.0
+#%BEGIN_CHECK% tolerance 1.e1
+## imposed exx ramp, eyy=0; sxx peaks at ft then softens via tensile damage (damageTension 0 -> 0.53).
+## peak (step 2)
+#ELEMENT tStep 2 number 1 gp 1 keyword 1 component 1 value 1.99291069e+06
+#ELEMENT tStep 2 number 1 gp 1 keyword 1 component 2 value 3.51337864e+05
+## softened (step 8)
+#ELEMENT tStep 8 number 1 gp 1 keyword 1 component 1 value 1.90245351e+06
+#ELEMENT tStep 8 number 1 gp 1 keyword 1 component 2 value 1.87966448e+05
+#%END_CHECK%

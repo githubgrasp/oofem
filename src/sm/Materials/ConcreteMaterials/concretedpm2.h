@@ -1131,6 +1131,31 @@ public:
     // Step 0: elastic scaffold only. Plasticity/damage added in later steps.
     FloatMatrixF< 3, 3 >givePlaneStressStiffMtrx(MatResponseMode mode, GaussPoint *gp, TimeStep *tStep) const override;
 
+    /// Native reduced plane-stress plastic return, unknowns [sxx,syy,sxy,kappaP,deltaLambda]; sigma_zz = 0, no vertex case.
+    FloatArrayF< 3 >performPlasticityReturnPlaneStress(GaussPoint *gp, const FloatMatrixF< 3, 3 > &D, const FloatArrayF< 3 > &strain) const;
+
+    /// Out-of-plane plastic strain increment deltaEpZz = deltaLambda * (dg/dsigma)_zz (plane stress).
+    double computeDeltaEpZz(const FloatArrayF< 3 > &effectiveStress, double tempKappaP, double deltaLambda) const;
+
+    double performRegularReturnPlaneStress(FloatArrayF< 3 > &effectiveStress,
+                                           const FloatMatrixF< 3, 3 > &D,
+                                           ConcreteDPM2_ReturnResult &returnResult,
+                                           double kappaP,
+                                           double theta,
+                                           GaussPoint *gp) const;
+
+    FloatMatrixF< 5, 5 >computePlaneStressJacobian(const FloatArrayF< 3 > &stress,
+                                                   const FloatMatrixF< 3, 3 > &D,
+                                                   double sig, double rho, double theta,
+                                                   double kappa, double deltaLambda,
+                                                   GaussPoint *gp) const;
+
+    /// Compute the plane-stress damage parameters (tension, compression).
+    FloatArrayF< 2 >computeDamagePlaneStress(const FloatArrayF< 3 > &strain, const FloatMatrixF< 3, 3 > &D, double deltaTime, GaussPoint *gp, TimeStep *tStep, double alpha, const FloatArrayF< 3 > &effectiveStress) const;
+
+    /// Check for un- and reloading in the plane-stress damage part.
+    int checkForUnAndReloadingPlaneStress(double &tempEquivStrain, double &minEquivStrain, const FloatMatrixF< 3, 3 > &D, GaussPoint *gp) const;
+
     /// Compute the 3d secant stiffness matrix.
     FloatMatrixF< 6, 6 >compute3dSecantStiffness(GaussPoint *gp, TimeStep *tStep) const;
 
