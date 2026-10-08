@@ -1249,10 +1249,9 @@ ConcreteDPM2::performRegularReturnPlaneStress(FloatArrayF< 3 > &effectiveStress,
             return kappaP;
         }
 
-        // stagnation safeguard: at an exact equibiaxial (in-plane degenerate) state the
-        // ductility Lode term is non-smooth and Newton limit-cycles near yieldTol without
-        // dropping below it; if the residual stalls with a best value well below the
-        // engineering-relevant level, accept the best iterate
+        // stagnation safeguard: at an exact equibiaxial state Newton limit-cycles near yieldTol;
+        // on stall, accept the best iterate. The gate max(1.e-6, yieldTol) never accepts looser
+        // than requested; a diverging return never reaches it (-> newtonIter cap -> subincrement).
         if ( normOfResiduals < bestNorm ) {
             bestNorm = normOfResiduals;
             bestUnknowns = unknowns;
@@ -1260,7 +1259,7 @@ ConcreteDPM2::performRegularReturnPlaneStress(FloatArrayF< 3 > &effectiveStress,
         } else {
             stagCount++;
         }
-        if ( stagCount > 8 && bestNorm < 1.e-6 ) {
+        if ( stagCount > 8 && bestNorm < max(1.e-6, yieldTol) ) {
             unknowns = bestUnknowns;
             tempKappaP = unknowns.at(4);
             deltaLambda = unknowns.at(5);
