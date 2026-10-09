@@ -4618,6 +4618,12 @@ By default, two damage variables are used, i.e., the effective stress is transfo
 nominal stress using equation (\ref{cdpm2:efftonominal}). If parameter {\em damflag} is set to 3,
 only $\omega_t$ is used and the effective stress is reduced by $1-\omega_t$.
 
+In addition to the general three-dimensional and plane-strain formulations, CDPM2 provides
+dedicated reduced formulations for uniaxial ({\em 1dMat}) and plane-stress analyses. These enforce
+the reduced stress state directly in the stress-return algorithm, instead of the generic
+stress-control condensation of the three-dimensional model, which makes them robust in
+structural analyses with localised cracking.
+
 
 \begin{htmlonly}
 \begin{longtable}{|l|l|}
@@ -4670,7 +4676,7 @@ Parameters &- \param{d} material density\\
 \end{itemize}\\
 &- \param{yieldtol} tolerance for the implicit stress return algorithm, optional, default value $1 \times 10^{-6}$\\
 &- \param{newtoniter} maximum number of iterations in the implicit stress return algorithm, optional, default value 100\\
-Supported modes& 3dMat, PlaneStrain, 1dMat\\
+Supported modes& 3dMat, PlaneStress, PlaneStrain, 1dMat\\
 \hline
 %\end{mmt}
 \caption{CDPM2 -- summary.}
