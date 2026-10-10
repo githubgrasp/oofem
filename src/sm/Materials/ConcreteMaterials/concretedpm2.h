@@ -73,6 +73,9 @@
 #define _IFT_ConcreteDPM2_deltatime "deltat"
 #define _IFT_ConcreteDPM2_helem "helem"
 #define _IFT_ConcreteDPM2_damflag "damflag"
+#define _IFT_ConcreteDPM2_symtangent "symtangent"
+#define _IFT_ConcreteDPM2_numtangent "numtangent"
+#define _IFT_ConcreteDPM2_numtangentpert "numtangentpert"
 //@}
 
 namespace oofem {
@@ -662,6 +665,15 @@ protected:
      */
     int damageFlag = 0;
 
+    /// If true, the consistent tangent is symmetrised (0.5*(D+D^T)) so it works with symmetric solvers.
+    bool symTangent = true;
+
+    /// If true, the tangent is computed numerically (central difference of the full plastic+damage response).
+    bool numTangent = false;
+
+    /// Strain perturbation used for the numerical tangent.
+    double numTangentPert = 1.e-6;
+
     double e0 = 0.;
 
     /// Parameter of the ductilityMeasure of the plasticity model.
@@ -1161,6 +1173,21 @@ public:
 
     /// Compute the 3d tangent stiffness matrix.
     FloatMatrixF< 6, 6 >compute3dTangentStiffness(GaussPoint *gp, TimeStep *tStep) const;
+
+    /// Compute the plane-stress secant stiffness matrix.
+    FloatMatrixF< 3, 3 >compute2dPlaneStressSecantStiffness(GaussPoint *gp, TimeStep *tStep) const;
+
+    /// Compute the plane-stress tangent stiffness matrix.
+    FloatMatrixF< 3, 3 >compute2dPlaneStressTangentStiffness(GaussPoint *gp, TimeStep *tStep) const;
+
+    /// Compute the 1D tangent stiffness matrix.
+    FloatMatrixF< 1, 1 >compute1dTangentStiffness(GaussPoint *gp, TimeStep *tStep) const;
+
+    /// Numerical (central-difference) tangent of the full plastic+damage response (3D form also
+    /// serves plane strain and axisymmetric).
+    FloatMatrixF< 6, 6 >compute3dNumericalTangent(GaussPoint *gp, TimeStep *tStep) const;
+    FloatMatrixF< 3, 3 >compute2dPlaneStressNumericalTangent(GaussPoint *gp, TimeStep *tStep) const;
+    FloatMatrixF< 1, 1 >compute1dNumericalTangent(GaussPoint *gp, TimeStep *tStep) const;
 
     // --- 1D (uniaxial) implementation -------------------------------------
     // Dedicated 1D stress return. In 1D a single stress sigma is mapped to the

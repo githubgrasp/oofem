@@ -500,6 +500,17 @@ ConcreteDPM2::initializeFrom(const std::shared_ptr<InputRecord> &ir)
     this->damageFlag = 1; //Default value using damage in tension and compression according to IJSS CDPM2 paper.
     IR_GIVE_OPTIONAL_FIELD(ir, this->damageFlag, _IFT_ConcreteDPM2_damflag);
 
+    // symmetrise the consistent tangent so it works with symmetric solvers
+    int symFlag = 1;
+    IR_GIVE_OPTIONAL_FIELD(ir, symFlag, _IFT_ConcreteDPM2_symtangent);
+    this->symTangent = ( symFlag != 0 );
+
+    // numerical tangent (central difference of the full plastic+damage response)
+    int numTangentFlag = 0;
+    IR_GIVE_OPTIONAL_FIELD(ir, numTangentFlag, _IFT_ConcreteDPM2_numtangent);
+    this->numTangent = ( numTangentFlag != 0 );
+    IR_GIVE_OPTIONAL_FIELD(ir, this->numTangentPert, _IFT_ConcreteDPM2_numtangentpert);
+
     // elastic parameters
     IR_GIVE_FIELD(ir, this->eM, _IFT_IsotropicLinearElasticMaterial_e)
     IR_GIVE_FIELD(ir, this->nu, _IFT_IsotropicLinearElasticMaterial_n);
@@ -1023,13 +1034,14 @@ ConcreteDPM2::giveRealStressVector_PlaneStress(const FloatArrayF< 3 > &fullStrai
         } else {
             OOFEM_ERROR("Unknown value of damage flag. Must be 0, 1, 2 or 3");
         }
-        FloatArrayF< 6 >eff6store;
-        eff6store.at(1) = effectiveStress.at(1); eff6store.at(2) = effectiveStress.at(2); eff6store.at(6) = effectiveStress.at(3);
-        status->letTempEffectiveStressBe(eff6store);
     } else {
         stress = effectiveStress;
     }
 
+    // store effective stress for the stiffness routines
+    FloatArrayF< 6 >eff6store;
+    eff6store.at(1) = effectiveStress.at(1); eff6store.at(2) = effectiveStress.at(2); eff6store.at(6) = effectiveStress.at(3);
+    status->letTempEffectiveStressBe(eff6store);
     status->letTempStrainVectorBe(fullStrainVector);
     status->letTempAlphaBe(alpha);
     status->letTempStressVectorBe(stress);
@@ -1041,8 +1053,99 @@ ConcreteDPM2::giveRealStressVector_PlaneStress(const FloatArrayF< 3 > &fullStrai
 FloatMatrixF< 3, 3 >
 ConcreteDPM2::givePlaneStressStiffMtrx(MatResponseMode mode, GaussPoint *gp, TimeStep *tStep) const
 {
-    // elastic plane-stress stiffness for every response mode
+    auto status = static_cast< ConcreteDPM2Status * >( giveStatus(gp) );
+    if ( mode == SecantStiffness ) {
+        return this->compute2dPlaneStressSecantStiffness(gp, tStep);
+    } else if ( mode == TangentStiffness ) {
+        const int stateFlag = status->giveTempStateFlag();
+        if ( stateFlag == ConcreteDPM2Status::ConcreteDPM2_PlasticDamage || stateFlag == ConcreteDPM2Status::ConcreteDPM2_Plastic ) {
+            if ( this->numTangent ) {
+                return this->compute2dPlaneStressNumericalTangent(gp, tStep);
+            }
+            return this->compute2dPlaneStressTangentStiffness(gp, tStep);
+        } else {
+            return this->compute2dPlaneStressSecantStiffness(gp, tStep);
+        }
+    }
+    //Elastic case
     return this->linearElasticMaterial.givePlaneStressStiffMtrx(ElasticStiffness, gp, tStep);
+}
+
+
+FloatMatrixF< 3, 3 >
+ConcreteDPM2::compute2dPlaneStressSecantStiffness(GaussPoint *gp, TimeStep *tStep) const
+{
+    auto status = static_cast< ConcreteDPM2Status * >( giveStatus(gp) );
+
+    double omegaTension = min(status->giveTempDamageTension(), 0.999999);
+    double omegaCompression = min(status->giveTempDamageCompression(), 0.999999);
+    double alpha = status->giveTempAlpha();
+
+    auto d = this->linearElasticMaterial.givePlaneStressStiffMtrx(ElasticStiffness, gp, tStep);
+
+    // Damage-scaled elastic secant for scalar (damflag 2) and isotropic (damflag 3) damage.
+    // damflag 1 (split) keeps the elastic stiffness (a scalar factor cannot represent the split).
+    if ( damageFlag == 2 ) {
+        d *= ( 1. - ( 1. - alpha ) * omegaTension ) * ( 1. - alpha * omegaCompression );
+    } else if ( damageFlag == 3 ) {
+        d *= ( 1. - omegaTension );
+    }
+
+    return d;
+}
+
+
+FloatMatrixF< 3, 3 >
+ConcreteDPM2::compute2dPlaneStressTangentStiffness(GaussPoint *gp, TimeStep *tStep) const
+{
+    auto status = static_cast< ConcreteDPM2Status * >( giveStatus(gp) );
+
+    auto eff6 = status->giveTempEffectiveStress();
+    FloatArrayF< 3 >stress = { eff6.at(1), eff6.at(2), eff6.at(6) };
+    double tempKappa = status->giveTempKappaP();
+    double deltaLambda = status->giveDeltaLambda();
+
+    double sig, rho, theta;
+    computeCoordinates(eff6, sig, rho, theta);
+
+    auto d = this->linearElasticMaterial.givePlaneStressStiffMtrx(ElasticStiffness, gp, tStep);
+
+    // Consistent tangent of the plane-stress return: [J^-1]_sigma,sigma * D, J the 5x5 return Jacobian
+    auto jacobian = computePlaneStressJacobian(stress, d, sig, rho, theta, tempKappa, deltaLambda, gp);
+    auto invJacobian = inv(jacobian);
+
+    FloatMatrixF< 3, 3 >help;
+    for ( int i = 1; i <= 3; i++ ) {
+        for ( int j = 1; j <= 3; j++ ) {
+            help.at(i, j) = invJacobian.at(i, j);
+        }
+    }
+
+    FloatMatrixF< 3, 3 >answer = dot(help, d);
+
+    double omegaTension = min(status->giveTempDamageTension(), 0.999999);
+    double omegaCompression = min(status->giveTempDamageCompression(), 0.999999);
+    double alpha = status->giveTempAlpha();
+
+    // Damage scaling: damflag 1 (split) keeps the undamaged Dep; damflag 2/3 (scalar/isotropic)
+    // apply the consistent (1-omega) factor.
+    if ( damageFlag == 2 ) {
+        answer *= ( 1. - ( 1. - alpha ) * omegaTension ) * ( 1. - alpha * omegaCompression );
+    } else if ( damageFlag == 3 ) {
+        answer *= ( 1. - omegaTension );
+    }
+
+    if ( this->symTangent ) {
+        FloatMatrixF< 3, 3 >sym;
+        for ( int i = 1; i <= 3; i++ ) {
+            for ( int j = 1; j <= 3; j++ ) {
+                sym.at(i, j) = 0.5 * ( answer.at(i, j) + answer.at(j, i) );
+            }
+        }
+        answer = sym;
+    }
+
+    return answer;
 }
 
 
@@ -1926,8 +2029,19 @@ ConcreteDPM2::initDamaged1d(double kappaD, GaussPoint *gp) const
 FloatMatrixF< 1, 1 >
 ConcreteDPM2::give1dStressStiffMtrx(MatResponseMode mode, GaussPoint *gp, TimeStep *tStep) const
 {
-    if ( mode == SecantStiffness ) {
-        auto status = static_cast< ConcreteDPM2Status * >( this->giveStatus(gp) );
+    auto status = static_cast< ConcreteDPM2Status * >( this->giveStatus(gp) );
+
+    if ( mode == TangentStiffness ) {
+        const int stateFlag = status->giveTempStateFlag();
+        if ( stateFlag == ConcreteDPM2Status::ConcreteDPM2_PlasticDamage || stateFlag == ConcreteDPM2Status::ConcreteDPM2_Plastic ) {
+            if ( this->numTangent ) {
+                return this->compute1dNumericalTangent(gp, tStep);
+            }
+            return this->compute1dTangentStiffness(gp, tStep);
+        }
+    }
+
+    if ( mode == SecantStiffness || mode == TangentStiffness ) {
         double strain = status->giveTempStrainVector().at(1);
         double om = ( strain >= 0. || this->damageFlag == 3 ) ? status->giveTempDamageTension() : status->giveTempDamageCompression();
         if ( om > 0.999999 ) {
@@ -1936,8 +2050,40 @@ ConcreteDPM2::give1dStressStiffMtrx(MatResponseMode mode, GaussPoint *gp, TimeSt
         return FloatMatrixF< 1, 1 >{ this->eM * ( 1. - om ) };
     }
 
-    // Elastic stiffness (tangent stiffness is not implemented for 1D -> elastic used)
+    // Elastic
     return FloatMatrixF< 1, 1 >{ this->eM };
+}
+
+
+FloatMatrixF< 1, 1 >
+ConcreteDPM2::compute1dTangentStiffness(GaussPoint *gp, TimeStep *tStep) const
+{
+    auto status = static_cast< ConcreteDPM2Status * >( giveStatus(gp) );
+
+    double sigma = status->giveTempEffectiveStress().at(1);
+    double tempKappa = status->giveTempKappaP();
+    double deltaLambda = status->giveDeltaLambda();
+
+    double sig, rho, theta;
+    computeTrialCoordinates1d(sigma, sig, rho, theta);
+
+    // Consistent 1D tangent: [J^-1]_sigma,sigma * E, J the 3x3 return Jacobian
+    auto jacobian = compute1dJacobian(sigma, tempKappa, deltaLambda, theta, gp);
+    auto invJacobian = inv(jacobian);
+    double answer = invJacobian.at(1, 1) * this->eM;
+
+    // Damage scaling: damflag 1 (split) keeps the undamaged Dep; damflag 2/3 (scalar/isotropic)
+    // apply the consistent (1-omega) factor.
+    double omegaTension = min(status->giveTempDamageTension(), 0.999999);
+    double omegaCompression = min(status->giveTempDamageCompression(), 0.999999);
+    double alpha = status->giveTempAlpha();
+    if ( damageFlag == 2 ) {
+        answer *= ( 1. - ( 1. - alpha ) * omegaTension ) * ( 1. - alpha * omegaCompression );
+    } else if ( damageFlag == 3 ) {
+        answer *= ( 1. - omegaTension );
+    }
+
+    return FloatMatrixF< 1, 1 >{ answer };
 }
 
 int
@@ -3399,8 +3545,7 @@ ConcreteDPM2::computeDDKappaDDeltaLambdaDStress(const FloatArrayF< 6 > &stress, 
 
     //Reuse implementation to compute dKappaDDeltaLambdaDCosTheta
     //Ductility measure has in denominator (2*cos(theta))^2
-    double dDKappaDDeltaLambdaDCosTheta = equivalentDGDStress / ductilityMeasure / cos(theta);
-    //  dDKappaDDeltaLambdaDCosTheta = 0.;
+    double dDKappaDDeltaLambdaDCosTheta = 2. * equivalentDGDStress / ductilityMeasure / cos(theta);
 
     auto dSigDStress = computeDSigDStress();
     auto dRhoDStress = computeDRhoDStress(stress);
@@ -3576,7 +3721,7 @@ ConcreteDPM2::computeDGDStress(const FloatArrayF< 6 > &stress, const double temp
 
 
 
-//Debug
+// Full-stress (8x8) Jacobian of the return [6 stress, kappaP, deltaLambda]; used for the consistent tangent
 FloatMatrixF< 8, 8 >
 ConcreteDPM2::computeFullJacobian(const FloatArrayF< 6 > &stress,
                                   const double deltaLambda,
@@ -3949,6 +4094,9 @@ ConcreteDPM2::give3dMaterialStiffnessMatrix(MatResponseMode mode,
     } else if ( mode == TangentStiffness ) {
         const int stateFlag = status->giveTempStateFlag();
         if ( stateFlag == ConcreteDPM2Status::ConcreteDPM2_PlasticDamage || stateFlag == ConcreteDPM2Status::ConcreteDPM2_Plastic ) {
+            if ( this->numTangent ) {
+                return this->compute3dNumericalTangent(gp, tStep);
+            }
             return this->compute3dTangentStiffness(gp, tStep);
         } else {
             return this->compute3dSecantStiffness(gp, tStep);
@@ -3972,10 +4120,12 @@ ConcreteDPM2::compute3dSecantStiffness(GaussPoint *gp, TimeStep *tStep) const
 
     auto d = this->linearElasticMaterial.give3dMaterialStiffnessMatrix(ElasticStiffness, gp, tStep);
 
+    // Damage-scaled elastic secant for scalar (damflag 2) and isotropic (damflag 3) damage.
+    // damflag 1 (split) keeps the elastic stiffness (a scalar factor cannot represent the split).
     if ( damageFlag == 2 ) {
-        d *= ( 1. - omegaTension );
-    } else if ( damageFlag == 3 ) {
         d *= ( 1. - ( 1. - alpha ) * omegaTension ) * ( 1. - alpha * omegaCompression );
+    } else if ( damageFlag == 3 ) {
+        d *= ( 1. - omegaTension );
     }
 
     return d;
@@ -3993,10 +4143,9 @@ ConcreteDPM2::compute3dTangentStiffness(GaussPoint *gp, TimeStep *tStep) const
     double tempKappa = status->giveTempKappaP();
     double deltaLambda = status->giveDeltaLambda();
 
-    //Computes only the plastic part of the tangent stiffness
+    //Consistent tangent of the effective-stress return; damage scaling is applied below
     auto d = this->linearElasticMaterial.give3dMaterialStiffnessMatrix(ElasticStiffness, gp, tStep);
 
-    // Debug
     FloatMatrixF< 8, 8 >fullJacobian = computeFullJacobian(effectiveStress, deltaLambda, gp, tStep, tempKappa);
 
     FloatMatrixF< 8, 8 >invFullJacobian = inv(fullJacobian);
@@ -4015,14 +4164,116 @@ ConcreteDPM2::compute3dTangentStiffness(GaussPoint *gp, TimeStep *tStep) const
     double omegaCompression = min(status->giveTempDamageCompression(), 0.999999);
     double alpha = status->giveTempAlpha();
 
+    // Damage scaling: damflag 1 (split) keeps the undamaged Dep; damflag 2/3 (scalar/isotropic)
+    // apply the consistent (1-omega) factor.
     if ( damageFlag == 2 ) {
         answer *= ( 1. - ( 1. - alpha ) * omegaTension ) * ( 1. - alpha * omegaCompression );
     } else if ( damageFlag == 3 ) {
         answer *= ( 1. - omegaTension );
     }
 
+    if ( this->symTangent ) {
+        FloatMatrixF< 6, 6 >sym;
+        for ( int i = 1; i <= 6; i++ ) {
+            for ( int j = 1; j <= 6; j++ ) {
+                sym.at(i, j) = 0.5 * ( answer.at(i, j) + answer.at(j, i) );
+            }
+        }
+        answer = sym;
+    }
+
     return answer;
 }
+
+
+FloatMatrixF< 6, 6 >
+ConcreteDPM2::compute3dNumericalTangent(GaussPoint *gp, TimeStep *tStep) const
+{
+    auto status = static_cast< ConcreteDPM2Status * >( giveStatus(gp) );
+    FloatArray s6 = status->giveTempStrainVector();
+    FloatArrayF< 6 >strain;
+    for ( int i = 1; i <= 6; i++ ) {
+        strain.at(i) = s6.at(i);
+    }
+    double dl = this->numTangentPert;
+
+    FloatMatrixF< 6, 6 >answer;
+    for ( int j = 1; j <= 6; j++ ) {
+        auto sp = strain; sp.at(j) += dl;
+        auto sm = strain; sm.at(j) -= dl;
+        auto fp = this->giveRealStressVector_3d(sp, gp, tStep);
+        auto fm = this->giveRealStressVector_3d(sm, gp, tStep);
+        for ( int i = 1; i <= 6; i++ ) {
+            answer.at(i, j) = ( fp.at(i) - fm.at(i) ) / ( 2. * dl );
+        }
+    }
+    this->giveRealStressVector_3d(strain, gp, tStep); // restore temp state
+
+    if ( this->symTangent ) {
+        FloatMatrixF< 6, 6 >sym;
+        for ( int i = 1; i <= 6; i++ ) {
+            for ( int j = 1; j <= 6; j++ ) {
+                sym.at(i, j) = 0.5 * ( answer.at(i, j) + answer.at(j, i) );
+            }
+        }
+        answer = sym;
+    }
+
+    return answer;
+}
+
+
+FloatMatrixF< 3, 3 >
+ConcreteDPM2::compute2dPlaneStressNumericalTangent(GaussPoint *gp, TimeStep *tStep) const
+{
+    auto status = static_cast< ConcreteDPM2Status * >( giveStatus(gp) );
+    FloatArray s3 = status->giveTempStrainVector();
+    FloatArrayF< 3 >strain;
+    for ( int i = 1; i <= 3; i++ ) {
+        strain.at(i) = s3.at(i);
+    }
+    double dl = this->numTangentPert;
+
+    FloatMatrixF< 3, 3 >answer;
+    for ( int j = 1; j <= 3; j++ ) {
+        auto sp = strain; sp.at(j) += dl;
+        auto sm = strain; sm.at(j) -= dl;
+        auto fp = this->giveRealStressVector_PlaneStress(sp, gp, tStep);
+        auto fm = this->giveRealStressVector_PlaneStress(sm, gp, tStep);
+        for ( int i = 1; i <= 3; i++ ) {
+            answer.at(i, j) = ( fp.at(i) - fm.at(i) ) / ( 2. * dl );
+        }
+    }
+    this->giveRealStressVector_PlaneStress(strain, gp, tStep); // restore
+
+    if ( this->symTangent ) {
+        FloatMatrixF< 3, 3 >sym;
+        for ( int i = 1; i <= 3; i++ ) {
+            for ( int j = 1; j <= 3; j++ ) {
+                sym.at(i, j) = 0.5 * ( answer.at(i, j) + answer.at(j, i) );
+            }
+        }
+        answer = sym;
+    }
+
+    return answer;
+}
+
+
+FloatMatrixF< 1, 1 >
+ConcreteDPM2::compute1dNumericalTangent(GaussPoint *gp, TimeStep *tStep) const
+{
+    auto status = static_cast< ConcreteDPM2Status * >( giveStatus(gp) );
+    double strain = status->giveTempStrainVector().at(1);
+    double dl = this->numTangentPert;
+
+    auto fp = this->giveRealStressVector_1d(FloatArrayF< 1 >{ strain + dl }, gp, tStep);
+    auto fm = this->giveRealStressVector_1d(FloatArrayF< 1 >{ strain - dl }, gp, tStep);
+    this->giveRealStressVector_1d(FloatArrayF< 1 >{ strain }, gp, tStep); // restore
+
+    return FloatMatrixF< 1, 1 >{ ( fp.at(1) - fm.at(1) ) / ( 2. * dl ) };
+}
+
 
 void
 ConcreteDPM2::computeCoordinates(const FloatArrayF< 6 > &stress, double &sigNew, double &rhoNew, double &thetaNew) const
@@ -4048,16 +4299,20 @@ ConcreteDPM2::assignStateFlag(GaussPoint *gp) const
     double tempKappaP = status->giveTempKappaP();
 
     if ( tempKappaP > kappaP ) {
+        const int tempFlag = status->giveTempStateFlag();
+        bool atVertex = ( tempFlag == ConcreteDPM2Status::ConcreteDPM2_VertexTension ||
+                          tempFlag == ConcreteDPM2Status::ConcreteDPM2_VertexCompression );
         if ( tempDamageTension > damageTension ||  tempDamageTension == 1. ||
              tempDamageCompression > damageCompression || tempDamageCompression == 1. ) {
-            if ( status->giveTempStateFlag() == ConcreteDPM2Status::ConcreteDPM2_VertexTension ) {
+            if ( tempFlag == ConcreteDPM2Status::ConcreteDPM2_VertexTension ) {
                 status->letTempStateFlagBe(ConcreteDPM2Status::ConcreteDPM2_VertexTensionDamage);
-            } else if ( status->giveTempStateFlag() == ConcreteDPM2Status::ConcreteDPM2_VertexTension )      {
+            } else if ( tempFlag == ConcreteDPM2Status::ConcreteDPM2_VertexCompression )      {
                 status->letTempStateFlagBe(ConcreteDPM2Status::ConcreteDPM2_VertexCompressionDamage);
             } else   {
                 status->letTempStateFlagBe(ConcreteDPM2Status::ConcreteDPM2_PlasticDamage);
             }
-        } else {
+        } else if ( !atVertex ) {
+            // keep a vertex flag so the stiffness dispatch uses the secant (tangent singular at apex)
             status->letTempStateFlagBe(ConcreteDPM2Status::ConcreteDPM2_Plastic);
         }
     } else {
@@ -4151,7 +4406,7 @@ ConcreteDPM2::computeDCosThetaDStress(const FloatArrayF< 6 > &stress) const
     ds1DStress.at(2) = principalDir.at(2, 1) * principalDir.at(2, 1) - 1. / 3.;
     ds1DStress.at(3) = principalDir.at(3, 1) * principalDir.at(3, 1) - 1. / 3.;
     ds1DStress.at(4) = 2. * principalDir.at(2, 1) * principalDir.at(3, 1);
-    ds1DStress.at(5) = 2. * principalDir.at(3, 1) * principalDir(1, 1);
+    ds1DStress.at(5) = 2. * principalDir.at(3, 1) * principalDir.at(1, 1);
     ds1DStress.at(6) = 2. * principalDir.at(1, 1) * principalDir.at(2, 1);
 
     //compute dCosThetaDStress

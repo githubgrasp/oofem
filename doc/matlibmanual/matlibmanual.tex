@@ -4634,7 +4634,7 @@ structural analyses with localised cracking.
 \hline
 Description & CDPM2\\
 \hline
-Record Format & \descitem{con2dpm}  \elemparam{d}{rn} \elemparam{E}{rn} \elemparam{n}{rn} \elemparam{tAlpha}{rn} \elemparam{ft}{rn} \elemparam{fc}{rn} \elemparam{wf}{rn} [\elemparam{stype}{in}] [\elemparam{ft1}{rn}] [\elemparam{wf1}{rn}] [\elemparam{efc}{rn}] [\elemparam{ecc}{rn}] [\elemparam{kinit}{rn}] [\elemparam{Ahard}{rn}] [\elemparam{Bhard}{rn}] [\elemparam{Chard}{rn}] [\elemparam{Dhard}{rn}] [\elemparam{Asoft}{rn}] [\elemparam{helem}{rn}] [\elemparam{dilation}{rn}] [\elemparam{hp}{rn}] [\elemparam{damflag}{in}] [\elemparam{sratetype}{in}] \elemparam{eratetype}{in} [\elemparam{yieldtol}{rn}] [\elemparam{newtoniter}{in}] \\
+Record Format & \descitem{con2dpm}  \elemparam{d}{rn} \elemparam{E}{rn} \elemparam{n}{rn} \elemparam{tAlpha}{rn} \elemparam{ft}{rn} \elemparam{fc}{rn} \elemparam{wf}{rn} [\elemparam{stype}{in}] [\elemparam{ft1}{rn}] [\elemparam{wf1}{rn}] [\elemparam{efc}{rn}] [\elemparam{ecc}{rn}] [\elemparam{kinit}{rn}] [\elemparam{Ahard}{rn}] [\elemparam{Bhard}{rn}] [\elemparam{Chard}{rn}] [\elemparam{Dhard}{rn}] [\elemparam{Asoft}{rn}] [\elemparam{helem}{rn}] [\elemparam{dilation}{rn}] [\elemparam{hp}{rn}] [\elemparam{damflag}{in}] [\elemparam{sratetype}{in}] \elemparam{eratetype}{in} [\elemparam{yieldtol}{rn}] [\elemparam{newtoniter}{in}] [\elemparam{symtangent}{in}] [\elemparam{numtangent}{in}] [\elemparam{numtangentpert}{rn}] \\
 Parameters &- \param{d} material density\\
 &- \param{E} Young modulus\\
 &- \param{n} Poisson ratio\\
@@ -4676,6 +4676,9 @@ Parameters &- \param{d} material density\\
 \end{itemize}\\
 &- \param{yieldtol} tolerance for the implicit stress return algorithm, optional, default value $1 \times 10^{-6}$\\
 &- \param{newtoniter} maximum number of iterations in the implicit stress return algorithm, optional, default value 100\\
+&- \param{symtangent} flag to symmetrise the tangent stiffness so it can be used with symmetric solvers, optional, default value 1; set to 0 to keep the exact non-symmetric tangent (requires a non-symmetric solver)\\
+&- \param{numtangent} flag to compute the tangent stiffness numerically by central differences of the full plastic-damage response, optional, default value 0\\
+&- \param{numtangentpert} strain perturbation used for the numerical tangent, optional, default value $1 \times 10^{-6}$\\
 Supported modes& 3dMat, PlaneStress, PlaneStrain, 1dMat\\
 \hline
 %\end{mmt}
