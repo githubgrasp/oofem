@@ -178,7 +178,10 @@ ConcreteDPM2Status::printOutputAt(FILE *file, TimeStep *tStep) const
     }
 
     // print plastic strain vector and inelastic strain vector
-    auto inelasticStrainVector = ( ( FloatArrayF< 6 >(strainVector) - plasticStrain ) * damageTension + plasticStrain ) * le;
+    // expand the (possibly reduced-mode) strain to full form before the fixed-size arithmetic
+    FloatArray fullStrain;
+    StructuralMaterial::giveFullSymVectorForm(fullStrain, strainVector, gp->giveMaterialMode());
+    auto inelasticStrainVector = ( ( FloatArrayF< 6 >(fullStrain) - plasticStrain ) * damageTension + plasticStrain ) * le;
 
     fprintf(file, " reduced ");
     for ( auto &val : reducedStrain ) {
@@ -437,11 +440,13 @@ ConcreteDPM2Status::computeWork(GaussPoint *gp, double gf)
     //Calculate increase or decrease of total strain tensor during iteration/step
     auto deltaTotalStrain = tempTotalstrain - totalstrain;
 
-    //Ask for stress tensor at step
-    auto stress = tempStressVector;
+    // expand the (possibly reduced-mode) stress vectors to full form to match the full strains
+    FloatArray tempStressFull, stressFull;
+    StructuralMaterial::giveFullSymVectorForm(tempStressFull, tempStressVector, gp->giveMaterialMode());
+    StructuralMaterial::giveFullSymVectorForm(stressFull, stressVector, gp->giveMaterialMode());
 
     //Calculate increase/decrease in total work
-    double dSW = ( dot(tempStressVector, deltaTotalStrain) + dot(stressVector, deltaTotalStrain) ) / 2.;
+    double dSW = ( dot(tempStressFull, deltaTotalStrain) + dot(stressFull, deltaTotalStrain) ) / 2.;
 
     double tempStressWork = this->giveTempStressWork() + dSW;
 
@@ -449,7 +454,7 @@ ConcreteDPM2Status::computeWork(GaussPoint *gp, double gf)
     auto tempElasticStrain = tempTotalstrain - tempPlasticStrain;
 
     //Calculate elastically stored energy density
-    double We = dot(tempStressVector, tempElasticStrain) / 2.;
+    double We = dot(tempStressFull, tempElasticStrain) / 2.;
 
     // dissipative work density
     tempDissWork = tempStressWork - We;
