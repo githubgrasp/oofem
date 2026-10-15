@@ -234,6 +234,8 @@ The model parameters are summarised in :numref:`latticebond_table`.
    |                    | :optelemparam:`calpha{rn}` :elemparam:`e{rn}` :optelemparam:`a1{rn}` :optelemparam:`a2{rn}`  |
    |                    | :elemparam:`fc{rn}` :elemparam:`angle1{rn}` :elemparam:`ef{rn}` :elemparam:`sub{in}`         |
    |                    | :elemparam:`iter{in}` :elemparam:`tol{rn}`                                                   |
+   |                    | :optelemparam:`angle2{rn}` :optelemparam:`flowangle{rn}`                                     |
+   |                    | :optelemparam:`efp{rn}` :optelemparam:`qres{rn}`                                             |
    +--------------------+----------------------------------------------------------------------------------------------+
    | Parameters         | - material number                                                                            |
    |                    | - :param:`d` material density                                                                |
@@ -245,7 +247,16 @@ The model parameters are summarised in :numref:`latticebond_table`.
    |                    | - :optparam:`a2` ratio of rotational and normal modulus. Default is 1.                       |
    |                    | - :param:`fc` compressive strength                                                           |
    |                    | - :param:`angle1` friction angle                                                             |
-   |                    | - :optparam:`ef` strain threshold to control hardening                                       |
+   |                    | - :optparam:`ef` ductility of the hardening/softening function, default -1 (inactive); must  |
+   |                    |   be > 0 when qres != 1; larger ef is more gradual (ef -> infinity is perfect plastic)       |
+   |                    | - :optparam:`angle2` cap aspect angle, default = angle1; angle2 < angle1 widens/raises the   |
+   |                    |   compressive cap (maximum bond -> fc as angle2 -> 0)                                        |
+   |                    | - :optparam:`flowangle` dilatancy (flow) angle, default = angle1 (associated); set to 0 for  |
+   |                    |   non-dilatant Coulomb contact                                                               |
+   |                    | - :optparam:`qres` residual/asymptotic level of the hardening function, default 1 (perfect   |
+   |                    |   plasticity); qres < 1 softens, qres > 1 hardens                                            |
+   |                    | - :optparam:`efp` exponent of the hardening function, default 1 (exponential); 2 gives a     |
+   |                    |   Gaussian (zero slope at the peak)                                                          |
    |                    | - :optparam:`sub` maximum number of subincrementations                                       |
    |                    | - :optparam:`iter` maximum number of newton iterations                                       |
    |                    | - :optparam:`tol` tolerance for newton method                                                |

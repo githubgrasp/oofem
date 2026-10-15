@@ -1740,6 +1740,8 @@ By default, two damage variables are used, i.e., the effective stress is transfo
    |                    | [:elemparam:`dilation{rn}`] [:elemparam:`hp{rn}`] [:elemparam:`damflag{in}`]                 |
    |                    | [:elemparam:`sratetype{in}`] :elemparam:`eratetype{in}` [:elemparam:`yieldtol{rn}`]          |
    |                    | [:elemparam:`newtoniter{in}`]                                                                |
+   |                    | [:elemparam:`symtangent{in}`] [:elemparam:`numtangent{in}`]                                  |
+   |                    | [:elemparam:`numtangentpert{rn}`]                                                            |
    +--------------------+----------------------------------------------------------------------------------------------+
    | Parameters         | - :param:`d` material density                                                                |
    |                    | - :param:`E` Young modulus                                                                   |
@@ -1780,8 +1782,15 @@ By default, two damage variables are used, i.e., the effective stress is transfo
    |                    |   value :math:`1 \times 10^{-6}`                                                             |
    |                    | - :param:`newtoniter` maximum number of iterations in the implicit stress return algorithm,  |
    |                    |   optional, default value 100                                                                |
+   |                    | - :param:`symtangent` symmetrise the tangent stiffness so it can be used with symmetric      |
+   |                    |   solvers, optional, default value 1; set to 0 to keep the exact non-symmetric tangent       |
+   |                    |   (requires a non-symmetric solver)                                                          |
+   |                    | - :param:`numtangent` compute the tangent stiffness numerically by central differences of    |
+   |                    |   the full plastic-damage response, optional, default value 0                                |
+   |                    | - :param:`numtangentpert` strain perturbation used for the numerical tangent, optional,      |
+   |                    |   default value :math:`1 \times 10^{-6}`                                                     |
    +--------------------+----------------------------------------------------------------------------------------------+
-   | Supported modes    | 3dMat, PlaneStrain, 1dMat                                                                    |
+   | Supported modes    | 3dMat, PlaneStress, PlaneStrain, 1dMat                                                       |
    +--------------------+----------------------------------------------------------------------------------------------+
    | Tests/Examples     | `sm/con2dpm1.in                                                                              |
    |                    | <https://github.com/oofem/oofem/blob/devel/tests/regression/sm/con2dpm1.in>`_,               |
