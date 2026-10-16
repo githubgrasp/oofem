@@ -24,15 +24,19 @@ command -v sphinx-build >/dev/null 2>&1 || {
     exit 1
 }
 
-# <manual-dir>|<title shown on the landing page>   (order = order on the page)
+# <source-path (relative to doc/)>|<output-name>|<title on the landing page>
+# (order = order on the page). Fork tool manuals live with their code under src/.
 MANUALS=(
-    "usermanual|User Manual"
-    "oofemInput|Input Manual"
-    "matlibmanual|Material Library Manual"
-    "elementlibmanual|Element Library Manual"
-    "theorymanual2|Theory Manual"
-    "developerGuide|Developer Guide"
-    "python|Python Bindings"
+    "usermanual|usermanual|User Manual"
+    "oofemInput|oofemInput|Input Manual"
+    "matlibmanual|matlibmanual|Material Library Manual"
+    "elementlibmanual|elementlibmanual|Element Library Manual"
+    "theorymanual2|theorymanual2|Theory Manual"
+    "developerGuide|developerGuide|Developer Guide"
+    "python|python|Python Bindings"
+    "../src/aggregate/doc|aggregate|Aggregate Tool"
+    "../src/converter/doc|converter|Converter Tool"
+    "../src/generator/doc|generator|Generator Tool"
 )
 
 echo "Staging OOFEM fork docs into: $STAGE"
@@ -40,17 +44,19 @@ mkdir -p "$STAGE"
 
 links=""
 for entry in "${MANUALS[@]}"; do
-    name="${entry%%|*}"
-    title="${entry#*|}"
-    src="$DOC_DIR/$name"
+    srcpath="${entry%%|*}"
+    rest="${entry#*|}"
+    outname="${rest%%|*}"
+    title="${rest#*|}"
+    src="$DOC_DIR/$srcpath"
     if [ ! -f "$src/conf.py" ]; then
-        echo "  skip  $name (no conf.py)"
+        echo "  skip  $outname (no conf.py at $src)"
         continue
     fi
-    echo "  build $name -> $STAGE/$name"
-    rm -rf "${STAGE:?}/$name"
-    sphinx-build -q -b html "$src" "$STAGE/$name"
-    links+="        <li><a href=\"$name/index.html\">$title</a></li>"$'\n'
+    echo "  build $outname -> $STAGE/$outname"
+    rm -rf "${STAGE:?}/$outname"
+    sphinx-build -q -b html "$src" "$STAGE/$outname"
+    links+="        <li><a href=\"$outname/index.html\">$title</a></li>"$'\n'
 done
 
 built="$(date +%Y-%m-%d)"
