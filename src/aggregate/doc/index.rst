@@ -1,15 +1,15 @@
 Aggregate User Manual
 =====================
 
-The aggregate module produces a periodic packing of ellipsoidal aggregates and straight fibres inside a rectangular RVE. It reads a ``#@``-directive control file, runs a sequential trial-and-error placer, and writes a ``packing.dat`` file (and optionally a ParaView-loadable ``.vtu``) describing where each inclusion sits and how it is oriented. The packing file is the input to downstream tools — typically the converter, which couples it with a node mesh from the generator to produce a complete OOFEM ``.in``.
+The aggregate module produces a periodic packing of ellipsoidal aggregates and straight fibres inside a rectangular RVE. It reads a ``#@``-directive control file, runs a sequential trial-and-error placer, and writes a ``packing.dat`` file (and optionally a ParaView-loadable ``.vtu``) describing where each inclusion sits and how it is oriented. The packing file is the input to downstream tools - typically the converter, which couples it with a node mesh from the generator to produce a complete OOFEM ``.in``.
 
-The module implements the meso-structure generation of Grassl and Antonelli (2019): poly-dispersed ellipsoids sized from a Fuller grading curve divided into sieve intervals and placed into a periodic cell by random sequential addition, rejecting overlaps, with inner/outer bounding-sphere pre-checks to skip unnecessary tests. As in that work, ellipsoid–ellipsoid overlap is decided by the algebraic separation condition of Wang, Wang & Kim (2001). Here that condition is evaluated via the mathematically equivalent Alfano–Greer (2003) eigenvalues of ``A⁻¹B`` (which are the roots of ``det(λA − B) = 0``) rather than the characteristic-polynomial coefficients, so results are identical up to rounding. The random orientation uses Shoemake's uniform-on-SO(3) quaternion sampler (Grassl and Antonelli (2019) used the method of Muller (1959)).
+The module implements the meso-structure generation of Grassl and Antonelli (2019): poly-dispersed ellipsoids sized from a Fuller grading curve divided into sieve intervals and placed into a periodic cell by random sequential addition, rejecting overlaps, with inner/outer bounding-sphere pre-checks to skip unnecessary tests. As in that work, ellipsoid-ellipsoid overlap is decided by the algebraic separation condition of Wang, Wang & Kim (2001). Here that condition is evaluated via the mathematically equivalent Alfano-Greer (2003) eigenvalues of :math:`A^{-1}B` (which are the roots of :math:`\det(\lambda A - B) = 0`) rather than the characteristic-polynomial coefficients, so results are identical up to rounding. The random orientation uses Shoemake's uniform-on-SO(3) quaternion sampler (Grassl and Antonelli (2019) used the method of Muller (1959)).
 
 References:
 
--  W. Wang, J. Wang, M.-S. Kim. An algebraic condition for the separation of two ellipsoids. *Computer Aided Geometric Design* 18 (6), 531–539, 2001.
--  S. Alfano, M. L. Greer. Determining if two solid ellipsoids intersect. *Journal of Guidance, Control, and Dynamics* 26 (1), 106–110, 2003.
--  P. Grassl, A. Antonelli. 3D network modelling of fracture processes in fibre-reinforced geomaterials. *International Journal of Solids and Structures* 156–157, 234–242, 2019.
+-  W. Wang, J. Wang, M.-S. Kim. An algebraic condition for the separation of two ellipsoids. *Computer Aided Geometric Design* 18 (6), 531-539, 2001.
+-  S. Alfano, M. L. Greer. Determining if two solid ellipsoids intersect. *Journal of Guidance, Control, and Dynamics* 26 (1), 106-110, 2003.
+-  P. Grassl, A. Antonelli. 3D network modelling of fracture processes in fibre-reinforced geomaterials. *International Journal of Solids and Structures* 156-157, 234-242, 2019.
 
 Running the aggregate tests
 ---------------------------
@@ -66,7 +66,7 @@ There are two kinds of tests, both registered automatically by ``src/aggregate/C
 | ``reference.vtu`` | *(optional)* Committed VTU file to diff against if ``#@vtu`` is set |
 +-------------------+---------------------------------------------------------------------+
 
-The driver (``tests/run_test.cmake``) runs ``aggregate.exec`` on ``control.in``, compares ``packing.dat`` against ``reference.dat``, and — only if ``reference.vtu`` exists in the test directory — also compares ``packing.vtu`` against it. Any test directory that does not declare a VTU reference simply skips the second check.
+The driver (``tests/run_test.cmake``) runs ``aggregate.exec`` on ``control.in``, compares ``packing.dat`` against ``reference.dat``, and - only if ``reference.vtu`` exists in the test directory - also compares ``packing.vtu`` against it. Any test directory that does not declare a VTU reference simply skips the second check.
 
 Determinism
 ~~~~~~~~~~~
@@ -106,7 +106,7 @@ The control file's ``#@output`` directive names the packing file; ``#@vtu`` opti
 Tracing the placement process
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Set the ``AGGREGATE_TRACE`` environment variable to a filename to record every ellipsoid placement *trial* — the rejected candidates that overlap an existing aggregate as well as the one finally accepted:
+Set the ``AGGREGATE_TRACE`` environment variable to a filename to record every ellipsoid placement *trial* - the rejected candidates that overlap an existing aggregate as well as the one finally accepted:
 
 .. code:: bash
 
@@ -128,7 +128,7 @@ The trace is a pure observer: it logs values the placement loop already computes
 Control file ``#@`` directives
 ------------------------------
 
-The control file is read line by line. Lines that start with ``#@`` are directives. All other lines — including blank lines, plain ``#`` comments, and descriptive text — are ignored. Directive order is irrelevant.
+The control file is read line by line. Lines that start with ``#@`` are directives. All other lines - including blank lines, plain ``#`` comments, and descriptive text - are ignored. Directive order is irrelevant.
 
 Top-level directives
 ~~~~~~~~~~~~~~~~~~~~
@@ -140,9 +140,9 @@ Top-level directives
 +-------------------+----------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | ``#@vtu``         | ``<filename>``                                                 | Optional VTU output path. Omit to skip ParaView export.                                                                                                                                                                                                                                                                                                                |
 +-------------------+----------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| ``#@vtughosts``   | ``0`` or ``1``                                                 | Whether the VTU also draws the periodic ghost images (default ``1``). Purely a visualisation choice — the ghosts always exist for overlap tests and are always written to ``packing.dat``, so ``0`` only makes the ``.vtu`` show a single copy of each inclusion.                                                                                                      |
+| ``#@vtughosts``   | ``0`` or ``1``                                                 | Whether the VTU also draws the periodic ghost images (default ``1``). Purely a visualisation choice - the ghosts always exist for overlap tests and are always written to ``packing.dat``, so ``0`` only makes the ``.vtu`` show a single copy of each inclusion.                                                                                                      |
 +-------------------+----------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| ``#@box``         | ``2 <lx> <ly>`` (2D) or ``3 <lx> <ly> <lz>`` (3D)              | RVE side lengths. The leading count selects the dimension — 2D mode places disks, 3D mode places ellipsoids/spheres and (optionally) fibres. Required.                                                                                                                                                                                                                 |
+| ``#@box``         | ``2 <lx> <ly>`` (2D) or ``3 <lx> <ly> <lz>`` (3D)              | RVE side lengths. The leading count selects the dimension - 2D mode places disks, 3D mode places ellipsoids/spheres and (optionally) fibres. Required.                                                                                                                                                                                                                 |
 +-------------------+----------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | ``#@periodicity`` | ``2 <px> <py>`` (2D) or ``3 <px> <py> <pz>`` (3D)              | Per-axis periodicity flag. ``1`` = periodic (the placer generates ghosts and allows boundary crossings); ``0`` = real boundary (candidates that touch the boundary are rejected). The arity must match ``#@box``.                                                                                                                                                      |
 +-------------------+----------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -150,24 +150,24 @@ Top-level directives
 +-------------------+----------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | ``#@maxiter``     | ``<n>``                                                        | Maximum number of trial placements per inclusion before giving up. Defaults to 10000.                                                                                                                                                                                                                                                                                  |
 +-------------------+----------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| ``#@grading``     | ``dmin <d>  dmax <d>  fraction <f>  [shape sphere|ellipsoid]`` | Aggregate sieve curve parameters. Optional — omit if no aggregates are wanted. In 3D, ``shape ellipsoid`` (default) samples random aspect-ratio ellipsoids; ``shape sphere`` collapses each aggregate to ``sx = sy = sz = r``. In 2D the ``shape`` token is ignored and disks are sampled (single radius per aggregate, written as ``disk`` lines in ``packing.dat``). |
+| ``#@grading``     | ``dmin <d>  dmax <d>  fraction <f>  [shape sphere|ellipsoid]`` | Aggregate sieve curve parameters. Optional - omit if no aggregates are wanted. In 3D, ``shape ellipsoid`` (default) samples random aspect-ratio ellipsoids; ``shape sphere`` collapses each aggregate to ``sx = sy = sz = r``. In 2D the ``shape`` token is ignored and disks are sampled (single radius per aggregate, written as ``disk`` lines in ``packing.dat``). |
 +-------------------+----------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| ``#@fibres``      | ``fraction <f>  length <l>  diameter <d>``                     | Fibre placement parameters. Optional — omit if no fibres are wanted. **3D only** — fibres are not supported in 2D (a 2D textile cross-section is a circle, modelled via ``#@grading`` disks). The number of fibres is computed as ``floor(box_volume · fraction / (π · (d/2)² · l))``.                                                                                 |
+| ``#@fibres``      | ``fraction <f>  length <l>  diameter <d>``                     | Fibre placement parameters. Optional - omit if no fibres are wanted. **3D only** - fibres are not supported in 2D (a 2D textile cross-section is a circle, modelled via ``#@grading`` disks). The number of fibres is computed as ``floor(box_volume * fraction / (pi * (d/2)^2 * l))``.                                                                               |
 +-------------------+----------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 ``#@grading`` semantics
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-The grading curve uses Wriggers' interval-volume formula on a Fuller-style distribution truncated below ``dmin`` and above ``dmax``. Because the distribution is truncated, the *modelled* volume is less than the nominal ``fraction · box_volume`` — the missing piece (everything below ``dmin``) is implicitly attributed to the matrix. Don't be surprised if the placed-aggregate volume is, e.g., 50–70% of ``fraction · box_volume``.
+The grading curve uses Wriggers' interval-volume formula on a Fuller-style distribution truncated below ``dmin`` and above ``dmax``. Because the distribution is truncated, the *modelled* volume is less than the nominal ``fraction * box_volume`` - the missing piece (everything below ``dmin``) is implicitly attributed to the matrix. Don't be surprised if the placed-aggregate volume is, e.g., 50-70% of ``fraction * box_volume``.
 
-``dmax`` must be at least ``2·dmin`` (one full sieve octave). Each ellipsoid sampled inside an interval respects ``sx ≤ sy ≤ sz`` and an aspect ratio ``sx/sz ∈ [0.5, 1]``. With ``shape sphere`` the constraints collapse to a single radius ``r ∈ [n/2, m/2]`` per sieve interval ``[n, m]``, and the output line becomes ``sphere <id> centre 3 ... radius <r>`` instead of the six-parameter ellipsoid form. Spherical aggregates are particularly useful when the downstream consumer (typically the generator) only implements surface seeding for spheres — see ``tests/SmallRVEsphere/`` for an example.
+``dmax`` must be at least ``2*dmin`` (one full sieve octave). Each ellipsoid sampled inside an interval respects :math:`s_x \le s_y \le s_z` and an aspect ratio :math:`s_x/s_z \in [0.5, 1]`. With ``shape sphere`` the constraints collapse to a single radius :math:`r \in [n/2, m/2]` per sieve interval :math:`[n, m]`, and the output line becomes ``sphere <id> centre 3 ... radius <r>`` instead of the six-parameter ellipsoid form. Spherical aggregates are particularly useful when the downstream consumer (typically the generator) only implements surface seeding for spheres - see ``tests/SmallRVEsphere/`` for an example.
 
 .. _2d-mode:
 
 2D mode
 ~~~~~~~
 
-``#@box 2 lx ly`` switches the module into 2D-disk mode. The grading curve samples a single radius per inclusion (uniform in ``[lower/2, upper/2]`` per sieve interval), the placer uses an analytic distance-based overlap test instead of the 3×3 Alfano-Greer eigenvalue path, and the packing file writes ``disk`` lines:
+``#@box 2 lx ly`` switches the module into 2D-disk mode. The grading curve samples a single radius per inclusion (uniform in ``[lower/2, upper/2]`` per sieve interval), the placer uses an analytic distance-based overlap test instead of the 3x3 Alfano-Greer eigenvalue path, and the packing file writes ``disk`` lines:
 
 .. code:: text
 
@@ -178,20 +178,20 @@ The grading curve uses Wriggers' interval-volume formula on a Fuller-style distr
    disk 2 centre 2 0.0050 0.0029 radius 0.00488
    ...
 
-The 2D path is the typical entry point for textile-reinforced concrete modelling (where the textile cross-sections are circular). See ``tests/2DRVE/`` for a 50×50 mm doubly-periodic example and the matching generator-side ``#@inclusionfile`` consumer.
+The 2D path is the typical entry point for textile-reinforced concrete modelling (where the textile cross-sections are circular). See ``tests/2DRVE/`` for a 50x50 mm doubly-periodic example and the matching generator-side ``#@inclusionfile`` consumer.
 
 ``#@fibres`` semantics
 ~~~~~~~~~~~~~~~~~~~~~~
 
-The placer determines an integer fibre count from the requested volume fraction, then attempts to place each one against existing aggregates. **Fibre-fibre overlaps are not checked** (as in Grassl and Antonelli (2019), which checks only ellipsoid–ellipsoid and ellipsoid–line-segment overlaps) — only fibre-vs-ellipsoid intersections cause rejection.
+The placer determines an integer fibre count from the requested volume fraction, then attempts to place each one against existing aggregates. **Fibre-fibre overlaps are not checked** (as in Grassl and Antonelli (2019), which checks only ellipsoid-ellipsoid and ellipsoid-line-segment overlaps) - only fibre-vs-ellipsoid intersections cause rejection.
 
 When ``#@grading`` and ``#@fibres`` are both present, the placer follows a three-stage order:
 
-1. Place "group 1" aggregates (the large end, above the ``dlim``-derived volume threshold) — these go down before fibres so the big inclusions have first pick of the volume.
+1. Place "group 1" aggregates (the large end, above the ``dlim``-derived volume threshold) - these go down before fibres so the big inclusions have first pick of the volume.
 2. Place fibres against the now-occupied aggregates.
 3. Place "group 2" aggregates (the small end) into the remaining space, avoiding both ellipsoids and fibres.
 
-The split point is ``dlim · α`` where ``α = 1.5`` and ``dlim`` is computed analytically from ``aggregateFraction``, ``fibreFraction``, ``fibreDiameter``, ``fibreLength``, and ``dmax`` via ``aggregate::dlim()`` in ``dlim.h``.
+The split point is ``dlim * alpha`` where ``alpha = 1.5`` and ``dlim`` is computed analytically from ``aggregateFraction``, ``fibreFraction``, ``fibreDiameter``, ``fibreLength``, and ``dmax`` via ``aggregate::dlim()`` in ``dlim.h``.
 
 Output format
 -------------
@@ -227,19 +227,19 @@ A line-oriented text file. The first three lines are metadata comments; the rema
    disk <id> centre 2 <cx> <cy> radius <r>
    ...
 
-Each inclusion line starts with its type keyword (``disk``, ``ellipsoid``, ``sphere``, ``fibre``) and a per-type sequential id. The remaining tokens follow OOFEM's ``keyword count v1 v2 ...`` convention, parseable by the same machinery the generator and converter already use. ``sphere`` lines are written automatically when ``Ellipsoid::writeTo`` detects three equal semi-axes — the typical case under ``#@grading shape sphere``. ``disk`` lines are the 2D analog.
+Each inclusion line starts with its type keyword (``disk``, ``ellipsoid``, ``sphere``, ``fibre``) and a per-type sequential id. The remaining tokens follow OOFEM's ``keyword count v1 v2 ...`` convention, parseable by the same machinery the generator and converter already use. ``sphere`` lines are written automatically when ``Ellipsoid::writeTo`` detects three equal semi-axes - the typical case under ``#@grading shape sphere``. ``disk`` lines are the 2D analog.
 
 This format is shared with the generator and the converter:
 
--  The **generator** consumes it via ``#@inclusionfile <path> [itz <t>] [refine <r>]`` — each ``sphere`` line becomes an ``InterfaceSphere``, each ``disk`` line becomes an ``InterfaceDisk`` (both seed surface points plus an ITZ halo). ``ellipsoid`` lines trigger a warning (the generator does not yet implement arbitrary-orientation ellipsoid surface seeding); ``fibre`` lines are silently ignored (handled by the converter, not the generator).
--  The **converter** consumes it via ``#@inclusionfile <path> itz <t> inside <m> interface <m>`` — each ``sphere`` line becomes a ``SphereInclusionSpec`` driving material classification of every Voronoi/Delaunay edge whose endpoints fall inside or straddle the sphere+ITZ boundary; each ``fibre`` line becomes a ``Fibre`` for beam-and-link generation. (``disk`` lines for the 2D path are handled via ``#@diskinclusion`` rather than ``#@inclusionfile`` — ``#@inclusionfile`` consumption on the converter side is currently 3D-only.)
+-  The **generator** consumes it via ``#@inclusionfile <path> [itz <t>] [refine <r>]`` - each ``sphere`` line becomes an ``InterfaceSphere``, each ``disk`` line becomes an ``InterfaceDisk`` (both seed surface points plus an ITZ halo). ``ellipsoid`` lines trigger a warning (the generator does not yet implement arbitrary-orientation ellipsoid surface seeding); ``fibre`` lines are silently ignored (handled by the converter, not the generator).
+-  The **converter** consumes it via ``#@inclusionfile <path> itz <t> inside <m> interface <m>`` - each ``sphere`` line becomes a ``SphereInclusionSpec`` driving material classification of every Voronoi/Delaunay edge whose endpoints fall inside or straddle the sphere+ITZ boundary; each ``fibre`` line becomes a ``Fibre`` for beam-and-link generation. (``disk`` lines for the 2D path are handled via ``#@diskinclusion`` rather than ``#@inclusionfile`` - ``#@inclusionfile`` consumption on the converter side is currently 3D-only.)
 
 .. _packingvtu:
 
 ``packing.vtu``
 ~~~~~~~~~~~~~~~
 
-ParaView-compatible XML UnstructuredGrid. Each ellipsoid is tessellated into an ``(N+1)²`` grid of points and ``N²`` quad cells (default ``N = 10``). Each fibre becomes 2 points and a single line cell. By default the periodic ghost images are drawn as well, so the VTU shows the packing tiling exactly as ``packing.dat`` describes it (set ``#@vtughosts 0`` to draw only the real inclusions). Three cell-data arrays let you filter and colour:
+ParaView-compatible XML UnstructuredGrid. Each ellipsoid is tessellated into an :math:`(N+1)^2` grid of points and :math:`N^2` quad cells (default ``N = 10``). Each fibre becomes 2 points and a single line cell. By default the periodic ghost images are drawn as well, so the VTU shows the packing tiling exactly as ``packing.dat`` describes it (set ``#@vtughosts 0`` to draw only the real inclusions). Three cell-data arrays let you filter and colour:
 
 ========= ===== ======================================================
 Array     Type  Values
@@ -270,7 +270,7 @@ Example
    #@maxiter 1000
    #@grading dmin 0.005 dmax 0.020 fraction 0.3
 
-This is ``src/aggregate/tests/SmallRVEvtu/control.in``. With this seed the placer produces 29 aggregates in a 50 mm cubic periodic RVE — the committed ``reference.dat`` and ``reference.vtu`` capture exactly that configuration.
+This is ``src/aggregate/tests/SmallRVEvtu/control.in``. With this seed the placer produces 29 aggregates in a 50 mm cubic periodic RVE - the committed ``reference.dat`` and ``reference.vtu`` capture exactly that configuration.
 
 Architecture overview
 ---------------------
@@ -278,23 +278,23 @@ Architecture overview
 +-----------------------+-------------------------------------------------------------------------------------------------------------------------------------------------+
 | File                  | Role                                                                                                                                            |
 +=======================+=================================================================================================================================================+
-| ``aggregate.C``       | ``main()`` — orchestrates the read → grading → group1 → fibres → group2 → write pipeline                                                        |
+| ``aggregate.C``       | ``main()`` - orchestrates the read -> grading -> group1 -> fibres -> group2 -> write pipeline                                                   |
 +-----------------------+-------------------------------------------------------------------------------------------------------------------------------------------------+
-| ``box.h/.C``          | ``Box`` — owns dimensions, periodicity, RNG seed, parsed parameters, and the ``unique_ptr<Inclusion>`` lists for both real and ghost inclusions |
+| ``box.h/.C``          | ``Box`` - owns dimensions, periodicity, RNG seed, parsed parameters, and the ``unique_ptr<Inclusion>`` lists for both real and ghost inclusions |
 +-----------------------+-------------------------------------------------------------------------------------------------------------------------------------------------+
 | ``inclusion.h``       | Abstract base for any geometric inclusion (``number``, ``typeName()``, ``writeTo()``)                                                           |
 +-----------------------+-------------------------------------------------------------------------------------------------------------------------------------------------+
-| ``ellipsoid.h/.C``    | ``Ellipsoid`` — centre, Euler angles (Rz·Ry·Rx), semi-axes, with cached 4×4 Alfano-Greer quadric form                                           |
+| ``ellipsoid.h/.C``    | ``Ellipsoid`` - centre, Euler angles (Rz*Ry*Rx), semi-axes, with cached 4x4 Alfano-Greer quadric form                                           |
 +-----------------------+-------------------------------------------------------------------------------------------------------------------------------------------------+
-| ``fibre.h/.C``        | ``Fibre`` — two endpoints + diameter                                                                                                            |
+| ``fibre.h/.C``        | ``Fibre`` - two endpoints + diameter                                                                                                            |
 +-----------------------+-------------------------------------------------------------------------------------------------------------------------------------------------+
-| ``intersection.h/.C`` | Free-function pairwise overlap predicates (Alfano-Greer ellipsoid–ellipsoid, ellipsoid–axis-plane, line-segment–ellipsoid)                      |
+| ``intersection.h/.C`` | Free-function pairwise overlap predicates (Alfano-Greer ellipsoid-ellipsoid, ellipsoid-axis-plane, line-segment-ellipsoid)                      |
 +-----------------------+-------------------------------------------------------------------------------------------------------------------------------------------------+
-| ``gradingcurve.h/.C`` | ``GradingCurve`` — Wriggers interval-volume + sieve halving                                                                                     |
+| ``gradingcurve.h/.C`` | ``GradingCurve`` - Wriggers interval-volume + sieve halving                                                                                     |
 +-----------------------+-------------------------------------------------------------------------------------------------------------------------------------------------+
 | ``dlim.h/.C``         | Analytic group-split threshold (companion-matrix root finder via Eigen)                                                                         |
 +-----------------------+-------------------------------------------------------------------------------------------------------------------------------------------------+
-| ``placer.h/.C``       | ``Placer`` — trial-and-error placement loop with periodic ghost generation                                                                      |
+| ``placer.h/.C``       | ``Placer`` - trial-and-error placement loop with periodic ghost generation                                                                      |
 +-----------------------+-------------------------------------------------------------------------------------------------------------------------------------------------+
 | ``random.h``          | Portable ``uniform()`` / ``normal()`` / ``uniformOnSphere()`` over ``std::mt19937``                                                             |
 +-----------------------+-------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -320,4 +320,4 @@ Adding a new inclusion type
 2. If the new type can be parsed from a packing file directly, add an ``initializeFromTokens(std::istringstream&)`` method matching the pattern used by ``Ellipsoid`` and ``Fibre``.
 3. Add free intersection predicates in ``intersection.h/.C`` for any new type pair the placer needs to test.
 4. Extend ``Placer`` with a ``place<Name>`` method and route ``Box``'s inclusion lists through ``dynamic_cast`` checks where needed.
-5. Extend ``vtu.C`` if the new type should appear in ParaView output — choose a tessellation strategy and assign a fresh ``kind`` value.
+5. Extend ``vtu.C`` if the new type should appear in ParaView output - choose a tessellation strategy and assign a fresh ``kind`` value.
