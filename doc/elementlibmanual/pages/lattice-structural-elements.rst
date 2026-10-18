@@ -84,10 +84,7 @@ element length in the form of strains. The element is defined in x,y plane (see 
    |                          | com/oofem/oofem/blob/devel/tests/regression/lm/latticeviscoelastic_mps_1.in>`_               |
    +--------------------------+----------------------------------------------------------------------------------------------+
 
-The theory of lattice2d is described in the paper “P. Grassl and M. Jirásek. Meso-scale
-approach to modelling the fracture process zone of concrete subjected to uniaxial
-tension. International Journal of Solids and Structures. Volume 47, Issues 7-8, pp.
-957-968, 2010.”
+The theory of lattice2d is described in [GraJir10]_
 
 latticeboundary2D element
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -107,7 +104,7 @@ this element in addition to those used for lattice2d are shown in Table
 ``lattice2dboundarysummary``.
 
 .. figure:: /figures/lattice2dboundaryfig.svg
-   :width: 40%
+   :width: 70%
    :name: lattice2dboundaryfig
 
    latticeboundary2D element. Elements with cross boundary of periodic cell use DOFs of node inside cell and average strain values of periodic cell.
@@ -150,7 +147,7 @@ which are smeared out over the element length in the form of strains. The input
 parameters for this element are shown in :numref:`lattice3dsummary`.
 
 .. figure:: /figures/lattice3d.svg
-   :width: 30%
+   :width: 70%
    :name: lattice3dfig
 
    Lattice3d element. Node numbering, DOF numbering, cross-section vertices and local coordinate system at integration point :math:`C`.
@@ -224,7 +221,7 @@ provided in the form of a location parameter as shown in Table
 :numref:`lattice3dboundarysummary`.
 
 .. figure:: /figures/lattice3dboundaryfig.svg
-   :width: 60%
+   :width: 70%
    :name: lattice3dboundaryfig
 
    Lattice3dboundary element. Elements with cross boundary of periodic cell use DOFs of node inside cell and average strain values of periodic cell.

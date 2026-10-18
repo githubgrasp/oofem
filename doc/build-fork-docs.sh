@@ -19,8 +19,18 @@ set -euo pipefail
 DOC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 STAGE="${1:-$DOC_DIR/_fork-site}"
 
-command -v sphinx-build >/dev/null 2>&1 || {
-    echo "ERROR: sphinx-build not found. Install with: pip install sphinx" >&2
+# Prefer the dedicated docs venv if present (it carries sphinxcontrib-tikz, needed
+# to render the element-library TikZ figures); otherwise fall back to PATH.
+# Override with SPHINXBUILD=/path/to/sphinx-build if needed.
+if [ -z "${SPHINXBUILD:-}" ]; then
+    if [ -x "$HOME/.venvs/oofemdocs/bin/sphinx-build" ]; then
+        SPHINXBUILD="$HOME/.venvs/oofemdocs/bin/sphinx-build"
+    else
+        SPHINXBUILD="sphinx-build"
+    fi
+fi
+command -v "$SPHINXBUILD" >/dev/null 2>&1 || {
+    echo "ERROR: sphinx-build not found ($SPHINXBUILD). Create the docs venv or install sphinx." >&2
     exit 1
 }
 
@@ -55,7 +65,7 @@ for entry in "${MANUALS[@]}"; do
     fi
     echo "  build $outname -> $STAGE/$outname"
     rm -rf "${STAGE:?}/$outname"
-    sphinx-build -q -b html "$src" "$STAGE/$outname"
+    "$SPHINXBUILD" -q -b html "$src" "$STAGE/$outname"
     links+="        <li><a href=\"$outname/index.html\">$title</a></li>"$'\n'
 done
 

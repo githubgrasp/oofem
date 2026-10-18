@@ -71,7 +71,7 @@ Furthermore, :math:`\omega` is the damage variable varying from 0 (undamaged) to
 Also, :math:`\mathbf{D}_{\rm e}` is the elastic stiffness matrix which is based on the elastic modulus of the lattice material :math:`E`, and a parameter :math:`a_1` which is the ratio of the modulus of the shear and normal direction.
 The strength envelope (onset of damage) is elliptic and determined by three parameters, :math:`f_{\rm t}`, :math:`f_{\rm q}`, and :math:`f_{\rm c}`. The evolution of the damage variable :math:`\omega` is controlled by normal stress-normal crack opening law. The three possible laws are linear, bilinear, and exponential.
 
-This simple damage material model for lattice elements has been used in many recent articles. For instance, the two-dimensional version has been used in *P. Grassl and M. Jirásek. "Meso-scale approach to modelling the fracture process zone of concrete subjected to uniaxial tension". International Journal of Solids and Structures. Volume 47, Issues 7-8, pp. 957-968, 2010*. An example of an application of the three-dimensional version of the model is found in *\ P. Grassl, J. Bolander. "Three-Dimensional Network Model for Coupling of Fracture and Mass Transport in Quasi-Brittle Geomaterials", Materials, 9, 782, 2016*.
+This simple damage material model for lattice elements has been used in many recent articles. For instance, the two-dimensional version has been used in [GraJir10]_. An example of an application of the three-dimensional version of the model is found in [GraBol16]_.
 
 The model parameters are summarised in :numref:`latticedamage_table`.
 
@@ -129,6 +129,15 @@ The model parameters are summarised in :numref:`latticedamage_table`.
    +--------------------+----------------------------------------------------------------------------------------------+
 
 .. _plasticity_damage_lattice_model:
+
+Damage lattice model for shell elements
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A variant of the scalar damage lattice model for shell-type lattice analysis. It
+works only with the ``lattice3d`` and ``lattice3dnl`` elements. It uses a
+shell-specific equivalent-strain measure but is otherwise identical to the scalar
+damage model; the input record and parameters are the same as for
+:descitem:`latticedamage`, using the keyword ``latticedamageshell``.
 
 Plasticity damage lattice model
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -220,7 +229,10 @@ The model parameters are summarised in :numref:`latticeplastdam_table`.
 
 
 
-The theory of the model is described in the paper *P. Grassl and T. Davies. "Lattice modelling of corrosion induced cracking and bond in reinforced concrete". Cement and Concrete Composites, Volume 33, pp. 918-924, 2011*.
+Bond plasticity lattice model
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The theory of the model is described in the paper [GraDav11]_.
 
 The model parameters are summarised in :numref:`latticebond_table`.
 
@@ -345,6 +357,38 @@ The model description and parameters are summarized in :numref:`latticeviscoelas
    |                    | lm/latticedamagevisco_mps_1.in>`_                                                            |
    +--------------------+----------------------------------------------------------------------------------------------+
 
+
+Slip lattice model
+~~~~~~~~~~~~~~~~~~
+
+This model implements a slip (bond-slip) law for interface elements between lattice
+and beam (reinforcement) elements.
+
+   +--------------------+----------------------------------------------------------------------------------------------+
+   | Description        | Slip model for lattice-to-beam interface elements                                            |
+   +--------------------+----------------------------------------------------------------------------------------------+
+   | Record Format      | :descitem:`latticeslip` :elemparam:`in` :elemparam:`d{rn}` :optelemparam:`talpha{rn}`        |
+   |                    | :optelemparam:`calpha{rn}` :elemparam:`e{rn}` :elemparam:`a1{rn}` :optelemparam:`a2{rn}`     |
+   |                    | :elemparam:`t0{rn}` :optelemparam:`type{in}` :optelemparam:`s1{rn}` :optelemparam:`alpha{rn}`|
+   |                    | :optelemparam:`s2{rn}` :optelemparam:`s3{rn}` :optelemparam:`tf{rn}`                         |
+   +--------------------+----------------------------------------------------------------------------------------------+
+   | Parameters         | - :param:`d` material density                                                                |
+   |                    | - :param:`e` modulus of the equivalent lattice material                                      |
+   |                    | - :optparam:`a1` ratio of shear to normal modulus                                            |
+   |                    | - :optparam:`a2` ratio of rotational to normal modulus, default = a1                         |
+   |                    | - :optparam:`talpha` thermal expansion coefficient, default 0                                |
+   |                    | - :optparam:`calpha` thermal displacement expansion coefficient, default 0                   |
+   |                    | - :param:`t0` peak slip (bond) stress                                                        |
+   |                    | - :optparam:`type` slip-law type: 0 = elastic-perfectly plastic; 1 = hardening               |
+   |                    |   (requires s1, alpha); 2 = hardening with post-peak softening (requires s1, alpha,          |
+   |                    |   s2, s3, tf)                                                                                |
+   |                    | - :optparam:`s1` slip at the end of the hardening branch (type 1 and 2)                      |
+   |                    | - :optparam:`alpha` hardening exponent (type 1 and 2)                                        |
+   |                    | - :optparam:`s2`, :optparam:`s3` slips defining the softening branch (type 2)                |
+   |                    | - :optparam:`tf` residual bond stress (type 2)                                               |
+   +--------------------+----------------------------------------------------------------------------------------------+
+   | Supported modes    | 3dlattice                                                                                    |
+   +--------------------+----------------------------------------------------------------------------------------------+
 
 Viscoelastic plasticity damage lattice model
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

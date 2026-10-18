@@ -5,7 +5,7 @@ Coupled heat and mass transport material model - HeMotk
 =======================================================
 
 Coupled heat and mass transfer material model.
-Source: T. Krejci doctoral thesis; Bazant and Najjar, 1972;
+Source: T. Krejci doctoral thesis; [Bazant:72]_;
 Pedersen, 1990. Assumptions: water vapor is the only driving
 mechanism; relative humidity is from range 0.2 - 0.98 (I and II
 regions). The model parameters are summarized

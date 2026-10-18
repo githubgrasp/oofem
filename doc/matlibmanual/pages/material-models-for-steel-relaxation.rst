@@ -14,7 +14,7 @@ Model for relaxation of prestressing steel - SteelRelaxMat
 
 This section describes the implementation of the material model for
 steel relaxation given in Eurocode 2 (the same as in Model Code 2010)
-and in Bažant and Yu (J. of Eng. Mech, 2013) which reduces to the first model under
+and in Bažant and Yu [BazYu13]_ which reduces to the first model under
 constant strain. At variable strain history the first model uses the
 approach employing the so-called :math:`\text{equivalent time}` approach
 described in Annex D in the Eurocode 2.

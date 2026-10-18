@@ -182,7 +182,7 @@ The equivalent strain, :math:`\tilde\varepsilon`, is a scalar measure derived fr
 
 The following definitions of **equivalent strain** are currently supported:
 
-    - **Mazars** (1984) definition based on norm of positive part of strain:
+    - **Mazars** definition [Mazars84]_ based on norm of positive part of strain:
 
       .. math::
          :label: mazars
