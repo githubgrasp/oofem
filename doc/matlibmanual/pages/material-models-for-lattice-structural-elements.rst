@@ -379,13 +379,12 @@ and beam (reinforcement) elements.
    |                    | - :optparam:`talpha` thermal expansion coefficient, default 0                                |
    |                    | - :optparam:`calpha` thermal displacement expansion coefficient, default 0                   |
    |                    | - :param:`t0` peak slip (bond) stress                                                        |
-   |                    | - :optparam:`type` slip-law type: 0 = elastic-perfectly plastic; 1 = hardening               |
-   |                    |   (requires s1, alpha); 2 = hardening with post-peak softening (requires s1, alpha,          |
-   |                    |   s2, s3, tf)                                                                                |
-   |                    | - :optparam:`s1` slip at the end of the hardening branch (type 1 and 2)                      |
-   |                    | - :optparam:`alpha` hardening exponent (type 1 and 2)                                        |
-   |                    | - :optparam:`s2`, :optparam:`s3` slips defining the softening branch (type 2)                |
-   |                    | - :optparam:`tf` residual bond stress (type 2)                                               |
+   |                    | - :optparam:`type` slip-law type: 0 = elastic-perfectly plastic; 1 = CEB bond-slip law       |
+   |                    |   ascending branch then a constant plateau; 2 = full CEB bond-slip law (with the             |
+   |                    |   descending/residual branch)                                                                |
+   |                    | - :optparam:`s1`, :optparam:`s2`, :optparam:`s3`, :optparam:`alpha`, :optparam:`tf`          |
+   |                    |   bond-slip law parameters with the same meaning as in the ``bondceb`` (CEB-FIP) model;      |
+   |                    |   needed for ``type`` 1 and 2                                                                |
    +--------------------+----------------------------------------------------------------------------------------------+
    | Supported modes    | 3dlattice                                                                                    |
    +--------------------+----------------------------------------------------------------------------------------------+
