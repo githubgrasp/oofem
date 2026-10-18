@@ -66,7 +66,9 @@ element length in the form of strains. The element is defined in x,y plane (see 
    | Parameters               | :param:`thick`: defines the out of plane (:math:`z`-direction) thickness :param:`width`:     |
    |                          | defines the width of the midpoint cross-section in the :math:`x`-:math:`y` plane with the    |
    |                          | point :math:`C` at its centre :param:`gpCooords`: array of the coordinates of the            |
-   |                          | integration point :math:`C` in the global coordinate system                                  |
+   |                          | integration point :math:`C` in the global coordinate system. For a circular ``LatticeCS``    |
+   |                          | (``shape 1``) the section properties are taken from the cross section and :param:`thick` and |
+   |                          | :param:`width` do not affect the response.                                                   |
    +--------------------------+----------------------------------------------------------------------------------------------+
    | Unknowns                 | Three dofs (:math:`u`-displacement, :math:`v`-displacement, :math:`w`-rotation) are required |
    |                          | in each node.                                                                                |
@@ -81,10 +83,26 @@ element length in the form of strains. The element is defined in x,y plane (see 
    |                          | ofem/oofem/blob/devel/tests/regression/lm/latticedamagevisco_mps_1.in>`_,                    |
    |                          | `lm/latticeplastdamvisco3drandom.in <https://github.com/oofem/oofem/blob/devel/tests/regress |
    |                          | ion/lm/latticeplastdamvisco3drandom.in>`_, `lm/latticeviscoelastic_mps_1.in <https://github. |
-   |                          | com/oofem/oofem/blob/devel/tests/regression/lm/latticeviscoelastic_mps_1.in>`_               |
+   |                          | com/oofem/oofem/blob/devel/tests/regression/lm/latticeviscoelastic_mps_1.in>`_, `lm/lattice2 |
+   |                          | dframecircle.in <https://github.com/oofem/oofem/blob/devel/tests/regression/lm/lattice2dfram |
+   |                          | ecircle.in>`_, `lm/lattice2dframesteelplastic.in <https://github.com/oofem/oofem/blob/devel/ |
+   |                          | tests/regression/lm/lattice2dframesteelplastic.in>`_                                         |
    +--------------------------+----------------------------------------------------------------------------------------------+
 
 The theory of lattice2d is described in [GraJir10]_
+
+Used with a circular ``LatticeCS`` (``shape 1``, :param:`radius`), lattice2d acts as
+a Timoshenko frame element in the :math:`x`-:math:`y` plane. The area
+:math:`A = \pi r^2`, the second moment of area :math:`I = \pi r^4/4` and the shear
+area :math:`0.9 A` are computed from the radius, and each can be overridden by
+:param:`area`, :param:`iz` and :param:`shearareay` of the cross section. Together with
+the frame materials ``latticeframeelastic`` and ``latticeframesteelplastic``, this
+allows modelling, for example, yielding reinforcement bars in 2d. The generalised
+strains are the axial strain, the shear strain and the curvature at point :math:`C`,
+and the corresponding generalised stresses are the normal force :math:`N`, the shear
+force :math:`V` and the bending moment :math:`M_z`. The element has a single
+integration point, so the bending moment is constant within each element and
+several elements per member are needed where yielding is expected.
 
 LatticeBoundary2D element
 ~~~~~~~~~~~~~~~~~~~~~~~~~

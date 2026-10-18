@@ -232,7 +232,8 @@ Lattice cross section
 
    Part of the lattice module; compile with ``USE_LM``.
 
-Cross section for the 3D lattice elements ``lattice3d`` and ``lattice3dnl``.
+Cross section for the 3D lattice elements ``lattice3d`` and ``lattice3dnl``, and for
+the 2D lattice element ``lattice2d``.
 
 .. record::
 
@@ -299,6 +300,12 @@ frame member — rod, beam and so on.  :param:`area` is then mandatory and the
 remaining properties optional; the transverse axes are oriented by the element's
 ``zaxis``, and the integration point position along the element by its ``s``
 parameter.  See the Element Library Manual.
+
+For ``lattice2d`` only ``shape 1`` is evaluated. It gives a circular frame section
+with :math:`A=\pi r^2`, :math:`I=\pi r^4/4` and shear area :math:`0.9A`; the
+overrides :param:`area`, :param:`iz` and :param:`shearareay` apply. For all other
+shapes, lattice2d uses the rectangle defined by its own ``width`` and ``thick``
+parameters.
 
 Other cross section types
 -------------------------

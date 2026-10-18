@@ -486,7 +486,7 @@ The model description and parameters are summarized in :numref:`latticeplasticda
 Elastic material model for lattice based frame elements
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This is an elastic material model used together with 3D lattice frame elements. It has been specifically developed to describe the failure of steel frame members using the lattice elements lattice3d and lattice3dnl. However, it can also be used with any other 3D lattice element.
+This is an elastic material model used together with lattice frame elements. It has been specifically developed to describe the failure of steel frame members using the lattice elements lattice3d and lattice3dnl. However, it can also be used with any other 3D lattice element, and with lattice2d in 2D (see below).
 
 The stress-strain law has the form
 
@@ -500,18 +500,22 @@ where :math:`\mathbf{e}` is a vector of internal forces and moments, :math:`\mat
    :name: latticeframeelastic_table
 
    +--------------------+----------------------------------------------------------------------------------------------+
-   | Description        | Plasticity lattice model for steel                                                           |
+   | Description        | Elastic lattice model for frame elements                                                     |
    +--------------------+----------------------------------------------------------------------------------------------+
    | Record Format      | :descitem:`latticeframeelastic` :elemparam:`in` :elemparam:`d{rn}`                           |
    |                    | :optelemparam:`talpha{rn}` :elemparam:`e{rn}` :elemparam:`n{rn}`                             |
+   |                    | :optelemparam:`tcrit{rn}`                                                                    |
    +--------------------+----------------------------------------------------------------------------------------------+
    | Parameters         | - material number                                                                            |
    |                    | - :param:`d` material density                                                                |
    |                    | - :optparam:`talpha` Thermal expansion coefficient. Default is 0.                            |
+   |                    | - :optparam:`tcrit` critical temperature :math:`T_{\rm crit}` for the temperature dependent  |
+   |                    |   reduction of the Young's modulus (see below). Default is 0, which switches the reduction   |
+   |                    |   off.                                                                                       |
    |                    | - :param:`e` Young's modulus of the lattice material.                                        |
    |                    | - :param:`n` Poisson's ratio of the material that the beam element is made of.               |
    +--------------------+----------------------------------------------------------------------------------------------+
-   | Supported modes    | 3dlattice                                                                                    |
+   | Supported modes    | 2dlattice, 3dlattice                                                                         |
    +--------------------+----------------------------------------------------------------------------------------------+
    | Tests/Examples     | `lm/lattice3dnl_logrot.in                                                                    |
    |                    | <https://github.com/oofem/oofem/blob/devel/tests/regression/lm/lattice3dnl_logrot.in>`_,     |
@@ -533,12 +537,22 @@ where :math:`\mathbf{e}` is a vector of internal forces and moments, :math:`\mat
 
 The linear-elastic response of the frame elements is given directly as a relationship between generalized stress (internal forces) and generalized strain.
 
+In 2D (lattice2d) the generalized strains and stresses reduce to the axial, shear and bending components, :math:`\mathbf{s} = (N, V, M_z)^T`, and the elastic stiffness is :math:`\mathbf{D}_{\rm e} = \mathrm{diag}(EA, G A_{\rm s}, E I)`, with the section properties provided by the element.
+
+If :param:`tcrit` is non-zero, the Young's modulus (and thereby the shear modulus) is multiplied by the reduction factor
+
+.. math::
+
+   r(T) = \exp\left[ -\left( \dfrac{T - T_{\rm ref}}{T_{\rm crit} - T_{\rm ref}} \right)^2 \right] \qquad \textrm{for } T > T_{\rm ref} \textrm{ and } T > 0
+
+and :math:`r = 1` otherwise. Here :math:`T` is the temperature at the integration point, the sum of the element temperature loads and of a registered temperature field (e.g. from a staggered thermo-mechanical analysis), and :math:`T_{\rm ref}` is the reference temperature (:param:`referencetemperature` of the structural material, default 0).
+
 .. _latticeframesteelplastic:
 
 Steel Plasticity material model for lattice based frame elements
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This is a plasticity material used together with 3D lattice frame elements. It has been specifically developed to describe the failure process of steel frame members using the lattice elements lattice3d and lattice3dnl.
+This is a plasticity material used together with lattice frame elements. It has been specifically developed to describe the failure process of steel frame members using the lattice elements lattice3d and lattice3dnl. It can also be used with lattice2d, for example to model yielding reinforcement bars in 2D.
 
 The generalised stress-strain law has the form
 
@@ -555,28 +569,58 @@ where :math:`\mathbf{e}` is a vector of internal forces and moments, :math:`\mat
    | Description        | Plasticity lattice model for steel                                                           |
    +--------------------+----------------------------------------------------------------------------------------------+
    | Record Format      | :descitem:`latticeframesteelplastic` :elemparam:`in` :elemparam:`d{rn}`                      |
-   |                    | :optelemparam:`talpha{rn}` :elemparam:`e{rn}` :elemparam:`n{rn}` :elemparam:`nx0{rn}`        |
-   |                    | :elemparam:`mx0{rn}` :elemparam:`my0{rn}` :elemparam:`mz0{rn}` :elemparam:`sub{in}`          |
-   |                    | :elemparam:`iter{in}` :elemparam:`tol{rn}`                                                   |
+   |                    | :optelemparam:`talpha{rn}` :elemparam:`e{rn}` :elemparam:`n{rn}` :optelemparam:`sigmay{rn}`  |
+   |                    | :optelemparam:`nx0{rn}` :optelemparam:`mx0{rn}` :optelemparam:`my0{rn}`                      |
+   |                    | :optelemparam:`mz0{rn}` :optelemparam:`sub{in}` :optelemparam:`iter{in}`                     |
+   |                    | :optelemparam:`tol{rn}` :optelemparam:`htype{in}` :optelemparam:`h{rn}`                      |
+   |                    | :optelemparam:`h_eps{ra}` :optelemparam:`h(eps){ra}` :optelemparam:`hlength{rn}`             |
+   |                    | :optelemparam:`capmode{in}`                                                                  |
+   |                    | :optelemparam:`tcrit{rn}`                                                                    |
    +--------------------+----------------------------------------------------------------------------------------------+
    | Parameters         | - material number                                                                            |
    |                    | - :param:`d` material density                                                                |
    |                    | - :optparam:`talpha` Thermal expansion coefficient. Default is 0.                            |
+   |                    | - :optparam:`tcrit` critical temperature :math:`T_{\rm crit}` for the temperature dependent  |
+   |                    |   reduction of the Young's modulus and of the capacities by the factor :math:`r(T)` given    |
+   |                    |   for latticeframeelastic. Default is 0, which switches the reduction off.                   |
    |                    | - :param:`e` Young's modulus of the lattice material.                                        |
    |                    | - :param:`n` Poisson's ratio of the material that the beam element is made of.               |
-   |                    | - :param:`nx0` ultimate capacity under pure axialloads.                                      |
-   |                    | - :param:`mx0` ultimate capacity under pure moment about :math:`x`.                          |
-   |                    | - :param:`my0` ultimate capacity under pure moment about :math:`y`.                          |
-   |                    | - :param:`mz0` ultimate capacity under pure moment about :math:`z`.                          |
-   |                    | - :optparam:`sub` maximum number of subincrementations.                                      |
-   |                    | - :optparam:`iter` maximum number of newton iterations.                                      |
-   |                    | - :optparam:`tol` tolerance for newton method.                                               |
+   |                    | - :optparam:`sigmay` yield stress. If given, the capacities are computed from the cross      |
+   |                    |   section: for a circle of radius :math:`r`, :math:`N_0=\sigma_y \pi r^2`,                   |
+   |                    |   :math:`M_{y0}=M_{z0}=4\sigma_y r^3/3` and :math:`M_{x0}=\sigma_y J/r`; for a rectangle     |
+   |                    |   :math:`b_y \times b_z`, :math:`N_0=\sigma_y b_y b_z`, :math:`M_{y0}=\sigma_y b_y b_z^2/4`  |
+   |                    |   and :math:`M_{z0}=\sigma_y b_z b_y^2/4`. Otherwise :param:`nx0`, :param:`mx0`,             |
+   |                    |   :param:`my0` and :param:`mz0` are required.                                                |
+   |                    | - :optparam:`nx0` ultimate capacity under pure axial loads.                                  |
+   |                    | - :optparam:`mx0` ultimate capacity under pure moment about :math:`x`.                       |
+   |                    | - :optparam:`my0` ultimate capacity under pure moment about :math:`y`.                       |
+   |                    | - :optparam:`mz0` ultimate capacity under pure moment about :math:`z`.                       |
+   |                    | - :optparam:`sub` maximum number of subincrementations. Default is 10.                       |
+   |                    | - :optparam:`iter` maximum number of newton iterations. Default is 100.                      |
+   |                    | - :optparam:`tol` tolerance for newton method. Default is :math:`10^{-6}`.                   |
+   |                    | - :optparam:`htype` type of hardening law. ``0``: linear, :math:`h(\kappa) = 1 + H\kappa`;   |
+   |                    |   ``1``: piecewise linear, given by :param:`h_eps` and :param:`h(eps)`. Default is 0.        |
+   |                    | - :optparam:`h` hardening modulus :math:`H` of the linear law (``htype 0``). Default is 0    |
+   |                    |   (perfect plasticity).                                                                      |
+   |                    | - :optparam:`h_eps` values of the hardening variable :math:`\kappa` for the piecewise linear |
+   |                    |   law (``htype 1``). The first entry must be 0, and :math:`\kappa` must not exceed the last  |
+   |                    |   entry.                                                                                     |
+   |                    | - :optparam:`h(eps)` values of the hardening function :math:`h` at the points                |
+   |                    |   :param:`h_eps`; same size as :param:`h_eps`. The first entry is normally 1.                |
+   |                    | - :optparam:`hlength` length :math:`l_{\rm h}` that converts the rotational plastic strains  |
+   |                    |   into the hardening variable :math:`\kappa` (see below). Default is 0, for which only the   |
+   |                    |   axial plastic strain drives hardening.                                                     |
+   |                    | - :optparam:`capmode` ``0``: :param:`nx0`, :param:`mx0`, :param:`my0` and :param:`mz0` are   |
+   |                    |   resultants; ``1``: they are given per unit width and multiplied by the tributary width of  |
+   |                    |   the element (the shell width of lattice3d shells, 1 otherwise). Default is 0.              |
    +--------------------+----------------------------------------------------------------------------------------------+
-   | Supported modes    | 3dlattice                                                                                    |
+   | Supported modes    | 2dlattice, 3dlattice                                                                         |
    +--------------------+----------------------------------------------------------------------------------------------+
    | Tests/Examples     | `lm/latticeframesteelplastic1.in <https://github.com/oofem/oofem/blob/devel/tests/regression |
    |                    | /lm/latticeframesteelplastic1.in>`_, `lm/latticeframesteelplastic2.in <https://github.com/oo |
-   |                    | fem/oofem/blob/devel/tests/regression/lm/latticeframesteelplastic2.in>`_                     |
+   |                    | fem/oofem/blob/devel/tests/regression/lm/latticeframesteelplastic2.in>`_, `lm/lattice2dframe |
+   |                    | steelplastic.in <https://github.com/oofem/oofem/blob/devel/tests/regression/lm/lattice2dfram |
+   |                    | esteelplastic.in>`_                                                                          |
    +--------------------+----------------------------------------------------------------------------------------------+
 
 The nonlinear response of the beam element is given directly as a relationship between internal force and strain. The basic equations include an additive decomposition of total strain into elastic part and plastic part of the form
@@ -611,6 +655,28 @@ The flow rule is
 
    \dot{\mathbf{e}}_{\rm{p}} = \dot{\lambda} \dfrac{\partial f}{\partial \bar{\mathbf{s}}}
 
+In 2D (lattice2d) the torsional moment and the out-of-plane moment vanish, and the yield function reduces to the ellipse
+
+.. math::
+
+   \left(\dfrac{N_x}{N_0}\right)^2+ \left(\dfrac{M_z}{M_{z0}}\right)^2 - 1 = 0
+
+The shear force remains elastic.
+
+Hardening scales all capacities by the hardening function :math:`h(\kappa)`, so that the yield function used in the model is
+
+.. math::
+
+   f = \dfrac{1}{h^2(\kappa)} \left[ \left(\dfrac{N_x}{N_0}\right)^2+ \left(\dfrac{M_x}{M_{x0}}\right)^2+ \left(\dfrac{M_y}{M_{y0}}\right)^2+ \left(\dfrac{M_z}{M_{z0}}\right)^2 \right] - 1
+
+with :math:`h(\kappa) = 1 + H\kappa` for ``htype 0`` and the piecewise linear function defined by :param:`h_eps` and :param:`h(eps)` for ``htype 1``. The hardening variable evolves as
+
+.. math::
+
+   \dot{\kappa} = \sqrt{\dot{e}_{{\rm p}N}^2 + l_{\rm h}^2 \left( \dot{e}_{{\rm p}M_x}^2 + \dot{e}_{{\rm p}M_y}^2 + \dot{e}_{{\rm p}M_z}^2 \right)}
+
+where :math:`\dot{e}_{{\rm p}N}` is the axial plastic strain rate and :math:`\dot{e}_{{\rm p}M_x}`, :math:`\dot{e}_{{\rm p}M_y}` and :math:`\dot{e}_{{\rm p}M_z}` are the plastic rates of twist and curvature. The length :math:`l_{\rm h}` (:param:`hlength`) converts these rotational components into strains. With the default :math:`l_{\rm h} = 0`, plastic bending does not cause hardening, so :param:`hlength` must be set for members that harden in bending.
+
 
 Reinforced concrete plasticity-damage material model for lattice based frame elements
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -635,10 +701,14 @@ where :math:`\mathbf{e}` is a vector of internal forces and moments, :math:`\mat
    |                    | :elemparam:`nx1{rn}` :elemparam:`mx0{rn}` :elemparam:`mx1{rn}` :elemparam:`my0{rn}`          |
    |                    | :elemparam:`my1{rn}` :elemparam:`mz0{rn}` :elemparam:`mz1{rn}` :elemparam:`wu{rn}`           |
    |                    | :elemparam:`wf{rn}` :elemparam:`sub{in}` :elemparam:`iter{in}` :elemparam:`tol{rn}`          |
+   |                    | :optelemparam:`tcrit{rn}`                                                                    |
    +--------------------+----------------------------------------------------------------------------------------------+
    | Parameters         | - material number                                                                            |
    |                    | - :param:`d` material density                                                                |
    |                    | - :optparam:`talpha` Thermal expansion coefficient. Default is 0.                            |
+   |                    | - :optparam:`tcrit` critical temperature :math:`T_{\rm crit}` for the temperature dependent  |
+   |                    |   reduction of the capacities by the factor :math:`r(T)` given for latticeframeelastic; the  |
+   |                    |   elastic stiffness is not reduced. Default is 0, which switches the reduction off.          |
    |                    | - :param:`e` Young's modulus of the lattice material.                                        |
    |                    | - :param:`n` Poisson's ratio of the material that the beam element is made of.               |
    |                    | - :param:`nx0` ultimate positive capacity under pure axialloads.                             |
