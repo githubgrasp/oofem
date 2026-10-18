@@ -5,7 +5,12 @@ Plate & Shell Elements
 Plate & Shell Elements
 ----------------------
 
-\subsubsection DKT Element  Implementation of Discrete Kirchhoff Triangle (DKT) plate
+.. _dkt:
+
+DKT Element
+~~~~~~~~~~~
+
+Implementation of Discrete Kirchhoff Triangle (DKT) plate
 element. This element is suitable for thin plates, as the traswerse shear strain energy
 is neglected. The structure should be defined in x,y plane, nodes should be numbered
 anti-clockwise (positive rotation around z-axis). The element features are summarized in
@@ -64,7 +69,12 @@ anti-clockwise (positive rotation around z-axis). The element features are summa
    |                          | n/sm/dkt_rhombic_cantilever_4x4.in>`_                                                        |
    +--------------------------+----------------------------------------------------------------------------------------------+
 
-\subsubsection QDKT Element  Implementation of Discrete Kirchhoff Theory plate quad
+.. _qdkt:
+
+QDKT Element
+~~~~~~~~~~~~
+
+Implementation of Discrete Kirchhoff Theory plate quad
 element (QDKT). This element is suitable for thin plates, as the traswerse shear strain
 energy is neglected. The structure should be defined in x,y plane, nodes should be
 numbered anti-clockwise (positive rotation around z-axis). The element features are
@@ -117,7 +127,12 @@ summarized in :numref:`qdktplatesummary`.
    |                          | <https://github.com/oofem/oofem/blob/devel/tests/regression/sm/patch_qdtk.in>`_              |
    +--------------------------+----------------------------------------------------------------------------------------------+
 
-\subsubsection CCT Element  Implementation of constant curvature triangular element for
+.. _cct:
+
+CCT Element
+~~~~~~~~~~~
+
+Implementation of constant curvature triangular element for
 plate analysis. Formulation based on Mindlin hypothesis. The structure should be defined
 in x,y plane.  The nodes should be numbered anti-clockwise (positive rotation around
 z-axis). The element features are summarized in :numref:`cctplatesummary`.
@@ -167,7 +182,12 @@ z-axis). The element features are summarized in :numref:`cctplatesummary`.
    |                          | <https://github.com/oofem/oofem/blob/devel/tests/regression/sm/patch200.in>`_                |
    +--------------------------+----------------------------------------------------------------------------------------------+
 
-\subsubsection CCT3D Element Implementation of constant curvature triangular element for
+.. _cct3d:
+
+CCT3D Element
+~~~~~~~~~~~~~
+
+Implementation of constant curvature triangular element for
 plate analysis. Formulation based on Mindlin hypothesis. The element could be
 arbitrarily oriented in space.  The nodes should be numbered anti-clockwise (positive
 rotation around element normal).  The element features are summarized in Table
@@ -218,7 +238,12 @@ rotation around element normal).  The element features are summarized in Table
    |                          | <https://github.com/oofem/oofem/blob/devel/tests/regression/sm/patch_cct3d.in>`_             |
    +--------------------------+----------------------------------------------------------------------------------------------+
 
-\subsubsection RerShell Element Combination of CCT plate element (Mindlin hypothesis)
+.. _rershell:
+
+RerShell Element
+~~~~~~~~~~~~~~~~
+
+Combination of CCT plate element (Mindlin hypothesis)
 with triangular plane stress element for membrane behavior. The element curvature can be
 specified.  Although element requires generally six DOFs per node, no stiffness to local
 rotation along z-axis (rotation around element normal) is supplied.  The element
@@ -272,7 +297,12 @@ features are summarized in :numref:`rershellsummary`.
    |                          | <https://github.com/oofem/oofem/blob/devel/tests/regression/sm/patch_rershell.in>`_          |
    +--------------------------+----------------------------------------------------------------------------------------------+
 
-\subsubsection tr_shell11 element Combination of CCT3D plate element (Mindlin
+.. _trshell11:
+
+tr_shell11 Element
+~~~~~~~~~~~~~~~~~~
+
+Combination of CCT3D plate element (Mindlin
 hypothesis) with triangular plane stress element for membrane behavior. It comes with
 complete set of 6 DOFs per node.  The element features are summarized in Table
 :numref:`trshell01summary`.
@@ -355,7 +385,12 @@ complete set of 6 DOFs per node.  The element features are summarized in Table
    |                          | <https://github.com/oofem/oofem/blob/devel/tests/regression/sm/trshell11_1.in>`_             |
    +--------------------------+----------------------------------------------------------------------------------------------+
 
-\subsubsection tr_shell02 element Combination of thin-plate DKT plate element with plane
+.. _trshell02:
+
+tr_shell02 Element
+~~~~~~~~~~~~~~~~~~
+
+Combination of thin-plate DKT plate element with plane
 stress element (TrPlanestressRotAllman). This element comes with complete set of 6 DOFs
 per node.  The element features are summarized in :numref:`trshell02summary`.
 
@@ -515,7 +550,12 @@ The element features are summarized in :numref:`quad1mindlinsummary`.
    |                          | <https://github.com/oofem/oofem/blob/devel/tests/regression/sm/staggeredsolver.in>`_         |
    +--------------------------+----------------------------------------------------------------------------------------------+
 
-\subsubsection MITC4Shell Element A four-node quadrilateral shell element formulated
+.. _mitc4shell:
+
+MITC4Shell Element
+~~~~~~~~~~~~~~~~~~
+
+A four-node quadrilateral shell element formulated
 using three-dimensional continuum mechanics theory degenerated to shell behaviour. The
 element is applicable to thick and thin shells as the “mixed interpolation of tensorial
 components” (MITC) approach is used to remove shear locking. The implementation is based
