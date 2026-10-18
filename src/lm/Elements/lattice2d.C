@@ -286,9 +286,101 @@ Lattice2d :: computeGtoLRotationMatrix(FloatMatrix &answer)
 
 
 double
+Lattice2d :: giveCircularRadius() const
+{
+    auto *cs = static_cast< LatticeCrossSection * >( const_cast< Lattice2d * >( this )->giveCrossSection() );
+    if ( cs->giveShape() != 1 ) {
+        return 0.;
+    }
+    if ( cs->giveRadius() <= 0. ) {
+        OOFEM_ERROR("Non-positive radius for circular section of element %d", this->giveGlobalNumber() );
+    }
+    return cs->giveRadius();
+}
+
+
+double
+Lattice2d :: giveSectionProperty(CrossSectionProperty key, double fallback) const
+{
+    auto *cs = const_cast< Lattice2d * >( this )->giveCrossSection();
+    double value = cs->give(key, (GaussPoint *) nullptr);
+    return ( value > 0. ) ? value : fallback;
+}
+
+
+double
+Lattice2d :: giveArea(GaussPoint *gp)
+{
+    double r = this->giveCircularRadius();
+    if ( r > 0. ) {
+        return giveSectionProperty(CS_Area, M_PI * r * r);
+    }
+    return this->width * this->thickness;
+}
+
+
+double
+Lattice2d :: giveI1(GaussPoint *gp)
+{
+    double r = this->giveCircularRadius();
+    if ( r > 0. ) {
+        return giveSectionProperty(CS_InertiaMomentY, M_PI * pow(r, 4.) / 4.);
+    }
+    return this->width * pow(this->thickness, 3.) / 12.;
+}
+
+
+double
+Lattice2d :: giveI2(GaussPoint *gp)
+{
+    double r = this->giveCircularRadius();
+    if ( r > 0. ) {
+        return giveSectionProperty(CS_InertiaMomentZ, M_PI * pow(r, 4.) / 4.);
+    }
+    return pow(this->width, 3.) * this->thickness / 12.;
+}
+
+
+double
+Lattice2d :: giveJ(GaussPoint *gp)
+{
+    double r = this->giveCircularRadius();
+    if ( r > 0. ) {
+        return giveSectionProperty(CS_TorsionConstantX, M_PI * pow(r, 4.) / 2.);
+    }
+    // Torsion is inactive in 2d; polar moment keeps frame materials finite.
+    return this->giveI1(gp) + this->giveI2(gp);
+}
+
+
+double
+Lattice2d :: giveShearArea1(GaussPoint *gp)
+{
+    double r = this->giveCircularRadius();
+    if ( r > 0. ) {
+        return giveSectionProperty(CS_ShearAreaY, 0.9 * this->giveArea(gp) );
+    }
+    return giveSectionProperty(CS_ShearAreaY, 5. / 6. * this->giveArea(gp) );
+}
+
+
+bool
+Lattice2d :: giveRectangularSectionDimensions(double &by, double &bz, GaussPoint *gp) const
+{
+    if ( this->giveCircularRadius() > 0. ) {
+        return false;
+    }
+    // by is the in-plane depth (bending about z), bz the out-of-plane thickness.
+    by = this->width;
+    bz = this->thickness;
+    return true;
+}
+
+
+double
 Lattice2d :: computeVolumeAround(GaussPoint *gp)
 {
-    double area = this->width * this->thickness;
+    double area = this->giveArea(gp);
     double weight  = gp->giveWeight();
     return weight * 0.5 * this->giveLength() * area;
 }
