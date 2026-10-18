@@ -30,15 +30,27 @@ Furthermore, :math:`\mathbf{D}_{\rm e}` is the elastic stiffness matrix which is
    +--------------------+----------------------------------------------------------------------------------------------+
    | Record Format      | :descitem:`latticelinearelastic` :elemparam:`in` :elemparam:`d{rn}`                          |
    |                    | :optelemparam:`talpha{rn}` :optelemparam:`calpha{rn}` :elemparam:`e{rn}`                     |
-   |                    | :optelemparam:`a1{rn}` :optelemparam:`a2{rn}`                                                |
+   |                    | :optelemparam:`em{rn}` :optelemparam:`nu{rn}` :optelemparam:`a1{rn}` :optelemparam:`a2{rn}`  |
+   |                    | :optelemparam:`bio{rn}`                                                                      |
    +--------------------+----------------------------------------------------------------------------------------------+
    | Parameters         | - material number                                                                            |
    |                    | - :param:`d` material density                                                                |
    |                    | - :optparam:`talpha` Thermal strain expansion coefficient. Default is 0.                     |
    |                    | - :optparam:`calpha` Thermal displacement expansion coefficient. Default is 0.               |
-   |                    | - :param:`e` Young's modulus of the equivalent lattice material                              |
+   |                    | - :param:`e` Young's modulus of the lattice springs (normal stiffness). At least one of      |
+   |                    |   :param:`e` and :param:`em` must be given; if :param:`e` is omitted, it is set from         |
+   |                    |   :param:`em` (see :param:`nu`).                                                             |
+   |                    | - :optparam:`em` Macroscopic Young's modulus of the continuum to be represented. Default is  |
+   |                    |   :param:`e`.                                                                                |
+   |                    | - :optparam:`nu` Poisson's ratio (must be < 1). If given, the spring ratios are derived from |
+   |                    |   it following Griffiths and Mustoe (2001): :math:`a_1 = (1-3\nu)/(1+\nu)`. If :param:`em`   |
+   |                    |   is given without :param:`e`, the spring modulus is scaled as :math:`E = E_{\rm m}/(1-\nu)` |
+   |                    |   and :math:`a_2 = 1/(1+\nu)`, otherwise :math:`a_2 = 1`. Explicitly given :param:`a1` and   |
+   |                    |   :param:`a2` take precedence.                                                               |
    |                    | - :optparam:`a1` ratio of shear and normal modulus. Default is 1.                            |
    |                    | - :optparam:`a2` ratio of rotational and normal modulus. Default is 1.                       |
+   |                    | - :optparam:`bio` Biot's coefficient used when the element is coupled to a lattice transport |
+   |                    |   problem (pressure acting on the mechanical response). Default is 0.                        |
    +--------------------+----------------------------------------------------------------------------------------------+
    | Supported modes    | 2dlattice, 3dlattice                                                                         |
    +--------------------+----------------------------------------------------------------------------------------------+
@@ -53,6 +65,24 @@ Furthermore, :math:`\mathbf{D}_{\rm e}` is the elastic stiffness matrix which is
    |                    | on/lm/lattice3dshell_lle_twist_n4.in>`_, `lm/latticedyn1.in                                  |
    |                    | <https://github.com/oofem/oofem/blob/devel/tests/regression/lm/latticedyn1.in>`_             |
    +--------------------+----------------------------------------------------------------------------------------------+
+
+.. _lattice_random_fields:
+
+Random fields of material parameters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+All lattice structural materials derived from the linear elastic lattice model accept two optional parameters, :optparam:`randvars{ia}` and :optparam:`randgen{ia}`, which assign spatially varying values to selected material properties. :param:`randvars` is a list of property identifiers and :param:`randgen` is a list of the same length with the numbers of the functions (see the time function records in the OOFEM input manual) that generate them. When the material status of an integration point is created, each function is evaluated at the global coordinates of that point (variable ``x``) and the result is stored as a multiplicative factor on the mean value of the corresponding property. A typical choice is an ``InterpolatingFunction`` reading a precomputed random field from a file.
+
+The property identifiers that are currently queried are
+
+- ``1101`` (``eNormal_ID``): factor on the spring modulus :param:`e`, used by ``latticelinearelastic`` and ``latticedamage``;
+- ``800`` (``e0_ID``): factor on the strain threshold :param:`e0` of ``latticedamage``.
+
+``latticeplastdam`` accepts the two parameters but does not currently query any random property, so the strength parameters :param:`ft` and :param:`fc` cannot be varied this way.
+
+For ``latticelinearelastic`` and ``latticedamage`` the factor is limited to the range 0.1 to 10. Identifiers that a model does not query are silently ignored.
+
+Example: ``latticedamage 1 d 2400. e 30.e9 e0 100.e-6 wf 40.e-6 stype 3 randvars 1 800 randgen 1 2`` scales :param:`e0` by the field generated by function 2.
 
 .. _scalar-damage-lattice-model:
 
@@ -164,7 +194,7 @@ The resulting yield function :math:`f` is
 
 .. math::
 
-   f = \left\{ \begin{array}{l} \alpha^2\bar{\sigma}_{\rm n}^2 + 2 \dfrac{\alpha^2\left(f_{\rm c} - \alpha \beta f_{\rm t}\right)}{\left(1+\alpha \beta\right)} q \bar{\sigma}_{\rm n} + \bar{\sigma}_{\rm q}^2 - \dfrac{2 \alpha^2 f_{\rm c}f_{\rm t} + \alpha^2 \left(1-\alpha \beta \right) f_{\rm t}^2}{1+\alpha \beta} q^2 \\ \mbox{if $\bar{\sigma}_{\rm n} \geq -\dfrac{f_{\rm c} - \alpha \beta f_{\rm t}}{1+\alpha \beta} q$} \vspace{0.5cm}\\
+   f = \left\{ \begin{array}{l} \alpha^2\bar{\sigma}_{\rm n}^2 + 2 \dfrac{\alpha^2\left(f_{\rm c} - \alpha \beta f_{\rm t}\right)}{\left(1+\alpha \beta\right)} q \bar{\sigma}_{\rm n} + \bar{\sigma}_{\rm q}^2 - \dfrac{2 \alpha^2 f_{\rm c}f_{\rm t} + \alpha^2 \left(1-\alpha \beta \right) f_{\rm t}^2}{1+\alpha \beta} q^2 \\ \mbox{if $\bar{\sigma}_{\rm n} \geq -\dfrac{f_{\rm c} - \alpha \beta f_{\rm t}}{1+\alpha \beta} q$} \\[0.5cm]
      \dfrac{\bar{\sigma}_{\rm n}^2}{\beta^2} + 2 \dfrac{f_{\rm c} - \alpha \beta f_{\rm t}}{\beta^2 \left(1+\alpha \beta \right)} q \bar{\sigma}_{\rm n} + \bar{\sigma}_{\rm q}^2 + \dfrac{\left(1-\alpha \beta\right) f_{\rm c}^2 -2 \alpha \beta f_{\rm c} f_{\rm t} }{\beta^2 \left(1+\alpha \beta \right)} q^2\\ \mbox{if $\bar{\sigma}_{\rm n} < - \dfrac{f_{\rm c} - \alpha \beta f_{\rm t}}{1+\alpha \beta} q$} \end{array} \right.
 
 Here parameters :math:`\alpha` and :math:`\beta` are the slopes, and :math:`f_{\rm c}` and :math:`f_{\rm t}` are the strength parameters shown in Figure ``plastdamyieldfig``. The hardening function :math:`q` controls the shape of the yield function.

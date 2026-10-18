@@ -86,7 +86,7 @@ element length in the form of strains. The element is defined in x,y plane (see 
 
 The theory of lattice2d is described in [GraJir10]_
 
-latticeboundary2D element
+LatticeBoundary2D element
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Represents three-node lattice element for boundary of 2d periodic cells. The first two
@@ -251,7 +251,7 @@ provided in the form of a location parameter as shown in Table
    |                          | <https://github.com/oofem/oofem/blob/devel/tests/regression/lm/lattice3d1.in>`_              |
    +--------------------------+----------------------------------------------------------------------------------------------+
 
-Latticelink3d
+LatticeLink3d element
 ~~~~~~~~~~~~~
 
 This element represents a two-node 3d link element connecting 3d beam and 3d lattice
@@ -318,10 +318,10 @@ element in addition of those for latticelink3d are shown in Table
    | Reference                | [GraAnt19]_                                                                                  |
    +--------------------------+----------------------------------------------------------------------------------------------+
 
-Lattice3dnl element
+Lattice3dNl element
 ~~~~~~~~~~~~~~~~~~~
 
-Lattice3dnl is the geometrically nonlinear (large-rotation) counterpart of the lattice3d
+Lattice3dNl is the geometrically nonlinear (large-rotation) counterpart of the lattice3d
 element. It accepts the same input and the same cross-section options (facet/shell via
 :param:`polycoords`, or beam via the cross-section properties together with
 :param:`zaxis` and :param:`s`), but the displacement jumps and nodal forces are
@@ -361,4 +361,52 @@ vectors for rotation about a single axis.
    |                          | om/oofem/oofem/blob/devel/tests/regression/lm/latticelink3dnl_assembly.in>`_,                |
    |                          | `lm/latticeframe3dnl.in                                                                      |
    |                          | <https://github.com/oofem/oofem/blob/devel/tests/regression/lm/latticeframe3dnl.in>`_        |
+   +--------------------------+----------------------------------------------------------------------------------------------+
+
+LatticeContact3d element
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+LatticeContact3d is a two-node contact (interface) element. In contrast to lattice3d it
+couples only the translational degrees of freedom of the two nodes, so it can connect
+6-DOF lattice nodes as well as 3-DOF continuum nodes, and it transmits no moment. The
+translational displacement jump between the nodes is expressed in a local frame (one
+normal and two shear directions) and passed to the material as a three-component
+generalised strain. The jump is not divided by the element length, so the material
+works directly with displacement jumps. Internal forces and stiffness are scaled by the
+contact area. A typical use is the bond between reinforcement and concrete: the
+converter emits latticecontact3d for all elements of a given material with
+``#@element material <mat> latticecontact3d``, using the Voronoi facet as
+:param:`polycoords`. The element is summarised in :numref:`latticecontact3dsummary`.
+
+.. table:: latticecontact3d element summary
+   :name: latticecontact3dsummary
+
+   +--------------------------+----------------------------------------------------------------------------------------------+
+   | Keyword                  | latticecontact3d                                                                             |
+   +--------------------------+----------------------------------------------------------------------------------------------+
+   | Description              | 3d node-to-node lattice contact (interface) element                                          |
+   +--------------------------+----------------------------------------------------------------------------------------------+
+   | Specific parameters      | :optelemparam:`polycoords{ra}` :optelemparam:`area{rn}` :optelemparam:`normal{ra}`           |
+   +--------------------------+----------------------------------------------------------------------------------------------+
+   | Parameters               | :param:`polycoords`: coordinates of the vertices of the contact facet polygon, given as for  |
+   |                          | the lattice3d element (typically the Voronoi facet). The contact area is the polygon area    |
+   |                          | and the normal is the polygon plane normal (Newell's method). :param:`area`: contact area,   |
+   |                          | required if :param:`polycoords` is not given (fewer than three vertices). :param:`normal`:   |
+   |                          | contact normal (local axis 1), used together with :param:`area`; if omitted, it is taken     |
+   |                          | along the line connecting the two nodes.                                                     |
+   +--------------------------+----------------------------------------------------------------------------------------------+
+   | Cross-section            | A latticecs record, as for the lattice3d element.                                            |
+   +--------------------------+----------------------------------------------------------------------------------------------+
+   | Material                 | A lattice material acting on the three translational components, typically latticebondplast; |
+   |                          | the rotational components 4 to 6 remain zero.                                                |
+   +--------------------------+----------------------------------------------------------------------------------------------+
+   | Unknowns                 | Three dofs (:math:`u`-displacement, :math:`v`-displacement, :math:`w`-displacement) are      |
+   |                          | required in each node. Rotational dofs present at the nodes are not coupled.                 |
+   +--------------------------+----------------------------------------------------------------------------------------------+
+   | Tests/Examples           | `lm/contact_single.in                                                                        |
+   |                          | <https://github.com/oofem/oofem/blob/devel/tests/regression/lm/contact_single.in>`_,         |
+   |                          | `lm/contact_cubes_separation.in <https://github.com/oofem/oofem/blob/devel/tests/regression/ |
+   |                          | lm/contact_cubes_separation.in>`_,                                                           |
+   |                          | `lm/contact_cubes_shear.in                                                                   |
+   |                          | <https://github.com/oofem/oofem/blob/devel/tests/regression/lm/contact_cubes_shear.in>`_     |
    +--------------------------+----------------------------------------------------------------------------------------------+
