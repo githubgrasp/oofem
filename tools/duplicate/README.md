@@ -45,20 +45,16 @@ For plane stress / plane strain inputs as written by `t3d2oofem`: header
 record with `ndofman`/`nelem`, then the node records, then the element
 records, then everything else. That order is kept; no sets are written.
 
-- Bar elements: `truss2d` on ordinary `node` records. Every other record is
-  copied unchanged and in place.
-- Bar node: rewritten as `hangingnode ... doftype 2 0 2`, i.e. `u` free (slip
-  along the bar) and `v` slaved to the host continuum element (the bar follows
-  the concrete transversally). A bar node that is already a `hangingnode` is
-  left as it is.
+- Bar elements: `truss2d`. Every other record is copied unchanged and in
+  place; the bar nodes stay ordinary nodes.
 - Duplicate: `hangingnode ... doftype 2 2 2` with the bar node's coordinates,
   inserted after the last node record.
-- Link: `bondlink1d` (material e.g. `linkslip`, cross section `interfacecs`),
-  inserted after the last element record. `ndofman` and `nelem` are updated.
-
-`bondlink1d` couples the `u` DOF only, so all bars must be parallel to x; the
-tool stops with an error otherwise. Inclined bars or stirrups would need a 2D
-link element.
+- Link: `bondlink2dtruss` between bar node (first) and duplicate (second),
+  inserted after the last element record. The link resolves the relative
+  displacement into slip along the bar and a lateral component, so bars may
+  have any direction in the x-y plane. Use it with e.g. `linkslip` (bond-slip
+  law for the slip, `kl` for the lateral stiffness) and an `interfacecs`
+  cross section. `ndofman` and `nelem` are updated.
 
 Example (oofem-examples, `cdpm2-bondslip-2d`):
 

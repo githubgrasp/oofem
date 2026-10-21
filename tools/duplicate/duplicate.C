@@ -116,14 +116,12 @@ struct ZoneMat {
 // materials, BCs, time functions, extractor block). That order is kept.
 //
 // For every truss2d node the tool
-//   - turns the bar node into a hanging node with u free and v slaved to the
-//     host continuum element (doftype 2 0 2), so the bar can slip along its
-//     axis but follows the concrete transversally,
 //   - adds a duplicated, fully hanging node at the same position (doftype
-//     2 2 2), which carries the concrete displacement, and
-//   - joins the pair with a bondlink1d element.
-//
-// bondlink1d couples the u DOF only, so all bars must be parallel to x.
+//     2 2 2), which carries the displacement of the host continuum element,
+//     and
+//   - joins the bar node and the duplicate with a bondlink2dtruss element
+//     (slip along the bar, lateral stiffness across it).
+// The bar node itself stays an ordinary node.
 // ---------------------------------------------------------------------------
 
 static string lowerCase(string s) {
@@ -253,7 +251,6 @@ static int run2D(const vector<string> &lines, ofstream &outfile, const vector<Zo
 
     // one duplicated node and one link per bar node
     vector<LinkInfo> links;
-    unordered_set<int> isBarNode(barNodes.begin(), barNodes.end());
     int nextNode = maxNodeId, nextElem = maxElemId;
     for (int n : barNodes) {
         LinkInfo link;
@@ -272,12 +269,6 @@ static int run2D(const vector<string> &lines, ofstream &outfile, const vector<Zo
         link.dirVector = (dir / (double)k).normalized();
         link.length = len / (double)k;
         if (k == 1) link.length *= 0.5;   // bar end: half the adjacent element
-
-        if (std::fabs(std::fabs(link.dirVector.x) - 1.0) > 1.e-6) {
-            cerr << "Error: bar node " << n << " is not on a bar parallel to x. "
-                 << "bondlink1d couples u only." << endl;
-            return 1;
-        }
 
         Vec3 c = coordOf(n);
         for (const auto &z : zones) {
@@ -307,22 +298,7 @@ static int run2D(const vector<string> &lines, ofstream &outfile, const vector<Zo
             continue;
         }
 
-        bool written = false;
-        if (i <= lastNodeLine && isRecord(line)) {
-            istringstream iss(line);
-            string kw;
-            int id;
-            iss >> kw >> id;
-            if (isBarNode.count(id) && lowerCase(kw) == "node") {
-                // bar node: u free (slip), v from the host element
-                string rest = line.substr(line.find(kw) + kw.size());
-                outfile << "hangingnode" << rest;
-                if (lowerCase(line).find("doftype") == string::npos) outfile << " doftype 2 0 2";
-                outfile << "\n";
-                written = true;
-            }
-        }
-        if (!written) outfile << line << "\n";
+        outfile << line << "\n";
 
         if (i == lastNodeLine) {
             for (const auto &link : links) {
@@ -334,7 +310,7 @@ static int run2D(const vector<string> &lines, ofstream &outfile, const vector<Zo
         }
         if (i == lastElemLine) {
             for (const auto &link : links) {
-                outfile << "bondlink1d " << link.id
+                outfile << "bondlink2dtruss " << link.id
                         << " nodes 2 " << link.originalNodeId << " " << link.newNodeId
                         << " crossSect " << link.crossSect << " mat " << link.mat
                         << " length " << link.length

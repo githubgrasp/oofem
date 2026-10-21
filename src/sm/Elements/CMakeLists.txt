@@ -134,6 +134,7 @@ set (sm_interface_elements
     Interfaces/bondlink1d.C
     Interfaces/bondlink3d.C
     Interfaces/bondlink3dboundary.C
+    Interfaces/bondlink2dtruss.C
     Interfaces/bondlink3dtruss.C
     #    bondlink3dboundarybeam.C
     #    bondlink3dboundaryplate.C		
