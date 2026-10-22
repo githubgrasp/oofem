@@ -512,6 +512,25 @@ Lattice2d :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority
 }
 
 
+void
+Lattice2d :: postInitialize()
+{
+    // gpcoords is optional: without it the integration point is the element
+    // midpoint, so the eccentricity is zero (frame elements).
+    if ( this->gpCoords.giveSize() == 0 ) {
+        Node *nodeA = this->giveNode(1);
+        Node *nodeB = this->giveNode(2);
+        this->gpCoords.resize(2);
+        this->gpCoords.at(1) = 0.5 * ( nodeA->giveCoordinate(1) + nodeB->giveCoordinate(1) );
+        this->gpCoords.at(2) = 0.5 * ( nodeA->giveCoordinate(2) + nodeB->giveCoordinate(2) );
+    } else if ( this->gpCoords.giveSize() < 2 ) {
+        OOFEM_ERROR("gpcoords of element %d needs 2 components", this->giveGlobalNumber() );
+    }
+
+    LatticeStructuralElement :: postInitialize();
+}
+
+
 int
 Lattice2d :: computeGlobalCoordinates(Coordinates &answer, const FloatArray &lcoords)
 {

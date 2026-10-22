@@ -65,10 +65,11 @@ element length in the form of strains. The element is defined in x,y plane (see 
    +--------------------------+----------------------------------------------------------------------------------------------+
    | Parameters               | :param:`thick`: defines the out of plane (:math:`z`-direction) thickness :param:`width`:     |
    |                          | defines the width of the midpoint cross-section in the :math:`x`-:math:`y` plane with the    |
-   |                          | point :math:`C` at its centre :param:`gpCooords`: array of the coordinates of the            |
-   |                          | integration point :math:`C` in the global coordinate system. For a circular ``LatticeCS``    |
-   |                          | (``shape 1``) the section properties are taken from the cross section and :param:`thick` and |
-   |                          | :param:`width` do not affect the response.                                                   |
+   |                          | point :math:`C` at its centre :param:`gpCoords`: array of the coordinates of the integration |
+   |                          | point :math:`C` in the global coordinate system. :param:`gpCoords` is optional; if it is not |
+   |                          | given, :math:`C` is the midpoint of the element, so the eccentricity is zero (frame          |
+   |                          | elements). For a circular ``LatticeCS`` (``shape 1``) the section properties are taken from  |
+   |                          | the cross section and :param:`thick` and :param:`width` do not affect the response.          |
    +--------------------------+----------------------------------------------------------------------------------------------+
    | Unknowns                 | Three dofs (:math:`u`-displacement, :math:`v`-displacement, :math:`w`-rotation) are required |
    |                          | in each node.                                                                                |

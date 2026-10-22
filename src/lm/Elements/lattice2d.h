@@ -111,6 +111,8 @@ public:
     //
     const char *giveInputRecordName() const override { return _IFT_Lattice2d_Name; }
     const char *giveClassName() const override { return "Lattice2d"; }
+    /// Sets gpCoords to the element midpoint if not given (e.g. frame elements).
+    void postInitialize() override;
     void initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority) override;
     
     static ParamKey IPK_Lattice2d_thick;

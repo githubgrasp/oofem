@@ -45,8 +45,13 @@ For plane stress / plane strain inputs as written by `t3d2oofem`: header
 record with `ndofman`/`nelem`, then the node records, then the element
 records, then everything else. That order is kept; no sets are written.
 
-- Bar elements: `truss2d`. Every other record is copied unchanged and in
-  place; the bar nodes stay ordinary nodes.
+- Bar elements: `truss2d`, or `lattice2d` used as a frame (beam) element.
+  Every other record is copied unchanged and in place; the bar nodes stay
+  ordinary nodes. All `lattice2d` records are treated as bars, so this mode
+  is not meant for lattice models of the concrete itself. `lattice2d`
+  without `gpCoords` takes the element midpoint as integration point (zero
+  eccentricity), so `t3d2oofem` can write it directly with
+  `edgetype lattice2d`.
 - Duplicate: `hangingnode ... doftype 2 2 2` with the bar node's coordinates,
   inserted after the last node record.
 - Link: `bondlink2dtruss` between bar node (first) and duplicate (second),
@@ -54,11 +59,16 @@ records, then everything else. That order is kept; no sets are written.
   displacement into slip along the bar and a lateral component, so bars may
   have any direction in the x-y plane. Use it with e.g. `linkslip` (bond-slip
   law for the slip, `kl` for the lateral stiffness) and an `interfacecs`
-  cross section. `ndofman` and `nelem` are updated.
+  cross section. `ndofman` and `nelem` are updated. The link uses only the
+  translations of both nodes, so with `lattice2d` bars the rotation of the
+  bar node is not tied to the concrete; bending of the bar is restrained
+  through the lateral stiffness at the neighbouring links.
 
 Example (oofem-examples, `cdpm2-bondslip-2d`):
 
     duplicate oofemTemp.in oofem.in --diameter 0.052 --bond 3 4
+
+The same call is used with `lattice2d` bars (`cdpm2-reinforced-beam-2d`).
 
 ## Compile
 

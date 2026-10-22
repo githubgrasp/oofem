@@ -109,19 +109,20 @@ struct ZoneMat {
 // ---------------------------------------------------------------------------
 // 2D mode
 //
-// Input: an OOFEM record file in which the bars are truss2d elements on
-// ordinary nodes, e.g. straight from t3d2oofem. The file is expected in the
+// Input: an OOFEM record file in which the bars are truss2d or lattice2d
+// (frame) elements on ordinary nodes, e.g. straight from t3d2oofem. The file is expected in the
 // usual order: header record with ndofman/nelem, then ndofman node records,
 // then nelem element records, then everything else (cross sections,
 // materials, BCs, time functions, extractor block). That order is kept.
 //
-// For every truss2d node the tool
+// For every bar node the tool
 //   - adds a duplicated, fully hanging node at the same position (doftype
 //     2 2 2), which carries the displacement of the host continuum element,
 //     and
 //   - joins the bar node and the duplicate with a bondlink2dtruss element
 //     (slip along the bar, lateral stiffness across it).
-// The bar node itself stays an ordinary node.
+// The bar node itself stays an ordinary node. The link only uses the
+// translations, so a lattice2d bar node keeps its rotation free of the link.
 // ---------------------------------------------------------------------------
 
 static string lowerCase(string s) {
@@ -219,7 +220,7 @@ static int run2D(const vector<string> &lines, ofstream &outfile, const vector<Zo
         return Vec3(std::stod(c[0]), std::stod(c[1]), c.size() > 2 ? std::stod(c[2]) : 0.0);
     };
 
-    // bar elements: truss2d. Collect node order, directions and lengths.
+    // bar elements: truss2d or lattice2d (frame). Collect node order, directions and lengths.
     vector<int> barNodes;   // in order of first appearance
     unordered_map<int, vector<Vec3>> nodeDirs;
     unordered_map<int, vector<double>> nodeLengths;
@@ -228,13 +229,13 @@ static int run2D(const vector<string> &lines, ofstream &outfile, const vector<Zo
         string kw, tok;
         int id;
         iss >> kw >> id;
-        if (lowerCase(kw) != "truss2d") continue;
+        if (lowerCase(kw) != "truss2d" && lowerCase(kw) != "lattice2d") continue;
         int n1 = 0, n2 = 0;
         while (iss >> tok) {
             if (lowerCase(tok) == "nodes") { int n; iss >> n >> n1 >> n2; break; }
         }
         if (!nodeIndex.count(n1) || !nodeIndex.count(n2)) {
-            cerr << "Error: truss2d " << id << " refers to an unknown node." << endl;
+            cerr << "Error: " << kw << " " << id << " refers to an unknown node." << endl;
             return 1;
         }
         Vec3 d = coordOf(n2) - coordOf(n1);
@@ -245,7 +246,7 @@ static int run2D(const vector<string> &lines, ofstream &outfile, const vector<Zo
         }
     }
     if (barNodes.empty()) {
-        cerr << "Error: no truss2d elements found." << endl;
+        cerr << "Error: no truss2d or lattice2d elements found." << endl;
         return 1;
     }
 
