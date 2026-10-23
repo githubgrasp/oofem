@@ -24,6 +24,7 @@ Typical pipeline:
 | `--bond <cs> <mat>` | cross section and material of the links | 4 4 |
 | `--zone-mat <axis> <lo> <hi> <cs> <mat>` | repeatable: links whose bar node has its `<axis>` (x/y/z) coordinate in `[lo,hi]` get `<cs> <mat>` instead; first match wins. Use it for a debonded portion (e.g. the loaded-end sleeve of a lap splice): the link stays, so the bar remains laterally constrained, but it points at a zero-bond material. | none |
 
+
 Without the new options (`--2d`, `--diameter`, `--bond`) a 3D input gives the
 same output as before.
 
@@ -52,23 +53,42 @@ records, then everything else. That order is kept; no sets are written.
   without `gpCoords` takes the element midpoint as integration point (zero
   eccentricity), so `t3d2oofem` can write it directly with
   `edgetype lattice2d`.
-- Duplicate: `hangingnode ... doftype 2 2 2` with the bar node's coordinates,
-  inserted after the last node record.
-- Link: `bondlink2dtruss` between bar node (first) and duplicate (second),
-  inserted after the last element record. The link resolves the relative
-  displacement into slip along the bar and a lateral component, so bars may
-  have any direction in the x-y plane. Use it with e.g. `linkslip` (bond-slip
-  law for the slip, `kl` for the lateral stiffness) and an `interfacecs`
-  cross section. `ndofman` and `nelem` are updated. The link uses only the
-  translations of both nodes, so with `lattice2d` bars the rotation of the
-  bar node is not tied to the concrete; bending of the bar is restrained
-  through the lateral stiffness at the neighbouring links.
+- Duplicate (`truss2d` bars): `hangingnode ... doftype 2 2 2` with the bar
+  node's coordinates, inserted after the last node record.
+- Link (`truss2d` bars): `bondlink2dtruss` between bar node (first) and
+  duplicate (second), inserted after the last element record. The link
+  resolves the relative displacement into slip along the bar and a lateral
+  component, so bars may have any direction in the x-y plane. Use it with
+  e.g. `linkslip` (bond-slip law for the slip, `kl` for the lateral
+  stiffness) and an `interfacecs` cross section. `ndofman` and `nelem` are
+  updated.
+- For `lattice2d` bars see below.
 
 Example (oofem-examples, `cdpm2-bondslip-2d`):
 
     duplicate oofemTemp.in oofem.in --diameter 0.052 --bond 3 4
 
-The same call is used with `lattice2d` bars (`cdpm2-reinforced-beam-2d`).
+The same call is used with `lattice2d` bars (`cdpm2-reinforced-beam-2d`);
+the tool picks the duplicate and link from the bar type.
+
+### 2D mode with `lattice2d` bars
+
+The bar type sets what is written: `truss2d` bars get a `hangingnode` and a
+`bondlink2dtruss` as described above, `lattice2d` bars get a node and link
+that also carry the rotation. Mixing both bar types is an error.
+
+- Duplicate: `continuumframenode ... dofidmask 3 1 2 6 doftype 3 2 2 2`. Its
+  translations follow the host triangle as for a hanging node, and its
+  rotation `R_w` is the continuum rotation of the triangle,
+  `1/2 (dv/dx - du/dy)`.
+- Link: `latticelink2d` (same `length`, `diameter`, `dirvector`), which
+  couples slip, lateral jump and relative rotation. Use it with a
+  `latticecs` cross section and a lattice bond material such as
+  `latticeslip` (`e` slip stiffness, `a1 e` lateral, `a2 e` rotational
+  stiffness).
+- The rotational coupling is set by the material: `a2 = 0` leaves the bar
+  rotation free (only translations tied to the concrete), a large `a2` ties
+  it to the rotation of the host triangle.
 
 ## Compile
 

@@ -115,14 +115,18 @@ struct ZoneMat {
 // then nelem element records, then everything else (cross sections,
 // materials, BCs, time functions, extractor block). That order is kept.
 //
-// For every bar node the tool
-//   - adds a duplicated, fully hanging node at the same position (doftype
-//     2 2 2), which carries the displacement of the host continuum element,
-//     and
-//   - joins the bar node and the duplicate with a bondlink2dtruss element
-//     (slip along the bar, lateral stiffness across it).
-// The bar node itself stays an ordinary node. The link only uses the
-// translations, so a lattice2d bar node keeps its rotation free of the link.
+// For every bar node the tool adds a duplicated node at the same position,
+// which follows the host continuum element, and joins the bar node and the
+// duplicate with a link. What is written depends on the bar type:
+//   - truss2d bars: a fully hanging node (doftype 2 2 2) and a
+//     bondlink2dtruss (slip along the bar, lateral stiffness across it).
+//   - lattice2d bars: a continuumframenode (dofidmask 3 1 2 6, doftype
+//     3 2 2 2), whose R_w also follows the rotation of the host triangle, and
+//     a latticelink2d, which couples slip, lateral jump and rotation. The
+//     rotational stiffness is set by the material (a2 = 0 leaves the bar
+//     rotation free).
+// The bar node itself stays an ordinary node. Mixing both bar types is an
+// error.
 // ---------------------------------------------------------------------------
 
 static string lowerCase(string s) {
@@ -221,6 +225,9 @@ static int run2D(const vector<string> &lines, ofstream &outfile, const vector<Zo
     };
 
     // bar elements: truss2d or lattice2d (frame). Collect node order, directions and lengths.
+    // The bar type sets the duplicate and link (rotation = lattice2d bars).
+    string barType;
+    bool rotation = false;
     vector<int> barNodes;   // in order of first appearance
     unordered_map<int, vector<Vec3>> nodeDirs;
     unordered_map<int, vector<double>> nodeLengths;
@@ -230,6 +237,14 @@ static int run2D(const vector<string> &lines, ofstream &outfile, const vector<Zo
         int id;
         iss >> kw >> id;
         if (lowerCase(kw) != "truss2d" && lowerCase(kw) != "lattice2d") continue;
+        if (barType.empty()) {
+            barType = lowerCase(kw);
+            rotation = ( barType == "lattice2d" );
+        } else if (lowerCase(kw) != barType) {
+            cerr << "Error: both truss2d and lattice2d bars found (" << kw << " " << id
+                 << "); use one bar type." << endl;
+            return 1;
+        }
         int n1 = 0, n2 = 0;
         while (iss >> tok) {
             if (lowerCase(tok) == "nodes") { int n; iss >> n >> n1 >> n2; break; }
@@ -304,14 +319,21 @@ static int run2D(const vector<string> &lines, ofstream &outfile, const vector<Zo
         if (i == lastNodeLine) {
             for (const auto &link : links) {
                 const auto &c = nodeRecs[nodeIndex.at(link.originalNodeId)].coords;
-                outfile << "hangingnode " << link.newNodeId << " coords " << c.size();
-                for (const string &v : c) outfile << " " << v;
-                outfile << " doftype 2 2 2\n";
+                if (rotation) {
+                    // translations and R_w follow the host triangle
+                    outfile << "continuumframenode " << link.newNodeId << " coords " << c.size();
+                    for (const string &v : c) outfile << " " << v;
+                    outfile << " dofidmask 3 1 2 6 doftype 3 2 2 2\n";
+                } else {
+                    outfile << "hangingnode " << link.newNodeId << " coords " << c.size();
+                    for (const string &v : c) outfile << " " << v;
+                    outfile << " doftype 2 2 2\n";
+                }
             }
         }
         if (i == lastElemLine) {
             for (const auto &link : links) {
-                outfile << "bondlink2dtruss " << link.id
+                outfile << (rotation ? "latticelink2d " : "bondlink2dtruss ") << link.id
                         << " nodes 2 " << link.originalNodeId << " " << link.newNodeId
                         << " crossSect " << link.crossSect << " mat " << link.mat
                         << " length " << link.length

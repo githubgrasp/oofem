@@ -270,6 +270,41 @@ provided in the form of a location parameter as shown in Table
    |                          | <https://github.com/oofem/oofem/blob/devel/tests/regression/lm/lattice3d1.in>`_              |
    +--------------------------+----------------------------------------------------------------------------------------------+
 
+LatticeLink2d element
+~~~~~~~~~~~~~~~~~~~~~
+
+This element is the 2d counterpart of latticelink3d. It is a two-node link in the
+:math:`x`-:math:`y` plane with three degrees of freedom per node (:math:`u`, :math:`v` and
+the rotation about :math:`z`), for example between a frame node (lattice2d) and a node
+embedded in a 2d continuum. The jump of the second node relative to the first, including
+a rigid arm from the first node to the second, is expressed in a local system with the
+first axis along :param:`dirvector`: slip along the bar, lateral jump across it and
+relative rotation. The material is evaluated in 2d lattice mode, i.e. as the components
+1, 2 and 6 of the 3d lattice material, so the same bond materials (e.g. ``latticeslip``,
+with :param:`a1` scaling the lateral and :param:`a2` the rotational stiffness) can be used
+in 2d and 3d. The bond area is :math:`\pi` :param:`diameter` :param:`length`. The input
+parameters are shown in :numref:`latticelink2dsummary`.
+
+.. table:: latticelink2d element summary
+   :name: latticelink2dsummary
+
+   +--------------------------+----------------------------------------------------------------------------------------------+
+   | Keyword                  | latticelink2d                                                                                |
+   +--------------------------+----------------------------------------------------------------------------------------------+
+   | Description              | 2d lattice link element                                                                      |
+   +--------------------------+----------------------------------------------------------------------------------------------+
+   | Specific parameters      | :elemparam:`length{rn}` :elemparam:`diameter{rn}` :elemparam:`dirvector{ra}`                 |
+   +--------------------------+----------------------------------------------------------------------------------------------+
+   | Parameters               | :param:`length`: bond length :param:`diameter`: diameter :param:`dirvector`: direction       |
+   |                          | vector in which bond-slip occurs (2 components; a third component is ignored).               |
+   +--------------------------+----------------------------------------------------------------------------------------------+
+   | Unknowns                 | Three dofs (:math:`u`-displacement, :math:`v`-displacement and :math:`w`-rotation) are       |
+   |                          | required in each node.                                                                       |
+   +--------------------------+----------------------------------------------------------------------------------------------+
+   | Tests/Examples           | `lm/latticelink2d01.in                                                                       |
+   |                          | <https://github.com/githubgrasp/oofem/blob/main/tests/regression/lm/latticelink2d01.in>`_    |
+   +--------------------------+----------------------------------------------------------------------------------------------+
+
 LatticeLink3d element
 ~~~~~~~~~~~~~
 
