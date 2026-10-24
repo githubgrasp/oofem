@@ -62,33 +62,19 @@ records, then everything else. That order is kept; no sets are written.
   e.g. `linkslip` (bond-slip law for the slip, `kl` for the lateral
   stiffness) and an `interfacecs` cross section. `ndofman` and `nelem` are
   updated.
-- For `lattice2d` bars see below.
 
 Example (oofem-examples, `cdpm2-bondslip-2d`):
 
     duplicate oofemTemp.in oofem.in --diameter 0.052 --bond 3 4
 
-The same call is used with `lattice2d` bars (`cdpm2-reinforced-beam-2d`);
-the tool picks the duplicate and link from the bar type.
+The same call is used with `lattice2d` bars (`cdpm2-reinforced-beam-2d`).
 
 ### 2D mode with `lattice2d` bars
 
-The bar type sets what is written: `truss2d` bars get a `hangingnode` and a
-`bondlink2dtruss` as described above, `lattice2d` bars get a node and link
-that also carry the rotation. Mixing both bar types is an error.
-
-- Duplicate: `continuumframenode ... dofidmask 3 1 2 6 doftype 3 2 2 2`. Its
-  translations follow the host triangle as for a hanging node, and its
-  rotation `R_w` is the continuum rotation of the triangle,
-  `1/2 (dv/dx - du/dy)`.
-- Link: `latticelink2d` (same `length`, `diameter`, `dirvector`), which
-  couples slip, lateral jump and relative rotation. Use it with a
-  `latticecs` cross section and a lattice bond material such as
-  `latticeslip` (`e` slip stiffness, `a1 e` lateral, `a2 e` rotational
-  stiffness).
-- The rotational coupling is set by the material: `a2 = 0` leaves the bar
-  rotation free (only translations tied to the concrete), a large `a2` ties
-  it to the rotation of the host triangle.
+`lattice2d` bars (frame elements: u, v and rotation per node) get the same
+`hangingnode` and `bondlink2dtruss` as `truss2d` bars. The link uses only the
+translations of both nodes, so the rotation of the bar node is not tied to
+the concrete; it is carried by the frame elements.
 
 ## Compile
 

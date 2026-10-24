@@ -1217,6 +1217,15 @@ ConcreteDPM2::performPlasticityReturnPlaneStress(GaussPoint *gp, const FloatMatr
         if ( yieldValue > 0. ) {
             tempKappaP = performRegularReturnPlaneStress(effectiveStress, D, returnResult, tempKappaP, theta, gp);
             status->letTempKappaPBe(tempKappaP);
+        } else if ( subIncrementFlag == 1 ) {
+            // Elastic subincrement: accept it and continue with the remaining strain.
+            subincrementcounter = 0;
+            subIncrementFlag = 0;
+            returnResult = RR_NotConverged;
+            convergedStrain = tempStrain;
+            deltaStrain = strain - convergedStrain;
+            tempStrain = strain;
+            continue;
         } else {
             returnResult = RR_Converged;
             FloatArrayF< 6 >p6;
@@ -2586,9 +2595,19 @@ ConcreteDPM2::performPlasticityReturn(GaussPoint *gp, const FloatMatrixF< 6, 6 >
                 tempKappaP = performRegularReturn(effectiveStress, returnResult, returnType, tempKappaP, gp, theta);
                 status->letTempKappaPBe(tempKappaP);
             }
+        } else if ( subIncrementFlag == 1 ) {
+            // Elastic subincrement: accept it and continue with the remaining strain.
+            // The plastic strain of previous subincrements is kept.
+            subincrementcounter = 0;
+            subIncrementFlag = 0;
+            returnResult = RR_NotConverged;
+            convergedStrain = tempStrain;
+            deltaStrain = strain - convergedStrain;
+            tempStrain = strain;
+            continue;
         } else {
+            // Elastic (remaining) step: keep the current plastic strain
             returnResult = RR_Converged;
-            tempPlasticStrain = status->givePlasticStrain();
             status->letTempPlasticStrainBe(tempPlasticStrain);
             status->letTempKappaPBe(tempKappaP);
             break;
@@ -2998,6 +3017,15 @@ ConcreteDPM2::performPlasticityReturn1d(GaussPoint *gp, double strain) const
             // No vertex case in 1D: always a regular return.
             tempKappaP = performRegularReturn1d(effectiveStress, returnResult, tempKappaP, theta, gp);
             status->letTempKappaPBe(tempKappaP);
+        } else if ( subIncrementFlag == 1 ) {
+            // Elastic subincrement: accept it and continue with the remaining strain.
+            subincrementcounter = 0;
+            subIncrementFlag = 0;
+            returnResult = RR_NotConverged;
+            convergedStrain = tempStrain;
+            deltaStrain = strain - convergedStrain;
+            tempStrain = strain;
+            continue;
         } else {
             returnResult = RR_Converged;
             FloatArrayF< 6 >plasticStrain;
