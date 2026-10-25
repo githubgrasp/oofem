@@ -70,6 +70,7 @@
 #define _IFT_ConcreteDPM2_wfOne "wf1"
 #define _IFT_ConcreteDPM2_strengthratetype "sratetype"
 #define _IFT_ConcreteDPM2_energyratetype "eratetype"
+#define _IFT_ConcreteDPM2_energyrateexponent "erateexp"
 #define _IFT_ConcreteDPM2_deltatime "deltat"
 #define _IFT_ConcreteDPM2_helem "helem"
 #define _IFT_ConcreteDPM2_damflag "damflag"
@@ -172,12 +173,21 @@ protected:
 
     double deltaEquivStrain = 0.;
 
+    /// Rate factor of the current step, computed at the end of the previous step and kept constant once damage has started
     double rateFactor = 1.;
     double tempRateFactor = 0.;
 
-    /// Strains that are used for calculation of strain rates
+    /// Rate factors in tension and compression, held during unloading
+    double rateFactorTension = 1.;
+    double tempRateFactorTension = 1.;
+    double rateFactorCompression = 1.;
+    double tempRateFactorCompression = 1.;
+
+    /// Maximum and minimum principal strains that are used for calculation of strain rates
     double rateStrain = 0.;
     double tempRateStrain = 0.;
+    double rateStrainCompression = 0.;
+    double tempRateStrainCompression = 0.;
 
     /// Indicates the state (i.e. elastic, unloading, plastic, damage, vertex) of the Gauss point
     int state_flag = ConcreteDPM2Status::ConcreteDPM2_Elastic;
@@ -364,6 +374,24 @@ public:
 
     void letTempRateStrainBe(double v)
     { tempRateStrain = v; }
+
+    double giveRateStrainCompression() const
+    { return rateStrainCompression; }
+
+    void letTempRateStrainCompressionBe(double v)
+    { tempRateStrainCompression = v; }
+
+    double giveRateFactorTension() const
+    { return rateFactorTension; }
+
+    void letTempRateFactorTensionBe(double v)
+    { tempRateFactorTension = v; }
+
+    double giveRateFactorCompression() const
+    { return rateFactorCompression; }
+
+    void letTempRateFactorCompressionBe(double v)
+    { tempRateFactorCompression = v; }
 
 
     void letTempAlphaBe(double v)
@@ -758,13 +786,11 @@ protected:
      */
     int strengthRateType = 0;
 
-    /** Type of energy strain rate dependence used if strengthRateType >0 .
-     * 0 = mod. CEB strain rate effect for strength with constant fracture energy
-     * 1 = CEB strain rate effect for strength and linear for fracture energy
-     * 2 = mod. CEB strain rate effect for strength and squared for fracture energy
-     *
+    /** Exponent n of the rate dependence of the fracture energy, used if strengthRateType > 0.
+     * The fracture energy is increased by rateFactor^n, with 0 <= n <= 1.
+     * n = 0 keeps the fracture energy constant (default), n = 1 increases it by the rate factor.
      */
-    int energyRateType = 0;
+    double energyRateExponent = 0.;
 
 public:
     /// Constructor
@@ -963,12 +989,16 @@ public:
                                  double tempKappa) const;
 
     /**
-     * This function computes the rate factor which is used to take into account the strain rate dependence of the material.
+     * Computes the rate factor for the next step from the principal strain rates of the current step.
+     * The rate factors in tension and compression are held during unloading, and the rate factor is
+     * kept constant once damage has started.
      */
-    double computeRateFactor(double alpha,
-                             double timeFactor,
-                             GaussPoint *gp,
-                             TimeStep *deltaTime) const;
+    void updateRateFactor(double alpha,
+                          double deltaTime,
+                          GaussPoint *gp) const;
+
+    /// Rate factor of the current step, by which the strengths are scaled.
+    double giveCurrentRateFactor(GaussPoint *gp) const;
 
     /**
      * Computes the second derivative of the plastic potential with respect to the
@@ -1190,10 +1220,13 @@ public:
     FloatMatrixF< 1, 1 >compute1dNumericalTangent(GaussPoint *gp, TimeStep *tStep) const;
 
     // --- 1D (uniaxial) implementation -------------------------------------
-    // Dedicated 1D stress return. In 1D a single stress sigma is mapped to the
-    // Haigh-Westergaard coordinates sig = sigma/3, rho = sigma*sqrt(2/3) and the
-    // Lode angle theta = 0 in tension, pi/6 in compression. The plastic return
-    // solves a 3x3 system in the unknowns [sigma, kappaP, deltaLambda]; the
+    // Dedicated 1D stress return for uniaxial stress. A single stress sigma is mapped to the
+    // Haigh-Westergaard coordinates sig = sigma/3, rho = |sigma|*sqrt(2/3) and the
+    // Lode angle theta = 0 in tension, pi/3 in compression. The derivatives with respect to sigma
+    // are obtained from the derivatives with respect to sig and rho by the chain rule, so that the
+    // response is the same as for 3D uniaxial stress. The lateral plastic strains are stored in the
+    // yy and zz components of the plastic strain, since they enter the hardening and damage laws.
+    // The plastic return solves a 3x3 system in the unknowns [sigma, kappaP, deltaLambda]; the
     // vertex case is never used in 1D.
 
     FloatMatrixF< 1, 1 >give1dStressStiffMtrx(MatResponseMode mode, GaussPoint *gp, TimeStep *tStep) const override;
@@ -1205,17 +1238,22 @@ public:
     double performRegularReturn1d(double &effectiveStress,
                                   ConcreteDPM2_ReturnResult &returnResult,
                                   double kappaP,
-                                  double theta,
                                   GaussPoint *gp) const;
 
     /// Map a 1D stress to the Haigh-Westergaard coordinates.
     void computeTrialCoordinates1d(double stress, double &sig, double &rho, double &theta) const;
 
+    /// Derivatives of sig and rho with respect to the 1D stress.
+    FloatArrayF< 2 >computeDInvDStress1d(double sigma) const;
+
+    /// Lateral component of the flow direction for uniaxial stress.
+    double computeLateralFlow1d(double sigma, double tempKappa) const;
+
     /// Jacobian of the 1D return (unknowns [sigma, kappaP, deltaLambda]).
-    FloatMatrixF< 3, 3 >compute1dJacobian(double sigma, double kappa, double deltaLambda, double theta, GaussPoint *gp) const;
+    FloatMatrixF< 3, 3 >compute1dJacobian(double sigma, double kappa, double deltaLambda) const;
 
     /// 1D derivative of the yield surface with respect to sigma.
-    double computeDFDInv1d(double sigma, double tempKappa, double theta) const;
+    double computeDFDInv1d(double sigma, double tempKappa) const;
 
     /// 1D derivative of the plastic potential with respect to sigma.
     double computeDGDInv1d(double sigma, double tempKappa) const;
@@ -1227,19 +1265,16 @@ public:
     double computeDDGDInvDKappa1d(double sigma, double tempKappa) const;
 
     /// 1D derivative of the yield surface with respect to kappa.
-    double computeDFDKappa1d(double sigma, double tempKappa, double theta) const;
+    double computeDFDKappa1d(double sigma, double tempKappa) const;
 
     /// 1D derivative of the hardening variable with respect to the plastic multiplier.
-    double computeDKappaDDeltaLambda1d(double sigma, double tempKappa, double theta) const;
+    double computeDKappaDDeltaLambda1d(double sigma, double tempKappa) const;
 
     /// 1D derivative of dKappaDDeltaLambda with respect to kappa.
-    double computeDDKappaDDeltaLambdaDKappa1d(double sigma, double tempKappa, double theta) const;
+    double computeDDKappaDDeltaLambdaDKappa1d(double sigma, double tempKappa) const;
 
     /// 1D derivative of dKappaDDeltaLambda with respect to sigma.
-    double computeDDKappaDDeltaLambdaDInv1d(double sigma, double tempKappa, double theta) const;
-
-    /// 1D derivative of the ductility measure with respect to sigma.
-    double computeDDuctilityMeasureDInv1d(double sigma, double tempKappa, double theta) const;
+    double computeDDKappaDDeltaLambdaDInv1d(double sigma, double tempKappa) const;
 
     /// Compute the 1D damage parameters (tension, compression).
     FloatArrayF< 2 >computeDamage1d(double strain, double deltaTime, GaussPoint *gp, TimeStep *tStep, double alpha, double effectiveStress) const;

@@ -1722,6 +1722,8 @@ where :math:`X` is the continuous compression measure (= 1 means only compressio
 
 The dynamic increase factor (DIF) for strength is computed according to Model Code 2010.
 
+If :em:`sratetype` is greater than zero, the strengths depend on the strain rate. A rate factor :math:`r` is computed at the end of each step from the rates of the maximum and minimum principal strains, using the dynamic increase factors of the Model Code 2010 for tension (:math:`r_{\rm t}`) and compression (:math:`r_{\rm c}`), which are combined as :math:`r = (1-\alpha) r_{\rm t} + \alpha r_{\rm c}`. This rate factor is used in the next step. During unloading, the rate factors in tension and compression are kept constant, and once damage has started, the rate factor is no longer changed. Both :math:`f_{\rm t}` and :math:`f_{\rm c}` are multiplied by :math:`r`, which expands the yield surface without changing its shape. This is implemented by evaluating the model for the strains divided by :math:`r` and multiplying the resulting stress by :math:`r`. Consequently, damage starts when the effective stress reaches the expanded yield surface, and the strains at peak stress increase with :math:`r`. The fracture energy is increased by :math:`r^n`, where :math:`n` is given by :em:`erateexp`. Since the strength increase is obtained by the plasticity part, the hardening modulus :math:`H_p` does not need to be increased for rate dependent analyses.
+
 The :math:`\bf{parameters of CDPM2}` for OOFEM input file are summarised in :numref:`cdpm2_table`.
 By default, two damage variables are used, i.e., the effective stress is transformed into nominal stress using equation (:eq:`cdpm2:efftonominal`). If parameter :em:`damflag` is set to 3, only :math:`\omega_t` is used and the effective stress is reduced by :math:`1-\omega_t`.
 
@@ -1738,7 +1740,8 @@ By default, two damage variables are used, i.e., the effective stress is transfo
    |                    | [:elemparam:`Ahard{rn}`] [:elemparam:`Bhard{rn}`] [:elemparam:`Chard{rn}`]                   |
    |                    | [:elemparam:`Dhard{rn}`] [:elemparam:`Asoft{rn}`] [:elemparam:`helem{rn}`]                   |
    |                    | [:elemparam:`dilation{rn}`] [:elemparam:`hp{rn}`] [:elemparam:`damflag{in}`]                 |
-   |                    | [:elemparam:`sratetype{in}`] :elemparam:`eratetype{in}` [:elemparam:`yieldtol{rn}`]          |
+   |                    | [:elemparam:`sratetype{in}`] [:elemparam:`eratetype{in}`] [:elemparam:`erateexp{rn}`]        |
+   |                    | [:elemparam:`deltat{rn}`] [:elemparam:`yieldtol{rn}`]                                        |
    |                    | [:elemparam:`newtoniter{in}`]                                                                |
    |                    | [:elemparam:`symtangent{in}`] [:elemparam:`numtangent{in}`]                                  |
    |                    | [:elemparam:`numtangentpert{rn}`]                                                            |
@@ -1768,16 +1771,22 @@ By default, two damage variables are used, i.e., the effective stress is transfo
    |                    | - :param:`helem` element size :math:`h`, optional (if not specified, the actual element size |
    |                    |   is used)                                                                                   |
    |                    | - :param:`dilation` dilation factor, optional, default value 0.85                            |
-   |                    | - :param:`hp` hardening modulus, optional, default value 0.5                                 |
+   |                    | - :param:`hp` hardening modulus, optional, default value 0.5. A small value such as 0.01     |
+   |                    |   is recommended, also if the strain rate effect is used                                     |
    |                    | - :param:`damflag` flag which allows for the use of different damage formulations. Default   |
    |                    |   value is 1. If set to zero, no damage is used. If set to 3, only the tensile damage        |
    |                    |   varialbe is used.                                                                          |
    |                    | - :param:`sratetype` Dynamic increase factor (DIF) for strength ; 0 - DIF = 1 (no rate       |
    |                    |   effect) ; 1 - First branch of Model Code 2010 DIF for strength. ; 2 - First and second     |
    |                    |   branch of Model Code 2010 DIF for strength                                                 |
-   |                    | - :param:`eratetype` Dynamic increase factor (DIF) for fracture energy. Only used if         |
-   |                    |   sratetype is not equal to 0. ; 0 - DIF = 1 ; 1 - DIF from sratetype ; 2 - DIF squared from |
-   |                    |   sratetype                                                                                  |
+   |                    | - :param:`erateexp` exponent :math:`n` of the rate dependence of the fracture energy, which  |
+   |                    |   is multiplied by :math:`r^n`, where :math:`r` is the rate factor. Only used if sratetype is|
+   |                    |   not equal to 0. Must be between 0 and 1, optional, default value 0 (constant fracture      |
+   |                    |   energy)                                                                                    |
+   |                    | - :param:`eratetype` older input for erateexp, optional. 0 corresponds to erateexp 0 and 1 to|
+   |                    |   erateexp 1                                                                                 |
+   |                    | - :param:`deltat` time increment used for the strain rate instead of the time step of the    |
+   |                    |   analysis, optional                                                                         |
    |                    | - :param:`yieldtol` tolerance for the implicit stress return algorithm, optional, default    |
    |                    |   value :math:`1 \times 10^{-6}`                                                             |
    |                    | - :param:`newtoniter` maximum number of iterations in the implicit stress return algorithm,  |
