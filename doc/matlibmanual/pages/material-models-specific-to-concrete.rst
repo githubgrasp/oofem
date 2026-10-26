@@ -1832,7 +1832,11 @@ CDPM2F is a fibre extension of CDPM2 in :ref:`sec:cdpm2`. The theory of CDPM2F i
 
 The main idea of CDPM2F is to adjust the damage part of CDPM2 to predict the effect of fibres.
 
-Below in Table :numref:`cdpm2f_table` the input parameters of CDPM2F in addition to those required for CDPM2 are described.
+Below in Table :numref:`cdpm2f_table` the input parameters of CDPM2F in addition to those required for CDPM2 are described. CDPM2F requires exponential softening of the matrix (:param:`stype` 2).
+
+The dispersion factor :math:`\alpha` describes how uniformly the fibres are distributed. It reduces the effective fibre volume fraction to :math:`v_{\rm f} = (1 + \ln \alpha)\, v_{\rm f0}`, so :math:`\alpha = 1` corresponds to a uniform distribution. :math:`\alpha` must lie between a lower limit :math:`\alpha_{\rm min}`, which follows from the other parameters (at :math:`\alpha_{\rm min}` the fibres just carry the tensile strength of the matrix, so the response no longer hardens), and 1. If the input :param:`alpha` is smaller than :math:`\alpha_{\rm min}`, the analysis stops with an error message that gives :math:`\alpha_{\rm min}`.
+
+The dispersion factor can vary in space through the optional parameters :optparam:`randvars{ia}` and :optparam:`randgen{ia}` with the property identifier 1001, for example ``randvars 1 1001 randgen 1 2``. When the material status of an integration point is created, function 2 (typically an ``InterpolatingFunction`` reading a random field from a file) is evaluated at the global coordinates of the point, and the result is used as a factor on the mean value :param:`alpha`, as for the random fields of the lattice materials. The field should therefore have a mean of 1, and the coefficient of variation of the field is the coefficient of variation of :math:`\alpha`. Outside the grid of an ``InterpolatingFunction`` the factor is 1. Since :math:`\alpha_{\rm min}` and 1 bound :math:`\alpha`, values of the product outside this range are set to the nearest limit at each integration point; for a wide distribution this changes the effective mean and coefficient of variation of :math:`\alpha`.
 
 .. table:: CDPM2F -- summary.
    :name: cdpm2f_table
@@ -1841,21 +1845,30 @@ Below in Table :numref:`cdpm2f_table` the input parameters of CDPM2F in addition
    | Description        | CDPM2F                                                                                       |
    +--------------------+----------------------------------------------------------------------------------------------+
    | Record Format      | :descitem:`cdpm2f` :elemparam:`lf{rn}` :elemparam:`vf0{rn}` :elemparam:`df{rn}`              |
-   |                    | :elemparam:`tau0{rn}` :elemparam:`beta{rn}` [:elemparam:`f{rn}`] :elemparam:`ef{rn}`         |
+   |                    | :elemparam:`tau0{rn}` [:elemparam:`beta{rn}`] [:elemparam:`f{rn}`] :elemparam:`ef{rn}`       |
    |                    | :elemparam:`sm{rn}` [:elemparam:`alpha{rn}`] [:elemparam:`xi{rn}`]                           |
+   |                    | [:elemparam:`randvars{ia}` :elemparam:`randgen{ia}`]                                         |
    +--------------------+----------------------------------------------------------------------------------------------+
    | Parameters         | - :param:`lf` length of fibre                                                                |
    |                    | - :param:`vf0` base volume fraction of fibres                                                |
    |                    | - :param:`df` diameter of fibre                                                              |
    |                    | - :param:`tau0` initial bond strength of interface between fibre and matrix                  |
-   |                    | - :param:`beta` hardening parameter of interface between fibre and matrix                    |
-   |                    | - :param:`f` snubbing factor                                                                 |
+   |                    | - :param:`beta` hardening parameter of interface between fibre and matrix, default 0.015     |
+   |                    | - :param:`f` snubbing factor, default 0.8                                                    |
    |                    | - :param:`ef` Young's modulus of fibre material                                              |
-   |                    | - :param:`sm` staturated crack spacing                                                       |
-   |                    | - :param:`alpha` parameter related to dispersion                                             |
-   |                    | - :param:`xi` parameter controling hardening of fibre stress strain response                 |
+   |                    | - :param:`sm` saturated crack spacing                                                        |
+   |                    | - :param:`alpha` dispersion factor (mean value if random), between                           |
+   |                    |   :math:`\alpha_{\rm min}` and 1, default 1                                                  |
+   |                    | - :param:`xi` parameter controlling hardening of fibre stress strain response, default 10    |
+   |                    | - :param:`randvars` property identifiers of random variables; 1001 for the dispersion factor |
+   |                    | - :param:`randgen` numbers of the functions generating the random factors                    |
    +--------------------+----------------------------------------------------------------------------------------------+
    | Supported modes    | 3dMat, PlaneStrain, 1DMat                                                                    |
+   +--------------------+----------------------------------------------------------------------------------------------+
+   | Tests/Examples     | `sm/cdpm2fTest1.in                                                                           |
+   |                    | <https://github.com/githubgrasp/oofem/blob/main/tests/regression/sm/cdpm2fTest1.in>`_,       |
+   |                    | `sm/cdpm2fRandom.in                                                                          |
+   |                    | <https://github.com/githubgrasp/oofem/blob/main/tests/regression/sm/cdpm2fRandom.in>`_       |
    +--------------------+----------------------------------------------------------------------------------------------+
 
 .. _concreteFCM:
