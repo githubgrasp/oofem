@@ -1,0 +1,15 @@
+# 2D rectangle 100x60 mm with three #@holedisk holes of radius 8 mm in a row.
+#@output nodes.dat
+#@domain 2
+#@diam 0.004
+#@maxiter 100000
+#@perflag 2 0 0
+#@ranint -1
+#@ranflag 1
+# bounding-box corners widen the localiser
+#@vertex 1 coords 2 -0.01 -0.01 refine 1. radius 0.
+#@vertex 2 coords 2  0.11  0.07 refine 1. radius 0.
+#@rect 1 box 4 0.0 0.0 0.1 0.06
+#@holedisk 1 centre 2 0.025 0.03 radius 0.008 refine 0.25
+#@holedisk 2 centre 2 0.050 0.03 radius 0.008 refine 0.25
+#@holedisk 3 centre 2 0.075 0.03 radius 0.008 refine 0.25

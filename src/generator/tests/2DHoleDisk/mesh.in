@@ -1,0 +1,18 @@
+# 2D thick-walled cylinder (annulus): #@disk with one #@holedisk.
+# Coarse version of the mesh in oofem-examples/lattice-coupling-pressure-2d
+# (inner radius 0.008, outer radius 0.025).
+#@output nodes.dat
+#@domain 2
+#@diam 0.004
+#@maxiter 100000
+#@ranint -1
+#@perflag 2 0 0
+#@ranflag 1
+# bounding-box corners widen the localiser
+#@vertex 1 coords 2 -0.026 -0.026 refine 1. radius 0.
+#@vertex 2 coords 2  0.026  0.026 refine 1. radius 0.
+#@disk 1 centre 2 0.0 0.0 radius 0.025
+#@holedisk 1 centre 2 0.0 0.0 radius 0.008 refine 0.5
+#@controlvertex 1 coords 2  0.025  0.0
+#@controlvertex 2 coords 2  0.0    0.025
+#@controlvertex 3 coords 2  0.0   -0.025

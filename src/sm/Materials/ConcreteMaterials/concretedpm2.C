@@ -1666,7 +1666,7 @@ ConcreteDPM2::computeDamagePlaneStress(const FloatArrayF< 3 > &strain, const Flo
         tempKappaDCompressionOne = status->giveKappaDCompressionOne();
         tempKappaDCompressionTwo = status->giveKappaDCompressionTwo();
         this->initDamaged(tempKappaDTension, strain6, gp);
-        tempDamageTension = computeDamageParamTension(tempKappaDTension, tempKappaDTensionOne, tempKappaDTensionTwo, status->giveLe(), status->giveDamageTension(), rateFactor);
+        tempDamageTension = computeDamageParamTension(tempKappaDTension, tempKappaDTensionOne, tempKappaDTensionTwo, status->giveLe(), status->giveDamageTension(), rateFactor, gp);
         tempDamageCompression = status->giveDamageCompression();
     } else if ( fTension < -yieldTolDamage && fCompression >= -yieldTolDamage ) {
         tempKappaDTension = status->giveKappaDTension();
@@ -1688,7 +1688,7 @@ ConcreteDPM2::computeDamagePlaneStress(const FloatArrayF< 3 > &strain, const Flo
         tempKappaDCompressionOne = status->giveKappaDCompressionOne() + deltaPlasticStrainNormCompression / ( ductilityMeasure * rateFactor );
         tempKappaDCompressionTwo = status->giveKappaDCompressionTwo() + ( tempKappaDCompression - status->giveKappaDCompression() ) / ductilityMeasure;
         this->initDamaged(tempKappaDTension, strain6, gp);
-        tempDamageTension = computeDamageParamTension(tempKappaDTension, tempKappaDTensionOne, tempKappaDTensionTwo, status->giveLe(), status->giveDamageTension(), rateFactor);
+        tempDamageTension = computeDamageParamTension(tempKappaDTension, tempKappaDTensionOne, tempKappaDTensionTwo, status->giveLe(), status->giveDamageTension(), rateFactor, gp);
         tempDamageCompression = computeDamageParamCompression(tempKappaDCompression, tempKappaDCompressionOne, tempKappaDCompressionTwo, status->giveDamageCompression(), rateFactor);
     }
 
@@ -1793,7 +1793,7 @@ ConcreteDPM2::computeDamage(const FloatArrayF< 6 > &strain,
         //Initialise damage with tensile history variable
         this->initDamaged(tempKappaDTension, strain, gp);
 
-        tempDamageTension = computeDamageParamTension(tempKappaDTension, tempKappaDTensionOne, tempKappaDTensionTwo, status->giveLe(), status->giveDamageTension(), rateFactor);
+        tempDamageTension = computeDamageParamTension(tempKappaDTension, tempKappaDTensionOne, tempKappaDTensionTwo, status->giveLe(), status->giveDamageTension(), rateFactor, gp);
 
         tempDamageCompression = status->giveDamageCompression();
     } else if ( fTension < -yieldTolDamage && fCompression >= -yieldTolDamage ) {
@@ -1833,7 +1833,7 @@ ConcreteDPM2::computeDamage(const FloatArrayF< 6 > &strain,
         //Determine the damage parameters
         this->initDamaged(tempKappaDTension, strain, gp);
 
-        tempDamageTension = computeDamageParamTension(tempKappaDTension, tempKappaDTensionOne, tempKappaDTensionTwo, status->giveLe(), status->giveDamageTension(), rateFactor);
+        tempDamageTension = computeDamageParamTension(tempKappaDTension, tempKappaDTensionOne, tempKappaDTensionTwo, status->giveLe(), status->giveDamageTension(), rateFactor, gp);
 
         tempDamageCompression = computeDamageParamCompression(tempKappaDCompression, tempKappaDCompressionOne, tempKappaDCompressionTwo, status->giveDamageCompression(), rateFactor);
     }
@@ -1923,7 +1923,7 @@ ConcreteDPM2::computeDamage1d(double strain, double deltaTime, GaussPoint *gp, T
 
         this->initDamaged1d(tempKappaDTension, gp);
 
-        tempDamageTension = computeDamageParamTension(tempKappaDTension, tempKappaDTensionOne, tempKappaDTensionTwo, status->giveLe(), status->giveDamageTension(), rateFactor);
+        tempDamageTension = computeDamageParamTension(tempKappaDTension, tempKappaDTensionOne, tempKappaDTensionTwo, status->giveLe(), status->giveDamageTension(), rateFactor, gp);
 
         tempDamageCompression = status->giveDamageCompression();
     } else if ( fTension < -yieldTolDamage && fCompression >= -yieldTolDamage ) {
@@ -1951,7 +1951,7 @@ ConcreteDPM2::computeDamage1d(double strain, double deltaTime, GaussPoint *gp, T
 
         this->initDamaged1d(tempKappaDTension, gp);
 
-        tempDamageTension = computeDamageParamTension(tempKappaDTension, tempKappaDTensionOne, tempKappaDTensionTwo, status->giveLe(), status->giveDamageTension(), rateFactor);
+        tempDamageTension = computeDamageParamTension(tempKappaDTension, tempKappaDTensionOne, tempKappaDTensionTwo, status->giveLe(), status->giveDamageTension(), rateFactor, gp);
 
         tempDamageCompression = computeDamageParamCompression(tempKappaDCompression, tempKappaDCompressionOne, tempKappaDCompressionTwo, status->giveDamageCompression(), rateFactor);
     }
@@ -2333,7 +2333,7 @@ ConcreteDPM2::computeEquivalentStrain(double sig,
 
 
 double
-ConcreteDPM2::computeDamageParamTension(double equivStrain, double kappaOne, double kappaTwo, double le, double omegaOld, double rateFactor) const
+ConcreteDPM2::computeDamageParamTension(double equivStrain, double kappaOne, double kappaTwo, double le, double omegaOld, double rateFactor, GaussPoint *gp) const
 {
     double omega = 0.;
 

@@ -1119,7 +1119,7 @@ public:
     double computeAlpha(FloatArrayF< 6 > &effectiveStressTension, FloatArrayF< 6 > &effectiveStressCompression, const FloatArrayF< 6 > &effectiveStress) const;
 
     /// Compute damage parameter in tension.
-    virtual double computeDamageParamTension(double equivStrain, double kappaOne, double kappaTwo, double le, double omegaOld, double rateFactor) const;
+    virtual double computeDamageParamTension(double equivStrain, double kappaOne, double kappaTwo, double le, double omegaOld, double rateFactor, GaussPoint *gp) const;
 
     /// Compute damage parameter in compression.
     virtual double computeDamageParamCompression(double equivStrain, double kappaOne, double kappaTwo, double omegaOld, double rateFactor) const;
