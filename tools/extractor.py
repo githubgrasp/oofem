@@ -80,7 +80,7 @@ timeStep_re = re.compile(r"""
         
 dofMan_re = re.compile(r"""
         ^           # beginning of line
-        (?:Node|RigidArmNode|HangingNode|SlaveNode)\s*         # char string
+        (?:Node|RigidArmNode|HangingNode|ContinuumFrameNode|SlaveNode)\s*         # char string
         (\d+).*         # node label
         """,re.X)
 

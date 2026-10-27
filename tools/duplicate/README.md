@@ -22,7 +22,7 @@ Typical pipeline:
 | `--2d`, `--3d` | force the mode | from the `domain` record: `2d...` or `planestrain` gives 2D, anything else 3D |
 | `--diameter <d>` | bond diameter written to every link (bond area = pi d length). For n bars lumped into one truss, use n times the bar diameter. | 0.016 |
 | `--bond <cs> <mat>` | cross section and material of the links | 4 4 |
-| `--zone-mat <axis> <lo> <hi> <cs> <mat>` | repeatable: links whose bar node has its `<axis>` (x/y/z) coordinate in `[lo,hi]` get `<cs> <mat>` instead; first match wins. Use it for a debonded portion (e.g. the loaded-end sleeve of a lap splice): the link stays, so the bar remains laterally constrained, but it points at a zero-bond material. | none |
+| `--zone-mat <axis> <lo> <hi> <cs> <mat>` | repeatable: bond length in the band `[lo,hi]` of the `<axis>` (x/y/z) coordinate gets `<cs> <mat>` instead; first match wins. The tributary length of a bar node (one half of each adjacent bar element) is assigned half by half, by the midpoint of each half, so a band edge at a bar node is placed exactly there: that node gets one link per material (same duplicate), each with its part of the length. Use it for a debonded portion (e.g. the loaded-end sleeve of a lap splice): the link stays, so the bar remains laterally constrained, but it points at a zero-bond material. | none |
 
 
 Without the new options (`--2d`, `--diameter`, `--bond`) a 3D input gives the
@@ -34,8 +34,18 @@ the adjacent bar elements.
 
 ## 3D mode
 
-- Bar elements: `truss3d`, `latticeframe3d`. Continuum: `ltrspace`.
-- Duplicate: `hangingnode ... dofType 6 2 2 2 2 2 2 dofidmask 6 1 2 3 4 5 6`.
+- Bar elements: `truss3d`, `lattice3d` (frame; replaces the obsolete
+  `latticeframe3d`). Continuum: `ltrspace`. All `lattice3d` records are
+  treated as bars, so this mode is not meant for lattice models of the
+  concrete itself.
+- Duplicate of a `lattice3d` node: `continuumframenode ... dofType 6 2 2 2 2 2 2
+  dofidmask 6 1 2 3 4 5 6`. Translations and rotations follow the host
+  tetrahedron (rotation = 1/2 curl u).
+- Duplicate of a `truss3d` node: `hangingnode ... dofType 6 2 2 2 0 0 0
+  dofidmask 6 1 2 3 4 5 6`. Only the translations are embedded. The link needs
+  six DOFs per node, but a truss node has no rotational stiffness, so the
+  rotations of the bar nodes and their duplicates have to be fixed in the
+  input (e.g. `bc 6 0 0 0 1 1 1` with a zero boundary condition 1).
 - Link: `latticelink3d` (material e.g. `latticeslip`).
 - Writes `Set 1` (bars), `Set 2` (links), `Set 3` (other elements) and the
   fixed sets `Set 4 nodes 1 9`, `Set 5 nodes 1 12`.

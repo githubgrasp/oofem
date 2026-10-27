@@ -306,7 +306,7 @@ parameters are shown in :numref:`latticelink2dsummary`.
    +--------------------------+----------------------------------------------------------------------------------------------+
 
 LatticeLink3d element
-~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
 
 This element represents a two-node 3d link element connecting 3d beam and 3d lattice
 elements. Each node has six degrees of freedom. The node ordering is important: the

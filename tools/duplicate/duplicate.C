@@ -432,12 +432,12 @@ std::vector<LinkInfo> linkInfos;
         string type;
         iss >> type;
 
-        if (type == "node" || type == "hangingnode") {
+        if (type == "node" || type == "hangingnode" || type == "continuumframenode") {
             int id;
             iss >> id;
             nodes[id] = {id, line};
             nextNodeId = max(nextNodeId, id);
-        } else if (type == "ltrspace" || type == "truss3d" || type == "latticeframe3d") {
+        } else if (type == "ltrspace" || type == "truss3d" || type == "lattice3d") {
             int id;
             iss >> id;
             elements[id] = {id, type, line};
@@ -472,7 +472,7 @@ for (const auto& [id, node] : nodes) {
 
 // Build map: node -> list of (element ID, dir vector)
 for (const auto& [id, elem] : elements) {
-    if (elem.type != "truss3d" && elem.type != "latticeframe3d") continue;
+    if (elem.type != "truss3d" && elem.type != "lattice3d") continue;
 
     std::istringstream iss(elem.line);
     std::string dummy;
@@ -487,9 +487,9 @@ for (const auto& [id, elem] : elements) {
 
     unordered_map<int, int> duplicatedNodeMap;
 
-// Loop over all truss3d and latticeframe3d elements
+// Loop over all truss3d and lattice3d (frame) elements
     for (const auto& [eid, elem] : elements) {
-        if (elem.type != "truss3d" && elem.type != "latticeframe3d") continue;
+        if (elem.type != "truss3d" && elem.type != "lattice3d") continue;
 
         std::istringstream iss(elem.line);
         std::string dummy;
@@ -507,11 +507,21 @@ for (const auto& [id, elem] : elements) {
             if (coordIt != nodeCoords.end()) {
                 Vec3 coord = coordIt->second;
 
+                // Frame (lattice3d) bar: the duplicate is a continuumframenode, whose
+                // rotations follow the infinitesimal rotation of the host tetrahedron.
+                // Truss bar: hangingnode with the translations embedded only; its
+                // rotations (needed by latticelink3d) stay free and must be fixed in
+                // the input, as truss nodes carry no rotational stiffness.
                 std::ostringstream newLine;
-                newLine << "hangingnode " << newId
-                        << " coords 3 " << coord.x << " " << coord.y << " " << coord.z
-                        << " dofType 6 2 2 2 2 2 2"
-                        << " dofidmask 6 1 2 3 4 5 6";
+                if (elem.type == "lattice3d")
+                    newLine << "continuumframenode " << newId
+                            << " coords 3 " << coord.x << " " << coord.y << " " << coord.z
+                            << " dofType 6 2 2 2 2 2 2";
+                else
+                    newLine << "hangingnode " << newId
+                            << " coords 3 " << coord.x << " " << coord.y << " " << coord.z
+                            << " dofType 6 2 2 2 0 0 0";
+                newLine << " dofidmask 6 1 2 3 4 5 6";
 
                 nodes[newId] = {newId, newLine.str()};
             }
@@ -573,22 +583,70 @@ for (const auto& [id, elem] : elements) {
 
 
 
-for (auto& link : linkInfos) {
-    // Resolve the link's section/material from the original bar-node coordinate.
-    // First matching --zone-mat band wins; outside all bands keep the --bond default.
-    auto cIt = nodeCoords.find(link.originalNodeId);
-    if (cIt != nodeCoords.end()) {
-        const Vec3& c = cIt->second;
-        for (const auto& z : zones) {
-            double v = (z.axis == 'x') ? c.x : (z.axis == 'y') ? c.y : c.z;
-            if (v >= z.lo && v <= z.hi) {
-                link.crossSect = z.crossSect;
-                link.mat = z.mat;
-                break;
-            }
+// Section/material of a point: first matching --zone-mat band wins; outside all
+// bands keep the --bond default.
+auto zoneOf = [&](const Vec3& c, int& cs, int& mat) {
+    cs = bondCS;
+    mat = bondMat;
+    for (const auto& z : zones) {
+        double v = (z.axis == 'x') ? c.x : (z.axis == 'y') ? c.y : c.z;
+        if (v >= z.lo && v <= z.hi) {
+            cs = z.crossSect;
+            mat = z.mat;
+            return;
         }
     }
+};
 
+// With --zone-mat the tributary length of a bar node is made of one half of each
+// adjacent bar element. Each half takes the section/material at its midpoint, so a
+// zone boundary at a bar node is placed exactly at that node: the node then gets
+// one link per material, each with the length of its halves (same duplicate, so the
+// lateral stiffness of the node is unchanged). Without --zone-mat nothing changes.
+if (!zones.empty()) {
+    vector<LinkInfo> split;
+    for (auto& link : linkInfos) {
+        const Vec3& c = nodeCoords[link.originalNodeId];
+        map<pair<int, int>, double> lengthOf;   // (cs, mat) -> tributary length
+        auto it = nodeToElementDirs.find(link.originalNodeId);
+        if (it != nodeToElementDirs.end()) {
+            for (const auto& [eid, dir] : it->second) {
+                std::istringstream iss(elements.at(eid).line);
+                std::string dummy;
+                int id, nodeA, nodeB;
+                iss >> dummy >> id >> dummy >> dummy >> nodeA >> nodeB;
+                int other = (nodeA == link.originalNodeId) ? nodeB : nodeA;
+                Vec3 d = nodeCoords[other] - c;
+                int cs, mat;
+                zoneOf(c + d / 4., cs, mat);
+                lengthOf[{cs, mat}] += 0.5 * d.norm();
+            }
+        }
+        if (lengthOf.empty()) {
+            zoneOf(c, link.crossSect, link.mat);
+            continue;
+        }
+        bool first = true;
+        for (const auto& [csMat, len] : lengthOf) {
+            LinkInfo l = link;
+            if (!first) {
+                l.id = ++nextElementId;
+            }
+            l.crossSect = csMat.first;
+            l.mat = csMat.second;
+            l.length = len;
+            if (first) {
+                link = l;
+            } else {
+                split.push_back(l);
+            }
+            first = false;
+        }
+    }
+    linkInfos.insert(linkInfos.end(), split.begin(), split.end());
+}
+
+for (auto& link : linkInfos) {
     stringstream ss;
     ss << "latticelink3d " << link.id
        << " nodes 2 " << link.originalNodeId << " " << link.newNodeId
@@ -648,7 +706,7 @@ for (auto& link : linkInfos) {
     vector<int> trussOrFrameElems, linkElems, otherElems;
 
     for (const auto& [id, elem] : elements) {
-        if (elem.type == "truss3d" || elem.type == "latticeframe3d") {
+        if (elem.type == "truss3d" || elem.type == "lattice3d") {
             trussOrFrameElems.push_back(id);
         } else {
             otherElems.push_back(id);
