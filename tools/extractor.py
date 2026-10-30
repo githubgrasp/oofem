@@ -123,7 +123,7 @@ errorestimate_re = re.compile(r"""
         """, re.X)
 
 
-gprecord_re = re.compile (r"""[ ]*(stresses|strains|status|element_status|curvatures|moments|remark|jump|traction|{)\s*""",re.X)
+gprecord_re = re.compile (r"""[ ]*(stresses|strains|status|element_status|curvatures|moments|remark|jump|traction|latticestrain|latticestress|plasticstrain|{)\s*""",re.X)
 #gpstrain_re = re.compile (r"""[ ]strains\s*([\s+-e\d]+)""",re.X)
 #gpstatus_re = re.compile (r"""status\s.*""", re.X)
 #gpelementstatus_re = re.compile (r"""element_status\s.*""", re.X)
@@ -210,6 +210,12 @@ def elemKwdToString(kwd):
         return 'traction'
     elif (kwd == '135') : 
         return 'equivalentTime'
+    elif (kwd == '138') : 
+        return 'latticestrain'
+    elif (kwd == '139') : 
+        return 'latticestress'
+    elif (kwd == '140') : 
+        return 'plasticstrain'
     else:
         # keyword is something else -> allow to use the string directly 
         return kwd;

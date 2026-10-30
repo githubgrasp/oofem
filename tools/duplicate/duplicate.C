@@ -328,7 +328,7 @@ int main(int argc, char *argv[]) {
     if (argc < 3) {
         cerr << "Usage: " << argv[0]
              << " inputfile outputfile [--2d | --3d] [--diameter <d>] [--bond <cs> <mat>]"
-             << " [--zone-mat <axis> <lo> <hi> <cs> <mat>]..." << endl;
+             << " [--link latticelink3d|bondlink3dtruss] [--zone-mat <axis> <lo> <hi> <cs> <mat>]..." << endl;
         return 1;
     }
 
@@ -345,6 +345,7 @@ int main(int argc, char *argv[]) {
     double diameter = 0.016;   // bond diameter written to every link
     int bondCS = 4, bondMat = 4;  // default bond section / material
     int forceDim = 0;          // 0 = detect from the domain record, 2 or 3 = forced
+    std::string linkType = "latticelink3d";  // 3D link element (--link)
     for (int a = 3; a < argc; ++a) {
         std::string opt = argv[a];
         if (opt == "--diameter") {
@@ -360,6 +361,16 @@ int main(int argc, char *argv[]) {
             }
             bondCS = std::stoi(argv[++a]);
             bondMat = std::stoi(argv[++a]);
+        } else if (opt == "--link") {
+            if (a + 1 >= argc) {
+                cerr << "Error: --link needs latticelink3d or bondlink3dtruss" << endl;
+                return 1;
+            }
+            linkType = lowerCase(argv[++a]);
+            if (linkType != "latticelink3d" && linkType != "bondlink3dtruss") {
+                cerr << "Error: --link must be latticelink3d or bondlink3dtruss" << endl;
+                return 1;
+            }
         } else if (opt == "--2d") {
             forceDim = 2;
         } else if (opt == "--3d") {
@@ -442,9 +453,9 @@ std::vector<LinkInfo> linkInfos;
             iss >> id;
             elements[id] = {id, type, line};
             nextElementId = max(nextElementId, id);
-        } else if (type == "SimpleCS" || type == "LatticeCS" || type == "latticecs") {
+        } else if (type == "SimpleCS" || type == "LatticeCS" || type == "latticecs" || type == "interfacecs") {
             crossSectionLines.push_back(line);
-        } else if (type == "IsotropicMaterial" || type == "con2dpm" || type == "LatticeFrameSteelPlastic" || type == "latticeslip") {
+        } else if (type == "IsotropicMaterial" || type == "con2dpm" || type == "LatticeFrameSteelPlastic" || type == "latticeslip" || type == "linkslip") {
             materialLines.push_back(line);
         } else if (type == "BoundaryCondition" || type == "NodalLoad") {
             bcLoadLines.push_back(line);
@@ -507,13 +518,20 @@ for (const auto& [id, elem] : elements) {
             if (coordIt != nodeCoords.end()) {
                 Vec3 coord = coordIt->second;
 
-                // Frame (lattice3d) bar: the duplicate is a continuumframenode, whose
-                // rotations follow the infinitesimal rotation of the host tetrahedron.
-                // Truss bar: hangingnode with the translations embedded only; its
-                // rotations (needed by latticelink3d) stay free and must be fixed in
-                // the input, as truss nodes carry no rotational stiffness.
+                // bondlink3dtruss links only the translations: the duplicate is a
+                // hangingnode with u, v, w (any bar type).
+                // latticelink3d needs six DOFs per node. Frame (lattice3d) bar: the
+                // duplicate is a continuumframenode, whose rotations follow the
+                // infinitesimal rotation of the host tetrahedron. Truss bar:
+                // hangingnode with the translations embedded only; its rotations stay
+                // free and must be fixed in the input, as truss nodes carry no
+                // rotational stiffness.
                 std::ostringstream newLine;
-                if (elem.type == "lattice3d")
+                if (linkType == "bondlink3dtruss")
+                    newLine << "hangingnode " << newId
+                            << " coords 3 " << coord.x << " " << coord.y << " " << coord.z
+                            << " dofType 3 2 2 2";
+                else if (elem.type == "lattice3d")
                     newLine << "continuumframenode " << newId
                             << " coords 3 " << coord.x << " " << coord.y << " " << coord.z
                             << " dofType 6 2 2 2 2 2 2";
@@ -521,7 +539,8 @@ for (const auto& [id, elem] : elements) {
                     newLine << "hangingnode " << newId
                             << " coords 3 " << coord.x << " " << coord.y << " " << coord.z
                             << " dofType 6 2 2 2 0 0 0";
-                newLine << " dofidmask 6 1 2 3 4 5 6";
+                if (linkType != "bondlink3dtruss")
+                    newLine << " dofidmask 6 1 2 3 4 5 6";
 
                 nodes[newId] = {newId, newLine.str()};
             }
@@ -648,7 +667,7 @@ if (!zones.empty()) {
 
 for (auto& link : linkInfos) {
     stringstream ss;
-    ss << "latticelink3d " << link.id
+    ss << linkType << " " << link.id
        << " nodes 2 " << link.originalNodeId << " " << link.newNodeId
        << " crossSect " << link.crossSect << " mat " << link.mat
        << " length " << link.length
@@ -694,7 +713,7 @@ for (auto& link : linkInfos) {
     for (auto &[id, entry] : elements) orderedElements[id] = entry;
     for (auto &[id, entry] : orderedElements) outfile << entry.line << "\n";
 
-    // Write latticelink3d elements
+    // Write link elements
     for (const string &line : linkLines) outfile << line << "\n";
 
     for (const string &line : crossSectionLines) outfile << line << "\n";
