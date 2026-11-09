@@ -1417,7 +1417,7 @@ ConcreteDPM2::performRegularReturnPlaneStress(FloatArrayF< 3 > &effectiveStress,
             return kappaP;
         }
 
-        // stagnation safeguard: at an exact equibiaxial state Newton limit-cycles near yieldTol;
+        // stagnation safeguard: at theta = pi/3 (see computePlaneStressJacobian) Newton limit-cycles near yieldTol;
         // on stall, accept the best iterate. The gate max(1.e-6, yieldTol) never accepts looser
         // than requested; a diverging return never reaches it (-> newtonIter cap -> subincrement).
         if ( normOfResiduals < bestNorm ) {
@@ -1514,8 +1514,10 @@ ConcreteDPM2::computePlaneStressJacobian(const FloatArrayF< 3 > &stress,
         }
     }
 
-    // Lode coupling via the eig-based stress-space derivatives; singular only at a
-    // coincident in-plane principal pair (equibiaxial), handled by subincrementation
+    // Lode coupling via dcos(theta)/dsigma from the principal direction of the largest
+    // deviatoric stress; ill-defined where the two largest of (s1, s2, 0) coincide
+    // (theta = pi/3: equibiaxial tension, uniaxial compression), but dF/dcos(theta)
+    // vanishes there; residual limit cycles are caught by the stagnation safeguard.
     FloatArrayF< 6 >s6;
     s6.at(1) = stress.at(1);
     s6.at(2) = stress.at(2);
