@@ -1025,9 +1025,7 @@ ConcreteDPM2::giveRealStressVector_1d(const FloatArrayF< 1 > &fullStrainVector, 
 
 
 // ===================================================================
-// 2D plane stress (native reduced formulation, built step by step)
-// Step 0: elastic scaffold only. The plastic return and damage are
-// added in later steps; here the response is linear-elastic plane stress.
+// 2D plane stress (native reduced formulation, sigma_zz = 0)
 // ===================================================================
 
 FloatArrayF< 3 >
@@ -1258,7 +1256,7 @@ ConcreteDPM2::performPlasticityReturnPlaneStress(GaussPoint *gp, const FloatMatr
         auto elasticStrain = tempStrain - tempPlasticStrain;
         effectiveStress = dot(D, elasticStrain);
 
-        // trial invariants (theta frozen at the trial value)
+        // trial invariants for the yield check
         FloatArrayF< 6 >s6;
         s6.at(1) = effectiveStress.at(1);
         s6.at(2) = effectiveStress.at(2);

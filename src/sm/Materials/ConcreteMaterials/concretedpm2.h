@@ -1169,8 +1169,7 @@ public:
 
     FloatMatrixF< 6, 6 >give3dMaterialStiffnessMatrix(MatResponseMode mode, GaussPoint *gp, TimeStep *tStep) const override;
 
-    // --- 2D plane stress (native reduced formulation, built step by step) ---
-    // Step 0: elastic scaffold only. Plasticity/damage added in later steps.
+    // --- 2D plane stress (native reduced formulation, sigma_zz = 0) ---
     FloatMatrixF< 3, 3 >givePlaneStressStiffMtrx(MatResponseMode mode, GaussPoint *gp, TimeStep *tStep) const override;
 
     /// Native reduced plane-stress plastic return, unknowns [sxx,syy,sxy,kappaP,deltaLambda]; sigma_zz = 0, no vertex case.

@@ -1,5 +1,5 @@
 con2dpm13.out
-Test of 2D plane stress CDPM2 - Step 0 elastic scaffold (single CST triangle, imposed uniform strain)
+Plane stress CDPM2 - elastic response (single CST triangle, imposed uniform strain)
 StaticStructural nsteps 1 initialguess 1 rtolf 1.e-6 stiffMode 2 maxiter 100 nmodules 1
 errorcheck
 domain 2dPlaneStress
