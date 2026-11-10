@@ -135,6 +135,10 @@ protected:
     int deletionFlag = 0;
     int tempDeletionFlag = 1;
 
+    /// Number of strain-increment halvings needed so far in the current step; kept across
+    /// global iterations so the subincrementation path does not switch, reset in updateYourself.
+    int subincrementLevel = 0;
+
     double alpha = 0.;
     double tempAlpha = 0.;
 
@@ -275,6 +279,10 @@ public:
     void setTempDeletionFlag(int newFlag) { this->tempDeletionFlag = newFlag; }
     int giveDeletionFlag() const { return this->deletionFlag; }
     int giveTempDeletionFlag() const { return this->tempDeletionFlag; }
+
+    /// Subincrementation level accessors (halvings needed so far in the current step).
+    int giveSubincrementLevel() const { return this->subincrementLevel; }
+    void letSubincrementLevelBe(int level) { this->subincrementLevel = level; }
 
     /**
      * Get the hardening variable of the damage model from the

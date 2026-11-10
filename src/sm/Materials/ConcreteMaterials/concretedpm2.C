@@ -112,6 +112,7 @@ ConcreteDPM2Status::updateYourself(TimeStep *tStep)
     StructuralMaterialStatus::updateYourself(tStep);
 
     this->deletionFlag = this->tempDeletionFlag;
+    this->subincrementLevel = 0;
 
     // update variables defined in ConcreteDPM2Status
 
@@ -1249,6 +1250,17 @@ ConcreteDPM2::performPlasticityReturnPlaneStress(GaussPoint *gp, const FloatMatr
     auto tempStrain = strain;
     auto deltaStrain = strain - oldStrain;
 
+    // Substeps of equal size dt (fraction of the increment). Start at the level needed
+    // earlier in this step, so the path does not switch between global iterations.
+    int level = status->giveSubincrementLevel();
+    double dt = ldexp(1., -level);
+    double tConv = 0.;
+    if ( level > 0 ) {
+        subIncrementFlag = 1;
+        deltaStrain *= dt;
+        tempStrain = convergedStrain + deltaStrain;
+    }
+
     FloatArrayF< 3 >effectiveStress;
     ConcreteDPM2_ReturnResult returnResult = RR_NotConverged;
 
@@ -1269,13 +1281,19 @@ ConcreteDPM2::performPlasticityReturnPlaneStress(GaussPoint *gp, const FloatMatr
             tempKappaP = performRegularReturnPlaneStress(effectiveStress, D, returnResult, tempKappaP, theta, gp);
             status->letTempKappaPBe(tempKappaP);
         } else if ( subIncrementFlag == 1 ) {
-            // Elastic subincrement: accept it and continue with the remaining strain.
+            // Elastic subincrement: accept it and continue with the same substep size.
             subincrementcounter = 0;
-            subIncrementFlag = 0;
             returnResult = RR_NotConverged;
             convergedStrain = tempStrain;
-            deltaStrain = strain - convergedStrain;
-            tempStrain = strain;
+            tConv += dt;
+            if ( tConv >= 1. ) {
+                // last substep: finish as an elastic step below
+                subIncrementFlag = 0;
+                tempStrain = strain;
+            } else {
+                tempStrain = oldStrain + ( strain - oldStrain ) * min(tConv + dt, 1.);
+                deltaStrain = tempStrain - convergedStrain;
+            }
             continue;
         } else {
             returnResult = RR_Converged;
@@ -1302,6 +1320,9 @@ ConcreteDPM2::performPlasticityReturnPlaneStress(GaussPoint *gp, const FloatMatr
             subIncrementFlag = 1;
             deltaStrain *= 0.5;
             tempStrain = convergedStrain + deltaStrain;
+            dt *= 0.5;
+            level++;
+            status->letSubincrementLevelBe(max(status->giveSubincrementLevel(), level) );
         } else if ( returnResult == RR_Converged && subIncrementFlag == 0 ) {
             auto elasticStrain = dot(Cinv, effectiveStress);
             tempPlasticStrain = strain - elasticStrain;
@@ -1325,11 +1346,18 @@ ConcreteDPM2::performPlasticityReturnPlaneStress(GaussPoint *gp, const FloatMatr
             p6.at(3) = epZz;
             status->letTempPlasticStrainBe(p6 * rateFactor);
             status->letTempKappaPBe(tempKappaP);
-            subIncrementFlag = 0;
-            returnResult = RR_NotConverged;
             convergedStrain = tempStrain;
-            deltaStrain = strain - convergedStrain;
-            tempStrain = strain;
+            tConv += dt;
+            if ( tConv >= 1. ) {
+                // last substep converged
+                subIncrementFlag = 0;
+            } else {
+                // continue with the same substep size
+                returnResult = RR_NotConverged;
+                double tNext = min(tConv + dt, 1.);
+                tempStrain = tNext < 1. ? oldStrain + ( strain - oldStrain ) * tNext : strain;
+                deltaStrain = tempStrain - convergedStrain;
+            }
         }
     }
 
@@ -1516,8 +1544,9 @@ ConcreteDPM2::computePlaneStressJacobian(const FloatArrayF< 3 > &stress,
 
     // Lode coupling via dcos(theta)/dsigma from the principal direction of the largest
     // deviatoric stress; ill-defined where the two largest of (s1, s2, 0) coincide
-    // (theta = pi/3: equibiaxial tension, uniaxial compression), but dF/dcos(theta)
-    // vanishes there; residual limit cycles are caught by the stagnation safeguard.
+    // (theta = pi/3: equibiaxial tension, uniaxial compression); dF/dcos(theta) vanishes
+    // there, but dk/dcos(theta) does not (ductility measure ~ 1/cos^2), so the hardening
+    // row has a kink; residual limit cycles are caught by the stagnation safeguard.
     FloatArrayF< 6 >s6;
     s6.at(1) = stress.at(1);
     s6.at(2) = stress.at(2);
@@ -2559,6 +2588,17 @@ ConcreteDPM2::performPlasticityReturn(GaussPoint *gp, const FloatMatrixF< 6, 6 >
     auto tempStrain = strain;
     auto deltaStrain = strain - oldStrain;
 
+    // Substeps of equal size dt (fraction of the increment). Start at the level needed
+    // earlier in this step, so the path does not switch between global iterations.
+    int level = status->giveSubincrementLevel();
+    double dt = ldexp(1., -level);
+    double tConv = 0.;
+    if ( level > 0 ) {
+        subIncrementFlag = 1;
+        deltaStrain *= dt;
+        tempStrain = convergedStrain + deltaStrain;
+    }
+
     FloatArrayF< 6 >effectiveStress;
 
     //To get into the loop
@@ -2590,14 +2630,20 @@ ConcreteDPM2::performPlasticityReturn(GaussPoint *gp, const FloatMatrixF< 6, 6 >
                 status->letTempKappaPBe(tempKappaP);
             }
         } else if ( subIncrementFlag == 1 ) {
-            // Elastic subincrement: accept it and continue with the remaining strain.
+            // Elastic subincrement: accept it and continue with the same substep size.
             // The plastic strain of previous subincrements is kept.
             subincrementcounter = 0;
-            subIncrementFlag = 0;
             returnResult = RR_NotConverged;
             convergedStrain = tempStrain;
-            deltaStrain = strain - convergedStrain;
-            tempStrain = strain;
+            tConv += dt;
+            if ( tConv >= 1. ) {
+                // last substep: finish as an elastic step below
+                subIncrementFlag = 0;
+                tempStrain = strain;
+            } else {
+                tempStrain = oldStrain + ( strain - oldStrain ) * min(tConv + dt, 1.);
+                deltaStrain = tempStrain - convergedStrain;
+            }
             continue;
         } else {
             // Elastic (remaining) step: keep the current plastic strain
@@ -2645,6 +2691,9 @@ ConcreteDPM2::performPlasticityReturn(GaussPoint *gp, const FloatMatrixF< 6, 6 >
             subIncrementFlag = 1;
             deltaStrain *= 0.5;
             tempStrain = convergedStrain + deltaStrain;
+            dt *= 0.5;
+            level++;
+            status->letSubincrementLevelBe(max(status->giveSubincrementLevel(), level) );
         } else if ( returnResult == RR_Converged && subIncrementFlag == 0 ) {
             auto C = inv(D); // compliance
             elasticStrain = dot(C, effectiveStress);
@@ -2657,11 +2706,18 @@ ConcreteDPM2::performPlasticityReturn(GaussPoint *gp, const FloatMatrixF< 6, 6 >
             tempPlasticStrain = tempStrain - elasticStrain;
             status->letTempPlasticStrainBe(tempPlasticStrain * rateFactor);
 
-            subIncrementFlag = 0;
-            returnResult = RR_NotConverged;
             convergedStrain = tempStrain;
-            deltaStrain = strain - convergedStrain;
-            tempStrain = strain;
+            tConv += dt;
+            if ( tConv >= 1. ) {
+                // last substep converged
+                subIncrementFlag = 0;
+            } else {
+                // continue with the same substep size
+                returnResult = RR_NotConverged;
+                double tNext = min(tConv + dt, 1.);
+                tempStrain = tNext < 1. ? oldStrain + ( strain - oldStrain ) * tNext : strain;
+                deltaStrain = tempStrain - convergedStrain;
+            }
         }
     }
 
@@ -3002,6 +3058,17 @@ ConcreteDPM2::performPlasticityReturn1d(GaussPoint *gp, double unscaledStrain) c
     double tempStrain = strain;
     double deltaStrain = strain - oldStrain;
 
+    // Substeps of equal size dt (fraction of the increment). Start at the level needed
+    // earlier in this step, so the path does not switch between global iterations.
+    int level = status->giveSubincrementLevel();
+    double dt = ldexp(1., -level);
+    double tConv = 0.;
+    if ( level > 0 ) {
+        subIncrementFlag = 1;
+        deltaStrain *= dt;
+        tempStrain = convergedStrain + deltaStrain;
+    }
+
     double effectiveStress = 0.;
 
     returnResult = RR_NotConverged;
@@ -3018,13 +3085,19 @@ ConcreteDPM2::performPlasticityReturn1d(GaussPoint *gp, double unscaledStrain) c
             tempKappaP = performRegularReturn1d(effectiveStress, returnResult, tempKappaP, gp);
             status->letTempKappaPBe(tempKappaP);
         } else if ( subIncrementFlag == 1 ) {
-            // Elastic subincrement: accept it and continue with the remaining strain.
+            // Elastic subincrement: accept it and continue with the same substep size.
             subincrementcounter = 0;
-            subIncrementFlag = 0;
             returnResult = RR_NotConverged;
             convergedStrain = tempStrain;
-            deltaStrain = strain - convergedStrain;
-            tempStrain = strain;
+            tConv += dt;
+            if ( tConv >= 1. ) {
+                // last substep: finish as an elastic step below
+                subIncrementFlag = 0;
+                tempStrain = strain;
+            } else {
+                tempStrain = oldStrain + ( strain - oldStrain ) * min(tConv + dt, 1.);
+                deltaStrain = tempStrain - convergedStrain;
+            }
             continue;
         } else {
             returnResult = RR_Converged;
@@ -3050,6 +3123,9 @@ ConcreteDPM2::performPlasticityReturn1d(GaussPoint *gp, double unscaledStrain) c
             subIncrementFlag = 1;
             deltaStrain *= 0.5;
             tempStrain = convergedStrain + deltaStrain;
+            dt *= 0.5;
+            level++;
+            status->letSubincrementLevelBe(max(status->giveSubincrementLevel(), level) );
         } else if ( returnResult == RR_Converged && subIncrementFlag == 0 ) {
             double elasticStrainNew = effectiveStress / this->eM;
             tempPlasticStrain = strain - elasticStrainNew;
@@ -3070,11 +3146,18 @@ ConcreteDPM2::performPlasticityReturn1d(GaussPoint *gp, double unscaledStrain) c
             status->letTempPlasticStrainBe(plasticStrain);
             status->letTempKappaPBe(tempKappaP);
 
-            subIncrementFlag = 0;
-            returnResult = RR_NotConverged;
             convergedStrain = tempStrain;
-            deltaStrain = strain - convergedStrain;
-            tempStrain = strain;
+            tConv += dt;
+            if ( tConv >= 1. ) {
+                // last substep converged
+                subIncrementFlag = 0;
+            } else {
+                // continue with the same substep size
+                returnResult = RR_NotConverged;
+                double tNext = min(tConv + dt, 1.);
+                tempStrain = tNext < 1. ? oldStrain + ( strain - oldStrain ) * tNext : strain;
+                deltaStrain = tempStrain - convergedStrain;
+            }
         }
     }
 
