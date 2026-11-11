@@ -18,7 +18,7 @@ PiecewiseLinFunction 1 t 2 0.0 12.0 f(t) 2 0.0 1.0
 ## imposed exx ramp, syy free -> uniaxial stress compression (theta=pi/3); hardening to peak then
 ## compressive damage softening. Out-of-plane plastic strain epZz enters the compression damage norm.
 ## peak (step 6)
-#ELEMENT tStep 6 number 1 gp 1 keyword 1 component 1 value -3.49493330e+07
+#ELEMENT tStep 6 number 1 gp 1 keyword 1 component 1 value -3.49724953e+07
 ## softened (step 12)
-#ELEMENT tStep 12 number 1 gp 1 keyword 1 component 1 value -2.67366478e+07
+#ELEMENT tStep 12 number 1 gp 1 keyword 1 component 1 value -2.66115770e+07
 #%END_CHECK%

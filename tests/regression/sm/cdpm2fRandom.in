@@ -31,7 +31,7 @@ InterpolatingFunction 2 dim 3 name cdpm2fRandom.dat
 #ELEMENT tStep 1 number 1 gp 1 keyword 1 component 2 value 1.22239769e+06 tolerance 1.e-2
 #ELEMENT tStep 5 number 1 gp 1 keyword 4 component 2 value 2.e-03 tolerance 1.e-12
 #ELEMENT tStep 5 number 1 gp 1 keyword 1 component 2 value 2.07553051e+06 tolerance 1.e-2
-#ELEMENT tStep 7 number 1 gp 1 keyword 1 component 2 value 2.09930064e+06 tolerance 1.e-2
+#ELEMENT tStep 7 number 1 gp 1 keyword 1 component 2 value 1.30026447e+06 tolerance 1.e-2
 #ELEMENT tStep 10 number 1 gp 1 keyword 4 component 2 value 1.22400000e-01 tolerance 1.e-12
 #ELEMENT tStep 10 number 1 gp 1 keyword 1 component 2 value 0.00000000e+00 tolerance 1.e-2
 #%END_CHECK%

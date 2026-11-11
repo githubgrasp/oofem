@@ -18,7 +18,7 @@ Set 1 elementranges {1}
 Set 2 nodes 1 1
 Set 3 nodes 1 2
 #%BEGIN_CHECK% tolerance 1e-1
-#ELEMENT tStep 10 number 1 gp 1 keyword 1 component 1 value -2.77261463e+07
-#ELEMENT tStep 20 number 1 gp 1 keyword 1 component 1 value -2.88049421e+07
-#ELEMENT tStep 40 number 1 gp 1 keyword 1 component 1 value -2.32965703e+07
+#ELEMENT tStep 10 number 1 gp 1 keyword 1 component 1 value -2.79684420e+07
+#ELEMENT tStep 20 number 1 gp 1 keyword 1 component 1 value -2.87237168e+07
+#ELEMENT tStep 40 number 1 gp 1 keyword 1 component 1 value -2.32317232e+07
 #%END_CHECK%

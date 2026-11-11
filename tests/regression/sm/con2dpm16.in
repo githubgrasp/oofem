@@ -18,9 +18,9 @@ PiecewiseLinFunction 1 t 2 0.0 14.0 f(t) 2 0.0 1.0
 ## imposed exx=eyy ramp (theta=0 compressive meridian); confined peak ~1.3 fc then compressive
 ## damage softening (damageCompression -> 0.23). sxx=syy by symmetry.
 ## peak (step 7)
-#ELEMENT tStep 7 number 1 gp 1 keyword 1 component 1 value -4.62945358e+07
-#ELEMENT tStep 7 number 1 gp 1 keyword 1 component 2 value -4.62945358e+07
+#ELEMENT tStep 7 number 1 gp 1 keyword 1 component 1 value -4.61844389e+07
+#ELEMENT tStep 7 number 1 gp 1 keyword 1 component 2 value -4.61844389e+07
 ## softened by compressive damage (step 14)
-#ELEMENT tStep 14 number 1 gp 1 keyword 1 component 1 value -3.71361116e+07
-#ELEMENT tStep 14 number 1 gp 1 keyword 1 component 2 value -3.71361116e+07
+#ELEMENT tStep 14 number 1 gp 1 keyword 1 component 1 value -3.70489374e+07
+#ELEMENT tStep 14 number 1 gp 1 keyword 1 component 2 value -3.70489374e+07
 #%END_CHECK%

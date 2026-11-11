@@ -2890,13 +2890,13 @@ ConcreteDPM2::computeRatioPotential(double sig,
     double yieldHardOne = computeHardeningOne(tempKappa);
     double yieldHardTwo = computeHardeningTwo(tempKappa);
 
-    //Compute dilation parameter (mQ = dmg/dsig with mg per eq.(23), generalised with qh factors)
-    double AGParam = 3. * this->ft * yieldHardOne * yieldHardTwo / this->fc + this->m * yieldHardOne * yieldHardOne / 2.;
+    //Compute dilation parameter
+    double AGParam = 3. * this->ft * yieldHardTwo / this->fc + this->m / 2.;
     double BGParam =
-        yieldHardOne * yieldHardTwo * ( 1. + this->ft / this->fc ) / 3. /
-        ( log(AGParam) + log(this->dilationConst + 1.) - log(2. * this->dilationConst - 1.) - log(3. * yieldHardOne * yieldHardTwo + this->m * yieldHardOne * yieldHardOne / 2.) );
+        yieldHardTwo * ( 1. + this->ft / this->fc ) / 3. /
+        ( log(AGParam) + log(this->dilationConst + 1.) - log(2. * this->dilationConst - 1.) - log(3. * yieldHardTwo + this->m / 2.) );
 
-    double R = ( sig - this->ft * yieldHardOne * yieldHardTwo / 3. ) / ( this->fc * BGParam );
+    double R = ( sig - this->ft * yieldHardTwo / 3. ) / ( this->fc * BGParam );
     double mQ = AGParam * exp(R);
 
     double Bl = sig / fc + rho / ( fc * sqrt(6.) );
@@ -3699,13 +3699,13 @@ ConcreteDPM2::computeDGDInv(double sig,
     double yieldHardOne = computeHardeningOne(tempKappa);
     double yieldHardTwo = computeHardeningTwo(tempKappa);
 
-    //Compute dilation parameter (mQ = dmg/dsig with mg per eq.(23), generalised with qh1 factors)
-    double AGParam = 3. * this->ft * yieldHardOne * yieldHardTwo / this->fc + this->m * yieldHardOne * yieldHardOne / 2.;
+    //Compute dilation parameter
+    double AGParam = 3. * this->ft * yieldHardTwo / this->fc + this->m / 2.;
     double BGParam =
-        yieldHardOne * yieldHardTwo * ( 1. + this->ft / this->fc ) / 3. /
-        ( log(AGParam) + log(this->dilationConst + 1.) - log(2. * this->dilationConst - 1.) - log(3. * yieldHardOne * yieldHardTwo + this->m * yieldHardOne * yieldHardOne / 2.) );
+        yieldHardTwo * ( 1. + this->ft / this->fc ) / 3. /
+        ( log(AGParam) + log(this->dilationConst + 1.) - log(2. * this->dilationConst - 1.) - log(3. * yieldHardTwo + this->m / 2.) );
 
-    double R = ( sig - this->ft * yieldHardOne * yieldHardTwo / 3. ) / ( this->fc * BGParam );
+    double R = ( sig - this->ft * yieldHardTwo / 3. ) / ( this->fc * BGParam );
     double mQ = AGParam * exp(R);
 
     double Bl = sig / fc + rho / ( fc * sqrt(6.) );
@@ -3921,32 +3921,31 @@ ConcreteDPM2::computeDDGDInvDKappa(double sig,
     double dYieldHardOneDKappa = computeHardeningOnePrime(tempKappa);
     double dYieldHardTwoDKappa = computeHardeningTwoPrime(tempKappa);
 
-    //Compute dilation parameter (mQ = dmg/dsig with mg per eq.(23), generalised with qh1 factors)
-    double AGParam = 3. * this->ft * yieldHardOne * yieldHardTwo / this->fc + this->m * yieldHardOne * yieldHardOne / 2.;
-    double BGParamTop = yieldHardOne * yieldHardTwo * ( 1. + this->ft / this->fc ) / 3.;
-    double BGParamBottom = log(AGParam) + log(this->dilationConst + 1.) - log(2. * this->dilationConst - 1.) - log(3. * yieldHardOne * yieldHardTwo + this->m * yieldHardOne * yieldHardOne / 2.);
+    //Compute dilation parameter
+    double AGParam = 3. * this->ft * yieldHardTwo / this->fc + this->m / 2.;
+    double BGParamTop = yieldHardTwo * ( 1. + this->ft / this->fc ) / 3.;
+    double BGParamBottom = log(AGParam) + log(this->dilationConst + 1.) - log(2. * this->dilationConst - 1.) - log(3. * yieldHardTwo + this->m / 2.);
     double BGParam = BGParamTop / BGParamBottom;
 
-    double R = ( sig - this->ft * yieldHardOne * yieldHardTwo / 3. ) / ( this->fc * BGParam );
+    double R = ( sig - this->ft * yieldHardTwo / 3. ) / ( this->fc * BGParam );
     double mQ = AGParam * exp(R);
 
     //Compute the derivative of mQ with respect to kappa
-    double dQh1Qh2DKappa = yieldHardOne * dYieldHardTwoDKappa + yieldHardTwo * dYieldHardOneDKappa;
 
-    //Derivative of AGParam = 3*ft*qh1*qh2/fc + m*qh1^2/2
-    double dAGParamDKappa = 3. * this->ft / this->fc * dQh1Qh2DKappa + this->m * yieldHardOne * dYieldHardOneDKappa;
+    //Derivative of AGParam
+    double dAGParamDKappa = 3. * this->ft / this->fc * dYieldHardTwoDKappa;
 
     //Derivative of BGParam
-    double dBGParamTopDKappa = ( 1. + this->ft / this->fc ) / 3. * dQh1Qh2DKappa;
-    double denomLog = 3. * yieldHardOne * yieldHardTwo + this->m * yieldHardOne * yieldHardOne / 2.;
-    double dDenomLogDKappa = 3. * dQh1Qh2DKappa + this->m * yieldHardOne * dYieldHardOneDKappa;
+    double dBGParamTopDKappa = ( 1. + this->ft / this->fc ) / 3. * dYieldHardTwoDKappa;
+    double denomLog = 3. * yieldHardTwo + this->m / 2.;
+    double dDenomLogDKappa = 3. * dYieldHardTwoDKappa;
     double dBGParamBottomDKappa = dAGParamDKappa / AGParam - dDenomLogDKappa / denomLog;
     double dBGParamDKappa = ( dBGParamTopDKappa * BGParamBottom - BGParamTop * dBGParamBottomDKappa ) / pow(BGParamBottom, 2.);
 
     //Derivative of R
-    double RTop = sig - this->ft * yieldHardOne * yieldHardTwo / 3.;
+    double RTop = sig - this->ft * yieldHardTwo / 3.;
     double RBottom = this->fc * BGParam;
-    double dRTopDKappa = -this->ft / 3. * dQh1Qh2DKappa;
+    double dRTopDKappa = -this->ft / 3. * dYieldHardTwoDKappa;
     double dRBottomDKappa = this->fc * dBGParamDKappa;
     double dRDKappa = ( dRTopDKappa * RBottom - RTop * dRBottomDKappa ) / pow(RBottom, 2.);
 
@@ -3982,13 +3981,13 @@ ConcreteDPM2::computeDDGDDInv(double sig,
     double yieldHardOne = computeHardeningOne(tempKappa);
     double yieldHardTwo = computeHardeningTwo(tempKappa);
 
-    //Compute dilation parameter (mQ = dmg/dsig with mg per eq.(23), generalised with qh1 factors)
-    double AGParam = 3. * this->ft * yieldHardOne * yieldHardTwo / this->fc + this->m * yieldHardOne * yieldHardOne / 2.;
+    //Compute dilation parameter
+    double AGParam = 3. * this->ft * yieldHardTwo / this->fc + this->m / 2.;
     double BGParam =
-        yieldHardOne * yieldHardTwo * ( 1. + this->ft / this->fc ) / 3. /
-        ( log(AGParam) + log(this->dilationConst + 1.) - log(2. * this->dilationConst - 1.) - log(3. * yieldHardOne * yieldHardTwo + this->m * yieldHardOne * yieldHardOne / 2.) );
+        yieldHardTwo * ( 1. + this->ft / this->fc ) / 3. /
+        ( log(AGParam) + log(this->dilationConst + 1.) - log(2. * this->dilationConst - 1.) - log(3. * yieldHardTwo + this->m / 2.) );
 
-    double R = ( sig - this->ft * yieldHardOne * yieldHardTwo / 3. ) / ( this->fc * BGParam );
+    double R = ( sig - this->ft * yieldHardTwo / 3. ) / ( this->fc * BGParam );
 
     double dMQDSig = AGParam / ( BGParam * fc ) * exp(R);
 
