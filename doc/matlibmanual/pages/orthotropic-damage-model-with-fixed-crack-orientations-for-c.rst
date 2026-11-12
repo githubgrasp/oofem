@@ -19,7 +19,7 @@ Material orientation on a finite element can be specified with the :param:`lcs` 
 
 The index :math:`p,~p\in\{11,22,33,23,31,12\}` symbolizes six components of stress or strain vectors. The linear softening occurs after reaching a critical stress :math:`f_{p,0}`, see :numref:`comp_softening`. Orientation of cracks is assumed to be orthogonal and aligned with an orientation of material axes \cite[pp.236]{Bazant:98}. The transverse isotropy is generally lost upon fracture, material becomes orthotropic and six damage parameters :math:`d_p` are introduced.
 
-.. figure:: /figures/Compodamagemat_diag.png
+.. figure:: ../figures/Compodamagemat_diag.png
    :width: 70%
    :alt: Implemented stress-strain evolution with damage for 1D case. Tension and compression are separated, but sharing the same damage parameter.
    :align: center
@@ -70,8 +70,8 @@ and the calculation of damage variables :math:`d_p` stems from :eq:`comp_eq_H`, 
 .. math::
    :label: comp_eq_dp11
 
-   d_{11} &=& 1 - \frac{\sigma'_{11}}{E_{11}\left(\varepsilon_{11}+\frac{\nu_{21}}{E_{22}}\sigma_{22}+ \frac{\nu_{31}}{E_{33}}\sigma_{33} \right)}\\
-   d_{12} &=& 1 - \frac{\sigma'_{12}}{G_{12}\varepsilon_{12}}
+   d_{11} &= 1 - \frac{\sigma'_{11}}{E_{11}\left(\varepsilon_{11}+\frac{\nu_{21}}{E_{22}}\sigma_{22}+ \frac{\nu_{31}}{E_{33}}\sigma_{33} \right)}\\
+   d_{12} &= 1 - \frac{\sigma'_{12}}{G_{12}\varepsilon_{12}}
 
 Damage is always controled not to decrease. :numref:`comp_performance` shows a typical performance for this damage model in one direction.
 
@@ -79,7 +79,7 @@ The damage initiation is based on a trial stress. It becomes necessary for highe
 
 :param:`allowSnapBack` skips the checking of sufficient fracture energy for each direction. If not specified, all directions are checked to prevent snap-back, which dissipates an incorrect amount of energy.
 
-.. figure:: /figures/Compodamagemat_test.png
+.. figure:: ../figures/Compodamagemat_test.png
    :width: 70%
    :alt: Typical loading/unloading material performance for homogenized stress and strain in the direction `:math:`{2}`'. Note that one damage parameter is common for both tension and compression.
    :name: comp_performance
@@ -88,6 +88,7 @@ The damage initiation is based on a trial stress. It becomes necessary for highe
 
 .. table:: Orthotropic damage model with fixed crack orientations for composites -- summary
    :name: compdammat_table
+   :widths: 20 94
 
    +--------------------+----------------------------------------------------------------------------------------------+
    | Description        | Orthotropic damage model with fixed crack orientations for composites                        |

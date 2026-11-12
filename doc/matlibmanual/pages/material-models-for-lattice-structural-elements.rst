@@ -24,6 +24,7 @@ Furthermore, :math:`\mathbf{D}_{\rm e}` is the elastic stiffness matrix which is
 
 .. table:: Linear elastic material model for lattice elements -- summary.
    :name: latticelinearelastic_table
+   :widths: 20 94
 
    +--------------------+----------------------------------------------------------------------------------------------+
    | Description        | Linear elastic model for lattice elements                                                    |
@@ -109,6 +110,7 @@ The model parameters are summarised in :numref:`latticedamage_table`.
 
 .. table:: Scalar damage model for lattice elements -- summary.
    :name: latticedamage_table
+   :widths: 20 94
 
    +--------------------+----------------------------------------------------------------------------------------------+
    | Description        | Scalar damage model for lattice elements                                                     |
@@ -186,7 +188,7 @@ where :math:`\boldsymbol{\sigma}` is a vector of tractions and rotational compon
 
 The plasticity part is based on the effective stresses and uses only a subset of the strains and stresses which are the normal stress :math:`\sigma_{\rm n}` and the two shear stresses :math:`\sigma_{\rm s}` and :math:`\sigma_{\rm t}`. The yield surface is composed of two ellipse which are arranged so that the transition of the two ellipses is smooth (Figure ``plastdamyieldfig``).
 
-.. figure:: /figures/plastdamyieldfig.svg
+.. figure:: ../figures/plastdamyieldfig.*
    :width: 60%
    :alt: Latticeplastdam yield surface, which is composed of ellipse with a smooth transition.
 
@@ -205,6 +207,7 @@ The model parameters are summarised in :numref:`latticeplastdam_table`.
 
 .. table:: Combined plasticity damage model for lattice elements
    :name: latticeplastdam_table
+   :widths: 20 94
 
    +--------------------+----------------------------------------------------------------------------------------------+
    | Description        | Combined plasticity damage model for lattice elements                                        |
@@ -270,6 +273,7 @@ The model parameters are summarised in :numref:`latticebond_table`.
 
 .. table:: Bond plasticity model for lattice elements -- summary.
    :name: latticebond_table
+   :widths: 20 94
 
    +--------------------+----------------------------------------------------------------------------------------------+
    | Description        | Bond model for lattice elements                                                              |
@@ -324,6 +328,7 @@ The model description and parameters are summarized in :numref:`latticeviscoelas
 
 .. table:: Visco elastic material model for lattice elements -- summary.
    :name: latticeviscoelastic_table
+   :widths: 20 94
 
    +--------------------+----------------------------------------------------------------------------------------------+
    | Description        | Viscoelastic lattice model                                                                   |
@@ -359,6 +364,7 @@ The model description and parameters are summarized in :numref:`latticedamagevis
 
 .. table:: Damage visco elastic material model for lattice elements -- summary.
    :name: latticedamageviscoelastic_table
+   :widths: 20 94
 
    +--------------------+----------------------------------------------------------------------------------------------+
    | Description        | Viscoelastic damage lattice model                                                            |
@@ -451,6 +457,7 @@ The model description and parameters are summarized in :numref:`latticeplasticda
 
 .. table:: Plasticity-damage viscoelastic material model for lattice elements -- summary
    :name: latticeplasticdamageviscoelastic_table
+   :widths: 20 94
 
    +--------------------+----------------------------------------------------------------------------------------------+
    | Description        | Plasticity-damage viscoelastic lattice model                                                 |
@@ -521,6 +528,7 @@ where :math:`\mathbf{e}` is a vector of internal forces and moments, :math:`\mat
 
 .. table:: Elastic model for 3D lattice based frame elements -- summary.
    :name: latticeframeelastic_table
+   :widths: 20 94
 
    +--------------------+----------------------------------------------------------------------------------------------+
    | Description        | Elastic lattice model for frame elements                                                     |
@@ -587,6 +595,7 @@ where :math:`\mathbf{e}` is a vector of internal forces and moments, :math:`\mat
 
 .. table:: Plasticity steel model for 3D lattice frame elements -- summary
    :name: latticeframesteelplastic_table
+   :widths: 20 94
 
    +--------------------+----------------------------------------------------------------------------------------------+
    | Description        | Plasticity lattice model for steel                                                           |
@@ -715,6 +724,7 @@ The generalised stress-strain law has the form
 where :math:`\mathbf{e}` is a vector of internal forces and moments, :math:`\mathbf{D}_{\rm e}` is the elastic stiffness matrix, :math:`\mathbf{e}` is a vector of translation and rotational jumps smeared over the element length and :math:`\mathbf{e}_{\rm p}` are the plastic smeared jumps. The model parameters are summarised in Table :numref:`latticeframesteelplastic_table`.
 
 .. table:: Damage Plasticity concrete model for 3D lattice frame elements -- summary
+   :widths: 20 94
 
    +--------------------+----------------------------------------------------------------------------------------------+
    | Description        | Damage-plasticity lattice model for reinforced concrete                                      |
