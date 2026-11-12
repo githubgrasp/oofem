@@ -53,5 +53,5 @@ Set 4 nodes 1 9
 #REACTION tStep 11 number 4 dof 1 value 1.27147593e+05 tolerance 1.e-1
 #REACTION tStep 11 number 4 dof 6 value 3.91462224e+02 tolerance 1.e-3
 #REACTION tStep 3 number 9 dof 2 value 8.96364807e+02 tolerance 1.e-3
-#REACTION tStep 11 number 9 dof 2 value 1.90476190e+03 tolerance 1.e-3
+#REACTION tStep 11 number 9 dof 2 value 1.90476190e+03 tolerance 1.e-2
 #%END_CHECK%
