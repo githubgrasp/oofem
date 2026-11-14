@@ -48,11 +48,7 @@ LatticeStructuralElement :: LatticeStructuralElement(int n, Domain *aDomain) : S
 int
 LatticeStructuralElement :: giveIPValue(FloatArray &answer, GaussPoint *gp, InternalStateType type, TimeStep *tStep)
 {
-    // Skip StructuralElement::giveIPValue's IST_DisplacementVector case (answer = N*u):
-    // computeNmatrixAt is a no-op for lattice elements, so N is empty and beProductOf
-    // crashes.  Go straight to the cross-section/material, which returns the lattice
-    // IST (LatticeForce/Strain/...) or an empty value (zero-padded on export) for any
-    // unsupported solid IST -> a single vtkxml can export a mixed solid+lattice mesh.
+    // Bypass StructuralElement: lattice elements have no N matrix for IST_DisplacementVector.
     return Element :: giveIPValue(answer, gp, type, tStep);
 }
 

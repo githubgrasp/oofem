@@ -80,11 +80,7 @@ public:
 
     int giveLocalCoordinateSystem(FloatMatrix &answer) override;
 
-    /**
-     * This function is different from the standard computeGlobalCordinates
-     * function as it returns the global coordinates of the gausspoint
-     * independent to the value of the lcoords.
-     */
+    /// Returns the global coordinates of the integration point, independent of lcoords.
     int computeGlobalCoordinates(Coordinates &answer, const FloatArray &lcoords) override;
 
     virtual double giveBondLength();
