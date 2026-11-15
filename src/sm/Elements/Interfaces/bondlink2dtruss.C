@@ -69,7 +69,7 @@ BondLink2dTruss::BondLink2dTruss(int n, Domain *aDomain) : StructuralElement(n, 
 double
 BondLink2dTruss::computeVolumeAround(GaussPoint *aGaussPoint)
 {
-    // Artificial volume (bond area times bond length) for post-processing; divided by the bond length again where the bond area is needed.
+    // Bond area times bond length
     return pow(this->bondLength, 2.) * this->bondDiameter * M_PI;
 }
 
@@ -109,8 +109,6 @@ BondLink2dTruss::computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMo
     FloatArray u, slip;
 
     this->computeVectorOf(VM_Total, tStep, u);
-
-    // subtract initial displacements, if defined
     if ( initialDisplacements ) {
         u.subtract(* initialDisplacements);
     }
@@ -135,7 +133,7 @@ BondLink2dTruss::computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMo
     db.beProductOf(d, b);
     answer.beProductOf(bt, db);
 
-    //Introduce integration of bond strength
+    // Scale by bond area
     double area = this->computeVolumeAround(gp) / this->giveLength();
     answer.times(area);
 
@@ -211,7 +209,6 @@ BondLink2dTruss::giveDofManDofIDMask(int inode, IntArray &answer) const
 void
 BondLink2dTruss::initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
-    // first call parent
     StructuralElement::initializeFrom(ir, priority);
 
     IR_GIVE_FIELD(ir, this->bondLength, _IFT_BondLink2dTruss_length);
@@ -264,7 +261,6 @@ BondLink2dTruss::computeGeometryProperties()
 
     this->globalCentroid.resize(3);
     for ( int i = 1; i <= 3; i++ ) {
-        //nodeA and nodeB should be at same point
         this->globalCentroid.at(i) = nodeB->giveCoordinate(i);
     }
 
@@ -295,12 +291,9 @@ BondLink2dTruss::giveInternalForcesVector(FloatArray &answer,
     FloatArray u, stress, strain;
 
     this->computeVectorOf(VM_Total, tStep, u);
-    // subtract initial displacements, if defined
     if ( initialDisplacements ) {
         u.subtract(* initialDisplacements);
     }
-
-    // zero answer will resize accordingly when adding first contribution
     answer.clear();
 
     for ( GaussPoint *gp : * this->giveDefaultIntegrationRulePtr() ) {
@@ -355,7 +348,7 @@ BondLink2dTruss::giveInternalForcesVector(FloatArray &answer,
 double
 BondLink2dTruss::giveLength()
 {
-    //returns the bond length, not the length between the two nodes, which should be zero
+    // Bond length
     return this->bondLength;
 }
 

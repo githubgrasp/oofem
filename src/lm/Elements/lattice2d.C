@@ -515,8 +515,7 @@ Lattice2d :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority
 void
 Lattice2d :: postInitialize()
 {
-    // gpcoords is optional: without it the integration point is the element
-    // midpoint, so the eccentricity is zero (frame elements).
+    // Without gpCoords, the integration point is the element midpoint.
     if ( this->gpCoords.giveSize() == 0 ) {
         Node *nodeA = this->giveNode(1);
         Node *nodeB = this->giveNode(2);

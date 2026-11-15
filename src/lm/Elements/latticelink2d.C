@@ -74,7 +74,7 @@ LatticeLink2d :: ~LatticeLink2d()
 double
 LatticeLink2d :: computeVolumeAround(GaussPoint *aGaussPoint)
 {
-    //Returns artificial volume (bond area times bond length) so that general parts of post processing work
+    // Bond area times bond length
     return pow(this->bondLength, 2.) * this->bondDiameter * M_PI;
 }
 
@@ -139,7 +139,7 @@ LatticeLink2d :: computeStiffnessMatrix(FloatMatrix &answer, MatResponseMode rMo
     db.beProductOf(d, b);
     answer.beProductOf(bt, db);
 
-    //Introduce integration of bond strength
+    // Scale by bond area
     double area = this->computeVolumeAround(gp) / this->giveLength();
     answer.times(area);
 }
@@ -213,7 +213,6 @@ void
 LatticeLink2d :: initializeFrom(const std::shared_ptr<InputRecord> &ir, int priority)
 {
     ParameterManager &ppm = this->giveDomain()->elementPPM;
-    // first call parent
     LatticeStructuralElement :: initializeFrom(ir, priority);
 
     PM_UPDATE_PARAMETER(bondLength, ppm, ir, this->number, IPK_LatticeLink2d_length, priority) ;
@@ -310,7 +309,6 @@ LatticeLink2d :: giveInternalForcesVector(FloatArray &answer,
     FloatArray u, stress(3), strain(3);
 
     this->computeVectorOf(VM_Total, tStep, u);
-    // subtract initial displacements, if defined
     if ( initialDisplacements ) {
         u.subtract(* initialDisplacements);
     }
@@ -340,10 +338,10 @@ LatticeLink2d :: giveInternalForcesVector(FloatArray &answer,
             break;
         }
 
-        // compute nodal representation of internal forces using f = B^T*stress
+        // f = B^T * stress
         answer.beProductOf(bt, stress);
 
-        //Introduce integration of bond strength
+        // Scale by bond area
         double area = this->computeVolumeAround(gp) / this->giveLength();
         answer.times(area);
     }
@@ -359,7 +357,7 @@ LatticeLink2d :: giveInternalForcesVector(FloatArray &answer,
 double
 LatticeLink2d :: giveLength()
 {
-    //returns the bond length, not the length between the two nodes
+    // Bond length
     return this->bondLength;
 }
 
