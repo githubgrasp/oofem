@@ -16,9 +16,9 @@ truss1d 1 nodes 2 1 2
 truss1d 2 nodes 2 2 3
 truss1d 3 nodes 2 3 4
 truss1d 4 nodes 2 4 5
-bondlink1d 5 nodes 2 1 4 dirvector 3 1 0 0 length 0.05 diameter 0.02
-bondlink1d 6 nodes 2 2 5 dirvector 3 1 0 0 length 0.1 diameter 0.02
-bondlink1d 7 nodes 2 3 6 dirvector 3 1 0 0 length 0.05 diameter 0.02
+intelpoint 5 nodes 2 4 1 area 3.141593e-03 normal 3 1 0 0
+intelpoint 6 nodes 2 5 2 area 6.283185e-03 normal 3 1 0 0
+intelpoint 7 nodes 2 6 3 area 3.141593e-03 normal 3 1 0 0
 Set 1 elements 4 1 2 3 4
 Set 2 elements 3 5 6 7
 Set 3 nodes 1 1

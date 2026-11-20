@@ -131,11 +131,8 @@ set (sm_interface_elements
     Interfaces/intelline2intpen.C
     Interfaces/intelsurftr1.C
     Interfaces/intelsurfquad1.C
-    Interfaces/bondlink1d.C
     Interfaces/bondlink3d.C
     Interfaces/bondlink3dboundary.C
-    Interfaces/bondlink2dtruss.C
-    Interfaces/bondlink3dtruss.C
     #    bondlink3dboundarybeam.C
     #    bondlink3dboundaryplate.C		
     Interfaces/Deprecated/interfaceelement1d.C
