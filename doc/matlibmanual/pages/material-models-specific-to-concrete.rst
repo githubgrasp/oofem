@@ -1677,7 +1677,7 @@ from which :math:`\varepsilon_{\rm i}` can be evaluated iteratively if the total
    +--------------------------+------------------+------+-----------------+----------------------------------------------------------------------------------------+
    | :math:`q_{h0}`           | kinit            | \-   | 0.3             | initial value of hardening variable :math:`q_{h1}`, eq.~(:eq:`eq:hardeningLawOne`)     |
    +--------------------------+------------------+------+-----------------+----------------------------------------------------------------------------------------+
-   | :math:`H_p`              | hp               | \-   | 0.5             | hardening modulus (for the last stage, eq.~(:eq:`eq:hardeningLawTwo`))                 |
+   | :math:`H_p`              | hp               | \-   | 0.01            | hardening modulus (for the last stage, eq.~(:eq:`eq:hardeningLawTwo`))                 |
    +--------------------------+------------------+------+-----------------+----------------------------------------------------------------------------------------+
    | :math:`D_f`              | dilation         | \-   | 0.85            | dilation factor, eq.~(:eq:`cdpm2:betac`)                                               |
    +--------------------------+------------------+------+-----------------+----------------------------------------------------------------------------------------+
@@ -1718,7 +1718,7 @@ where
 
 The default value is not mentioned in  [GraXenNys13]_; in OOFEM it is taken as :math:`e=0.525`. 
 
-Parameter :math:`H_p` is a dimensionless hardening modulus that sets the ratio between the increments of variables :math:`q_{h2}` and :math:`\kappa_p` during the last stage of the plastic hardening process. The value recommended in  [GraXenNys13]_ is :math:`H_p=0.01`, but the default value used in OOFEM is 0.5.
+Parameter :math:`H_p` is a dimensionless hardening modulus that sets the ratio between the increments of variables :math:`q_{h2}` and :math:`\kappa_p` during the last stage of the plastic hardening process. The value recommended in  [GraXenNys13]_ is :math:`H_p=0.01`, which is also the default value used in OOFEM.
 
 The dilation parameter :math:`D_f` controls the ratio between the transversal and axial plastic strain rates in uniaxial compression and thus can be used to control the volumetric expansion in the softening regime. The default value is set to 0.85, as suggested in [GraJir]_, which means that the transversal plastic strain rate will be :math:`-0.85` times the (negative) axial plastic strain rate. 
 
@@ -1734,7 +1734,7 @@ where :math:`X` is the continuous compression measure (= 1 means only compressio
 
 The dynamic increase factor (DIF) for strength is computed according to Model Code 2010.
 
-If :em:`sratetype` is greater than zero, the strengths depend on the strain rate. A rate factor :math:`r` is computed at the end of each step from the rates of the maximum and minimum principal strains, using the dynamic increase factors of the Model Code 2010 for tension (:math:`r_{\rm t}`) and compression (:math:`r_{\rm c}`), which are combined as :math:`r = (1-\alpha) r_{\rm t} + \alpha r_{\rm c}`. This rate factor is used in the next step. During unloading, the rate factors in tension and compression are kept constant, and once damage has started, the rate factor is no longer changed. Both :math:`f_{\rm t}` and :math:`f_{\rm c}` are multiplied by :math:`r`, which expands the yield surface without changing its shape. This is implemented by evaluating the model for the strains divided by :math:`r` and multiplying the resulting stress by :math:`r`. Consequently, damage starts when the effective stress reaches the expanded yield surface, and the strains at peak stress increase with :math:`r`. The fracture energy is increased by :math:`r^n`, where :math:`n` is given by :em:`erateexp`. Since the strength increase is obtained by the plasticity part, the hardening modulus :math:`H_p` does not need to be increased for rate dependent analyses.
+If :em:`sratetype` is greater than zero, the strengths depend on the strain rate, following the approach developed by Xiaowei Liu in her PhD thesis "Modelling the failure process of concrete subjected to shock". A rate factor :math:`r` is computed at the end of each step from the rates of the maximum and minimum principal strains, using the dynamic increase factors of the Model Code 2010 for tension (:math:`r_{\rm t}`) and compression (:math:`r_{\rm c}`), which are combined as :math:`r = (1-\alpha) r_{\rm t} + \alpha r_{\rm c}`. This rate factor is used in the next step. During unloading, the rate factors in tension and compression are kept constant, and once damage has started, the rate factor is no longer changed. Both :math:`f_{\rm t}` and :math:`f_{\rm c}` are multiplied by :math:`r`, which expands the yield surface without changing its shape. This is implemented by evaluating the model for the strains divided by :math:`r` and multiplying the resulting stress by :math:`r`. Consequently, damage starts when the effective stress reaches the expanded yield surface, and the strains at peak stress increase with :math:`r`. The fracture energy is increased by :math:`r^n`, where :math:`n` is given by :em:`erateexp`. Since the strength increase is obtained by the plasticity part, the hardening modulus :math:`H_p` does not need to be increased for rate dependent analyses.
 
 The :math:`\bf{parameters of CDPM2}` for OOFEM input file are summarised in :numref:`cdpm2_table`.
 By default, two damage variables are used, i.e., the effective stress is transformed into nominal stress using equation (:eq:`cdpm2:efftonominal`). If parameter :em:`damflag` is set to 3, only :math:`\omega_t` is used and the effective stress is reduced by :math:`1-\omega_t`.
@@ -1784,8 +1784,7 @@ By default, two damage variables are used, i.e., the effective stress is transfo
    |                    | - :param:`helem` element size :math:`h`, optional (if not specified, the actual element size |
    |                    |   is used)                                                                                   |
    |                    | - :param:`dilation` dilation factor, optional, default value 0.85                            |
-   |                    | - :param:`hp` hardening modulus, optional, default value 0.5. A small value such as 0.01     |
-   |                    |   is recommended, also if the strain rate effect is used                                     |
+   |                    | - :param:`hp` hardening modulus, optional, default value 0.01                                |
    |                    | - :param:`damflag` flag which allows for the use of different damage formulations. Default   |
    |                    |   value is 1. If set to zero, no damage is used. If set to 3, only the tensile damage        |
    |                    |   varialbe is used.                                                                          |
@@ -1941,9 +1940,9 @@ The dispersion factor can vary in space through the optional parameters :optpara
    | Supported modes    | 3dMat, PlaneStrain, 1DMat                                                                    |
    +--------------------+----------------------------------------------------------------------------------------------+
    | Tests/Examples     | `sm/cdpm2fTest1.in                                                                           |
-   |                    | <https://github.com/githubgrasp/oofem/blob/main/tests/regression/sm/cdpm2fTest1.in>`_,       |
+   |                    | <https://github.com/oofem/oofem/blob/devel/tests/regression/sm/cdpm2fTest1.in>`_,            |
    |                    | `sm/cdpm2fRandom.in                                                                          |
-   |                    | <https://github.com/githubgrasp/oofem/blob/main/tests/regression/sm/cdpm2fRandom.in>`_       |
+   |                    | <https://github.com/oofem/oofem/blob/devel/tests/regression/sm/cdpm2fRandom.in>`_            |
    +--------------------+----------------------------------------------------------------------------------------------+
 
 .. _concreteFCM:

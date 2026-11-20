@@ -313,15 +313,15 @@ namespace oofem {
             } else {
                 //Element so small so that no unloading occurs in element.
                 //Are we underestimating fracture energy with this approach. If yes, it must be negligible because so much energy is dissipated in pre-preak.
-	      
-	      gammaR0 = gammaCu * le / sm;
+
+                gammaR0 = gammaCu * le / sm;
 
                 delta = 1. / ( 4. * ( gammaR0 - 1. ) ) *
-		  ( lf * gammaR0 - 2. * fp.deltaCu - sqrt(pow(lf, 2.) * pow(gammaR0, 2.) - 4. * fp.deltaCu * ( lf * gammaR0 - fp.deltaCu ) +
-		   8. * ( 1. - gammaR0 ) * crackingStrain * le * ( lf - 2. * fp.deltaCu ) ) );
+                    ( lf * gammaR0 - 2. * fp.deltaCu - sqrt(pow(lf, 2.) * pow(gammaR0, 2.) - 4. * fp.deltaCu * ( lf * gammaR0 - fp.deltaCu ) +
+                     8. * ( 1. - gammaR0 ) * crackingStrain * le * ( lf - 2. * fp.deltaCu ) ) );
             }
         } else   {
-	  delta = le * crackingStrain;
+            delta = le * crackingStrain;
         }
 
         return delta;
@@ -382,8 +382,8 @@ namespace oofem {
             residualMid = computeStressResidual(equivStrain, damageTwo, kappaOne, kappaTwo, le, fp);
 
             if ( ( residual * residualMid > 0 ) ) {
-	      /* //Bisection method cannot find a solution. This can be the case, because the fibre law is too steep at tha start. If this is the reason, then damage is kept constant at this stage. */
-		 return damageOld;
+                /* //Bisection method cannot find a solution. This can be the case, because the fibre law is too steep at tha start. If this is the reason, then damage is kept constant at this stage. */
+                return damageOld;
             }
 
             damage = residual < 0.0 ? ( dDamage = damageTwo - damageOne, damageOne ) : ( dDamage = damageOne - damageTwo, damageTwo );
