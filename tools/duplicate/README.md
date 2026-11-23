@@ -15,14 +15,14 @@ Typical pipeline:
 ## Usage
 
     duplicate inputfile outputfile [--2d | --3d] [--diameter <d>] [--bond <cs> <mat>]
-              [--link latticelink3d|bondlink3dtruss] [--zone-mat <axis> <lo> <hi> <cs> <mat>]...
+              [--link latticelink3d|intelpoint] [--zone-mat <axis> <lo> <hi> <cs> <mat>]...
 
 | option | meaning | default |
 |---|---|---|
 | `--2d`, `--3d` | force the mode | from the `domain` record: `2d...` or `planestrain` gives 2D, anything else 3D |
 | `--diameter <d>` | bond diameter written to every link (bond area = pi d length). For n bars lumped into one truss, use n times the bar diameter. | 0.016 |
 | `--bond <cs> <mat>` | cross section and material of the links | 4 4 |
-| `--link <type>` | 3D link element: `latticelink3d` (six DOFs per node, e.g. `latticecs` + `latticeslip`) or `bondlink3dtruss` (translations only, `interfacecs` + `linkslip`). Ignored in 2D (always `bondlink2dtruss`). | latticelink3d |
+| `--link <type>` | 3D link element: `latticelink3d` (six DOFs per node, e.g. `latticecs` + `latticeslip`) or `intelpoint` (translations only, `interfacecs` + `linkslip`). `bondlink3dtruss`, removed from OOFEM, is accepted as an alias for `intelpoint` with a warning. Ignored in 2D (always `intelpoint`). | latticelink3d |
 | `--zone-mat <axis> <lo> <hi> <cs> <mat>` | repeatable: bond length in the band `[lo,hi]` of the `<axis>` (x/y/z) coordinate gets `<cs> <mat>` instead; first match wins. The tributary length of a bar node (one half of each adjacent bar element) is assigned half by half, by the midpoint of each half, so a band edge at a bar node is placed exactly there: that node gets one link per material (same duplicate), each with its part of the length. Use it for a debonded portion (e.g. the loaded-end sleeve of a lap splice): the link stays, so the bar remains laterally constrained, but it points at a zero-bond material. | none |
 
 
@@ -31,7 +31,9 @@ same output as before.
 
 Each link gets a tributary bond length: the mean length of the adjacent bar
 elements, halved at a bar end. Its direction vector is the mean direction of
-the adjacent bar elements.
+the adjacent bar elements. `intelpoint` links take `area` = pi d length (bond
+surface) and `normal` = that direction vector; `latticelink3d` links take
+`length`, `diameter` and `dirvector`.
 
 ## 3D mode
 
@@ -39,9 +41,9 @@ the adjacent bar elements.
   `latticeframe3d`). Continuum: `ltrspace`. All `lattice3d` records are
   treated as bars, so this mode is not meant for lattice models of the
   concrete itself.
-- With `--link bondlink3dtruss` the duplicate of every bar node is
+- With `--link intelpoint` the duplicate of every bar node is
   `hangingnode ... dofType 3 2 2 2` (translations only) and the links are
-  `bondlink3dtruss`. No rotational DOFs are involved, so nothing has to be
+  `intelpoint`. No rotational DOFs are involved, so nothing has to be
   fixed for truss bars. With `lattice3d` bars the bar rotations are then not
   tied to the concrete (as in 2D). The items below are for the default
   `--link latticelink3d`.
@@ -53,8 +55,8 @@ the adjacent bar elements.
   six DOFs per node, but a truss node has no rotational stiffness, so the
   rotations of the bar nodes and their duplicates have to be fixed in the
   input (e.g. `bc 6 0 0 0 1 1 1` with a zero boundary condition 1).
-- Link: `latticelink3d` (material e.g. `latticeslip`), or `bondlink3dtruss`
-  with `--link bondlink3dtruss` (material e.g. `linkslip`, cross section
+- Link: `latticelink3d` (material e.g. `latticeslip`), or `intelpoint`
+  with `--link intelpoint` (material e.g. `linkslip`, cross section
   `interfacecs`).
 - Writes `Set 1` (bars), `Set 2` (links), `Set 3` (other elements) and the
   fixed sets `Set 4 nodes 1 9`, `Set 5 nodes 1 12`.
@@ -74,8 +76,8 @@ records, then everything else. That order is kept; no sets are written.
   `edgetype lattice2d`.
 - Duplicate (`truss2d` bars): `hangingnode ... doftype 2 2 2` with the bar
   node's coordinates, inserted after the last node record.
-- Link (`truss2d` bars): `bondlink2dtruss` between bar node (first) and
-  duplicate (second), inserted after the last element record. The link
+- Link (`truss2d` bars): `intelpoint` between duplicate (first) and bar
+  node (second), inserted after the last element record. The link
   resolves the relative displacement into slip along the bar and a lateral
   component, so bars may have any direction in the x-y plane. Use it with
   e.g. `linkslip` (bond-slip law for the slip, `kl` for the lateral
@@ -91,7 +93,7 @@ The same call is used with `lattice2d` bars (`cdpm2-reinforced-beam-2d`).
 ### 2D mode with `lattice2d` bars
 
 `lattice2d` bars (frame elements: u, v and rotation per node) get the same
-`hangingnode` and `bondlink2dtruss` as `truss2d` bars. The link uses only the
+`hangingnode` and `intelpoint` as `truss2d` bars. The link uses only the
 translations of both nodes, so the rotation of the bar node is not tied to
 the concrete; it is carried by the frame elements.
 

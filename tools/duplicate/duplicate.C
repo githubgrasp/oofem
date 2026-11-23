@@ -59,6 +59,20 @@ struct LinkInfo {
     int mat = 4;          // default bond material; overridable per zone (--zone-mat)
 };
 
+// intelpoint record for a bond link: duplicate (concrete side) first, bar node
+// second, area = bar perimeter x tributary length, normal = bar direction.
+static string intelPointRecord(const LinkInfo &link) {
+    ostringstream oss;
+    char area[32];
+    snprintf(area, sizeof(area), "%.6e", M_PI * link.diameter * link.length);
+    oss << "intelpoint " << link.id
+        << " nodes 2 " << link.newNodeId << " " << link.originalNodeId
+        << " crossSect " << link.crossSect << " mat " << link.mat
+        << " area " << area
+        << " normal 3 " << link.dirVector.x << " " << link.dirVector.y << " " << link.dirVector.z;
+    return oss.str();
+}
+
 
 
 struct NodeEntry {
@@ -119,7 +133,7 @@ struct ZoneMat {
 //   - adds a duplicated, fully hanging node at the same position (doftype
 //     2 2 2), which carries the displacement of the host continuum element,
 //     and
-//   - joins the bar node and the duplicate with a bondlink2dtruss element
+//   - joins the duplicate and the bar node with an intelpoint element
 //     (slip along the bar, lateral stiffness across it).
 // The bar node itself stays an ordinary node. The link only uses the
 // translations, so a lattice2d bar node keeps its rotation free of the link.
@@ -311,13 +325,7 @@ static int run2D(const vector<string> &lines, ofstream &outfile, const vector<Zo
         }
         if (i == lastElemLine) {
             for (const auto &link : links) {
-                outfile << "bondlink2dtruss " << link.id
-                        << " nodes 2 " << link.originalNodeId << " " << link.newNodeId
-                        << " crossSect " << link.crossSect << " mat " << link.mat
-                        << " length " << link.length
-                        << " diameter " << link.diameter
-                        << " dirvector 3 " << link.dirVector.x << " " << link.dirVector.y << " "
-                        << link.dirVector.z << "\n";
+                outfile << intelPointRecord(link) << "\n";
             }
         }
     }
@@ -328,7 +336,7 @@ int main(int argc, char *argv[]) {
     if (argc < 3) {
         cerr << "Usage: " << argv[0]
              << " inputfile outputfile [--2d | --3d] [--diameter <d>] [--bond <cs> <mat>]"
-             << " [--link latticelink3d|bondlink3dtruss] [--zone-mat <axis> <lo> <hi> <cs> <mat>]..." << endl;
+             << " [--link latticelink3d|intelpoint] [--zone-mat <axis> <lo> <hi> <cs> <mat>]..." << endl;
         return 1;
     }
 
@@ -363,12 +371,17 @@ int main(int argc, char *argv[]) {
             bondMat = std::stoi(argv[++a]);
         } else if (opt == "--link") {
             if (a + 1 >= argc) {
-                cerr << "Error: --link needs latticelink3d or bondlink3dtruss" << endl;
+                cerr << "Error: --link needs latticelink3d or intelpoint" << endl;
                 return 1;
             }
             linkType = lowerCase(argv[++a]);
-            if (linkType != "latticelink3d" && linkType != "bondlink3dtruss") {
-                cerr << "Error: --link must be latticelink3d or bondlink3dtruss" << endl;
+            if (linkType == "bondlink3dtruss") {
+                // removed from OOFEM; intelpoint is the drop-in replacement
+                cerr << "Warning: bondlink3dtruss was removed from OOFEM, writing intelpoint instead" << endl;
+                linkType = "intelpoint";
+            }
+            if (linkType != "latticelink3d" && linkType != "intelpoint") {
+                cerr << "Error: --link must be latticelink3d or intelpoint" << endl;
                 return 1;
             }
         } else if (opt == "--2d") {
@@ -518,7 +531,7 @@ for (const auto& [id, elem] : elements) {
             if (coordIt != nodeCoords.end()) {
                 Vec3 coord = coordIt->second;
 
-                // bondlink3dtruss links only the translations: the duplicate is a
+                // intelpoint links only the translations: the duplicate is a
                 // hangingnode with u, v, w (any bar type).
                 // latticelink3d needs six DOFs per node. Frame (lattice3d) bar: the
                 // duplicate is a continuumframenode, whose rotations follow the
@@ -527,7 +540,7 @@ for (const auto& [id, elem] : elements) {
                 // free and must be fixed in the input, as truss nodes carry no
                 // rotational stiffness.
                 std::ostringstream newLine;
-                if (linkType == "bondlink3dtruss")
+                if (linkType == "intelpoint")
                     newLine << "hangingnode " << newId
                             << " coords 3 " << coord.x << " " << coord.y << " " << coord.z
                             << " dofType 3 2 2 2";
@@ -539,7 +552,7 @@ for (const auto& [id, elem] : elements) {
                     newLine << "hangingnode " << newId
                             << " coords 3 " << coord.x << " " << coord.y << " " << coord.z
                             << " dofType 6 2 2 2 0 0 0";
-                if (linkType != "bondlink3dtruss")
+                if (linkType != "intelpoint")
                     newLine << " dofidmask 6 1 2 3 4 5 6";
 
                 nodes[newId] = {newId, newLine.str()};
@@ -666,6 +679,10 @@ if (!zones.empty()) {
 }
 
 for (auto& link : linkInfos) {
+    if (linkType == "intelpoint") {
+        linkLines.push_back(intelPointRecord(link));
+        continue;
+    }
     stringstream ss;
     ss << linkType << " " << link.id
        << " nodes 2 " << link.originalNodeId << " " << link.newNodeId
