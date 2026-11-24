@@ -47,13 +47,14 @@
 #include "mathfem.h"
 #include "classfactory.h"
 #include "element.h"
+#include "matconst.h"
 #include <limits>
 
 namespace oofem {
 REGISTER_Material(ConcreteDPM2);
 
 ConcreteDPM2Status::ConcreteDPM2Status(GaussPoint *gp) :
-    StructuralMaterialStatus(gp)
+    StructuralMaterialStatus(gp), RandomMaterialStatusExtensionInterface()
 {
     strainVector.resize(6);
     tempStrainVector.resize(6);
@@ -516,8 +517,19 @@ ConcreteDPM2Status::computeWork(GaussPoint *gp, double gf)
 
 #define IDM_ITERATION_LIMIT 1.e-8
 
+Interface *
+ConcreteDPM2Status::giveInterface(InterfaceType type)
+{
+    if ( type == RandomMaterialStatusExtensionInterfaceType ) {
+        return static_cast< RandomMaterialStatusExtensionInterface * >( this );
+    }
+    return StructuralMaterialStatus::giveInterface(type);
+}
+
+
 ConcreteDPM2::ConcreteDPM2(int n, Domain *d) :
     StructuralMaterial(n, d),
+    RandomMaterialExtensionInterface(),
     linearElasticMaterial(n, d)
 {}
 
@@ -697,6 +709,14 @@ ConcreteDPM2::initializeFrom(const std::shared_ptr<InputRecord> &ir)
             throw ValueInputException(ir, _IFT_ConcreteDPM2_energyrateexponent, "must be between 0 and 1");
         }
     }
+
+    // Random strength factor (randvars with key strengthFactor_ID), applied to ft and fc in the same way as the rate factor
+    RandomMaterialExtensionInterface::initializeFrom(ir);
+    this->randomEnergyExponent = 1.;
+    IR_GIVE_OPTIONAL_FIELD(ir, this->randomEnergyExponent, _IFT_ConcreteDPM2_randomenergyexponent);
+    if ( this->randomEnergyExponent < 0. || this->randomEnergyExponent > 1. ) {
+        throw ValueInputException(ir, _IFT_ConcreteDPM2_randomenergyexponent, "must be between 0 and 1");
+    }
 }
 
 
@@ -808,6 +828,9 @@ ConcreteDPM2::saveContext(DataStream &stream, ContextMode mode)
             THROW_CIOERR(CIO_IOERR);
         }
         if ( !stream.write(energyRateExponent) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.write(randomEnergyExponent) ) {
             THROW_CIOERR(CIO_IOERR);
         }
     }
@@ -924,6 +947,9 @@ ConcreteDPM2::restoreContext(DataStream &stream, ContextMode mode)
             THROW_CIOERR(CIO_IOERR);
         }
         if ( !stream.read(energyRateExponent) ) {
+            THROW_CIOERR(CIO_IOERR);
+        }
+        if ( !stream.read(randomEnergyExponent) ) {
             THROW_CIOERR(CIO_IOERR);
         }
     }
@@ -1187,7 +1213,7 @@ ConcreteDPM2::computeDamage(const FloatArrayF< 6 > &strain,
 
         //Determine damage parameters
         tempDamageTension = status->giveDamageTension();
-        tempDamageCompression = computeDamageParamCompression(tempKappaDCompression, tempKappaDCompressionOne, tempKappaDCompressionTwo, status->giveDamageCompression(), rateFactor);
+        tempDamageCompression = computeDamageParamCompression(tempKappaDCompression, tempKappaDCompressionOne, tempKappaDCompressionTwo, status->giveDamageCompression(), rateFactor, gp);
     } else if ( fTension >= -yieldTolDamage && fCompression >= -yieldTolDamage ) {
         //Both tension and compression is active
 
@@ -1210,7 +1236,7 @@ ConcreteDPM2::computeDamage(const FloatArrayF< 6 > &strain,
 
         tempDamageTension = computeDamageParamTension(tempKappaDTension, tempKappaDTensionOne, tempKappaDTensionTwo, status->giveLe(), status->giveDamageTension(), rateFactor, gp);
 
-        tempDamageCompression = computeDamageParamCompression(tempKappaDCompression, tempKappaDCompressionOne, tempKappaDCompressionTwo, status->giveDamageCompression(), rateFactor);
+        tempDamageCompression = computeDamageParamCompression(tempKappaDCompression, tempKappaDCompressionOne, tempKappaDCompressionTwo, status->giveDamageCompression(), rateFactor, gp);
     }
 
     //Write all temp history variables to the status
@@ -1312,7 +1338,7 @@ ConcreteDPM2::computeDamage1d(double strain, double deltaTime, GaussPoint *gp, T
         tempKappaDCompressionTwo = status->giveKappaDCompressionTwo() + ( tempKappaDCompression - status->giveKappaDCompression() ) / ductilityMeasure;
 
         tempDamageTension = status->giveDamageTension();
-        tempDamageCompression = computeDamageParamCompression(tempKappaDCompression, tempKappaDCompressionOne, tempKappaDCompressionTwo, status->giveDamageCompression(), rateFactor);
+        tempDamageCompression = computeDamageParamCompression(tempKappaDCompression, tempKappaDCompressionOne, tempKappaDCompressionTwo, status->giveDamageCompression(), rateFactor, gp);
     } else if ( fTension >= -yieldTolDamage && fCompression >= -yieldTolDamage ) {
         tempKappaDTension = tempEquivStrainTension;
         deltaPlasticStrainNormTension = computeDeltaPlasticStrainNormTension(tempKappaDTension, status->giveKappaDTension(), gp);
@@ -1328,7 +1354,7 @@ ConcreteDPM2::computeDamage1d(double strain, double deltaTime, GaussPoint *gp, T
 
         tempDamageTension = computeDamageParamTension(tempKappaDTension, tempKappaDTensionOne, tempKappaDTensionTwo, status->giveLe(), status->giveDamageTension(), rateFactor, gp);
 
-        tempDamageCompression = computeDamageParamCompression(tempKappaDCompression, tempKappaDCompressionOne, tempKappaDCompressionTwo, status->giveDamageCompression(), rateFactor);
+        tempDamageCompression = computeDamageParamCompression(tempKappaDCompression, tempKappaDCompressionOne, tempKappaDCompressionTwo, status->giveDamageCompression(), rateFactor, gp);
     }
 
     status->letTempEquivStrainBe(tempEquivStrain);
@@ -1539,11 +1565,52 @@ ConcreteDPM2::checkForUnAndReloading(double &tempEquivStrain,
 double
 ConcreteDPM2::giveCurrentRateFactor(GaussPoint *gp) const
 {
-    if ( this->strengthRateType == 0 ) {
+    double factor = this->giveStrengthFactor(gp);
+    if ( this->strengthRateType > 0 ) {
+        auto status = static_cast< ConcreteDPM2Status * >( this->giveStatus(gp) );
+        factor *= status->giveRateFactor();
+    }
+    return factor;
+}
+
+
+double
+ConcreteDPM2::giveStrengthFactor(GaussPoint *gp) const
+{
+    double r;
+    if ( !RandomMaterialExtensionInterface::give(strengthFactor_ID, gp, r) ) {
         return 1.;
     }
-    auto status = static_cast< ConcreteDPM2Status * >( this->giveStatus(gp) );
-    return status->giveRateFactor();
+    return r;
+}
+
+
+double
+ConcreteDPM2::computeSofteningFactor(double rateFactor, GaussPoint *gp) const
+{
+    // Dividing the strains by the strength factor F increases the fracture energy by F^2.
+    // wf and efc are scaled by F^(n-2), so that the fracture energy increases by F^n instead,
+    // with separate exponents n for the rate factor and the random strength factor.
+    double factor = 1.;
+    double r = this->giveStrengthFactor(gp);
+    if ( r != 1. ) {
+        factor *= pow(r, this->randomEnergyExponent - 2.);
+    }
+    if ( this->strengthRateType > 0 ) {
+        factor *= pow(rateFactor / r, this->energyRateExponent - 2.);
+    }
+    return factor;
+}
+
+
+MaterialStatus *
+ConcreteDPM2::giveStatus(GaussPoint *gp) const
+{
+    if ( !gp->hasMaterialStatus() ) {
+        gp->setMaterialStatus(this->CreateStatus(gp) );
+        this->_generateStatusVariables(gp);
+    }
+    return static_cast< MaterialStatus * >( gp->giveMaterialStatus() );
 }
 
 
@@ -1718,12 +1785,10 @@ ConcreteDPM2::computeDamageParamTension(double equivStrain, double kappaOne, dou
     double wfMod = this->wf;
     double wfOneMod = this->wfOne;
 
-    // Dividing the strains by the rate factor increases the fracture energy by rateFactor^2.
-    // wf is scaled so that it increases by rateFactor^n instead.
-    if ( this->strengthRateType > 0 ) {
-        wfMod *= pow(rateFactor, this->energyRateExponent - 2.);
-        wfOneMod *= pow(rateFactor, this->energyRateExponent - 2.);
-    }
+    // Scaled so that the fracture energy depends on the rate and random strength factors as specified.
+    double softeningFactor = this->computeSofteningFactor(rateFactor, gp);
+    wfMod *= softeningFactor;
+    wfOneMod *= softeningFactor;
 
     double help;
     if ( equivStrain > e0 * ( 1. - yieldTolDamage ) ) {
@@ -1783,7 +1848,7 @@ ConcreteDPM2::computeDamageParamTension(double equivStrain, double kappaOne, dou
 }
 
 double
-ConcreteDPM2::computeDamageParamCompression(double equivStrain, double kappaOne, double kappaTwo, double omegaOld, double rateFactor) const
+ConcreteDPM2::computeDamageParamCompression(double equivStrain, double kappaOne, double kappaTwo, double omegaOld, double rateFactor, GaussPoint *gp) const
 {
     if ( this->damageFlag == 3 ) {
         return 0.;
@@ -1793,9 +1858,7 @@ ConcreteDPM2::computeDamageParamCompression(double equivStrain, double kappaOne,
     double efCompressionMod = this->efCompression;
 
     // See computeDamageParamTension
-    if ( this->strengthRateType > 0 ) {
-        efCompressionMod *= pow(rateFactor, this->energyRateExponent - 2.);
-    }
+    efCompressionMod *= this->computeSofteningFactor(rateFactor, gp);
 
     double omega = 1.;
     int nite = 0;

@@ -63,15 +63,13 @@ namespace oofem {
  * This class implements the material status associated to CDPM2F.
  * @author Chao Zhou, Peter Grassl
  */
-class CDPM2FStatus : public ConcreteDPM2Status, public RandomMaterialStatusExtensionInterface
+class CDPM2FStatus : public ConcreteDPM2Status
 {
 public:
     /// Constructor
     CDPM2FStatus(GaussPoint *gp);
 
     const char *giveClassName() const override { return "CDPM2FStatus"; }
-
-    Interface *giveInterface(InterfaceType it) override;
 };
 
 
@@ -85,7 +83,7 @@ public:
  * The fibre tensile response is based on the paper "Crack bridging in fibre reinforced cementitious composites with slip-hardening interfaces." by Lin and Li. 1997
  * @author Chao Zhou, Peter Grassl
  */
-class CDPM2F : public ConcreteDPM2, public RandomMaterialExtensionInterface
+class CDPM2F : public ConcreteDPM2
 {
 public:
     /**
@@ -163,7 +161,6 @@ public:
     double computeDamageParamTension(double equivStrain, double kappaOne, double kappaTwo, double le, double omegaOld, double rateFactor, GaussPoint *gp) const override;
 
     std::unique_ptr<MaterialStatus> CreateStatus(GaussPoint *gp) const override;
-    MaterialStatus *giveStatus(GaussPoint *gp) const override;
 };
 } //end namespace oofem
 #endif

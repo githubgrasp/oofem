@@ -53,19 +53,8 @@ namespace oofem {
     REGISTER_Material(CDPM2F);
 
     CDPM2FStatus::CDPM2FStatus(GaussPoint *gp) :
-        ConcreteDPM2Status(gp), RandomMaterialStatusExtensionInterface()
+        ConcreteDPM2Status(gp)
     {}
-
-
-    Interface *
-    CDPM2FStatus::giveInterface(InterfaceType type)
-    {
-        if ( type == RandomMaterialStatusExtensionInterfaceType ) {
-            return static_cast< RandomMaterialStatusExtensionInterface * >(this);
-        } else {
-            return nullptr;
-        }
-    }
 
 
     //   ********************************
@@ -75,7 +64,7 @@ namespace oofem {
 #define IDM_ITERATION_LIMIT 1.e-8
 
     CDPM2F::CDPM2F(int n, Domain *d) :
-        ConcreteDPM2(n, d), RandomMaterialExtensionInterface()
+        ConcreteDPM2(n, d)
     {}
 
 
@@ -83,7 +72,11 @@ namespace oofem {
     {
         // call the corresponding service for the linear elastic material
         ConcreteDPM2::initializeFrom(ir);
-        RandomMaterialExtensionInterface::initializeFrom(ir);
+
+        // The fibre terms use ft directly, so only the dispersion factor can be random.
+        if ( this->randVariables.contains(strengthFactor_ID) ) {
+            throw ValueInputException(ir, _IFT_RandomMaterialExt_randVariables, "random strength factor not supported by cdpm2f, use the dispersion factor");
+        }
 
 
         //default not available
@@ -204,17 +197,6 @@ namespace oofem {
     CDPM2F::CreateStatus(GaussPoint *gp) const
     {
         return std::make_unique< CDPM2FStatus >(gp);
-    }
-
-
-    MaterialStatus *
-    CDPM2F::giveStatus(GaussPoint *gp) const
-    {
-        if ( !gp->hasMaterialStatus() ) {
-            gp->setMaterialStatus(this->CreateStatus(gp) );
-            this->_generateStatusVariables(gp);
-        }
-        return static_cast< MaterialStatus * >( gp->giveMaterialStatus() );
     }
 
 

@@ -90,6 +90,8 @@ namespace oofem {
 /* strengths */
 #define ft_strength 806
 #define fc_strength 807
+/// Factor on all strengths (fully correlated)
+#define strengthFactor_ID 808
 
 /* nonlocal material parameters */
 #define AVERAGING_TYPE 901

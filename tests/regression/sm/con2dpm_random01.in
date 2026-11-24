@@ -1,0 +1,57 @@
+con2dpm_random01.out
+CDPM2 with random strength factor 1.2 on ft and fc (element 1) and deterministic strengths 1.2 ft and 1.2 fc (element 2), uniaxial tension, 3D tetrahedra
+StaticStructural nsteps 8 rtolf 1.e-6 maxiter 100 nmodules 1
+errorcheck
+domain 3d
+OutputManager tstep_all dofman_all element_all
+ndofman 8 nelem 2 ncrosssect 2 nmat 2 nbc 4 nic 0 nltf 3 nset 6
+node 1 coords 3 0.0 0.0 0.0
+node 2 coords 3 0.1 0.0 0.0
+node 3 coords 3 0.0 0.1 0.0
+node 4 coords 3 0.0 0.0 0.1
+node 5 coords 3 1.0 0.0 0.0
+node 6 coords 3 1.1 0.0 0.0
+node 7 coords 3 1.0 0.1 0.0
+node 8 coords 3 1.0 0.0 0.1
+#
+ltrspace 1 nodes 4 1 2 3 4
+ltrspace 2 nodes 4 5 6 7 8
+#
+SimpleCS 1 material 1 set 1
+SimpleCS 2 material 2 set 2
+#
+con2dpm 1 d 0 E 30.e9 n 0.15 talpha 0. wf 9.3755e-4 fc 3.e6 ft 1.e6 hp 0.01 yieldtol 1.e-5 asoft 5. stype 1 helem 0.1 kinit 0.3 randvars 1 808 randgen 1 3
+con2dpm 2 d 0 E 30.e9 n 0.15 talpha 0. wf 9.3755e-4 fc 3.6e6 ft 1.2e6 hp 0.01 yieldtol 1.e-5 asoft 5. stype 1 helem 0.1 kinit 0.3
+#
+BoundaryCondition 1 loadTimeFunction 1 dofs 1 1 values 1 0.0 set 3
+BoundaryCondition 2 loadTimeFunction 1 dofs 1 2 values 1 0.0 set 4
+BoundaryCondition 3 loadTimeFunction 1 dofs 1 3 values 1 0.0 set 5
+BoundaryCondition 4 loadTimeFunction 2 dofs 1 1 values 1 1.0e-5 set 6
+#
+ConstantFunction 1 f(t) 1.0
+PiecewiseLinFunction 2 t 9 0. 1. 2. 3. 4. 5. 6. 7. 8. f(t) 9 0. 0.125 0.25 0.375 0.5 0.625 0.75 0.875 1.0
+ConstantFunction 3 f(t) 1.2
+#
+Set 1 elementranges {1}
+Set 2 elementranges {2}
+Set 3 nodes 6 1 3 4 5 7 8
+Set 4 nodes 6 1 2 4 5 6 8
+Set 5 nodes 6 1 2 3 5 6 7
+Set 6 nodes 2 2 6
+#
+#%BEGIN_CHECK% tolerance 1.e-3
+## tStep 1: elastic, both elements give E * strain
+#ELEMENT tStep 1 number 1 gp 1 keyword 4 component 1 value 1.25000000e-05 tolerance 1.e-10
+#ELEMENT tStep 1 number 1 gp 1 keyword 1 component 1 value 3.75000000e+05
+#ELEMENT tStep 1 number 2 gp 1 keyword 1 component 1 value 3.75000000e+05
+## tStep 2-3: hardening, random element slightly below the deterministic one (hardening in scaled strain)
+#ELEMENT tStep 2 number 1 gp 1 keyword 1 component 1 value 7.4774e+05 tolerance 1.e2
+#ELEMENT tStep 3 number 1 gp 1 keyword 1 component 1 value 1.0946e+06 tolerance 1.e2
+## tStep 4: peak, both elements reach about 1.2 ft
+#ELEMENT tStep 4 number 1 gp 1 keyword 1 component 1 value 1.1986e+06 tolerance 1.e2
+#ELEMENT tStep 4 number 2 gp 1 keyword 1 component 1 value 1.1982e+06 tolerance 1.e2
+## tStep 8: softening
+#ELEMENT tStep 8 number 1 gp 1 keyword 4 component 1 value 1.0e-04 tolerance 1.e-10
+#ELEMENT tStep 8 number 1 gp 1 keyword 1 component 1 value 1.1681e+06 tolerance 1.e2
+#ELEMENT tStep 8 number 2 gp 1 keyword 1 component 1 value 1.1677e+06 tolerance 1.e2
+#%END_CHECK%

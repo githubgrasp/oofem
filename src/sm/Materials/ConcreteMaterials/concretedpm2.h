@@ -43,6 +43,7 @@
 #include "sm/Materials/isolinearelasticmaterial.h"
 #include "gausspoint.h"
 #include "mathfem.h"
+#include "randommaterialext.h"
 
 #define CDPM2_TOL 1.e-6
 #define keep_track_of_dissipated_energy
@@ -72,6 +73,7 @@
 #define _IFT_ConcreteDPM2_energyratetype "eratetype"
 #define _IFT_ConcreteDPM2_energyrateexponent "erateexp"
 #define _IFT_ConcreteDPM2_deltatime "deltat"
+#define _IFT_ConcreteDPM2_randomenergyexponent "randerateexp"
 #define _IFT_ConcreteDPM2_helem "helem"
 #define _IFT_ConcreteDPM2_damflag "damflag"
 #define _IFT_ConcreteDPM2_symtangent "symtangent"
@@ -91,7 +93,7 @@ namespace oofem {
  * See also https://petergrassl.com/Research/Constitutive/index.html for more info.
  * @author Peter Grassl, Dimitrios Xenos
  */
-class ConcreteDPM2Status : public StructuralMaterialStatus
+class ConcreteDPM2Status : public StructuralMaterialStatus, public RandomMaterialStatusExtensionInterface
 {
 public:
     /// Values of history variable state_flag.
@@ -240,6 +242,8 @@ public:
     void saveContext(DataStream &stream, ContextMode mode) override;
     void restoreContext(DataStream &stream, ContextMode mode) override;
     const char *giveClassName() const override { return "ConcreteDPM2Status"; }
+
+    Interface *giveInterface(InterfaceType it) override;
 
 
     // Inline functions for access to state variables
@@ -694,7 +698,7 @@ public:
  *
  * @author Peter Grassl, Dimitrios Xenos
  */
-class OOFEM_EXPORT ConcreteDPM2 : public StructuralMaterial
+class OOFEM_EXPORT ConcreteDPM2 : public StructuralMaterial, public RandomMaterialExtensionInterface
 {
 public:
 
@@ -914,6 +918,12 @@ protected:
      */
     double energyRateExponent = 0.;
 
+    /** Exponent n of the dependence of the fracture energy on the random strength factor r
+     * (randvars with key strengthFactor_ID). The fracture energy is scaled by r^n, with 0 <= n <= 1.
+     * n = 1 keeps wf constant (default), n = 0 keeps the fracture energy constant.
+     */
+    double randomEnergyExponent = 1.;
+
 public:
     /// Constructor
     ConcreteDPM2(int n, Domain *d);
@@ -1117,8 +1127,14 @@ public:
                           double deltaTime,
                           GaussPoint *gp) const;
 
-    /// Rate factor of the current step, by which the strengths are scaled.
+    /// Factor by which the strengths are scaled: rate factor of the current step times random strength factor.
     double giveCurrentRateFactor(GaussPoint *gp) const;
+
+    /// Random factor on ft and fc (fully correlated), 1 if not random.
+    double giveStrengthFactor(GaussPoint *gp) const;
+
+    /// Factor on wf and efc so that the fracture energy scales with the rate factor and the random strength factor as specified.
+    double computeSofteningFactor(double rateFactor, GaussPoint *gp) const;
 
     /**
      * Computes the second derivative of the plastic potential with respect to the
@@ -1242,7 +1258,7 @@ public:
     virtual double computeDamageParamTension(double equivStrain, double kappaOne, double kappaTwo, double le, double omegaOld, double rateFactor, GaussPoint *gp) const;
 
     /// Compute damage parameter in compression.
-    virtual double computeDamageParamCompression(double equivStrain, double kappaOne, double kappaTwo, double omegaOld, double rateFactor) const;
+    virtual double computeDamageParamCompression(double equivStrain, double kappaOne, double kappaTwo, double omegaOld, double rateFactor, GaussPoint *gp) const;
 
     /// Compute equivalent strain value for tension.
     double computeDeltaPlasticStrainNormTension(double tempKappaD, double kappaD, GaussPoint *gp) const;
@@ -1504,6 +1520,8 @@ public:
                                          TimeStep *tStep,
                                          double &alpha) const;
     //@}
+
+    MaterialStatus *giveStatus(GaussPoint *gp) const override;
 
 protected:
     std::unique_ptr<MaterialStatus> CreateStatus(GaussPoint *gp) const override;
