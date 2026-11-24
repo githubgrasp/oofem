@@ -4918,6 +4918,12 @@ ConcreteDPM2::giveIPValue(FloatArray &answer,
         answer.at(3) = status->giveDissWork();
         return 1;
 
+    case IST_TensileStrength:
+        // Tensile strength including the random strength factor (without rate effects)
+        answer.resize(1);
+        answer.at(1) = this->ft * this->giveStrengthFactor(gp);
+        return 1;
+
 #ifdef keep_track_of_dissipated_energy
     case IST_StressWorkDensity:
         answer.resize(1);

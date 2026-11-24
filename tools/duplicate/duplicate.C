@@ -429,12 +429,10 @@ std::vector<LinkInfo> linkInfos;
 
     vector<string> preambleLines;
 
-    vector<string> crossSectionLines;
-    vector<string> materialLines;
-    vector<string> bcLoadLines;
-    vector<string> timeFunctionLines;
-    vector<string> setLines;
-    vector<string> otherLines;
+    // All records after the node and element records (cross sections,
+    // materials, BCs, functions, comments, extractor block), kept in input
+    // order. Set records of the input are dropped: Sets 1-5 are generated.
+    vector<string> restLines;
 
     vector<string> linkLines;
 
@@ -455,29 +453,22 @@ std::vector<LinkInfo> linkInfos;
         istringstream iss(line);
         string type;
         iss >> type;
+        const string ltype = lowerCase(type);
 
-        if (type == "node" || type == "hangingnode" || type == "continuumframenode") {
+        if (ltype == "node" || ltype == "hangingnode" || ltype == "continuumframenode") {
             int id;
             iss >> id;
             nodes[id] = {id, line};
             nextNodeId = max(nextNodeId, id);
-        } else if (type == "ltrspace" || type == "truss3d" || type == "lattice3d") {
+        } else if (ltype == "ltrspace" || ltype == "truss3d" || ltype == "lattice3d") {
             int id;
             iss >> id;
-            elements[id] = {id, type, line};
+            elements[id] = {id, ltype, line};
             nextElementId = max(nextElementId, id);
-        } else if (type == "SimpleCS" || type == "LatticeCS" || type == "latticecs" || type == "interfacecs") {
-            crossSectionLines.push_back(line);
-        } else if (type == "IsotropicMaterial" || type == "con2dpm" || type == "LatticeFrameSteelPlastic" || type == "latticeslip" || type == "linkslip") {
-            materialLines.push_back(line);
-        } else if (type == "BoundaryCondition" || type == "NodalLoad") {
-            bcLoadLines.push_back(line);
-        } else if (type == "ConstantFunction" || type == "PiecewiseLinFunction") {
-            timeFunctionLines.push_back(line);
-        } else if (type == "Set") {
-            setLines.push_back(line);
+        } else if (ltype == "set") {
+            // dropped, Sets 1-5 are generated below
         } else {
-            otherLines.push_back(line);
+            restLines.push_back(line);
         }
     }
 
@@ -699,6 +690,7 @@ for (auto& link : linkInfos) {
             istringstream iss(line);
             ostringstream oss;
             string token;
+            bool hasNSet = false;
             while (iss >> token) {
                 if (token == "ndofman") {
                     oss << token << " " << nodes.size() << " ";
@@ -706,10 +698,16 @@ for (auto& link : linkInfos) {
                 } else if (token == "nelem") {
                     oss << token << " " << elements.size() + linkLines.size() << " ";
                     iss >> token; // skip old number
+                } else if (lowerCase(token) == "nset") {
+                    // Sets 1-5 are written below; t3d2oofem drops nset from the header
+                    oss << token << " 5 ";
+                    iss >> token; // skip old number
+                    hasNSet = true;
                 } else {
                     oss << token << " ";
                 }
             }
+            if (!hasNSet) oss << "nset 5";
             line = oss.str();  // update the line in preambleLines
             break;
         }
@@ -733,10 +731,14 @@ for (auto& link : linkInfos) {
     // Write link elements
     for (const string &line : linkLines) outfile << line << "\n";
 
-    for (const string &line : crossSectionLines) outfile << line << "\n";
-    for (const string &line : materialLines) outfile << line << "\n";
-    for (const string &line : bcLoadLines) outfile << line << "\n";
-    for (const string &line : timeFunctionLines) outfile << line << "\n";
+    // Records after the elements, in input order, up to the last real record.
+    // The Sets follow (they are the last records OOFEM reads); trailing
+    // comments, such as the extractor block, are written after them.
+    size_t lastRecord = 0;
+    for (size_t i = 0; i < restLines.size(); ++i) {
+        if (isRecord(restLines[i])) lastRecord = i + 1;
+    }
+    for (size_t i = 0; i < lastRecord; ++i) outfile << restLines[i] << "\n";
 
     // --- Generate element sets ---
     vector<int> trussOrFrameElems, linkElems, otherElems;
@@ -776,7 +778,7 @@ for (auto& link : linkInfos) {
     outfile << "Set 4 nodes 1 9 \n";
     outfile << "Set 5 nodes 1 12 \n";
 
-    for (const string &line : otherLines) outfile << line << "\n";
+    for (size_t i = lastRecord; i < restLines.size(); ++i) outfile << restLines[i] << "\n";
 
     return 0;
 }
