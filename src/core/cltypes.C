@@ -215,6 +215,7 @@ InternalStateValueType giveInternalStateValueType(InternalStateType type)
     case IST_2ndCrackWidth:
     case IST_3rdCrackWidth: 
     case IST_TensileStrength:
+    case IST_DispersionFactor:
     case IST_ResidualTensileStrength:
     case IST_CrackIndex:
     case IST_FiberStressNL:

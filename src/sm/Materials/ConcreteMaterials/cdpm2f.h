@@ -161,6 +161,8 @@ public:
     double computeDamageParamTension(double equivStrain, double kappaOne, double kappaTwo, double le, double omegaOld, double rateFactor, GaussPoint *gp) const override;
 
     std::unique_ptr<MaterialStatus> CreateStatus(GaussPoint *gp) const override;
+
+    int giveIPValue(FloatArray &answer, GaussPoint *gp, InternalStateType type, TimeStep *tStep) override;
 };
 } //end namespace oofem
 #endif

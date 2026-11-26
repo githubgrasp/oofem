@@ -200,6 +200,20 @@ namespace oofem {
     }
 
 
+    int
+    CDPM2F::giveIPValue(FloatArray &answer, GaussPoint *gp, InternalStateType type, TimeStep *tStep)
+    {
+        if ( type == IST_DispersionFactor ) {
+            // dispersion factor used at this point, including the random factor and its limits
+            answer.resize(1);
+            answer.at(1) = this->giveFibreParameters(gp).alpha;
+            return 1;
+        }
+
+        return ConcreteDPM2::giveIPValue(answer, gp, type, tStep);
+    }
+
+
     double CDPM2F::computeFibreStress(double delta, const FibreParameters &fp) const
     {
         double fibreStress = 0.;
