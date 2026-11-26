@@ -814,4 +814,26 @@ LatticeFrameSteelPlasticStatus::initTempStatus()
     LatticeMaterialStatus::initTempStatus();
     this->tempKappa = this->kappa;
 }
+
+
+void
+LatticeFrameSteelPlasticStatus::saveContext(DataStream &stream, ContextMode mode)
+{
+    LatticeMaterialStatus::saveContext(stream, mode);
+
+    if ( !stream.write(kappa) ) {
+        THROW_CIOERR(CIO_IOERR);
+    }
+}
+
+
+void
+LatticeFrameSteelPlasticStatus::restoreContext(DataStream &stream, ContextMode mode)
+{
+    LatticeMaterialStatus::restoreContext(stream, mode);
+
+    if ( !stream.read(kappa) ) {
+        THROW_CIOERR(CIO_IOERR);
+    }
+}
 }

@@ -164,6 +164,9 @@ LatticeMaterialStatus :: saveContext(DataStream &stream, ContextMode mode)
         THROW_CIOERR(iores);
     }
 
+    if ( !stream.write(normalLatticeStress) ) {
+        THROW_CIOERR(CIO_IOERR);
+    }
 
     if ( !stream.write(le) ) {
         THROW_CIOERR(CIO_IOERR);
@@ -181,10 +184,16 @@ LatticeMaterialStatus :: saveContext(DataStream &stream, ContextMode mode)
         THROW_CIOERR(CIO_IOERR);
     }
 
+    if ( !stream.write(crackWidth) ) {
+        THROW_CIOERR(CIO_IOERR);
+    }
 
-        if ( !stream.write(updateFlag) ) {
-            THROW_CIOERR(CIO_IOERR);
-        }
+    if ( !stream.write(updateFlag) ) {
+        THROW_CIOERR(CIO_IOERR);
+    }
+
+    // random properties are stored so that a restart reproduces the same field
+    randProperties.saveContext(stream);
 }
 
 
@@ -192,15 +201,12 @@ void
 LatticeMaterialStatus :: restoreContext(DataStream &stream, ContextMode mode)
 //
 // restores full information stored in stream to this Status
+// order must match saveContext
 //
 {
-    MaterialStatus :: saveContext(stream, mode);
+    MaterialStatus :: restoreContext(stream, mode);
 
     contextIOResultType iores;
-
-    if ( ( iores = damageLatticeStrain.restoreYourself(stream) ) != CIO_OK ) {
-        THROW_CIOERR(iores);
-    }
 
     if ( ( iores = latticeStress.restoreYourself(stream) ) != CIO_OK ) {
         THROW_CIOERR(iores);
@@ -216,6 +222,14 @@ LatticeMaterialStatus :: restoreContext(DataStream &stream, ContextMode mode)
 
     if ( ( iores = plasticLatticeStrain.restoreYourself(stream) ) != CIO_OK ) {
         THROW_CIOERR(iores);
+    }
+
+    if ( ( iores = damageLatticeStrain.restoreYourself(stream) ) != CIO_OK ) {
+        THROW_CIOERR(iores);
+    }
+
+    if ( !stream.read(normalLatticeStress) ) {
+        THROW_CIOERR(CIO_IOERR);
     }
 
     if ( !stream.read(le) ) {
@@ -234,10 +248,14 @@ LatticeMaterialStatus :: restoreContext(DataStream &stream, ContextMode mode)
         THROW_CIOERR(CIO_IOERR);
     }
 
+    if ( !stream.read(crackWidth) ) {
+        THROW_CIOERR(CIO_IOERR);
+    }
 
-        if ( !stream.read(updateFlag) ) {
-            THROW_CIOERR(CIO_IOERR);
-        }
+    if ( !stream.read(updateFlag) ) {
+        THROW_CIOERR(CIO_IOERR);
+    }
 
+    randProperties.restoreContext(stream);
 }
 } // end namespace oofem

@@ -1064,6 +1064,12 @@ LatticePlasticityDamageStatus::saveContext(DataStream &stream, ContextMode mode)
     if ( !stream.write(& shearDeltaDissipation, 1) ) {
         THROW_CIOERR(CIO_IOERR);
     }
+    if ( !stream.write(deletionFlag) ) {
+        THROW_CIOERR(CIO_IOERR);
+    }
+    if ( !stream.write(compressionFlag) ) {
+        THROW_CIOERR(CIO_IOERR);
+    }
 }
 
 
@@ -1093,10 +1099,10 @@ LatticePlasticityDamageStatus::restoreContext(DataStream &stream, ContextMode mo
     if ( !stream.read(& tensionDissipation, 1) ) {
         THROW_CIOERR(CIO_IOERR);
     }
-    if ( !stream.read(& shearDissipation, 1) ) {
+    if ( !stream.read(& compressionDissipation, 1) ) {
         THROW_CIOERR(CIO_IOERR);
     }
-    if ( !stream.read(& compressionDissipation, 1) ) {
+    if ( !stream.read(& shearDissipation, 1) ) {
         THROW_CIOERR(CIO_IOERR);
     }
     if ( !stream.read(& deltaDissipation, 1) ) {
@@ -1105,10 +1111,16 @@ LatticePlasticityDamageStatus::restoreContext(DataStream &stream, ContextMode mo
     if ( !stream.read(& tensionDeltaDissipation, 1) ) {
         THROW_CIOERR(CIO_IOERR);
     }
+    if ( !stream.read(& compressionDeltaDissipation, 1) ) {
+        THROW_CIOERR(CIO_IOERR);
+    }
     if ( !stream.read(& shearDeltaDissipation, 1) ) {
         THROW_CIOERR(CIO_IOERR);
     }
-    if ( !stream.read(& compressionDeltaDissipation, 1) ) {
+    if ( !stream.read(deletionFlag) ) {
+        THROW_CIOERR(CIO_IOERR);
+    }
+    if ( !stream.read(compressionFlag) ) {
         THROW_CIOERR(CIO_IOERR);
     }
 }

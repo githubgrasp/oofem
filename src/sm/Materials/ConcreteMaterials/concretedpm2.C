@@ -343,6 +343,22 @@ ConcreteDPM2Status::saveContext(DataStream &stream, ContextMode mode)
         THROW_CIOERR(CIO_IOERR);
     }
 
+    if ( !stream.write(deletionFlag) ) {
+        THROW_CIOERR(CIO_IOERR);
+    }
+
+    // effective stress and deltaLambda of the last return enter the consistent tangent
+    if ( ( iores = tempEffectiveStress.storeYourself(stream) ) != CIO_OK ) {
+        THROW_CIOERR(iores);
+    }
+
+    if ( !stream.write(deltaLambda) ) {
+        THROW_CIOERR(CIO_IOERR);
+    }
+
+    // random properties are stored so that a restart reproduces the same field
+    randProperties.saveContext(stream);
+
 
 #ifdef keep_track_of_dissipated_energy
     if ( !stream.write(stressWork) ) {
@@ -455,6 +471,20 @@ ConcreteDPM2Status::restoreContext(DataStream &stream, ContextMode mode)
     if ( !stream.read(state_flag) ) {
         THROW_CIOERR(CIO_IOERR);
     }
+
+    if ( !stream.read(deletionFlag) ) {
+        THROW_CIOERR(CIO_IOERR);
+    }
+
+    if ( ( iores = tempEffectiveStress.restoreYourself(stream) ) != CIO_OK ) {
+        THROW_CIOERR(iores);
+    }
+
+    if ( !stream.read(deltaLambda) ) {
+        THROW_CIOERR(CIO_IOERR);
+    }
+
+    randProperties.restoreContext(stream);
 
 
 #ifdef keep_track_of_dissipated_energy

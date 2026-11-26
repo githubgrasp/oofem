@@ -35,6 +35,7 @@
 
 #include "structuralinterfacematerial.h"
 #include "contextioerr.h"
+#include "datastream.h"
 
 #include "sm/Materials/structuralmaterial.h"
 #include "structuralinterfacematerialstatus.h"
@@ -92,36 +93,53 @@ void StructuralInterfaceMaterialStatus :: initTempStatus()
 void
 StructuralInterfaceMaterialStatus :: saveContext(DataStream &stream, ContextMode mode)
 {
-#if 0
     MaterialStatus :: saveContext(stream, mode);
 
     contextIOResultType iores;
-    if ( ( iores = strainVector.storeYourself(stream) ) != CIO_OK ) {
+    if ( ( iores = jump.storeYourself(stream) ) != CIO_OK ) {
         THROW_CIOERR(iores);
     }
 
-    if ( ( iores = stressVector.storeYourself(stream) ) != CIO_OK ) {
+    if ( ( iores = traction.storeYourself(stream) ) != CIO_OK ) {
         THROW_CIOERR(iores);
     }
-#endif
+
+    if ( ( iores = firstPKTraction.storeYourself(stream) ) != CIO_OK ) {
+        THROW_CIOERR(iores);
+    }
+
+    if ( ( iores = F.storeYourself(stream) ) != CIO_OK ) {
+        THROW_CIOERR(iores);
+    }
 }
 
 
 void
 StructuralInterfaceMaterialStatus :: restoreContext(DataStream &stream, ContextMode mode)
 {
-#if 0
     MaterialStatus :: restoreContext(stream, mode);
 
     contextIOResultType iores;
-    if ( ( iores = strainVector.restoreYourself(stream) ) != CIO_OK ) {
+    if ( ( iores = jump.restoreYourself(stream) ) != CIO_OK ) {
         THROW_CIOERR(iores);
     }
 
-    if ( ( iores = stressVector.restoreYourself(stream) ) != CIO_OK ) {
+    if ( ( iores = traction.restoreYourself(stream) ) != CIO_OK ) {
         THROW_CIOERR(iores);
     }
-#endif
+
+    if ( ( iores = firstPKTraction.restoreYourself(stream) ) != CIO_OK ) {
+        THROW_CIOERR(iores);
+    }
+
+    if ( ( iores = F.restoreYourself(stream) ) != CIO_OK ) {
+        THROW_CIOERR(iores);
+    }
+
+    tempJump = jump;
+    tempTraction = traction;
+    tempFirstPKTraction = firstPKTraction;
+    tempF = F;
 }
 
 void StructuralInterfaceMaterialStatus :: copyStateVariables(const MaterialStatus &iStatus)

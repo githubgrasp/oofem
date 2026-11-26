@@ -115,6 +115,10 @@ public:
 
     void initTempStatus() override;
 
+    void saveContext(DataStream &stream, ContextMode mode) override;
+
+    void restoreContext(DataStream &stream, ContextMode mode) override;
+
     double giveKappa() const { return kappa; }
     void   setTempKappa(double newKappa) { tempKappa = newKappa; }
 };

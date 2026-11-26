@@ -119,6 +119,13 @@ public:
 
     std::unique_ptr< MaterialStatus > CreateStatus(GaussPoint *gp) const override;
 
+    void saveIPContext(DataStream &stream, ContextMode mode, GaussPoint *gp) override;
+
+    void restoreIPContext(DataStream &stream, ContextMode mode, GaussPoint *gp) override;
+
+    /// Creates the status of the viscoelastic slave point if it does not exist yet.
+    void initSlaveViscoStatus(GaussPoint *gp) const;
+
     RheoChainMaterial *giveViscoelasticMaterial();
 
 protected:

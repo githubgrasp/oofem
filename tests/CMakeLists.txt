@@ -140,6 +140,15 @@ endif()
 
 if (USE_LM)
     oofem_regression_ctest(lm "lm")
+
+    if (NOT WIN32)
+        set (test_rel_dir "tests/regression/lm")
+        file (GLOB lm_tests RELATIVE "${oofem_SOURCE_DIR}/${test_rel_dir}" "${oofem_SOURCE_DIR}/${test_rel_dir}/*.sh")
+        foreach (case ${lm_tests})
+            add_test (NAME "${test_rel_dir}/${case}" WORKING_DIRECTORY ${oofem_SOURCE_DIR}/${test_rel_dir} COMMAND bash ${case} ${oofem_cmd})
+            set_tests_properties("${test_rel_dir}/${case}" PROPERTIES LABELS "workflow")
+        endforeach (case)
+    endif()
 endif()
 
 if (USE_TM AND USE_SM)

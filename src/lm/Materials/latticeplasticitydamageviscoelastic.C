@@ -81,6 +81,32 @@ LatticePlasticityDamageViscoelastic::CreateStatus(GaussPoint *gp) const
 }
 
 
+void
+LatticePlasticityDamageViscoelastic::initSlaveViscoStatus(GaussPoint *gp) const
+{
+    auto status = static_cast< LatticePlasticityDamageViscoelasticStatus * >( this->giveStatus(gp) );
+    RheoChainMaterial *rheoMat = static_cast< RheoChainMaterial * >( domain->giveMaterial(this->viscoMat) );
+    rheoMat->giveStatus(status->giveSlaveGaussPointVisco() );
+}
+
+
+void
+LatticePlasticityDamageViscoelastic::saveIPContext(DataStream &stream, ContextMode mode, GaussPoint *gp)
+{
+    this->initSlaveViscoStatus(gp);
+    LatticePlasticityDamage::saveIPContext(stream, mode, gp);
+}
+
+
+void
+LatticePlasticityDamageViscoelastic::restoreIPContext(DataStream &stream, ContextMode mode, GaussPoint *gp)
+{
+    // on restart the slave status does not exist yet
+    this->initSlaveViscoStatus(gp);
+    LatticePlasticityDamage::restoreIPContext(stream, mode, gp);
+}
+
+
 FloatArrayF< 6 >
 LatticePlasticityDamageViscoelastic::giveLatticeStress3d(const FloatArrayF< 6 > &totalStrain,
                                                          GaussPoint *gp,

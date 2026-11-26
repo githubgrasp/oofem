@@ -1881,6 +1881,9 @@ void EngngModel :: restoreContext(DataStream &stream, ContextMode mode)
     previousStep = std::make_unique<TimeStep>(istep - 1, this, pmstep, currentStep->giveTargetTime ( ) - currentStep->giveTimeIncrement(),
                                 currentStep->giveTimeIncrement(), currentStep->giveSolutionStateCounter() - 1);
 
+    // models whose steps live in the time step controller (e.g. StaticStructural) need them too
+    timeStepController->restoreStepState(*currentStep, *previousStep);
+
     // restore numberOfEquations and domainNeqs array
     if ( !stream.read(numberOfEquations) ) {
         THROW_CIOERR(CIO_IOERR);
