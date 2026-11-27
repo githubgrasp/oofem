@@ -1,0 +1,43 @@
+cdpm2fTest2.out
+#
+cdpm2f test 2 tension with fibres, softening starts at the end of debonding (c = 1.59 < 6 lambda + 2 = 2.04)
+NonLinearStatic nmsteps 2 nsteps 1 nmodules 1
+nsteps 5 rtolv 1.e-3 reqIterations 20 stiffMode 1 maxiter 200 controllmode 0 stepLength 80.e-6 minsteplength 80.e-6 Psi 0. hpcmode 2 hpc 2 3 2 hpcw 1 1. donotfixload
+nsteps 5 rtolv 1.e-3 reqIterations 20 stiffMode 1 maxiter 200 controllmode 0 stepLength 1.5e-3 minsteplength 1.5e-3 Psi 0. hpcmode 2 hpc 2 3 2 hpcw 1 1. donotfixload
+errorcheck
+domain 3d
+OutputManager
+ndofman 4 nelem 1 ncrosssect 1 nmat 1 nbc 4 nltf 1 nic 0
+node 1 coords 3 0. 0. 0. bc 3 1 1 1
+node 2 coords 3 0.1 0. 0. bc 3 0 1 1
+node 3 coords 3 0. 0.1 0. bc 3 0 0 1 load 1 3
+node 4 coords 3 0. 0. 0.1 bc 3 1 1 0
+#
+ltrspace 1 nodes 4 1 2 3 4 mat 1 crossSect 1
+#
+SimpleCS 1
+#
+cdpm2f 1 d 0. talpha 0. stype 2 E 20.e9 n 0.2 ft 2.9e6 fc 40.e6 wf 2.22e-7 ef 43.e9 lf 12.7e-3 vf0 0.02 df 40.e-6 beta 0.01 f 0.9 tau0 0.53e6 sm 6.2e-3 hp 0.01 alpha 0.9
+#
+BoundaryCondition  1 loadTimeFunction 1 prescribedvalue 0.0
+NodalLoad 2 loadTimeFunction 1 Components 3 0.0 0. 0.
+NodalLoad 3 loadTimeFunction 1 Components 3 0. 2.5e6 0.
+NodalLoad 4 loadTimeFunction 1 Components 3 0. 0. 0.0
+#
+ConstantFunction 1 f(t) 1.
+#
+# Softening starts at deltaCu = lf lambda / c = 0.052 mm with sigmaCu = 3.31 MPa (eps_cu = 4.07e-3);
+# the fibres are pulled out at lf/2, i.e. eps = 0.0635 for le = 0.1.
+# The element-size check gives leMax = 1.12 m, so no snapback warning (the c > 6 lambda + 2 formula is negative here).
+#%BEGIN_CHECK%
+#ELEMENT tStep 1 number 1 gp 1 keyword 4 component 2 value 8.e-4 tolerance 1.e-12
+#ELEMENT tStep 1 number 1 gp 1 keyword 1 component 2 value 1.83233592e+06 tolerance 1.
+#ELEMENT tStep 5 number 1 gp 1 keyword 4 component 2 value 4.e-3 tolerance 1.e-12
+#ELEMENT tStep 5 number 1 gp 1 keyword 1 component 2 value 3.31487218e+06 tolerance 1.
+#ELEMENT tStep 7 number 1 gp 1 keyword 4 component 2 value 1.98e-2 tolerance 1.e-12
+#ELEMENT tStep 7 number 1 gp 1 keyword 1 component 2 value 2.56411622e+06 tolerance 1.
+#ELEMENT tStep 8 number 1 gp 1 keyword 4 component 2 value 3.48e-2 tolerance 1.e-12
+#ELEMENT tStep 8 number 1 gp 1 keyword 1 component 2 value 1.40435846e+06 tolerance 1.
+#ELEMENT tStep 10 number 1 gp 1 keyword 4 component 2 value 6.48e-2 tolerance 1.e-12
+#ELEMENT tStep 10 number 1 gp 1 keyword 1 component 2 value 0.0 tolerance 1.
+#%END_CHECK%

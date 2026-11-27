@@ -97,6 +97,10 @@ namespace oofem {
         //Default 0.015
         this->beta = 0.015;
         IR_GIVE_OPTIONAL_FIELD(ir, beta, _IFT_CDPM2F_Beta);
+        // delta* = 2 df lambda / beta
+        if ( this->beta <= 0. ) {
+            throw ValueInputException(ir, _IFT_CDPM2F_Beta, "must be positive");
+        }
 
         this->f = 0.8;
         IR_GIVE_OPTIONAL_FIELD(ir, f, _IFT_CDPM2F_f);
@@ -190,6 +194,34 @@ namespace oofem {
         }
 
         return fp;
+    }
+
+
+    double
+    CDPM2F::computeMaxElementSize(const FibreParameters &fp, double gammaCu) const
+    {
+        // pull-out shape r(delta) = (1 + beta delta/df)(1 - 2 delta/lf)^2 and its derivative
+        auto r = [this](double delta) {
+                     return ( 1. + this->beta * delta / this->df ) * pow(1. - 2. * delta / this->lf, 2.);
+                 };
+        auto dr = [this](double delta) {
+                      double u = 1. - 2. * delta / this->lf;
+                      return this->beta / this->df * u * u - 4. / this->lf * ( 1. + this->beta * delta / this->df ) * u;
+                  };
+
+        // |r'| is largest at the inflection point lf(2c-1)/(6c) if it lies in the softening branch, else at deltaCu
+        double deltaCrit = fp.deltaCu;
+        if ( this->c > 0.5 ) {
+            deltaCrit = max(deltaCrit, this->lf * ( 2. * this->c - 1. ) / ( 6. * this->c ) );
+        }
+
+        double slope = fabs(dr(deltaCrit) );
+        if ( fp.deltaCu >= this->deltaUl || slope <= 0. ) {
+            // no pull-out branch left, so no snapback limit
+            return std::numeric_limits< double >::max();
+        }
+
+        return this->sm / gammaCu * ( 1. + r(fp.deltaCu) / ( fp.deltaCu * slope ) );
     }
 
 
@@ -350,9 +382,14 @@ namespace oofem {
         double ftTemp = this->ft * ( 1. - yieldTolDamage );
         double gammaCu = ( 1. - fp.alpha ) * ftTemp / this->eM * this->sm / ( fp.deltaCu * ( 1. - fp.alphaMin ) ) + ( ( fp.alpha - fp.alphaMin ) / ( 1. - fp.alphaMin ) );
 
-        //Check first if element length is small enough. This needs to be done here because le is caluclated from the principal directions at the onset of cracking.
-        if ( le > ( 7. * c - 2. ) * this->sm / ( gammaCu * ( 3. * c - 6. ) ) ) {
-            OOFEM_WARNING("element size should be less than %e. Your element size is le = %e\n Local snapback could occur.\n", ( 7. * c - 2. ) * this->sm / ( gammaCu * ( 3. * c - 6. ) ), le);
+        // Check the element size once per point, when damage starts; le is fixed at the onset of cracking.
+        auto status = static_cast< CDPM2FStatus * >( this->giveStatus(gp) );
+        if ( equivStrain > e0 * ( 1. - yieldTolDamage ) && !status->giveElementSizeChecked() ) {
+            status->setElementSizeChecked();
+            double leMax = this->computeMaxElementSize(fp, gammaCu);
+            if ( le > leMax ) {
+                OOFEM_WARNING("element size should be less than %e. Your element size is le = %e\n Local snapback could occur.\n", leMax, le);
+            }
         }
 
 

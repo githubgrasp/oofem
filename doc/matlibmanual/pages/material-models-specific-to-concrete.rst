@@ -1911,6 +1911,18 @@ The dispersion factor :math:`\alpha` describes how uniformly the fibres are dist
 
 The dispersion factor can vary in space through the optional parameters :optparam:`randvars{ia}` and :optparam:`randgen{ia}` with the property identifier 1001, for example ``randvars 1 1001 randgen 1 2``. When the material status of an integration point is created, function 2 (typically an ``InterpolatingFunction`` reading a random field from a file) is evaluated at the global coordinates of the point, and the result is used as a factor on the mean value :param:`alpha`, as for the random fields of the lattice materials. The field should therefore have a mean of 1, and the coefficient of variation of the field is the coefficient of variation of :math:`\alpha`. Outside the grid of an ``InterpolatingFunction`` the factor is 1. Since :math:`\alpha_{\rm min}` and 1 bound :math:`\alpha`, values of the product outside this range are set to the nearest limit at each integration point; for a wide distribution this changes the effective mean and coefficient of variation of :math:`\alpha`.
 
+The dispersion factor used at each integration point, including the random factor and the limits, is available as the internal state type ``IST_DispersionFactor`` (165), for example ``cellvars 1 165`` in a VTK export module.
+
+The softening law depends on the element size :math:`l_{\rm e}`, which is determined at the onset of cracking. Local snapback is avoided if the cracking strain increases monotonically with the crack opening over the whole pull-out branch, :math:`{\rm d}\varepsilon_{\rm cr}/{\rm d}\delta \geq 0` for :math:`\delta_{\rm cu} \leq \delta \leq l_{\rm f}/2`. This requires
+
+.. math::
+
+   l_{\rm e} \leq \frac{s_{\rm m}}{\gamma_{\rm cu}} \left( 1 + \frac{r(\delta_{\rm cu})}{\delta_{\rm cu} \left| r'(\delta_{\rm crit}) \right|} \right)
+   \quad \text{with} \quad
+   r(\delta) = \left( 1 + \frac{\beta \delta}{d_{\rm f}} \right) \left( 1 - \frac{2 \delta}{l_{\rm f}} \right)^2
+
+where :math:`\delta_{\rm cu}` is the crack opening at the start of softening, :math:`\gamma_{\rm cu}` the corresponding factor relating crack opening and cracking strain, :math:`\varepsilon_{\rm cu} = \delta_{\rm cu} \gamma_{\rm cu} / s_{\rm m}`, and :math:`\delta_{\rm crit}` the opening at which the pull-out curve is steepest, :math:`\delta_{\rm crit} = \max\left(\delta_{\rm cu},\, l_{\rm f} (2c-1)/(6c)\right)` for :math:`c > 0.5` and :math:`\delta_{\rm crit} = \delta_{\rm cu}` otherwise, with :math:`c = \beta l_{\rm f}/(2 d_{\rm f})`. The limit holds both when softening starts at the end of debonding (:math:`c \leq 6\lambda + 2`) and when it starts after slip hardening (:math:`c > 6\lambda + 2`); in the latter case it is equal to :math:`(7c-2)\, s_{\rm m} / \left(\gamma_{\rm cu} (3c - 6)\right)`. It is checked once per integration point when damage starts, and a warning is printed if the element is larger.
+
 .. table:: CDPM2F -- summary.
    :name: cdpm2f_table
    :widths: 20 94
@@ -1927,7 +1939,8 @@ The dispersion factor can vary in space through the optional parameters :optpara
    |                    | - :param:`vf0` base volume fraction of fibres                                                |
    |                    | - :param:`df` diameter of fibre                                                              |
    |                    | - :param:`tau0` initial bond strength of interface between fibre and matrix                  |
-   |                    | - :param:`beta` hardening parameter of interface between fibre and matrix, default 0.015     |
+   |                    | - :param:`beta` hardening parameter of interface between fibre and matrix, default 0.015,    |
+   |                    |   must be positive                                                                           |
    |                    | - :param:`f` snubbing factor, default 0.8                                                    |
    |                    | - :param:`ef` Young's modulus of fibre material                                              |
    |                    | - :param:`sm` saturated crack spacing                                                        |
@@ -1942,7 +1955,9 @@ The dispersion factor can vary in space through the optional parameters :optpara
    | Tests/Examples     | `sm/cdpm2fTest1.in                                                                           |
    |                    | <https://github.com/oofem/oofem/blob/devel/tests/regression/sm/cdpm2fTest1.in>`_,            |
    |                    | `sm/cdpm2fRandom.in                                                                          |
-   |                    | <https://github.com/oofem/oofem/blob/devel/tests/regression/sm/cdpm2fRandom.in>`_            |
+   |                    | <https://github.com/oofem/oofem/blob/devel/tests/regression/sm/cdpm2fRandom.in>`_,           |
+   |                    | `sm/cdpm2fTest2.in                                                                           |
+   |                    | <https://github.com/oofem/oofem/blob/devel/tests/regression/sm/cdpm2fTest2.in>`_             |
    +--------------------+----------------------------------------------------------------------------------------------+
 
 .. _concreteFCM:

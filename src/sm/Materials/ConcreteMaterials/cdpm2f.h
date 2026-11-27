@@ -65,11 +65,18 @@ namespace oofem {
  */
 class CDPM2FStatus : public ConcreteDPM2Status
 {
+protected:
+    /// Set once the element size has been checked against the snapback limit.
+    bool elementSizeChecked = false;
+
 public:
     /// Constructor
     CDPM2FStatus(GaussPoint *gp);
 
     const char *giveClassName() const override { return "CDPM2FStatus"; }
+
+    bool giveElementSizeChecked() const { return elementSizeChecked; }
+    void setElementSizeChecked() { elementSizeChecked = true; }
 };
 
 
@@ -145,6 +152,13 @@ public:
 
     /// Computes the fibre parameters for a given dispersion factor alpha.
     FibreParameters computeFibreParameters(double alpha) const;
+
+    /**
+     * Largest element size without local snapback, from d(eps_cr)/d(delta) >= 0 over the pull-out branch.
+     * @param fp Fibre parameters.
+     * @param gammaCu Crack strain factor at the start of softening.
+     */
+    double computeMaxElementSize(const FibreParameters &fp, double gammaCu) const;
 
     /// Returns the fibre parameters of the integration point. A random alpha (field value times input alpha) is limited to [alphaMin, 1].
     FibreParameters giveFibreParameters(GaussPoint *gp) const;
